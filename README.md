@@ -181,6 +181,12 @@ There is also a maven plugin for generating code from WSDLs that also may be imp
 
 ```
 
+## Other libraries that may need to be added
+- java.corba
+- java.transaction
+- JavaFX
+- Web Start
+
 ## Converting BigDecimal Rounding Constants to Enums <a name="ConvertBigDecimalRoundingMode"></a>
 
 There are a set of constants (static public integers) representing the various rounding strategies for the BigDecimal class. These have been deprecated in favor of an enum. Any use of these constants will result in a breaking change when using the `jdeprscan` tool. This recipe will migrate the use of these constants to their enum counterparts.
@@ -243,3 +249,36 @@ The `sun.misc.Unsafe` class provides direct access to CPU and other hardware fea
 It will be possible to create a set of recipes to aid in the migration of `Unsafe` to the new APIs starting in Java 11.
 
 
+## Other deprecated/removed packages and classes: 
+
+- com.sun.awt.AWTUtilities
+- com.sun.image.codec.jpeg.*
+- com.sun.browser.plugin2.DOM
+- com.sun.security.auth.*
+- com.suh.xml.internal.bind.*
+- java.awt.dnd.peer.*
+- java.awt.peer.*
+- javax.security.auth.Policy
+- sun.misc.BASE64Decoder
+- sun.misc.BASE64Encoder
+- sun.plugin.dom.DOMObject
+- java.lang.Runtime.getLocalizedInputStream()
+- java.lang.Runtime.getLocalizedOutputStream()
+- java.lang.Runtime.runFinalizersOnExit()
+- java.lang.SecurityManager.checkAwtEventQueueAccess()
+- java.lang.SecurityManager.checkMemberAccess()
+- java.lang.SecurityManager.checkSystemClipboardAccess()
+- java.lang.SecurityManager.checkTopLevelWindow()
+- java.lang.SecurityManager.classDepth()
+- java.lang.SecurityManager.classLoaderDepth()
+- java.lang.SecurityManager.currentClassLoader()
+- java.lang.SecurityManager.currentLoadedClass()
+- java.lang.SecurityManager.getInCheck()
+- java.lang.SecurityManager.inClass()
+- java.lang.SecurityManager.inClassLoader()
+
+
+
+## Helpful tools
+
+- http://ibm.biz/WAMT4AppBinaries
