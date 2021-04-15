@@ -22,7 +22,7 @@ This project implements a [Rewrite module](https://github.com/openrewrite/rewrit
 
 ## Add `jdeprscan` plugin to Maven <a name="AddJdeprscanToMaven"></a>
 
-There is a java tool called `jdeprscan` that will find uses of depcrecated or removed APIs and this tool can be added to a project's build via a Maven plugin. In a multi-module project, this only needs to be added to the top-level, parent pom. This will fail the build if deprecated APIs are used.
+There is a java tool called `jdeprscan` that will find uses of deprecated or removed APIs and this tool can be added to a project's build via a Maven plugin. In a multi-module project, this only needs to be added to the top-level, parent pom. This will fail the build if deprecated APIs are used.
 
 
 
