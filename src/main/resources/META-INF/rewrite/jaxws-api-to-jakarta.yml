@@ -15,7 +15,7 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.JaxBMigrationToJakarta
+name: org.openrewrite.java.migrate.jakarta.JaxWSMigrationToJakarta
 displayName: # Migrate from Javax jaxws-api to Jakarta bind-api.
 description: # From Version: javax.xml.ws:jaxws-api:2.3.1 To Version: jakarta.xml.ws:jakarta.xml.ws-api:3.0.0
 tags:

@@ -114,6 +114,12 @@ dependencies {
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:latest.release")
     testImplementation("io.github.classgraph:classgraph:latest.release")
 
+    testImplementation("javax.xml.ws:jaxws-api:2.3.1")
+    testImplementation("jakarta.xml.ws:jakarta.xml.ws-api:3.0.0")
+
+    testImplementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
+    testImplementation("jakarta.xml.bind:jakarta.xml.bind-api:3.0.0")
+
     testRuntimeOnly("org.openrewrite:rewrite-java-11:${rewriteVersion}")
     testRuntimeOnly("org.openrewrite:rewrite-java-8:${rewriteVersion}")
 
