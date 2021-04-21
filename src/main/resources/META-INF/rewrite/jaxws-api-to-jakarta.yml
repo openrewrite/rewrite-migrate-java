@@ -1,0 +1,216 @@
+#
+# Copyright 2020 the original author or authors.
+# <p>
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://www.apache.org/licenses/LICENSE-2.0
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JaxBMigrationToJakarta
+displayName: # Migrate from Javax jaxws-api to Jakarta bind-api.
+description: # From Version: javax.xml.ws:jaxws-api:2.3.1 To Version: jakarta.xml.ws:jakarta.xml.ws-api:3.0.0
+tags:
+  - jaxws
+  - jakarta
+recipeList:
+
+  # f(x).xml.ws
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.Action
+      newFullyQualifiedTypeName: jakarta.xml.ws.Action
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.AsyncHandler
+      newFullyQualifiedTypeName: jakarta.xml.ws.AsyncHandler
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.Binding
+      newFullyQualifiedTypeName: jakarta.xml.ws.Binding
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.BindingProvider
+      newFullyQualifiedTypeName: jakarta.xml.ws.BindingProvider
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.BindingType
+      newFullyQualifiedTypeName: jakarta.xml.ws.BindingType
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.Dispatch
+      newFullyQualifiedTypeName: jakarta.xml.ws.Dispatch
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.Endpoint
+      newFullyQualifiedTypeName: jakarta.xml.ws.Endpoint
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.EndpointContext
+      newFullyQualifiedTypeName: jakarta.xml.ws.EndpointContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.EndpointReference
+      newFullyQualifiedTypeName: jakarta.xml.ws.EndpointReference
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.FaultAction
+      newFullyQualifiedTypeName: jakarta.xml.ws.FaultAction
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.Holder
+      newFullyQualifiedTypeName: jakarta.xml.ws.Holder
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.LogicalMessage
+      newFullyQualifiedTypeName: jakarta.xml.ws.LogicalMessage
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.ProtocolException
+      newFullyQualifiedTypeName: jakarta.xml.ws.ProtocolException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.Provider
+      newFullyQualifiedTypeName: jakarta.xml.ws.Provider
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.RequestWrapper
+      newFullyQualifiedTypeName: jakarta.xml.ws.RequestWrapper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.RespectBinding
+      # Note: there is an id reference that changes from javax to jakarta in the annotation.
+      # It should be safe, but may be good to make sure the ChangeType recipe only updates the package.
+      newFullyQualifiedTypeName: jakarta.xml.ws.RespectBinding
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.RespectBindingFeature
+      newFullyQualifiedTypeName: jakarta.xml.ws.RespectBindingFeature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.Response
+      newFullyQualifiedTypeName: jakarta.xml.ws.Response
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.ResponseWrapper
+      newFullyQualifiedTypeName: jakarta.xml.ws.ResponseWrapper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.Service
+      newFullyQualifiedTypeName: jakarta.xml.ws.Service
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.ServiceMode
+      newFullyQualifiedTypeName: jakarta.xml.ws.ServiceMode
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.WebEndpoint
+      newFullyQualifiedTypeName: jakarta.xml.ws.WebEndpoint
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.WebFault
+      newFullyQualifiedTypeName: jakarta.xml.ws.WebFault
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.WebServiceClient
+      newFullyQualifiedTypeName: jakarta.xml.ws.WebServiceClient
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.WebServiceContext
+      newFullyQualifiedTypeName: jakarta.xml.ws.WebServiceContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.WebServiceException
+      newFullyQualifiedTypeName: jakarta.xml.ws.WebServiceException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.WebServiceFeature
+      newFullyQualifiedTypeName: jakarta.xml.ws.WebServiceFeature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.WebServicePermission
+      newFullyQualifiedTypeName: jakarta.xml.ws.WebServicePermission
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.WebServiceProvider
+      newFullyQualifiedTypeName: jakarta.xml.ws.WebServiceProvider
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.WebServiceRef
+      newFullyQualifiedTypeName: jakarta.xml.ws.WebServiceRef
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.WebServiceRefs
+      newFullyQualifiedTypeName: jakarta.xml.ws.WebServiceRefs
+
+  # f(x).xml.ws.handler
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.handler.Handler
+      newFullyQualifiedTypeName: jakarta.xml.ws.handler.Handler
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.handler.HandlerResolver
+      newFullyQualifiedTypeName: jakarta.xml.ws.handler.HandlerResolver
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.handler.LogicalHandler
+      newFullyQualifiedTypeName: jakarta.xml.ws.handler.LogicalHandler
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.handler.LogicalMessageContext
+      newFullyQualifiedTypeName: jakarta.xml.ws.handler.LogicalMessageContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.handler.MessageContext
+      newFullyQualifiedTypeName: jakarta.xml.ws.handler.MessageContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.handler.PortInfo
+      newFullyQualifiedTypeName: jakarta.xml.ws.handler.PortInfo
+
+  # f(x).xml.ws.handler.soap
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.handler.soap.SOAPHandler
+      newFullyQualifiedTypeName: jakarta.xml.ws.handler.soap.SOAPHandler
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.handler.soap.SOAPMessageContext
+      newFullyQualifiedTypeName: jakarta.xml.ws.handler.soap.SOAPMessageContext
+
+  # f(x).xml.ws.handler.http
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.handler.http.HTTPBinding
+      newFullyQualifiedTypeName: jakarta.xml.ws.handler.http.HTTPBinding
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.handler.http.HTTPException
+      newFullyQualifiedTypeName: jakarta.xml.ws.handler.http.HTTPException
+
+  # f(x).xml.ws.soap
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.soap.Addressing
+      newFullyQualifiedTypeName: jakarta.xml.ws.soap.Addressing
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.soap.AddressingFeature
+      newFullyQualifiedTypeName: jakarta.xml.ws.soap.AddressingFeature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.soap.MTOM
+      newFullyQualifiedTypeName: jakarta.xml.ws.soap.MTOM
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.soap.MTOMFeature
+      newFullyQualifiedTypeName: jakarta.xml.ws.soap.MTOMFeature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.soap.SOAPBinding
+      newFullyQualifiedTypeName: jakarta.xml.ws.soap.SOAPBinding
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.soap.SOAPFaultException
+      newFullyQualifiedTypeName: jakarta.xml.ws.soap.SOAPFaultException
+
+  # f(x).xml.ws.spi
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.spi.FactoryFinder
+      newFullyQualifiedTypeName: jakarta.xml.ws.spi.FactoryFinder
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.spi.Invoker
+      newFullyQualifiedTypeName: jakarta.xml.ws.spi.Invoker
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.spi.Provider
+      newFullyQualifiedTypeName: jakarta.xml.ws.spi.Provider
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.spi.ServiceDelegate
+      newFullyQualifiedTypeName: jakarta.xml.ws.spi.ServiceDelegate
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.spi.ServiceLoaderUtil
+      newFullyQualifiedTypeName: jakarta.xml.ws.spi.ServiceLoaderUtil
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.spi.WebServiceFeatureAnnotation
+      newFullyQualifiedTypeName: jakarta.xml.ws.spi.WebServiceFeatureAnnotation
+
+  # f(x).xml.ws.spi.http
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.spi.http.HttpContext
+      newFullyQualifiedTypeName: jakarta.xml.ws.spi.http.HttpContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.spi.http.HttpExchange
+      newFullyQualifiedTypeName: jakarta.xml.ws.spi.http.HttpExchange
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.spi.http.HttpHandler
+      newFullyQualifiedTypeName: jakarta.xml.ws.spi.http.HttpHandler
+
+  # f(x).xml.ws.wsaddressing
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.wsaddressing.W3CEndpointReference
+      newFullyQualifiedTypeName: jakarta.xml.ws.wsaddressing.W3CEndpointReference
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws.wsaddressing.W3CEndpointReferenceBuilder
+      newFullyQualifiedTypeName: jakarta.xml.ws.wsaddressing.W3CEndpointReferenceBuilder
