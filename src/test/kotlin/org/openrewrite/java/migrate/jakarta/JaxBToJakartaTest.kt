@@ -17,35 +17,41 @@ package org.openrewrite.java.migrate.jakarta
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Parser
+import org.openrewrite.Recipe
+import org.openrewrite.config.Environment
 import org.openrewrite.java.JavaParser
 import org.openrewrite.java.JavaRecipeTest
 import org.openrewrite.java.tree.J
-import org.openrewrite.loadRecipeFromClasspath
 
 class JaxBToJakartaTest : JavaRecipeTest {
     override val parser: Parser<J.CompilationUnit> = JavaParser.fromJavaVersion()
         .classpath("javax", "jakarta")
         .build()
 
-    override val recipe = loadRecipeFromClasspath(
-        "org.openrewrite.java.migrate.jakarta.JaxBMigrationToJakarta"
-    )
+    override val recipe: Recipe = Environment.builder()
+        .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
+        .build()
+        .activateRecipes("org.openrewrite.java.migrate.jakarta.JaxBMigrationToJakarta")
 
     @Test
-    fun test() = assertChanged(
+    fun changeImport() = assertChanged(
         before = """
-            package javax.xml.bind;
+            package org.A;
 
-            public abstract class Binder<XmlNode> {
+            import javax.xml.bind.MarshalException;
+
+            public class B {
+                Messages cf = new MarshalException();
             }
-
         """,
         after = """
-            package jakarta.xml.bind;
+            package org.A;
 
-            public abstract class Binder<XmlNode> {
+            import jakarta.xml.bind.MarshalException;
+
+            public class B {
+                Messages cf = new MarshalException();
             }
         """
     )
-
 }

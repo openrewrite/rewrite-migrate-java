@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.jakarta
 import org.junit.jupiter.api.Test
 import org.openrewrite.Parser
 import org.openrewrite.Recipe
+import org.openrewrite.config.Environment
 import org.openrewrite.java.JavaParser
 import org.openrewrite.java.JavaRecipeTest
 import org.openrewrite.java.tree.J
@@ -28,24 +29,30 @@ class JaxWSToJakartaTest : JavaRecipeTest {
         .classpath("javax", "jakarta")
         .build()
 
-    override val recipe = loadRecipeFromClasspath(
-        "org.openrewrite.java.migrate.jakarta.JaxWSMigrationToJakarta"
-    )
+    override val recipe: Recipe = Environment.builder()
+        .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
+        .build()
+        .activateRecipes("org.openrewrite.java.migrate.jakarta.JaxWSMigrationToJakarta")
 
     @Test
-    fun test() = assertChanged(
+    fun changeImport() = assertChanged(
         before = """
-            package javax.xml.ws;
+            package org.A;
 
-            public @interface Action {
+            import javax.xml.ws.Service;
+
+            public class B {
+                Service service = new Service();
             }
         """,
         after = """
-            package jakarta.xml.ws;
+            package org.A;
 
-            public @interface Action {
+            import jakarta.xml.ws.Service;
+
+            public class B {
+                Service service = new Service();
             }
         """
     )
-
 }
