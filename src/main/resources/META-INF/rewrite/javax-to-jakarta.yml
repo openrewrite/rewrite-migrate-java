@@ -1,0 +1,51 @@
+#
+# Copyright 2020 the original author or authors.
+# <p>
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://www.apache.org/licenses/LICENSE-2.0
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
+# TODO: update dispName and description.
+displayName: # Migrate from Javax jaxb-api to Jakarta bind-api.
+description: # From Version: javax.xml.bind:jaxb-api:2.4.0-b180830.0359 To Version: jakarta.xml.bind:jakarta.xml.bind-api:3.0.0
+tags:
+  - jaxb
+  - jaxws
+  - jakarta
+
+# TODO:
+# * add missing dependencies:
+#   - potentially requires conditional logic.
+#   - may also be necessary to update to the most current version of jakarta for J11+ compatibility.
+#   - API changes imply a need to update the APIs from current version to the most recent.
+# * ensure list of change types is complete.
+# * update XML references if necessary.
+# * rename bootstrapping files if necessary.
+recipeList:
+  -
+
+  # f(x).transaction
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.transaction
+      newFullyQualifiedTypeName: jakarta.transaction
+
+  # f(x).xml.bind
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.bind
+      newFullyQualifiedTypeName: jakarta.xml.bind
+
+  # f(x).xml.ws
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws
+      newFullyQualifiedTypeName: jakarta.xml.ws
