@@ -33,7 +33,9 @@ tags:
 # * update XML references if necessary.
 # * rename bootstrapping files if necessary.
 recipeList:
-  -
+
+  # Add to list of type changes.
+  # Make sure to test different versions of the APIs to  gracefully handle breaking changes.
 
   # f(x).transaction
   - org.openrewrite.java.ChangeType:
@@ -49,3 +51,54 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.xml.ws
       newFullyQualifiedTypeName: jakarta.xml.ws
+
+  # Add dependencies if the types were changed.
+  # This will eventually include each of the javax packages that have been removed from the JDK ...
+
+  # JaxB API(x) .. update
+  - org.openrewrite.maven.AddDependency:
+      groupId: jakarta.xml.bind
+      artifactId: jakarta.xml.bind-api
+      version: 3.0.0
+      onlyIfUsing:
+        - jakarta.xml.bind.*
+
+  # JaxB Runtime(x) .. update
+  - org.openrewrite.maven.AddDependency:
+      groupId: com.sun.xml.bind
+      artifactId: jaxb-impl
+      version: 3.0.0
+      scope: runtime
+      onlyIfUsing:
+        - jakarta.xml.bind.*
+
+  # JaxWS API(x) .. update
+  - org.openrewrite.maven.AddDependency:
+      groupId: jakarta.xml.ws
+      artifactId: jakarta.xml.ws-api
+      version: 3.0.0
+      onlyIfUsing:
+        - jakarta.xml.ws.*
+
+  # JaxWS Runtime(x) .. update
+  - org.openrewrite.maven.AddDependency:
+      groupId: com.sun.xml.ws
+      artifactId: jaxws-rt
+      version: 3.0.0
+      scope: runtime
+      onlyIfUsing:
+        - jakarta.xml.ws.*
+
+  - org.openrewrite.maven.AddDependency:
+      groupId: jakarta.transaction
+      artifactId: jakarta.transaction-api
+      version: 2.0.0
+      onlyIfUsing:
+        - jakarta.transaction.*
+
+  - org.openrewrite.maven.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.0
+      onlyIfUsing:
+        - jakarta.annotation.*
