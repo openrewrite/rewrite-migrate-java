@@ -20,10 +20,15 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.openrewrite.InMemoryExecutionContext
 import org.openrewrite.Recipe
+import org.openrewrite.SourceFile
 import org.openrewrite.config.Environment
 import org.openrewrite.java.ChangeType
+import org.openrewrite.java.JavaParser
 import org.openrewrite.java.JavaRecipeTest
+import org.openrewrite.maven.AddDependency
+import org.openrewrite.maven.MavenParser
 
 class JavaxToJakartaTest : JavaRecipeTest {
     override val recipe: Recipe = Environment.builder()
@@ -325,27 +330,58 @@ class JavaxToJakartaTest : JavaRecipeTest {
         """
     )
 
-    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     @Test
-    fun checkValidation() {
-        var recipe = ChangeType(null, null)
-        var valid = recipe.validate()
-        Assertions.assertThat(valid.isValid).isFalse()
-        Assertions.assertThat(valid.failures()).hasSize(2)
-        Assertions.assertThat(valid.failures()[0].property).isEqualTo("newFullyQualifiedTypeName")
-        Assertions.assertThat(valid.failures()[1].property).isEqualTo("oldFullyQualifiedTypeName")
+    fun onlyIfUsing() {
+        val recipe = AddDependency(
+            "jakarta.xml.bind",
+            "jakarta.xml.bind-api",
+            "3.0.0",
+            null,
+            true,
+            null,
+            null,
+            null,
+            null,
+            listOf("jakarta.xml.bind.*")
+        )
+        val javaSource = JavaParser.fromJavaVersion().build().parse("""
+            package org.openrewrite.java.testing;
+            import jakarta.xml.bind.MarshalException;
+            public class A {
+                MarshalException getMap() {
+                    return new MarshalException();
+                }
+            }
+        """)[0]
+        val mavenSource = MavenParser.builder().build().parse("""
+            <project>
+              <groupId>com.mycompany.app</groupId>
+              <artifactId>my-app</artifactId>
+              <version>1</version>
+              <dependencies>
+              </dependencies>
+            </project>
+        """.trimIndent())[0]
 
-        recipe = ChangeType(null, "java.lang.String")
-        valid = recipe.validate()
-        Assertions.assertThat(valid.isValid).isFalse()
-        Assertions.assertThat(valid.failures()).hasSize(1)
-        Assertions.assertThat(valid.failures()[0].property).isEqualTo("oldFullyQualifiedTypeName")
+        val sources: List<SourceFile> = listOf(javaSource, mavenSource)
+        val results = recipe.run(sources, InMemoryExecutionContext{ error: Throwable -> throw error})
+        val mavenResult = results.find { it.before === mavenSource }
+        Assertions.assertThat(mavenResult).isNotNull
 
-        recipe = ChangeType("java.lang.String", null)
-        valid = recipe.validate()
-        Assertions.assertThat(valid.isValid).isFalse()
-        Assertions.assertThat(valid.failures()).hasSize(1)
-        Assertions.assertThat(valid.failures()[0].property).isEqualTo("newFullyQualifiedTypeName")
+        Assertions.assertThat(mavenResult?.after?.print()).isEqualTo( """
+            <project>
+              <groupId>com.mycompany.app</groupId>
+              <artifactId>my-app</artifactId>
+              <version>1</version>
+              <dependencies>
+                <dependency>
+                  <groupId>jakarta.xml.bind</groupId>
+                  <artifactId>jakarta.xml.bind-api</artifactId>
+                  <version>3.0.0</version>
+                </dependency>
+              </dependencies>
+            </project>
+        """.trimIndent())
     }
 
     // TODO: reduce test brevity. Currently, exhaustive to test all the recipes together once they're written.

@@ -37,6 +37,53 @@ recipeList:
   # Add to list of type changes.
   # Make sure to test different versions of the APIs to  gracefully handle breaking changes.
 
+  - org.openrewrite.maven.AddDependency:
+      groupId: jakarta.xml.bind
+      artifactId: jakarta.xml.bind-api
+      version: 3.x
+      onlyIfUsing:
+        - javax.xml.bind.*
+
+  # JaxB Runtime(x) .. update
+  - org.openrewrite.maven.AddDependency:
+      groupId: com.sun.xml.bind
+      artifactId: jaxb-impl
+      version: 3.x
+      scope: runtime
+      onlyIfUsing:
+        - javax.xml.bind.*
+
+  # JaxWS API(x) .. update
+  - org.openrewrite.maven.AddDependency:
+      groupId: jakarta.xml.ws
+      artifactId: jakarta.xml.ws-api
+      version: 3.x
+      onlyIfUsing:
+        - javax.xml.ws.*
+
+  # JaxWS Runtime(x) .. update
+  - org.openrewrite.maven.AddDependency:
+      groupId: com.sun.xml.ws
+      artifactId: jaxws-rt
+      version: 3.x
+      scope: runtime
+      onlyIfUsing:
+        - javax.xml.ws.*
+
+  - org.openrewrite.maven.AddDependency:
+      groupId: jakarta.transaction
+      artifactId: jakarta.transaction-api
+      version: 2.x
+      onlyIfUsing:
+        - javax.transaction.*
+
+  - org.openrewrite.maven.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.x
+      onlyIfUsing:
+        - javax.annotation.*
+
   # f(x).transaction
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.transaction
@@ -59,46 +106,46 @@ recipeList:
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
-      version: 3.0.0
+      version: 3.x
       onlyIfUsing:
-        - jakarta.xml.bind.*
+        - javax.xml.bind.*
 
   # JaxB Runtime(x) .. update
   - org.openrewrite.maven.AddDependency:
       groupId: com.sun.xml.bind
       artifactId: jaxb-impl
-      version: 3.0.0
+      version: 3.x
       scope: runtime
       onlyIfUsing:
-        - jakarta.xml.bind.*
+        - javax.xml.bind.*
 
   # JaxWS API(x) .. update
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
-      version: 3.0.0
+      version: 3.x
       onlyIfUsing:
-        - jakarta.xml.ws.*
+        - javax.xml.ws.*
 
   # JaxWS Runtime(x) .. update
   - org.openrewrite.maven.AddDependency:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
-      version: 3.0.0
+      version: 3.x
       scope: runtime
       onlyIfUsing:
-        - jakarta.xml.ws.*
+        - javax.xml.ws.*
 
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.transaction
       artifactId: jakarta.transaction-api
-      version: 2.0.0
+      version: 2.x
       onlyIfUsing:
-        - jakarta.transaction.*
+        - javax.transaction.*
 
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
-      version: 2.0.0
+      version: 2.x
       onlyIfUsing:
-        - jakarta.annotation.*
+        - javax.annotation.*
