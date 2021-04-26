@@ -368,7 +368,7 @@ class JavaxToJakartaTest : JavaRecipeTest {
         val mavenResult = results.find { it.before === mavenSource }
         Assertions.assertThat(mavenResult).isNotNull
 
-        Assertions.assertThat(mavenResult?.after?.print()).isEqualTo( """
+        Assertions.assertThat(mavenResult?.after?.print()).isEqualTo("""
             <project>
               <groupId>com.mycompany.app</groupId>
               <artifactId>my-app</artifactId>

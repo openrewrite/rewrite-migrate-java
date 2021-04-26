@@ -16,91 +16,22 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
-# TODO: update dispName and description.
-displayName: # Migrate from Javax jaxb-api to Jakarta bind-api.
-description: # From Version: javax.xml.bind:jaxb-api:2.4.0-b180830.0359 To Version: jakarta.xml.bind:jakarta.xml.bind-api:3.0.0
+displayName: # Migrate from deprecated javax packages to Jakarta.
+description: # Migrate from deprecated javax packages to Jakarta.
 tags:
   - jaxb
   - jaxws
   - jakarta
 
 # TODO:
-# * add missing dependencies:
-#   - potentially requires conditional logic.
-#   - may also be necessary to update to the most current version of jakarta for J11+ compatibility.
-#   - API changes imply a need to update the APIs from current version to the most recent.
-# * ensure list of change types is complete.
-# * update XML references if necessary.
-# * rename bootstrapping files if necessary.
+# - add missing dependencies:
+# - ensure list of change types is complete.
+#   Note: ChangeType does not update java doc references. Modules that are not included in the mvn config are left alone.
+# - update XML references if necessary.
+# - rename bootstrapping files if necessary.
 recipeList:
 
-  # Add to list of type changes.
-  # Make sure to test different versions of the APIs to  gracefully handle breaking changes.
-
-  - org.openrewrite.maven.AddDependency:
-      groupId: jakarta.xml.bind
-      artifactId: jakarta.xml.bind-api
-      version: 3.x
-      onlyIfUsing:
-        - javax.xml.bind.*
-
-  # JaxB Runtime(x) .. update
-  - org.openrewrite.maven.AddDependency:
-      groupId: com.sun.xml.bind
-      artifactId: jaxb-impl
-      version: 3.x
-      scope: runtime
-      onlyIfUsing:
-        - javax.xml.bind.*
-
-  # JaxWS API(x) .. update
-  - org.openrewrite.maven.AddDependency:
-      groupId: jakarta.xml.ws
-      artifactId: jakarta.xml.ws-api
-      version: 3.x
-      onlyIfUsing:
-        - javax.xml.ws.*
-
-  # JaxWS Runtime(x) .. update
-  - org.openrewrite.maven.AddDependency:
-      groupId: com.sun.xml.ws
-      artifactId: jaxws-rt
-      version: 3.x
-      scope: runtime
-      onlyIfUsing:
-        - javax.xml.ws.*
-
-  - org.openrewrite.maven.AddDependency:
-      groupId: jakarta.transaction
-      artifactId: jakarta.transaction-api
-      version: 2.x
-      onlyIfUsing:
-        - javax.transaction.*
-
-  - org.openrewrite.maven.AddDependency:
-      groupId: jakarta.annotation
-      artifactId: jakarta.annotation-api
-      version: 2.x
-      onlyIfUsing:
-        - javax.annotation.*
-
-  # f(x).transaction
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.transaction
-      newFullyQualifiedTypeName: jakarta.transaction
-
-  # f(x).xml.bind
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.xml.bind
-      newFullyQualifiedTypeName: jakarta.xml.bind
-
-  # f(x).xml.ws
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.xml.ws
-      newFullyQualifiedTypeName: jakarta.xml.ws
-
-  # Add dependencies if the types were changed.
-  # This will eventually include each of the javax packages that have been removed from the JDK ...
+  # TODO: Test different versions of the APIs to gracefully handle breaking changes.
 
   # JaxB API(x) .. update
   - org.openrewrite.maven.AddDependency:
@@ -149,3 +80,30 @@ recipeList:
       version: 2.x
       onlyIfUsing:
         - javax.annotation.*
+
+  - org.openrewrite.maven.AddDependency:
+      groupId: jakarta.activation
+      artifactId: jakarta.activation-api
+      version: 2.x
+      onlyIfUsing:
+        - javax.activation.*
+
+  # f(x).xml.bind
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.bind
+      newFullyQualifiedTypeName: jakarta.xml.bind
+
+  # f(x).xml.ws
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.xml.ws
+      newFullyQualifiedTypeName: jakarta.xml.ws
+
+  # f(x).transaction
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.transaction
+      newFullyQualifiedTypeName: jakarta.transaction
+
+  # f(x).transaction
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.activation
+      newFullyQualifiedTypeName: jakarta.activation
