@@ -41,12 +41,9 @@ class JavaxToJakartaTest : JavaRecipeTest {
         before = "public class B {}"
     )
 
-    private val source: String = "javax.xml.bind."
-    private val target: String = "jakarta.xml.bind."
-
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun changeImport(pkg: String, className: String) {
+    @MethodSource("changeTypeWithWildCardTest")
+    fun changeImport(source: String, target: String, pkg: String, className: String) {
         assertChanged(
             before = """
                 package org.A;
@@ -68,8 +65,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
     }
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun changeQualifiedFieldAccess(pkg: String, className: String) {
+    @MethodSource("changeTypeTest")
+    fun changeQualifiedFieldAccess(source: String, target: String, pkg: String, className: String) {
         assertChanged(
             before = """
                 package org.A;
@@ -89,23 +86,23 @@ class JavaxToJakartaTest : JavaRecipeTest {
     }
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun fullyQualifiedName(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun fullyQualifiedName(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = "public class B extends $source$pkg$className {}",
         after = "public class B extends $target$pkg$className {}"
     )
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun annotation(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun annotation(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = "@$source$pkg$className public class B {}",
         after = "@$target$pkg$className public class B {}"
     )
 
     // array types and new arrays
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun array(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun array(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = """
             import $source$pkg$className;
             public class B {
@@ -121,8 +118,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun classDecl(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun classDecl(source: String, target: String, pkg: String, className: String) = assertChanged(
         dependsOn = arrayOf(
             "public interface I1 {}",
             "public interface I2 {}"
@@ -141,8 +138,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun method(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun method(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = """
             import $source$pkg$className;
             public class B {
@@ -158,8 +155,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun methodInvocationTypeParametersAndWildcard(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun methodInvocationTypeParametersAndWildcard(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = """
             import $source$pkg$className;
             public class B {
@@ -183,8 +180,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun multiCatch(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun multiCatch(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = """
             import $source$pkg$className;
             public class B {
@@ -206,8 +203,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun multiVariable(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun multiVariable(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = """
             import $source$pkg$className;
             public class B {
@@ -223,8 +220,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun newClass(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun newClass(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = """
             import $source$pkg$className;
             public class B {
@@ -240,8 +237,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun parameterizedType(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun parameterizedType(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = """
             import $source$pkg$className;
             public class B {
@@ -257,8 +254,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun typeCast(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun typeCast(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = """
             import $source$pkg$className;
             public class B {
@@ -274,8 +271,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun classReference(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun classReference(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = """
             import $source$pkg$className;
             public class A {
@@ -291,8 +288,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun methodSelect(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun methodSelect(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = """
             import $source$pkg$className;
             public class B {
@@ -310,8 +307,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @ParameterizedTest
-    @MethodSource("changeImportTest")
-    fun staticImport(pkg: String, className: String) = assertChanged(
+    @MethodSource("changeTypeTest")
+    fun staticImport(source: String, target: String, pkg: String, className: String) = assertChanged(
         before = """
             import static $source$pkg$className.stat;
             public class B {
@@ -387,79 +384,20 @@ class JavaxToJakartaTest : JavaRecipeTest {
     // TODO: reduce test brevity. Currently, exhaustive to test all the recipes together once they're written.
     companion object{
         @JvmStatic
-        fun changeImportTest() = listOf(
-            // xml.bind package
-            Arguments.of("", "Binder"),
-            Arguments.of("", "ContextFinder"),
-            Arguments.of("", "DataBindingException"),
-            Arguments.of("", "DatatypeConverter"),
-            Arguments.of("", "DatatypeConverterImpl"),
-            Arguments.of("", "DatatypeConverterInterface"),
-            Arguments.of("", "Element"),
-            Arguments.of("", "GetPropertyAction"),
-            Arguments.of("", "JAXB"),
-            Arguments.of("", "JAXBContext"),
-            Arguments.of("", "JAXBContextFactory"),
-            Arguments.of("", "JAXBElement"),
-            Arguments.of("", "JAXBException"),
-            Arguments.of("", "JAXBIntrospector"),
-            Arguments.of("", "JAXBPermission"),
-            Arguments.of("", "MarshalException"),
-            Arguments.of("", "Marshaller"),
-            Arguments.of("", "Messages"),
-            Arguments.of("", "ModuleUtil"),
-            Arguments.of("", "NotIdentifiableEvent"),
-            Arguments.of("", "ParseConversionEvent"),
-            Arguments.of("", "PrintConversionEvent"),
-            Arguments.of("", "PropertyException"),
-            Arguments.of("", "SchemaOutputResolver"),
-            Arguments.of("", "ServiceLoaderUtil"),
-            Arguments.of("", "TypeConstraintException"),
-            Arguments.of("", "UnmarshalException"),
-            Arguments.of("", "Unmarshaller"),
-            Arguments.of("", "ValidationEvent"),
-            Arguments.of("", "ValidationEventHandler"),
-            Arguments.of("", "ValidationEventLocator"),
-            Arguments.of("", "ValidationException"),
-            Arguments.of("", "Validator"),
-            Arguments.of("", "WhiteSpaceProcessor"),
+        fun changeTypeTest() = listOf(
+            Arguments.of("javax.", "jakarta.", "xml.bind.annotation.", "TestClass"),
+            Arguments.of("javax.", "jakarta.", "xml.ws.", "TestClass"),
+            Arguments.of("javax.", "jakarta.", "transaction.", "TestClass"),
+            Arguments.of("javax.", "jakarta.", "activation.", "TestClass"),
+        )
 
-            // xml.bind.annotation package
-            Arguments.of("annotation", "DomHandler"),
-            Arguments.of("annotation", "W3CDomHandler"),
-            Arguments.of("annotation", "XmlAccessOrder"),
-            Arguments.of("annotation", "XmlAccessorOrder"),
-            Arguments.of("annotation", "XmlAccessorType"),
-            Arguments.of("annotation", "XmlAccessType"),
-            Arguments.of("annotation", "XmlAnyAttribute"),
-            Arguments.of("annotation", "XmlAnyElement"),
-            Arguments.of("annotation", "XmlAttachmentRef"),
-            Arguments.of("annotation", "XmlAttribute"),
-            Arguments.of("annotation", "XmlElement"),
-            Arguments.of("annotation", "XmlElementDecl"),
-            Arguments.of("annotation", "XmlElementRef"),
-            Arguments.of("annotation", "XmlElementRefs"),
-            Arguments.of("annotation", "XmlElements"),
-            Arguments.of("annotation", "XmlElementWrapper"),
-            Arguments.of("annotation", "XmlEnum"),
-            Arguments.of("annotation", "XmlEnumValue"),
-            Arguments.of("annotation", "XmlID"),
-            Arguments.of("annotation", "XmlIDREF"),
-            Arguments.of("annotation", "XmlInlineBinaryData"),
-            Arguments.of("annotation", "XmlList"),
-            Arguments.of("annotation", "XmlMimeType"),
-            Arguments.of("annotation", "XmlMixed"),
-            Arguments.of("annotation", "XmlNs"),
-            Arguments.of("annotation", "XmlNsForm"),
-            Arguments.of("annotation", "XmlRegistry"),
-            Arguments.of("annotation", "XmlRootElement"),
-            Arguments.of("annotation", "XmlSchema"),
-            Arguments.of("annotation", "XmlSchemaType"),
-            Arguments.of("annotation", "XmlSchemaTypes"),
-            Arguments.of("annotation", "XmlSeeAlso"),
-            Arguments.of("annotation", "XmlTransient"),
-            Arguments.of("annotation", "XmlType"),
-            Arguments.of("annotation", "XmlValue"),
+        @JvmStatic
+        fun changeTypeWithWildCardTest() = changeTypeTest() + listOf(
+            Arguments.of("javax.", "jakarta.", "xml.bind.annotation.", "TestClass"),
+            Arguments.of("javax.", "jakarta.", "xml.ws.", "TestClass"),
+            Arguments.of("javax.", "jakarta.", "transaction.", "TestClass"),
+            Arguments.of("javax.", "jakarta.", "activation.", "TestClass"),
+            Arguments.of("javax.", "jakarta.", "activation.", "*"),
         )
     }
 }
