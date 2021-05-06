@@ -89,24 +89,24 @@ recipeList:
         - javax.activation.*
 
   # f(x).xml.bind
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.xml.bind
-      newFullyQualifiedTypeName: jakarta.xml.bind
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.xml.bind
+      newPackageName: jakarta.xml.bind
 
   # f(x).xml.ws
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.xml.ws
-      newFullyQualifiedTypeName: jakarta.xml.ws
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.xml.ws
+      newPackageName: jakarta.xml.ws
 
   # f(x).transaction
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.transaction
-      newFullyQualifiedTypeName: jakarta.transaction
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.transaction
+      newPackageName: jakarta.transaction
 
   # f(x).transaction
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.activation
-      newFullyQualifiedTypeName: jakarta.activation
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.activation
+      newPackageName: jakarta.activation
 
   # Remove Javax JaxB API(x)
   - org.openrewrite.maven.RemoveDependency:
