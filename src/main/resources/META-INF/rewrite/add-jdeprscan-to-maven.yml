@@ -25,4 +25,4 @@ recipeList:
   - org.openrewrite.maven.AddPlugin:
       groupId: org.apache.maven.plugins
       artifactId: maven-jdeprscan-plugin
-      version: 3.x
+      version: 3.0.0-alpha-1
