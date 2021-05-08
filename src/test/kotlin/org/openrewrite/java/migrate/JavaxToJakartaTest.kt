@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.jakarta
+package org.openrewrite.java.migrate
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
@@ -32,9 +32,9 @@ import org.openrewrite.maven.MavenParser
 
 class JavaxToJakartaTest : JavaRecipeTest {
     override val recipe: Recipe = Environment.builder()
-        .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
+        .scanRuntimeClasspath("org.openrewrite.java.migrate")
         .build()
-        .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
+        .activateRecipes("org.openrewrite.java.migrate.JavaxMigrationToJakarta")
 
     @Test
     fun dontAddImportWhenNoChangesWereMade() = assertUnchanged(

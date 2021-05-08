@@ -16,13 +16,30 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.maven.migrate.AddJDeprScanToMavenTest
-displayName: # Add jdeprscan plugin to maven.
-description: # Add jdeprscan plugin to maven poms.
+displayName: # Add jdeprscan plugin to maven. The plugins are added but will require configuration.
+description: # Add jdeprscan plugin to maven poms. The plugins are added but will require configuration.
 tags:
   - deprscan
 
+# Note: configuration blacks are not supported at this time.
 recipeList:
   - org.openrewrite.maven.AddPlugin:
       groupId: org.apache.maven.plugins
       artifactId: maven-jdeprscan-plugin
       version: 3.0.0-alpha-1
+      # Requires:
+      # <configuration>
+      #   <release>11</release>
+      # </configuration
+
+  - org.openrewrite.maven.AddPlugin:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-jar-plugin
+      # Requires:
+      # <configuration>
+      #   <archive>
+      #     <manifestEntries>
+      #       <Add-Opens>java.base/java.lang java.base/java.util java.base/java.lang.reflect java.base/java.text java.desktop/java.awt.font</Add-Opens>
+      #     </manifestEntries>
+      #    </archive>
+      #  </configuration>

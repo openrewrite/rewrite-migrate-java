@@ -15,7 +15,7 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
+name: org.openrewrite.java.migrate.JavaxMigrationToJakarta
 displayName: # Migrate from deprecated javax packages to Jakarta.
 description: # Migrate from deprecated javax packages to Jakarta.
 tags:
@@ -23,15 +23,13 @@ tags:
   - jaxws
   - jakarta
 
-# TODO:
-# - add missing dependencies:
-# - ensure list of change types is complete.
-#   Note: ChangeType does not update java doc references. Modules that are not included in the mvn config are left alone.
-# - update XML references if necessary.
-# - rename bootstrapping files if necessary.
+# - Add missing dependencies:
+# - Update XML references if necessary.
+# - Rename bootstrapping files if necessary.
+#
+#   Test different versions of the APIs to gracefully handle breaking changes.
+#   Note: ChangePackage does not update java doc references.
 recipeList:
-
-  # TODO: Test different versions of the APIs to gracefully handle breaking changes.
 
   # JaxB API(x) .. update
   - org.openrewrite.maven.AddDependency:
