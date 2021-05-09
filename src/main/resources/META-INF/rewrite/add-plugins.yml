@@ -15,31 +15,32 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.maven.migrate.AddJDeprScanToMavenTest
-displayName: # Add jdeprscan plugin to maven. The plugins are added but will require configuration.
-description: # Add jdeprscan plugin to maven poms. The plugins are added but will require configuration.
-tags:
-  - deprscan
-
-# Note: configuration blacks are not supported at this time.
+name: org.openrewrite.maven.migrate.AddJDeprScanPlugin
+displayName: Add jdeprscan plugin to Maven
+description: Add jdeprscan plugin to Maven as part of the migration from Java 8 to 11.
 recipeList:
   - org.openrewrite.maven.AddPlugin:
       groupId: org.apache.maven.plugins
       artifactId: maven-jdeprscan-plugin
       version: 3.0.0-alpha-1
-      # Requires:
-      # <configuration>
-      #   <release>11</release>
-      # </configuration
-
+      configuration: |-
+        <configuration>
+          <release>11</release>
+        </configuration>
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.maven.migrate.AddMavenJarPlugin
+displayName: Add Maven jar plugin
+description: Add Maven jar plugin as part of the migration from Java 8 to 11.
+recipeList:
   - org.openrewrite.maven.AddPlugin:
       groupId: org.apache.maven.plugins
       artifactId: maven-jar-plugin
-      # Requires:
-      # <configuration>
-      #   <archive>
-      #     <manifestEntries>
-      #       <Add-Opens>java.base/java.lang java.base/java.util java.base/java.lang.reflect java.base/java.text java.desktop/java.awt.font</Add-Opens>
-      #     </manifestEntries>
-      #    </archive>
-      #  </configuration>
+      configuration: |-
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Add-Opens>java.base/java.lang java.base/java.util java.base/java.lang.reflect java.base/java.text java.desktop/java.awt.font</Add-Opens>
+            </manifestEntries>
+          </archive>
+        </configuration>
