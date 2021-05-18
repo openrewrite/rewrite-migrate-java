@@ -1,4 +1,4 @@
-![Logo](https://github.com/openrewrite/rewrite/raw/master/doc/logo-oss.png)
+![Logo](https://github.com/openrewrite/rewrite/raw/main/doc/logo-oss.png)
 ### Migrate to Java 11. Automatically.
 
 [![ci](https://github.com/openrewrite/rewrite-testing-frameworks/actions/workflows/ci.yml/badge.svg)](https://github.com/openrewrite/rewrite-testing-frameworks/actions/workflows/ci.yml)
