@@ -5,12 +5,6 @@ import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-buildscript {
-    repositories {
-        gradlePluginPortal()
-    }
-}
-
 plugins {
     `java-library`
     `maven-publish`
@@ -32,11 +26,9 @@ plugins {
     id("nebula.source-jar") version "17.3.2"
     id("nebula.maven-apache-license") version "17.3.2"
 
-    id("nebula.integtest") version "7.0.9" apply false
     id("org.openrewrite.rewrite") version "4.0.0"
 }
 
-apply(plugin = "nebula.integtest-standalone")
 apply(plugin = "nebula.publish-verification")
 
 configure<org.openrewrite.gradle.RewriteExtension> {
@@ -81,16 +73,12 @@ configurations.all {
     }
 }
 
-val rewriteVersion = "latest.integration"
-val testingFrameworksVersion = "latest.integration"
+val rewriteVersion = "latest.release"
 dependencies {
     compileOnly("org.projectlombok:lombok:latest.release")
     annotationProcessor("org.projectlombok:lombok:latest.release")
 
     implementation("org.openrewrite:rewrite-java:${rewriteVersion}")
-    implementation("org.openrewrite:rewrite-xml:${rewriteVersion}")
-    implementation("org.openrewrite:rewrite-properties:${rewriteVersion}")
-    implementation("org.openrewrite:rewrite-yaml:${rewriteVersion}")
     implementation("org.openrewrite:rewrite-maven:${rewriteVersion}")
 
     // eliminates "unknown enum constant DeprecationLevel.WARNING" warnings from the build log
@@ -107,12 +95,6 @@ dependencies {
     testImplementation("org.openrewrite:rewrite-test:${rewriteVersion}")
 
     testImplementation("org.assertj:assertj-core:latest.release")
-    testImplementation("com.github.marschall:memoryfilesystem:latest.release")
-
-    // for generating properties migration configurations
-    testImplementation("com.fasterxml.jackson.core:jackson-databind:latest.release")
-    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:latest.release")
-    testImplementation("io.github.classgraph:classgraph:latest.release")
 
     testImplementation("javax.xml.ws:jaxws-api:2.3.1")
     testImplementation("jakarta.xml.ws:jakarta.xml.ws-api:3.0.0")
@@ -122,11 +104,6 @@ dependencies {
 
     testRuntimeOnly("org.openrewrite:rewrite-java-11:${rewriteVersion}")
     testRuntimeOnly("org.openrewrite:rewrite-java-8:${rewriteVersion}")
-
-    "integTestImplementation"("org.mapdb:mapdb:latest.release")
-    "integTestImplementation"("org.openrewrite:rewrite-java-11:${rewriteVersion}")
-    "integTestImplementation"("org.openrewrite:rewrite-java-8:${rewriteVersion}")
-
 }
 
 tasks.named<Test>("test") {
@@ -148,7 +125,6 @@ tasks.named<JavaCompile>("compileJava") {
 tasks.withType(KotlinCompile::class.java).configureEach {
     kotlinOptions {
         jvmTarget = "1.8"
-        useIR = true
     }
 
     doFirst {
@@ -163,15 +139,15 @@ configure<ContactsExtension> {
     people["jkschneider@gmail.com"] = j
 }
 
- configure<LicenseExtension> {
-     ext.set("year", Calendar.getInstance().get(Calendar.YEAR))
-     skipExistingHeaders = true
-     header = project.rootProject.file("gradle/licenseHeader.txt")
-     mapping(mapOf("kt" to "SLASHSTAR_STYLE", "java" to "SLASHSTAR_STYLE"))
-     // exclude JavaTemplate shims from license check
-     exclude("src/main/resources/META-INF/rewrite/*.java")
-     strictCheck = true
- }
+configure<LicenseExtension> {
+    ext.set("year", Calendar.getInstance().get(Calendar.YEAR))
+    skipExistingHeaders = true
+    header = project.rootProject.file("gradle/licenseHeader.txt")
+    mapping(mapOf("kt" to "SLASHSTAR_STYLE", "java" to "SLASHSTAR_STYLE"))
+    // exclude JavaTemplate shims from license check
+    exclude("src/main/resources/META-INF/rewrite/*.java")
+    strictCheck = true
+}
 
 configure<LicenseReportExtension> {
     renderers = arrayOf(com.github.jk1.license.render.CsvReportRenderer())
@@ -181,26 +157,6 @@ configure<PublishingExtension> {
     publications {
         named("nebula", MavenPublication::class.java) {
             suppressPomMetadataWarningsFor("runtimeElements")
-
-            pom.withXml {
-                (asElement().getElementsByTagName("dependencies").item(0) as org.w3c.dom.Element).let { dependencies ->
-                    dependencies.getElementsByTagName("dependency").let { dependencyList ->
-                        var i = 0
-                        var length = dependencyList.length
-                        while (i < length) {
-                            (dependencyList.item(i) as org.w3c.dom.Element).let { dependency ->
-                                if ((dependency.getElementsByTagName("scope")
-                                        .item(0) as org.w3c.dom.Element).textContent == "provided") {
-                                    dependencies.removeChild(dependency)
-                                    i--
-                                    length--
-                                }
-                            }
-                            i++
-                        }
-                    }
-                }
-            }
         }
     }
 }
