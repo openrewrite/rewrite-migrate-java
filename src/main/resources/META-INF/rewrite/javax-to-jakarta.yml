@@ -16,8 +16,8 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaxMigrationToJakarta
-displayName: # Migrate from deprecated javax packages to Jakarta.
-description: # Migrate from deprecated javax packages to Jakarta.
+displayName: Migrate from deprecated javax packages to Jakarta.
+description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 tags:
   - jaxb
   - jaxws
