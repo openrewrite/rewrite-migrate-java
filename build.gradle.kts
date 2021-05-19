@@ -102,6 +102,8 @@ dependencies {
     testImplementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
     testImplementation("jakarta.xml.bind:jakarta.xml.bind-api:3.0.0")
 
+    testImplementation("com.google.guava:guava:29.0-jre")
+
     testRuntimeOnly("org.openrewrite:rewrite-java-11:${rewriteVersion}")
     testRuntimeOnly("org.openrewrite:rewrite-java-8:${rewriteVersion}")
 }
