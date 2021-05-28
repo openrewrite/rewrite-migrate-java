@@ -96,12 +96,6 @@ dependencies {
 
     testImplementation("org.assertj:assertj-core:latest.release")
 
-    testImplementation("javax.xml.ws:jaxws-api:2.3.1")
-    testImplementation("jakarta.xml.ws:jakarta.xml.ws-api:3.0.0")
-
-    testImplementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
-    testImplementation("jakarta.xml.bind:jakarta.xml.bind-api:3.0.0")
-
     testImplementation("com.google.guava:guava:29.0-jre")
 
     testRuntimeOnly("org.openrewrite:rewrite-java-11:${rewriteVersion}")

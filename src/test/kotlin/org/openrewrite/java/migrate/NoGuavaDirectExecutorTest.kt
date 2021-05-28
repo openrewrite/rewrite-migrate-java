@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.openrewrite.Parser
 import org.openrewrite.Recipe
@@ -28,6 +29,7 @@ class NoGuavaDirectExecutorTest: JavaRecipeTest {
     override val recipe: Recipe
         get() = NoGuavaDirectExecutor()
 
+    @Disabled
     @Test
     fun noDirectExecutor() = assertChanged(
         before = """
