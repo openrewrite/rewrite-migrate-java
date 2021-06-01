@@ -15,18 +15,15 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.maven.migrate.AddMavenJarPlugin
-displayName: Add Maven jar plugin
-description: Add Maven jar plugin as part of the migration from Java 8 to 11.
+name: org.openrewrite.maven.migrate.AddJDeprScanPlugin
+displayName: Add the Maven JDeprScan plugin to pom.
+description: Adds the Maven JDeprScan plugin to the maven pom. The JDeprScan plugin is used to scan the class files for uses of deprecated API elements.
 recipeList:
   - org.openrewrite.maven.AddPlugin:
       groupId: org.apache.maven.plugins
-      artifactId: maven-jar-plugin
+      artifactId: maven-jdeprscan-plugin
+      version: 3.0.0-alpha-1
       configuration: |-
         <configuration>
-          <archive>
-            <manifestEntries>
-              <Add-Opens>java.base/java.lang java.base/java.util java.base/java.lang.reflect java.base/java.text java.desktop/java.awt.font</Add-Opens>
-            </manifestEntries>
-          </archive>
+          <release>11</release>
         </configuration>
