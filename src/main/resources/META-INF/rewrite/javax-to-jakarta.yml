@@ -106,11 +106,6 @@ recipeList:
       oldPackageName: javax.activation
       newPackageName: jakarta.activation
 
-  # Remove Javax JaxB API(x)
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.xml.bind
-      artifactId: jaxb-api
-
   # Remove Javax JaxWs API(x)
   - org.openrewrite.maven.RemoveDependency:
       groupId: javax.xml.ws
