@@ -21,6 +21,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 public class NoGuavaDirectExecutor extends Recipe {
@@ -34,6 +35,11 @@ public class NoGuavaDirectExecutor extends Recipe {
     @Override
     public String getDescription() {
         return "`Executor` is a SAM-compatible interface, so `Runnable::run` is just as succinct as `MoreExecutors.directExecutor()` but without the third-party library requirement.";
+    }
+
+    @Override
+    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
+        return new UsesMethod<>(DIRECT_EXECUTOR);
     }
 
     @Override
