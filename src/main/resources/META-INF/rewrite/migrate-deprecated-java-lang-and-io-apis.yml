@@ -1,0 +1,84 @@
+#
+# Copyright 2020 the original author or authors.
+# <p>
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://www.apache.org/licenses/LICENSE-2.0
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RenameCharacterIsJavaLetterMethod
+displayName: .
+description: Deprecated in Java 1.1.
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.lang.Character isJavaLetter(char)
+      newMethodName: isJavaIdentifierStart
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RenameCharacterIsIdentifierPart
+displayName: .
+description: Deprecated in Java 1.1.
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.lang.Character isJavaLetterOrDigit(char)
+      newMethodName: isJavaIdentifierPart
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RenameCharacterIsSpace
+displayName: .
+description: Deprecated in Java 1.1.
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.lang.Character isSpace(char)
+      newMethodName: isWhitespace
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RenameClassNewInstance
+displayName: .
+description: Deprecated in Java 9.
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.lang.Class newInstance()
+      newMethodName: getDeclaredConstructor().newInstance
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RenameRuntimeVersionMajor
+displayName: .
+description: Deprecated in Java 10.
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.lang.Runtime.Version major()
+      newMethodName: feature
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RenameRuntimeVersionMinor
+displayName: .
+description: Deprecated in Java 10.
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.lang.Runtime.Version minor()
+      newMethodName: interim
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RenameRuntimeVersionSecurity
+displayName: .
+description: Deprecated in Java 10.
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.lang.Runtime.Version security()
+      newMethodName: update
