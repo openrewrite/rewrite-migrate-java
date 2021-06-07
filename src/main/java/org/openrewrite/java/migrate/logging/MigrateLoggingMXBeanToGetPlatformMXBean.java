@@ -33,7 +33,7 @@ public class MigrateLoggingMXBeanToGetPlatformMXBean extends Recipe {
 
     @Override
     public String getDescription() {
-        return "`java.util.logging.LoggingMXBean` is deprecated and replaced with `java.lang.management.PlatformLoggingMXBean`. Use `java.lang.management.ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)` instead.";
+        return "Migrates usages of the deprecated method `java.util.logging.LogManager#getLoggingMXBean()` to using `java.lang.management.ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)`.";
     }
 
     @Override
