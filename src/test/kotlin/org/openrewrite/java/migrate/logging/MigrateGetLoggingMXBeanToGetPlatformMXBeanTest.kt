@@ -19,9 +19,9 @@ import org.junit.jupiter.api.Test
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
-class MigrateLoggingMXBeanToGetPlatformMXBeanTest : JavaRecipeTest {
+class MigrateGetLoggingMXBeanToGetPlatformMXBeanTest : JavaRecipeTest {
     override val recipe: Recipe
-        get() = MigrateLoggingMXBeanToGetPlatformMXBean()
+        get() = MigrateGetLoggingMXBeanToGetPlatformMXBean()
 
     @Test
     fun getLoggingMXBeanToGetPlatformMXBean() = assertChanged(

@@ -23,7 +23,7 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-public class MigrateLoggingMXBeanToGetPlatformMXBean extends Recipe {
+public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
     private static final MethodMatcher LOG_MANAGER_GET_LOGGING_MX_BEAN_MATCHER = new MethodMatcher("java.util.logging.LogManager getLoggingMXBean()");
 
     @Override
@@ -43,10 +43,10 @@ public class MigrateLoggingMXBeanToGetPlatformMXBean extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MigrateLoggingMXBeanToGetPlatformMXBeanVisitor();
+        return new MigrateGetLoggingMXBeanToGetPlatformMXBeanVisitor();
     }
 
-    private static class MigrateLoggingMXBeanToGetPlatformMXBeanVisitor extends JavaIsoVisitor<ExecutionContext> {
+    private static class MigrateGetLoggingMXBeanToGetPlatformMXBeanVisitor extends JavaIsoVisitor<ExecutionContext> {
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation m = method;
