@@ -26,7 +26,7 @@ recipeList:
   - org.openrewrite.java.migrate.RenameRuntimeVersionMajor
   - org.openrewrite.java.migrate.RenameRuntimeVersionMinor
   - org.openrewrite.java.migrate.RenameRuntimeVersionSecurity
-  - org.openrewrite.java.migrate.MigrateSecurityManagerMulticast
+  - org.openrewrite.java.migrate.lang.MigrateSecurityManagerMulticast
 
 ---
 
