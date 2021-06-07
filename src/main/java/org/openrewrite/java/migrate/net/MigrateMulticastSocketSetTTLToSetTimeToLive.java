@@ -54,12 +54,11 @@ public class MigrateMulticastSocketSetTTLToSetTimeToLive extends Recipe {
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation m = method;
             if (MATCHER.matches(m)) {
-                m = m.withTemplate(
+                m = m.withName(m.getName().withName("setTimeToLive")).withTemplate(
                         template("Byte.valueOf(#{any(byte)}).intValue()").build(),
                         m.getCoordinates().replaceArguments(),
                         m.getArguments().get(0)
                 );
-                doAfterVisit(new ChangeMethodName("java.net.MulticastSocket setTTL(byte)", "setTimeToLive"));
             }
             return super.visitMethodInvocation(m, ctx);
         }
