@@ -34,7 +34,7 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Migrates `LogRecord#setMillis(long)` to `LogRecord#setInstant(Instant)` using `LogRecord#setInstant(Instant.ofEpochMilli(long))`.";
+        return "Migrates usages of the deprecated method `LogRecord#setMillis(long)` to using `LogRecord#setInstant(Instant)` via `LogRecord#setInstant(Instant.ofEpochMilli(long))`.";
     }
 
     @Override
