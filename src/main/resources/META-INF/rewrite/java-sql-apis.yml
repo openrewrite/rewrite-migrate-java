@@ -15,20 +15,8 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.Java8toJava11
-displayName: Migrate Java 8 to Java 11
-description: This recipe will apply changes commonly needed when migrating from Java 8 to Java 11.
-tags:
-  - java11
-  - jaxb
-  - jaxws
-  - deprecated
-  - jakarta
-
+name: org.openrewrite.java.migrate.sql.JavaSqlAPIs
+displayName: Migrate deprecated `java.sql` APIs
+description: Certain Java sql APIs have become deprecated and their usages changed, necessitating usage changes.
 recipeList:
-  - org.openrewrite.java.migrate.AddJdeprscanPlugin
-  - org.openrewrite.java.migrate.AddJaxbDependencies
-  - org.openrewrite.java.migrate.lang.JavaLangAPIs
-  - org.openrewrite.java.migrate.logging.JavaLoggingAPIs
-  - org.openrewrite.java.migrate.net.JavaNetAPIs
-  - org.openrewrite.java.migrate.sql.JavaSqlAPIs
+  - org.openrewrite.java.migrate.sql.MigrateDriverManagerSetLogStream
