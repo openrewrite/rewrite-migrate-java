@@ -24,7 +24,7 @@ class MigrateJavaLangTest : JavaRecipeTest {
     override val recipe: Recipe = Environment.builder()
         .scanRuntimeClasspath("org.openrewrite.java.migrate")
         .build()
-        .activateRecipes("org.openrewrite.java.migrate.DeprecatedJavaLangAPIs")
+        .activateRecipes("org.openrewrite.java.migrate.lang.DeprecatedJavaLangAPIs")
 
     @Test
     fun renameCharacterIsJavaLetter() = assertChanged(

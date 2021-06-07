@@ -24,7 +24,7 @@ class DeprecatedLoggingAPIsTest : JavaRecipeTest {
     override val recipe: Recipe = Environment.builder()
         .scanRuntimeClasspath("org.openrewrite.java.migrate")
         .build()
-        .activateRecipes("org.openrewrite.java.migrate.DeprecatedLoggingAPIs")
+        .activateRecipes("org.openrewrite.java.migrate.logging.DeprecatedLoggingAPIs")
 
     @Test
     fun loggingMXBeanToPlatformLoggingMXBean() = assertChanged(

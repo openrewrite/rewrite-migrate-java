@@ -15,7 +15,7 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.DeprecatedNetAPIs
+name: org.openrewrite.java.migrate.net.DeprecatedNetAPIs
 displayName: Migrate deprecated `java.net` APIs
 description: Certain Java networking APIs have become deprecated and their usages changed, necessitating usage changes.
 tags:
