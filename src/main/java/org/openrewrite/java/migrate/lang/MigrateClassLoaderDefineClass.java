@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.Incubating;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -24,24 +23,23 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
-@Incubating(since = "7.7.0")
 public class MigrateClassLoaderDefineClass extends Recipe {
     private static final MethodMatcher DEFINE_CLASS_MATCHER = new MethodMatcher("java.lang.ClassLoader defineClass(byte[], int, int)");
 
     @Override
     public String getDisplayName() {
-        return "Migrates deprecated method java.lang.ClassLoader.defineClass(byte, int, int)";
+        return "Use ClassLoader#defineClass(String, byte[], int, int)";
     }
 
     @Override
     public String getDescription() {
-        return "Replaces the java.lang.ClassLoader deprecated method defineClass(byte, int, int) with defineClass(String, byte, int, int).";
+        return "`ClassLoader#defineClass(byte[], int, int)` was deprecated in Java 1.1.";
     }
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
-            final JavaTemplate template = template("(null, #{any(byte[])}, #{any(int)}, #{any(int)})")
+            final JavaTemplate template = template("null, #{anyArray(byte)}, #{any(int)}, #{any(int)}")
                     .build();
 
             @Override

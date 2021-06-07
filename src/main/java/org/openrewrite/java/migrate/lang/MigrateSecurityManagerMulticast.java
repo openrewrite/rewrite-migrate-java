@@ -30,12 +30,12 @@ public class MigrateSecurityManagerMulticast extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Migrate `java.lang.SecurityManager#checkMulticast(InetAddress, byte)` to `java.lang.SecurityManager#checkMulticast(InetAddress)`";
+        return "Use `java.lang.SecurityManager#checkMulticast(InetAddress)`";
     }
 
     @Override
     public String getDescription() {
-        return "Migrates usages of the deprecated method `java.lang.SecurityManager#checkMulticast(InetAddress, byte)` to using `java.lang.SecurityManager#checkMulticast(InetAddress)`.";
+        return "`SecurityManager#checkMulticast(InetAddress, byte)` was deprecated in Java 1.1.";
     }
 
     @Override

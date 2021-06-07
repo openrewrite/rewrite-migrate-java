@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang
 
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
@@ -24,7 +23,6 @@ class MigrateClassLoaderDefineClassTest: JavaRecipeTest {
     override val recipe: Recipe
         get() = MigrateClassLoaderDefineClass()
 
-    @Disabled("")
     @Test
     fun migrateDefineClass() = assertChanged(
         before = """

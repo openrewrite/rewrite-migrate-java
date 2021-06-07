@@ -27,12 +27,13 @@ recipeList:
   - org.openrewrite.java.migrate.lang.RuntimeVersionMinorToInterim
   - org.openrewrite.java.migrate.lang.RuntimeVersionSecurityToUpdate
   - org.openrewrite.java.migrate.lang.MigrateSecurityManagerMulticast
+  - org.openrewrite.java.migrate.lang.MigrateClassLoaderDefineClass
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.CharacterIsJavaLetterToIsJavaIdentifierStart
 displayName: Use `Character#isJavaIdentifierStart(char)`
-description: '`Character#isJavaLetter(char)` was deprecated in Java 11.'
+description: '`Character#isJavaLetter(char)` was deprecated in Java 1.1.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: Character isJavaLetter(char)
@@ -42,7 +43,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.CharacterIsJavaLetterOrDigitToIsJavaIdentifierPart
 displayName: Use `Character#isJavaIdentifierPart(char)`
-description: '`Character#isJavaLetterOrDigit(char)` was deprecated in Java 11.'
+description: '`Character#isJavaLetterOrDigit(char)` was deprecated in Java 1.1.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: Character isJavaLetterOrDigit(char)
@@ -52,7 +53,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.CharacterIsSpaceToIsWhitespace
 displayName: Use `Character#isWhitespace(char)`
-description: '`Character#isSpace(char)` was deprecated in Java 11.'
+description: '`Character#isSpace(char)` was deprecated in Java 1.1.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: Character isSpace(char)
