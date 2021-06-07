@@ -20,11 +20,11 @@ import org.openrewrite.Recipe
 import org.openrewrite.config.Environment
 import org.openrewrite.java.JavaRecipeTest
 
-class MigrateDeprecatedNetAPIsTest : JavaRecipeTest {
+class JavaNetAPIsTest : JavaRecipeTest {
     override val recipe: Recipe = Environment.builder()
         .scanRuntimeClasspath("org.openrewrite.java.migrate")
         .build()
-        .activateRecipes("org.openrewrite.java.migrate.net.DeprecatedNetAPIs")
+        .activateRecipes("org.openrewrite.java.migrate.net.JavaNetAPIs")
 
     @Test
     fun multicastSocketGetTTLToGetTimeToLive() = assertChanged(

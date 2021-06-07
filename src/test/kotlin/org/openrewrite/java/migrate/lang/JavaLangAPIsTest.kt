@@ -20,11 +20,11 @@ import org.openrewrite.Recipe
 import org.openrewrite.config.Environment
 import org.openrewrite.java.JavaRecipeTest
 
-class MigrateJavaLangTest : JavaRecipeTest {
+class JavaLangAPIsTest : JavaRecipeTest {
     override val recipe: Recipe = Environment.builder()
         .scanRuntimeClasspath("org.openrewrite.java.migrate")
         .build()
-        .activateRecipes("org.openrewrite.java.migrate.lang.DeprecatedJavaLangAPIs")
+        .activateRecipes("org.openrewrite.java.migrate.lang.JavaLangAPIs")
 
     @Test
     fun renameCharacterIsJavaLetter() = assertChanged(

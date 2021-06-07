@@ -15,7 +15,7 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.lang.DeprecatedJavaLangAPIs
+name: org.openrewrite.java.migrate.lang.JavaLangAPIs
 displayName: Migrate deprecated `java.lang` APIs
 description: Certain Java lang APIs have become deprecated and their usages changed, necessitating usage changes.
 recipeList:
