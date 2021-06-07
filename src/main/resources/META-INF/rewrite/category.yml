@@ -21,3 +21,7 @@ packageName: org.openrewrite.java.migrate.lang
 type: specs.openrewrite.org/v1beta/category
 name: '`java.net` APIs'
 packageName: org.openrewrite.java.migrate.net
+---
+type: specs.openrewrite.org/v1beta/category
+name: SQL
+packageName: org.openrewrite.java.migrate.sql
