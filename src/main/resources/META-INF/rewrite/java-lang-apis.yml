@@ -31,69 +31,69 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.CharacterIsJavaLetterToIsJavaIdentifierStart
-displayName: Use `java.lang.Character#isJavaIdentifierStart(char)`
-description: '`java.lang.Character#isJavaLetter(char)` was deprecated in Java 11.'
+displayName: Use `Character#isJavaIdentifierStart(char)`
+description: '`Character#isJavaLetter(char)` was deprecated in Java 11.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: java.lang.Character isJavaLetter(char)
+      methodPattern: Character isJavaLetter(char)
       newMethodName: isJavaIdentifierStart
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.CharacterIsJavaLetterOrDigitToIsJavaIdentifierPart
-displayName: Use `java.lang.Character#isJavaIdentifierPart(char)`
-description: '`java.lang.Character#isJavaLetterOrDigit(char)` was deprecated in Java 11.'
+displayName: Use `Character#isJavaIdentifierPart(char)`
+description: '`Character#isJavaLetterOrDigit(char)` was deprecated in Java 11.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: java.lang.Character isJavaLetterOrDigit(char)
+      methodPattern: Character isJavaLetterOrDigit(char)
       newMethodName: isJavaIdentifierPart
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.CharacterIsSpaceToIsWhitespace
-displayName: Use `java.lang.Character#isWhitespace(char)`
-description: '`java.lang.Character#isSpace(char)` was deprecated in Java 11.'
+displayName: Use `Character#isWhitespace(char)`
+description: '`Character#isSpace(char)` was deprecated in Java 11.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: java.lang.Character isSpace(char)
+      methodPattern: Character isSpace(char)
       newMethodName: isWhitespace
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.ClassNewInstanceToGetDeclaredConstructorNewInstance
-displayName: Use `java.lang.Class#getDeclaredConstructor().newInstance()`
-description: '`java.lang.Class#newInstance()` was deprecated in Java 9.'
+displayName: Use `Class#getDeclaredConstructor().newInstance()`
+description: '`Class#newInstance()` was deprecated in Java 9.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: java.lang.Class newInstance()
+      methodPattern: Class newInstance()
       newMethodName: getDeclaredConstructor().newInstance
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.RuntimeVersionMajorToFeature
-displayName: Use `java.lang.Runtime.Version#feature()`
-description: '`java.lang.Runtime.Version#major()` was deprecated in Java 10.'
+displayName: Use `Runtime.Version#feature()`
+description: '`Runtime.Version#major()` was deprecated in Java 10.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: java.lang.Runtime.Version major()
+      methodPattern: Runtime.Version major()
       newMethodName: feature
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.RuntimeVersionMinorToInterim
-displayName: Use `java.lang.Runtime.Version#interim()`
-description: '`java.lang.Runtime.Version#minor()` was deprecated in Java 10.'
+displayName: Use `Runtime.Version#interim()`
+description: '`Runtime.Version#minor()` was deprecated in Java 10.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: java.lang.Runtime.Version minor()
+      methodPattern: Runtime.Version minor()
       newMethodName: interim
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.RuntimeVersionSecurityToUpdate
-displayName: Use `java.lang.Runtime.Version#update()`
-description: '`java.lang.Runtime.Version#security()` was deprecated in Java 10.'
+displayName: Use `Runtime.Version#update()`
+description: '`Runtime.Version#security()` was deprecated in Java 10.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: java.lang.Runtime.Version security()
+      methodPattern: Runtime.Version security()
       newMethodName: update
