@@ -32,7 +32,7 @@ recipeList:
 
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RenameCharacterIsJavaLetterMethod
-displayName: Renames deprecated method Character.isJavaLetter.
+displayName: Renames deprecated method Character.isJavaLetter
 description: Character.isJavaLetter was deprecated in Java 1.1. This recipe will replace the method name to isJavaIdentifierStart.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -42,7 +42,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RenameCharacterIsIdentifierPart
-displayName: Renames deprecated method Character.isJavaLetterOrDigit.
+displayName: Renames deprecated method Character.isJavaLetterOrDigit
 description: Character.isJavaLetterOrDigit was deprecated in Java 1.1. This recipe will replace the method name to isJavaIdentifierPart.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -52,7 +52,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RenameCharacterIsSpace
-displayName: Renames deprecated method Character.isSpace.
+displayName: Renames deprecated method Character.isSpace
 description: Character.isSpace was deprecated in Java 1.1. This recipe will replace the method name to isWhitespace.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -62,7 +62,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RenameClassNewInstance
-displayName: Renames deprecated method Class.newInstance.
+displayName: Renames deprecated method Class.newInstance
 description: Class.newInstance was deprecated in Java 9. This recipe will replace the method name to getDeclaredConstructor.newInstance.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -72,7 +72,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RenameRuntimeVersionMajor
-displayName: Renames deprecated method Runtime.Version.major.
+displayName: Renames deprecated method Runtime.Version.major
 description: Runtime.Version.major was deprecated in Java 10. This recipe will replace the method name to feature.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -82,7 +82,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RenameRuntimeVersionMinor
-displayName: Renames deprecated method Runtime.Version.minor.
+displayName: Renames deprecated method Runtime.Version.minor
 description: Runtime.Version.minor was deprecated in Java 10. This recipe will replace the method name to interim.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -92,7 +92,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RenameRuntimeVersionSecurity
-displayName: Renames deprecated method Runtime.Version.security.
+displayName: Renames deprecated method Runtime.Version.security
 description: Runtime.Version.minor was deprecated in Java 10. This recipe will replace the method name to update.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
