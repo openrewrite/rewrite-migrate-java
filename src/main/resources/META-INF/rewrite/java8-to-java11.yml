@@ -16,7 +16,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.Java8toJava11
-displayName: Migrate from Java 8 to Java 11
+displayName: Migrate Java 8 to Java 11
 description: This recipe will apply changes commonly needed when migrating from Java 8 to Java 11.
 tags:
   - java11
