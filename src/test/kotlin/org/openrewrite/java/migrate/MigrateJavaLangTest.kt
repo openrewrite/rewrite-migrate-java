@@ -24,16 +24,10 @@ class MigrateJavaLangTest : JavaRecipeTest {
     override val recipe: Recipe = Environment.builder()
         .scanRuntimeClasspath("org.openrewrite.java.migrate")
         .build()
-        .activateRecipes("org.openrewrite.java.migrate.RenameCharacterIsJavaLetterMethod",
-            "org.openrewrite.java.migrate.RenameCharacterIsIdentifierPart",
-            "org.openrewrite.java.migrate.RenameCharacterIsSpace",
-            "org.openrewrite.java.migrate.RenameClassNewInstance",
-            "org.openrewrite.java.migrate.RenameRuntimeVersionMajor",
-            "org.openrewrite.java.migrate.RenameRuntimeVersionMinor",
-            "org.openrewrite.java.migrate.RenameRuntimeVersionSecurity")
+        .activateRecipes("org.openrewrite.java.migrate.DeprecatedJavaLangAPIs")
 
     @Test
-    fun renameCharacterIsJavaLetterMethod() = assertChanged(
+    fun renameCharacterIsJavaLetter() = assertChanged(
         before = """
             package com.abc;
 
@@ -55,7 +49,7 @@ class MigrateJavaLangTest : JavaRecipeTest {
     )
 
     @Test
-    fun renameCharacterIsIdentifierPart() = assertChanged(
+    fun renameCharacterIsJavaLetterOrDigit() = assertChanged(
         before = """
             package com.abc;
 

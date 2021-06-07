@@ -19,19 +19,18 @@ name: org.openrewrite.java.migrate.DeprecatedJavaLangAPIs
 displayName: Migrate deprecated `java.lang` APIs
 description: Certain Java lang APIs have become deprecated and their usages changed, necessitating usage changes.
 recipeList:
-  - org.openrewrite.java.migrate.RenameCharacterIsJavaLetterMethod
-  - org.openrewrite.java.migrate.RenameCharacterIsIdentifierPart
-  - org.openrewrite.java.migrate.RenameCharacterIsSpace
-  - org.openrewrite.java.migrate.RenameClassNewInstance
-  - org.openrewrite.java.migrate.RenameRuntimeVersionMajor
-  - org.openrewrite.java.migrate.RenameRuntimeVersionMinor
-  - org.openrewrite.java.migrate.RenameRuntimeVersionSecurity
+  - org.openrewrite.java.migrate.lang.RenameCharacterIsJavaLetter
+  - org.openrewrite.java.migrate.lang.RenameCharacterIsJavaLetterOrDigit
+  - org.openrewrite.java.migrate.lang.RenameCharacterIsSpace
+  - org.openrewrite.java.migrate.lang.RenameClassNewInstance
+  - org.openrewrite.java.migrate.lang.RenameRuntimeVersionMajor
+  - org.openrewrite.java.migrate.lang.RenameRuntimeVersionMinor
+  - org.openrewrite.java.migrate.lang.RenameRuntimeVersionSecurity
   - org.openrewrite.java.migrate.lang.MigrateSecurityManagerMulticast
 
 ---
-
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.RenameCharacterIsJavaLetterMethod
+name: org.openrewrite.java.migrate.lang.RenameCharacterIsJavaLetter
 displayName: Migrate `java.lang.Character#isJavaLetter(char)` to `java.lang.Character#isJavaIdentifierStart(char)`
 description: Migrates usages of `java.lang.Character#isJavaLetter(char)` (deprecated in Java 1.1) to using `java.lang.Character#isJavaIdentifierStart(char)`.
 recipeList:
@@ -41,7 +40,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.RenameCharacterIsIdentifierPart
+name: org.openrewrite.java.migrate.lang.RenameCharacterIsJavaLetterOrDigit
 displayName: Migrate `java.lang.Character#isJavaLetterOrDigit(char)` to `java.lang.Character#isJavaIdentifierPart(char)`
 description: Migrates usages of `java.lang.Character#isJavaLetterOrDigit(char)` (deprecated in Java 1.1) to using `java.lang.Character#isJavaIdentifierPart(char)`.
 recipeList:
@@ -51,7 +50,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.RenameCharacterIsSpace
+name: org.openrewrite.java.migrate.lang.RenameCharacterIsSpace
 displayName: Migrate `java.lang.Character#isSpace(char)` to `java.lang.Character#isWhitespace(char)`
 description: Migrates usages of `java.lang.Character#isSpace(char)` (deprecated in Java 1.1) to using `java.lang.Character#isWhitespace(char)`.
 recipeList:
@@ -61,7 +60,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.RenameClassNewInstance
+name: org.openrewrite.java.migrate.lang.RenameClassNewInstance
 displayName: Migrate `java.lang.Class#newInstance()` to `java.lang.Class#getDeclaredConstructor().newInstance()`
 description: Migrates usages of `java.lang.Class#newInstance()` (deprecated in Java 9) to using `java.lang.Class#getDeclaredConstructor().newInstance()`.
 recipeList:
@@ -71,7 +70,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.RenameRuntimeVersionMajor
+name: org.openrewrite.java.migrate.lang.RenameRuntimeVersionMajor
 displayName: Migrate `java.lang.Runtime.Version#major()` to `java.lang.Runtime.Version#feature()`
 description: Migrates usages of `java.lang.Runtime.Version#major()` (deprecated in Java 10) to using `java.lang.Runtime.Version#feature()`.
 recipeList:
@@ -81,7 +80,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.RenameRuntimeVersionMinor
+name: org.openrewrite.java.migrate.lang.RenameRuntimeVersionMinor
 displayName: Migrate `java.lang.Runtime.Version#minor()` to `java.lang.Runtime.Version#interim()`
 description: Migrates usages of `java.lang.Runtime.Version#minor()` (deprecated in Java 10) to using `java.lang.Runtime.Version#interim()`.
 recipeList:
@@ -91,7 +90,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.RenameRuntimeVersionSecurity
+name: org.openrewrite.java.migrate.lang.RenameRuntimeVersionSecurity
 displayName: Migrate `java.lang.Runtime.Version#security()` to `java.lang.Runtime.Version#update()`
 description: Migrates usages of `java.lang.Runtime.Version#security()` (deprecated in Java 10) to using `java.lang.Runtime.Version#update()`.
 recipeList:
