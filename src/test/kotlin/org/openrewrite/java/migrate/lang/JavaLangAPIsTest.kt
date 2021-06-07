@@ -27,7 +27,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
         .activateRecipes("org.openrewrite.java.migrate.lang.JavaLangAPIs")
 
     @Test
-    fun renameCharacterIsJavaLetter() = assertChanged(
+    fun characterIsJavaLetterToIsJavaIdentifierStart() = assertChanged(
         before = """
             package com.abc;
 
@@ -49,7 +49,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
     )
 
     @Test
-    fun renameCharacterIsJavaLetterOrDigit() = assertChanged(
+    fun characterIsJavaLetterOrDigitToIsJavaIdentifierPart() = assertChanged(
         before = """
             package com.abc;
 
@@ -71,7 +71,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
     )
 
     @Test
-    fun renameCharacterIsSpace() = assertChanged(
+    fun characterIsSpaceToIsWhitespace() = assertChanged(
         before = """
             package com.abc;
 
@@ -93,7 +93,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
     )
 
     @Test
-    fun renameClassNewInstance() = assertChanged(
+    fun classNewInstanceToGetDeclaredConstructorNewInstance() = assertChanged(
         before = """
             package com.abc;
 
@@ -117,7 +117,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
     )
 
     @Test
-    fun renameRuntimeVersionMajor() = assertChanged(
+    fun runtimeVersionMajorToFeature() = assertChanged(
         before = """
             package com.abc;
 
@@ -143,7 +143,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
     )
 
     @Test
-    fun renameRuntimeVersionMinor() = assertChanged(
+    fun runtimeVersionMinorToInterim() = assertChanged(
         before = """
             package com.abc;
 
@@ -169,7 +169,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
     )
 
     @Test
-    fun renameRuntimeVersionSecurity() = assertChanged(
+    fun runtimeVersionSecurityToUpdate() = assertChanged(
         before = """
             package com.abc;
 
@@ -193,4 +193,5 @@ class JavaLangAPIsTest : JavaRecipeTest {
             }
         """
     )
+
 }
