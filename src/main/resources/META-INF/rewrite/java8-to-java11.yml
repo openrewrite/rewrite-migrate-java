@@ -30,3 +30,4 @@ recipeList:
   - org.openrewrite.java.migrate.AddJaxbDependencies
   - org.openrewrite.java.migrate.DeprecatedLoggingAPIs
   - org.openrewrite.java.migrate.DeprecatedNetAPIs
+  - org.openrewrite.java.migrate.DeprecatedJavaLangAPIs

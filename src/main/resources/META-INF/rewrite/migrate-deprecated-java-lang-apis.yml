@@ -15,6 +15,22 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.DeprecatedJavaLangAPIs
+displayName: Migrate from deprecated java.lang APIs
+description: Certain Java lang APIs have become deprecated and their usages changed, necessitating usage changes.
+recipeList:
+  - org.openrewrite.java.migrate.RenameCharacterIsJavaLetterMethod
+  - org.openrewrite.java.migrate.RenameCharacterIsIdentifierPart
+  - org.openrewrite.java.migrate.RenameCharacterIsSpace
+  - org.openrewrite.java.migrate.RenameClassNewInstance
+  - org.openrewrite.java.migrate.RenameRuntimeVersionMajor
+  - org.openrewrite.java.migrate.RenameRuntimeVersionMinor
+  - org.openrewrite.java.migrate.RenameRuntimeVersionSecurity
+  - org.openrewrite.java.migrate.MigrateSecurityManagerMulticast
+
+---
+
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RenameCharacterIsJavaLetterMethod
 displayName: Renames deprecated method Character.isJavaLetter.
 description: Character.isJavaLetter was deprecated in Java 1.1. This recipe will replace the method name to isJavaIdentifierStart.

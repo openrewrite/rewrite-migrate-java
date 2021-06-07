@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate
+package org.openrewrite.java.migrate.lang
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
-import org.openrewrite.java.migrate.lang.MigrateSecurityManagerMulticast
 
 class MigrateSecurityManagerMulticastTest: JavaRecipeTest {
     override val recipe: Recipe
         get() = MigrateSecurityManagerMulticast()
 
     @Test
-    fun replaceCheckMulticast() = assertChanged(
+    fun migrateCheckMulticast() = assertChanged(
         before = """
             package org.openrewrite;
 
