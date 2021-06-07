@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.logging;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
@@ -52,7 +51,7 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation m = method;
             if (SET_MILLIS_MATCHER.matches(m)) {
-                m = m.withTemplate(
+                m = m.withName(m.getName().withName("setInstant")).withTemplate(
                         template("Instant.ofEpochMilli(#{any(long)})")
                                 .imports("java.time.Instant")
                                 .build(),
@@ -60,7 +59,6 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
                         m.getArguments().get(0)
                 );
                 maybeAddImport("java.time.Instant");
-                doAfterVisit(new ChangeMethodName("java.util.logging.LogRecord setMillis(long)", "setInstant"));
             }
             return super.visitMethodInvocation(m, ctx);
         }
