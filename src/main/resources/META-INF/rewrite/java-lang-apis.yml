@@ -36,7 +36,7 @@ displayName: Use `Character#isJavaIdentifierStart(char)`
 description: '`Character#isJavaLetter(char)` was deprecated in Java 1.1.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: Character isJavaLetter(char)
+      methodPattern: java.lang.Character isJavaLetter(char)
       newMethodName: isJavaIdentifierStart
 
 ---
@@ -46,7 +46,7 @@ displayName: Use `Character#isJavaIdentifierPart(char)`
 description: '`Character#isJavaLetterOrDigit(char)` was deprecated in Java 1.1.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: Character isJavaLetterOrDigit(char)
+      methodPattern: java.lang.Character isJavaLetterOrDigit(char)
       newMethodName: isJavaIdentifierPart
 
 ---
@@ -56,7 +56,7 @@ displayName: Use `Character#isWhitespace(char)`
 description: '`Character#isSpace(char)` was deprecated in Java 1.1.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: Character isSpace(char)
+      methodPattern: java.lang.Character isSpace(char)
       newMethodName: isWhitespace
 
 ---
@@ -66,7 +66,7 @@ displayName: Use `Class#getDeclaredConstructor().newInstance()`
 description: '`Class#newInstance()` was deprecated in Java 9.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: Class newInstance()
+      methodPattern: java.lang.Class newInstance()
       newMethodName: getDeclaredConstructor().newInstance
 
 ---
@@ -76,7 +76,7 @@ displayName: Use `Runtime.Version#feature()`
 description: '`Runtime.Version#major()` was deprecated in Java 10.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: Runtime.Version major()
+      methodPattern: java.lang.Runtime.Version major()
       newMethodName: feature
 
 ---
@@ -86,7 +86,7 @@ displayName: Use `Runtime.Version#interim()`
 description: '`Runtime.Version#minor()` was deprecated in Java 10.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: Runtime.Version minor()
+      methodPattern: java.lang.Runtime.Version minor()
       newMethodName: interim
 
 ---
@@ -96,5 +96,5 @@ displayName: Use `Runtime.Version#update()`
 description: '`Runtime.Version#security()` was deprecated in Java 10.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: Runtime.Version security()
+      methodPattern: java.lang.Runtime.Version security()
       newMethodName: update
