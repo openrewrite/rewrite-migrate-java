@@ -22,11 +22,11 @@ tags:
   - networking
 recipeList:
   - org.openrewrite.java.migrate.net.MigrateMulticastSocketSetTTLToSetTimeToLive
-  - org.openrewrite.java.migrate.net.MigrateMulticastSocketGetTTL
+  - org.openrewrite.java.migrate.net.MigrateMulticastSocketGetTTLToGetTimeToLive
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.net.MigrateMulticastSocketGetTTL
+name: org.openrewrite.java.migrate.net.MigrateMulticastSocketGetTTLToGetTimeToLive
 displayName: Migrate `java.net.MulticastSocket#getTTL()`
 description: Migrates the deprecated method `java.net.MulticastSocket#getTTL()` to `java.net.MulticastSocket#getTimeToLive()`.
 recipeList:
