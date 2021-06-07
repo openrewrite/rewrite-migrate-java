@@ -30,13 +30,12 @@ public class MigrateMulticastSocketSetTTLToSetTimeToLive extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Migrate `java.net.MulticastSocket#setTTL(byte)`";
+        return "Migrate `java.net.MulticastSocket#setTTL(byte)` to `java.net.MulticastSocket#setTimeToLive(int)`";
     }
 
     @Override
     public String getDescription() {
-        return "Migrates the deprecated method `java.net.MulticastSocket#setTTL(byte)` to `java.net.MulticastSocket#setTimeToLive(int)` using " +
-                "`Byte.valueOf(byte).intValue()`. The result being `java.net.MulticastSocket#setTimeToLive(Byte.valueOf(byte).intValue())`.";
+        return "Migrates usages of the deprecated method `java.net.MulticastSocket#setTTL(byte)` to using `java.net.MulticastSocket#setTimeToLive(int)` via `java.net.MulticastSocket#setTimeToLive(Byte.valueOf(byte).intValue())`.";
     }
 
     @Override
