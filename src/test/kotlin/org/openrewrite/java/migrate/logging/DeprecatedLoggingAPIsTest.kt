@@ -20,9 +20,6 @@ import org.openrewrite.Recipe
 import org.openrewrite.config.Environment
 import org.openrewrite.java.JavaRecipeTest
 
-/**
- * Holds the declarative tests for the deprecated-logging-apis.yml composite recipe.
- */
 class DeprecatedLoggingAPIsTest : JavaRecipeTest {
     override val recipe: Recipe = Environment.builder()
         .scanRuntimeClasspath("org.openrewrite.java.migrate")
@@ -30,7 +27,7 @@ class DeprecatedLoggingAPIsTest : JavaRecipeTest {
         .activateRecipes("org.openrewrite.java.migrate.DeprecatedLoggingAPIs")
 
     @Test
-    fun loggingMXBeanInterfaceToPlatformLoggingMXBeanInterface() = assertChanged(
+    fun loggingMXBeanToPlatformLoggingMXBean() = assertChanged(
         before = """
             package org.openrewrite.example;
 
