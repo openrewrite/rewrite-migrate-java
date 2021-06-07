@@ -29,3 +29,4 @@ recipeList:
   - org.openrewrite.java.migrate.AddJdeprscanPlugin
   - org.openrewrite.java.migrate.AddJaxbDependencies
   - org.openrewrite.java.migrate.DeprecatedLoggingAPIs
+  - org.openrewrite.java.migrate.DeprecatedNetAPIs
