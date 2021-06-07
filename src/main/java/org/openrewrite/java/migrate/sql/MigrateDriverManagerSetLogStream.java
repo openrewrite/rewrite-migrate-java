@@ -13,49 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.lang;
+package org.openrewrite.java.migrate.sql;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.util.Collections;
-
-public class MigrateSecurityManagerMulticast extends Recipe {
-    private static final MethodMatcher MULTICAST_METHOD = new MethodMatcher("java.lang.SecurityManager checkMulticast(java.net.InetAddress, byte)");
+public class MigrateDriverManagerSetLogStream extends Recipe {
+    private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.sql.DriverManager setLogStream(java.io.PrintStream)");
 
     @Override
     public String getDisplayName() {
-        return "Use `SecurityManager#checkMulticast(InetAddress)`";
+        return "Use `DriverManager#setLogWriter(java.io.PrintWriter)`";
     }
 
     @Override
     public String getDescription() {
-        return "`SecurityManager#checkMulticast(InetAddress, byte)` was deprecated in Java 1.1.";
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(MULTICAST_METHOD);
+        return "`DriverManager#setLogStream(java.io.PrintStream)` was deprecated in Java 1.2.";
     }
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
+            final JavaTemplate template = template("new java.io.PrintWriter(#{any(java.io.PrintStream)})")
+                    .build();
+
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
-                if (MULTICAST_METHOD.matches(m) && m.getArguments().size() == 2) {
-                    return m.withArguments(Collections.singletonList(m.getArguments().get(0)));
+                if (METHOD_MATCHER.matches(m)) {
+                    m = method.withName(m.getName().withName("setLogWriter"))
+                            .withTemplate(template,
+                                    m.getCoordinates().replaceArguments(),
+                                    m.getArguments().get(0));
                 }
                 return m;
             }
         };
     }
-
 }

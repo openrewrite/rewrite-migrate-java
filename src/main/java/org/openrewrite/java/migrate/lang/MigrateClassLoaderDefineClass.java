@@ -28,7 +28,7 @@ public class MigrateClassLoaderDefineClass extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use ClassLoader#defineClass(String, byte[], int, int)";
+        return "Use `ClassLoader#defineClass(String, byte[], int, int)`";
     }
 
     @Override
