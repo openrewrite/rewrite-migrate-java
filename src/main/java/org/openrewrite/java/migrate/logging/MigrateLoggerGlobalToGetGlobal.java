@@ -32,7 +32,7 @@ import java.util.Collections;
 public class MigrateLoggerGlobalToGetGlobal extends Recipe {
     @Override
     public String getDisplayName() {
-        return "Migrate `Logger.global` to `Logger#getGlobal()`.";
+        return "Migrate `Logger.global` to `Logger#getGlobal()`";
     }
 
     @Override

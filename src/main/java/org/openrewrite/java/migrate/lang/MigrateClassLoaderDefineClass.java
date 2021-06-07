@@ -30,7 +30,7 @@ public class MigrateClassLoaderDefineClass extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Migrates deprecated method java.lang.ClassLoader.defineClass(byte, int, int).";
+        return "Migrates deprecated method java.lang.ClassLoader.defineClass(byte, int, int)";
     }
 
     @Override

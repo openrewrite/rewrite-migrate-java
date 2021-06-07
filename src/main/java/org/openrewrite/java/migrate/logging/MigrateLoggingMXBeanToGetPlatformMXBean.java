@@ -28,7 +28,7 @@ public class MigrateLoggingMXBeanToGetPlatformMXBean extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Migrate `LogManager#getLoggingMXBean()` to `ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)`.";
+        return "Migrate `LogManager#getLoggingMXBean()` to `ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)`";
     }
 
     @Override

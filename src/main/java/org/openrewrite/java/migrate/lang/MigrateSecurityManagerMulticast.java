@@ -30,7 +30,7 @@ public class MigrateSecurityManagerMulticast extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Migrates deprecated method java.lang.SecurityManager.checkMulticast.";
+        return "Migrates deprecated method java.lang.SecurityManager.checkMulticast";
     }
 
     @Override

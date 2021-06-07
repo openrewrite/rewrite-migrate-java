@@ -44,7 +44,7 @@ public class AddSuppressionForIllegalReflectionWarningsPlugin extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Add Maven Jar Plugin to suppress Illegal Reflection Warnings.";
+        return "Add Maven Jar Plugin to suppress Illegal Reflection Warnings";
     }
 
     @Override

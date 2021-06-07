@@ -29,7 +29,7 @@ public class NoGuavaDirectExecutor extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use Java SDK instead of `MoreExecutors#directExecutor()`.";
+        return "Use Java SDK instead of `MoreExecutors#directExecutor()`";
     }
 
     @Override
