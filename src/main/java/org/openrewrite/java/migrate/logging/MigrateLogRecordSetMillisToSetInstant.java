@@ -22,7 +22,6 @@ import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
 public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
@@ -30,12 +29,12 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Migrate `LogRecord#setMillis(long)` to `LogRecord#setInstant(Instant.ofEpochMilli(long))`.";
+        return "Migrate `LogRecord#setMillis(long)` to `LogRecord#setInstant(Instant)`";
     }
 
     @Override
     public String getDescription() {
-        return "Migrate `LogRecord#setMillis(long)`, which is deprecated in favor of `LogRecord#setInstant(Instant.ofEpochMilli(long))`.";
+        return "Migrates `LogRecord#setMillis(long)` to `LogRecord#setInstant(Instant)` using `LogRecord#setInstant(Instant.ofEpochMilli(long))`.";
     }
 
     @Override
