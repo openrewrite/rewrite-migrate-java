@@ -49,11 +49,11 @@ recipeList:
       groupId: org.glassfish.jaxb
       artifactId: jaxb-runtime
       newVersion: 2.3.x
-  # Remove any legacy Javax JAXB API in favor of the the jakarta artifact.
+  # Remove the legacy Javax JAXB API in favor of the the jakarta artifact.
   - org.openrewrite.maven.RemoveDependency:
       groupId: javax.xml.bind
       artifactId: jaxb-api
-  # Remove any legacy glassfish JAXB runtime in facor of the jakarata artifact
+  # Remove the legacy sun JAXB runtime in facor of the glassfish artifact.
   - org.openrewrite.maven.RemoveDependency:
       groupId: com.sun.xml.bind
       artifactId: jaxb-impl
