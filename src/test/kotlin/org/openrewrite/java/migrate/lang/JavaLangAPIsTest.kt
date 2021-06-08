@@ -100,7 +100,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
 
             class A {
                public void test() {
-                   Class<T> clazz = Class.forName("org.openrewrite.Test");
+                   Class<?> clazz = Class.forName("org.openrewrite.Test");
                    clazz.newInstance();
                }
             }
@@ -110,7 +110,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
 
             class A {
                public void test() {
-                   Class<T> clazz = Class.forName("org.openrewrite.Test");
+                   Class<?> clazz = Class.forName("org.openrewrite.Test");
                    clazz.getDeclaredConstructor().newInstance();
                }
             }
