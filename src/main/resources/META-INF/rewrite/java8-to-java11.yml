@@ -28,6 +28,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.AddJdeprscanPlugin
   - org.openrewrite.java.migrate.AddJaxbDependencies
+  - org.openrewrite.java.migrate.JavaxLangModelUtil
   - org.openrewrite.java.migrate.lang.JavaLangAPIs
   - org.openrewrite.java.migrate.logging.JavaLoggingAPIs
   - org.openrewrite.java.migrate.net.JavaNetAPIs
