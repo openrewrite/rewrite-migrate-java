@@ -23,6 +23,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.logging.MigrateGetLoggingMXBeanToGetPlatformMXBean
   - org.openrewrite.java.migrate.logging.MigrateLoggerGlobalToGetGlobal
+  - org.openrewrite.java.migrate.logging.MigrateLoggerLogrbToUseResourceBundle
   - org.openrewrite.java.migrate.logging.MigrateLogRecordSetMillisToSetInstant
   - org.openrewrite.java.migrate.logging.MigrateInterfaceLoggingMXBeanToPlatformLoggingMXBean
 
