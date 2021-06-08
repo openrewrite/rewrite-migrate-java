@@ -15,13 +15,26 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/category
+name: Adopt newer JDK
+packageName: org.openrewrite.java.migrate
+description: Modernize your code to a newer JDK version. Along the way, take advantage of newly available APIs and reduce the dependency of your code on third party dependencies where there is equivalent functionality in the Java standard library.
+---
+type: specs.openrewrite.org/v1beta/category
 name: '`java.lang` APIs'
 packageName: org.openrewrite.java.migrate.lang
+---
+type: specs.openrewrite.org/v1beta/category
+name: '`java.util.logging` APIs'
+packageName: org.openrewrite.java.migrate.logging
 ---
 type: specs.openrewrite.org/v1beta/category
 name: '`java.net` APIs'
 packageName: org.openrewrite.java.migrate.net
 ---
 type: specs.openrewrite.org/v1beta/category
-name: SQL
+name: '`javax` APIs'
+packageName: org.openrewrite.java.migrate.javax
+---
+type: specs.openrewrite.org/v1beta/category
+name: '`java.sql` APIs'
 packageName: org.openrewrite.java.migrate.sql
