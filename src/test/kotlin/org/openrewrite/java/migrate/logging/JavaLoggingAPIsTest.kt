@@ -20,13 +20,13 @@ import org.openrewrite.Recipe
 import org.openrewrite.config.Environment
 import org.openrewrite.java.JavaRecipeTest
 
+@Suppress("deprecation")
 class JavaLoggingAPIsTest : JavaRecipeTest {
     override val recipe: Recipe = Environment.builder()
         .scanRuntimeClasspath("org.openrewrite.java.migrate.logging")
         .build()
         .activateRecipes("org.openrewrite.java.migrate.logging.JavaLoggingAPIs")
 
-    @Suppress("deprecation")
     @Test
     fun loggingMXBeanToPlatformLoggingMXBean() = assertChanged(
         before = """
@@ -34,7 +34,7 @@ class JavaLoggingAPIsTest : JavaRecipeTest {
 
             import java.util.logging.LoggingMXBean;
 
-            public class B {
+            public class Test {
                 public static void method() {
                     LoggingMXBean loggingBean = null;
                 }
@@ -45,7 +45,7 @@ class JavaLoggingAPIsTest : JavaRecipeTest {
 
             import java.lang.management.PlatformLoggingMXBean;
 
-            public class B {
+            public class Test {
                 public static void method() {
                     PlatformLoggingMXBean loggingBean = null;
                 }
