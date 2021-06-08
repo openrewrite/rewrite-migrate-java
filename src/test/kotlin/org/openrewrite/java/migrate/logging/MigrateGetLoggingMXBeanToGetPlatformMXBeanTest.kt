@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
+@Suppress("deprecation")
 class MigrateGetLoggingMXBeanToGetPlatformMXBeanTest : JavaRecipeTest {
     override val recipe: Recipe
         get() = MigrateGetLoggingMXBeanToGetPlatformMXBean()
@@ -31,7 +32,7 @@ class MigrateGetLoggingMXBeanToGetPlatformMXBeanTest : JavaRecipeTest {
             import java.util.logging.LoggingMXBean;
             import java.util.logging.LogManager;
 
-            public class B {
+            public class Test {
                 public static void method() {
                     LoggingMXBean loggingBean = LogManager.getLoggingMXBean();
                 }
@@ -44,7 +45,7 @@ class MigrateGetLoggingMXBeanToGetPlatformMXBeanTest : JavaRecipeTest {
             import java.lang.management.PlatformLoggingMXBean;
             import java.util.logging.LoggingMXBean;
 
-            public class B {
+            public class Test {
                 public static void method() {
                     LoggingMXBean loggingBean = ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class);
                 }

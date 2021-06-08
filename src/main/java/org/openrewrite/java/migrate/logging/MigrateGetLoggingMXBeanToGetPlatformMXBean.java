@@ -24,21 +24,21 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
-    private static final MethodMatcher LOG_MANAGER_GET_LOGGING_MX_BEAN_MATCHER = new MethodMatcher("java.util.logging.LogManager getLoggingMXBean()");
+    private static final MethodMatcher MATCHER = new MethodMatcher("java.util.logging.LogManager getLoggingMXBean()");
 
     @Override
     public String getDisplayName() {
-        return "Migrate `LogManager#getLoggingMXBean()` to `ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)`";
+        return "Use `ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)`";
     }
 
     @Override
     public String getDescription() {
-        return "Migrates usages of the deprecated method `java.util.logging.LogManager#getLoggingMXBean()` to using `java.lang.management.ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)`.";
+        return "`LogManager#getLoggingMXBean()` was deprecated in Java 9.";
     }
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(LOG_MANAGER_GET_LOGGING_MX_BEAN_MATCHER);
+        return new UsesMethod<>(MATCHER);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation m = method;
-            if (LOG_MANAGER_GET_LOGGING_MX_BEAN_MATCHER.matches(m)) {
+            if (MATCHER.matches(m)) {
                 m = m.withTemplate(
                         template("ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class)")
                                 .imports("java.lang.management.ManagementFactory", "java.lang.management.PlatformLoggingMXBean")
