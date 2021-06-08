@@ -1,0 +1,98 @@
+#
+# Copyright 2020 the original author or authors.
+# <p>
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://www.apache.org/licenses/LICENSE-2.0
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
+displayName: Migrate deprecated `java.util.concurrent` APIs
+description: Certain Java concurrent APIs have become deprecated and their usages changed, necessitating usage changes.
+recipeList:
+  - org.openrewrite.java.migrate.concurrent.MigrateAtomicBooleanWeakCompareAndSetToWeakCompareAndSetPlain
+  - org.openrewrite.java.migrate.concurrent.MigrateAtomicIntegerWeakCompareAndSetToWeakCompareAndSetPlain
+  - org.openrewrite.java.migrate.concurrent.MigrateAtomicIntegerArrayWeakCompareAndSetToWeakCompareAndSetPlain
+  - org.openrewrite.java.migrate.concurrent.MigrateAtomicLongWeakCompareAndSetToWeakCompareAndSetPlain
+  - org.openrewrite.java.migrate.concurrent.MigrateAtomicLongArrayWeakCompareAndSetToWeakCompareAndSetPlain
+  - org.openrewrite.java.migrate.concurrent.MigrateAtomicReferenceWeakCompareAndSetToWeakCompareAndSetPlain
+  - org.openrewrite.java.migrate.concurrent.MigrateAtomicReferenceArrayWeakCompareAndSetToWeakCompareAndSetPlain
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.concurrent.MigrateAtomicBooleanWeakCompareAndSetToWeakCompareAndSetPlain
+displayName: Use `AtomicBoolean#weakCompareAndSetPlain(boolean, boolean)`
+description: '`AtomicBoolean#weakCompareAndSet(boolean, boolean)` was deprecated in Java 9.'
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.concurrent.atomic.AtomicBoolean weakCompareAndSet(boolean, boolean)
+      newMethodName: weakCompareAndSetPlain
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.concurrent.MigrateAtomicIntegerWeakCompareAndSetToWeakCompareAndSetPlain
+displayName: Use `AtomicInteger#weakCompareAndSetPlain(int, int)`
+description: '`AtomicInteger#weakCompareAndSet(int, int)` was deprecated in Java 9.'
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.concurrent.atomic.AtomicInteger weakCompareAndSet(int, int)
+      newMethodName: weakCompareAndSetPlain
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.concurrent.MigrateAtomicIntegerArrayWeakCompareAndSetToWeakCompareAndSetPlain
+displayName: Use `AtomicIntegerArray#weakCompareAndSetPlain(int, int, int)`
+description: '`AtomicIntegerArray#weakCompareAndSet(int, int, int)` was deprecated in Java 9.'
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.concurrent.atomic.AtomicIntegerArray weakCompareAndSet(int, int, int)
+      newMethodName: weakCompareAndSetPlain
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.concurrent.MigrateAtomicLongWeakCompareAndSetToWeakCompareAndSetPlain
+displayName: Use `AtomicLong#weakCompareAndSetPlain(long, long)`
+description: '`AtomicLong#weakCompareAndSet(long, long)` was deprecated in Java 9.'
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.concurrent.atomic.AtomicLong weakCompareAndSet(long, long)
+      newMethodName: weakCompareAndSetPlain
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.concurrent.MigrateAtomicLongArrayWeakCompareAndSetToWeakCompareAndSetPlain
+displayName: Use `AtomicLongArray#weakCompareAndSetPlain(int, long, long)`
+description: '`AtomicLongArray#weakCompareAndSet(int, long, long)` was deprecated in Java 9.'
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.concurrent.atomic.AtomicLongArray weakCompareAndSet(int, long, long)
+      newMethodName: weakCompareAndSetPlain
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.concurrent.MigrateAtomicReferenceWeakCompareAndSetToWeakCompareAndSetPlain
+displayName: Use `AtomicReference#weakCompareAndSetPlain(T, T)`
+description: '`AtomicReference#weakCompareAndSet(T, T)` was deprecated in Java 9.'
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.concurrent.atomic.AtomicReference weakCompareAndSet(..)
+      newMethodName: weakCompareAndSetPlain
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.concurrent.MigrateAtomicReferenceArrayWeakCompareAndSetToWeakCompareAndSetPlain
+displayName: Use `AtomicReferenceArray#weakCompareAndSetPlain(int, T, T)`
+description: '`AtomicReferenceArray#weakCompareAndSet(int, T, T)` was deprecated in Java 9.'
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.concurrent.atomic.AtomicReferenceArray weakCompareAndSet(int, ..)
+      newMethodName: weakCompareAndSetPlain

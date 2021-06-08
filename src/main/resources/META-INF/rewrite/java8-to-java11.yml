@@ -28,6 +28,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.AddJdeprscanPlugin
   - org.openrewrite.java.migrate.AddJaxbDependencies
+  - org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
   - org.openrewrite.java.migrate.javax.JavaxLangModelUtil
   - org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
