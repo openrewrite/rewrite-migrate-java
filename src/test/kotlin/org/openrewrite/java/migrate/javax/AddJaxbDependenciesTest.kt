@@ -13,28 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.xml
+package org.openrewrite.java.migrate.javax
 
-import org.assertj.core.api.Assertions
-import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 import org.openrewrite.*
 import org.openrewrite.config.Environment
-import org.openrewrite.java.ChangeType
-import org.openrewrite.java.JavaParser
-import org.openrewrite.java.JavaRecipeTest
-import org.openrewrite.maven.AddDependency
-import org.openrewrite.maven.MavenParser
 import org.openrewrite.maven.MavenRecipeTest
-import org.openrewrite.scheduling.ForkJoinScheduler
-import java.util.*
-import java.util.concurrent.ForkJoinPool
 
 class AddJaxbDependenciesTest : MavenRecipeTest {
     override val recipe: Recipe = Environment.builder()
         .scanRuntimeClasspath("org.openrewrite.java.migrate")
         .build()
-        .activateRecipes("org.openrewrite.java.migrate.AddJaxbDependencies")
+        .activateRecipes("org.openrewrite.java.migrate.javax.AddJaxbDependencies")
 
     companion object {
         private val jaxbContextStub : String = """
@@ -87,8 +77,8 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
                   <version>2.3.3</version>
                 </dependency>
                 <dependency>
-                  <groupId>com.sun.xml.bind</groupId>
-                  <artifactId>jaxb-impl</artifactId>
+                  <groupId>org.glassfish.jaxb</groupId>
+                  <artifactId>jaxb-runtime</artifactId>
                   <version>2.3.4</version>
                   <scope>runtime</scope>
                 </dependency>
@@ -126,8 +116,8 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
                   <version>2.3.1</version>
                 </dependency>
                 <dependency>
-                  <groupId>org.glassfish.jaxb</groupId>
-                  <artifactId>jaxb-runtime</artifactId>
+                  <groupId>com.sun.xml.bind</groupId>
+                  <artifactId>jaxb-impl</artifactId>
                   <version>2.3.4</version>
                   <scope>runtime</scope>
                 </dependency>
@@ -146,8 +136,8 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
                   <version>2.3.3</version>
                 </dependency>
                 <dependency>
-                  <groupId>com.sun.xml.bind</groupId>
-                  <artifactId>jaxb-impl</artifactId>
+                  <groupId>org.glassfish.jaxb</groupId>
+                  <artifactId>jaxb-runtime</artifactId>
                   <version>2.3.4</version>
                   <scope>runtime</scope>
                 </dependency>
