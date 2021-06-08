@@ -20,9 +20,10 @@ import org.openrewrite.Recipe
 import org.openrewrite.config.Environment
 import org.openrewrite.java.JavaRecipeTest
 
+@Suppress("deprecation")
 class JavaLangAPIsTest : JavaRecipeTest {
     override val recipe: Recipe = Environment.builder()
-        .scanRuntimeClasspath("org.openrewrite.java.migrate")
+        .scanRuntimeClasspath("org.openrewrite.java.migrate.lang")
         .build()
         .activateRecipes("org.openrewrite.java.migrate.lang.JavaLangAPIs")
 
@@ -33,7 +34,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
 
             class A {
                public void test() {
-                   Character.isJavaLetter('b');
+                   boolean result = Character.isJavaLetter('b');
                }
             }
         """,
@@ -42,7 +43,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
 
             class A {
                public void test() {
-                   Character.isJavaIdentifierStart('b');
+                   boolean result = Character.isJavaIdentifierStart('b');
                }
             }
         """
@@ -55,7 +56,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
 
             class A {
                public void test() {
-                   Character.isJavaLetterOrDigit('b');
+                   boolean result = Character.isJavaLetterOrDigit('b');
                }
             }
         """,
@@ -64,7 +65,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
 
             class A {
                public void test() {
-                   Character.isJavaIdentifierPart('b');
+                   boolean result = Character.isJavaIdentifierPart('b');
                }
             }
         """
@@ -77,7 +78,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
 
             class A {
                public void test() {
-                   Character.isSpace('b');
+                   boolean result = Character.isSpace('b');
                }
             }
         """,
@@ -86,7 +87,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
 
             class A {
                public void test() {
-                   Character.isWhitespace('b');
+                   boolean result = Character.isWhitespace('b');
                }
             }
         """
@@ -99,7 +100,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
 
             class A {
                public void test() {
-                   Class clazz = Class.forName("org.openrewrite.Test");
+                   Class<T> clazz = Class.forName("org.openrewrite.Test");
                    clazz.newInstance();
                }
             }
@@ -109,7 +110,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
 
             class A {
                public void test() {
-                   Class clazz = Class.forName("org.openrewrite.Test");
+                   Class<T> clazz = Class.forName("org.openrewrite.Test");
                    clazz.getDeclaredConstructor().newInstance();
                }
             }

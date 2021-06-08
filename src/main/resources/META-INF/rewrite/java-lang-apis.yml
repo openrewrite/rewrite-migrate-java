@@ -19,19 +19,19 @@ name: org.openrewrite.java.migrate.lang.JavaLangAPIs
 displayName: Migrate deprecated `java.lang` APIs
 description: Certain Java lang APIs have become deprecated and their usages changed, necessitating usage changes.
 recipeList:
-  - org.openrewrite.java.migrate.lang.CharacterIsJavaLetterToIsJavaIdentifierStart
-  - org.openrewrite.java.migrate.lang.CharacterIsJavaLetterOrDigitToIsJavaIdentifierPart
-  - org.openrewrite.java.migrate.lang.CharacterIsSpaceToIsWhitespace
-  - org.openrewrite.java.migrate.lang.ClassNewInstanceToGetDeclaredConstructorNewInstance
-  - org.openrewrite.java.migrate.lang.RuntimeVersionMajorToFeature
-  - org.openrewrite.java.migrate.lang.RuntimeVersionMinorToInterim
-  - org.openrewrite.java.migrate.lang.RuntimeVersionSecurityToUpdate
+  - org.openrewrite.java.migrate.lang.MigrateCharacterIsJavaLetterToIsJavaIdentifierStart
+  - org.openrewrite.java.migrate.lang.MigrateCharacterIsJavaLetterOrDigitToIsJavaIdentifierPart
+  - org.openrewrite.java.migrate.lang.MigrateCharacterIsSpaceToIsWhitespace
+  - org.openrewrite.java.migrate.lang.MigrateClassNewInstanceToGetDeclaredConstructorNewInstance
+  - org.openrewrite.java.migrate.lang.MigrateRuntimeVersionMajorToFeature
+  - org.openrewrite.java.migrate.lang.MigrateRuntimeVersionMinorToInterim
+  - org.openrewrite.java.migrate.lang.MigrateRuntimeVersionSecurityToUpdate
   - org.openrewrite.java.migrate.lang.MigrateSecurityManagerMulticast
   - org.openrewrite.java.migrate.lang.MigrateClassLoaderDefineClass
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.lang.CharacterIsJavaLetterToIsJavaIdentifierStart
+name: org.openrewrite.java.migrate.lang.MigrateCharacterIsJavaLetterToIsJavaIdentifierStart
 displayName: Use `Character#isJavaIdentifierStart(char)`
 description: '`Character#isJavaLetter(char)` was deprecated in Java 1.1.'
 recipeList:
@@ -41,7 +41,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.lang.CharacterIsJavaLetterOrDigitToIsJavaIdentifierPart
+name: org.openrewrite.java.migrate.lang.MigrateCharacterIsJavaLetterOrDigitToIsJavaIdentifierPart
 displayName: Use `Character#isJavaIdentifierPart(char)`
 description: '`Character#isJavaLetterOrDigit(char)` was deprecated in Java 1.1.'
 recipeList:
@@ -51,7 +51,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.lang.CharacterIsSpaceToIsWhitespace
+name: org.openrewrite.java.migrate.lang.MigrateCharacterIsSpaceToIsWhitespace
 displayName: Use `Character#isWhitespace(char)`
 description: '`Character#isSpace(char)` was deprecated in Java 1.1.'
 recipeList:
@@ -61,7 +61,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.lang.ClassNewInstanceToGetDeclaredConstructorNewInstance
+name: org.openrewrite.java.migrate.lang.MigrateClassNewInstanceToGetDeclaredConstructorNewInstance
 displayName: Use `Class#getDeclaredConstructor().newInstance()`
 description: '`Class#newInstance()` was deprecated in Java 9.'
 recipeList:
@@ -71,7 +71,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.lang.RuntimeVersionMajorToFeature
+name: org.openrewrite.java.migrate.lang.MigrateRuntimeVersionMajorToFeature
 displayName: Use `Runtime.Version#feature()`
 description: '`Runtime.Version#major()` was deprecated in Java 10.'
 recipeList:
@@ -81,7 +81,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.lang.RuntimeVersionMinorToInterim
+name: org.openrewrite.java.migrate.lang.MigrateRuntimeVersionMinorToInterim
 displayName: Use `Runtime.Version#interim()`
 description: '`Runtime.Version#minor()` was deprecated in Java 10.'
 recipeList:
@@ -91,7 +91,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.lang.RuntimeVersionSecurityToUpdate
+name: org.openrewrite.java.migrate.lang.MigrateRuntimeVersionSecurityToUpdate
 displayName: Use `Runtime.Version#update()`
 description: '`Runtime.Version#security()` was deprecated in Java 10.'
 recipeList:

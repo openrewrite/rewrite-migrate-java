@@ -1,0 +1,54 @@
+#
+# Copyright 2020 the original author or authors.
+# <p>
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://www.apache.org/licenses/LICENSE-2.0
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
+displayName: Migrate deprecated `javax.xml.stream` APIs
+description: Certain `javax.xml.stream` APIs have become deprecated and their usages changed, necessitating usage changes.
+recipeList:
+  - org.openrewrite.java.migrate.javax.MigrateXMLEventFactoryNewInstanceToNewFactory
+  - org.openrewrite.java.migrate.javax.MigrateXMLInputFactoryNewInstanceToNewFactory
+  - org.openrewrite.java.migrate.javax.MigrateXMLOutputFactoryNewInstanceToNewFactory
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.MigrateXMLEventFactoryNewInstanceToNewFactory
+displayName: Use `javax.xml.stream.XMLEventFactory#newFactory()`
+description: '`javax.xml.stream.XMLEventFactory#newInstance` has been deprecated in Java 7.'
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: javax.xml.stream.XMLEventFactory newInstance()
+      newMethodName: newFactory
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.MigrateXMLInputFactoryNewInstanceToNewFactory
+displayName: Use `javax.xml.stream.XMLInputFactory#newFactory()`
+description: '`javax.xml.stream.XMLInputFactory#newInstance` has been deprecated Java 7.'
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: javax.xml.stream.XMLInputFactory newInstance()
+      newMethodName: newFactory
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.MigrateXMLOutputFactoryNewInstanceToNewFactory
+displayName: Use `javax.xml.stream.XMLOutputFactory#newFactory()`
+description: '`javax.xml.stream.XMLOutputFactory#newInstance` has been deprecated Java 7.'
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: javax.xml.stream.XMLOutputFactory newInstance()
+      newMethodName: newFactory

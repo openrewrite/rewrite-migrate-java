@@ -22,10 +22,11 @@ import org.openrewrite.java.JavaRecipeTest
 
 class JavaLoggingAPIsTest : JavaRecipeTest {
     override val recipe: Recipe = Environment.builder()
-        .scanRuntimeClasspath("org.openrewrite.java.migrate")
+        .scanRuntimeClasspath("org.openrewrite.java.migrate.logging")
         .build()
         .activateRecipes("org.openrewrite.java.migrate.logging.JavaLoggingAPIs")
 
+    @Suppress("deprecation")
     @Test
     fun loggingMXBeanToPlatformLoggingMXBean() = assertChanged(
         before = """

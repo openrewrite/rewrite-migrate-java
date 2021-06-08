@@ -15,24 +15,24 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxLangModelUtil
+name: org.openrewrite.java.migrate.javax.JavaxLangModelUtil
 displayName: Migrate deprecated `javax.lang.model.util` APIs in openjdk.
 description: Certain `javax.lang.model.util` APIs have become deprecated and their usages changed, necessitating usage changes.
 recipeList:
-  - org.openrewrite.java.migrate.javax.AbstractAnnotationValueVisitor6
-  - org.openrewrite.java.migrate.javax.AbstractElementVisitor6
-  - org.openrewrite.java.migrate.javax.AbstractTypeVisitor6
-  - org.openrewrite.java.migrate.javax.ElementKindVisitor6
-  - org.openrewrite.java.migrate.javax.ElementScanner6
-  - org.openrewrite.java.migrate.javax.SimpleAnnotationValueVisitor6
-  - org.openrewrite.java.migrate.javax.SimpleElementVisitor6
-  - org.openrewrite.java.migrate.javax.SimpleTypeVisitor6
-  - org.openrewrite.java.migrate.javax.TypeKindVisitor6
+  - org.openrewrite.java.migrate.javax.MigrateAbstractAnnotationValueVisitor6To9
+  - org.openrewrite.java.migrate.javax.MigrateAbstractElementVisitor6To9
+  - org.openrewrite.java.migrate.javax.MigrateAbstractTypeVisitor6To9
+  - org.openrewrite.java.migrate.javax.MigrateElementKindVisitor6To9
+  - org.openrewrite.java.migrate.javax.MigrateElementScanner6To9
+  - org.openrewrite.java.migrate.javax.MigrateSimpleAnnotationValueVisitor6To9
+  - org.openrewrite.java.migrate.javax.MigrateSimpleElementVisitor6To9
+  - org.openrewrite.java.migrate.javax.MigrateSimpleTypeVisitor6To9
+  - org.openrewrite.java.migrate.javax.MigrateTypeKindVisitor6To9
 
 ---
 # AbstractAnnotationValueVisitors.
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.javax.AbstractAnnotationValueVisitor6
+name: org.openrewrite.java.migrate.javax.MigrateAbstractAnnotationValueVisitor6To9
 displayName: Use `AbstractAnnotationValueVisitor9`
 description: '`AbstractAnnotationValueVisitor6` was deprecated in Java 9.'
 recipeList:
@@ -43,7 +43,7 @@ recipeList:
 ---
 # AbstractElementVisitors.
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.javax.AbstractElementVisitor6
+name: org.openrewrite.java.migrate.javax.MigrateAbstractElementVisitor6To9
 displayName: Use `AbstractElementVisitor9`
 description: '`AbstractElementVisitor6` was deprecated in Java 9.'
 recipeList:
@@ -54,7 +54,7 @@ recipeList:
 ---
 # AbstractTypeVisitors.
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.javax.AbstractTypeVisitor6
+name: org.openrewrite.java.migrate.javax.MigrateAbstractTypeVisitor6To9
 displayName: Use `AbstractTypeVisitor9`
 description: '`AbstractTypeVisitor6` was deprecated in Java 9.'
 recipeList:
@@ -65,7 +65,7 @@ recipeList:
 ---
 # ElementKindVisitors.
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.javax.ElementKindVisitor6
+name: org.openrewrite.java.migrate.javax.MigrateElementKindVisitor6To9
 displayName: Use `ElementKindVisitor9`
 description: '`ElementKindVisitor6` was deprecated in Java 9.'
 recipeList:
@@ -76,7 +76,7 @@ recipeList:
 ---
 # ElementScanners.
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.javax.ElementScanner6
+name: org.openrewrite.java.migrate.javax.MigrateElementScanner6To9
 displayName: Use `ElementScanner9`
 description: '`ElementScanner6` was deprecated in Java 9.'
 recipeList:
@@ -87,7 +87,7 @@ recipeList:
 ---
 # SimpleAnnotationValueVisitors.
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.javax.SimpleAnnotationValueVisitor6
+name: org.openrewrite.java.migrate.javax.MigrateSimpleAnnotationValueVisitor6To9
 displayName: Use `SimpleAnnotationValueVisitor9`
 description: '`SimpleAnnotationValueVisitor6` was deprecated in Java 9.'
 recipeList:
@@ -98,7 +98,7 @@ recipeList:
 ---
 # SimpleElementVisitors.
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.javax.SimpleElementVisitor6
+name: org.openrewrite.java.migrate.javax.MigrateSimpleElementVisitor6To9
 displayName: Use `SimpleElementVisitor9`
 description: '`SimpleElementVisitor6` was deprecated in Java 9.'
 recipeList:
@@ -109,7 +109,7 @@ recipeList:
 ---
 # SimpleTypeVisitors.
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.javax.SimpleTypeVisitor6
+name: org.openrewrite.java.migrate.javax.MigrateSimpleTypeVisitor6To9
 displayName: Use `SimpleTypeVisitor9`
 description: '`SimpleTypeVisitor6` was deprecated in Java 9.'
 recipeList:
@@ -120,7 +120,7 @@ recipeList:
 ---
 # TypeKindVisitors.
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.javax.TypeKindVisitor6
+name: org.openrewrite.java.migrate.javax.MigrateTypeKindVisitor6To9
 displayName: Use `TypeKindVisitor9`
 description: '`TypeKindVisitor6` was deprecated in Java 9.'
 recipeList:

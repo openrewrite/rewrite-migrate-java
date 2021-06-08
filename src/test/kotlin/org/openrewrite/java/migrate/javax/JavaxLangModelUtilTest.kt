@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate
+package org.openrewrite.java.migrate.javax
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Recipe
 import org.openrewrite.config.Environment
 import org.openrewrite.java.JavaRecipeTest
 
+@Suppress("deprecation", "rawtypes")
 class JavaxLangModelUtilTest : JavaRecipeTest {
     override val recipe: Recipe = Environment.builder()
-        .scanRuntimeClasspath("org.openrewrite.java.migrate")
+        .scanRuntimeClasspath("org.openrewrite.java.migrate.javax")
         .build()
-        .activateRecipes("org.openrewrite.java.migrate.JavaxLangModelUtil")
+        .activateRecipes("org.openrewrite.java.migrate.javax.JavaxLangModelUtil")
 
     @Test
     fun abstractAnnotationValueVisitor6() = assertChanged(
