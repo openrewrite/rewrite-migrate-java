@@ -15,10 +15,11 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.AddJaxbDependencies
+name: org.openrewrite.java.migrate.javax.AddJaxbDependencies
 displayName: Add explicit JAXB dependencies
 description: This recipe will add the necessary JAXB dependencies for those projects migrating to Java 11.
 tags:
+  - javax
   - java11
   - jaxb
   - jakarta
@@ -38,15 +39,15 @@ recipeList:
       newVersion: 2.3.x
   #Add or update the jaxb-impl to a maven project. This artifact still uses the javax.xml name space.
   - org.openrewrite.maven.AddDependency:
-      groupId: com.sun.xml.bind
-      artifactId: jaxb-impl
+      groupId: org.glassfish.jaxb
+      artifactId: jaxb-runtime
       version: 2.3.x
       scope: runtime
       onlyIfUsing:
         - javax.xml.bind.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
-      groupId: com.sun.xml.bind
-      artifactId: jaxb-impl
+      groupId: org.glassfish.jaxb
+      artifactId: jaxb-runtime
       newVersion: 2.3.x
   # Remove any legacy Javax JAXB API in favor of the the jakarta artifact.
   - org.openrewrite.maven.RemoveDependency:
@@ -54,5 +55,5 @@ recipeList:
       artifactId: jaxb-api
   # Remove any legacy glassfish JAXB runtime in facor of the jakarata artifact
   - org.openrewrite.maven.RemoveDependency:
-      groupId: org.glassfish.jaxb
-      artifactId: jaxb-runtime
+      groupId: com.sun.xml.bind
+      artifactId: jaxb-impl
