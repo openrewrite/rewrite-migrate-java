@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
+@Suppress("deprecation")
 class MigrateLogRecordSetMillisToSetInstantTest : JavaRecipeTest {
     override val recipe: Recipe
         get() = MigrateLogRecordSetMillisToSetInstant()
@@ -31,7 +32,7 @@ class MigrateLogRecordSetMillisToSetInstantTest : JavaRecipeTest {
             import java.util.logging.Level;
             import java.util.logging.LogRecord;
 
-            public class B {
+            public class Test {
                 public static void method(long millis) {
                     LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
                     logRecord.setMillis(millis);
@@ -45,7 +46,7 @@ class MigrateLogRecordSetMillisToSetInstantTest : JavaRecipeTest {
             import java.util.logging.Level;
             import java.util.logging.LogRecord;
 
-            public class B {
+            public class Test {
                 public static void method(long millis) {
                     LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
                     logRecord.setInstant(Instant.ofEpochMilli(millis));
@@ -62,7 +63,7 @@ class MigrateLogRecordSetMillisToSetInstantTest : JavaRecipeTest {
             import java.util.logging.Level;
             import java.util.logging.LogRecord;
 
-            public class B {
+            public class Test {
                 private static long getLong() {
                     return 1L;
                 }
@@ -80,7 +81,7 @@ class MigrateLogRecordSetMillisToSetInstantTest : JavaRecipeTest {
             import java.util.logging.Level;
             import java.util.logging.LogRecord;
 
-            public class B {
+            public class Test {
                 private static long getLong() {
                     return 1L;
                 }
@@ -101,7 +102,7 @@ class MigrateLogRecordSetMillisToSetInstantTest : JavaRecipeTest {
             import java.util.logging.Level;
             import java.util.logging.LogRecord;
 
-            public class B {
+            public class Test {
                 public static void method() {
                     LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
                     logRecord.setMillis(1L);
@@ -115,7 +116,7 @@ class MigrateLogRecordSetMillisToSetInstantTest : JavaRecipeTest {
             import java.util.logging.Level;
             import java.util.logging.LogRecord;
 
-            public class B {
+            public class Test {
                 public static void method() {
                     LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
                     logRecord.setInstant(Instant.ofEpochMilli(1L));

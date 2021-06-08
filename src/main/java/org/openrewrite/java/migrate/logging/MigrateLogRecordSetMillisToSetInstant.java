@@ -24,21 +24,21 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
-    private static final MethodMatcher SET_MILLIS_MATCHER = new MethodMatcher("java.util.logging.LogRecord setMillis(long)");
+    private static final MethodMatcher MATCHER = new MethodMatcher("java.util.logging.LogRecord setMillis(long)");
 
     @Override
     public String getDisplayName() {
-        return "Migrate `LogRecord#setMillis(long)` to `LogRecord#setInstant(Instant)`";
+        return "Use `LogRecord#setInstant(Instant)`";
     }
 
     @Override
     public String getDescription() {
-        return "Migrates usages of the deprecated method `LogRecord#setMillis(long)` to using `LogRecord#setInstant(Instant)` via `LogRecord#setInstant(Instant.ofEpochMilli(long))`.";
+        return "`LogRecord#setMillis(long)` has been deprecated.";
     }
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(SET_MILLIS_MATCHER);
+        return new UsesMethod<>(MATCHER);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation m = method;
-            if (SET_MILLIS_MATCHER.matches(m)) {
+            if (MATCHER.matches(m)) {
                 m = m.withName(m.getName().withName("setInstant")).withTemplate(
                         template("Instant.ofEpochMilli(#{any(long)})")
                                 .imports("java.time.Instant")
