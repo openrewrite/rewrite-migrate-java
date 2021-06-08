@@ -125,7 +125,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
             import java.lang.Runtime.Version;
             class A {
                 public void test() {
-                    Version runtimeVersion = Runtime.Version;
+                    Runtime.Version runtimeVersion = Runtime.version();
                     int version = runtimeVersion.major();
                 }
             }
@@ -136,7 +136,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
             import java.lang.Runtime.Version;
             class A {
                 public void test() {
-                    Version runtimeVersion = Runtime.Version;
+                    Runtime.Version runtimeVersion = Runtime.version();
                     int version = runtimeVersion.feature();
                 }
             }
@@ -151,7 +151,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
             import java.lang.Runtime.Version;
             class A {
                 public void test() {
-                    Version runtimeVersion = Runtime.Version;
+                    Runtime.Version runtimeVersion = Runtime.version();
                     int version = runtimeVersion.minor();
                 }
             }
@@ -162,7 +162,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
             import java.lang.Runtime.Version;
             class A {
                 public void test() {
-                    Version runtimeVersion = Runtime.Version;
+                    Runtime.Version runtimeVersion = Runtime.version();
                     int version = runtimeVersion.interim();
                 }
             }
@@ -177,7 +177,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
             import java.lang.Runtime.Version;
             class A {
                 public void test() {
-                    Version runtimeVersion = Runtime.Version;
+                    Runtime.Version runtimeVersion = Runtime.version();
                     int version = runtimeVersion.security();
                 }
             }
@@ -188,7 +188,7 @@ class JavaLangAPIsTest : JavaRecipeTest {
             import java.lang.Runtime.Version;
             class A {
                 public void test() {
-                    Version runtimeVersion = Runtime.Version;
+                    Runtime.Version runtimeVersion = Runtime.version();
                     int version = runtimeVersion.update();
                 }
             }
