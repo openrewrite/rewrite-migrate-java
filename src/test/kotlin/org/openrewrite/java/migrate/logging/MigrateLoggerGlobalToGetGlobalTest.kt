@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
+@Suppress("deprecation")
 class MigrateLoggerGlobalToGetGlobalTest : JavaRecipeTest {
     override val recipe: Recipe
         get() = MigrateLoggerGlobalToGetGlobal()
@@ -30,7 +31,7 @@ class MigrateLoggerGlobalToGetGlobalTest : JavaRecipeTest {
 
             import java.util.logging.Logger;
 
-            public class B {
+            public class Test {
                 public static void method() {
                     Logger logger = Logger.global;
                 }
@@ -41,7 +42,7 @@ class MigrateLoggerGlobalToGetGlobalTest : JavaRecipeTest {
 
             import java.util.logging.Logger;
 
-            public class B {
+            public class Test {
                 public static void method() {
                     Logger logger = Logger.getGlobal();
                 }
