@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.net;
 
-import lombok.SneakyThrows;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -29,12 +28,12 @@ public class MigrateMulticastSocketSetTTLToSetTimeToLive extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Migrate `java.net.MulticastSocket#setTTL(byte)` to `java.net.MulticastSocket#setTimeToLive(int)`";
+        return "Use `java.net.MulticastSocket#setTimeToLive(int)`";
     }
 
     @Override
     public String getDescription() {
-        return "Migrates usages of the deprecated method `java.net.MulticastSocket#setTTL(byte)` to using `java.net.MulticastSocket#setTimeToLive(int)` via `java.net.MulticastSocket#setTimeToLive(Byte.valueOf(byte).intValue())`.";
+        return "`java.net.MulticastSocket#setTTL(byte)` has been deprecated.";
     }
 
     @Override
@@ -48,16 +47,16 @@ public class MigrateMulticastSocketSetTTLToSetTimeToLive extends Recipe {
     }
 
     private static class MigrateMulticastSocketSetTTLToSetTimeToLiveVisitor extends JavaIsoVisitor<ExecutionContext> {
-        @SneakyThrows
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation m = method;
             if (MATCHER.matches(m)) {
-                m = m.withName(m.getName().withName("setTimeToLive")).withTemplate(
-                        template("Byte.valueOf(#{any(byte)}).intValue()").build(),
-                        m.getCoordinates().replaceArguments(),
-                        m.getArguments().get(0)
-                );
+                m = m.withName(m.getName().withName("setTimeToLive"))
+                        .withTemplate(
+                                template("Byte.valueOf(#{any(byte)}).intValue()").build(),
+                                m.getCoordinates().replaceArguments(),
+                                m.getArguments().get(0)
+                        );
             }
             return super.visitMethodInvocation(m, ctx);
         }

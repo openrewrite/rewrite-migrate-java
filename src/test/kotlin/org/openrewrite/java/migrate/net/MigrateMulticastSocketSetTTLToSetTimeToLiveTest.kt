@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
+@Suppress("deprecation")
 class MigrateMulticastSocketSetTTLToSetTimeToLiveTest : JavaRecipeTest {
     override val recipe: Recipe
         get() = MigrateMulticastSocketSetTTLToSetTimeToLive()
