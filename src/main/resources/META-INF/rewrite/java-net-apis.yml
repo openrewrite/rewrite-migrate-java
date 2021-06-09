@@ -24,6 +24,8 @@ recipeList:
   - org.openrewrite.java.migrate.net.MigrateMulticastSocketSetTTLToSetTimeToLive
   - org.openrewrite.java.migrate.net.MigrateMulticastSocketGetTTLToGetTimeToLive
   - org.openrewrite.java.migrate.net.MigrateHttpURLConnectionHttpServerErrorToHttpInternalError
+  - org.openrewrite.java.migrate.net.MigrateURLDecoderDecode
+  - org.openrewrite.java.migrate.net.MigrateURLEncoderEncode
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

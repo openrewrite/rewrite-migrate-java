@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Copyright 2021 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,39 +17,35 @@ package org.openrewrite.java.migrate.net
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Recipe
-import org.openrewrite.config.Environment
 import org.openrewrite.java.JavaRecipeTest
 
 @Suppress("deprecation")
-class JavaNetAPIsTest : JavaRecipeTest {
-    override val recipe: Recipe = Environment.builder()
-        .scanRuntimeClasspath("org.openrewrite.java.migrate.net")
-        .build()
-        .activateRecipes("org.openrewrite.java.migrate.net.JavaNetAPIs")
+class MigrateURLEncoderEncodeTest : JavaRecipeTest {
+    override val recipe: Recipe
+        get() = MigrateURLEncoderEncode()
 
     @Test
-    fun multicastSocketGetTTLToGetTimeToLive() = assertChanged(
+    fun urlEncoderEncode() = assertChanged(
         before = """
             package org.openrewrite.example;
 
-            import java.net.MulticastSocket;
+            import java.net.URLEncoder;
 
-            public class Test {
-                public static void method() {
-                    MulticastSocket s = new MulticastSocket(0);
-                    s.getTTL();
+            class Test {
+                public static void method(String url) {
+                    String message = URLEncoder.encode(url);
                 }
             }
         """,
         after = """
             package org.openrewrite.example;
 
-            import java.net.MulticastSocket;
+            import java.net.URLEncoder;
+            import java.nio.charset.StandardCharsets;
 
-            public class Test {
-                public static void method() {
-                    MulticastSocket s = new MulticastSocket(0);
-                    s.getTimeToLive();
+            class Test {
+                public static void method(String url) {
+                    String message = URLEncoder.encode(url, StandardCharsets.UTF_8);
                 }
             }
         """
