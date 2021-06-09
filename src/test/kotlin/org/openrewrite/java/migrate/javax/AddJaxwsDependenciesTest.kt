@@ -20,34 +20,36 @@ import org.openrewrite.*
 import org.openrewrite.config.Environment
 import org.openrewrite.maven.MavenRecipeTest
 
-class AddJaxbDependenciesTest : MavenRecipeTest {
+class AddJaxwsDependenciesTest : MavenRecipeTest {
     override val recipe: Recipe = Environment.builder()
         .scanRuntimeClasspath("org.openrewrite.java.migrate")
         .build()
-        .activateRecipes("org.openrewrite.java.migrate.javax.AddJaxbDependencies")
+        .activateRecipes("org.openrewrite.java.migrate.javax.AddJaxwsDependencies")
 
     companion object {
         private val jaxbContextStub : String = """
-            package javax.xml.bind;
-            public class JAXBContext {
-                public static JAXBContext newInstance(String packages) {
-                    return null;
-                }
-                public static JAXBContext newInstance(java.lang.Class<?> packages) {
-                    return null;
-                }
+            package javax.jws;
+
+            import java.lang.annotation.Target;
+            import java.lang.annotation.Retention;
+            import java.lang.annotation.RetentionPolicy;
+            import java.lang.annotation.ElementType;
+
+            @Retention(value = RetentionPolicy.RUNTIME)
+            @Target(value = {ElementType.TYPE})
+            public @interface WebService {
             }
         """.trimIndent()
 
-        private val javaSourceWithJaxb : String = """
+        private val javaSourceWithJaxws : String = """
             package org.old.code;
-            import javax.xml.bind.JAXBContext;
+            import javax.jws.WebService;
             
+            @WebService
             public class Yep {
-                private static final JAXBContext context = JAXBContext.newInstance("org.old.code");
             }
         """.trimIndent()
-        private val javaSourceWithoutJaxb : String = """
+        private val javaSourceWithoutJaxws : String = """
             package org.old.code;
             public class Nope {
             }
@@ -55,7 +57,7 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
     }
 
     @Test
-    fun onlyIfUsingJaxb() = assertChanged(
+    fun onlyIfUsingJaxws() = assertChanged(
         before = """
             <project>
               <groupId>com.mycompany.app</groupId>
@@ -72,24 +74,24 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
               <version>1</version>
               <dependencies>
                 <dependency>
-                  <groupId>jakarta.xml.bind</groupId>
-                  <artifactId>jakarta.xml.bind-api</artifactId>
+                  <groupId>jakarta.xml.ws</groupId>
+                  <artifactId>jakarta.xml.ws-api</artifactId>
                   <version>2.3.3</version>
                 </dependency>
                 <dependency>
-                  <groupId>org.glassfish.jaxb</groupId>
-                  <artifactId>jaxb-runtime</artifactId>
+                  <groupId>com.sun.xml.ws</groupId>
+                  <artifactId>jaxws-rt</artifactId>
                   <version>2.3.4</version>
                   <scope>runtime</scope>
                 </dependency>
               </dependencies>
             </project>
         """.trimIndent(),
-        additionalJavaFiles = arrayOf(jaxbContextStub, javaSourceWithJaxb)
+        additionalJavaFiles = arrayOf(jaxbContextStub, javaSourceWithJaxws)
     )
 
     @Test
-    fun doNotChangeIfNoJaxb() = assertUnchanged(
+    fun doNotChangeIfNoJaxws() = assertUnchanged(
         before = """
             <project>
               <groupId>com.mycompany.app</groupId>
@@ -99,11 +101,11 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
               </dependencies>
             </project>
         """.trimIndent(),
-        additionalJavaFiles = arrayOf(javaSourceWithoutJaxb)
+        additionalJavaFiles = arrayOf(javaSourceWithoutJaxws)
     )
 
     @Test
-    fun migrateFromJaxbToJakarta() = assertChanged(
+    fun migrateFromJaxwsApiToJakarta() = assertChanged(
         before = """
             <project>
               <groupId>com.mycompany.app</groupId>
@@ -111,14 +113,14 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
               <version>1</version>
               <dependencies>
                 <dependency>
-                  <groupId>javax.xml.bind</groupId>
-                  <artifactId>jaxb-api</artifactId>
+                  <groupId>javax.xml.ws</groupId>
+                  <artifactId>jaxws-api</artifactId>
                   <version>2.3.1</version>
                 </dependency>
                 <dependency>
-                  <groupId>com.sun.xml.bind</groupId>
-                  <artifactId>jaxb-impl</artifactId>
-                  <version>2.3.4</version>
+                  <groupId>com.sun.xml.ws</groupId>
+                  <artifactId>jaxws-rt</artifactId>
+                  <version>2.3.2</version>
                   <scope>runtime</scope>
                 </dependency>
               </dependencies>
@@ -131,23 +133,23 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
               <version>1</version>
               <dependencies>
                 <dependency>
-                  <groupId>jakarta.xml.bind</groupId>
-                  <artifactId>jakarta.xml.bind-api</artifactId>
+                  <groupId>jakarta.xml.ws</groupId>
+                  <artifactId>jakarta.xml.ws-api</artifactId>
                   <version>2.3.3</version>
                 </dependency>
                 <dependency>
-                  <groupId>org.glassfish.jaxb</groupId>
-                  <artifactId>jaxb-runtime</artifactId>
+                  <groupId>com.sun.xml.ws</groupId>
+                  <artifactId>jaxws-rt</artifactId>
                   <version>2.3.4</version>
                   <scope>runtime</scope>
                 </dependency>
               </dependencies>
             </project>
         """.trimIndent(),
-        additionalJavaFiles = arrayOf(jaxbContextStub, javaSourceWithJaxb)
+        additionalJavaFiles = arrayOf(jaxbContextStub, javaSourceWithJaxws)
     )
     @Test
-    fun migrateFromJaxbToJakartaParent() = assertChanged(
+    fun migrateFromJaxwsToJakartaParent() = assertChanged(
         before = """
             <project>
                 <parent>
@@ -160,12 +162,12 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
                 <version>1</version>
                 <dependencies>
                     <dependency>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
+                        <groupId>javax.xml.ws</groupId>
+                        <artifactId>jaxws-api</artifactId>
                     </dependency>
                     <dependency>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-rt</artifactId>
                         <scope>runtime</scope>
                     </dependency>
                 </dependencies>
@@ -183,41 +185,41 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
                 <version>1</version>
                 <dependencies>
                     <dependency>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
                         <version>2.3.3</version>
                     </dependency>
                     <dependency>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-runtime</artifactId>
-                        <version>2.3.4</version>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-rt</artifactId>
                         <scope>runtime</scope>
                     </dependency>
                 </dependencies>
             </project>
         """.trimIndent(),
-        additionalJavaFiles = arrayOf(jaxbContextStub, javaSourceWithJaxb),
+        additionalJavaFiles = arrayOf(jaxbContextStub, javaSourceWithJaxws),
         additionalMavenFiles = arrayOf(
             """
-                <project>
-                  <groupId>com.mycompany.app</groupId>
-                  <artifactId>my-parent</artifactId>
-                  <version>1</version>
-                  <dependencyManagement>
-                      <dependencies>
+            <project>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-parent</artifactId>
+                <version>1</version>
+                <dependencyManagement>
+                    <dependencies>
                         <dependency>
-                            <groupId>javax.xml.bind</groupId>
-                            <artifactId>jaxb-api</artifactId>
-                            <version>2.3.0</version>
+                            <groupId>javax.xml.ws</groupId>
+                            <artifactId>jaxws-api</artifactId>
+                            <version>2.3.1</version>
                         </dependency>
                         <dependency>
-                            <groupId>com.sun.xml.bind</groupId>
-                            <artifactId>jaxb-impl</artifactId>
-                          <version>2.3.4</version>
+                            <groupId>com.sun.xml.ws</groupId>
+                            <artifactId>jaxws-rt</artifactId>
+                            <version>2.3.2</version>
+                            <scope>runtime</scope>
                         </dependency>
                       </dependencies>
-                  </dependencyManagement>
-                </project>
+                </dependencyManagement>
+            </project>
             """.trimIndent()
         )
     )
