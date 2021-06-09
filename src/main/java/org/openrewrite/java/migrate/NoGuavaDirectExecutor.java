@@ -51,7 +51,7 @@ public class NoGuavaDirectExecutor extends Recipe {
 
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                if(DIRECT_EXECUTOR.matches(method)) {
+                if (DIRECT_EXECUTOR.matches(method)) {
                     maybeRemoveImport("com.google.common.util.concurrent.MoreExecutors");
                     return method.withTemplate(template, method.getCoordinates().replace());
                 }
