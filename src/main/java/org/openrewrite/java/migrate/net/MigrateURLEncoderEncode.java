@@ -44,10 +44,10 @@ public class MigrateURLEncoderEncode extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MigrateURLDecoderDecodeVisitor();
+        return new MigrateURLEncoderEncodeVisitor();
     }
 
-    private static class MigrateURLDecoderDecodeVisitor extends JavaIsoVisitor<ExecutionContext> {
+    private static class MigrateURLEncoderEncodeVisitor extends JavaIsoVisitor<ExecutionContext> {
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation m = method;
