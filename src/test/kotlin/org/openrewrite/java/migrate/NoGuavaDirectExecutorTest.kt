@@ -16,13 +16,12 @@
 package org.openrewrite.java.migrate
 
 import org.junit.jupiter.api.Test
-import org.openrewrite.Parser
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaParser
 import org.openrewrite.java.JavaRecipeTest
 
-class NoGuavaDirectExecutorTest: JavaRecipeTest {
-    override val parser: Parser<*>?
+class NoGuavaDirectExecutorTest : JavaRecipeTest {
+    override val parser: JavaParser
         get() = JavaParser.fromJavaVersion().classpath("guava").build()
 
     override val recipe: Recipe
