@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate;
+package org.openrewrite.java.migrate.guava;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
@@ -24,36 +24,37 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-public class NoGuavaDirectExecutor extends Recipe {
-    private static final MethodMatcher DIRECT_EXECUTOR = new MethodMatcher("com.google.common.util.concurrent.MoreExecutors directExecutor()");
+public class NoGuavaListsNewArrayList extends Recipe {
+    private static final MethodMatcher NEW_ARRAY_LIST = new MethodMatcher("com.google.common.collect.Lists newArrayList()");
 
     @Override
     public String getDisplayName() {
-        return "Use Java SDK instead of `MoreExecutors#directExecutor()`";
+        return "Use `new ArrayList<>()` instead of Guava";
     }
 
     @Override
     public String getDescription() {
-        return "`Executor` is a SAM-compatible interface, so `Runnable::run` is just as succinct as `MoreExecutors.directExecutor()` but without the third-party library requirement.";
+        return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(DIRECT_EXECUTOR);
+    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
+        return new UsesMethod<>(NEW_ARRAY_LIST);
     }
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate template = template("Runnable::run")
-                    .imports("java.lang.Runnable")
+            private final JavaTemplate newArrayList = template("new ArrayList<>()")
+                    .imports("java.util.ArrayList")
                     .build();
 
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                if (DIRECT_EXECUTOR.matches(method)) {
-                    maybeRemoveImport("com.google.common.util.concurrent.MoreExecutors");
-                    return method.withTemplate(template, method.getCoordinates().replace());
+                if(NEW_ARRAY_LIST.matches(method)) {
+                    maybeRemoveImport("com.google.common.collect.Lists");
+                    maybeAddImport("java.util.ArrayList");
+                    return method.withTemplate(newArrayList, method.getCoordinates().replace());
                 }
                 return super.visitMethodInvocation(method, executionContext);
             }
