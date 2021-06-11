@@ -26,21 +26,21 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateXMLEventFactoryNewInstanceToNewFactory
-displayName: Use `javax.xml.stream.XMLEventFactory#newFactory()`
+displayName: Use `javax.xml.stream.XMLEventFactory#newFactory(String, ClassLoader)`
 description: '`javax.xml.stream.XMLEventFactory#newInstance` has been deprecated in Java 7.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: javax.xml.stream.XMLEventFactory newInstance()
+      methodPattern: javax.xml.stream.XMLEventFactory newInstance(String, ClassLoader)
       newMethodName: newFactory
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateXMLInputFactoryNewInstanceToNewFactory
-displayName: Use `javax.xml.stream.XMLInputFactory#newFactory()`
+displayName: Use `javax.xml.stream.XMLInputFactory#newFactory(String, ClassLoader)`
 description: '`javax.xml.stream.XMLInputFactory#newInstance` has been deprecated Java 7.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: javax.xml.stream.XMLInputFactory newInstance()
+      methodPattern: javax.xml.stream.XMLInputFactory newInstance(String, ClassLoader)
       newMethodName: newFactory
 
 ---

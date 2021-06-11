@@ -33,7 +33,7 @@ class JavaxXmlStreamAPIsTest : JavaRecipeTest {
 
             public class Test {
                 public void method() {
-                    XMLEventFactory eventFactory = XMLEventFactory.newInstance();
+                    XMLEventFactory eventFactory = XMLEventFactory.newInstance("test", Test.class.getClassLoader());
                 }
             }
         """,
@@ -42,7 +42,7 @@ class JavaxXmlStreamAPIsTest : JavaRecipeTest {
 
             public class Test {
                 public void method() {
-                    XMLEventFactory eventFactory = XMLEventFactory.newFactory();
+                    XMLEventFactory eventFactory = XMLEventFactory.newFactory("test", Test.class.getClassLoader());
                 }
             }
         """
@@ -55,7 +55,7 @@ class JavaxXmlStreamAPIsTest : JavaRecipeTest {
 
             public class Test {
                 public void method() {
-                    XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+                    XMLInputFactory inputFactory = XMLInputFactory.newInstance("test", Test.class.getClassLoader());
                 }
             }
         """,
@@ -64,7 +64,7 @@ class JavaxXmlStreamAPIsTest : JavaRecipeTest {
 
             public class Test {
                 public void method() {
-                    XMLInputFactory inputFactory = XMLInputFactory.newFactory();
+                    XMLInputFactory inputFactory = XMLInputFactory.newFactory("test", Test.class.getClassLoader());
                 }
             }
         """
@@ -91,5 +91,4 @@ class JavaxXmlStreamAPIsTest : JavaRecipeTest {
             }
         """
     )
-
 }
