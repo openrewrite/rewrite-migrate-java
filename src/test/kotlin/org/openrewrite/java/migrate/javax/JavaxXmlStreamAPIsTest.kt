@@ -77,7 +77,7 @@ class JavaxXmlStreamAPIsTest : JavaRecipeTest {
 
             public class Test {
                 public void method() {
-                    XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
+                    XMLOutputFactory outputFactory = XMLOutputFactory.newInstance("test", Test.class.getClassLoader());
                 }
             }
         """,
@@ -86,7 +86,7 @@ class JavaxXmlStreamAPIsTest : JavaRecipeTest {
 
             public class Test {
                 public void method() {
-                    XMLOutputFactory outputFactory = XMLOutputFactory.newFactory();
+                    XMLOutputFactory outputFactory = XMLOutputFactory.newFactory("test", Test.class.getClassLoader());
                 }
             }
         """

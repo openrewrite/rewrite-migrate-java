@@ -46,9 +46,9 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateXMLOutputFactoryNewInstanceToNewFactory
-displayName: Use `javax.xml.stream.XMLOutputFactory#newFactory()`
+displayName: Use `javax.xml.stream.XMLOutputFactory#newFactory(String, ClassLoader)`
 description: '`javax.xml.stream.XMLOutputFactory#newInstance` has been deprecated Java 7.'
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: javax.xml.stream.XMLOutputFactory newInstance()
+      methodPattern: javax.xml.stream.XMLOutputFactory newInstance(String, ClassLoader)
       newMethodName: newFactory
