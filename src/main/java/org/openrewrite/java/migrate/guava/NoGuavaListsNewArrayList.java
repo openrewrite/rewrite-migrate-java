@@ -51,7 +51,7 @@ public class NoGuavaListsNewArrayList extends Recipe {
 
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                if(NEW_ARRAY_LIST.matches(method)) {
+                if (NEW_ARRAY_LIST.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.ArrayList");
                     return method.withTemplate(newArrayList, method.getCoordinates().replace());
