@@ -15,7 +15,7 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/category
-name: Adopt newer JDK
+name: JDK
 packageName: org.openrewrite.java.migrate
 description: Modernize your code to a newer JDK version. Along the way, take advantage of newly available APIs and reduce the dependency of your code on third party dependencies where there is equivalent functionality in the Java standard library.
 ---
