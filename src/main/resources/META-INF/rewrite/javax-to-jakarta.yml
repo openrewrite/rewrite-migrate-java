@@ -41,8 +41,8 @@ recipeList:
 
   # JaxB Runtime(x) .. update
   - org.openrewrite.maven.AddDependency:
-      groupId: com.sun.xml.bind
-      artifactId: jaxb-impl
+      groupId: org.glassfish.jaxb
+      artifactId: jaxb-runtime
       version: 3.x
       scope: runtime
       onlyIfUsing:
