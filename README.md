@@ -9,16 +9,180 @@
 
 This project implements a [Rewrite module](https://github.com/openrewrite/rewrite) that performs common tasks when migrating from Java 8 to Java 11.
 
-# Proposed Recipes
+# Java 11 Migration Recipes
 
 | Recipe Name | Description |
 | ----------- | ----------- |
-| [AddJdeprscanToMaven](#AddJdeprscanToMaven) | Add jdeprscan to the parent POM of project
-| [AddJavaxLibrariesToMaven](#AddJavaxLibrariesToMaven) | Add javax-related dependencies to a Maven Build.
+| [Add XML binding dependencies](#AddXmlBindingDependencies)   | Add or update JAXB dependencies for a Maven build.
+| [Add XML Web Services dependencies](#AddXmlWebServiceDependencies) | Add or update JAX-WS dependencies for a Maven build.
 | [ConvertPrimitiveWrapperConstructors](#ConvertPrimitiveWrapperConstructors) | Convert Primitive Wrapper Class Constructors into `valueOf` methods.
-| [ConvertBigDecimalRoundingMode](#ConvertBigDecimalRoundingMode) | Convert the use of BigDecimal rounding constants to their enum counterparts
+| [ConvertBigDecimalRoundingMode](#ConvertBigDecimalRoundingMode) | Convert the use of BigDecimal rounding constants to their enum counterparts.
+| [Remediate deprecation warnings and errors](#AddressDeprecations) | Provide remediation for deprecations highlighted by `jdeprscan`.
+| [Migrate XML binding framework to Jakarta namespace](#MigrateXmlBindingToJakarta) | Migrate XML binding framework from `javax.xml.bind.*` to `jakarta.xml.bind.*`
+| [Migrate Java API for XML Web Services to Jakarta namespace](#MigrateXmlWebServicesToJakarta) | Migrate Java API for XML Web Services from `javax.jws.*` to `jakarta.jws.*`
+| [Add `jdeprscan` plugin to Maven](#AddJdeprscanToMaven) | Add the `jdeprscan` maven plugin to a Maven build.
 | [SuppressIllegalReflectiveAccess](#SuppressIllegalReflectiveAccess) | Suppress Illegal reflective access warning via JAR manifest file
 | [UnsafeMigration](#UnsafeMigration) | Migrate the use of `sun.misc.Unsafe` to `VarHandle`
+
+
+## Java Architecture for XML Binding (JAXB)
+
+Java Architecture for XML Binding (JAXB) provides a framework for mapping XML documents to/from a Java representation of those documents.
+This framework was originally part of the Java Platform, Enterprise Edition (J2EE) and both the API and the reference implementation
+were governed as part of the J2EE specification. The framework was originally developed when XML-based web services were popular and it
+made sense at the time to include the JAXB API and reference implementation as part of the Java standard library (JDK 6 through 8). Starting
+with JDK 9, the libraries were removed from the standard library to reduce the footprint of the Java standard library. Any projects that
+continue to use the JAXB framework (on JDK 9+) must now explicitly add the JAXB API and a runtime implementation to their builds. To muddy
+the waters further, the governance of the Java Platform, Enterprise Edition was transferred to the Eclipse foundation and was renamed to
+Jakarta EE. The Jakarta EE 8 release (the first under the Jakarta name) maintains the `javax.xml.bind` package namespace whereas Jakarta EE 9
+is the first release where the package namespace was changed to `jakarta.xml.bind`:
+
+| Jakarta EE Version | XML Binding Artifact                         | Package Namespace | Description                      |
+| ------------------ | -------------------------------------------  | ------------------| -------------------------------- |
+| Jakarta EE 8       | jakarta.xml.bind:jakarata.xml.bind-api:2.3.x | javax.xml.bind    | JAXB API                         |
+| Jakarta EE 8       | org.glassfish.jaxb:jaxb-runtime:2.3.x        | javax.xml.bind    | JAXB Reference Implementation    |
+| Jakarta EE 9       | jakarta.xml.bind:jakarata.xml.bind-api:3.x   | jakarta.xml.bind  | JAXB API                         |
+| Jakarta EE 9       | org.glassfish.jaxb:jaxb-runtime:3.x          | jakarta.xml.bind  | JAXB Reference Implementation    |
+
+
+There are two JAXB-related recipes in this project that help projects that are migrating to Java 11:
+
+### Add XML binding dependencies<a name="AddXmlBindingDependencies"></a>
+
+This recipe will add or update the latest 2.3.x versions of the Jakarta XML binding framework for an existing Maven project.
+This recipe will only add the dependencies if references to types within the `javax.xml.bind` package namespace are detected.
+
+```xml
+<dependencies>
+    <!-- JAXB API -->
+    <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>2.3.3</version>
+    </dependency>
+    <!-- JAXB runtime -->
+    <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>2.3.4</version>
+        <scope>runtime</scope>
+    </dependency>
+</dependencies>
+```
+
+There is also a maven plugin for generating code from xsds and this plugin must also be updated. [See this link for details](https://github.com/mojohaus/jaxb2-maven-plugin/issues/43)
+
+```xml
+
+<!-- Configuring the plugin for generating java model from xsds. -->
+<plugin>
+    <groupId>org.jvnet.jaxb2.maven2</groupId>
+    <artifactId>maven-jaxb2-plugin</artifactId>
+    <version>2.5.0</version>
+</plugin>
+```
+
+### Migrate XML binding framework from `javax.xml.bind` to `jakarta.xml.bind`<a name="MigrateXmlBindingToJakarta"></a>
+
+This recipe will migrate java projects that are using the XML binding framework from the `javax.xml.bind` package namespace
+to the new 'jakarta.xml.bind' namespace. The recipe will also add/update the latest 3.x versions of the Jakarta XML binding
+framework for maven-based builds.
+
+> **_NOTE:_** The `maven-jaxb2-plugin` does not yet support the jakarta.xml.bind namespace.
+
+## Java API for XML Web Services (JAX-WS)
+
+Java API for XML Web Services (JAX-WS) provides a framework for building SOAP-based XML web services in Java. This framework was
+originally part of the Java Platform, Enterprise Edition (J2EE) and both the API and the reference implementation were governed as
+part of the J2EE specification. The framework was originally developed when XML-based web services were popular and it made sense
+at the time to include the JAX-WS API and reference implementation as part of the Java standard library (JDK 6 through 8). Starting
+with JDK 9, the libraries were removed from the standard library to reduce the footprint of the Java standard library. Any projects that
+continue to use the JAX-WS framework (on JDK 9+) must now explicitly add the JAX-WS API and a runtime implementation to their builds.
+To muddy the waters further, the governance of the Java Platform, Enterprise Edition was transferred to the Eclipse foundation and was
+renamed to Jakarta EE. The Jakarta EE 8 release (the first under the Jakarta name) maintains the `javax.jws` package namespace whereas
+Jakarta EE 9 is the first release where the package namespace was changed to `jakarta.jws`:
+
+| Jakarta EE Version | XML Web Services Artifact                    | Package Namespace | Description                      |
+| ------------------ | -------------------------------------------  | ------------------| -------------------------------- |
+| Jakarta EE 8       | jakarta.xml.ws:jakarta.xml.ws-api:2.3.x      | javax.jws         | JAX-WS API                       |
+| Jakarta EE 8       | com.sun.xml.ws:jaxws-rt:2.3.x                | javax.jws         | JAX-WS Reference Implementation  |
+| Jakarta EE 9       | jakarta.xml.ws:jakarta.xml.ws-api:2.3.x      | jakarta.jws       | JAX-WS API                       |
+| Jakarta EE 9       | com.sun.xml.ws:jaxws-rt:2.3.x                | jakarta.jws       | JAX-WS Reference Implementation  |
+
+
+There are two JAX-WS recipes in this project that help projects that are migrating to Java 11:
+
+### Add XML Web Services dependencies<a name="AddXmlWebServiceDependencies"></a>
+
+This recipe will add or update the latest 2.3.x versions of the Jakarta XML Web Service dependencies for an existing Maven project.
+This recipe will only add the dependencies if references to types within the `javax.jws` package namespace are detected.
+
+```xml
+<dependencies>
+    <!-- JAX-WS API -->
+    <dependency>
+        <groupId>jakarta.xml.ws</groupId>
+        <artifactId>jakarta.xml.ws-api</artifactId>
+        <version>2.3.3</version>
+    </dependency>
+    <!-- JAX-WS reference implementation -->
+    <dependency>
+        <groupId>com.sun.xml.ws</groupId>
+        <artifactId>jaxws-rt</artifactId>
+        <version>2.3.4</version>
+        <scope>runtime</scope>
+    </dependency>
+</dependencies>
+```
+
+There are also several maven plugin for generating code from WSDL and these plugins must also be updated.
+
+### Migrate XML Web Services framework from `javax.jws` to `jakarta.jws`<a name="MigrateXmlWebServicesToJakarta"></a>
+
+This recipe will migrate java projects that are using the XML web services framework from the `javax.jws` package namespace
+to the new 'jakarta.jws' namespace. The recipe will also add/update the latest 3.x versions of the Jakarta XML Web Services
+framework for maven-based builds.
+
+> **_NOTE:_** The `maven-jaxb2-plugin` does not yet support the jakarta.xml.bind namespace.
+
+
+## Converting Primitive Wrapper Class Constructors to `valueOf` Method <a name="ConvertPrimitiveWrapperConstructors"></a>
+
+The constructor of all primitive types has been deprecated in favor of using the static factory method `valueOf` available of each of the primitive types. This is a recipe to convert these constructors to their `valueOf` counterparts on the following classes:
+
+- Boolean
+- Byte
+- Character
+- Double
+- Float
+- Long
+- Short
+
+## Converting BigDecimal Rounding Constants to Enums <a name="ConvertBigDecimalRoundingMode"></a>
+
+There are a set of constants (static public integers) representing the various rounding strategies for the BigDecimal class. These have been deprecated in favor of an enum. Any use of these constants will result in a breaking change when using the `jdeprscan` tool. This recipe will migrate the use of these constants to their enum counterparts.
+
+Methods in the `BigDecimal` classes that will be migrated:
+
+- `divide(BigDecimal, int)` --> `divide(BigDecimal, RoundingMode)`
+- `divide(BigDecimal, int, int)` --> `divide(BigDecimal, int, RoundingMode)`
+- `setScale(int, int)` --> `setScale(int, RoundingMode)`
+
+## Remediate deprecation warnings and errors<a name="AddressDeprecations"></a>
+
+The `jdeprscan` tool provides a list of deprecations that have been made to the Java language. This project does a
+best faith effort to remediate listed deprecations where a safe, automated solution exists. 
+
+## Additional recipes for adding libraries that have been removed from the Java runtime 
+
+There are several additional libraries that have been removed from the Java standard library that should be considered
+when migrating to Java 11:
+
+- java.corba
+- javax.transaction
+- javax.batch 
+- JavaFX
+- Web Start
 
 ## Add `jdeprscan` plugin to Maven <a name="AddJdeprscanToMaven"></a>
 
@@ -42,157 +206,6 @@ The recipe would ensure the following plugin is present:
     </build>
 </project>
 ```
-
-## Converting Primitive Wrapper Class Constructors to `valueOf` Method <a name="ConvertPrimitiveWrapperConstructors"></a>
-
-The constructor of all primitive types has been deprecated in favor of using the static factory method `valueOf` available of each of the primitive types. This is a recipe to convert these constructors to their `valueOf` counterparts on the following classes:
-
-- Boolean
-- Byte
-- Character
-- Double
-- Float
-- Long
-- Short
-
-## Adding `javax` Dependencies to Maven Poms <a name="AddJavaxLibrariesToMaven"></a>
-
-There are several libraries that, prior to Java 11, were bundled with each release of JDK. However, starting in Java 11, these libraries are no longer part of the JDK release and any projects that were leveraging these libraries must now add them as additional dependencies.
-
-> **_NOTE:_** The governance of some of these projects has moved to the Jakarta EE project and this move includes some changes to the package names and we may need recipes that support both name spaces.
-
-This will be a set of recipes that detects the use of these libraries and adds the appropriate dependencies to an existing project's Maven build.
-
-These recipes will include migrations paths for
-
-## JavaBeans Activation Framework
-
-```xml
-<properties>
-    <jakara.activation.version>1.2.1</jakara.activation.version>
-</properties>
-...
-<dependencies>
-    <dependency>
-        <groupId>com.sun.activation</groupId>
-        <artifactId>jakarta.activation</artifactId>
-        <version>${jakara.activation.version}</version>
-    </dependency>
-</dependencies>
-```
-
-## Java Architecture for XML Binding (JAXB)
-
-```xml
-<properties>
-    <jakarta.xml.bind-api.version>2.3.3</jakarta.xml.bind-api.version>
-</properties>
-
-...
-
-<dependencies>
-    <!-- JAXB API -->
-    <dependency>
-        <groupId>jakarta.xml.bind</groupId>
-        <artifactId>jakarta.xml.bind-api</artifactId>
-        <version>${jakarta.xml.bind-api.version}</version>
-    </dependency>
-    <!-- JAXB runtime -->
-    <dependency>
-        <groupId>com.sun.xml.bind</groupId>
-        <artifactId>jaxb-impl</artifactId>
-        <version>3.0.0</version>
-        <scope>runtime</scope>
-    </dependency>
-</dependencies>
-```
-
-There is also a maven plugin for generating code from xsds and this tool also relies on the activation framework.
-
-```xml
-<properties>
-    <maven-jaxb2-plugin.version>0.14.0</maven-jaxb2-plugin.version>
-    <jaxb-xjc.version>2.3.3</jaxb-xjc.version>
-</properties>
-
-<!-- Configuring the plugin for generating java model from xsds. -->
-<plugin>
-    <groupId>org.jvnet.jaxb2.maven2</groupId>
-    <artifactId>maven-jaxb2-plugin</artifactId>
-    <version>${maven-jaxb2-plugin.version}</version>
-    <dependencies>
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-xjc</artifactId>
-            <version>${jaxb-xjc.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.activation</groupId>
-            <artifactId>jakarta.activation</artifactId>
-            <version>${jakara.activation.version}</version>
-        </dependency>
-    </dependencies>
-</plugin>
-```
-
-## Java API for XML Web Services (JAXWS)
-
-```xml
-<properties>
-    <jaxws-rt.version>2.3.2-1</jaxws-rt.version>
-</properties>
-
-...
-
-<dependencies>
-    <dependency>
-        <groupId>com.sun.xml.ws</groupId>
-        <artifactId>jaxws-rt</artifactId>
-        <version>${jaxws-rt.version}</version>
-    </dependency>
-</dependencies>
-```
-
-There is also a maven plugin for generating code from WSDLs that also may be impacted.
-
-```xml
-<properties>
-    <jaxws-maven-plugin.version>2.6</jaxws-maven-plugin.version>
-</properties>
-
-...
-
-<!-- Configuring the plugin for generating java model from Soap WSDLs -->
-<plugin>
-    <groupId>org.codehaus.mojo</groupId>
-    <artifactId>jaxws-maven-plugin</artifactId>
-    <version>${jaxws-maven-plugin.version}</version>
-    <dependencies>
-        <dependency>
-            <groupId>com.sun.xml.ws</groupId>
-            <artifactId>jaxws-tools</artifactId>
-            <version>${jaxws-rt.version}</version>
-        </dependency>
-    </dependencies>
-</plugin>
-```
-
-## Other libraries that may need to be added
-
-- java.corba
-- java.transaction
-- JavaFX
-- Web Start
-
-## Converting BigDecimal Rounding Constants to Enums <a name="ConvertBigDecimalRoundingMode"></a>
-
-There are a set of constants (static public integers) representing the various rounding strategies for the BigDecimal class. These have been deprecated in favor of an enum. Any use of these constants will result in a breaking change when using the `jdeprscan` tool. This recipe will migrate the use of these constants to their enum counterparts.
-
-Methods in the `BigDecimal` classes that will be migrated:
-
-- `divide(BigDecimal, int)` --> `divide(BigDecimal, RoundingMode)`
-- `divide(BigDecimal, int, int)` --> `divide(BigDecimal, int, RoundingMode)`
-- `setScale(int, int)` --> `setScale(int, RoundingMode)`
 
 ## Suppress Illegal Reflective Access <a name="SuppressIllegalReflectiveAccess"></a>
 
@@ -242,34 +255,6 @@ This recipe can be used to add or modify the `maven-jar-plugin` to add manifest 
 The `sun.misc.Unsafe` class provides direct access to CPU and other hardware features. Over the years this class, although meant for only internal use by the JDK core, has been used in many frameworks across the Java-eco system to access its features primarily for performance gains. [This is an excellent article that desribes how the `Unsafe` class has been used over the years and also details how alternatives are being added to the platform.](https://blogs.oracle.com/javamagazine/the-unsafe-class-unsafe-at-any-speed)
 
 It will be possible to create a set of recipes to aid in the migration of `Unsafe` to the new APIs starting in Java 11.
-
-## Other deprecated/removed packages and classes
-
-- com.sun.awt.AWTUtilities
-- com.sun.image.codec.jpeg.*
-- com.sun.browser.plugin2.DOM
-- com.sun.security.auth.*
-- com.suh.xml.internal.bind.*
-- java.awt.dnd.peer.*
-- java.awt.peer.*
-- javax.security.auth.Policy
-- sun.misc.BASE64Decoder
-- sun.misc.BASE64Encoder
-- sun.plugin.dom.DOMObject
-- java.lang.Runtime.getLocalizedInputStream()
-- java.lang.Runtime.getLocalizedOutputStream()
-- java.lang.Runtime.runFinalizersOnExit()
-- java.lang.SecurityManager.checkAwtEventQueueAccess()
-- java.lang.SecurityManager.checkMemberAccess()
-- java.lang.SecurityManager.checkSystemClipboardAccess()
-- java.lang.SecurityManager.checkTopLevelWindow()
-- java.lang.SecurityManager.classDepth()
-- java.lang.SecurityManager.classLoaderDepth()
-- java.lang.SecurityManager.currentClassLoader()
-- java.lang.SecurityManager.currentLoadedClass()
-- java.lang.SecurityManager.getInCheck()
-- java.lang.SecurityManager.inClass()
-- java.lang.SecurityManager.inClassLoader()
 
 ## Helpful tools
 
