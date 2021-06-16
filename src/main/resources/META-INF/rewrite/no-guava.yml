@@ -24,6 +24,9 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
+  - org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList
+  - org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList
+  - org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
