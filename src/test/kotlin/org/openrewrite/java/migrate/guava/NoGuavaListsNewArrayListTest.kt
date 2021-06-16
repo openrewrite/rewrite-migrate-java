@@ -23,6 +23,7 @@ import org.openrewrite.java.JavaRecipeTest
 class NoGuavaListsNewArrayListTest: JavaRecipeTest {
     override val parser: JavaParser
         get() = JavaParser.fromJavaVersion()
+            .logCompilationWarningsAndErrors(true)
             .classpath("guava")
             .build()
 
@@ -46,6 +47,32 @@ class NoGuavaListsNewArrayListTest: JavaRecipeTest {
             
             class Test {
                 List<Integer> cardinalsWorldSeries = new ArrayList<>();
+            }
+        """
+    )
+
+    @Test
+    fun replaceWithNewArrayListIterable() = assertChanged(
+        before = """
+            import com.google.common.collect.*;
+            
+            import java.util.ArrayList;
+            import java.util.Collections;
+            import java.util.List;
+            
+            class Test {
+                List<Integer> l = Collections.emptyList();
+                List<Integer> cardinalsWorldSeries = Lists.newArrayList(l);
+            }
+        """,
+        after = """
+            import java.util.ArrayList;
+            import java.util.Collections;
+            import java.util.List;
+            
+            class Test {
+                List<Integer> l = Collections.emptyList();
+                List<Integer> cardinalsWorldSeries = new ArrayList<>(l);
             }
         """
     )
