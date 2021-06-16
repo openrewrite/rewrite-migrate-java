@@ -24,6 +24,8 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.stream.Collectors;
 
@@ -52,6 +54,10 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                     .imports("java.util.HashSet")
                     .build();
 
+            private final JavaTemplate newHashSetIterable = template("new HashSet<>(#{any(java.lang.Iterable)})")
+                    .imports("java.util.HashSet")
+                    .build();
+
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
                 if (NEW_HASH_SET.matches(method)) {
@@ -59,6 +65,10 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                     maybeAddImport("java.util.HashSet");
                     if(method.getArguments().isEmpty()) {
                         return method.withTemplate(newHashSet, method.getCoordinates().replace());
+                    } else if(method.getArguments().size() == 1 && TypeUtils.isAssignableTo(JavaType.Class.build("java.lang.Iterable"),
+                            method.getArguments().get(0).getType())) {
+                        return method.withTemplate(newHashSetIterable, method.getCoordinates().replace(),
+                                method.getArguments().get(0));
                     } else {
                         maybeAddImport("java.util.Arrays");
                         JavaTemplate newHashSetVarargs = template("new HashSet<>(Arrays.asList(" + method.getArguments().stream().map(a -> "#{any()}").collect(Collectors.joining(",")) + "))")

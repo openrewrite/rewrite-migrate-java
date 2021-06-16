@@ -52,6 +52,33 @@ class NoGuavaSetsNewHashSetTest: JavaRecipeTest {
     )
 
     @Test
+    fun replaceWithNewHashSetIterable() = assertChanged(
+        before = """
+            import com.google.common.collect.*;
+            
+            import java.util.Collections;
+            import java.util.List;
+            import java.util.Set;
+            
+            class Test {
+                List<Integer> l = Collections.emptyList();
+                Set<Integer> cardinalsWorldSeries = Sets.newHashSet(l);
+            }
+        """,
+        after = """
+            import java.util.Collections;
+            import java.util.HashSet;
+            import java.util.List;
+            import java.util.Set;
+            
+            class Test {
+                List<Integer> l = Collections.emptyList();
+                Set<Integer> cardinalsWorldSeries = new HashSet<>(l);
+            }
+        """
+    )
+
+    @Test
     fun replaceWithNewHashSetVarargs() = assertChanged(
         before = """
             import com.google.common.collect.*;
