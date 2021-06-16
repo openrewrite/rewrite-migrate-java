@@ -31,6 +31,8 @@ tags:
 #   Note: ChangePackage does not update java doc references.
 recipeList:
 
+  - org.openrewrite.java.migrate.JavaxBatchMigrationToJakartaBatch
+
   # JaxB API(x) .. update
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.xml.bind
@@ -110,3 +112,32 @@ recipeList:
   - org.openrewrite.maven.RemoveDependency:
       groupId: javax.xml.ws
       artifactId: jaxws-api
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.JavaxBatchMigrationToJakartaBatch
+displayName: Migrate deprecated `javax.batch` packages to `jakarta.batch`
+description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+tags:
+  - batch
+  - jakarta
+
+# - Add missing dependencies:
+#   Note: ChangePackage does not update java doc references.
+recipeList:
+  - org.openrewrite.maven.AddDependency:
+      groupId: jakarta.batch
+      artifactId: jakarta.batch-api
+      version: 2.x
+      onlyIfUsing:
+        - javax.batch.*
+
+  # f(x).batch
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.batch
+      newPackageName: jakarta.batch
+
+  # Remove Javax Batch API(x)
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: javax.batch
+      artifactId: javax.batch-api
