@@ -76,4 +76,26 @@ class NoGuavaListsNewArrayListTest: JavaRecipeTest {
             }
         """
     )
+
+    @Test
+    fun replaceWithNewArrayListWithCapacity() = assertChanged(
+        before = """
+            import com.google.common.collect.*;
+            
+            import java.util.ArrayList;
+            import java.util.List;
+            
+            class Test {
+                List<Integer> cardinalsWorldSeries = Lists.newArrayListWithCapacity(2);
+            }
+        """,
+        after = """
+            import java.util.ArrayList;
+            import java.util.List;
+            
+            class Test {
+                List<Integer> cardinalsWorldSeries = new ArrayList<>(2);
+            }
+        """
+    )
 }
