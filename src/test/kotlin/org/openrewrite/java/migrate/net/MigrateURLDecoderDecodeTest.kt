@@ -48,7 +48,8 @@ class MigrateURLDecoderDecodeTest : JavaRecipeTest {
                     String message = URLDecoder.decode(url, StandardCharsets.UTF_8);
                 }
             }
-        """
+        """,
+        skipEnhancedTypeValidation = true // fixme
     )
 
 }

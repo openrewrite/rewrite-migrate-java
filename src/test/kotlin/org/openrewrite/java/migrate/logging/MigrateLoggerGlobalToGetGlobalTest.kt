@@ -47,7 +47,8 @@ class MigrateLoggerGlobalToGetGlobalTest : JavaRecipeTest {
                     Logger logger = Logger.getGlobal();
                 }
             }
-        """
+        """,
+        skipEnhancedTypeValidation = true // fixme
     )
 
 }

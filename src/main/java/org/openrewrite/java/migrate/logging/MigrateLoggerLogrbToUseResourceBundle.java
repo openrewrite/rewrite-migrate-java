@@ -52,7 +52,7 @@ public class MigrateLoggerLogrbToUseResourceBundle extends Recipe {
             J.MethodInvocation m = method;
             if (MATCHER.matches(m)) {
                 m = m.withTemplate(
-                        template("#{any(java.util.logging.Level)}, #{any(String)}, #{any(String)}, ResourceBundle.getBundle(#{any(String)}), #{any(String)}" + (m.getArguments().size() == 6 ? ", #{any()}}" : ""))
+                        template("#{any(java.util.logging.Level)}, #{any(String)}, #{any(String)}, ResourceBundle.getBundle(#{any(String)}), #{any(String)}" + (m.getArguments().size() == 6 ? ", #{any()}" : ""))
                                 .imports("java.util.ResourceBundle")
                                 .build(),
                         m.getCoordinates().replaceArguments(),

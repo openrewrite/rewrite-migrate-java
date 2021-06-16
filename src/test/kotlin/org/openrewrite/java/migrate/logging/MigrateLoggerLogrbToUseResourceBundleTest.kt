@@ -87,7 +87,8 @@ class MigrateLoggerLogrbToUseResourceBundleTest : JavaRecipeTest {
                     logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", ResourceBundle.getBundle("bundleName"), "msg", new Object());
                 }
             }
-        """
+        """,
+        skipEnhancedTypeValidation = true // fixme
     )
 
     @Test
@@ -122,7 +123,8 @@ class MigrateLoggerLogrbToUseResourceBundleTest : JavaRecipeTest {
                     logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", ResourceBundle.getBundle("bundleName"), "msg", objects);
                 }
             }
-        """
+        """,
+        skipEnhancedTypeValidation = true // fixme
     )
 
     @Test
@@ -155,7 +157,8 @@ class MigrateLoggerLogrbToUseResourceBundleTest : JavaRecipeTest {
                     logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", ResourceBundle.getBundle("bundleName"), "msg", new Exception());
                 }
             }
-        """
+        """,
+        skipEnhancedTypeValidation = true // fixme
     )
 
 }
