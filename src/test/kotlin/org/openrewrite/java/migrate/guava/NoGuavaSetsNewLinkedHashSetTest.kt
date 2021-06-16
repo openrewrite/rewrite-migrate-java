@@ -20,7 +20,7 @@ import org.openrewrite.Recipe
 import org.openrewrite.java.JavaParser
 import org.openrewrite.java.JavaRecipeTest
 
-class NoGuavaListsNewArrayListTest: JavaRecipeTest {
+class NoGuavaSetsNewLinkedHashSetTest: JavaRecipeTest {
     override val parser: JavaParser
         get() = JavaParser.fromJavaVersion()
             .logCompilationWarningsAndErrors(true)
@@ -28,72 +28,71 @@ class NoGuavaListsNewArrayListTest: JavaRecipeTest {
             .build()
 
     override val recipe: Recipe
-        get() = NoGuavaListsNewArrayList()
+        get() = NoGuavaSetsNewLinkedHashSet()
 
     @Test
-    fun replaceWithNewArrayList() = assertChanged(
+    fun replaceWithNewLinkedHashSet() = assertChanged(
         before = """
             import com.google.common.collect.*;
             
-            import java.util.List;
+            import java.util.Set;
             
             class Test {
-                List<Integer> cardinalsWorldSeries = Lists.newArrayList();
+                Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSet();
             }
         """,
         after = """
-            import java.util.ArrayList;
-            import java.util.List;
+            import java.util.LinkedHashSet;
+            import java.util.Set;
             
             class Test {
-                List<Integer> cardinalsWorldSeries = new ArrayList<>();
+                Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>();
             }
         """
     )
 
     @Test
-    fun replaceWithNewArrayListIterable() = assertChanged(
+    fun replaceWithNewLinkedHashSetIterable() = assertChanged(
         before = """
             import com.google.common.collect.*;
             
             import java.util.Collections;
-            import java.util.List;
+            import java.util.Set;
             
             class Test {
-                List<Integer> l = Collections.emptyList();
-                List<Integer> cardinalsWorldSeries = Lists.newArrayList(l);
+                Set<Integer> l = Collections.emptySet();
+                Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSet(l);
             }
         """,
         after = """
-            import java.util.ArrayList;
             import java.util.Collections;
-            import java.util.List;
+            import java.util.LinkedHashSet;
+            import java.util.Set;
             
             class Test {
-                List<Integer> l = Collections.emptyList();
-                List<Integer> cardinalsWorldSeries = new ArrayList<>(l);
+                Set<Integer> l = Collections.emptySet();
+                Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>(l);
             }
         """
     )
 
     @Test
-    fun replaceWithNewArrayListWithCapacity() = assertChanged(
+    fun replaceWithNewLinkedHashSetWithCapacity() = assertChanged(
         before = """
             import com.google.common.collect.*;
             
-            import java.util.ArrayList;
-            import java.util.List;
+            import java.util.Set;
             
             class Test {
-                List<Integer> cardinalsWorldSeries = Lists.newArrayListWithCapacity(2);
+                Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSetWithExpectedSize(2);
             }
         """,
         after = """
-            import java.util.ArrayList;
-            import java.util.List;
+            import java.util.LinkedHashSet;
+            import java.util.Set;
             
             class Test {
-                List<Integer> cardinalsWorldSeries = new ArrayList<>(2);
+                Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>(2);
             }
         """
     )
