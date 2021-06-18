@@ -39,6 +39,7 @@ public class AddSuppressionForIllegalReflectionWarningsPlugin extends Recipe {
 
     @Option(displayName = "version",
             description = "An exact version number, or node-style semver selector used to select the version number.",
+            required = false,
             example = "29.X")
     private final String version;
 
