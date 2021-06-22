@@ -31,7 +31,8 @@ plugins {
 
 apply(plugin = "nebula.publish-verification")
 
-configure<org.openrewrite.gradle.RewriteExtension> {
+rewrite {
+    setRewriteVersion("latest.integration")
     activeRecipe("org.openrewrite.java.format.AutoFormat")
 }
 
