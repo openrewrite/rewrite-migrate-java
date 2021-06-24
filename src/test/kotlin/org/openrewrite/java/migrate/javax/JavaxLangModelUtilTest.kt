@@ -32,12 +32,12 @@ class JavaxLangModelUtilTest : JavaRecipeTest {
         before = """
             import javax.lang.model.util.AbstractAnnotationValueVisitor6;
 
-            public class Test extends AbstractAnnotationValueVisitor6 {}
+            abstract class Test extends AbstractAnnotationValueVisitor6 {}
         """,
         after = """
             import javax.lang.model.util.AbstractAnnotationValueVisitor9;
 
-            public class Test extends AbstractAnnotationValueVisitor9 {}
+            abstract class Test extends AbstractAnnotationValueVisitor9 {}
         """
     )
 
@@ -46,12 +46,12 @@ class JavaxLangModelUtilTest : JavaRecipeTest {
         before = """
             import javax.lang.model.util.AbstractElementVisitor6;
 
-            public class Test extends AbstractElementVisitor6 {}
+            abstract class Test extends AbstractElementVisitor6 {}
         """,
         after = """
             import javax.lang.model.util.AbstractElementVisitor9;
 
-            public class Test extends AbstractElementVisitor9 {}
+            abstract class Test extends AbstractElementVisitor9 {}
         """
     )
 
@@ -60,12 +60,12 @@ class JavaxLangModelUtilTest : JavaRecipeTest {
         before = """
             import javax.lang.model.util.AbstractTypeVisitor6;
 
-            public class Test extends AbstractTypeVisitor6 {}
+            abstract class Test extends AbstractTypeVisitor6 {}
         """,
         after = """
             import javax.lang.model.util.AbstractTypeVisitor9;
 
-            public class Test extends AbstractTypeVisitor9 {}
+            abstract class Test extends AbstractTypeVisitor9 {}
         """
     )
 
