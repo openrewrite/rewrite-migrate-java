@@ -53,7 +53,7 @@ recipeList:
   - org.openrewrite.maven.RemoveDependency:
       groupId: javax.xml.bind
       artifactId: jaxb-api
-  # Remove the legacy sun JAXB runtime in facor of the glassfish artifact.
+  # Remove the legacy sun JAXB runtime in favor of the glassfish artifact.
   - org.openrewrite.maven.RemoveDependency:
       groupId: com.sun.xml.bind
       artifactId: jaxb-impl

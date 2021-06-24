@@ -31,6 +31,7 @@ recipeList:
   - org.openrewrite.java.migrate.JavaxBatchMigrationToJakartaBatch
   - org.openrewrite.java.migrate.JavaxInjectMigrationToJakartaInject
 
+  # TODO: separate each API migration into a declarative recipe and add the declarative recipe into the recipe list.
   # JaxB API(x) .. update
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.xml.bind
@@ -38,6 +39,12 @@ recipeList:
       version: 3.x
       onlyIfUsing:
         - javax.xml.bind.*
+
+  # Upgrade the dependency to use the jakarta namespace if an older version already exists.
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: jakarta.xml.bind
+      artifactId: jakarta.xml.bind-api
+      newVersion: 3.x
 
   # JaxB Runtime(x) .. update
   - org.openrewrite.maven.AddDependency:
@@ -48,6 +55,12 @@ recipeList:
       onlyIfUsing:
         - javax.xml.bind.*
 
+  # Upgrade the dependency to use the jakarta namespace if an older version already exists.
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.glassfish.jaxb
+      artifactId: jaxb-runtime
+      newVersion: 3.x
+
   # JaxWS API(x) .. update
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.xml.ws
@@ -55,6 +68,12 @@ recipeList:
       version: 3.x
       onlyIfUsing:
         - javax.xml.ws.*
+
+  # Upgrade the dependency to use the jakarta namespace if an older version already exists.
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: jakarta.xml.ws
+      artifactId: jakarta.xml.ws-api
+      newVersion: 3.x
 
   # JaxWS Runtime(x) .. update
   - org.openrewrite.maven.AddDependency:
@@ -65,12 +84,24 @@ recipeList:
       onlyIfUsing:
         - javax.xml.ws.*
 
+  # Upgrade the dependency to use the jakarta namespace if an older version already exists.
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: com.sun.xml.ws
+      artifactId: jaxws-rt
+      newVersion: 3.x
+
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.transaction
       artifactId: jakarta.transaction-api
       version: 2.x
       onlyIfUsing:
         - javax.transaction.*
+
+  # Upgrade the dependency to use the jakarta namespace if an older version already exists.
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: jakarta.transaction
+      artifactId: jakarta.transaction-api
+      newVersion: 2.x
 
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.annotation
@@ -79,12 +110,24 @@ recipeList:
       onlyIfUsing:
         - javax.annotation.*
 
+  # Upgrade the dependency to use the jakarta namespace if an older version already exists.
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      newVersion: 2.x
+
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.activation
       artifactId: jakarta.activation-api
       version: 2.x
       onlyIfUsing:
         - javax.activation.*
+
+  # Upgrade the dependency to use the jakarta namespace if an older version already exists.
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: jakarta.activation
+      artifactId: jakarta.activation-api
+      newVersion: 2.x
 
   # f(x).xml.bind
   - org.openrewrite.java.ChangePackage:
@@ -105,6 +148,16 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.activation
       newPackageName: jakarta.activation
+
+  # Remove the legacy Javax JAXB API in favor of the the jakarta artifact.
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: javax.xml.bind
+      artifactId: jaxb-api
+
+  # Remove the legacy sun JAXB runtime in favor of the glassfish artifact.
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: com.sun.xml.bind
+      artifactId: jaxb-impl
 
   # Remove Javax JaxWs API(x)
   - org.openrewrite.maven.RemoveDependency:
@@ -127,6 +180,12 @@ recipeList:
       version: 2.x
       onlyIfUsing:
         - javax.batch.*
+
+  # Upgrade the dependency to use the jakarta namespace if an older version already exists.
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: jakarta.batch
+      artifactId: jakarta.batch-api
+      newVersion: 2.x
 
   # Note: ChangePackage does not update java doc references.
   # f(x).batch
