@@ -88,6 +88,7 @@ dependencies {
 
     implementation("org.openrewrite:rewrite-java:${rewriteVersion}")
     implementation("org.openrewrite:rewrite-maven:${rewriteVersion}")
+    runtimeOnly("org.openrewrite:rewrite-java-11:${rewriteVersion}")
 
     // eliminates "unknown enum constant DeprecationLevel.WARNING" warnings from the build log
     // see https://github.com/gradle/kotlin-dsl-samples/issues/1301 for why (okhttp is leaking parts of kotlin stdlib)
