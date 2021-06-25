@@ -54,11 +54,11 @@ public class NoGuavaListsNewLinkedList extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newLinkedList = template("new LinkedList<>()")
+            private final JavaTemplate newLinkedList = JavaTemplate.builder(this::getCursor, "new LinkedList<>()")
                     .imports("java.util.LinkedList")
                     .build();
 
-            private final JavaTemplate newLinkedListIterable = template("new LinkedList<>(#{any(java.lang.Iterable)})")
+            private final JavaTemplate newLinkedListIterable = JavaTemplate.builder(this::getCursor, "new LinkedList<>(#{any(java.lang.Iterable)})")
                     .imports("java.util.LinkedList")
                     .build();
 

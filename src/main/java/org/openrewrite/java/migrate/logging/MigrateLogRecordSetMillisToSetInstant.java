@@ -19,6 +19,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
@@ -52,7 +53,7 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
             J.MethodInvocation m = method;
             if (MATCHER.matches(m)) {
                 m = m.withName(m.getName().withName("setInstant")).withTemplate(
-                        template("Instant.ofEpochMilli(#{any(long)})")
+                        JavaTemplate.builder(this::getCursor, "Instant.ofEpochMilli(#{any(long)})")
                                 .imports("java.time.Instant")
                                 .build(),
                         m.getCoordinates().replaceArguments(),

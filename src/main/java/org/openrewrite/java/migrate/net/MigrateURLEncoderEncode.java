@@ -20,6 +20,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.AddImport;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
@@ -53,7 +54,7 @@ public class MigrateURLEncoderEncode extends Recipe {
             J.MethodInvocation m = method;
             if (MATCHER.matches(m)) {
                 m = m.withTemplate(
-                        template("#{any(String)}, StandardCharsets.UTF_8")
+                        JavaTemplate.builder(this::getCursor, "#{any(String)}, StandardCharsets.UTF_8")
                                 .imports("java.nio.charset.StandardCharsets")
                                 .build(),
                         m.getCoordinates().replaceArguments(),
@@ -66,5 +67,4 @@ public class MigrateURLEncoderEncode extends Recipe {
             return super.visitMethodInvocation(m, ctx);
         }
     }
-
 }

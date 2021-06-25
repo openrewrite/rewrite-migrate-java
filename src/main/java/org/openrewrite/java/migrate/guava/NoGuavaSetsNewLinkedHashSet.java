@@ -56,15 +56,15 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newLinkedHashSet = template("new LinkedHashSet<>()")
+            private final JavaTemplate newLinkedHashSet = JavaTemplate.builder(this::getCursor, "new LinkedHashSet<>()")
                     .imports("java.util.LinkedHashSet")
                     .build();
 
-            private final JavaTemplate newLinkedHashSetIterable = template("new LinkedHashSet<>(#{any(java.lang.Iterable)})")
+            private final JavaTemplate newLinkedHashSetIterable = JavaTemplate.builder(this::getCursor, "new LinkedHashSet<>(#{any(java.lang.Iterable)})")
                     .imports("java.util.LinkedHashSet")
                     .build();
 
-            private final JavaTemplate newLinkedHashSetCapacity = template("new LinkedHashSet<>(#{any(int)})")
+            private final JavaTemplate newLinkedHashSetCapacity = JavaTemplate.builder(this::getCursor, "new LinkedHashSet<>(#{any(int)})")
                     .imports("java.util.LinkedHashSet")
                     .build();
 

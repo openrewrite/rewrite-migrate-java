@@ -56,15 +56,15 @@ public class NoGuavaListsNewArrayList extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newArrayList = template("new ArrayList<>()")
+            private final JavaTemplate newArrayList = JavaTemplate.builder(this::getCursor, "new ArrayList<>()")
                     .imports("java.util.ArrayList")
                     .build();
 
-            private final JavaTemplate newArrayListIterable = template("new ArrayList<>(#{any(java.lang.Iterable)})")
+            private final JavaTemplate newArrayListIterable = JavaTemplate.builder(this::getCursor, "new ArrayList<>(#{any(java.lang.Iterable)})")
                     .imports("java.util.ArrayList")
                     .build();
 
-            private final JavaTemplate newArrayListCapacity = template("new ArrayList<>(#{any(int)})")
+            private final JavaTemplate newArrayListCapacity = JavaTemplate.builder(this::getCursor, "new ArrayList<>(#{any(int)})")
                     .imports("java.util.ArrayList")
                     .build();
 

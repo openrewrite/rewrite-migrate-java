@@ -39,7 +39,7 @@ public class MigrateClassLoaderDefineClass extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
-            final JavaTemplate template = template("null, #{anyArray(byte)}, #{any(int)}, #{any(int)}")
+            final JavaTemplate template = JavaTemplate.builder(this::getCursor, "null, #{anyArray(byte)}, #{any(int)}, #{any(int)}")
                     .build();
 
             @Override

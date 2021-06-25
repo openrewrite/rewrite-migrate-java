@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.guava;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -50,11 +49,11 @@ public class NoGuavaSetsNewHashSet extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newHashSet = template("new HashSet<>()")
+            private final JavaTemplate newHashSet = JavaTemplate.builder(this::getCursor, "new HashSet<>()")
                     .imports("java.util.HashSet")
                     .build();
 
-            private final JavaTemplate newHashSetIterable = template("new HashSet<>(#{any(java.lang.Iterable)})")
+            private final JavaTemplate newHashSetIterable = JavaTemplate.builder(this::getCursor, "new HashSet<>(#{any(java.lang.Iterable)})")
                     .imports("java.util.HashSet")
                     .build();
 
@@ -71,7 +70,7 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                                 method.getArguments().get(0));
                     } else {
                         maybeAddImport("java.util.Arrays");
-                        JavaTemplate newHashSetVarargs = template("new HashSet<>(Arrays.asList(" + method.getArguments().stream().map(a -> "#{any()}").collect(Collectors.joining(",")) + "))")
+                        JavaTemplate newHashSetVarargs = JavaTemplate.builder(this::getCursor, "new HashSet<>(Arrays.asList(" + method.getArguments().stream().map(a -> "#{any()}").collect(Collectors.joining(",")) + "))")
                                 .imports("java.util.Arrays")
                                 .imports("java.util.HashSet")
                                 .build();

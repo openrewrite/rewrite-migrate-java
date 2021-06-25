@@ -19,6 +19,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
@@ -52,7 +53,7 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
             J.MethodInvocation m = method;
             if (MATCHER.matches(m)) {
                 m = m.withTemplate(
-                        template("ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class)")
+                        JavaTemplate.builder(this::getCursor, "ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class)")
                                 .imports("java.lang.management.ManagementFactory", "java.lang.management.PlatformLoggingMXBean")
                                 .build(),
                         m.getCoordinates().replace()

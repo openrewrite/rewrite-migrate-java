@@ -16,7 +16,7 @@
 package org.openrewrite.java.migrate.javax
 
 import org.junit.jupiter.api.Test
-import org.openrewrite.*
+import org.openrewrite.Recipe
 import org.openrewrite.config.Environment
 import org.openrewrite.maven.MavenRecipeTest
 
