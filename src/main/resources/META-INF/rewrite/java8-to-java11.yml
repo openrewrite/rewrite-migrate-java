@@ -26,13 +26,20 @@ tags:
   - jakarta
 
 recipeList:
+  # Add javax dependencies if they are used by a project.
+  - org.openrewrite.java.migrate.javax.AddJaxbDependencies
+  - org.openrewrite.java.migrate.javax.AddJaxwsDependencies
+  - org.openrewrite.java.migrate.javax.AddInjectDependencies
+  # Add jdeprscan plugin to a maven-based build.
   - org.openrewrite.java.migrate.AddJdeprscanPlugin
-  - org.openrewrite.java.migrate.AddJaxbDependencies
+  # Remediate deprecations
+  - org.openrewrite.java.cleanup.BigDecimalRoundingConstantsToEnums
+  - org.openrewrite.java.cleanup.PrimitiveWrapperClassConstructorToValueOf
   - org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
-  - org.openrewrite.java.migrate.javax.JavaxLangModelUtil
-  - org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
-  - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
   - org.openrewrite.java.migrate.lang.JavaLangAPIs
   - org.openrewrite.java.migrate.logging.JavaLoggingAPIs
   - org.openrewrite.java.migrate.net.JavaNetAPIs
   - org.openrewrite.java.migrate.sql.JavaSqlAPIs
+  - org.openrewrite.java.migrate.javax.JavaxLangModelUtil
+  - org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
+  - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
