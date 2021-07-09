@@ -321,6 +321,7 @@ class JavaxToJakartaTest : JavaRecipeTest {
             null,
             null,
             null,
+            null,
             listOf("jakarta.xml.bind.*")
         )
         val javaSource = JavaParser.fromJavaVersion()
