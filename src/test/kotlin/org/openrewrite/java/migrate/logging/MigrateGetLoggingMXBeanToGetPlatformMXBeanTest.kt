@@ -41,9 +41,10 @@ class MigrateGetLoggingMXBeanToGetPlatformMXBeanTest : JavaRecipeTest {
         after = """
             package org.openrewrite.example;
 
+            import java.util.logging.LoggingMXBean;
+
             import java.lang.management.ManagementFactory;
             import java.lang.management.PlatformLoggingMXBean;
-            import java.util.logging.LoggingMXBean;
 
             public class Test {
                 public static void method() {
