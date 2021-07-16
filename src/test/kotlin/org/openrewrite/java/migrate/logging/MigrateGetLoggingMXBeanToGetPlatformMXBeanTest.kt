@@ -42,7 +42,6 @@ class MigrateGetLoggingMXBeanToGetPlatformMXBeanTest : JavaRecipeTest {
             package org.openrewrite.example;
 
             import java.util.logging.LoggingMXBean;
-
             import java.lang.management.ManagementFactory;
             import java.lang.management.PlatformLoggingMXBean;
 
