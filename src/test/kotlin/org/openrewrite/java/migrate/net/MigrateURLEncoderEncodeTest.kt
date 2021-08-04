@@ -48,8 +48,7 @@ class MigrateURLEncoderEncodeTest : JavaRecipeTest {
                     String message = URLEncoder.encode(url, StandardCharsets.UTF_8);
                 }
             }
-        """,
-        skipEnhancedTypeValidation = true // fixme
+        """
     )
 
 }

@@ -48,7 +48,7 @@ class MigrateLoggerGlobalToGetGlobalTest : JavaRecipeTest {
                 }
             }
         """,
-        skipEnhancedTypeValidation = true // fixme
+        typeValidation = { methodInvocations = false }
     )
 
 }
