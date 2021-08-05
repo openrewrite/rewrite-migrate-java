@@ -34,8 +34,6 @@ recipeList:
   - org.openrewrite.java.migrate.JavaxTransactionMigrationToJakartaTransaction
   - org.openrewrite.java.migrate.JavaxXmlBindMigrationToJakartaXmlBind
   - org.openrewrite.java.migrate.JavaxXmlWsMigrationToJakartaXmlWs
-  - org.openrewrite.java.migrate.JavaxValidationMigrationToJakartaValidation
-
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaxActivationMigrationToJakartaActivation
