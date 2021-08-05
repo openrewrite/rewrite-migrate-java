@@ -34,6 +34,7 @@ recipeList:
   - org.openrewrite.java.migrate.JavaxTransactionMigrationToJakartaTransaction
   - org.openrewrite.java.migrate.JavaxXmlBindMigrationToJakartaXmlBind
   - org.openrewrite.java.migrate.JavaxXmlWsMigrationToJakartaXmlWs
+  - org.openrewrite.java.migrate.JavaxValidationMigrationToJakartaValidation
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -139,7 +140,37 @@ recipeList:
   - org.openrewrite.maven.RemoveDependency:
       groupId: javax.batch
       artifactId: javax.batch-api
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.JavaxValidationMigrationToJakartaValidation
+displayName: Migrate deprecated `javax.validation` packages to `jakarta.validation`
+description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+tags:
+  - validation
+  - javax
+  - jakarta
 
+recipeList:
+  - org.openrewrite.maven.AddDependency:
+      groupId: jakarta.validation
+      artifactId: jakarta.validation-api
+      version: 3.x
+      onlyIfUsing:
+        - javax.batch.*
+
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: jakarta.validation
+      artifactId: jakarta.validation-api
+      newVersion: 3.x
+
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.validation
+      newPackageName: jakarta.validation
+
+  # Remove Javax Validation API
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: javax.validation
+      artifactId: validation-api
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaxInjectMigrationToJakartaInject
