@@ -81,7 +81,7 @@ class AddJaxwsDependenciesTest : MavenRecipeTest {
                 <dependency>
                   <groupId>com.sun.xml.ws</groupId>
                   <artifactId>jaxws-rt</artifactId>
-                  <version>2.3.4</version>
+                  <version>2.3.5</version>
                   <scope>runtime</scope>
                 </dependency>
               </dependencies>
@@ -140,7 +140,7 @@ class AddJaxwsDependenciesTest : MavenRecipeTest {
                 <dependency>
                   <groupId>com.sun.xml.ws</groupId>
                   <artifactId>jaxws-rt</artifactId>
-                  <version>2.3.4</version>
+                  <version>2.3.5</version>
                   <scope>runtime</scope>
                 </dependency>
               </dependencies>

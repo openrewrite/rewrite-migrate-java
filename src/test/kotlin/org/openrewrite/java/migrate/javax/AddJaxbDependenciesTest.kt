@@ -79,7 +79,7 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
                 <dependency>
                   <groupId>org.glassfish.jaxb</groupId>
                   <artifactId>jaxb-runtime</artifactId>
-                  <version>2.3.4</version>
+                  <version>2.3.5</version>
                   <scope>runtime</scope>
                 </dependency>
               </dependencies>
@@ -138,7 +138,7 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
                 <dependency>
                   <groupId>org.glassfish.jaxb</groupId>
                   <artifactId>jaxb-runtime</artifactId>
-                  <version>2.3.4</version>
+                  <version>2.3.5</version>
                   <scope>runtime</scope>
                 </dependency>
               </dependencies>
@@ -190,7 +190,7 @@ class AddJaxbDependenciesTest : MavenRecipeTest {
                     <dependency>
                         <groupId>org.glassfish.jaxb</groupId>
                         <artifactId>jaxb-runtime</artifactId>
-                        <version>2.3.4</version>
+                        <version>2.3.5</version>
                         <scope>runtime</scope>
                     </dependency>
                 </dependencies>
