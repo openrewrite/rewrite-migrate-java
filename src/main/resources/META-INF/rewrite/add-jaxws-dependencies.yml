@@ -31,8 +31,7 @@ recipeList:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       version: 2.3.x
-      onlyIfUsing:
-        - javax.jws.*
+      onlyIfUsing: javax.jws.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
@@ -43,8 +42,7 @@ recipeList:
       artifactId: jaxws-rt
       version: 2.3.x
       scope: runtime
-      onlyIfUsing:
-        - javax.jws.*
+      onlyIfUsing: javax.jws.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt

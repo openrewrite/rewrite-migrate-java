@@ -30,8 +30,7 @@ recipeList:
       groupId: jakarta.inject
       artifactId: jakarta.inject-api
       version: 1.0.3
-      onlyIfUsing:
-        - javax.inject.*
+      onlyIfUsing: javax.inject.*
 
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.inject

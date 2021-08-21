@@ -26,25 +26,23 @@ tags:
   - glassfish
 
 recipeList:
-  #Add or update the jakarta.xml.bind-api to a maven project. This artifact still uses the javax.xml name space.
+  # Add or update the jakarta.xml.bind-api to a maven project. This artifact still uses the javax.xml name space.
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
       version: 2.3.x
-      onlyIfUsing:
-        - javax.xml.bind.*
+      onlyIfUsing: javax.xml.bind.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
       newVersion: 2.3.x
-  #Add or update the jaxb-impl to a maven project. This artifact still uses the javax.xml name space.
+  # Add or update the jaxb-impl to a maven project. This artifact still uses the javax.xml name space.
   - org.openrewrite.maven.AddDependency:
       groupId: org.glassfish.jaxb
       artifactId: jaxb-runtime
       version: 2.3.x
       scope: runtime
-      onlyIfUsing:
-        - javax.xml.bind.*
+      onlyIfUsing: javax.xml.bind.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: org.glassfish.jaxb
       artifactId: jaxb-runtime

@@ -49,8 +49,7 @@ recipeList:
       groupId: jakarta.activation
       artifactId: jakarta.activation-api
       version: 2.x
-      onlyIfUsing:
-        - javax.activation.*
+      onlyIfUsing: javax.activation.*
 
   # Upgrade the dependency to use the jakarta namespace if an older version already exists.
   - org.openrewrite.maven.UpgradeDependencyVersion:
@@ -84,8 +83,7 @@ recipeList:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       version: 2.x
-      onlyIfUsing:
-        - javax.annotation.*
+      onlyIfUsing: javax.annotation.*
 
   # Upgrade the dependency to use the jakarta namespace if an older version already exists.
   - org.openrewrite.maven.UpgradeDependencyVersion:
@@ -119,8 +117,7 @@ recipeList:
       groupId: jakarta.batch
       artifactId: jakarta.batch-api
       version: 2.x
-      onlyIfUsing:
-        - javax.batch.*
+      onlyIfUsing: javax.batch.*
 
   # Upgrade the dependency to use the jakarta namespace if an older version already exists.
   - org.openrewrite.maven.UpgradeDependencyVersion:
@@ -184,8 +181,7 @@ recipeList:
       groupId: jakarta.inject
       artifactId: jakarta.inject-api
       version: 2.x
-      onlyIfUsing:
-        - javax.batch.*
+      onlyIfUsing: javax.batch.*
 
   # Upgrade the dependency to use the jakarta namespace if an older version already exists.
   - org.openrewrite.maven.UpgradeDependencyVersion:
@@ -219,8 +215,7 @@ recipeList:
       groupId: jakarta.transaction
       artifactId: jakarta.transaction-api
       version: 2.x
-      onlyIfUsing:
-        - javax.transaction.*
+      onlyIfUsing: javax.transaction.*
 
   # Upgrade the dependency to use the jakarta namespace if an older version already exists.
   - org.openrewrite.maven.UpgradeDependencyVersion:
@@ -254,8 +249,7 @@ recipeList:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
       version: 3.x
-      onlyIfUsing:
-        - javax.xml.bind.*
+      onlyIfUsing: javax.xml.bind.*
 
   # Upgrade the dependency to use the jakarta namespace if an older version already exists.
   - org.openrewrite.maven.UpgradeDependencyVersion:
@@ -269,8 +263,7 @@ recipeList:
       artifactId: jaxb-runtime
       version: 3.x
       scope: runtime
-      onlyIfUsing:
-        - javax.xml.bind.*
+      onlyIfUsing: javax.xml.bind.*
 
   # Upgrade the dependency to use the jakarta namespace if an older version already exists.
   - org.openrewrite.maven.UpgradeDependencyVersion:
@@ -309,8 +302,7 @@ recipeList:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       version: 3.x
-      onlyIfUsing:
-        - javax.xml.ws.*
+      onlyIfUsing: javax.xml.ws.*
 
   # Upgrade the dependency to use the jakarta namespace if an older version already exists.
   - org.openrewrite.maven.UpgradeDependencyVersion:
@@ -324,8 +316,7 @@ recipeList:
       artifactId: jaxws-rt
       version: 3.x
       scope: runtime
-      onlyIfUsing:
-        - javax.xml.ws.*
+      onlyIfUsing: javax.xml.ws.*
 
   # Upgrade the dependency to use the jakarta namespace if an older version already exists.
   - org.openrewrite.maven.UpgradeDependencyVersion:
