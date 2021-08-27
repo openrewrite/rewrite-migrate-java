@@ -47,6 +47,10 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferLongDivideUnsigned
   - org.openrewrite.java.migrate.guava.PreferLongParseUnsignedLong
   - org.openrewrite.java.migrate.guava.PreferLongRemainderUnsigned
+  - org.openrewrite.java.migrate.guava.PreferMathAddExact
+  - org.openrewrite.java.migrate.guava.PreferMathSubtractExact
+  - org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
+  - org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
@@ -284,3 +288,44 @@ recipeList:
       methodPattern: com.google.common.primitives.UnsignedLongs remainderUnsigned(int, int)
       fullyQualifiedTargetTypeName: java.lang.Long
 ---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferMathAddExact
+displayName: Prefer `Math#addExact`
+description: This method exists in the Java standard library now.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.math.IntMath checkedAdd(..)
+      newMethodName: addExact
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.math.IntMath addExact(..)
+      fullyQualifiedTargetTypeName: java.lang.Math
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferMathSubtractExact
+displayName: Prefer `Math#subtractExact`
+description: This method exists in the Java standard library now.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.math.IntMath checkedSubtract(..)
+      newMethodName: subtractExact
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.math.IntMath subtractExact(..)
+      fullyQualifiedTargetTypeName: java.lang.Math
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
+displayName: Prefer `Math#subtractExact`
+description: This method exists in the Java standard library now.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.math.IntMath checkedMultiply(..)
+      newMethodName: multiplyExact
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.math.IntMath multiplyExact(..)
+      fullyQualifiedTargetTypeName: java.lang.Math
