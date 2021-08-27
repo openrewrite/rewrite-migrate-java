@@ -29,6 +29,13 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsEquals
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsHashCode
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsUnmodifiableNavigableMap
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsSynchronizedNavigableMap
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
@@ -41,3 +48,83 @@ recipeList:
       methodPattern: com.google.common.collect.ImmutableSet of(..)
       fullyQualifiedTargetTypeName: java.util.Set
       returnType: java.util.Set
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
+displayName: Prefer `java.util.function.Function`
+description: Guava's `Function` extends `java.util.function.Function`.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.google.common.base.Function
+      newFullyQualifiedTypeName: java.util.function.Function
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate
+displayName: Prefer `java.util.function.Predicate`
+description: Guava's `Predicate` extends `java.util.function.Predicate`.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.google.common.base.Predicate
+      newFullyQualifiedTypeName: java.util.function.Predicate
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier
+displayName: Prefer `java.util.function.Supplier`
+description: Guava's `Supplier` extends `java.util.function.Supplier`.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.google.common.base.Supplier
+      newFullyQualifiedTypeName: java.util.function.Supplier
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsEquals
+displayName: Prefer `java.util.Objects#equals`
+description: This method exists in the Java standard library now.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.base.Objects equal(Object, Object)
+      fullyQualifiedTargetTypeName: java.util.Objects
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsHashCode
+displayName: Prefer `java.util.Objects#hash`
+description: This method exists in the Java standard library now.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.base.Objects hashCode(..)
+      fullyQualifiedTargetTypeName: java.util.Objects
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.Objects hashCode(..)
+      newMethodName: hash
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsUnmodifiableNavigableMap
+displayName: Prefer `java.util.Collections#unmodifiableNavigableMap`
+description: This method exists in the Java standard library now.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.collect.Maps unmodifiableNavigableMap(java.util.NavigableMap)
+      fullyQualifiedTargetTypeName: java.util.Collections
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsSynchronizedNavigableMap
+displayName: Prefer `java.util.Collections#synchronizedNavigableMap`
+description: This method exists in the Java standard library now.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.collect.Maps synchronizedNavigableMap(java.util.NavigableMap)
+      fullyQualifiedTargetTypeName: java.util.Collections
