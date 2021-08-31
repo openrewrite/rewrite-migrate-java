@@ -29,7 +29,7 @@ public class NoGuavaAtomicsNewReference extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `new ArrayList<>()` instead of Guava";
+        return "Use `new AtomicReference<>()` instead of Guava";
     }
 
     @Override
