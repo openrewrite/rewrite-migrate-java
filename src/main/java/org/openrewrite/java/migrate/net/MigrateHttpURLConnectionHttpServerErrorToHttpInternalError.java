@@ -55,17 +55,16 @@ public class MigrateHttpURLConnectionHttpServerErrorToHttpInternalError extends 
 
         @Override
         public J.Identifier visitIdentifier(J.Identifier identifier, ExecutionContext ctx) {
-            J.Identifier id = super.visitIdentifier(identifier, ctx);
-            if ("HTTP_SERVER_ERROR".equals(id.getSimpleName())) {
-                if (id.getFieldType() instanceof JavaType.Variable) {
-                    JavaType.FullyQualified fq = TypeUtils.asFullyQualified(((JavaType.Variable) id.getFieldType()).getType());
+            if ("HTTP_SERVER_ERROR".equals(identifier.getSimpleName())) {
+                if (identifier.getFieldType() instanceof JavaType.Variable) {
+                    JavaType.FullyQualified fq = TypeUtils.asFullyQualified(((JavaType.Variable) identifier.getFieldType()).getOwner());
                     if (fq != null && "java.net.HttpURLConnection".equals(fq.getFullyQualifiedName())) {
-                        id = id.withName("HTTP_INTERNAL_ERROR");
+                        identifier = identifier.withName("HTTP_INTERNAL_ERROR");
                     }
                 }
             }
 
-            return id;
+            return super.visitIdentifier(identifier, ctx);
         }
 
     }

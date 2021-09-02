@@ -27,8 +27,6 @@ class MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorTest : JavaRecip
     @Test
     fun httpUrlConnectionHttpServerErrorToHttpInternalError() = assertChanged(
         before = """
-            package org.openrewrite.example;
-
             import java.net.HttpURLConnection;
 
             class Test {
@@ -40,8 +38,6 @@ class MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorTest : JavaRecip
             }
         """,
         after = """
-            package org.openrewrite.example;
-
             import java.net.HttpURLConnection;
 
             class Test {
@@ -57,8 +53,6 @@ class MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorTest : JavaRecip
     @Test
     fun httpUrlConnectionHttpServerErrorToHttpInternalErrorAsStaticImport() = assertChanged(
         before = """
-            package org.openrewrite.example;
-
             import static java.net.HttpURLConnection.HTTP_SERVER_ERROR;
 
             class Test {
@@ -70,8 +64,6 @@ class MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorTest : JavaRecip
             }
         """,
         after = """
-            package org.openrewrite.example;
-
             import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 
             class Test {
@@ -88,16 +80,12 @@ class MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorTest : JavaRecip
     fun httpUrlConnectionHttpServerErrorToHttpInternalErrorTypeCheckStaticImport() = assertChanged(
         dependsOn = arrayOf(
             """
-            package org.openrewrite.example;
-
             public class LocalError {
                 public static final int HTTP_SERVER_ERROR = 500;
             }
         """.trimIndent()
         ),
         before = """
-            package org.openrewrite.example;
-
             import static java.net.HttpURLConnection.HTTP_SERVER_ERROR;
 
             class Test {
@@ -110,8 +98,6 @@ class MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorTest : JavaRecip
             }
         """,
         after = """
-            package org.openrewrite.example;
-
             import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 
             class Test {
