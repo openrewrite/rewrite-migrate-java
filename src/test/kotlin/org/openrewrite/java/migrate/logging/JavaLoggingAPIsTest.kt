@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Copyright 2021 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,23 +30,19 @@ class JavaLoggingAPIsTest : JavaRecipeTest {
     @Test
     fun loggingMXBeanToPlatformLoggingMXBean() = assertChanged(
         before = """
-            package org.openrewrite.example;
-
             import java.util.logging.LoggingMXBean;
 
-            public class Test {
-                public static void method() {
+            class Test {
+                static void method() {
                     LoggingMXBean loggingBean = null;
                 }
             }
         """,
         after = """
-            package org.openrewrite.example;
-
             import java.lang.management.PlatformLoggingMXBean;
 
-            public class Test {
-                public static void method() {
+            class Test {
+                static void method() {
                     PlatformLoggingMXBean loggingBean = null;
                 }
             }
