@@ -143,7 +143,9 @@ class JavaxToJakartaTest : JavaRecipeTest {
         before = """
             import java.util.List;
             public class B {
-               public <T extends javax.xml.bind.annotation.A> T generic(T n, List<? super javax.xml.bind.annotation.A> in);
+               public <T extends javax.xml.bind.annotation.A> T generic(T n, List<? super javax.xml.bind.annotation.A> in) {
+                    return n;
+               }
                public void test() {
                    javax.xml.bind.annotation.A.stat();
                    this.<javax.xml.bind.annotation.A>generic(null, null);
@@ -153,7 +155,9 @@ class JavaxToJakartaTest : JavaRecipeTest {
         after = """
             import java.util.List;
             public class B {
-               public <T extends jakarta.xml.bind.annotation.A> T generic(T n, List<? super jakarta.xml.bind.annotation.A> in);
+               public <T extends jakarta.xml.bind.annotation.A> T generic(T n, List<? super jakarta.xml.bind.annotation.A> in) {
+                    return n;
+               }
                public void test() {
                    jakarta.xml.bind.annotation.A.stat();
                    this.<jakarta.xml.bind.annotation.A>generic(null, null);
