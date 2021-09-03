@@ -238,6 +238,7 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @Test
+    @Suppress("RedundantCast")
     fun typeCast() = assertChanged(
         dependsOn = arrayOf(javax, jakarta),
         before = """
