@@ -76,13 +76,15 @@ class JavaxToJakartaTest : JavaRecipeTest {
 
     @Test
     fun annotation() = assertChanged(
-        dependsOn = arrayOf("""
+        dependsOn = arrayOf(
+            """
             package javax.xml.bind.annotation;
             public @interface A {}
         """.trimIndent(), """
             package jakarta.xml.bind.annotation;
             public @interface A {}
-        """.trimIndent()),
+        """.trimIndent()
+        ),
         before = "@javax.xml.bind.annotation.A public class B {}",
         after = "@jakarta.xml.bind.annotation.A public class B {}"
     )
@@ -124,7 +126,8 @@ class JavaxToJakartaTest : JavaRecipeTest {
         dependsOn = arrayOf(
             javax, jakarta,
             "package javax.xml.bind.annotation; public class NewException extends Throwable {}",
-            "package jakarta.xml.bind.annotation; public class NewException extends Throwable {}"),
+            "package jakarta.xml.bind.annotation; public class NewException extends Throwable {}"
+        ),
         before = """
             public class B {
                public javax.xml.bind.annotation.A foo() throws javax.xml.bind.annotation.NewException { return null; }
