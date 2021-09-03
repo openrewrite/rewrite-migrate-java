@@ -46,7 +46,7 @@ class JavaxToJakartaTest : JavaRecipeTest {
     }
 
     @Test
-    fun dontAddImportWhenNoChangesWereMade() = assertUnchanged(
+    fun doNotAddImportWhenNoChangesWereMade() = assertUnchanged(
         before = "public class B {}"
     )
 
@@ -122,6 +122,7 @@ class JavaxToJakartaTest : JavaRecipeTest {
     )
 
     @Test
+    @Suppress("RedundantThrows")
     fun method() = assertChanged(
         dependsOn = arrayOf(
             javax, jakarta,
