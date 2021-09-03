@@ -20,7 +20,7 @@ import org.openrewrite.Recipe
 import org.openrewrite.java.JavaParser
 import org.openrewrite.java.JavaRecipeTest
 
-class NoGuavaSetsNewHashSetTest: JavaRecipeTest {
+class NoGuavaSetsNewHashSetTest : JavaRecipeTest {
     override val parser: JavaParser
         get() = JavaParser.fromJavaVersion()
             .logCompilationWarningsAndErrors(true)
