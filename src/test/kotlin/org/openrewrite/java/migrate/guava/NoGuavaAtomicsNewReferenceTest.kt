@@ -22,7 +22,10 @@ import org.openrewrite.java.JavaRecipeTest
 
 class NoGuavaAtomicsNewReferenceTest : JavaRecipeTest {
     override val parser: JavaParser
-        get() = JavaParser.fromJavaVersion().classpath("guava").build()
+        get() = JavaParser.fromJavaVersion()
+            .logCompilationWarningsAndErrors(true)
+            .classpath("guava")
+            .build()
 
     override val recipe: Recipe
         get() = NoGuavaAtomicsNewReference()
