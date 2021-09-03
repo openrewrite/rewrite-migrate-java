@@ -21,9 +21,10 @@ import org.openrewrite.config.Environment
 import org.openrewrite.java.JavaParser
 import org.openrewrite.java.JavaRecipeTest
 
-class NoGuavaImmutableSetOfTest: JavaRecipeTest {
+class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     override val parser: JavaParser
         get() = JavaParser.fromJavaVersion()
+            .logCompilationWarningsAndErrors(true)
             .classpath("guava")
             .build()
 
@@ -37,17 +38,20 @@ class NoGuavaImmutableSetOfTest: JavaRecipeTest {
     fun replaceWithSetOf() = assertChanged(
         before = """
             import com.google.common.collect.ImmutableSet;
-            
+
+            import java.util.Set;
+
             class Test {
                 Set<Integer> cardinalsWorldSeries = ImmutableSet.of(2006, 2011, 2021);
             }
         """,
         after = """
             import java.util.Set;
-            
+
             class Test {
                 Set<Integer> cardinalsWorldSeries = Set.of(2006, 2011, 2021);
             }
         """
     )
+
 }
