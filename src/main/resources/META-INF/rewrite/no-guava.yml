@@ -321,7 +321,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
-displayName: Prefer `Math#subtractExact`
+displayName: Prefer `Math#multiplyExact`
 description: This method exists in the Java standard library now.
 tags:
   - guava
