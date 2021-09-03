@@ -104,8 +104,11 @@ description: This method exists in the Java standard library now.
 tags:
   - guava
 recipeList:
-  - org.openrewrite.java.ChangeMethodTargetToStatic:
+  - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.base.Objects equal(Object, Object)
+      newMethodName: equals
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.base.Objects equals(Object, Object)
       fullyQualifiedTargetTypeName: java.util.Objects
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -115,12 +118,12 @@ description: This method exists in the Java standard library now.
 tags:
   - guava
 recipeList:
-  - org.openrewrite.java.ChangeMethodTargetToStatic:
-      methodPattern: com.google.common.base.Objects hashCode(..)
-      fullyQualifiedTargetTypeName: java.util.Objects
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.base.Objects hashCode(..)
       newMethodName: hash
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.base.Objects hash(..)
+      fullyQualifiedTargetTypeName: java.util.Objects
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsUnmodifiableNavigableMap
