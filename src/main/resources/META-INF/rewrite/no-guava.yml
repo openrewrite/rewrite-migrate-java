@@ -21,7 +21,6 @@ description: Guava filled in important gaps in the Java standard library and sti
 tags:
   - guava
 recipeList:
-  - org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList
@@ -55,7 +54,10 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
 displayName: Use `Set#of(..)` not Guava
-description: Java 9 introduced `Set#of(..)` which does the same thing as the Guava method.
+description: |-
+  Java 9 introduced `Set#of(..)` which is similar to `ImmutableSet.of(..)`, but has a subtle difference.
+  As per the Java 9 documentation, [`Set.of` provides an unspecified iteration order on the set of elements and is subject to change](https://docs.oracle.com/javase/9/docs/api/java/util/Set.html), whereas [Guava `ImmutableSet` preserves the order from construction time](https://github.com/google/guava/wiki/ImmutableCollectionsExplained#how).
+  This is worth pointing out in case your usage calls for iteration order being important.
 tags:
   - guava
 recipeList:
