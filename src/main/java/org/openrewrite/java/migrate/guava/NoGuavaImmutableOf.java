@@ -31,16 +31,18 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class NoGuavaImmutableOf extends Recipe {
-    private static final MethodMatcher IMMUTABLE_MAP = new MethodMatcher("com.google.common.collect.ImmutableMap of(..)");
+    private final MethodMatcher IMMUTABLE_LIST_MATCHER = new MethodMatcher("com.google.common.collect.ImmutableList of(..)");
+    private final MethodMatcher IMMUTABLE_MAP_MATCHER = new MethodMatcher("com.google.common.collect.ImmutableMap of(..)");
+    private final MethodMatcher IMMUTABLE_SET_MATCHER = new MethodMatcher("com.google.common.collect.ImmutableSet of(..)");
 
     @Override
     public String getDisplayName() {
-        return "Use Map.of in Java 9 or higher.";
+        return "Use `List.of(..)`, `Map.of(..)`, and `Set.of(..)` in Java 9 or higher";
     }
 
     @Override
     public String getDescription() {
-        return "Replaces ImmutableMap.of(..) if the returned type is immediately down-cast to Map.";
+        return "Replaces `ImmutableList.of(..)`, `ImmutableMap.of(..)`, and `ImmutableSet.of(..)` if the returned type is immediately down-cast.";
     }
 
     @Override
@@ -50,6 +52,8 @@ public class NoGuavaImmutableOf extends Recipe {
             public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
                 doAfterVisit(new UsesJavaVersion<>(9));
                 doAfterVisit(new UsesType<>("com.google.common.collect.ImmutableMap"));
+                doAfterVisit(new UsesType<>("com.google.common.collect.ImmutableList"));
+                doAfterVisit(new UsesType<>("com.google.common.collect.ImmutableSet"));
                 return cu;
             }
         };
@@ -58,55 +62,74 @@ public class NoGuavaImmutableOf extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
-            private static final String JAVA_UTIL_MAP_FQN = "java.util.Map";
 
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                if (IMMUTABLE_MAP.matches(method) && isParentTypeDownCast()) {
-                    maybeRemoveImport("com.google.common.collect.ImmutableMap");
-                    maybeAddImport("java.util.Map");
+                String immutableFqn = "";
+                String replacementFqn = "";
+                MethodMatcher methodMatcher = null;
+                if (IMMUTABLE_LIST_MATCHER.matches(method)) {
+                    methodMatcher = IMMUTABLE_LIST_MATCHER;
+                    immutableFqn = "com.google.common.collect.ImmutableList";
+                    replacementFqn = "java.util.List";
+                } else if (IMMUTABLE_MAP_MATCHER.matches(method)) {
+                    methodMatcher = IMMUTABLE_MAP_MATCHER;
+                    immutableFqn = "com.google.common.collect.ImmutableMap";
+                    replacementFqn = "java.util.Map";
+                } else if (IMMUTABLE_SET_MATCHER.matches(method)) {
+                    methodMatcher = IMMUTABLE_SET_MATCHER;
+                    immutableFqn = "com.google.common.collect.ImmutableSet";
+                    replacementFqn = "java.util.Set";
+                }
 
-                    if (method.getArguments().get(0) instanceof J.Empty) {
-                        return method.withTemplate(
-                                JavaTemplate.builder(this::getCursor, "Map.of()")
-                                        .imports(JAVA_UTIL_MAP_FQN)
-                                        .build(),
-                                method.getCoordinates().replace());
-                    } else {
-                        String template = method.getArguments().stream()
-                                .map(arg -> {
-                                    if (arg.getType() instanceof JavaType.Primitive) {
-                                        return TypeUtils.asFullyQualified(JavaType.buildType("java.lang." + arg.getType()));
-                                    } else {
-                                        return TypeUtils.asFullyQualified(arg.getType());
-                                    }
-                                })
-                                .filter(Objects::nonNull)
-                                .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
-                                .collect(Collectors.joining(",", "Map.of(", ")"));
+                if (methodMatcher != null && methodMatcher.matches(method) && isParentTypeDownCast(methodMatcher, replacementFqn)) {
+                    maybeRemoveImport(immutableFqn);
+                    maybeAddImport(replacementFqn);
 
-                        return method.withTemplate(
-                                JavaTemplate.builder(this::getCursor, template)
-                                        .imports(JAVA_UTIL_MAP_FQN)
-                                        .build(),
-                                method.getCoordinates().replace(),
-                                method.getArguments().toArray());
+                    JavaType.FullyQualified fq = TypeUtils.asFullyQualified(JavaType.buildType(replacementFqn));
+                    if (fq != null) {
+                        if (method.getArguments().get(0) instanceof J.Empty) {
+                            return method.withTemplate(
+                                    JavaTemplate.builder(this::getCursor, fq.getClassName() + ".of()")
+                                            .imports(replacementFqn)
+                                            .build(),
+                                    method.getCoordinates().replace());
+                        } else {
+                            String template = method.getArguments().stream()
+                                    .map(arg -> {
+                                        if (arg.getType() instanceof JavaType.Primitive) {
+                                            return TypeUtils.asFullyQualified(JavaType.buildType("java.lang." + arg.getType()));
+                                        } else {
+                                            return TypeUtils.asFullyQualified(arg.getType());
+                                        }
+                                    })
+                                    .filter(Objects::nonNull)
+                                    .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
+                                    .collect(Collectors.joining(",", fq.getClassName() + ".of(", ")"));
+
+                            return method.withTemplate(
+                                    JavaTemplate.builder(this::getCursor, template)
+                                            .imports(replacementFqn)
+                                            .build(),
+                                    method.getCoordinates().replace(),
+                                    method.getArguments().toArray());
+                        }
                     }
                 }
                 return super.visitMethodInvocation(method, executionContext);
             }
 
-            private boolean isParentTypeDownCast() {
+            private boolean isParentTypeDownCast(MethodMatcher methodMatcher, String replacementFqn) {
                 J parent = getCursor().dropParentUntil(is -> is instanceof J).getValue();
                 boolean isParentTypeDownCast = false;
                 if (parent instanceof J.VariableDeclarations.NamedVariable) {
-                    isParentTypeDownCast = isParentTypeMatched(((J.VariableDeclarations.NamedVariable) parent).getType());
+                    isParentTypeDownCast = isParentTypeMatched(((J.VariableDeclarations.NamedVariable) parent).getType(), replacementFqn);
                 } else if (parent instanceof J.Assignment) {
                     J.Assignment a = (J.Assignment) parent;
                     if (a.getVariable() instanceof J.Identifier && ((J.Identifier) a.getVariable()).getFieldType() != null) {
-                        isParentTypeDownCast = isParentTypeMatched(((J.Identifier) a.getVariable()).getFieldType());
+                        isParentTypeDownCast = isParentTypeMatched(((J.Identifier) a.getVariable()).getFieldType(), replacementFqn);
                     } else if (a.getVariable() instanceof J.FieldAccess) {
-                        isParentTypeDownCast = isParentTypeMatched(a.getVariable().getType());
+                        isParentTypeDownCast = isParentTypeMatched(a.getVariable().getType(), replacementFqn);
                     }
                 } else if (parent instanceof J.Return) {
                     // Does not currently support returns in lambda expressions.
@@ -114,42 +137,42 @@ public class NoGuavaImmutableOf extends Recipe {
                     if (j instanceof J.MethodDeclaration) {
                         TypeTree returnType = ((J.MethodDeclaration) j).getReturnTypeExpression();
                         if (returnType != null) {
-                            isParentTypeDownCast = isParentTypeMatched(returnType.getType());
+                            isParentTypeDownCast = isParentTypeMatched(returnType.getType(), replacementFqn);
                         }
                     }
                 } else if (parent instanceof J.MethodInvocation) {
                     J.MethodInvocation m = (J.MethodInvocation) parent;
                     int index = 0;
                     for (Expression argument : m.getArguments()) {
-                        if (IMMUTABLE_MAP.matches(argument)) {
+                        if (methodMatcher.matches(argument)) {
                             break;
                         }
                         index++;
                     }
                     if (m.getType() != null && m.getType().getResolvedSignature() != null) {
-                        isParentTypeDownCast = isParentTypeMatched(m.getType().getResolvedSignature().getParamTypes().get(index));
+                        isParentTypeDownCast = isParentTypeMatched(m.getType().getResolvedSignature().getParamTypes().get(index), replacementFqn);
                     }
                 } else if (parent instanceof J.NewClass) {
                     J.NewClass c = (J.NewClass) parent;
                     int index = 0;
                     if (c.getConstructorType() != null && c.getArguments() != null) {
                         for (Expression argument : c.getArguments()) {
-                            if (IMMUTABLE_MAP.matches(argument)) {
+                            if (methodMatcher.matches(argument)) {
                                 break;
                             }
                             index++;
                         }
                         if (c.getConstructorType().getResolvedSignature() != null) {
-                            isParentTypeDownCast = isParentTypeMatched(c.getConstructorType().getResolvedSignature().getParamTypes().get(index));
+                            isParentTypeDownCast = isParentTypeMatched(c.getConstructorType().getResolvedSignature().getParamTypes().get(index), replacementFqn);
                         }
                     }
                 }
                 return isParentTypeDownCast;
             }
 
-            private boolean isParentTypeMatched(@Nullable JavaType type) {
+            private boolean isParentTypeMatched(@Nullable JavaType type, String replacementFqn) {
                 JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
-                return TypeUtils.isOfClassType(fq, JAVA_UTIL_MAP_FQN);
+                return TypeUtils.isOfClassType(fq, replacementFqn);
             }
         };
     }

@@ -25,7 +25,7 @@ import org.openrewrite.java.marker.JavaVersion
 import org.openrewrite.java.tree.J
 import java.util.*
 
-class NoGuavaImmutableMapOfTest : JavaRecipeTest {
+class NoGuavaImmutableOfTest : JavaRecipeTest {
     override val parser: JavaParser
         get() = JavaParser.fromJavaVersion()
             .logCompilationWarningsAndErrors(true)
