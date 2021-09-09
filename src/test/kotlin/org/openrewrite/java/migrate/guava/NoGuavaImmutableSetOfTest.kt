@@ -161,7 +161,7 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
 
         val result = runRecipe(arrayOf(before))
         Assertions.assertThat(result).isNotNull
-        if (getJavaVersion().majorVersion > 8) {
+        if (getJavaVersion().majorVersion >= 9) {
             Assertions.assertThat(result.isEmpty()).isFalse
             Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
         }
@@ -193,7 +193,7 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
 
         val result = runRecipe(arrayOf(before))
         Assertions.assertThat(result).isNotNull
-        if (getJavaVersion().majorVersion > 8) {
+        if (getJavaVersion().majorVersion >= 9) {
             Assertions.assertThat(result.isEmpty()).isFalse
             Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
         }
@@ -219,7 +219,7 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
 
         val result = runRecipe(arrayOf(before))
         Assertions.assertThat(result).isNotNull
-        if (getJavaVersion().majorVersion > 8) {
+        if (getJavaVersion().majorVersion >= 9) {
             Assertions.assertThat(result.isEmpty()).isFalse
             Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
         }
@@ -249,7 +249,7 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
 
         val result = runRecipe(arrayOf(before))
         Assertions.assertThat(result).isNotNull
-        if (getJavaVersion().majorVersion > 8) {
+        if (getJavaVersion().majorVersion >= 9) {
             Assertions.assertThat(result.isEmpty()).isFalse
             Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
         }
@@ -284,7 +284,7 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
 
         val result = runRecipe(arrayOf(dependsOn, before))
         Assertions.assertThat(result).isNotNull
-        if (getJavaVersion().majorVersion > 8) {
+        if (getJavaVersion().majorVersion >= 9) {
             Assertions.assertThat(result.isEmpty()).isFalse
             Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
         }
@@ -325,7 +325,7 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
 
         val result = runRecipe(arrayOf(dependsOn, before))
         Assertions.assertThat(result).isNotNull
-        if (getJavaVersion().majorVersion > 8) {
+        if (getJavaVersion().majorVersion >= 9) {
             Assertions.assertThat(result.isEmpty()).isFalse
             Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
         }
