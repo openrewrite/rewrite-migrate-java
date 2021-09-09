@@ -25,7 +25,7 @@ import org.openrewrite.java.marker.JavaVersion
 import org.openrewrite.java.tree.J
 import java.util.*
 
-class NoGuavaImmutableSetOfTest : JavaRecipeTest {
+class NoGuavaImmutableListOfTest : JavaRecipeTest {
     override val parser: JavaParser
         get() = JavaParser.fromJavaVersion()
             .logCompilationWarningsAndErrors(true)
@@ -33,16 +33,16 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
             .build()
 
     override val recipe: Recipe
-        get() = NoGuavaImmutableSetOf()
+        get() = NoGuavaImmutableListOf()
 
     @Test
-    fun doNotChangeReturnsImmutableSet() {
+    fun doNotChangeReturnsImmutableList() {
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableList;
 
             class Test {
-                ImmutableSet<String> getSet() {
-                    return ImmutableSet.of();
+                ImmutableList<String> getList() {
+                    return ImmutableList.of();
                 }
             }
         """
@@ -53,15 +53,15 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun doNotChangeFieldAssignmentToImmutableSet() {
+    fun doNotChangeFieldAssignmentToImmutableList() {
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableList;
             
             class Test {
-                ImmutableSet<String> m;
+                ImmutableList<String> m;
             
                 {
-                    this.m = ImmutableSet.of();
+                    this.m = ImmutableList.of();
                 }
             }
         """
@@ -72,15 +72,15 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun doNotChangeAssignsToImmutableSet() {
+    fun doNotChangeAssignsToImmutableList() {
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableList;
             
             class Test {
-                ImmutableSet<String> m;
+                ImmutableList<String> m;
             
                 void init() {
-                    m = ImmutableSet.of();
+                    m = ImmutableList.of();
                 }
             }
         """
@@ -93,20 +93,20 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     @Test
     fun doNotChangeNewClass() {
         val dependsOn = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableList;
 
             public class A {
-                ImmutableSet<String> immutableSet;
-                public A(ImmutableSet<String> immutableSet) {
-                    this.immutableSet = immutableSet;
+                ImmutableList<String> immutableList;
+                public A(ImmutableList<String> immutableList) {
+                    this.immutableList = immutableList;
                 }
             }
         """
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableList;
 
             class Test {
-                A a = new A(ImmutableSet.of());
+                A a = new A(ImmutableList.of());
             }
         """
         val result = runRecipe(arrayOf(dependsOn, before))
@@ -117,22 +117,22 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     @Test
     fun doNotChangeMethodInvocation() {
         val dependsOn = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableList;
 
             public class A {
-                ImmutableSet<String> immutableSet;
-                public void method(ImmutableSet<String> immutableSet) {
-                    this.immutableSet = immutableSet;
+                ImmutableList<String> immutableList;
+                public void method(ImmutableList<String> immutableList) {
+                    this.immutableList = immutableList;
                 }
             }
         """
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableList;
 
             class Test {
                 void method() {
                     A a = new A();
-                    a.method(ImmutableSet.of());
+                    a.method(ImmutableList.of());
                 }
             }
         """
@@ -144,18 +144,18 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     @Test
     fun replaceArguments() {
         val before = """
-            import java.util.Set;
-            import com.google.common.collect.ImmutableSet;
+            import java.util.List;
+            import com.google.common.collect.ImmutableList;
             
             class Test {
-                Set<String> m = ImmutableSet.of("A", "B", "C", "D");
+                List<String> m = ImmutableList.of("A", "B", "C", "D");
             }
         """
         val after = """
-            import java.util.Set;
+            import java.util.List;
             
             class Test {
-                Set<String> m = Set.of("A", "B", "C", "D");
+                List<String> m = List.of("A", "B", "C", "D");
             }
         """
 
@@ -168,25 +168,25 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun fieldAssignmentToSet() {
+    fun fieldAssignmentToList() {
         val before = """
-            import java.util.Set;
-            import com.google.common.collect.ImmutableSet;
+            import java.util.List;
+            import com.google.common.collect.ImmutableList;
             
             class Test {
-                Set<String> m;
+                List<String> m;
                 {
-                    this.m = ImmutableSet.of();
+                    this.m = ImmutableList.of();
                 }
             }
         """
         val after = """
-            import java.util.Set;
+            import java.util.List;
             
             class Test {
-                Set<String> m;
+                List<String> m;
                 {
-                    this.m = Set.of();
+                    this.m = List.of();
                 }
             }
         """
@@ -200,20 +200,20 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun assigmentToSet() {
+    fun assigmentToList() {
         val before = """
-            import java.util.Set;
-            import com.google.common.collect.ImmutableSet;
+            import java.util.List;
+            import com.google.common.collect.ImmutableList;
             
             class Test {
-                Set<String> m = ImmutableSet.of();
+                List<String> m = ImmutableList.of();
             }
         """
         val after = """
-            import java.util.Set;
+            import java.util.List;
             
             class Test {
-                Set<String> m = Set.of();
+                List<String> m = List.of();
             }
         """
 
@@ -226,23 +226,23 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun returnsSet() {
+    fun returnsList() {
         val before = """
-            import java.util.Set;
-            import com.google.common.collect.ImmutableSet;
+            import java.util.List;
+            import com.google.common.collect.ImmutableList;
             
             class Test {
-                Set<String> set() {
-                    return ImmutableSet.of();
+                List<String> list() {
+                    return ImmutableList.of();
                 }
             }
         """
         val after = """
-            import java.util.Set;
+            import java.util.List;
             
             class Test {
-                Set<String> set() {
-                    return Set.of();
+                List<String> list() {
+                    return List.of();
                 }
             }
         """
@@ -256,29 +256,29 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun newClassWithSetArgument() {
+    fun newClassWithListArgument() {
         val dependsOn = """
-            import java.util.Set;
+            import java.util.List;
 
             public class A {
-                Set<String, String> set;
-                public A(Set<String> set) {
-                    this.set = set;
+                List<String, String> list;
+                public A(List<String> list) {
+                    this.list = list;
                 }
             }
         """
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableList;
 
             class Test {
-                A a = new A(ImmutableSet.of());
+                A a = new A(ImmutableList.of());
             }
         """
         val after = """
-            import java.util.Set;
+            import java.util.List;
 
             class Test {
-                A a = new A(Set.of());
+                A a = new A(List.of());
             }
         """
 
@@ -291,34 +291,34 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun methodInvocationWithSetArgument() {
+    fun methodInvocationWithListArgument() {
         val dependsOn = """
-            import java.util.Set;
+            import java.util.List;
 
             public class A {
-                Set<String> set;
-                public void method(Set<String> set) {
-                    this.set = set;
+                List<String> list;
+                public void method(List<String> list) {
+                    this.list = list;
                 }
             }
         """
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableList;
 
             class Test {
                 void method() {
                     A a = new A();
-                    a.method(ImmutableSet.of());
+                    a.method(ImmutableList.of());
                 }
             }
         """
         val after = """
-            import java.util.Set;
+            import java.util.List;
 
             class Test {
                 void method() {
                     A a = new A();
-                    a.method(Set.of());
+                    a.method(List.of());
                 }
             }
         """
