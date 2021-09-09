@@ -25,7 +25,7 @@ import org.openrewrite.java.marker.JavaVersion
 import org.openrewrite.java.tree.J
 import java.util.*
 
-class NoGuavaImmutableSetOfTest : JavaRecipeTest {
+class NoGuavaImmutableMapOfTest : JavaRecipeTest {
     override val parser: JavaParser
         get() = JavaParser.fromJavaVersion()
             .logCompilationWarningsAndErrors(true)
@@ -33,16 +33,16 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
             .build()
 
     override val recipe: Recipe
-        get() = NoGuavaImmutableSetOf()
+        get() = NoGuavaImmutableMapOf()
 
     @Test
-    fun doNotChangeReturnsImmutableSet() {
+    fun doNotChangeReturnsImmutableMap() {
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableMap;
 
             class Test {
-                ImmutableSet<String> getSet() {
-                    return ImmutableSet.of();
+                ImmutableMap<String, String> getMap() {
+                    return ImmutableMap.of();
                 }
             }
         """
@@ -53,15 +53,15 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun doNotChangeFieldAssignmentToImmutableSet() {
+    fun doNotChangeFieldAssignmentToImmutableMap() {
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableMap;
             
             class Test {
-                ImmutableSet<String> m;
+                ImmutableMap<String, String> m;
             
                 {
-                    this.m = ImmutableSet.of();
+                    this.m = ImmutableMap.of();
                 }
             }
         """
@@ -72,15 +72,15 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun doNotChangeAssignsToImmutableSet() {
+    fun doNotChangeAssignsToImmutableMap() {
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableMap;
             
             class Test {
-                ImmutableSet<String> m;
+                ImmutableMap<String, String> m;
             
                 void init() {
-                    m = ImmutableSet.of();
+                    m = ImmutableMap.of();
                 }
             }
         """
@@ -93,20 +93,20 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     @Test
     fun doNotChangeNewClass() {
         val dependsOn = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableMap;
 
             public class A {
-                ImmutableSet<String> immutableSet;
-                public A(ImmutableSet<String> immutableSet) {
-                    this.immutableSet = immutableSet;
+                ImmutableMap<String, String> immutableMap;
+                public A(ImmutableMap<String, String> immutableMap) {
+                    this.immutableMap = immutableMap;
                 }
             }
         """
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableMap;
 
             class Test {
-                A a = new A(ImmutableSet.of());
+                A a = new A(ImmutableMap.of());
             }
         """
         val result = runRecipe(arrayOf(dependsOn, before))
@@ -117,22 +117,22 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     @Test
     fun doNotChangeMethodInvocation() {
         val dependsOn = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableMap;
 
             public class A {
-                ImmutableSet<String> immutableSet;
-                public void method(ImmutableSet<String> immutableSet) {
-                    this.immutableSet = immutableSet;
+                ImmutableMap<String, String> immutableMap;
+                public void method(ImmutableMap<String, String> immutableMap) {
+                    this.immutableMap = immutableMap;
                 }
             }
         """
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableMap;
 
             class Test {
                 void method() {
                     A a = new A();
-                    a.method(ImmutableSet.of());
+                    a.method(ImmutableMap.of());
                 }
             }
         """
@@ -144,18 +144,18 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     @Test
     fun replaceArguments() {
         val before = """
-            import java.util.Set;
-            import com.google.common.collect.ImmutableSet;
+            import java.util.Map;
+            import com.google.common.collect.ImmutableMap;
             
             class Test {
-                Set<String> m = ImmutableSet.of("A", "B", "C", "D");
+                Map<String, String> m = ImmutableMap.of("A", "B", "C", "D");
             }
         """
         val after = """
-            import java.util.Set;
+            import java.util.Map;
             
             class Test {
-                Set<String> m = Set.of("A", "B", "C", "D");
+                Map<String, String> m = Map.of("A", "B", "C", "D");
             }
         """
 
@@ -168,25 +168,25 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun fieldAssignmentToSet() {
+    fun fieldAssignmentToMap() {
         val before = """
-            import java.util.Set;
-            import com.google.common.collect.ImmutableSet;
+            import java.util.Map;
+            import com.google.common.collect.ImmutableMap;
             
             class Test {
-                Set<String> m;
+                Map<String, String> m;
                 {
-                    this.m = ImmutableSet.of();
+                    this.m = ImmutableMap.of();
                 }
             }
         """
         val after = """
-            import java.util.Set;
+            import java.util.Map;
             
             class Test {
-                Set<String> m;
+                Map<String, String> m;
                 {
-                    this.m = Set.of();
+                    this.m = Map.of();
                 }
             }
         """
@@ -200,20 +200,20 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun assigmentToSet() {
+    fun assigmentToMap() {
         val before = """
-            import java.util.Set;
-            import com.google.common.collect.ImmutableSet;
+            import java.util.Map;
+            import com.google.common.collect.ImmutableMap;
             
             class Test {
-                Set<String> m = ImmutableSet.of();
+                Map<String, String> m = ImmutableMap.of();
             }
         """
         val after = """
-            import java.util.Set;
+            import java.util.Map;
             
             class Test {
-                Set<String> m = Set.of();
+                Map<String, String> m = Map.of();
             }
         """
 
@@ -226,23 +226,23 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun returnsSet() {
+    fun returnsMap() {
         val before = """
-            import java.util.Set;
-            import com.google.common.collect.ImmutableSet;
+            import java.util.Map;
+            import com.google.common.collect.ImmutableMap;
             
             class Test {
-                Set<String> set() {
-                    return ImmutableSet.of();
+                Map<String, String> map() {
+                    return ImmutableMap.of();
                 }
             }
         """
         val after = """
-            import java.util.Set;
+            import java.util.Map;
             
             class Test {
-                Set<String> set() {
-                    return Set.of();
+                Map<String, String> map() {
+                    return Map.of();
                 }
             }
         """
@@ -256,29 +256,29 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun newClassWithSetArgument() {
+    fun newClassWithMapArgument() {
         val dependsOn = """
-            import java.util.Set;
+            import java.util.Map;
 
             public class A {
-                Set<String, String> set;
-                public A(Set<String> set) {
-                    this.set = set;
+                Map<String, String> map;
+                public A(Map<String, String> map) {
+                    this.map = map;
                 }
             }
         """
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableMap;
 
             class Test {
-                A a = new A(ImmutableSet.of());
+                A a = new A(ImmutableMap.of());
             }
         """
         val after = """
-            import java.util.Set;
+            import java.util.Map;
 
             class Test {
-                A a = new A(Set.of());
+                A a = new A(Map.of());
             }
         """
 
@@ -291,39 +291,76 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun methodInvocationWithSetArgument() {
+    fun methodInvocationWithMapArgument() {
         val dependsOn = """
-            import java.util.Set;
+            import java.util.Map;
 
             public class A {
-                Set<String> set;
-                public void method(Set<String> set) {
-                    this.set = set;
+                Map<String, String> map;
+                public void method(Map<String, String> map) {
+                    this.map = map;
                 }
             }
         """
         val before = """
-            import com.google.common.collect.ImmutableSet;
+            import com.google.common.collect.ImmutableMap;
 
             class Test {
                 void method() {
                     A a = new A();
-                    a.method(ImmutableSet.of());
+                    a.method(ImmutableMap.of());
                 }
             }
         """
         val after = """
-            import java.util.Set;
+            import java.util.Map;
 
             class Test {
                 void method() {
                     A a = new A();
-                    a.method(Set.of());
+                    a.method(Map.of());
                 }
             }
         """
 
         val result = runRecipe(arrayOf(dependsOn, before))
+        Assertions.assertThat(result).isNotNull
+        if (getJavaVersion().majorVersion > 8) {
+            Assertions.assertThat(result.isEmpty()).isFalse
+            Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
+        }
+    }
+
+    @Test
+    fun variableIsMap() {
+        val before = """
+            import java.util.HashMap;
+            import java.util.Map;
+            import com.google.common.collect.ImmutableMap;
+
+            class Test {
+                Map<Integer, Map<String, String>> map = new HashMap<>();
+                void setMap(String value) {
+                    for (int i = 0; i < 10; i++) {
+                        map.getOrDefault(i, ImmutableMap.of());
+                    }
+                }
+            }
+        """
+        val after = """
+            import java.util.HashMap;
+            import java.util.Map;
+
+            class Test {
+                Map<Integer, Map<String, String>> map = new HashMap<>();
+                void setMap(String value) {
+                    for (int i = 0; i < 10; i++) {
+                        map.getOrDefault(i, Map.of());
+                    }
+                }
+            }
+        """
+        val result = runRecipe(arrayOf(before))
         Assertions.assertThat(result).isNotNull
         if (getJavaVersion().majorVersion > 8) {
             Assertions.assertThat(result.isEmpty()).isFalse
@@ -348,5 +385,4 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
         val javaVendor = System.getProperty("java.vm.vendor")
         return JavaVersion(UUID.randomUUID(), javaRuntimeVersion, javaVendor, javaRuntimeVersion, javaRuntimeVersion)
     }
-
 }

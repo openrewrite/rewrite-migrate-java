@@ -30,19 +30,17 @@ import org.openrewrite.java.tree.*;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class NoGuavaImmutableOf extends Recipe {
+public class NoGuavaImmutableListOf extends Recipe {
     private final MethodMatcher IMMUTABLE_LIST_MATCHER = new MethodMatcher("com.google.common.collect.ImmutableList of(..)");
-    private final MethodMatcher IMMUTABLE_MAP_MATCHER = new MethodMatcher("com.google.common.collect.ImmutableMap of(..)");
-    private final MethodMatcher IMMUTABLE_SET_MATCHER = new MethodMatcher("com.google.common.collect.ImmutableSet of(..)");
 
     @Override
     public String getDisplayName() {
-        return "Use `List.of(..)`, `Map.of(..)`, and `Set.of(..)` in Java 9 or higher";
+        return "Use `List.of(..)` in Java 9 or higher";
     }
 
     @Override
     public String getDescription() {
-        return "Replaces `ImmutableList.of(..)`, `ImmutableMap.of(..)`, and `ImmutableSet.of(..)` if the returned type is immediately down-cast.";
+        return "Replaces `ImmutableList.of(..)` if the returned type is immediately down-cast.";
     }
 
     @Override
@@ -51,47 +49,30 @@ public class NoGuavaImmutableOf extends Recipe {
             @Override
             public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
                 doAfterVisit(new UsesJavaVersion<>(9));
-                doAfterVisit(new UsesType<>("com.google.common.collect.ImmutableMap"));
                 doAfterVisit(new UsesType<>("com.google.common.collect.ImmutableList"));
-                doAfterVisit(new UsesType<>("com.google.common.collect.ImmutableSet"));
                 return cu;
             }
         };
     }
 
+    // Code is shared between `NoGuavaImmutableMapOf`, `NoGuavaImmutableListOf`, and `NoGuavaImmutableSetOf`.
+    // Updates to either may apply to each of the recipes.
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
 
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                String immutableFqn = "";
-                String replacementFqn = "";
-                MethodMatcher methodMatcher = null;
-                if (IMMUTABLE_LIST_MATCHER.matches(method)) {
-                    methodMatcher = IMMUTABLE_LIST_MATCHER;
-                    immutableFqn = "com.google.common.collect.ImmutableList";
-                    replacementFqn = "java.util.List";
-                } else if (IMMUTABLE_MAP_MATCHER.matches(method)) {
-                    methodMatcher = IMMUTABLE_MAP_MATCHER;
-                    immutableFqn = "com.google.common.collect.ImmutableMap";
-                    replacementFqn = "java.util.Map";
-                } else if (IMMUTABLE_SET_MATCHER.matches(method)) {
-                    methodMatcher = IMMUTABLE_SET_MATCHER;
-                    immutableFqn = "com.google.common.collect.ImmutableSet";
-                    replacementFqn = "java.util.Set";
-                }
+                if (IMMUTABLE_LIST_MATCHER.matches(method) && isParentTypeDownCast()) {
+                    maybeRemoveImport("com.google.common.collect.ImmutableList");
+                    maybeAddImport("java.util.List");
 
-                if (methodMatcher != null && methodMatcher.matches(method) && isParentTypeDownCast(methodMatcher, replacementFqn)) {
-                    maybeRemoveImport(immutableFqn);
-                    maybeAddImport(replacementFqn);
-
-                    JavaType.FullyQualified fq = TypeUtils.asFullyQualified(JavaType.buildType(replacementFqn));
+                    JavaType.FullyQualified fq = TypeUtils.asFullyQualified(JavaType.buildType("java.util.List"));
                     if (fq != null) {
                         if (method.getArguments().get(0) instanceof J.Empty) {
                             return method.withTemplate(
                                     JavaTemplate.builder(this::getCursor, fq.getClassName() + ".of()")
-                                            .imports(replacementFqn)
+                                            .imports("java.util.List")
                                             .build(),
                                     method.getCoordinates().replace());
                         } else {
@@ -109,7 +90,7 @@ public class NoGuavaImmutableOf extends Recipe {
 
                             return method.withTemplate(
                                     JavaTemplate.builder(this::getCursor, template)
-                                            .imports(replacementFqn)
+                                            .imports("java.util.List")
                                             .build(),
                                     method.getCoordinates().replace(),
                                     method.getArguments().toArray());
@@ -119,17 +100,17 @@ public class NoGuavaImmutableOf extends Recipe {
                 return super.visitMethodInvocation(method, executionContext);
             }
 
-            private boolean isParentTypeDownCast(MethodMatcher methodMatcher, String replacementFqn) {
+            private boolean isParentTypeDownCast() {
                 J parent = getCursor().dropParentUntil(is -> is instanceof J).getValue();
                 boolean isParentTypeDownCast = false;
                 if (parent instanceof J.VariableDeclarations.NamedVariable) {
-                    isParentTypeDownCast = isParentTypeMatched(((J.VariableDeclarations.NamedVariable) parent).getType(), replacementFqn);
+                    isParentTypeDownCast = isParentTypeMatched(((J.VariableDeclarations.NamedVariable) parent).getType());
                 } else if (parent instanceof J.Assignment) {
                     J.Assignment a = (J.Assignment) parent;
                     if (a.getVariable() instanceof J.Identifier && ((J.Identifier) a.getVariable()).getFieldType() != null) {
-                        isParentTypeDownCast = isParentTypeMatched(((J.Identifier) a.getVariable()).getFieldType(), replacementFqn);
+                        isParentTypeDownCast = isParentTypeMatched(((J.Identifier) a.getVariable()).getFieldType());
                     } else if (a.getVariable() instanceof J.FieldAccess) {
-                        isParentTypeDownCast = isParentTypeMatched(a.getVariable().getType(), replacementFqn);
+                        isParentTypeDownCast = isParentTypeMatched(a.getVariable().getType());
                     }
                 } else if (parent instanceof J.Return) {
                     // Does not currently support returns in lambda expressions.
@@ -137,42 +118,42 @@ public class NoGuavaImmutableOf extends Recipe {
                     if (j instanceof J.MethodDeclaration) {
                         TypeTree returnType = ((J.MethodDeclaration) j).getReturnTypeExpression();
                         if (returnType != null) {
-                            isParentTypeDownCast = isParentTypeMatched(returnType.getType(), replacementFqn);
+                            isParentTypeDownCast = isParentTypeMatched(returnType.getType());
                         }
                     }
                 } else if (parent instanceof J.MethodInvocation) {
                     J.MethodInvocation m = (J.MethodInvocation) parent;
                     int index = 0;
                     for (Expression argument : m.getArguments()) {
-                        if (methodMatcher.matches(argument)) {
+                        if (IMMUTABLE_LIST_MATCHER.matches(argument)) {
                             break;
                         }
                         index++;
                     }
                     if (m.getType() != null && m.getType().getResolvedSignature() != null) {
-                        isParentTypeDownCast = isParentTypeMatched(m.getType().getResolvedSignature().getParamTypes().get(index), replacementFqn);
+                        isParentTypeDownCast = isParentTypeMatched(m.getType().getResolvedSignature().getParamTypes().get(index));
                     }
                 } else if (parent instanceof J.NewClass) {
                     J.NewClass c = (J.NewClass) parent;
                     int index = 0;
                     if (c.getConstructorType() != null && c.getArguments() != null) {
                         for (Expression argument : c.getArguments()) {
-                            if (methodMatcher.matches(argument)) {
+                            if (IMMUTABLE_LIST_MATCHER.matches(argument)) {
                                 break;
                             }
                             index++;
                         }
                         if (c.getConstructorType().getResolvedSignature() != null) {
-                            isParentTypeDownCast = isParentTypeMatched(c.getConstructorType().getResolvedSignature().getParamTypes().get(index), replacementFqn);
+                            isParentTypeDownCast = isParentTypeMatched(c.getConstructorType().getResolvedSignature().getParamTypes().get(index));
                         }
                     }
                 }
                 return isParentTypeDownCast;
             }
 
-            private boolean isParentTypeMatched(@Nullable JavaType type, String replacementFqn) {
+            private boolean isParentTypeMatched(@Nullable JavaType type) {
                 JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
-                return TypeUtils.isOfClassType(fq, replacementFqn);
+                return TypeUtils.isOfClassType(fq, "java.util.List");
             }
         };
     }

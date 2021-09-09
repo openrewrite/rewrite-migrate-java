@@ -25,7 +25,7 @@ import org.openrewrite.java.marker.JavaVersion
 import org.openrewrite.java.tree.J
 import java.util.*
 
-class NoGuavaImmutableOfTest : JavaRecipeTest {
+class NoGuavaImmutableListOfTest : JavaRecipeTest {
     override val parser: JavaParser
         get() = JavaParser.fromJavaVersion()
             .logCompilationWarningsAndErrors(true)
@@ -33,16 +33,16 @@ class NoGuavaImmutableOfTest : JavaRecipeTest {
             .build()
 
     override val recipe: Recipe
-        get() = NoGuavaImmutableOf()
+        get() = NoGuavaImmutableListOf()
 
     @Test
-    fun doNotChangeReturnsImmutableMap() {
+    fun doNotChangeReturnsImmutableList() {
         val before = """
-            import com.google.common.collect.ImmutableMap;
+            import com.google.common.collect.ImmutableList;
 
             class Test {
-                ImmutableMap<String, String> getMap() {
-                    return ImmutableMap.of();
+                ImmutableList<String> getList() {
+                    return ImmutableList.of();
                 }
             }
         """
@@ -53,15 +53,15 @@ class NoGuavaImmutableOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun doNotChangeFieldAssignmentToImmutableMap() {
+    fun doNotChangeFieldAssignmentToImmutableList() {
         val before = """
-            import com.google.common.collect.ImmutableMap;
+            import com.google.common.collect.ImmutableList;
             
             class Test {
-                ImmutableMap<String, String> m;
+                ImmutableList<String> m;
             
                 {
-                    this.m = ImmutableMap.of();
+                    this.m = ImmutableList.of();
                 }
             }
         """
@@ -72,15 +72,15 @@ class NoGuavaImmutableOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun doNotChangeAssignsToImmutableMap() {
+    fun doNotChangeAssignsToImmutableList() {
         val before = """
-            import com.google.common.collect.ImmutableMap;
+            import com.google.common.collect.ImmutableList;
             
             class Test {
-                ImmutableMap<String, String> m;
+                ImmutableList<String> m;
             
                 void init() {
-                    m = ImmutableMap.of();
+                    m = ImmutableList.of();
                 }
             }
         """
@@ -93,20 +93,20 @@ class NoGuavaImmutableOfTest : JavaRecipeTest {
     @Test
     fun doNotChangeNewClass() {
         val dependsOn = """
-            import com.google.common.collect.ImmutableMap;
+            import com.google.common.collect.ImmutableList;
 
             public class A {
-                ImmutableMap<String, String> immutableMap;
-                public A(ImmutableMap<String, String> immutableMap) {
-                    this.immutableMap = immutableMap;
+                ImmutableList<String> immutableList;
+                public A(ImmutableList<String> immutableList) {
+                    this.immutableList = immutableList;
                 }
             }
         """
         val before = """
-            import com.google.common.collect.ImmutableMap;
+            import com.google.common.collect.ImmutableList;
 
             class Test {
-                A a = new A(ImmutableMap.of());
+                A a = new A(ImmutableList.of());
             }
         """
         val result = runRecipe(arrayOf(dependsOn, before))
@@ -117,22 +117,22 @@ class NoGuavaImmutableOfTest : JavaRecipeTest {
     @Test
     fun doNotChangeMethodInvocation() {
         val dependsOn = """
-            import com.google.common.collect.ImmutableMap;
+            import com.google.common.collect.ImmutableList;
 
             public class A {
-                ImmutableMap<String, String> immutableMap;
-                public void method(ImmutableMap<String, String> immutableMap) {
-                    this.immutableMap = immutableMap;
+                ImmutableList<String> immutableList;
+                public void method(ImmutableList<String> immutableList) {
+                    this.immutableList = immutableList;
                 }
             }
         """
         val before = """
-            import com.google.common.collect.ImmutableMap;
+            import com.google.common.collect.ImmutableList;
 
             class Test {
                 void method() {
                     A a = new A();
-                    a.method(ImmutableMap.of());
+                    a.method(ImmutableList.of());
                 }
             }
         """
@@ -144,18 +144,18 @@ class NoGuavaImmutableOfTest : JavaRecipeTest {
     @Test
     fun replaceArguments() {
         val before = """
-            import java.util.Map;
-            import com.google.common.collect.ImmutableMap;
+            import java.util.List;
+            import com.google.common.collect.ImmutableList;
             
             class Test {
-                Map<String, String> m = ImmutableMap.of("A", "B", "C", "D");
+                List<String> m = ImmutableList.of("A", "B", "C", "D");
             }
         """
         val after = """
-            import java.util.Map;
+            import java.util.List;
             
             class Test {
-                Map<String, String> m = Map.of("A", "B", "C", "D");
+                List<String> m = List.of("A", "B", "C", "D");
             }
         """
 
@@ -168,25 +168,25 @@ class NoGuavaImmutableOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun fieldAssignmentToMap() {
+    fun fieldAssignmentToList() {
         val before = """
-            import java.util.Map;
-            import com.google.common.collect.ImmutableMap;
+            import java.util.List;
+            import com.google.common.collect.ImmutableList;
             
             class Test {
-                Map<String, String> m;
+                List<String> m;
                 {
-                    this.m = ImmutableMap.of();
+                    this.m = ImmutableList.of();
                 }
             }
         """
         val after = """
-            import java.util.Map;
+            import java.util.List;
             
             class Test {
-                Map<String, String> m;
+                List<String> m;
                 {
-                    this.m = Map.of();
+                    this.m = List.of();
                 }
             }
         """
@@ -200,20 +200,20 @@ class NoGuavaImmutableOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun assigmentToMap() {
+    fun assigmentToList() {
         val before = """
-            import java.util.Map;
-            import com.google.common.collect.ImmutableMap;
+            import java.util.List;
+            import com.google.common.collect.ImmutableList;
             
             class Test {
-                Map<String, String> m = ImmutableMap.of();
+                List<String> m = ImmutableList.of();
             }
         """
         val after = """
-            import java.util.Map;
+            import java.util.List;
             
             class Test {
-                Map<String, String> m = Map.of();
+                List<String> m = List.of();
             }
         """
 
@@ -226,23 +226,23 @@ class NoGuavaImmutableOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun returnsMap() {
+    fun returnsList() {
         val before = """
-            import java.util.Map;
-            import com.google.common.collect.ImmutableMap;
+            import java.util.List;
+            import com.google.common.collect.ImmutableList;
             
             class Test {
-                Map<String, String> map() {
-                    return ImmutableMap.of();
+                List<String> list() {
+                    return ImmutableList.of();
                 }
             }
         """
         val after = """
-            import java.util.Map;
+            import java.util.List;
             
             class Test {
-                Map<String, String> map() {
-                    return Map.of();
+                List<String> list() {
+                    return List.of();
                 }
             }
         """
@@ -256,29 +256,29 @@ class NoGuavaImmutableOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun newClassWithMapArgument() {
+    fun newClassWithListArgument() {
         val dependsOn = """
-            import java.util.Map;
+            import java.util.List;
 
             public class A {
-                Map<String, String> map;
-                public A(Map<String, String> map) {
-                    this.map = map;
+                List<String, String> list;
+                public A(List<String> list) {
+                    this.list = list;
                 }
             }
         """
         val before = """
-            import com.google.common.collect.ImmutableMap;
+            import com.google.common.collect.ImmutableList;
 
             class Test {
-                A a = new A(ImmutableMap.of());
+                A a = new A(ImmutableList.of());
             }
         """
         val after = """
-            import java.util.Map;
+            import java.util.List;
 
             class Test {
-                A a = new A(Map.of());
+                A a = new A(List.of());
             }
         """
 
@@ -291,76 +291,39 @@ class NoGuavaImmutableOfTest : JavaRecipeTest {
     }
 
     @Test
-    fun methodInvocationWithMapArgument() {
+    fun methodInvocationWithListArgument() {
         val dependsOn = """
-            import java.util.Map;
+            import java.util.List;
 
             public class A {
-                Map<String, String> map;
-                public void method(Map<String, String> map) {
-                    this.map = map;
+                List<String> list;
+                public void method(List<String> list) {
+                    this.list = list;
                 }
             }
         """
         val before = """
-            import com.google.common.collect.ImmutableMap;
+            import com.google.common.collect.ImmutableList;
 
             class Test {
                 void method() {
                     A a = new A();
-                    a.method(ImmutableMap.of());
+                    a.method(ImmutableList.of());
                 }
             }
         """
         val after = """
-            import java.util.Map;
+            import java.util.List;
 
             class Test {
                 void method() {
                     A a = new A();
-                    a.method(Map.of());
+                    a.method(List.of());
                 }
             }
         """
 
         val result = runRecipe(arrayOf(dependsOn, before))
-        Assertions.assertThat(result).isNotNull
-        if (getJavaVersion().majorVersion > 8) {
-            Assertions.assertThat(result.isEmpty()).isFalse
-            Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
-        }
-    }
-
-    @Test
-    fun variableIsMap() {
-        val before = """
-            import java.util.HashMap;
-            import java.util.Map;
-            import com.google.common.collect.ImmutableMap;
-
-            class Test {
-                Map<Integer, Map<String, String>> map = new HashMap<>();
-                void setMap(String value) {
-                    for (int i = 0; i < 10; i++) {
-                        map.getOrDefault(i, ImmutableMap.of());
-                    }
-                }
-            }
-        """
-        val after = """
-            import java.util.HashMap;
-            import java.util.Map;
-
-            class Test {
-                Map<Integer, Map<String, String>> map = new HashMap<>();
-                void setMap(String value) {
-                    for (int i = 0; i < 10; i++) {
-                        map.getOrDefault(i, Map.of());
-                    }
-                }
-            }
-        """
-        val result = runRecipe(arrayOf(before))
         Assertions.assertThat(result).isNotNull
         if (getJavaVersion().majorVersion > 8) {
             Assertions.assertThat(result.isEmpty()).isFalse
@@ -385,4 +348,5 @@ class NoGuavaImmutableOfTest : JavaRecipeTest {
         val javaVendor = System.getProperty("java.vm.vendor")
         return JavaVersion(UUID.randomUUID(), javaRuntimeVersion, javaVendor, javaRuntimeVersion, javaRuntimeVersion)
     }
+
 }
