@@ -32,7 +32,7 @@ class NoGuavaCreateTempDirTest : JavaRecipeTest {
         get() = NoGuavaCreateTempDir()
 
     @Test
-    fun inMethodThrowingIoException() = assertChanged(
+    fun inMethodThrowingException() = assertChanged(
         before = """
             import java.io.File;
             import java.io.IOException;
@@ -40,6 +40,10 @@ class NoGuavaCreateTempDirTest : JavaRecipeTest {
             
             class A {
                 void doSomething() throws IOException {
+                    File dir = Files.createTempDir();
+                    dir.createNewFile();
+                }
+                void doSomethingElse() throws Exception {
                     File dir = Files.createTempDir();
                     dir.createNewFile();
                 }
@@ -55,12 +59,16 @@ class NoGuavaCreateTempDirTest : JavaRecipeTest {
                     File dir = Files.createTempDirectory(null).toFile();
                     dir.createNewFile();
                 }
+                void doSomethingElse() throws Exception {
+                    File dir = Files.createTempDirectory(null).toFile();
+                    dir.createNewFile();
+                }
             }
         """
     )
 
     @Test
-    fun tempDirIsFieldVar() = assertChanged(
+    fun tempDirIsFieldVar() = assertUnchanged(
         before = """
             import java.io.File;
             import com.google.common.io.Files;
@@ -68,41 +76,30 @@ class NoGuavaCreateTempDirTest : JavaRecipeTest {
             class A {
                 File gDir = Files.createTempDir();
             }
-        """,
-        after = """
-            import java.io.File;
-            import java.io.IOException;
-            import java.nio.file.Files;
-            
-            class A {
-                File gDir = createTempDirectory();
-            
-                private static File createTempDirectory() {
-                    try {
-                        return Files.createTempDirectory(null).toFile();
-                    } catch (IOException exception) {
-                        throw new RuntimeException(exception);
-                    }
-                }
-            }
-        """,
-        typeValidation = {methodInvocations = false}
+        """
     )
 
     @Test
     fun tempDirIsStaticBlock() = assertChanged(
         before = """
             import java.io.File;
+            import java.io.IOException;
             import com.google.common.io.Files;
             
             class A {
-                private final File file;
-                {
-                    file = com.google.common.io.Files.createTempDir();
+                public void doSomething() {
+                    try {
+                        File dir = Files.createTempDir();
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
-                
-                public void main(String[] args) {
-                    System.out.println(file.getAbsolutePath());
+                public void doSomethingElse() {
+                    try {
+                        File dir = Files.createTempDir();
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
             }
         """,
@@ -112,29 +109,26 @@ class NoGuavaCreateTempDirTest : JavaRecipeTest {
             import java.nio.file.Files;
             
             class A {
-                private final File file;
-                {
-                    file = createTempDirectory();
-                }
-                
-                public void main(String[] args) {
-                    System.out.println(file.getAbsolutePath());
-                }
-            
-                private static File createTempDirectory() {
+                public void doSomething() {
                     try {
-                        return Files.createTempDirectory(null).toFile();
-                    } catch (IOException exception) {
-                        throw new RuntimeException(exception);
+                        File dir = Files.createTempDirectory(null).toFile();
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                public void doSomethingElse() {
+                    try {
+                        File dir = Files.createTempDirectory(null).toFile();
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
                     }
                 }
             }
-        """,
-        typeValidation = {methodInvocations = false}
+        """
     )
 
     @Test
-    fun tempDirIsInMethodDeclaration() = assertChanged(
+    fun tempDirIsInMethodNotThrowingIOException() = assertUnchanged(
         before = """
             import java.io.File;
             import com.google.common.io.Files;
@@ -144,107 +138,22 @@ class NoGuavaCreateTempDirTest : JavaRecipeTest {
                     File gDir = Files.createTempDir();
                 }
             }
-        """,
-        after = """
-            import java.io.File;
-            import java.io.IOException;
-            import java.nio.file.Files;
-            
-            class A {
-                void doSomething() {
-                    File gDir = createTempDirectory();
-                }
-            
-                private static File createTempDirectory() {
-                    try {
-                        return Files.createTempDirectory(null).toFile();
-                    } catch (IOException exception) {
-                        throw new RuntimeException(exception);
-                    }
-                }
-            }
-        """,
-        typeValidation = {methodInvocations = false}
+        """
     )
 
     @Test
-    fun tempDirIsInMethodDeclarationCreateTempDirMethodExists() = assertChanged(
-        before = """
-            import java.io.File;
-            import java.nio.file.Files;
-            import java.io.IOException;
-            
-            class A {
-                void doSomething() {
-                    File gDir = com.google.common.io.Files.createTempDir();
-                }
-                private static File createTempDirectory() {
-                    try {
-                        return Files.createTempDirectory(null).toFile();
-                    } catch (IOException exception) {
-                        throw new RuntimeException(exception);
-                    }
-                }
-            }
-        """,
-        after = """
-            import java.io.File;
-            import java.nio.file.Files;
-            import java.io.IOException;
-            
-            class A {
-                void doSomething() {
-                    File gDir = createTempDirectory();
-                }
-                private static File createTempDirectory() {
-                    try {
-                        return Files.createTempDirectory(null).toFile();
-                    } catch (IOException exception) {
-                        throw new RuntimeException(exception);
-                    }
-                }
-            }
-        """,
-        typeValidation = {methodInvocations = false}
-    )
-
-    @Test
-    fun guavaCreateTempDirIsMethodArgument() = assertChanged(
+    fun guavaCreateTempDirIsMethodArgument() = assertUnchanged(
         before = """
             import java.io.File;
             import com.google.common.io.Files;
             
-            class A {
-                void butWhy() {
+            class Test {
+                void someTest() {
                     doSomething(Files.createTempDir(), "some text");
                 }
-            
                 void doSomething(File file, String content) {
                 }
             }
-        """,
-        after = """
-            import java.io.File;
-            import java.io.IOException;
-            import java.nio.file.Files;
-            
-            class A {
-                void butWhy() {
-                    doSomething(createTempDirectory(), "some text");
-                }
-            
-                void doSomething(File file, String content) {
-                }
-            
-                private static File createTempDirectory() {
-                    try {
-                        return Files.createTempDirectory(null).toFile();
-                    } catch (IOException exception) {
-                        throw new RuntimeException(exception);
-                    }
-                }
-            }
-        """,
-        typeValidation = {methodInvocations = false}
+        """
     )
 }
