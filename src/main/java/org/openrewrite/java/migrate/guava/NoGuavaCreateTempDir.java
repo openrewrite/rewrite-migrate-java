@@ -32,12 +32,12 @@ import java.util.Set;
 public class NoGuavaCreateTempDir extends Recipe {
     @Override
     public String getDisplayName() {
-        return "Use `java.io.Files.createTempDirectory` instead of Guava";
+        return "Use `Files#createTempDirectory()` instead of Guava";
     }
 
     @Override
     public String getDescription() {
-        return "Replaces Guava `com.google.common.io.Files.createTempDir()` with `java.io.Files.createTempDirectory(..)`.  Since `java.io.Files.createTempDirectory(..)` throws `java.io.IOException` transformations are limited to scopes throwing or catching `java.io.IOException`.";
+        return "Replaces Guava `Files#createTempDir()` with `Files#createTempDirectory(..)`. Transformations are limited to scopes throwing or catching `java.io.IOException`.";
     }
 
     @Override
