@@ -21,6 +21,7 @@ description: Guava filled in important gaps in the Java standard library and sti
 tags:
   - guava
 recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList
