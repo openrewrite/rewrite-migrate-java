@@ -37,7 +37,7 @@ public class NoGuavaCreateTempDir extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Replaces Guava `Files#createTempDir()` with `Files#createTempDirectory(..)`. Transformations are limited to scopes throwing or catching `java.io.IOException`.";
+        return "Replaces Guava `Files#createTempDir()` with Java `Files#createTempDirectory(..)`. Transformations are limited to scopes throwing or catching `java.io.IOException`.";
     }
 
     @Override
