@@ -72,32 +72,24 @@ public class NoGuavaImmutableSetOf extends Recipe {
 
                     JavaType.FullyQualified fq = TypeUtils.asFullyQualified(JavaType.buildType("java.util.Set"));
                     if (fq != null) {
-                        if (method.getArguments().get(0) instanceof J.Empty) {
-                            return method.withTemplate(
-                                    JavaTemplate.builder(this::getCursor, fq.getClassName() + ".of()")
-                                            .imports("java.util.Set")
-                                            .build(),
-                                    method.getCoordinates().replace());
-                        } else {
-                            String template = method.getArguments().stream()
-                                    .map(arg -> {
-                                        if (arg.getType() instanceof JavaType.Primitive) {
-                                            return TypeUtils.asFullyQualified(JavaType.buildType("java.lang." + arg.getType()));
-                                        } else {
-                                            return TypeUtils.asFullyQualified(arg.getType());
-                                        }
-                                    })
-                                    .filter(Objects::nonNull)
-                                    .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
-                                    .collect(Collectors.joining(",", fq.getClassName() + ".of(", ")"));
+                        String template = method.getArguments().stream()
+                                .map(arg -> {
+                                    if (arg.getType() instanceof JavaType.Primitive) {
+                                        return TypeUtils.asFullyQualified(JavaType.buildType("java.lang." + arg.getType()));
+                                    } else {
+                                        return TypeUtils.asFullyQualified(arg.getType());
+                                    }
+                                })
+                                .filter(Objects::nonNull)
+                                .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
+                                .collect(Collectors.joining(",", fq.getClassName() + ".of(", ")"));
 
-                            return method.withTemplate(
-                                    JavaTemplate.builder(this::getCursor, template)
-                                            .imports("java.util.Set")
-                                            .build(),
-                                    method.getCoordinates().replace(),
-                                    method.getArguments().toArray());
-                        }
+                        return method.withTemplate(
+                                JavaTemplate.builder(this::getCursor, template)
+                                        .imports("java.util.Set")
+                                        .build(),
+                                method.getCoordinates().replace(),
+                                method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                     }
                 }
                 return super.visitMethodInvocation(method, executionContext);

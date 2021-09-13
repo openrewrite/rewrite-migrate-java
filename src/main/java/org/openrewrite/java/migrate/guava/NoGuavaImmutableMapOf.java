@@ -27,6 +27,8 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -69,32 +71,24 @@ public class NoGuavaImmutableMapOf extends Recipe {
 
                     JavaType.FullyQualified fq = TypeUtils.asFullyQualified(JavaType.buildType("java.util.Map"));
                     if (fq != null) {
-                        if (method.getArguments().get(0) instanceof J.Empty) {
-                            return method.withTemplate(
-                                    JavaTemplate.builder(this::getCursor, fq.getClassName() + ".of()")
-                                            .imports("java.util.Map")
-                                            .build(),
-                                    method.getCoordinates().replace());
-                        } else {
-                            String template = method.getArguments().stream()
-                                    .map(arg -> {
-                                        if (arg.getType() instanceof JavaType.Primitive) {
-                                            return TypeUtils.asFullyQualified(JavaType.buildType("java.lang." + arg.getType()));
-                                        } else {
-                                            return TypeUtils.asFullyQualified(arg.getType());
-                                        }
-                                    })
-                                    .filter(Objects::nonNull)
-                                    .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
-                                    .collect(Collectors.joining(",", fq.getClassName() + ".of(", ")"));
+                        String template = method.getArguments().stream()
+                                .map(arg -> {
+                                    if (arg.getType() instanceof JavaType.Primitive) {
+                                        return TypeUtils.asFullyQualified(JavaType.buildType("java.lang." + arg.getType()));
+                                    } else {
+                                        return TypeUtils.asFullyQualified(arg.getType());
+                                    }
+                                })
+                                .filter(Objects::nonNull)
+                                .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
+                                .collect(Collectors.joining(",", fq.getClassName() + ".of(", ")"));
 
-                            return method.withTemplate(
-                                    JavaTemplate.builder(this::getCursor, template)
-                                            .imports("java.util.Map")
-                                            .build(),
-                                    method.getCoordinates().replace(),
-                                    method.getArguments().toArray());
-                        }
+                        return method.withTemplate(
+                                JavaTemplate.builder(this::getCursor, template)
+                                        .imports("java.util.Map")
+                                        .build(),
+                                method.getCoordinates().replace(),
+                                method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                     }
                 }
                 return super.visitMethodInvocation(method, executionContext);
