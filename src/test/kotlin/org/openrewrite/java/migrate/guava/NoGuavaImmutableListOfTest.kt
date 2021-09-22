@@ -163,7 +163,7 @@ class NoGuavaImmutableListOfTest : JavaRecipeTest {
         Assertions.assertThat(result).isNotNull
         if (getJavaVersion().majorVersion >= 9) {
             Assertions.assertThat(result.isEmpty()).isFalse
-            Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
+            Assertions.assertThat(result[0].after!!.printAll()).isEqualTo(after)
         }
     }
 
@@ -195,7 +195,7 @@ class NoGuavaImmutableListOfTest : JavaRecipeTest {
         Assertions.assertThat(result).isNotNull
         if (getJavaVersion().majorVersion >= 9) {
             Assertions.assertThat(result.isEmpty()).isFalse
-            Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
+            Assertions.assertThat(result[0].after!!.printAll()).isEqualTo(after)
         }
     }
 
@@ -221,7 +221,7 @@ class NoGuavaImmutableListOfTest : JavaRecipeTest {
         Assertions.assertThat(result).isNotNull
         if (getJavaVersion().majorVersion >= 9) {
             Assertions.assertThat(result.isEmpty()).isFalse
-            Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
+            Assertions.assertThat(result[0].after!!.printAll()).isEqualTo(after)
         }
     }
 
@@ -251,7 +251,7 @@ class NoGuavaImmutableListOfTest : JavaRecipeTest {
         Assertions.assertThat(result).isNotNull
         if (getJavaVersion().majorVersion >= 9) {
             Assertions.assertThat(result.isEmpty()).isFalse
-            Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
+            Assertions.assertThat(result[0].after!!.printAll()).isEqualTo(after)
         }
     }
 
@@ -286,7 +286,7 @@ class NoGuavaImmutableListOfTest : JavaRecipeTest {
         Assertions.assertThat(result).isNotNull
         if (getJavaVersion().majorVersion >= 9) {
             Assertions.assertThat(result.isEmpty()).isFalse
-            Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
+            Assertions.assertThat(result[0].after!!.printAll()).isEqualTo(after)
         }
     }
 
@@ -327,7 +327,7 @@ class NoGuavaImmutableListOfTest : JavaRecipeTest {
         Assertions.assertThat(result).isNotNull
         if (getJavaVersion().majorVersion >= 9) {
             Assertions.assertThat(result.isEmpty()).isFalse
-            Assertions.assertThat(result[0].after!!.print()).isEqualTo(after)
+            Assertions.assertThat(result[0].after!!.printAll()).isEqualTo(after)
         }
     }
 
