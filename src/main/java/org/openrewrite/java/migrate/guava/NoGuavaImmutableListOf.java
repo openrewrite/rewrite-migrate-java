@@ -27,7 +27,10 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
 
+import java.time.Duration;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class NoGuavaImmutableListOf extends Recipe {
@@ -41,6 +44,16 @@ public class NoGuavaImmutableListOf extends Recipe {
     @Override
     public String getDescription() {
         return "Replaces `ImmutableList.of(..)` if the returned type is immediately down-cast.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("RSPEC-4738");
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(10);
     }
 
     @Override

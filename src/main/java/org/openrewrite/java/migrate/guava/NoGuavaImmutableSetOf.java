@@ -27,7 +27,10 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
 
+import java.time.Duration;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class NoGuavaImmutableSetOf extends Recipe {
@@ -44,6 +47,16 @@ public class NoGuavaImmutableSetOf extends Recipe {
                 "  Java 9 introduced `List#of(..)`, `Map#of(..)`, `Set#of(..)` which is similar to `ImmutableList#of(..)`, `ImmutableMap#of(..)`, `ImmutableSet#of(..)`, but has a subtle difference.\n" +
                 "  As per the Java 9 documentation, [`Set.of` provides an unspecified iteration order on the set of elements and is subject to change](https://docs.oracle.com/javase/9/docs/api/java/util/Set.html), whereas [Guava `ImmutableSet` preserves the order from construction time](https://github.com/google/guava/wiki/ImmutableCollectionsExplained#how).\n" +
                 "  This is worth pointing out in case your usage calls for iteration order being important.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("RSPEC-4738");
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(10);
     }
 
     @Override
