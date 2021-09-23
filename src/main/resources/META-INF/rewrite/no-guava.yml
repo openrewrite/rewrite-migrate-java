@@ -60,7 +60,7 @@ name: org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
 displayName: Prefer `java.util.function.Function`
 description: Guava's `Function` extends `java.util.function.Function`.
 tags:
-  - guava
+  - guava, RSPEC-4738
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Function
@@ -71,7 +71,7 @@ name: org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate
 displayName: Prefer `java.util.function.Predicate`
 description: Guava's `Predicate` extends `java.util.function.Predicate`.
 tags:
-  - guava
+  - guava, RSPEC-4738
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Predicate
@@ -82,7 +82,7 @@ name: org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier
 displayName: Prefer `java.util.function.Supplier`
 description: Guava's `Supplier` extends `java.util.function.Supplier`.
 tags:
-  - guava
+  - guava, RSPEC-4738
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Supplier
