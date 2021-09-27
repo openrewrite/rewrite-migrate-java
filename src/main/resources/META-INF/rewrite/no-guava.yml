@@ -51,9 +51,9 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferMathSubtractExact
   - org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
   - org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference
-  - org.openrewrite.java.migrate.guava.NoNoGuavaImmutableListOf
-  - org.openrewrite.java.migrate.guava.NoNoGuavaImmutableMapOf
-  - org.openrewrite.java.migrate.guava.NoNoGuavaImmutableSetOf
+  - org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
+  - org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
+  - org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
