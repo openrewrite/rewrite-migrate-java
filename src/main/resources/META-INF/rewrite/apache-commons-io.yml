@@ -17,9 +17,7 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.apache.commons.io.RelocateApacheCommonsIo
 displayName: Relocate `org.apache.commons:commons-io` to `commons-io:commons-io`
-description: |
-  The deployment of `org.apache.commons:commons-io` [was a publishing mistake around 2012](https://issues.sonatype.org/browse/MVNCENTRAL-244)
-  which was corrected by changing the deployment GAV to be located under `commons-io:commons-io`.
+description: The deployment of `org.apache.commons:commons-io` [was a publishing mistake around 2012](https://issues.sonatype.org/browse/MVNCENTRAL-244) which was corrected by changing the deployment GAV to be located under `commons-io:commons-io`.
 tags:
   - apache
   - security
