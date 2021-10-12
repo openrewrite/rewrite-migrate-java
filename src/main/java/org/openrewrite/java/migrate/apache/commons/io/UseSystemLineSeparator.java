@@ -28,6 +28,9 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
 
+import java.util.Collections;
+import java.util.Set;
+
 public class UseSystemLineSeparator extends Recipe {
 
     @Override
@@ -38,6 +41,11 @@ public class UseSystemLineSeparator extends Recipe {
     @Override
     public String getDescription() {
         return "Migrate `IOUtils.LINE_SEPARATOR` to `System.lineSeparator()`.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("apache");
     }
 
     @Override
