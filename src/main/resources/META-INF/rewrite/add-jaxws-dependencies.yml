@@ -47,7 +47,7 @@ recipeList:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
       newVersion: 2.3.x
-  # Remove the legacy Javax jaxws API in favor of the the jakarta artifact.
+  # Remove the legacy Javax jaxws API in favor of the jakarta artifact.
   - org.openrewrite.maven.RemoveDependency:
       groupId: javax.xml.ws
       artifactId: jaxws-api
