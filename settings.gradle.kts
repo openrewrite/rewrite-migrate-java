@@ -12,9 +12,9 @@ gradleEnterprise {
             isEnabled = true
         }
 
-        remote<HttpBuildCache> {
+        remote(HttpBuildCache::class) {
             isPush = true
-            setUrl("https://ge.openrewrite.org/cache/")
+            url = uri("https://ge.openrewrite.org/cache/")
         }
 
     }
