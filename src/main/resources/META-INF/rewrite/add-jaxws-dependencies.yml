@@ -26,15 +26,15 @@ tags:
   - glassfish
 
 recipeList:
-  #Add the jakarta.xml.ws-api to a maven project that uses the jws API
+  # Add the jakarta.xml.ws-api to a maven project that uses the jws API
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       version: 2.3.x
       onlyIfUsing: javax.jws.*
-  # Replace the legacy, compile-time Javax JAXB API in favor of the jakarta artifact.
+  # Replace the legacy, compile-time Javax JAXWS API in favor of the jakarta artifact.
   - org.openrewrite.java.migrate.javax.ReplaceJavaxJaxwsWithJakarta
-  # Add JAXB Runtime if there is a transitive dependency on the JAXB API.
+  # Add JAXWS Runtime if there is a transitive dependency on the JAXB API.
   - org.openrewrite.java.migrate.javax.AddJaxwsRuntime:
       runtime: sun
   # Update the jaxb api and runtime to the most current version of 2.3.x

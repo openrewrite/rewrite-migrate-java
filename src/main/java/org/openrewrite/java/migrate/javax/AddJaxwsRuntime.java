@@ -81,7 +81,7 @@ public class AddJaxwsRuntime extends Recipe {
 
                 if (apiScope != null && (runtimeScope == null || !apiScope.isInClasspathOf(runtimeScope))) {
                     //If the API is present and there is not a matching runtime in the transitive scope of the api, add the runtime.
-                    String resolvedScope = apiScope == Scope.Test ? "test" : "runtime";
+                    String resolvedScope = apiScope == Scope.Test ? "test" : "provided";
                     return (SourceFile) new AddDependencyVisitor(
                             SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x",
                             null, resolvedScope, null, null, null,

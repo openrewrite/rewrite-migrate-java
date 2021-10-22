@@ -15,11 +15,15 @@
  */
 package org.openrewrite.java.migrate.javax;
 
-import org.openrewrite.*;
-import org.openrewrite.maven.*;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
+import org.openrewrite.maven.AddDependencyVisitor;
+import org.openrewrite.maven.MavenVisitor;
+import org.openrewrite.maven.RemoveDependency;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.*;
+import java.util.Optional;
 
 public class ReplaceJavaxJaxbWithJakarta extends Recipe {
 

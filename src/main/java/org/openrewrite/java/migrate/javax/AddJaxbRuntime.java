@@ -44,7 +44,7 @@ public class AddJaxbRuntime extends Recipe {
     private static final String GLASSFISH_JAXB_RUNTIME_ARTIFACT = "jaxb-runtime";
 
     @Option(displayName = "JAXB run-time",
-            description = "Which implementation of the JABX run-time that will be added to maven projects that have transitive dependencies on the JAXB API",
+            description = "Which implementation of the JAXB run-time that will be added to maven projects that have transitive dependencies on the JAXB API",
             valid = {"glassfish", "sun"},
             example = "glassfish")
     String runtime;
@@ -86,7 +86,7 @@ public class AddJaxbRuntime extends Recipe {
                         getTransitiveDependencyScope(mavenSource.getModel(), SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, gavToPom) :
                         getTransitiveDependencyScope(mavenSource.getModel(), GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, gavToPom);
                 if (apiScope != null && (runtimeScope == null || !apiScope.isInClasspathOf(runtimeScope))) {
-                    String resolvedScope = apiScope == Scope.Test ? "test" : "runtime";
+                    String resolvedScope = apiScope == Scope.Test ? "test" : "provided";
                     AddDependencyVisitor addDependency = "sun".equals(runtime) ?
                             new AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, resolvedScope, null, null, null, null, null) :
                             new AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, resolvedScope, null, null, null, null, null);
@@ -135,7 +135,7 @@ public class AddJaxbRuntime extends Recipe {
 
     @Value
     @EqualsAndHashCode(callSuper = true)
-    private class ReplaceRuntimeVisitor extends MavenVisitor {
+    private static class ReplaceRuntimeVisitor extends MavenVisitor {
 
         String oldGroupId;
         String oldArtifactId;
