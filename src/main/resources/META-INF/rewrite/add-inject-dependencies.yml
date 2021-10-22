@@ -25,7 +25,7 @@ tags:
   - jakarta
 
 recipeList:
-  #Add or update the jakarta.inject-api to a maven project. This artifact still uses the javax.inject name space.
+  # Add or update the jakarta.inject-api to a maven project. This artifact still uses the javax.inject name space.
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.inject
       artifactId: jakarta.inject-api

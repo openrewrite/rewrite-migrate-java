@@ -26,28 +26,23 @@ tags:
   - glassfish
 
 recipeList:
-  #Add or update the jakarta.xml.ws-api to a maven project. This artifact still uses the javax.xml name space.
+  # Add the jakarta.xml.ws-api to a maven project that uses the jws API
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       version: 2.3.x
       onlyIfUsing: javax.jws.*
+  # Replace the legacy, compile-time Javax JAXWS API in favor of the jakarta artifact.
+  - org.openrewrite.java.migrate.javax.ReplaceJavaxJaxwsWithJakarta
+  # Add JAXWS Runtime if there is a transitive dependency on the JAXB API.
+  - org.openrewrite.java.migrate.javax.AddJaxwsRuntime:
+      runtime: sun
+  # Update the jaxws api and runtime to the most current version of 2.3.x
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       newVersion: 2.3.x
-  #Add or update the jaxws runtime to a maven project. This artifact still uses the javax.xml name space.
-  - org.openrewrite.maven.AddDependency:
-      groupId: com.sun.xml.ws
-      artifactId: jaxws-rt
-      version: 2.3.x
-      scope: runtime
-      onlyIfUsing: javax.jws.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
       newVersion: 2.3.x
-  # Remove the legacy Javax jaxws API in favor of the the jakarta artifact.
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.xml.ws
-      artifactId: jaxws-api
