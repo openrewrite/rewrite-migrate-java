@@ -22,7 +22,6 @@ recipeList:
   - org.openrewrite.java.migrate.lang.MigrateCharacterIsJavaLetterToIsJavaIdentifierStart
   - org.openrewrite.java.migrate.lang.MigrateCharacterIsJavaLetterOrDigitToIsJavaIdentifierPart
   - org.openrewrite.java.migrate.lang.MigrateCharacterIsSpaceToIsWhitespace
-  - org.openrewrite.java.migrate.lang.MigrateClassNewInstanceToGetDeclaredConstructorNewInstance
   - org.openrewrite.java.migrate.lang.MigrateRuntimeVersionMajorToFeature
   - org.openrewrite.java.migrate.lang.MigrateRuntimeVersionMinorToInterim
   - org.openrewrite.java.migrate.lang.MigrateRuntimeVersionSecurityToUpdate
@@ -58,16 +57,6 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.lang.Character isSpace(char)
       newMethodName: isWhitespace
-
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.lang.MigrateClassNewInstanceToGetDeclaredConstructorNewInstance
-displayName: Use `Class#getDeclaredConstructor().newInstance()`
-description: '`Class#newInstance()` was deprecated in Java 9.'
-recipeList:
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: java.lang.Class newInstance()
-      newMethodName: getDeclaredConstructor().newInstance
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
