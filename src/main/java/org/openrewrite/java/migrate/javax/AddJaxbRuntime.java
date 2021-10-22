@@ -28,7 +28,10 @@ import org.openrewrite.maven.tree.Pom;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
@@ -120,15 +123,24 @@ public class AddJaxbRuntime extends Recipe {
         for (Pom.Dependency dependency : pom.getDependencies()) {
             if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
                 scope = Scope.maxPrecedence(scope, dependency.getScope());
+                if (Scope.Compile.equals(scope)) {
+                    return scope;
+                }
             }
         }
 
         if (pom.getParent() != null) {
             scope = Scope.maxPrecedence(scope, getTransitiveDependencyScope(pom.getParent(), groupId, artifactId, gavToPoms));
+            if (Scope.Compile.equals(scope)) {
+                return scope;
+            }
         }
 
         for (Pom.Dependency dependency : pom.getDependencies()) {
             scope = Scope.maxPrecedence(scope, getTransitiveDependencyScope(dependency.getModel(), groupId, artifactId, gavToPoms));
+            if (Scope.Compile.equals(scope)) {
+                return scope;
+            }
         }
         return scope;
     }
