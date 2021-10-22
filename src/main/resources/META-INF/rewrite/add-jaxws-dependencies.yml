@@ -37,7 +37,7 @@ recipeList:
   # Add JAXWS Runtime if there is a transitive dependency on the JAXB API.
   - org.openrewrite.java.migrate.javax.AddJaxwsRuntime:
       runtime: sun
-  # Update the jaxb api and runtime to the most current version of 2.3.x
+  # Update the jaxws api and runtime to the most current version of 2.3.x
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
