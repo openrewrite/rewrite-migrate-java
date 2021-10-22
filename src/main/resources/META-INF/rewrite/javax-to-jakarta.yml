@@ -96,6 +96,7 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.annotation
       newPackageName: jakarta.annotation
+      recursive: false
 
   # Remove Javax Batch API(x)
   - org.openrewrite.maven.RemoveDependency:
