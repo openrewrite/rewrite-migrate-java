@@ -91,17 +91,105 @@ recipeList:
       artifactId: jakarta.annotation-api
       newVersion: 2.x
 
-  # Note: ChangePackage does not update java doc references.
-  # f(x).batch
-  - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.annotation
-      newPackageName: jakarta.annotation
-      recursive: false
+- org.openrewrite.java.migrate.ChangeJavaxAnnotationToJakarta
 
   # Remove Javax Batch API(x)
   - org.openrewrite.maven.RemoveDependency:
       groupId: javax.annotation
       artifactId: javax.annotation-api
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.ChangeJavaxAnnotationToJakarta
+displayName: Migrate deprecated `javax.annotation` packages to `jakarta.annotation`
+description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation. Excludes `javax.annotation.processing`.
+tags:
+  - batch
+  - javax
+  - jakarta
+
+recipeList:
+  - org.openrewrite.java.migrate.JavaxAnnotationPackageToJakarta
+  - org.openrewrite.java.migrate.JavaxAnnotationSecurityPackageToJakarta
+  - org.openrewrite.java.migrate.JavaxAnnotationSqlPackageToJakarta
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.JavaxAnnotationPackageToJakarta
+displayName: Migrate deprecated `javax.annotation` packages to `jakarta.annotation`
+description: `ChangeType` on classes in the `javax.annotation` package.
+tags:
+  - batch
+  - javax
+  - jakarta
+
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Generated
+      newFullyQualifiedTypeName: jakarta.annotation.Generated
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.ManagedBean
+      newFullyQualifiedTypeName: jakarta.annotation.ManagedBean
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.PostConstruct
+      newFullyQualifiedTypeName: jakarta.annotation.PostConstruct
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.PreDestroy
+      newFullyQualifiedTypeName: jakarta.annotation.PreDestroy
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Priority
+      newFullyQualifiedTypeName: jakarta.annotation.Priority
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Resource
+      newFullyQualifiedTypeName: jakarta.annotation.Resource
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Resources
+      newFullyQualifiedTypeName: jakarta.annotation.Resources
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.JavaxAnnotationSecurityPackageToJakarta
+displayName: Migrate deprecated `javax.annotation.security` packages to `jakarta.annotation.security`
+description: `ChangeType` on classes in the `javax.annotation.security` package.
+tags:
+  - batch
+  - javax
+  - jakarta
+
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.security.DeclareRoles
+      newFullyQualifiedTypeName: jakarta.annotation.security.DeclareRoles
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.security.DenyAll
+      newFullyQualifiedTypeName: jakarta.annotation.security.DenyAll
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.security.PermitAll
+      newFullyQualifiedTypeName: jakarta.annotation.security.PermitAll
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.security.RolesAllowed
+      newFullyQualifiedTypeName: jakarta.annotation.security.RolesAllowed
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.security.RunAs
+      newFullyQualifiedTypeName: jakarta.annotation.security.RunAs
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.JavaxAnnotationSqlPackageToJakarta
+displayName: Migrate deprecated `javax.annotation.sql` packages to `jakarta.annotation.sql`
+description: `ChangeType` on classes in the `javax.annotation.sql` package.
+tags:
+  - batch
+  - javax
+  - jakarta
+
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.sql.DataSourceDefinition
+      newFullyQualifiedTypeName: jakarta.annotation.sql.DataSourceDefinition
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.sql.DataSourceDefinitions
+      newFullyQualifiedTypeName: jakarta.annotation.sql.DataSourceDefinitions
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
