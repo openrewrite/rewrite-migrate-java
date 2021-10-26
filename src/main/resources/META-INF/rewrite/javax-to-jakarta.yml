@@ -91,7 +91,7 @@ recipeList:
       artifactId: jakarta.annotation-api
       newVersion: 2.x
 
-- org.openrewrite.java.migrate.ChangeJavaxAnnotationToJakarta
+  - org.openrewrite.java.migrate.ChangeJavaxAnnotationToJakarta
 
   # Remove Javax Batch API(x)
   - org.openrewrite.maven.RemoveDependency:
