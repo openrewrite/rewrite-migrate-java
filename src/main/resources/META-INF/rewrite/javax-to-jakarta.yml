@@ -117,7 +117,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaxAnnotationPackageToJakarta
 displayName: Migrate deprecated `javax.annotation` packages to `jakarta.annotation`
-description: `ChangeType` on classes in the `javax.annotation` package.
+description: Change type of classes in the `javax.annotation` package to jakarta.
 tags:
   - batch
   - javax
@@ -150,7 +150,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaxAnnotationSecurityPackageToJakarta
 displayName: Migrate deprecated `javax.annotation.security` packages to `jakarta.annotation.security`
-description: `ChangeType` on classes in the `javax.annotation.security` package.
+description: Change type of classes in the `javax.annotation.security` package to jakarta.
 tags:
   - batch
   - javax
@@ -177,7 +177,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaxAnnotationSqlPackageToJakarta
 displayName: Migrate deprecated `javax.annotation.sql` packages to `jakarta.annotation.sql`
-description: `ChangeType` on classes in the `javax.annotation.sql` package.
+description: Change type of classes in the `javax.annotation.sql` package to jakarta.
 tags:
   - batch
   - javax
