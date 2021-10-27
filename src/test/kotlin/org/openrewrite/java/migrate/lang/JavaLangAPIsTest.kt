@@ -94,31 +94,6 @@ class JavaLangAPIsTest : JavaRecipeTest {
         """
     )
 
-    @Disabled
-    @Test
-    fun classNewInstanceToGetDeclaredConstructorNewInstance() = assertChanged(
-        before = """
-            package com.abc;
-
-            class A {
-               public void test() {
-                   Class<?> clazz = Class.forName("org.openrewrite.Test");
-                   clazz.newInstance();
-               }
-            }
-        """,
-        after = """
-            package com.abc;
-
-            class A {
-               public void test() {
-                   Class<?> clazz = Class.forName("org.openrewrite.Test");
-                   clazz.getDeclaredConstructor().newInstance();
-               }
-            }
-        """
-    )
-
     @Test
     fun runtimeVersionMajorToFeature() = assertChanged(
         before = """

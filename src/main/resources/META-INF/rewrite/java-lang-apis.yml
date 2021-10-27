@@ -27,6 +27,7 @@ recipeList:
   - org.openrewrite.java.migrate.lang.MigrateRuntimeVersionSecurityToUpdate
   - org.openrewrite.java.migrate.lang.MigrateSecurityManagerMulticast
   - org.openrewrite.java.migrate.lang.MigrateClassLoaderDefineClass
+  - org.openrewrite.java.migrate.lang.MigrateClassNewInstanceToGetDeclaredConstructorNewInstance
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
