@@ -15,7 +15,9 @@
  */
 package org.openrewrite.java.migrate.apache.commons.io
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.openrewrite.Issue
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaParser
 import org.openrewrite.java.JavaRecipeTest
@@ -32,15 +34,16 @@ class UseSystemLineSeparatorTest : JavaRecipeTest {
     fun migratesQualifiedField() = assertChanged(
         before = """
             import org.apache.commons.io.IOUtils;
+
             class A {
-                public String lineSeparator() {
+                static String lineSeparator() {
                     return IOUtils.LINE_SEPARATOR;
                 }
             }
         """,
         after = """
             class A {
-                public String lineSeparator() {
+                static String lineSeparator() {
                     return System.lineSeparator();
                 }
             }
@@ -51,17 +54,36 @@ class UseSystemLineSeparatorTest : JavaRecipeTest {
     fun migratesStaticImportedField() = assertChanged(
         before = """
             import static org.apache.commons.io.IOUtils.LINE_SEPARATOR;
+
             class A {
-                public String lineSeparator() {
+                static String lineSeparator() {
                     return LINE_SEPARATOR;
                 }
             }
         """,
         after = """
             class A {
-                public String lineSeparator() {
+                static String lineSeparator() {
                     return System.lineSeparator();
                 }
+            }
+        """
+    )
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/54")
+    @Disabled
+    fun migratesFieldInitializer() = assertChanged(
+        before = """
+            import org.apache.commons.io.IOUtils;
+
+            class A {
+                private final String LINE_SEPARATOR_AND_INDENTATION = IOUtils.LINE_SEPARATOR;
+            }
+        """,
+        after = """
+            class A {
+                private final String LINE_SEPARATOR_AND_INDENTATION = System.lineSeparator();
             }
         """
     )
@@ -71,7 +93,8 @@ class UseSystemLineSeparatorTest : JavaRecipeTest {
         before = """
             class A {
                 private static final String LINE_SEPARATOR = System.lineSeparator();
-                public String lineSeparator() {
+
+                static String lineSeparator() {
                     return LINE_SEPARATOR;
                 }
             }
