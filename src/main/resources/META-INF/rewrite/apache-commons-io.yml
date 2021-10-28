@@ -27,3 +27,16 @@ recipeList:
       oldArtifactId: commons-io
       newGroupId: commons-io
       newArtifactId: commons-io
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.apache.commons.io.UseSystemLineSeparator
+displayName: Use `System.lineSeparator()`
+description: Migrate `IOUtils.LINE_SEPARATOR` to `System.lineSeparator()`.
+tags:
+  - apache
+recipeList:
+  - org.openrewrite.java.ChangeStaticFieldToMethod:
+      oldClassName: org.apache.commons.io.IOUtils
+      oldFieldName: LINE_SEPARATOR
+      newClassName: java.lang.System
+      newMethodName: lineSeparator

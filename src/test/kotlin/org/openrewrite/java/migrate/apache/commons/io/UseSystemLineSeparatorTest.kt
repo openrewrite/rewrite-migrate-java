@@ -15,20 +15,24 @@
  */
 package org.openrewrite.java.migrate.apache.commons.io
 
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.openrewrite.Issue
 import org.openrewrite.Recipe
+import org.openrewrite.config.Environment
 import org.openrewrite.java.JavaParser
 import org.openrewrite.java.JavaRecipeTest
 
 class UseSystemLineSeparatorTest : JavaRecipeTest {
-    override val parser: JavaParser = JavaParser.fromJavaVersion()
-        .classpath("commons-io")
-        .build()
+    override val parser: JavaParser
+        get() = JavaParser.fromJavaVersion()
+            .logCompilationWarningsAndErrors(true)
+            .classpath("commons-io")
+            .build()
 
-    override val recipe: Recipe =
-        UseSystemLineSeparator()
+    override val recipe: Recipe = Environment.builder()
+        .scanRuntimeClasspath("org.openrewrite.java.migrate.apache.commons.io")
+        .build()
+        .activateRecipes("org.openrewrite.java.migrate.apache.commons.io.UseSystemLineSeparator")
 
     @Test
     fun migratesQualifiedField() = assertChanged(
@@ -72,7 +76,6 @@ class UseSystemLineSeparatorTest : JavaRecipeTest {
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/54")
-    @Disabled
     fun migratesFieldInitializer() = assertChanged(
         before = """
             import org.apache.commons.io.IOUtils;
@@ -100,4 +103,5 @@ class UseSystemLineSeparatorTest : JavaRecipeTest {
             }
         """
     )
+
 }
