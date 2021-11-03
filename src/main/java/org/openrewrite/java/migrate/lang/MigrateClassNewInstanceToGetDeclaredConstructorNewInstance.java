@@ -28,6 +28,7 @@ import org.openrewrite.java.tree.TypeUtils;
 
 public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends Recipe {
     private static final MethodMatcher NEW_INSTANCE_MATCHER = new MethodMatcher("java.lang.Class newInstance()");
+
     @Override
     public String getDisplayName() {
         return "Use `Class#getDeclaredConstructor().newInstance()`";
@@ -61,7 +62,7 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
                 J.MethodDeclaration md = getCursor().firstEnclosing(J.MethodDeclaration.class);
                 if ((tri != null && tri.getCatches().stream().anyMatch(c -> isExceptionType(c.getParameter().getType())))
                         || (md != null && md.getThrows() != null && md.getThrows().stream().anyMatch(nt -> isExceptionType(nt.getType())))) {
-                    J.MethodInvocation modifiedMethodInvocation = (J.MethodInvocation)TO_DECLARED_CONS_NEW_INSTANCE.getVisitor().visit(mi,executionContext);
+                    J.MethodInvocation modifiedMethodInvocation = (J.MethodInvocation) TO_DECLARED_CONS_NEW_INSTANCE.getVisitor().visit(mi, executionContext);
                     if (modifiedMethodInvocation != null) {
                         mi = modifiedMethodInvocation;
                     }
@@ -71,7 +72,7 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
         }
 
         private boolean isExceptionType(@Nullable JavaType type) {
-            return TypeUtils.isOfType(type,exType)
+            return TypeUtils.isOfType(type, exType)
                     || TypeUtils.isOfType(type, thType);
         }
     }
