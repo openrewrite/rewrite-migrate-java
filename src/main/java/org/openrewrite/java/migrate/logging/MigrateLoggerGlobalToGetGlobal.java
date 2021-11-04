@@ -19,6 +19,8 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
@@ -57,16 +59,8 @@ public class MigrateLoggerGlobalToGetGlobal extends Recipe {
             J.FieldAccess asFieldAccess = (J.FieldAccess) j;
 
             if (TypeUtils.isOfClassType(asFieldAccess.getTarget().getType(), "java.util.logging.Logger") && asFieldAccess.getSimpleName().equals("global")) {
-                j = new J.MethodInvocation(
-                        Tree.randomId(),
-                        asFieldAccess.getPrefix(),
-                        Markers.EMPTY,
-                        JRightPadded.build(asFieldAccess.getTarget()),
-                        null,
-                        asFieldAccess.getName().withName("getGlobal"),
-                        JContainer.build(Collections.emptyList()),
-                        TypeUtils.asMethod(asFieldAccess.getTarget().getType())
-                );
+                j = j.withTemplate(JavaTemplate.builder(this::getCursor, "Logger.getGlobal();").build(),
+                        ((J.FieldAccess) j).getCoordinates().replace());
             }
 
             return j;

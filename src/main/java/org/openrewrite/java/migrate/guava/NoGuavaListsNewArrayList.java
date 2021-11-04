@@ -24,6 +24,7 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 
 public class NoGuavaListsNewArrayList extends Recipe {
     private static final MethodMatcher NEW_ARRAY_LIST = new MethodMatcher("com.google.common.collect.Lists newArrayList()");
@@ -44,7 +45,7 @@ public class NoGuavaListsNewArrayList extends Recipe {
     protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
+            public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext context) {
                 doAfterVisit(new UsesMethod<>(NEW_ARRAY_LIST));
                 doAfterVisit(new UsesMethod<>(NEW_ARRAY_LIST_ITERABLE));
                 doAfterVisit(new UsesMethod<>(NEW_ARRAY_LIST_CAPACITY));

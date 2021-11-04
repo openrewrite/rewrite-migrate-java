@@ -113,7 +113,8 @@ public class NoGuavaImmutableListOf extends Recipe {
                 } else if (parent instanceof J.Assignment) {
                     J.Assignment a = (J.Assignment) parent;
                     if (a.getVariable() instanceof J.Identifier && ((J.Identifier) a.getVariable()).getFieldType() != null) {
-                        isParentTypeDownCast = isParentTypeMatched(((J.Identifier) a.getVariable()).getFieldType());
+                        assert ((J.Identifier) a.getVariable()).getFieldType() != null;
+                        isParentTypeDownCast = isParentTypeMatched(((J.Identifier) a.getVariable()).getFieldType().getType());
                     } else if (a.getVariable() instanceof J.FieldAccess) {
                         isParentTypeDownCast = isParentTypeMatched(a.getVariable().getType());
                     }
