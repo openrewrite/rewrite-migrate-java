@@ -28,9 +28,8 @@ import org.openrewrite.maven.tree.Maven;
 import org.openrewrite.maven.tree.Pom;
 import org.openrewrite.maven.tree.Scope;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
@@ -54,30 +53,21 @@ public class AddJaxwsRuntime extends Recipe {
 
     @Override
     protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
-        //remove legacy jaxws-ri library (in favor of the jakarta runtime)
+        // remove legacy jaxws-ri library (in favor of the jakarta runtime)
         doNext(new RemoveDependency("com.sun.xml.ws", "jaxws-ri", null));
-
-        //Collect a map of gav coordinates to pom models for any maven files in the source set (other visitors may have
-        //made changes to those models)
-        Map<String, Pom> gavToPom = new HashMap<>();
-        for (SourceFile source : before) {
-            if (source instanceof Maven) {
-                Pom pom = ((Maven) source).getModel();
-                gavToPom.put(pom.getCoordinates(), pom);
-            }
-        }
 
         return ListUtils.map(before, s -> {
             if (s instanceof Maven) {
                 Maven mavenSource = (Maven) s;
-                //Find the highest scope of a transitive dependency on the JAX-WS API (if it exists at all)
-                Scope apiScope = getTransitiveDependencyScope(mavenSource.getModel(), JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT, gavToPom);
-                //Find the highest scope of a transitive dependency on the JAX-WS runtime (if it exists at all)
-                Scope runtimeScope = getTransitiveDependencyScope(mavenSource.getModel(), SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, gavToPom);
+                // Find the highest scope of a transitive dependency on the JAX-WS API (if it exists at all)
+                Scope apiScope = getDependencyScope(mavenSource.getModel(), JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
+                // Find the highest scope of a transitive dependency on the JAX-WS runtime (if it exists at all)
+                Scope runtimeScope = getDependencyScope(mavenSource.getModel(), SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
 
-                if (apiScope != null && (runtimeScope == null || !apiScope.isInClasspathOf(runtimeScope))) {
-                    //If the API is present and there is not a matching runtime in the transitive scope of the api, add the runtime.
+                if (!Scope.None.equals(apiScope) && (Scope.None.equals(runtimeScope) || !apiScope.isInClasspathOf(runtimeScope))) {
+                    // If the API is present and there is not a matching runtime in the transitive scope of the api, add the runtime.
                     String resolvedScope = apiScope == Scope.Test ? "test" : "provided";
+                    // TODO: auto-format after changes
                     return (SourceFile) new AddDependencyVisitor(
                             SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.2",
                             null, resolvedScope, null, null, null,
@@ -94,39 +84,41 @@ public class AddJaxwsRuntime extends Recipe {
      * @param pom The pom to search for a dependency.
      * @param groupId The group ID of the dependency
      * @param artifactId The artifact ID of the dependency
-     * @param gavToPoms A map of gav coordinates to "poms" that exist in the source set, these may have been manipulated by other visitors
      * @return The highest scope of the given dependency or null if the dependency does not exist.
      */
-    @Nullable
-    private Scope getTransitiveDependencyScope(Pom pom, String groupId, String artifactId, Map<String, Pom> gavToPoms) {
-
-        Pom localPom = gavToPoms.get(pom.getCoordinates());
-        if (localPom != null) {
-            pom = localPom;
-        }
-        Scope scope = null;
-        for (Pom.Dependency dependency : pom.getDependencies()) {
+    private Scope getDependencyScope(Pom pom, String groupId, String artifactId) {
+        Scope scope = Scope.Compile;
+        Set<Pom.Dependency> dependencies = pom.getDependencies(scope);
+        for (Pom.Dependency dependency : dependencies) {
             if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
-                scope = Scope.maxPrecedence(scope, dependency.getScope());
-                if (Scope.Compile.equals(scope)) {
-                    return scope;
-                }
-            }
-        }
-
-        if (pom.getParent() != null) {
-            scope = Scope.maxPrecedence(scope, getTransitiveDependencyScope(pom.getParent(), groupId, artifactId, gavToPoms));
-            if (Scope.Compile.equals(scope)) {
                 return scope;
             }
         }
 
-        for (Pom.Dependency dependency : pom.getDependencies()) {
-            scope = Scope.maxPrecedence(scope, getTransitiveDependencyScope(dependency.getModel(), groupId, artifactId, gavToPoms));
-            if (Scope.Compile.equals(scope)) {
+        scope = Scope.Provided;
+        dependencies = pom.getDependencies(scope);
+        for (Pom.Dependency dependency : dependencies) {
+            if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
                 return scope;
             }
         }
-        return scope;
+
+        scope = Scope.Runtime;
+        dependencies = pom.getDependencies(scope);
+        for (Pom.Dependency dependency : dependencies) {
+            if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
+                return scope;
+            }
+        }
+
+        scope = Scope.Test;
+        dependencies = pom.getDependencies(scope);
+        for (Pom.Dependency dependency : dependencies) {
+            if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
+                return scope;
+            }
+        }
+
+        return Scope.None;
     }
 }

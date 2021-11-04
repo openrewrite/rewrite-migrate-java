@@ -28,10 +28,9 @@ import org.openrewrite.maven.tree.Pom;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
@@ -64,19 +63,15 @@ public class AddJaxbRuntime extends Recipe {
 
     @Override
     protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
-        //remove legacy jaxb-core, regardless of which runtime is being used.
+        // remove legacy jaxb-core, regardless of which runtime is being used.
         doNext(new RemoveDependency("com.sun.xml.bind", "jaxb-core", null));
         ReplaceRuntimeVisitor replaceRuntime = "sun".equals(runtime) ?
                 new ReplaceRuntimeVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.2") :
                 new ReplaceRuntimeVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.2");
 
-        Map<String, Pom> gavToPom = new HashMap<>();
         List<SourceFile> sources = ListUtils.map(before, s -> {
             if (s instanceof Maven) {
-                Maven mavenSource = (Maven) replaceRuntime.visit(s, ctx);
-                //noinspection ConstantConditions
-                gavToPom.put(mavenSource.getCoordinates(), mavenSource.getModel());
-                return mavenSource;
+                return (Maven) replaceRuntime.visit(s, ctx);
             }
             return s;
         });
@@ -84,10 +79,10 @@ public class AddJaxbRuntime extends Recipe {
         sources = ListUtils.map(sources, s -> {
             if (s instanceof Maven) {
                 Maven mavenSource = (Maven) s;
-                Scope apiScope = getTransitiveDependencyScope(mavenSource.getModel(), JAXB_API_GROUP, JAXB_API_ARTIFACT, gavToPom);
+                Scope apiScope = getDependencyScope(mavenSource.getModel(), JAXB_API_GROUP, JAXB_API_ARTIFACT);
                 Scope runtimeScope = "sun".equals(runtime) ?
-                        getTransitiveDependencyScope(mavenSource.getModel(), SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, gavToPom) :
-                        getTransitiveDependencyScope(mavenSource.getModel(), GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, gavToPom);
+                        getDependencyScope(mavenSource.getModel(), SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT) :
+                        getDependencyScope(mavenSource.getModel(), GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT);
                 if (apiScope != null && (runtimeScope == null || !apiScope.isInClasspathOf(runtimeScope))) {
                     String resolvedScope = apiScope == Scope.Test ? "test" : "provided";
                     AddDependencyVisitor addDependency = "sun".equals(runtime) ?
@@ -99,7 +94,7 @@ public class AddJaxbRuntime extends Recipe {
             }
             return s;
         });
-
+        // TODO: auto-format after changes
         return sources;
     }
 
@@ -109,40 +104,42 @@ public class AddJaxbRuntime extends Recipe {
      * @param pom The pom to search for a dependency.
      * @param groupId The group ID of the dependency
      * @param artifactId The artifact ID of the dependency
-     * @param gavToPoms A map of gav coordinates to "poms" that exist in the source set, these may have been manipulated by other visitors
      * @return The highest scope of the given dependency or null if the dependency does not exist.
      */
-    @Nullable
-    private Scope getTransitiveDependencyScope(Pom pom, String groupId, String artifactId, Map<String, Pom> gavToPoms) {
-
-        Pom localPom = gavToPoms.get(pom.getCoordinates());
-        if (localPom != null) {
-            pom = localPom;
-        }
-        Scope scope = null;
-        for (Pom.Dependency dependency : pom.getDependencies()) {
+    private @Nullable Scope getDependencyScope(Pom pom, String groupId, String artifactId) {
+        Scope scope = Scope.Compile;
+        Set<Pom.Dependency> dependencies = pom.getDependencies(scope);
+        for (Pom.Dependency dependency : dependencies) {
             if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
-                scope = Scope.maxPrecedence(scope, dependency.getScope());
-                if (Scope.Compile.equals(scope)) {
-                    return scope;
-                }
-            }
-        }
-
-        if (pom.getParent() != null) {
-            scope = Scope.maxPrecedence(scope, getTransitiveDependencyScope(pom.getParent(), groupId, artifactId, gavToPoms));
-            if (Scope.Compile.equals(scope)) {
                 return scope;
             }
         }
 
-        for (Pom.Dependency dependency : pom.getDependencies()) {
-            scope = Scope.maxPrecedence(scope, getTransitiveDependencyScope(dependency.getModel(), groupId, artifactId, gavToPoms));
-            if (Scope.Compile.equals(scope)) {
+        scope = Scope.Provided;
+        dependencies = pom.getDependencies(scope);
+        for (Pom.Dependency dependency : dependencies) {
+            if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
                 return scope;
             }
         }
-        return scope;
+
+        scope = Scope.Runtime;
+        dependencies = pom.getDependencies(scope);
+        for (Pom.Dependency dependency : dependencies) {
+            if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
+                return scope;
+            }
+        }
+
+        scope = Scope.Test;
+        dependencies = pom.getDependencies(scope);
+        for (Pom.Dependency dependency : dependencies) {
+            if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
+                return scope;
+            }
+        }
+
+        return null;
     }
 
     @Value
