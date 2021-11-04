@@ -93,4 +93,54 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest : JavaRecip
             }
         """
     )
+
+    @Test
+    fun newInstanceInCatch() = assertUnchanged(
+        before = """
+            package com.abc;
+
+            class A {
+                public void test() throws IllegalAccessException, InstantiationException {
+                    try {
+                        System.out.println();
+                    } catch (Exception ex) {
+                        Class<?> clazz = Class.forName("org.openrewrite.Test");
+                        clazz.newInstance();
+                    }
+                }
+            }
+        """
+    )
+
+    @Test
+    fun newInstanceInCatchMethodDeclarationThrowsException() = assertChanged(
+        before = """
+            package com.abc;
+
+            class A {
+                public void test() throws Exception {
+                    try {
+                        System.out.println();
+                    } catch (Exception ex) {
+                        Class<?> clazz = Class.forName("org.openrewrite.Test");
+                        clazz.newInstance();
+                    }
+                }
+            }
+        """,
+        after = """
+            package com.abc;
+
+            class A {
+                public void test() throws Exception {
+                    try {
+                        System.out.println();
+                    } catch (Exception ex) {
+                        Class<?> clazz = Class.forName("org.openrewrite.Test");
+                        clazz.getDeclaredConstructor().newInstance();
+                    }
+                }
+            }
+        """
+    )
 }
