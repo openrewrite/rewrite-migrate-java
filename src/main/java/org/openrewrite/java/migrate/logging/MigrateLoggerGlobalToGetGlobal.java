@@ -17,19 +17,12 @@ package org.openrewrite.java.migrate.logging;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
-import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JContainer;
-import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.TypeUtils;
-import org.openrewrite.marker.Markers;
-
-import java.util.Collections;
 
 public class MigrateLoggerGlobalToGetGlobal extends Recipe {
     @Override

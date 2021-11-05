@@ -49,15 +49,15 @@ public class MigrateHttpURLConnectionHttpServerErrorToHttpInternalError extends 
     private static class MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorVisitor extends JavaIsoVisitor<ExecutionContext> {
         @Override
         public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-            doAfterVisit(new ChangeFieldName<>(JavaType.Class.build("java.net.HttpURLConnection"), "HTTP_SERVER_ERROR", "HTTP_INTERNAL_ERROR"));
+            doAfterVisit(new ChangeFieldName<>("java.net.HttpURLConnection", "HTTP_SERVER_ERROR", "HTTP_INTERNAL_ERROR"));
             return super.visitCompilationUnit(cu, ctx);
         }
 
         @Override
         public J.Identifier visitIdentifier(J.Identifier identifier, ExecutionContext ctx) {
             if ("HTTP_SERVER_ERROR".equals(identifier.getSimpleName())) {
-                if (identifier.getFieldType() instanceof JavaType.Variable) {
-                    JavaType.FullyQualified fq = TypeUtils.asFullyQualified(((JavaType.Variable) identifier.getFieldType()).getOwner());
+                if (identifier.getFieldType() != null) {
+                    JavaType.FullyQualified fq = TypeUtils.asFullyQualified(identifier.getFieldType().getOwner());
                     if (fq != null && "java.net.HttpURLConnection".equals(fq.getFullyQualifiedName())) {
                         identifier = identifier.withName("HTTP_INTERNAL_ERROR");
                     }

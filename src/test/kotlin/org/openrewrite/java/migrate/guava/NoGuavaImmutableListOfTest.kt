@@ -261,7 +261,7 @@ class NoGuavaImmutableListOfTest : JavaRecipeTest {
             import java.util.List;
 
             public class A {
-                List<String, String> list;
+                List<String> list;
                 public A(List<String> list) {
                     this.list = list;
                 }

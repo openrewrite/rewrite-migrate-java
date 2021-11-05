@@ -261,7 +261,7 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
             import java.util.Set;
 
             public class A {
-                Set<String, String> set;
+                Set<String> set;
                 public A(Set<String> set) {
                     this.set = set;
                 }
