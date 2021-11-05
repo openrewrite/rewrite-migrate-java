@@ -32,13 +32,13 @@ recipeList:
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
-      version: 2.3.1
+      version: 2.3.2
       onlyIfUsing: javax.xml.bind.*
   # Update the jaxb api and runtime to the most current version of 2.3.x
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
-      newVersion: 2.3.1
+      newVersion: 2.3.2
   # Add JAXB Runtime if there is a transitive dependency on the JAXB API.
   - org.openrewrite.java.migrate.javax.AddJaxbRuntime:
       runtime: sun
