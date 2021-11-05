@@ -67,8 +67,8 @@ public class AddJaxbRuntime extends Recipe {
         //remove legacy jaxb-core, regardless of which runtime is being used.
         doNext(new RemoveDependency("com.sun.xml.bind", "jaxb-core", null));
         ReplaceRuntimeVisitor replaceRuntime = "sun".equals(runtime) ?
-                new ReplaceRuntimeVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x") :
-                new ReplaceRuntimeVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x");
+                new ReplaceRuntimeVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.1") :
+                new ReplaceRuntimeVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.1");
 
         Map<String, Pom> gavToPom = new HashMap<>();
         List<SourceFile> sources = ListUtils.map(before, s -> {
@@ -91,8 +91,8 @@ public class AddJaxbRuntime extends Recipe {
                 if (apiScope != null && (runtimeScope == null || !apiScope.isInClasspathOf(runtimeScope))) {
                     String resolvedScope = apiScope == Scope.Test ? "test" : "provided";
                     AddDependencyVisitor addDependency = "sun".equals(runtime) ?
-                            new AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, resolvedScope, null, null, null, null, null) :
-                            new AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, resolvedScope, null, null, null, null, null);
+                            new AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.1", null, resolvedScope, null, null, null, null, null) :
+                            new AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.1", null, resolvedScope, null, null, null, null, null);
                     return (SourceFile) addDependency.visit(mavenSource, ctx);
                 }
                 return mavenSource;
@@ -161,7 +161,7 @@ public class AddJaxbRuntime extends Recipe {
                 Optional<Xml.Tag> scopeTag = tag.getChild("scope");
                 String scope = scopeTag.isPresent() && scopeTag.get().getValue().isPresent() ? scopeTag.get().getValue().get() : null;
                 doAfterVisit(new RemoveDependency(oldGroupId, oldArtifactId, scope));
-                doAfterVisit(new AddDependencyVisitor(newGroupId, newArtifactId, "2.3.x", null, scope, null, null, null, null, null));
+                doAfterVisit(new AddDependencyVisitor(newGroupId, newArtifactId, newVersion, null, scope, null, null, null, null, null));
             }
             return tag;
         }

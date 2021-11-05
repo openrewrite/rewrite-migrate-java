@@ -46,7 +46,7 @@ public class ReplaceJavaxJaxwsWithJakarta extends Recipe {
                     Optional<Xml.Tag> scopeTag = tag.getChild("scope");
                     String scope = scopeTag.isPresent() && scopeTag.get().getValue().isPresent() ? scopeTag.get().getValue().get() : null;
                     doAfterVisit(new RemoveDependency("javax.xml.ws", "jaxws-api", scope));
-                    doAfterVisit(new AddDependencyVisitor("jakarta.xml.ws", "jakarta.xml.ws-api", "2.3.x", null, scope, null, null, null, null, null));
+                    doAfterVisit(new AddDependencyVisitor("jakarta.xml.ws", "jakarta.xml.ws-api", "2.3.1", null, scope, null, null, null, null, null));
                 }
                 return super.visitTag(tag, ctx);
             }

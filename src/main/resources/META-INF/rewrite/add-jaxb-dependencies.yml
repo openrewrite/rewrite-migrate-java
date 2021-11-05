@@ -26,23 +26,19 @@ tags:
   - glassfish
 
 recipeList:
+  # Replace the legacy, compile-time Javax JAXB API in favor of the jakarta artifact.
+  - org.openrewrite.java.migrate.javax.ReplaceJavaxJaxbWithJakarta
   # Add jakarta.xml.bind-api to a maven project that uses the jaxb binding API
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
-      version: 2.3.x
+      version: 2.3.1
       onlyIfUsing: javax.xml.bind.*
-  # Replace the legacy, compile-time Javax JAXB API in favor of the jakarta artifact.
-  - org.openrewrite.java.migrate.javax.ReplaceJavaxJaxbWithJakarta
-  # Add JAXB Runtime if there is a transitive dependency on the JAXB API.
-  - org.openrewrite.java.migrate.javax.AddJaxbRuntime:
-      runtime: sun
   # Update the jaxb api and runtime to the most current version of 2.3.x
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
-      newVersion: 2.3.x
-  - org.openrewrite.maven.UpgradeDependencyVersion:
-      groupId: com.sun.xml.bind
-      artifactId: jaxb-impl
-      newVersion: 2.3.x
+      newVersion: 2.3.1
+  # Add JAXB Runtime if there is a transitive dependency on the JAXB API.
+  - org.openrewrite.java.migrate.javax.AddJaxbRuntime:
+      runtime: sun
