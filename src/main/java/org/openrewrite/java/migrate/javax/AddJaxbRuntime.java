@@ -137,7 +137,11 @@ public class AddJaxbRuntime extends Recipe {
         }
 
         for (Pom.Dependency dependency : pom.getDependencies()) {
-            scope = Scope.maxPrecedence(scope, getTransitiveDependencyScope(dependency.getModel(), groupId, artifactId, gavToPoms));
+            Scope transitiveScope = Scope.maxPrecedence(scope, getTransitiveDependencyScope(dependency.getModel(), groupId, artifactId, gavToPoms));
+            if (transitiveScope != null) {
+                Scope dependencyScope = dependency.getScope();
+                scope = dependencyScope != null ? dependencyScope : transitiveScope;
+            }
             if (Scope.Compile.equals(scope)) {
                 return scope;
             }
