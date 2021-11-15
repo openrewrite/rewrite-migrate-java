@@ -22,25 +22,52 @@ import org.openrewrite.java.JavaRecipeTest
 
 class SimplifyMicrometerMeterTagsTest : JavaRecipeTest {
     override val parser: JavaParser
-        get() = JavaParser.fromJavaVersion().classpath("micrometer-core").build()
+        get() = JavaParser.fromJavaVersion()
+            .classpath("micrometer-core")
+            .logCompilationWarningsAndErrors(true)
+            .build()
 
     override val recipe: Recipe
         get() = SimplifyMicrometerMeterTags()
 
     @Test
-    fun simplify() = assertChanged(
+    fun simplifyNewArray() = assertChanged(
         before = """
-            import io.micrometer.core.instrument.Counter;
+            import io.micrometer.core.instrument.*;
             class Test {
                 Counter c = Counter.builder("counter")
-                    .tags(new String[] { "key", "value" });
+                    .tags(new String[] { "key", "value" })
+                    .register(Metrics.globalRegistry);
             }
         """,
         after = """
-            import io.micrometer.core.instrument.Counter;
+            import io.micrometer.core.instrument.*;
             class Test {
                 Counter c = Counter.builder("counter")
-                    .tag("key", "value");
+                    .tag("key", "value")
+                    .register(Metrics.globalRegistry);
+            }
+        """
+    )
+
+    @Test
+    fun simplifyExistingArray() = assertChanged(
+        before = """
+            import io.micrometer.core.instrument.*;
+            class Test {
+                String[] tags = new String[] { "key", "value" };
+                Counter c = Counter.builder("counter")
+                    .tags(tags)
+                    .register(Metrics.globalRegistry);
+            }
+        """,
+        after = """
+            import io.micrometer.core.instrument.*;
+            class Test {
+                String[] tags = new String[] { "key", "value" };
+                Counter c = Counter.builder("counter")
+                    .tag(tags[0], tags[1])
+                    .register(Metrics.globalRegistry);
             }
         """
     )
