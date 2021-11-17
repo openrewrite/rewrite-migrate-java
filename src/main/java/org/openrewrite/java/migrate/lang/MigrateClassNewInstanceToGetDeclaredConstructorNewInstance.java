@@ -63,10 +63,7 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
                 J.MethodDeclaration md = getCursor().firstEnclosing(J.MethodDeclaration.class);
                 if ((ctch == null && tri != null && tri.getCatches().stream().anyMatch(c -> isExceptionType(c.getParameter().getType())))
                         || (md != null && md.getThrows() != null && md.getThrows().stream().anyMatch(nt -> isExceptionType(nt.getType())))) {
-                    J.MethodInvocation modifiedMethodInvocation = (J.MethodInvocation) TO_DECLARED_CONS_NEW_INSTANCE.getVisitor().visit(mi, executionContext);
-                    if (modifiedMethodInvocation != null) {
-                        mi = modifiedMethodInvocation;
-                    }
+                    mi = (J.MethodInvocation) TO_DECLARED_CONS_NEW_INSTANCE.getVisitor().visitNonNull(mi, executionContext);
                 }
             }
             return mi;
