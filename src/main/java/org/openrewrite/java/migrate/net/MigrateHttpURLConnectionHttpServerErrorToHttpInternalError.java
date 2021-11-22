@@ -59,7 +59,7 @@ public class MigrateHttpURLConnectionHttpServerErrorToHttpInternalError extends 
                 if (identifier.getFieldType() != null) {
                     JavaType.FullyQualified fq = TypeUtils.asFullyQualified(identifier.getFieldType().getOwner());
                     if (fq != null && "java.net.HttpURLConnection".equals(fq.getFullyQualifiedName())) {
-                        identifier = identifier.withName("HTTP_INTERNAL_ERROR");
+                        identifier = identifier.withSimpleName("HTTP_INTERNAL_ERROR");
                     }
                 }
             }

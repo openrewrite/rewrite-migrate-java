@@ -52,7 +52,7 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation m = method;
             if (MATCHER.matches(m)) {
-                m = m.withName(m.getName().withName("setInstant")).withTemplate(
+                m = m.withName(m.getName().withSimpleName("setInstant")).withTemplate(
                         JavaTemplate.builder(this::getCursor, "Instant.ofEpochMilli(#{any(long)})")
                                 .imports("java.time.Instant")
                                 .build(),
