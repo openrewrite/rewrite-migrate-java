@@ -40,3 +40,29 @@ recipeList:
       oldFieldName: LINE_SEPARATOR
       newClassName: java.lang.System
       newMethodName: lineSeparator
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.apache.commons.io.UseStandardCharsets
+displayName: Use `java.nio.charset.StandardCharsets`
+description: Migrate `org.apache.commons.io.Charsets` to `java.nio.charset.StandardCharsets`.
+tags:
+  - apache
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.io.Charsets.ISO_8859_1
+      newFullyQualifiedTypeName: java.nio.charset.StandardCharsets.ISO_8859_1
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.io.Charsets.US_ASCII
+      newFullyQualifiedTypeName: java.nio.charset.StandardCharsets.US_ASCII
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.io.Charsets.UTF_8
+      newFullyQualifiedTypeName: java.nio.charset.StandardCharsets.UTF_8
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.io.Charsets.UTF_16
+      newFullyQualifiedTypeName: java.nio.charset.StandardCharsets.UTF_16
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.io.Charsets.UTF_16BE
+      newFullyQualifiedTypeName: java.nio.charset.StandardCharsets.UTF_16BE
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.io.Charsets.UTF_16LE
+      newFullyQualifiedTypeName: java.nio.charset.StandardCharsets.UTF_16LE
