@@ -107,6 +107,8 @@ dependencies {
 
     testImplementation("com.google.guava:guava:29.0-jre")
 
+    testImplementation("commons-codec:commons-codec:latest.release")
+
     testRuntimeOnly("org.openrewrite:rewrite-java-11:${rewriteVersion}")
     testRuntimeOnly("org.openrewrite:rewrite-java-8:${rewriteVersion}")
 }
