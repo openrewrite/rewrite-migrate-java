@@ -113,7 +113,6 @@ public class NoGuavaImmutableListOf extends Recipe {
                 } else if (parent instanceof J.Assignment) {
                     J.Assignment a = (J.Assignment) parent;
                     if (a.getVariable() instanceof J.Identifier && ((J.Identifier) a.getVariable()).getFieldType() != null) {
-                        assert ((J.Identifier) a.getVariable()).getFieldType() != null;
                         isParentTypeDownCast = isParentTypeMatched(((J.Identifier) a.getVariable()).getFieldType().getType());
                     } else if (a.getVariable() instanceof J.FieldAccess) {
                         isParentTypeDownCast = isParentTypeMatched(a.getVariable().getType());
@@ -136,8 +135,8 @@ public class NoGuavaImmutableListOf extends Recipe {
                         }
                         index++;
                     }
-                    if (m.getMethodType() != null && m.getMethodType().getResolvedSignature() != null) {
-                        isParentTypeDownCast = isParentTypeMatched(m.getMethodType().getResolvedSignature().getParamTypes().get(index));
+                    if (m.getMethodType() != null) {
+                        isParentTypeDownCast = isParentTypeMatched(m.getMethodType().getParameterTypes().get(index));
                     }
                 } else if (parent instanceof J.NewClass) {
                     J.NewClass c = (J.NewClass) parent;
@@ -149,8 +148,8 @@ public class NoGuavaImmutableListOf extends Recipe {
                             }
                             index++;
                         }
-                        if (c.getConstructorType().getResolvedSignature() != null) {
-                            isParentTypeDownCast = isParentTypeMatched(c.getConstructorType().getResolvedSignature().getParamTypes().get(index));
+                        if (c.getConstructorType() != null) {
+                            isParentTypeDownCast = isParentTypeMatched(c.getConstructorType().getParameterTypes().get(index));
                         }
                     }
                 }

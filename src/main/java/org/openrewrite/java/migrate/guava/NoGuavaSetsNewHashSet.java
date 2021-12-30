@@ -64,7 +64,7 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                     maybeAddImport("java.util.HashSet");
                     if (method.getArguments().isEmpty() || (!method.getArguments().isEmpty() && method.getArguments().get(0) instanceof J.Empty)) {
                         return method.withTemplate(newHashSet, method.getCoordinates().replace());
-                    } else if (method.getArguments().size() == 1 && TypeUtils.isAssignableTo(JavaType.Class.build("java.lang.Iterable"),
+                    } else if (method.getArguments().size() == 1 && TypeUtils.isAssignableTo(JavaType.ShallowClass.build("java.lang.Iterable"),
                             method.getArguments().get(0).getType())) {
                         return method.withTemplate(newHashSetIterable, method.getCoordinates().replace(),
                                 method.getArguments().get(0));
