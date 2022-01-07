@@ -44,26 +44,24 @@ public class MigrateLoggerLogrbToUseResourceBundle extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MigrateLoggerLogrbToUseResourceBundleVisitor();
-    }
-
-    private static class MigrateLoggerLogrbToUseResourceBundleVisitor extends JavaIsoVisitor<ExecutionContext> {
-        @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-            J.MethodInvocation m = method;
-            if (MATCHER.matches(m)) {
-                m = m.withTemplate(
-                        JavaTemplate.builder(this::getCursor, "#{any(java.util.logging.Level)}, #{any(String)}, #{any(String)}, ResourceBundle.getBundle(#{any(String)}), #{any(String)}" + (m.getArguments().size() == 6 ? ", #{any()}" : ""))
-                                .imports("java.util.ResourceBundle")
-                                .build(),
-                        m.getCoordinates().replaceArguments(),
-                        m.getArguments().toArray()
-                );
-                maybeAddImport("java.util.ResourceBundle");
+        return new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = method;
+                if (MATCHER.matches(m)) {
+                    m = m.withTemplate(
+                            JavaTemplate.builder(this::getCursor, "#{any(java.util.logging.Level)}, #{any(String)}, #{any(String)}, ResourceBundle.getBundle(#{any(String)}), #{any(String)}" + (m.getArguments().size() == 6 ? ", #{any()}" : ""))
+                                    .imports("java.util.ResourceBundle")
+                                    .build(),
+                            m.getCoordinates().replaceArguments(),
+                            m.getArguments().toArray()
+                    );
+                    maybeAddImport("java.util.ResourceBundle");
+                }
+                return super.visitMethodInvocation(m, ctx);
             }
-            return super.visitMethodInvocation(m, ctx);
-        }
 
+        };
     }
 
 }

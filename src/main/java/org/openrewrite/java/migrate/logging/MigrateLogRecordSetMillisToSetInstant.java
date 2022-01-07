@@ -44,25 +44,23 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MigrateLogRecordSetMillisToSetInstantVisitor();
-    }
-
-    private static class MigrateLogRecordSetMillisToSetInstantVisitor extends JavaIsoVisitor<ExecutionContext> {
-        @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-            J.MethodInvocation m = method;
-            if (MATCHER.matches(m)) {
-                m = m.withName(m.getName().withSimpleName("setInstant")).withTemplate(
-                        JavaTemplate.builder(this::getCursor, "Instant.ofEpochMilli(#{any(long)})")
-                                .imports("java.time.Instant")
-                                .build(),
-                        m.getCoordinates().replaceArguments(),
-                        m.getArguments().get(0)
-                );
-                maybeAddImport("java.time.Instant");
+        return new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = method;
+                if (MATCHER.matches(m)) {
+                    m = m.withName(m.getName().withSimpleName("setInstant")).withTemplate(
+                            JavaTemplate.builder(this::getCursor, "Instant.ofEpochMilli(#{any(long)})")
+                                    .imports("java.time.Instant")
+                                    .build(),
+                            m.getCoordinates().replaceArguments(),
+                            m.getArguments().get(0)
+                    );
+                    maybeAddImport("java.time.Instant");
+                }
+                return super.visitMethodInvocation(m, ctx);
             }
-            return super.visitMethodInvocation(m, ctx);
-        }
+        };
     }
 
 }

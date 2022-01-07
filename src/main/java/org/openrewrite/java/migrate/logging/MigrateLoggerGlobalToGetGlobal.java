@@ -42,22 +42,20 @@ public class MigrateLoggerGlobalToGetGlobal extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MigrateLoggerGlobalToGetGlobalVisitor();
-    }
+        return new JavaVisitor<ExecutionContext>() {
+            @Override
+            public J visitFieldAccess(J.FieldAccess fieldAccess, ExecutionContext ctx) {
+                J j = super.visitFieldAccess(fieldAccess, ctx);
+                J.FieldAccess asFieldAccess = (J.FieldAccess) j;
 
-    private static class MigrateLoggerGlobalToGetGlobalVisitor extends JavaVisitor<ExecutionContext> {
-        @Override
-        public J visitFieldAccess(J.FieldAccess fieldAccess, ExecutionContext ctx) {
-            J j = super.visitFieldAccess(fieldAccess, ctx);
-            J.FieldAccess asFieldAccess = (J.FieldAccess) j;
+                if (TypeUtils.isOfClassType(asFieldAccess.getTarget().getType(), "java.util.logging.Logger") && asFieldAccess.getSimpleName().equals("global")) {
+                    j = j.withTemplate(JavaTemplate.builder(this::getCursor, "Logger.getGlobal();").build(),
+                            ((J.FieldAccess) j).getCoordinates().replace());
+                }
 
-            if (TypeUtils.isOfClassType(asFieldAccess.getTarget().getType(), "java.util.logging.Logger") && asFieldAccess.getSimpleName().equals("global")) {
-                j = j.withTemplate(JavaTemplate.builder(this::getCursor, "Logger.getGlobal();").build(),
-                        ((J.FieldAccess) j).getCoordinates().replace());
+                return j;
             }
-
-            return j;
-        }
+        };
 
 
     }
