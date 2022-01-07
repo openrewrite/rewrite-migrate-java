@@ -27,27 +27,22 @@ class MigrateGetLoggingMXBeanToGetPlatformMXBeanTest : JavaRecipeTest {
     @Test
     fun getLoggingMXBeanToGetPlatformMXBean() = assertChanged(
         before = """
-            package org.openrewrite.example;
-
             import java.util.logging.LoggingMXBean;
             import java.util.logging.LogManager;
 
-            public class Test {
-                public static void method() {
+            class Test {
+                static void method() {
                     LoggingMXBean loggingBean = LogManager.getLoggingMXBean();
                 }
             }
         """,
         after = """
-            package org.openrewrite.example;
-
-            import java.util.logging.LoggingMXBean;
             import java.lang.management.ManagementFactory;
             import java.lang.management.PlatformLoggingMXBean;
 
-            public class Test {
-                public static void method() {
-                    LoggingMXBean loggingBean = ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class);
+            class Test {
+                static void method() {
+                    PlatformLoggingMXBean loggingBean = ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class);
                 }
             }
         """

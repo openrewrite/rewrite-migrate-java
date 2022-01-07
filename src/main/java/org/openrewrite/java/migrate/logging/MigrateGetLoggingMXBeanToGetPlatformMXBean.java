@@ -18,11 +18,13 @@ package org.openrewrite.java.migrate.logging;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
 public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.util.logging.LogManager getLoggingMXBean()");
@@ -44,26 +46,35 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MigrateGetLoggingMXBeanToGetPlatformMXBeanVisitor();
-    }
-
-    private static class MigrateGetLoggingMXBeanToGetPlatformMXBeanVisitor extends JavaIsoVisitor<ExecutionContext> {
-        @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-            J.MethodInvocation m = method;
-            if (MATCHER.matches(m)) {
-                m = m.withTemplate(
-                        JavaTemplate.builder(this::getCursor, "ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class)")
-                                .imports("java.lang.management.ManagementFactory", "java.lang.management.PlatformLoggingMXBean")
-                                .build(),
-                        m.getCoordinates().replace()
-                );
-                maybeAddImport("java.lang.management.ManagementFactory");
-                maybeAddImport("java.lang.management.PlatformLoggingMXBean");
-                maybeRemoveImport("java.util.logging.LogManager");
+        return new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                cu = (J.CompilationUnit) new ChangeType(
+                        "java.util.logging.LoggingMXBean",
+                        "java.lang.management.PlatformLoggingMXBean"
+                ).getVisitor().visitNonNull(cu, ctx);
+                return super.visitCompilationUnit(cu, ctx);
             }
-            return super.visitMethodInvocation(m, ctx);
-        }
+
+            @Override
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
+                if (MATCHER.matches(m)) {
+                    maybeAddImport("java.lang.management.ManagementFactory");
+                    maybeAddImport("java.lang.management.PlatformLoggingMXBean");
+                    maybeRemoveImport("java.util.logging.LogManager");
+
+                    m = m.withTemplate(
+                            JavaTemplate.builder(this::getCursor, "ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class)")
+                                    .imports("java.lang.management.ManagementFactory")
+                                    .imports("java.lang.management.PlatformLoggingMXBean")
+                                    .build(),
+                            m.getCoordinates().replace()
+                    );
+                }
+                return m;
+            }
+        };
     }
 
 }
