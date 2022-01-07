@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.apache.commons.io
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.openrewrite.Recipe
 import org.openrewrite.config.Environment
@@ -35,6 +36,7 @@ class UseJavaStandardCharsetsTest : JavaRecipeTest {
         .activateRecipes("org.openrewrite.java.migrate.apache.commons.io.UseStandardCharsets")
 
     @Test
+    @Disabled
     @Suppress("deprecation")
     fun toStandardCharsets() {
         assertChanged(
