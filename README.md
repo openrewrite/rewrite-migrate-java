@@ -4,6 +4,7 @@
 [![ci](https://github.com/openrewrite/rewrite-migrate-java/actions/workflows/ci.yml/badge.svg)](https://github.com/openrewrite/rewrite-migrate-java/actions/workflows/ci.yml)
 [![Apache 2.0](https://img.shields.io/github/license/openrewrite/rewrite-migrate-java.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://img.shields.io/maven-central/v/org.openrewrite.recipe/rewrite-migrate-java.svg)](https://mvnrepository.com/artifact/org.openrewrite.recipe/rewrite-migrate-java)
+[![Revved up by Gradle Enterprise](https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.openrewrite.org/scans)
 
 ### What is this?
 
@@ -13,7 +14,7 @@ This project implements a [Rewrite module](https://github.com/openrewrite/rewrit
 
 | Recipe Name | Description |
 | ----------- | ----------- |
-| [Add XML binding dependencies](#AddXmlBindingDependencies)   | Add or update JAXB dependencies for a Maven build.
+| [Add XML binding dependencies](#AddXmlBindingDependencies) | Add or update JAXB dependencies for a Maven build.
 | [Add XML Web Services dependencies](#AddXmlWebServiceDependencies) | Add or update JAX-WS dependencies for a Maven build.
 | [ConvertPrimitiveWrapperConstructors](#ConvertPrimitiveWrapperConstructors) | Convert Primitive Wrapper Class Constructors into `valueOf` methods.
 | [ConvertBigDecimalRoundingMode](#ConvertBigDecimalRoundingMode) | Convert the use of BigDecimal rounding constants to their enum counterparts.
@@ -23,7 +24,6 @@ This project implements a [Rewrite module](https://github.com/openrewrite/rewrit
 | [Add `jdeprscan` plugin to Maven](#AddJdeprscanToMaven) | Add the `jdeprscan` maven plugin to a Maven build.
 | [SuppressIllegalReflectiveAccess](#SuppressIllegalReflectiveAccess) | Suppress Illegal reflective access warning via JAR manifest file
 | [UnsafeMigration](#UnsafeMigration) | Migrate the use of `sun.misc.Unsafe` to `VarHandle`
-
 
 ## Java Architecture for XML Binding (JAXB)
 
@@ -43,7 +43,6 @@ is the first release where the package namespace was changed to `jakarta.xml.bin
 | Jakarta EE 8       | org.glassfish.jaxb:jaxb-runtime:2.3.x        | javax.xml.bind    | JAXB Reference Implementation    |
 | Jakarta EE 9       | jakarta.xml.bind:jakarata.xml.bind-api:3.x   | jakarta.xml.bind  | JAXB API                         |
 | Jakarta EE 9       | org.glassfish.jaxb:jaxb-runtime:3.x          | jakarta.xml.bind  | JAXB Reference Implementation    |
-
 
 There are two JAXB-related recipes in this project that help projects that are migrating to Java 11:
 
@@ -109,7 +108,6 @@ Jakarta EE 9 is the first release where the package namespace was changed to `ja
 | Jakarta EE 9       | jakarta.xml.ws:jakarta.xml.ws-api:2.3.x      | jakarta.jws       | JAX-WS API                       |
 | Jakarta EE 9       | com.sun.xml.ws:jaxws-rt:2.3.x                | jakarta.jws       | JAX-WS Reference Implementation  |
 
-
 There are two JAX-WS recipes in this project that help projects that are migrating to Java 11:
 
 ### Add XML Web Services dependencies<a name="AddXmlWebServiceDependencies"></a>
@@ -144,7 +142,6 @@ to the new 'jakarta.jws' namespace. The recipe will also add/update the latest 3
 framework for maven-based builds.
 
 > **_NOTE:_** The `maven-jaxb2-plugin` does not yet support the jakarta.xml.bind namespace.
-
 
 ## Converting Primitive Wrapper Class Constructors to `valueOf` Method <a name="ConvertPrimitiveWrapperConstructors"></a>
 
