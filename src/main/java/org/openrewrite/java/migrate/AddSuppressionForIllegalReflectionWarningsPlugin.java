@@ -65,7 +65,7 @@ public class AddSuppressionForIllegalReflectionWarningsPlugin extends Recipe {
             Xml.Tag t = (Xml.Tag) super.visitTag(tag, ctx);
             if (PACKAGING_MATCHER.matches(getCursor())) {
                 // TODO: add condition for SpringBoot-Maven-Plugin.
-                if (t.getValue().isPresent() && (t.getValue().get().equals("ear") || t.getValue().get().equals("war"))) {
+                if (t.getValue().isPresent() && ("ear".equals(t.getValue().get()) || "war".equals(t.getValue().get()))) {
                     String groupId = "org.apache.maven.plugins";
                     String artifactId = "maven-jar-plugin";
                     // TODO: Prioritize managedPlugin version.

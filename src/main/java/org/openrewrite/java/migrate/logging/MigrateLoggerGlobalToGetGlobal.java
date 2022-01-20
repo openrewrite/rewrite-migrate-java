@@ -48,7 +48,7 @@ public class MigrateLoggerGlobalToGetGlobal extends Recipe {
                 J j = super.visitFieldAccess(fieldAccess, ctx);
                 J.FieldAccess asFieldAccess = (J.FieldAccess) j;
 
-                if (TypeUtils.isOfClassType(asFieldAccess.getTarget().getType(), "java.util.logging.Logger") && asFieldAccess.getSimpleName().equals("global")) {
+                if (TypeUtils.isOfClassType(asFieldAccess.getTarget().getType(), "java.util.logging.Logger") && "global".equals(asFieldAccess.getSimpleName())) {
                     j = j.withTemplate(JavaTemplate.builder(this::getCursor, "Logger.getGlobal();").build(),
                             ((J.FieldAccess) j).getCoordinates().replace());
                 }
