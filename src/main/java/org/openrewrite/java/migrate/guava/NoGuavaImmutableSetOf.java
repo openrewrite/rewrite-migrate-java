@@ -138,7 +138,7 @@ public class NoGuavaImmutableSetOf extends Recipe {
                         }
                         index++;
                     }
-                    if (m.getMethodType() != null ) {
+                    if (m.getMethodType() != null) {
                         isParentTypeDownCast = isParentTypeMatched(m.getMethodType().getParameterTypes().get(index));
                     }
                 } else if (parent instanceof J.NewClass) {
