@@ -22,7 +22,8 @@ import org.openrewrite.SourceFile;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.maven.AddPlugin;
 import org.openrewrite.maven.MavenVisitor;
-import org.openrewrite.maven.tree.Maven;
+import org.openrewrite.maven.tree.MavenResolutionResult;
+import org.openrewrite.xml.tree.Xml;
 
 import java.util.List;
 
@@ -46,18 +47,17 @@ public class AddJDeprScanPlugin extends Recipe {
     @Override
     protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
         return ListUtils.map(before, s -> {
-            if (s instanceof Maven && "pom.xml".equals(s.getSourcePath().toString())) {
-                Maven maven = (Maven) s;
-                return (SourceFile) new AddJDeprScanPluginVisitor().visit(maven, ctx);
+            if ("pom.xml".equals(s.getSourcePath().toString()) && s.getMarkers().findFirst(MavenResolutionResult.class).isPresent()) {
+                return (SourceFile) new AddJDeprScanPluginVisitor().visit(s, ctx);
             }
             return s;
         });
     }
 
-    private static class AddJDeprScanPluginVisitor extends MavenVisitor {
+    private static class AddJDeprScanPluginVisitor extends MavenVisitor<ExecutionContext> {
 
         @Override
-        public Maven visitMaven(Maven maven, ExecutionContext ctx) {
+        public Xml visitDocument(Xml.Document document, ExecutionContext o) {
             doAfterVisit(new AddPlugin(
                     "org.apache.maven.plugins",
                     "maven-jdeprscan-plugin",
@@ -68,7 +68,7 @@ public class AddJDeprScanPlugin extends Recipe {
                             "</configuration>",
                     null,
                     null));
-            return maven;
+            return document;
         }
     }
 }

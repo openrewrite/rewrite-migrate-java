@@ -21,17 +21,18 @@ import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.maven.AddDependencyVisitor;
-import org.openrewrite.maven.MavenVisitor;
+import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.RemoveDependency;
-import org.openrewrite.maven.tree.Maven;
-import org.openrewrite.maven.tree.Pom;
-import org.openrewrite.maven.tree.Scope;
+import org.openrewrite.maven.tree.*;
 import org.openrewrite.xml.tree.Xml;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static org.openrewrite.java.migrate.MavenUtils.getMavenModel;
+import static org.openrewrite.java.migrate.MavenUtils.isMavenSource;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
@@ -70,32 +71,31 @@ public class AddJaxbRuntime extends Recipe {
                 new ReplaceRuntimeVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.2") :
                 new ReplaceRuntimeVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.2");
 
-        Map<String, Pom> gavToPom = new HashMap<>();
+        Map<GroupArtifactVersion, MavenResolutionResult> gavToModel = new HashMap<>();
         List<SourceFile> sources = ListUtils.map(before, s -> {
-            if (s instanceof Maven) {
-                Maven mavenSource = (Maven) replaceRuntime.visit(s, ctx);
-                //noinspection ConstantConditions
-                gavToPom.put(mavenSource.getCoordinates(), mavenSource.getModel());
+            if (isMavenSource(s)) {
+                Xml.Document mavenSource = (Xml.Document) replaceRuntime.visitNonNull(s, ctx);
+                MavenResolutionResult mavenModel = getMavenModel(mavenSource);
+                gavToModel.put(new GroupArtifactVersion(mavenModel.getPom().getGroupId(),mavenModel.getPom().getArtifactId(), mavenModel.getPom().getVersion()), mavenModel);
                 return mavenSource;
             }
             return s;
         });
 
         sources = ListUtils.map(sources, s -> {
-            if (s instanceof Maven) {
-                Maven mavenSource = (Maven) s;
-                Scope apiScope = getTransitiveDependencyScope(mavenSource.getModel(), JAXB_API_GROUP, JAXB_API_ARTIFACT, gavToPom);
+            if (isMavenSource(s)) {
+                MavenResolutionResult mavenModel = getMavenModel(s);
+                Scope apiScope = getTransitiveDependencyScope(mavenModel, JAXB_API_GROUP, JAXB_API_ARTIFACT, gavToModel);
                 Scope runtimeScope = "sun".equals(runtime) ?
-                        getTransitiveDependencyScope(mavenSource.getModel(), SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, gavToPom) :
-                        getTransitiveDependencyScope(mavenSource.getModel(), GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, gavToPom);
+                        getTransitiveDependencyScope(mavenModel, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, gavToModel) :
+                        getTransitiveDependencyScope(mavenModel, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, gavToModel);
                 if (apiScope != null && (runtimeScope == null || !apiScope.isInClasspathOf(runtimeScope))) {
                     String resolvedScope = apiScope == Scope.Test ? "test" : "provided";
                     AddDependencyVisitor addDependency = "sun".equals(runtime) ?
                             new AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.2", null, resolvedScope, null, null, null, null, null) :
                             new AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.2", null, resolvedScope, null, null, null, null, null);
-                    return (SourceFile) addDependency.visit(mavenSource, ctx);
+                    return (SourceFile) addDependency.visit(s, ctx);
                 }
-                return mavenSource;
             }
             return s;
         });
@@ -106,52 +106,33 @@ public class AddJaxbRuntime extends Recipe {
     /**
      * Finds the highest scope for a given group/artifact.
      *
-     * @param pom The pom to search for a dependency.
+     * @param mavenModel The maven model to search for a dependency.
      * @param groupId The group ID of the dependency
      * @param artifactId The artifact ID of the dependency
-     * @param gavToPoms A map of gav coordinates to "poms" that exist in the source set, these may have been manipulated by other visitors
+     * @param gavToModels A map of gav coordinates to "poms" that exist in the source set, these may have been manipulated by other visitors
      * @return The highest scope of the given dependency or null if the dependency does not exist.
      */
     @Nullable
-    private Scope getTransitiveDependencyScope(Pom pom, String groupId, String artifactId, Map<String, Pom> gavToPoms) {
+    private Scope getTransitiveDependencyScope(MavenResolutionResult mavenModel, String groupId, String artifactId, Map<GroupArtifactVersion, MavenResolutionResult> gavToModels) {
 
-        Pom localPom = gavToPoms.get(pom.getCoordinates());
-        if (localPom != null) {
-            pom = localPom;
-        }
-        Scope scope = null;
-        for (Pom.Dependency dependency : pom.getDependencies()) {
-            if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
-                scope = Scope.maxPrecedence(scope, dependency.getScope());
-                if (Scope.Compile.equals(scope)) {
-                    return scope;
+        Scope maxScope = null;
+        for (Map.Entry<Scope, List<ResolvedDependency>> entry : mavenModel.getDependencies().entrySet()) {
+            for (ResolvedDependency dependency : entry.getValue()) {
+                if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
+                    maxScope = Scope.maxPrecedence(maxScope, entry.getKey());
+                    if (Scope.Compile.equals(maxScope)) {
+                        return maxScope;
+                    }
+                    break;
                 }
             }
         }
-
-        if (pom.getParent() != null) {
-            scope = Scope.maxPrecedence(scope, getTransitiveDependencyScope(pom.getParent(), groupId, artifactId, gavToPoms));
-            if (Scope.Compile.equals(scope)) {
-                return scope;
-            }
-        }
-
-        for (Pom.Dependency dependency : pom.getDependencies()) {
-            Scope transitiveScope = Scope.maxPrecedence(scope, getTransitiveDependencyScope(dependency.getModel(), groupId, artifactId, gavToPoms));
-            if (transitiveScope != null) {
-                Scope dependencyScope = dependency.getScope();
-                scope = dependencyScope != null ? dependencyScope : transitiveScope;
-            }
-            if (Scope.Compile.equals(scope)) {
-                return scope;
-            }
-        }
-        return scope;
+        return null;
     }
 
     @Value
     @EqualsAndHashCode(callSuper = true)
-    private static class ReplaceRuntimeVisitor extends MavenVisitor {
+    private static class ReplaceRuntimeVisitor extends MavenIsoVisitor<ExecutionContext> {
 
         String oldGroupId;
         String oldArtifactId;
@@ -160,7 +141,7 @@ public class AddJaxbRuntime extends Recipe {
         String newVersion;
 
         @Override
-        public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
+        public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
             if (isDependencyTag(oldGroupId, oldArtifactId)) {
                 Optional<Xml.Tag> scopeTag = tag.getChild("scope");
                 String scope = scopeTag.isPresent() && scopeTag.get().getValue().isPresent() ? scopeTag.get().getValue().get() : null;

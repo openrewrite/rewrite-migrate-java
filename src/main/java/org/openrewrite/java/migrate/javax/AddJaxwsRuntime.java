@@ -24,13 +24,14 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.maven.AddDependencyVisitor;
 import org.openrewrite.maven.RemoveDependency;
-import org.openrewrite.maven.tree.Maven;
-import org.openrewrite.maven.tree.Pom;
-import org.openrewrite.maven.tree.Scope;
+import org.openrewrite.maven.tree.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.openrewrite.java.migrate.MavenUtils.getMavenModel;
+import static org.openrewrite.java.migrate.MavenUtils.isMavenSource;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
@@ -59,21 +60,23 @@ public class AddJaxwsRuntime extends Recipe {
 
         //Collect a map of gav coordinates to pom models for any maven files in the source set (other visitors may have
         //made changes to those models)
-        Map<String, Pom> gavToPom = new HashMap<>();
-        for (SourceFile source : before) {
-            if (source instanceof Maven) {
-                Pom pom = ((Maven) source).getModel();
-                gavToPom.put(pom.getCoordinates(), pom);
+        Map<GroupArtifactVersion, MavenResolutionResult> gavToModel = new HashMap<>();
+        List<SourceFile> sources = ListUtils.map(before, s -> {
+            if (isMavenSource(s)) {
+                MavenResolutionResult mavenModel = getMavenModel(s);
+                gavToModel.put(new GroupArtifactVersion(mavenModel.getPom().getGroupId(),mavenModel.getPom().getArtifactId(), mavenModel.getPom().getVersion()), mavenModel);
             }
-        }
+            return s;
+        });
 
         return ListUtils.map(before, s -> {
-            if (s instanceof Maven) {
-                Maven mavenSource = (Maven) s;
+            if (isMavenSource(s)) {
+                MavenResolutionResult mavenModel = getMavenModel(s);
+
                 //Find the highest scope of a transitive dependency on the JAX-WS API (if it exists at all)
-                Scope apiScope = getTransitiveDependencyScope(mavenSource.getModel(), JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT, gavToPom);
+                Scope apiScope = getTransitiveDependencyScope(mavenModel, JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT, gavToModel);
                 //Find the highest scope of a transitive dependency on the JAX-WS runtime (if it exists at all)
-                Scope runtimeScope = getTransitiveDependencyScope(mavenSource.getModel(), SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, gavToPom);
+                Scope runtimeScope = getTransitiveDependencyScope(mavenModel, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, gavToModel);
 
                 if (apiScope != null && (runtimeScope == null || !apiScope.isInClasspathOf(runtimeScope))) {
                     //If the API is present and there is not a matching runtime in the transitive scope of the api, add the runtime.
@@ -81,7 +84,7 @@ public class AddJaxwsRuntime extends Recipe {
                     return (SourceFile) new AddDependencyVisitor(
                             SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.2",
                             null, resolvedScope, null, null, null,
-                            null, null).visit(mavenSource, ctx);
+                            null, null).visit(s, ctx);
                 }
             }
             return s;
@@ -91,46 +94,28 @@ public class AddJaxwsRuntime extends Recipe {
     /**
      * Finds the highest scope for a given group/artifact.
      *
-     * @param pom The pom to search for a dependency.
+     * @param mavenModel The maven model to search for a dependency.
      * @param groupId The group ID of the dependency
      * @param artifactId The artifact ID of the dependency
-     * @param gavToPoms A map of gav coordinates to "poms" that exist in the source set, these may have been manipulated by other visitors
+     * @param gavToModels A map of gav coordinates to "poms" that exist in the source set, these may have been manipulated by other visitors
      * @return The highest scope of the given dependency or null if the dependency does not exist.
      */
     @Nullable
-    private Scope getTransitiveDependencyScope(Pom pom, String groupId, String artifactId, Map<String, Pom> gavToPoms) {
+    private Scope getTransitiveDependencyScope(MavenResolutionResult mavenModel, String groupId, String artifactId, Map<GroupArtifactVersion, MavenResolutionResult> gavToModels) {
 
-        Pom localPom = gavToPoms.get(pom.getCoordinates());
-        if (localPom != null) {
-            pom = localPom;
-        }
-        Scope scope = null;
-        for (Pom.Dependency dependency : pom.getDependencies()) {
-            if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
-                scope = Scope.maxPrecedence(scope, dependency.getScope());
-                if (Scope.Compile.equals(scope)) {
-                    return scope;
+        Scope maxScope = null;
+        for (Map.Entry<Scope, List<ResolvedDependency>> entry : mavenModel.getDependencies().entrySet()) {
+            for (ResolvedDependency dependency : entry.getValue()) {
+                if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
+                    maxScope = Scope.maxPrecedence(maxScope, entry.getKey());
+                    if (Scope.Compile.equals(maxScope)) {
+                        return maxScope;
+                    }
+                    break;
                 }
             }
         }
-
-        if (pom.getParent() != null) {
-            scope = Scope.maxPrecedence(scope, getTransitiveDependencyScope(pom.getParent(), groupId, artifactId, gavToPoms));
-            if (Scope.Compile.equals(scope)) {
-                return scope;
-            }
-        }
-
-        for (Pom.Dependency dependency : pom.getDependencies()) {
-            Scope transitiveScope = Scope.maxPrecedence(scope, getTransitiveDependencyScope(dependency.getModel(), groupId, artifactId, gavToPoms));
-            if (transitiveScope != null) {
-                Scope dependencyScope = dependency.getScope();
-                scope = dependencyScope != null ? dependencyScope : transitiveScope;
-            }
-            if (Scope.Compile.equals(scope)) {
-                return scope;
-            }
-        }
-        return scope;
+        return null;
     }
+
 }

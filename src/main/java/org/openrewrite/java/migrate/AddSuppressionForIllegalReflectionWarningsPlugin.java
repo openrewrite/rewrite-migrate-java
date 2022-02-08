@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.openrewrite.*;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.maven.AddPlugin;
+import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.tree.Xml;
@@ -55,35 +56,32 @@ public class AddSuppressionForIllegalReflectionWarningsPlugin extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new AddMavenJarPluginVisitor();
-    }
+        return new MavenIsoVisitor<ExecutionContext>() {
+            @Override
+            public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
+                Xml.Tag t = super.visitTag(tag, ctx);
+                if (PACKAGING_MATCHER.matches(getCursor())) {
+                    // TODO: add condition for SpringBoot-Maven-Plugin.
+                    if (t.getValue().isPresent() && ("ear".equals(t.getValue().get()) || "war".equals(t.getValue().get()))) {
+                        String groupId = "org.apache.maven.plugins";
+                        String artifactId = "maven-jar-plugin";
+                        // TODO: Prioritize managedPlugin version.
+                        String version = StringUtils.isNullOrEmpty(getVersion()) ? "3.2.0" : getVersion();
+                        String configuration =
+                                "<configuration>\n" +
+                                        "    <archive>\n" +
+                                        "        <manifestEntries>\n" +
+                                        "            <Add-Opens>java.base/java.lang java.base/java.util java.base/java.lang.reflect java.base/java.text java.desktop/java.awt.font</Add-Opens>\n" +
+                                        "        </manifestEntries>\n" +
+                                        "    </archive>\n" +
+                                        "</configuration>";
 
-    private class AddMavenJarPluginVisitor extends MavenVisitor {
-
-        @Override
-        public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
-            Xml.Tag t = (Xml.Tag) super.visitTag(tag, ctx);
-            if (PACKAGING_MATCHER.matches(getCursor())) {
-                // TODO: add condition for SpringBoot-Maven-Plugin.
-                if (t.getValue().isPresent() && ("ear".equals(t.getValue().get()) || "war".equals(t.getValue().get()))) {
-                    String groupId = "org.apache.maven.plugins";
-                    String artifactId = "maven-jar-plugin";
-                    // TODO: Prioritize managedPlugin version.
-                    String version = StringUtils.isNullOrEmpty(getVersion()) ? "3.2.0" : getVersion();
-                    String configuration =
-                            "<configuration>\n" +
-                                    "    <archive>\n" +
-                                    "        <manifestEntries>\n" +
-                                    "            <Add-Opens>java.base/java.lang java.base/java.util java.base/java.lang.reflect java.base/java.text java.desktop/java.awt.font</Add-Opens>\n" +
-                                    "        </manifestEntries>\n" +
-                                    "    </archive>\n" +
-                                    "</configuration>";
-
-                    doAfterVisit(new AddPlugin(groupId, artifactId, version, configuration, null, null));
+                        doAfterVisit(new AddPlugin(groupId, artifactId, version, configuration, null, null));
+                    }
                 }
+                return t;
             }
-
-            return t;
-        }
+        };
     }
+
 }
