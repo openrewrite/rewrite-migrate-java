@@ -112,7 +112,7 @@ class JavaxToJakartaTest : JavaRecipeTest {
             "public interface I1 {}",
             "public interface I2 {}"
         ),
-        recipe = recipe.doNext(ChangeType("I1", "I2")),
+        recipe = recipe.doNext(ChangeType("I1", "I2", false)),
         before = """
             public class B extends javax.xml.bind.annotation.A implements I1 {}
         """,
@@ -170,6 +170,7 @@ class JavaxToJakartaTest : JavaRecipeTest {
         """
     )
 
+    @Suppress("EmptyTryBlock", "CatchMayIgnoreException")
     @Test
     fun multiCatch() = assertChanged(
         dependsOn = arrayOf(

@@ -51,7 +51,8 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
             public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
                 cu = (J.CompilationUnit) new ChangeType(
                         "java.util.logging.LoggingMXBean",
-                        "java.lang.management.PlatformLoggingMXBean"
+                        "java.lang.management.PlatformLoggingMXBean",
+                        false
                 ).getVisitor().visitNonNull(cu, ctx);
                 return super.visitCompilationUnit(cu, ctx);
             }
