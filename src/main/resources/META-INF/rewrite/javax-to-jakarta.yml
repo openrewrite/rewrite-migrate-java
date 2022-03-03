@@ -34,6 +34,7 @@ recipeList:
   - org.openrewrite.java.migrate.JavaxTransactionMigrationToJakartaTransaction
   - org.openrewrite.java.migrate.JavaxXmlBindMigrationToJakartaXmlBind
   - org.openrewrite.java.migrate.JavaxXmlWsMigrationToJakartaXmlWs
+  - org.openrewrite.java.migrate.JavaxPeristenceXmlToJakartaPersistenceXml
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaxActivationMigrationToJakartaActivation
@@ -422,3 +423,34 @@ recipeList:
   - org.openrewrite.maven.RemoveDependency:
       groupId: javax.xml.ws
       artifactId: jaxws-api
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.JavaxPeristenceXmlToJakartaPersistenceXml
+displayName: migrate persistence.xml files
+recipeList:
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: name
+      elementName: //property
+      oldValue: javax.persistence
+      newValue: jakarta.persistence
+      fileMatcher: "**/persistence.xml"
+
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: version
+      elementName: persistence
+      newValue: 3.0
+      fileMatcher: "**/persistence.xml"
+
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xmlns
+      elementName: persistence
+      oldValue: http://xmlns.jcp.org
+      newValue: https://jakarta.ee
+      fileMatcher: "**/persistence.xml"
+
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xsi:schemaLocation
+      elementName: persistence
+      newValue: https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd
+      fileMatcher: "**/persistence.xml"
