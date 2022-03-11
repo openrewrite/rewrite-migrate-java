@@ -24,6 +24,8 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 
+import java.time.Duration;
+
 public class ApacheFileUtilsToJavaFiles extends Recipe {
     @Override
     public String getDisplayName() {
@@ -33,6 +35,11 @@ public class ApacheFileUtilsToJavaFiles extends Recipe {
     @Override
     public String getDescription() {
         return "Migrate `apache.commons.io.FileUtils` to `java.nio.file.Files`.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

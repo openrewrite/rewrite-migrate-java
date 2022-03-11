@@ -24,6 +24,7 @@ import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.maven.RemoveDependency;
 import org.openrewrite.xml.tree.Xml;
 
+import java.time.Duration;
 import java.util.Optional;
 
 public class ReplaceJavaxJaxbWithJakarta extends Recipe {
@@ -36,6 +37,11 @@ public class ReplaceJavaxJaxbWithJakarta extends Recipe {
     @Override
     public String getDescription() {
         return "This recipe will replace the legacy `javax-api` artifact with the Jakarta EE equivalent.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

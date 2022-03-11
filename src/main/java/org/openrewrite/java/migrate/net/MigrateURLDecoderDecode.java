@@ -25,6 +25,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
+
 public class MigrateURLDecoderDecode extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.net.URLDecoder decode(String)");
 
@@ -66,6 +68,11 @@ public class MigrateURLDecoderDecode extends Recipe {
             }
             return super.visitMethodInvocation(m, ctx);
         }
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
 }

@@ -24,6 +24,8 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
+import java.time.Duration;
+
 public class ApacheBase64ToJavaBase64 extends Recipe {
     @Override
     public String getDisplayName() {
@@ -33,6 +35,11 @@ public class ApacheBase64ToJavaBase64 extends Recipe {
     @Override
     public String getDescription() {
         return "Migrate `apache.commons.codec.binary.Base64#encodeBase64` to `java.util.Base64.Encoder#encodeBase64`, `apache.commons.codec.binary.Base64#encodeBase64String` to `java.util.Base64.Encoder#encodeToString`, and `apache.commons.codec.binary.Base64#decodeBase64` to `java.util.Base64.Decoder#decode`";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

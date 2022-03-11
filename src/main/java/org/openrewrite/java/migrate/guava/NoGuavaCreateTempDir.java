@@ -26,6 +26,7 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -38,6 +39,11 @@ public class NoGuavaCreateTempDir extends Recipe {
     @Override
     public String getDescription() {
         return "Replaces Guava `Files#createTempDir()` with Java `Files#createTempDirectory(..)`. Transformations are limited to scopes throwing or catching `java.io.IOException`.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

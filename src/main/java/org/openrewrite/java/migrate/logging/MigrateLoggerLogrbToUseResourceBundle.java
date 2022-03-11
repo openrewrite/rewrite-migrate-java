@@ -24,6 +24,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
+
 public class MigrateLoggerLogrbToUseResourceBundle extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.util.logging.Logger logrb(java.util.logging.Level, String, String, String, String, ..)");
 
@@ -35,6 +37,11 @@ public class MigrateLoggerLogrbToUseResourceBundle extends Recipe {
     @Override
     public String getDescription() {
         return "`java.util.logging.Logger#logrb(.., String bundleName, ..)` has been deprecated.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

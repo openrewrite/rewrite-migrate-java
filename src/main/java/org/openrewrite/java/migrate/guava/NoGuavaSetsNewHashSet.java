@@ -26,6 +26,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
+import java.time.Duration;
 import java.util.stream.Collectors;
 
 public class NoGuavaSetsNewHashSet extends Recipe {
@@ -39,6 +40,11 @@ public class NoGuavaSetsNewHashSet extends Recipe {
     @Override
     public String getDescription() {
         return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

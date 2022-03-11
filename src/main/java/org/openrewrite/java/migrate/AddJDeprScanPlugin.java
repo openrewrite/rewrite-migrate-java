@@ -25,6 +25,7 @@ import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.xml.tree.Xml;
 
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -42,6 +43,11 @@ public class AddJDeprScanPlugin extends Recipe {
     @Override
     public String getDescription() {
         return "JDeprScan scans class files for uses of deprecated APIs.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

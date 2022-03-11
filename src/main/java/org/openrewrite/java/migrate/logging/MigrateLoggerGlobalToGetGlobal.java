@@ -24,6 +24,8 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
+import java.time.Duration;
+
 public class MigrateLoggerGlobalToGetGlobal extends Recipe {
     @Override
     public String getDisplayName() {
@@ -33,6 +35,11 @@ public class MigrateLoggerGlobalToGetGlobal extends Recipe {
     @Override
     public String getDescription() {
         return "The preferred way to get the global logger object is via the call `Logger#getGlobal()`.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override
