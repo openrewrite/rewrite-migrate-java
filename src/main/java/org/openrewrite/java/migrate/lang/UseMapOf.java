@@ -26,6 +26,7 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -37,6 +38,11 @@ public class UseMapOf extends Recipe {
     @Override
     public String getDisplayName() {
         return "Use `Map.of(..)` where possible";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

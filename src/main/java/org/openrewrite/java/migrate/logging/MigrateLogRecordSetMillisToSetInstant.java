@@ -24,6 +24,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
+
 public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.util.logging.LogRecord setMillis(long)");
 
@@ -35,6 +37,11 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
     @Override
     public String getDescription() {
         return "`LogRecord#setMillis(long)` has been deprecated.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

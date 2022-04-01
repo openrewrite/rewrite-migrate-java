@@ -24,12 +24,19 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
+
 public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
     private static final MethodMatcher NEW_HASH_SET = new MethodMatcher("com.google.common.collect.Sets newConcurrentHashSet()");
 
     @Override
     public String getDisplayName() {
         return "Construct a set from a `new ConcurrentHashMap<>()` instead of Guava";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

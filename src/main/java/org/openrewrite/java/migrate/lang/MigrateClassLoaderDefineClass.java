@@ -23,6 +23,8 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
+
 public class MigrateClassLoaderDefineClass extends Recipe {
     private static final MethodMatcher DEFINE_CLASS_MATCHER = new MethodMatcher("java.lang.ClassLoader defineClass(byte[], int, int)");
 
@@ -34,6 +36,11 @@ public class MigrateClassLoaderDefineClass extends Recipe {
     @Override
     public String getDescription() {
         return "`ClassLoader#defineClass(byte[], int, int)` was deprecated in Java 1.1.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

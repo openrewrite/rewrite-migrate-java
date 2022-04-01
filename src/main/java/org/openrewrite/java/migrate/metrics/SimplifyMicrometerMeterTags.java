@@ -23,12 +23,19 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
+
 public class SimplifyMicrometerMeterTags extends Recipe {
     private static final MethodMatcher COUNTER_TAGS = new MethodMatcher("io.micrometer.core.instrument.Counter.Builder tags(String[])");
 
     @Override
     public String getDisplayName() {
         return "Simplify [Micrometer](https://micrometer.io) meter tags";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

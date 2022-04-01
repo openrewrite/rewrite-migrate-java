@@ -23,8 +23,15 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
+
 public class MigrateDriverManagerSetLogStream extends Recipe {
     private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.sql.DriverManager setLogStream(java.io.PrintStream)");
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
+    }
 
     @Override
     public String getDisplayName() {

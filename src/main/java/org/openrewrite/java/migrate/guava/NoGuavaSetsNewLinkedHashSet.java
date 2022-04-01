@@ -25,6 +25,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
+
 public class NoGuavaSetsNewLinkedHashSet extends Recipe {
     private static final MethodMatcher NEW_LINKED_HASH_SET = new MethodMatcher("com.google.common.collect.Sets newLinkedHashSet()");
     private static final MethodMatcher NEW_LINKED_HASH_SET_ITERABLE = new MethodMatcher("com.google.common.collect.Sets newLinkedHashSet(java.lang.Iterable)");
@@ -38,6 +40,11 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
     @Override
     public String getDescription() {
         return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

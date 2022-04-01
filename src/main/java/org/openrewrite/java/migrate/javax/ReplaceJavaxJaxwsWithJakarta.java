@@ -24,6 +24,7 @@ import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.maven.RemoveDependency;
 import org.openrewrite.xml.tree.Xml;
 
+import java.time.Duration;
 import java.util.Optional;
 
 public class ReplaceJavaxJaxwsWithJakarta extends Recipe {
@@ -36,6 +37,11 @@ public class ReplaceJavaxJaxwsWithJakarta extends Recipe {
     @Override
     public String getDescription() {
         return "This recipe will replace the legacy javax `jaxws-api` artifact with the Jakarta EE equivalent. The jakarta JAX-WS API 2.3.x is part of JakartaEE 8 and still uses `javax` packaging.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

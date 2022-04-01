@@ -25,6 +25,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
+
 public class MigrateURLEncoderEncode extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.net.URLEncoder encode(String)");
 
@@ -36,6 +38,11 @@ public class MigrateURLEncoderEncode extends Recipe {
     @Override
     public String getDescription() {
         return "`java.net.URLEncoder#encode(String)` is platform-dependent. It's advised to specify an encoding.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

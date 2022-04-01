@@ -23,6 +23,7 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
 import java.util.Collections;
 
 public class MigrateSecurityManagerMulticast extends Recipe {
@@ -36,6 +37,11 @@ public class MigrateSecurityManagerMulticast extends Recipe {
     @Override
     public String getDescription() {
         return "`SecurityManager#checkMulticast(InetAddress, byte)` was deprecated in Java 1.1.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

@@ -63,6 +63,7 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.activation
       newPackageName: jakarta.activation
+      recursive: true
 
   # Remove Javax Batch API(x)
   - org.openrewrite.maven.RemoveDependency:
@@ -220,6 +221,7 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.batch
       newPackageName: jakarta.batch
+      recursive: true
 
   # Remove Javax Batch API(x)
   - org.openrewrite.maven.RemoveDependency:
@@ -251,6 +253,7 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.validation
       newPackageName: jakarta.validation
+      recursive: true
 
   # Remove Javax Validation API
   - org.openrewrite.maven.RemoveDependency:
@@ -284,6 +287,7 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.inject
       newPackageName: jakarta.inject
+      recursive: true
 
   # Remove Javax Inject API(x)
   - org.openrewrite.maven.RemoveDependency:
@@ -317,6 +321,7 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.transaction
       newPackageName: jakarta.transaction
+      recursive: true
 
   # Remove Javax Transaction API(x)
   - org.openrewrite.maven.RemoveDependency:
@@ -365,6 +370,7 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.xml.bind
       newPackageName: jakarta.xml.bind
+      recursive: true
 
   # Remove the legacy Javax JAXB API in favor of the the jakarta artifact.
   - org.openrewrite.maven.RemoveDependency:
@@ -418,6 +424,7 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.xml.ws
       newPackageName: jakarta.xml.ws
+      recursive: true
 
   # Remove Javax JaxWs API(x)
   - org.openrewrite.maven.RemoveDependency:

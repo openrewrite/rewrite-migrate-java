@@ -26,6 +26,7 @@ import org.openrewrite.maven.RemoveDependency;
 import org.openrewrite.maven.tree.*;
 import org.openrewrite.xml.tree.Xml;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,11 @@ public class AddJaxbRuntime extends Recipe {
     @Override
     public String getDescription() {
         return "This recipe will add a JAXB run-time dependency to any maven project that has a transitive dependency on JAXB.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

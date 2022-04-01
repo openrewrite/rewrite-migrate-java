@@ -25,6 +25,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
+
 public class NoGuavaListsNewLinkedList extends Recipe {
     private static final MethodMatcher NEW_LINKED_LIST = new MethodMatcher("com.google.common.collect.Lists newLinkedList()");
     private static final MethodMatcher NEW_LINKED_LIST_ITERABLE = new MethodMatcher("com.google.common.collect.Lists newLinkedList(java.lang.Iterable)");
@@ -37,6 +39,11 @@ public class NoGuavaListsNewLinkedList extends Recipe {
     @Override
     public String getDescription() {
         return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override

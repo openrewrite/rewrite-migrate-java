@@ -19,7 +19,7 @@ import org.openrewrite.SourceFile;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.xml.tree.Xml;
 
-public class MavenUtils {
+public final class MavenUtils {
     private MavenUtils() {
     }
 

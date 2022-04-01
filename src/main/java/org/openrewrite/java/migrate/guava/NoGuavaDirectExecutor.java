@@ -24,6 +24,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
+
 public class NoGuavaDirectExecutor extends Recipe {
     private static final MethodMatcher DIRECT_EXECUTOR = new MethodMatcher("com.google.common.util.concurrent.MoreExecutors directExecutor()");
 
@@ -35,6 +37,11 @@ public class NoGuavaDirectExecutor extends Recipe {
     @Override
     public String getDescription() {
         return "`Executor` is a SAM-compatible interface, so `Runnable::run` is just as succinct as `MoreExecutors.directExecutor()` but without the third-party library requirement.";
+    }
+
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(5);
     }
 
     @Override
