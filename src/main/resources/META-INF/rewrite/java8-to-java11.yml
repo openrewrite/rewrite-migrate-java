@@ -43,6 +43,5 @@ recipeList:
   - org.openrewrite.java.migrate.javax.JavaxLangModelUtil
   - org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
-  # Upgrade JaCoCo
+  - org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion
   - org.openrewrite.java.migrate.jacoco.UpgradeJaCoCoVersion
-  
