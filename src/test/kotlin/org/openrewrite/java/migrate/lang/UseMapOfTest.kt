@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
-class UseMapOfTest: JavaRecipeTest {
+class UseMapOfTest : JavaRecipeTest {
     override val recipe: Recipe
         get() = UseMapOf()
 

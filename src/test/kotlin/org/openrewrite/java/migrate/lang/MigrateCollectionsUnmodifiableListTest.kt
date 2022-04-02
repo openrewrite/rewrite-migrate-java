@@ -20,7 +20,7 @@ import org.openrewrite.Issue
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
-class MigrateCollectionsUnmodifiableListTest: JavaRecipeTest {
+class MigrateCollectionsUnmodifiableListTest : JavaRecipeTest {
     override val recipe: Recipe
         get() = MigrateCollectionsUnmodifiableList()
 

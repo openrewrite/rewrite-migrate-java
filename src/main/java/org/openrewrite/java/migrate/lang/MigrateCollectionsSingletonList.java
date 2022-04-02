@@ -64,17 +64,17 @@ public class MigrateCollectionsSingletonList extends Recipe {
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
                 if (SINGLETON_LIST.matches(method)) {
-                                maybeRemoveImport("java.util.Collections");
+                    maybeRemoveImport("java.util.Collections");
 
-                                return autoFormat(m.withTemplate(
-                                        JavaTemplate
-                                                .builder(this::getCursor, "List.of(#{any()})")
-                                                .imports("java.util.List")
-                                                .build(),
-                                        m.getCoordinates().replace(),
-                                        m.getArguments().get(0)
-                                ), executionContext);
-                            }
+                    return autoFormat(m.withTemplate(
+                            JavaTemplate
+                                    .builder(this::getCursor, "List.of(#{any()})")
+                                    .imports("java.util.List")
+                                    .build(),
+                            m.getCoordinates().replace(),
+                            m.getArguments().get(0)
+                    ), executionContext);
+                }
 
                 return m;
             }

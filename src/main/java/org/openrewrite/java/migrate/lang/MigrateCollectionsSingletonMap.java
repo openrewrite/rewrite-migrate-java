@@ -67,21 +67,21 @@ public class MigrateCollectionsSingletonMap extends Recipe {
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
                 if (SINGLETON_MAP.matches(method)) {
-                                maybeRemoveImport("java.util.Collections");
+                    maybeRemoveImport("java.util.Collections");
 
                     StringJoiner mapOf = new StringJoiner(", ", "Map.of(", ")");
                     List<Expression> args = m.getArguments();
                     args.forEach(o -> mapOf.add("#{any()}"));
 
-                                return autoFormat(m.withTemplate(
-                                        JavaTemplate
-                                                .builder(this::getCursor, mapOf.toString())
-                                                .imports("java.util.Map")
-                                                .build(),
-                                        m.getCoordinates().replace(),
-                                        m.getArguments().toArray()
-                                ), executionContext);
-                            }
+                    return autoFormat(m.withTemplate(
+                            JavaTemplate
+                                    .builder(this::getCursor, mapOf.toString())
+                                    .imports("java.util.Map")
+                                    .build(),
+                            m.getCoordinates().replace(),
+                            m.getArguments().toArray()
+                    ), executionContext);
+                }
 
                 return m;
             }

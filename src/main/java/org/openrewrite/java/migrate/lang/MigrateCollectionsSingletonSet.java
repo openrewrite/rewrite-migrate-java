@@ -23,13 +23,9 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringJoiner;
 
 public class MigrateCollectionsSingletonSet extends Recipe {
     private static final MethodMatcher SINGLETON_SET = new MethodMatcher("java.util.Collections singleton(..)", true);
@@ -68,17 +64,17 @@ public class MigrateCollectionsSingletonSet extends Recipe {
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
                 if (SINGLETON_SET.matches(method)) {
-                                maybeRemoveImport("java.util.Collections");
+                    maybeRemoveImport("java.util.Collections");
 
-                                return autoFormat(m.withTemplate(
-                                        JavaTemplate
-                                                .builder(this::getCursor, "Set.of(#{any()})")
-                                                .imports("java.util.Set")
-                                                .build(),
-                                        m.getCoordinates().replace(),
-                                        m.getArguments().get(0)
-                                ), executionContext);
-                            }
+                    return autoFormat(m.withTemplate(
+                            JavaTemplate
+                                    .builder(this::getCursor, "Set.of(#{any()})")
+                                    .imports("java.util.Set")
+                                    .build(),
+                            m.getCoordinates().replace(),
+                            m.getArguments().get(0)
+                    ), executionContext);
+                }
 
                 return m;
             }

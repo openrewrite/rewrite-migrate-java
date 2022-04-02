@@ -20,7 +20,7 @@ import org.openrewrite.Issue
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
-class MigrateCollectionsSingletonSetTest: JavaRecipeTest {
+class MigrateCollectionsSingletonSetTest : JavaRecipeTest {
     override val recipe: Recipe
         get() = MigrateCollectionsSingletonSet()
 
