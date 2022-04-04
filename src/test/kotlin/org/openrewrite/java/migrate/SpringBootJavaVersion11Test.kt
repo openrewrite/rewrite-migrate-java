@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- package org.openrewrite.maven
+package org.openrewrite.java.migrate
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -25,7 +25,7 @@ class SpringBootJavaVersion11Test : MavenRecipeTest {
     override val recipe: Recipe = Environment.builder()
         .scanRuntimeClasspath("org.openrewrite.java.migrate.spring")
         .build()
-        .activateRecipes("org.openrewrite.java.migrate.spring.SpringBootJavaVersion11")
+        .activateRecipes("org.openrewrite.java.migrate.JavaVersion11")
 
     @Test
     fun property() = assertChanged(
