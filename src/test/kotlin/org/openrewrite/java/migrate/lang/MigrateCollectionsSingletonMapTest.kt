@@ -20,26 +20,48 @@ import org.openrewrite.Issue
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
-class MigrateCollectionsUnmodifiableSetTest : JavaRecipeTest {
+class MigrateCollectionsSingletonMapTest : JavaRecipeTest {
     override val recipe: Recipe
-        get() = MigrateCollectionsUnmodifiableSet()
+        get() = MigrateCollectionsSingletonMap()
 
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
-    fun unmodifiableSet() = assertChanged(
+    fun singletonMap() = assertChanged(
         before = """
             import java.util.*;
             
             class Test {
-                Set<Integer> s = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(1, 2, 3)));
+                Map<String,String> set = Collections.singletonMap("hello", "world");
             }
         """,
         after = """
-            import java.util.Set;
+            import java.util.Map;
             
             class Test {
-                Set<Integer> s = Set.of(1, 2, 3);
+                Map<String,String> set = Map.of("hello", "world");
             }
         """
     )
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
+    @Test
+    fun singletonMapCustomType() = assertChanged(
+        before = """
+            import java.util.*;
+            import java.time.LocalDate;
+            
+            class Test {
+                Map<String,LocalDate> map = Collections.singletonMap("date", LocalDate.now());
+            }
+        """,
+        after = """
+            import java.util.Map;
+            import java.time.LocalDate;
+            
+            class Test {
+                Map<String,LocalDate> map = Map.of("date", LocalDate.now());
+            }
+        """
+    )
+
 }

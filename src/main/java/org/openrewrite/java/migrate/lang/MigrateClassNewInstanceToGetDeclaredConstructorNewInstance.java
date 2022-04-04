@@ -57,9 +57,9 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
     }
 
     private static class NewInstanceToDeclaredConstructorVisitor extends JavaIsoVisitor<ExecutionContext> {
+        private static final ChangeMethodName TO_DECLARED_CONS_NEW_INSTANCE = new ChangeMethodName("java.lang.Class newInstance()", "getDeclaredConstructor().newInstance", null, false);
         private final JavaType exType = JavaType.buildType("java.lang.Exception");
         private final JavaType thType = JavaType.buildType("java.lang.Throwable");
-        private static final ChangeMethodName TO_DECLARED_CONS_NEW_INSTANCE = new ChangeMethodName("java.lang.Class newInstance()", "getDeclaredConstructor().newInstance", null, false);
 
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
