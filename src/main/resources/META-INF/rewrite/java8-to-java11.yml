@@ -43,5 +43,5 @@ recipeList:
   - org.openrewrite.java.migrate.javax.JavaxLangModelUtil
   - org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
-  # Change Spring Boot Maven property java.version to 11
-  - org.openrewrite.java.migrate.spring.SpringBootJavaVersion11
+  # Change Maven property java.version to 11
+  - org.openrewrite.java.migrate.JavaVersion11
