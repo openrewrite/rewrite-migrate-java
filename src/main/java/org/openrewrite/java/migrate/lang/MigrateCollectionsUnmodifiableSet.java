@@ -77,7 +77,7 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
 
                                 StringJoiner setOf = new StringJoiner(", ", "Set.of(", ")");
                                 List<Expression> args = ((J.MethodInvocation) newSet.getArguments().get(0)).getArguments();
-                                args.forEach(o -> setOf.add("#{}"));
+                                args.forEach(o -> setOf.add("#{any()}"));
 
                                 return autoFormat(m.withTemplate(
                                         JavaTemplate

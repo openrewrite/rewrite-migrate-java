@@ -42,4 +42,25 @@ class MigrateCollectionsUnmodifiableListTest : JavaRecipeTest {
             }
         """
     )
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
+    @Test
+    fun unmodifiableListTyped() = assertChanged(
+        before = """
+            import java.util.*;
+            import java.time.LocalDate;
+            
+            class Test {
+                List<LocalDate> s = Collections.unmodifiableList(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now()));
+            }
+        """,
+        after = """
+            import java.util.List;
+            import java.time.LocalDate;
+            
+            class Test {
+                List<LocalDate> s = List.of(LocalDate.of(2010, 1, 1), LocalDate.now());
+            }
+        """
+    )
 }

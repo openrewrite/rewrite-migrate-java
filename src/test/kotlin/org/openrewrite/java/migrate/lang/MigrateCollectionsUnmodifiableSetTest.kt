@@ -42,4 +42,25 @@ class MigrateCollectionsUnmodifiableSetTest : JavaRecipeTest {
             }
         """
     )
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
+    @Test
+    fun unmodifiableSetTyped() = assertChanged(
+        before = """
+            import java.util.*;
+            import java.time.LocalDate;
+            
+            class Test {
+                Set<LocalDate> s = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now())));
+            }
+        """,
+        after = """
+            import java.util.Set;
+            import java.time.LocalDate;
+            
+            class Test {
+                Set<LocalDate> s = Set.of(LocalDate.of(2010, 1, 1), LocalDate.now());
+            }
+        """
+    )
 }
