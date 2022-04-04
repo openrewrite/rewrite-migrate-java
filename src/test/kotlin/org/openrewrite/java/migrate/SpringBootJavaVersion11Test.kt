@@ -23,7 +23,7 @@ import org.openrewrite.maven.MavenRecipeTest
 
 class SpringBootJavaVersion11Test : MavenRecipeTest {
     override val recipe: Recipe = Environment.builder()
-        .scanRuntimeClasspath("org.openrewrite.java.migrate.spring")
+        .scanRuntimeClasspath("org.openrewrite.java.migrate")
         .build()
         .activateRecipes("org.openrewrite.java.migrate.JavaVersion11")
 
