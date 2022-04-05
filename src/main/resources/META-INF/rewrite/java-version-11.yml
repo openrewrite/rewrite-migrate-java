@@ -16,8 +16,8 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaVersion11
-displayName: Change Maven property java.version to 11
-description: Change the Maven compiler source and target versions to 11, via Spring Boot property java.version.
+displayName: Change Maven Java version property values to 11
+description: Change maven.compiler.source and maven.compiler.target values to 11.
 recipeList:
   - org.openrewrite.maven.ChangePropertyValue:
       key: java.version
