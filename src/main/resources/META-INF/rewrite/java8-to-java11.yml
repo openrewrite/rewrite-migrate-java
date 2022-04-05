@@ -45,3 +45,4 @@ recipeList:
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
   - org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion
   - org.openrewrite.java.migrate.jacoco.UpgradeJaCoCoMavenPluginVersion
+  - org.openrewrite.java.migrate.JavaVersion11
