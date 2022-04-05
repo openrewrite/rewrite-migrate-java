@@ -21,14 +21,14 @@ import org.openrewrite.Recipe
 import org.openrewrite.config.Environment
 import org.openrewrite.maven.MavenRecipeTest
 
-class SpringBootJavaVersion11Test : MavenRecipeTest {
+class JavaVersion11Test : MavenRecipeTest {
     override val recipe: Recipe = Environment.builder()
         .scanRuntimeClasspath("org.openrewrite.java.migrate")
         .build()
         .activateRecipes("org.openrewrite.java.migrate.JavaVersion11")
 
     @Test
-    fun property() = assertChanged(
+    fun changeJavaVersion() = assertChanged(
         before = """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -48,6 +48,38 @@ class SpringBootJavaVersion11Test : MavenRecipeTest {
                
               <properties>
                 <java.version>11</java.version>
+              </properties>
+              
+              <groupId>com.mycompany.app</groupId>
+              <artifactId>my-app</artifactId>
+              <version>1</version>
+            </project>
+        """
+    )
+
+    @Test
+    fun changeMavenCompiler() = assertChanged(
+        before = """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+               
+              <properties>
+                <maven.compiler.source>1.8</maven.compiler.source>
+                <maven.compiler.target>1.8</maven.compiler.target>
+              </properties>
+              
+              <groupId>com.mycompany.app</groupId>
+              <artifactId>my-app</artifactId>
+              <version>1</version>
+            </project>
+        """,
+        after = """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+               
+              <properties>
+                <maven.compiler.source>11</maven.compiler.source>
+                <maven.compiler.target>11</maven.compiler.target>
               </properties>
               
               <groupId>com.mycompany.app</groupId>

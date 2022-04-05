@@ -23,3 +23,11 @@ recipeList:
       key: java.version
       newValue: 11
       addIfMissing: false
+  - org.openrewrite.maven.ChangePropertyValue:
+      key: maven.compiler.source
+      newValue: 11
+      addIfMissing: false
+  - org.openrewrite.maven.ChangePropertyValue:
+      key: maven.compiler.target
+      newValue: 11
+      addIfMissing: false
