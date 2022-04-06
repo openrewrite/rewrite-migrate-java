@@ -69,7 +69,7 @@ class UpgradeJaCoCoMavenPluginVersionTest : MavenRecipeTest {
               <modelVersion>4.0.0</modelVersion>
                
               <properties>
-                <jacoco.version>0.8.7</jacoco.version>
+                <jacoco.version>0.8.8</jacoco.version>
               </properties>
               
               <groupId>com.mycompany.app</groupId>
