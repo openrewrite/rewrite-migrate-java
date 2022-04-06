@@ -26,4 +26,4 @@ recipeList:
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.jacoco
       artifactId: jacoco-maven-plugin
-      newVersion: 0.8.7
+      newVersion: 0.8.8
