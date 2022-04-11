@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.lang;
+package org.openrewrite.java.migrate.util;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;

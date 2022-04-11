@@ -13,45 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.lang
+package org.openrewrite.java.migrate.util
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Issue
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
-class MigrateCollectionsSingletonListTest : JavaRecipeTest {
+class MigrateCollectionsUnmodifiableListTest : JavaRecipeTest {
     override val recipe: Recipe
-        get() = MigrateCollectionsSingletonList()
+        get() = MigrateCollectionsUnmodifiableList()
 
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
     @Test
-    fun singletonList() = assertChanged(
+    fun unmodifiableList() = assertChanged(
         before = """
             import java.util.*;
             
             class Test {
-                List<String> list = Collections.singletonList("ABC");
+                List<Integer> l = Collections.unmodifiableList(Arrays.asList(1, 2, 3));
             }
         """,
         after = """
             import java.util.List;
             
             class Test {
-                List<String> list = List.of("ABC");
+                List<Integer> l = List.of(1, 2, 3);
             }
         """
     )
 
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
     @Test
-    fun singletonListCustomType() = assertChanged(
+    fun unmodifiableListTyped() = assertChanged(
         before = """
             import java.util.*;
             import java.time.LocalDate;
             
             class Test {
-                List<LocalDate> list = Collections.singletonList(LocalDate.now());
+                List<LocalDate> s = Collections.unmodifiableList(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now()));
             }
         """,
         after = """
@@ -59,9 +59,8 @@ class MigrateCollectionsSingletonListTest : JavaRecipeTest {
             import java.time.LocalDate;
             
             class Test {
-                List<LocalDate> list = List.of(LocalDate.now());
+                List<LocalDate> s = List.of(LocalDate.of(2010, 1, 1), LocalDate.now());
             }
         """
     )
-
 }

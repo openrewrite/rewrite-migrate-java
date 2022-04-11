@@ -13,45 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.lang
+package org.openrewrite.java.migrate.util
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Issue
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
-class MigrateCollectionsUnmodifiableSetTest : JavaRecipeTest {
+class MigrateCollectionsSingletonSetTest : JavaRecipeTest {
     override val recipe: Recipe
-        get() = MigrateCollectionsUnmodifiableSet()
+        get() = MigrateCollectionsSingletonSet()
 
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
-    fun unmodifiableSet() = assertChanged(
+    fun singleTonSet() = assertChanged(
         before = """
             import java.util.*;
             
             class Test {
-                Set<Integer> s = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(1, 2, 3)));
+                Set<String> set = Collections.singleton("Hello");
             }
         """,
         after = """
             import java.util.Set;
             
             class Test {
-                Set<Integer> s = Set.of(1, 2, 3);
+                Set<String> set = Set.of("Hello");
             }
         """
     )
 
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
-    fun unmodifiableSetTyped() = assertChanged(
+    fun singletonSetCustomType() = assertChanged(
         before = """
             import java.util.*;
             import java.time.LocalDate;
             
             class Test {
-                Set<LocalDate> s = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now())));
+                Set<LocalDate> set = Collections.singleton(LocalDate.now());
             }
         """,
         after = """
@@ -59,8 +59,9 @@ class MigrateCollectionsUnmodifiableSetTest : JavaRecipeTest {
             import java.time.LocalDate;
             
             class Test {
-                Set<LocalDate> s = Set.of(LocalDate.of(2010, 1, 1), LocalDate.now());
+                Set<LocalDate> set = Set.of(LocalDate.now());
             }
         """
     )
+
 }
