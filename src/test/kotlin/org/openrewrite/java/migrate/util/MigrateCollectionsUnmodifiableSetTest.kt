@@ -13,55 +13,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.lang
+package org.openrewrite.java.migrate.util
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Issue
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
-class MigrateCollectionsSingletonMapTest : JavaRecipeTest {
+class MigrateCollectionsUnmodifiableSetTest : JavaRecipeTest {
     override val recipe: Recipe
-        get() = MigrateCollectionsSingletonMap()
+        get() = MigrateCollectionsUnmodifiableSet()
 
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
     @Test
-    fun singletonMap() = assertChanged(
+    fun unmodifiableSet() = assertChanged(
         before = """
             import java.util.*;
             
             class Test {
-                Map<String,String> set = Collections.singletonMap("hello", "world");
+                Set<Integer> s = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(1, 2, 3)));
             }
         """,
         after = """
-            import java.util.Map;
+            import java.util.Set;
             
             class Test {
-                Map<String,String> set = Map.of("hello", "world");
+                Set<Integer> s = Set.of(1, 2, 3);
             }
         """
     )
 
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
     @Test
-    fun singletonMapCustomType() = assertChanged(
+    fun unmodifiableSetTyped() = assertChanged(
         before = """
             import java.util.*;
             import java.time.LocalDate;
             
             class Test {
-                Map<String,LocalDate> map = Collections.singletonMap("date", LocalDate.now());
+                Set<LocalDate> s = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now())));
             }
         """,
         after = """
-            import java.util.Map;
+            import java.util.Set;
             import java.time.LocalDate;
             
             class Test {
-                Map<String,LocalDate> map = Map.of("date", LocalDate.now());
+                Set<LocalDate> s = Set.of(LocalDate.of(2010, 1, 1), LocalDate.now());
             }
         """
     )
-
 }

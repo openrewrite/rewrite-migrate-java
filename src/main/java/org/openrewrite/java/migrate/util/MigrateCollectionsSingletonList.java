@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.lang;
+package org.openrewrite.java.migrate.util;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
@@ -23,16 +23,12 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.StringJoiner;
 
-public class MigrateCollectionsUnmodifiableList extends Recipe {
-    private static final MethodMatcher UNMODIFIABLE_LIST = new MethodMatcher("java.util.Collections unmodifiableList(java.util.List)", true);
-    private static final MethodMatcher ARRAYS_AS_LIST = new MethodMatcher("java.util.Arrays asList(..)", true);
+public class MigrateCollectionsSingletonList extends Recipe {
+    private static final MethodMatcher SINGLETON_LIST = new MethodMatcher("java.util.Collections singletonList(..)", true);
 
     @Override
     public String getDisplayName() {
@@ -46,7 +42,7 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Replaces `unmodifiableList(java.util.Arrays asList(<args>))` with `List.Of(<args>)`.";
+        return "Replaces `Collections.singletonList(<args>)))` with `List.Of(<args>)`.";
     }
 
     @Override
@@ -55,7 +51,7 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
             @Override
             public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
                 doAfterVisit(new UsesJavaVersion<>(9));
-                doAfterVisit(new UsesMethod<>(UNMODIFIABLE_LIST));
+                doAfterVisit(new UsesMethod<>(SINGLETON_LIST));
                 return cu;
             }
         };
@@ -67,28 +63,19 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
-                if (UNMODIFIABLE_LIST.matches(method)) {
-                    if (m.getArguments().get(0) instanceof J.MethodInvocation) {
-                        if (ARRAYS_AS_LIST.matches((J.MethodInvocation) m.getArguments().get(0))) {
-                            J.MethodInvocation arraysInvocation = (J.MethodInvocation) m.getArguments().get(0);
-                            maybeRemoveImport("java.util.Collections");
-                            maybeRemoveImport("java.util.Arrays");
+                if (SINGLETON_LIST.matches(method)) {
+                    maybeRemoveImport("java.util.Collections");
 
-                            StringJoiner setOf = new StringJoiner(", ", "List.of(", ")");
-                            List<Expression> args = arraysInvocation.getArguments();
-                            args.forEach(o -> setOf.add("#{any()}"));
-
-                            return autoFormat(m.withTemplate(
-                                    JavaTemplate
-                                            .builder(this::getCursor, setOf.toString())
-                                            .imports("java.util.List")
-                                            .build(),
-                                    m.getCoordinates().replace(),
-                                    args.toArray()
-                            ), executionContext);
-                        }
-                    }
+                    return autoFormat(m.withTemplate(
+                            JavaTemplate
+                                    .builder(this::getCursor, "List.of(#{any()})")
+                                    .imports("java.util.List")
+                                    .build(),
+                            m.getCoordinates().replace(),
+                            m.getArguments().get(0)
+                    ), executionContext);
                 }
+
                 return m;
             }
         };
