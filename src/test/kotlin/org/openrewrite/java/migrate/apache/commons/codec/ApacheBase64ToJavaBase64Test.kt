@@ -31,7 +31,7 @@ class ApacheBase64ToJavaBase64Test : JavaRecipeTest {
             .build()
 
     @Test
-    fun   toJavaBase64() = assertChanged(
+    fun toJavaBase64() = assertChanged(
         before = """
             import org.apache.commons.codec.binary.Base64;
             
@@ -47,6 +47,12 @@ class ApacheBase64ToJavaBase64Test : JavaRecipeTest {
                 }
                 static byte[] encodeBase64(byte[] binaryData) {
                     return Base64.encodeBase64(binaryData);
+                }
+                static byte[] encodeBytesUrlSafe(byte [] encodeBytes) {
+                    return Base64.encodeBase64URLSafe(encodeBytes);
+                }
+                static String encodeBytesUrlSafeString(byte [] encodeBytes) {
+                    return Base64.encodeBase64URLSafeString(encodeBytes);
                 }
             }
         """,
@@ -65,6 +71,12 @@ class ApacheBase64ToJavaBase64Test : JavaRecipeTest {
                 }
                 static byte[] encodeBase64(byte[] binaryData) {
                     return Base64.getEncoder().encode(binaryData);
+                }
+                static byte[] encodeBytesUrlSafe(byte [] encodeBytes) {
+                    return Base64.getUrlEncoder().withoutPadding().encode(encodeBytes);
+                }
+                static String encodeBytesUrlSafeString(byte [] encodeBytes) {
+                    return Base64.getUrlEncoder().withoutPadding().encodeToString(encodeBytes);
                 }
             }
         """

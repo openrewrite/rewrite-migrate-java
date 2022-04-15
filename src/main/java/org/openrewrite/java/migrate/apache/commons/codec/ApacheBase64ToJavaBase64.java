@@ -22,6 +22,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
 
 import java.time.Duration;
@@ -53,6 +54,8 @@ public class ApacheBase64ToJavaBase64 extends Recipe {
             private final MethodMatcher apacheEncodeToString = new MethodMatcher("org.apache.commons.codec.binary.Base64 encodeBase64String(byte[])");
             private final MethodMatcher apacheEncode64 = new MethodMatcher("org.apache.commons.codec.binary.Base64 encodeBase64(byte[])");
             private final MethodMatcher apacheDecode = new MethodMatcher("org.apache.commons.codec.binary.Base64 decodeBase64(..)");
+            private final MethodMatcher apacheEncode64UrlSafe = new MethodMatcher("org.apache.commons.codec.binary.Base64 encodeBase64URLSafe(..)");
+            private final MethodMatcher apacheEncode64UrlSafeString = new MethodMatcher("org.apache.commons.codec.binary.Base64 encodeBase64URLSafeString(..)");
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
@@ -65,6 +68,10 @@ public class ApacheBase64ToJavaBase64 extends Recipe {
                     templatePrefix = "Base64.getEncoder().encode(#{anyArray()})";
                 } else if (apacheDecode.matches(mi)) {
                     templatePrefix = "Base64.getDecoder().decode(#{any(String)})";
+                } else if (apacheEncode64UrlSafe.matches(mi)) {
+                    templatePrefix = "Base64.getUrlEncoder().withoutPadding().encode(#{anyArray()})";
+                } else if (apacheEncode64UrlSafeString.matches(mi)) {
+                    templatePrefix = "Base64.getUrlEncoder().withoutPadding().encodeToString(#{anyArray()})";
                 }
                 if (templatePrefix != null) {
                     JavaTemplate t = JavaTemplate.builder(this::getCursor, templatePrefix).imports("java.util.Base64").build();
