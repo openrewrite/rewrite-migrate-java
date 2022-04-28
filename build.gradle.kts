@@ -10,14 +10,14 @@ plugins {
     `maven-publish`
     signing
 
-    id("org.jetbrains.kotlin.jvm") version "1.5.10"
+    id("org.jetbrains.kotlin.jvm") version "1.6.21"
     id("nebula.maven-resolved-dependencies") version "17.3.2"
     id("nebula.release") version "15.3.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
 
     id("com.github.hierynomus.license") version "0.16.1"
     id("com.github.jk1.dependency-license-report") version "1.16"
-    id("org.owasp.dependencycheck") version "6.5.3"
+    id("org.owasp.dependencycheck") version "7.0.4.1"
 
     id("nebula.maven-publish") version "17.3.2"
     id("nebula.contacts") version "5.1.0"
