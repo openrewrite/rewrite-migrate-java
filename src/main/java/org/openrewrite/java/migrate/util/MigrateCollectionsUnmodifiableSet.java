@@ -74,7 +74,7 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
                             if (ARRAYS_AS_LIST.matches(newSet.getArguments().get(0))) {
                                 maybeRemoveImport("java.util.Collections");
                                 maybeRemoveImport("java.util.Arrays");
-
+                                maybeAddImport("java.util.Set");
                                 StringJoiner setOf = new StringJoiner(", ", "Set.of(", ")");
                                 List<Expression> args = ((J.MethodInvocation) newSet.getArguments().get(0)).getArguments();
                                 args.forEach(o -> setOf.add("#{any()}"));

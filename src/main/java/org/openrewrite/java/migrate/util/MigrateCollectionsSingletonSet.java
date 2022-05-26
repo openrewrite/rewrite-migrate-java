@@ -65,7 +65,7 @@ public class MigrateCollectionsSingletonSet extends Recipe {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
                 if (SINGLETON_SET.matches(method)) {
                     maybeRemoveImport("java.util.Collections");
-
+                    maybeAddImport("java.util.Set");
                     return autoFormat(m.withTemplate(
                             JavaTemplate
                                     .builder(this::getCursor, "Set.of(#{any()})")

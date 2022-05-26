@@ -68,7 +68,7 @@ public class MigrateCollectionsSingletonMap extends Recipe {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
                 if (SINGLETON_MAP.matches(method)) {
                     maybeRemoveImport("java.util.Collections");
-
+                    maybeAddImport("java.util.Map");
                     StringJoiner mapOf = new StringJoiner(", ", "Map.of(", ")");
                     List<Expression> args = m.getArguments();
                     args.forEach(o -> mapOf.add("#{any()}"));

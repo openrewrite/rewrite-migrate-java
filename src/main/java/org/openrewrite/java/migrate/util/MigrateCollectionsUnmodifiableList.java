@@ -73,7 +73,7 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
                             J.MethodInvocation arraysInvocation = (J.MethodInvocation) m.getArguments().get(0);
                             maybeRemoveImport("java.util.Collections");
                             maybeRemoveImport("java.util.Arrays");
-
+                            maybeAddImport("java.util.List");
                             StringJoiner setOf = new StringJoiner(", ", "List.of(", ")");
                             List<Expression> args = arraysInvocation.getArguments();
                             args.forEach(o -> setOf.add("#{any()}"));
