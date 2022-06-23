@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.lang;
+package org.openrewrite.java.migrate.util;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
@@ -74,10 +74,10 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
                             if (ARRAYS_AS_LIST.matches(newSet.getArguments().get(0))) {
                                 maybeRemoveImport("java.util.Collections");
                                 maybeRemoveImport("java.util.Arrays");
-
+                                maybeAddImport("java.util.Set");
                                 StringJoiner setOf = new StringJoiner(", ", "Set.of(", ")");
                                 List<Expression> args = ((J.MethodInvocation) newSet.getArguments().get(0)).getArguments();
-                                args.forEach(o -> setOf.add("#{}"));
+                                args.forEach(o -> setOf.add("#{any()}"));
 
                                 return autoFormat(m.withTemplate(
                                         JavaTemplate

@@ -13,32 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.lang
+package org.openrewrite.java.migrate.util
 
 import org.junit.jupiter.api.Test
-import org.openrewrite.Issue
 import org.openrewrite.Recipe
 import org.openrewrite.java.JavaRecipeTest
 
-class MigrateCollectionsUnmodifiableListTest: JavaRecipeTest {
+class UseMapOfTest : JavaRecipeTest {
     override val recipe: Recipe
-        get() = MigrateCollectionsUnmodifiableList()
+        get() = UseMapOf()
 
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
     @Test
-    fun unmodifiableList() = assertChanged(
+    fun anonymousClass() = assertChanged(
         before = """
-            import java.util.*;
+            import java.util.HashMap;
+            import java.util.Map;
             
             class Test {
-                List<Integer> l = Collections.unmodifiableList(Arrays.asList(1, 2, 3));
+                Map<String, String> m = new HashMap<>() {{
+                    put("stru", "menta");
+                    put("mod", "erne");
+                }};
             }
         """,
         after = """
-            import java.util.List;
+            import java.util.Map;
             
             class Test {
-                List<Integer> l = List.of(1, 2, 3);
+                Map<String, String> m = Map.of("stru", "menta", "mod", "erne");
             }
         """
     )
