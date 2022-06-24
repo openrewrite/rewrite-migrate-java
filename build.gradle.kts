@@ -116,6 +116,7 @@ dependencies {
 
     testRuntimeOnly("org.openrewrite:rewrite-java-11:${rewriteVersion}")
     testRuntimeOnly("org.openrewrite:rewrite-java-8:${rewriteVersion}")
+    testRuntimeOnly("commons-io:commons-io:latest.release")
 }
 
 tasks.named<Test>("test") {
