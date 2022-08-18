@@ -16,12 +16,14 @@
 package org.openrewrite.java.migrate.apache.commons.io
 
 import org.junit.jupiter.api.Test
+import org.openrewrite.java.Assertions.java
+import org.openrewrite.java.Assertions.srcMainJava
 
 import org.openrewrite.java.JavaParser
 import org.openrewrite.test.RecipeSpec
 import org.openrewrite.test.RewriteTest
 
-@Suppress("deprecation", "resource", "ResultOfMethodCallIgnored")
+@Suppress("resource", "ResultOfMethodCallIgnored")
 class ApacheIOUtilsUseExplicitCharsetTest : RewriteTest  {
 
     override fun defaults(spec: RecipeSpec) {
