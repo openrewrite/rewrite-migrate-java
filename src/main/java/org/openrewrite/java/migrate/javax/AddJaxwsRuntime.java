@@ -22,14 +22,19 @@ import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.migrate.MavenUtils;
 import org.openrewrite.maven.AddDependencyVisitor;
 import org.openrewrite.maven.RemoveDependency;
-import org.openrewrite.maven.tree.*;
+import org.openrewrite.maven.tree.GroupArtifactVersion;
+import org.openrewrite.maven.tree.MavenResolutionResult;
+import org.openrewrite.maven.tree.ResolvedDependency;
+import org.openrewrite.maven.tree.Scope;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.openrewrite.java.migrate.MavenUtils.getMavenModel;
 import static org.openrewrite.java.migrate.MavenUtils.isMavenSource;
@@ -62,19 +67,19 @@ public class AddJaxwsRuntime extends Recipe {
     @Override
     protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
         //remove legacy jaxws-ri library (in favor of the jakarta runtime)
-        doNext(new RemoveDependency("com.sun.xml.ws", "jaxws-ri", null));
+        doNext(new RemoveDependency(SUN_JAXWS_RUNTIME_GROUP, "jaxws-ri", null));
 
         //Collect a map of gav coordinates to pom models for any maven files in the source set (other visitors may have
         //made changes to those models)
-        Map<GroupArtifactVersion, MavenResolutionResult> gavToModel = new HashMap<>();
-        List<SourceFile> sources = ListUtils.map(before, s -> {
-            if (isMavenSource(s)) {
-                MavenResolutionResult mavenModel = getMavenModel(s);
-                gavToModel.put(new GroupArtifactVersion(mavenModel.getPom().getGroupId(),mavenModel.getPom().getArtifactId(), mavenModel.getPom().getVersion()), mavenModel);
-            }
-            return s;
-        });
-
+        Map<GroupArtifactVersion, MavenResolutionResult> gavToModel = before.stream()
+                .filter(MavenUtils::isMavenSource)
+                .map(MavenUtils::getMavenModel)
+                .collect(Collectors.toMap(
+                        mavenModel -> new GroupArtifactVersion(
+                                mavenModel.getPom().getGroupId(),
+                                mavenModel.getPom().getArtifactId(),
+                                mavenModel.getPom().getVersion()),
+                        Function.identity()));
         return ListUtils.map(before, s -> {
             if (isMavenSource(s)) {
                 MavenResolutionResult mavenModel = getMavenModel(s);
@@ -107,8 +112,7 @@ public class AddJaxwsRuntime extends Recipe {
      * @return The highest scope of the given dependency or null if the dependency does not exist.
      */
     @Nullable
-    private Scope getTransitiveDependencyScope(MavenResolutionResult mavenModel, String groupId, String artifactId, Map<GroupArtifactVersion, MavenResolutionResult> gavToModels) {
-
+    private static Scope getTransitiveDependencyScope(MavenResolutionResult mavenModel, String groupId, String artifactId, Map<GroupArtifactVersion, MavenResolutionResult> gavToModels) {
         Scope maxScope = null;
         for (Map.Entry<Scope, List<ResolvedDependency>> entry : mavenModel.getDependencies().entrySet()) {
             for (ResolvedDependency dependency : entry.getValue()) {
