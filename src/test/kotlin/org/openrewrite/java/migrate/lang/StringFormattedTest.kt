@@ -103,4 +103,19 @@ class StringFormattedTest : RewriteTest {
         """)
     )
 
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    fun splitSecondArgument() = rewriteRun(
+        java("""
+            class A {
+                String str = String.format("foo %s", "a" + "b");
+            }
+        """,
+        """
+            class A {
+                String str = "foo %s".formatted("a" + "b");
+            }
+        """)
+    )
+
 }
