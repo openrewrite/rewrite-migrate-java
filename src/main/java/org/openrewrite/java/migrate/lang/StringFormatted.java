@@ -63,14 +63,11 @@ public class StringFormatted extends Recipe {
             }
 
             List<Expression> arguments = mi.getArguments();
-            String template = new StringBuilder()
-                    .append(arguments.get(0) instanceof J.Literal
-                            ? "#{any(java.lang.String)}"
-                            : "(#{any(java.lang.String)})")
-                    .append(String.format(".formatted(%s)",
-                            String.join(", ", Collections.nCopies(arguments.size() - 1, "#{any()}"))))
-                    .toString();
-
+            String template = String.format(
+                    arguments.get(0) instanceof J.Literal
+                            ? "#{any(java.lang.String)}.formatted(%s)"
+                            : "(#{any(java.lang.String)}).formatted(%s)",
+                    String.join(", ", Collections.nCopies(arguments.size() - 1, "#{any()}")));
             return mi.withTemplate(
                     JavaTemplate.builder(this::getCursor, template)
                             .javaParser(() -> JavaParser.fromJavaVersion().build())
