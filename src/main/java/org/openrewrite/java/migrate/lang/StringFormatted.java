@@ -27,12 +27,12 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 
 public class StringFormatted extends Recipe {
 
-    private static final MethodMatcher STRING_FORMAT_METHOD_MATCHER = new MethodMatcher(
-            "java.lang.String format(String, ..)");
+    private static final MethodMatcher STRING_FORMAT = new MethodMatcher("java.lang.String format(..)");
 
     @Override
     public String getDisplayName() {
@@ -46,7 +46,7 @@ public class StringFormatted extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(STRING_FORMAT_METHOD_MATCHER);
+        return new UsesMethod<>(STRING_FORMAT);
     }
 
     @Override
@@ -58,22 +58,25 @@ public class StringFormatted extends Recipe {
         @Override
         public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext p) {
             J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, p);
-            if (!STRING_FORMAT_METHOD_MATCHER.matches(mi)) {
+            if (!STRING_FORMAT.matches(mi)) {
                 return mi;
             }
 
             List<Expression> arguments = mi.getArguments();
-            Expression stringExpression = arguments.get(0);
-            //TODO Recognize split first argument, and wrap in () to retain same behavior
-            Object[] array = arguments.toArray(new Expression[arguments.size()]);
+            String template = new StringBuilder()
+                    .append(arguments.get(0) instanceof J.Literal
+                            ? "#{any(java.lang.String)}"
+                            : "(#{any(java.lang.String)})")
+                    .append(String.format(".formatted(%s)",
+                            String.join(", ", Collections.nCopies(arguments.size() - 1, "#{any()}"))))
+                    .toString();
+
             return mi.withTemplate(
-                    JavaTemplate.builder(this::getCursor,
-                            // TODO Use varags within formatted for remainder of arguments
-                            "#{any(java.lang.String)}.formatted(#{})")
+                    JavaTemplate.builder(this::getCursor, template)
                             .javaParser(() -> JavaParser.fromJavaVersion().build())
                             .build(),
                     mi.getCoordinates().replace(),
-                    array);
+                    arguments.toArray());
         }
     }
 
