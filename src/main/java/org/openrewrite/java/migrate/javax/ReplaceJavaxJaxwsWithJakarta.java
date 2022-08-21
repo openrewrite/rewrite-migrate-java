@@ -20,7 +20,6 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.maven.AddDependencyVisitor;
 import org.openrewrite.maven.MavenIsoVisitor;
-import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.maven.RemoveDependency;
 import org.openrewrite.xml.tree.Xml;
 
