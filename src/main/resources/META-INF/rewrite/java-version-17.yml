@@ -31,3 +31,4 @@ recipeList:
       key: maven.compiler.target
       newValue: 17
       addIfMissing: false
+  - org.openrewrite.java.migrate.lang.StringFormatted
