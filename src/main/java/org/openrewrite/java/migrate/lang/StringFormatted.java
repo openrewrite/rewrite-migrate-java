@@ -64,10 +64,11 @@ public class StringFormatted extends Recipe {
 
             List<Expression> arguments = mi.getArguments();
             String template = String.format(
-                    arguments.get(0) instanceof J.Literal
+                    arguments.get(0) instanceof J.Literal || arguments.get(0) instanceof J.MethodInvocation
                             ? "#{any(java.lang.String)}.formatted(%s)"
                             : "(#{any(java.lang.String)}).formatted(%s)",
                     String.join(", ", Collections.nCopies(arguments.size() - 1, "#{any()}")));
+            maybeRemoveImport("java.lang.String.format");
             return mi.withTemplate(
                     JavaTemplate.builder(this::getCursor, template)
                             .javaParser(() -> JavaParser.fromJavaVersion().build())
