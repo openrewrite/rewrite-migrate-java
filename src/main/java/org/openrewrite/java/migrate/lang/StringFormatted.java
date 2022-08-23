@@ -63,10 +63,9 @@ public class StringFormatted extends Recipe {
             }
 
             List<Expression> arguments = mi.getArguments();
-            String template = String.format(
-                    arguments.get(0) instanceof J.Literal || arguments.get(0) instanceof J.MethodInvocation
-                            ? "#{any(java.lang.String)}.formatted(%s)"
-                            : "(#{any(java.lang.String)}).formatted(%s)",
+            String template = String.format(wrapperNotNeeded(arguments.get(0))
+                    ? "#{any(java.lang.String)}.formatted(%s)"
+                    : "(#{any(java.lang.String)}).formatted(%s)",
                     String.join(", ", Collections.nCopies(arguments.size() - 1, "#{any()}")));
             maybeRemoveImport("java.lang.String.format");
             return mi.withTemplate(
@@ -75,6 +74,12 @@ public class StringFormatted extends Recipe {
                             .build(),
                     mi.getCoordinates().replace(),
                     arguments.toArray());
+        }
+
+        private static boolean wrapperNotNeeded(Expression expression) {
+            return expression instanceof J.Identifier
+                    || expression instanceof J.Literal
+                    || expression instanceof J.MethodInvocation;
         }
     }
 

@@ -141,6 +141,44 @@ class StringFormattedTest : RewriteTest {
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    fun doNotWrapLocalVariable() = rewriteRun(
+        java("""
+            class A {
+                String someMethod() {
+                    String fmt = "foo %s";
+                    String str = String.format(fmt, "a");
+                }
+            }
+        """,
+        """
+            class A {
+                String someMethod() {
+                    String fmt = "foo %s";
+                    String str = fmt.formatted("a");
+                }
+            }
+        """)
+    )
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    fun doNotWrapField() = rewriteRun(
+        java("""
+            class A {
+                static final String fmt = "foo %s";
+                String str = String.format(fmt, "a");
+            }
+        """,
+        """
+            class A {
+                static final String fmt = "foo %s";
+                String str = fmt.formatted("a");
+            }
+        """)
+    )
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     fun removeStaticImport() = rewriteRun(
         java("""
             import static java.lang.String.format;
