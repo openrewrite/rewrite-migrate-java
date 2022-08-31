@@ -32,7 +32,7 @@ import java.util.List;
 
 public class StringFormatted extends Recipe {
 
-    private static final MethodMatcher STRING_FORMAT = new MethodMatcher("java.lang.String format(..)");
+    private static final MethodMatcher STRING_FORMAT = new MethodMatcher("java.lang.String format(String, ..)");
 
     @Override
     public String getDisplayName() {

@@ -193,4 +193,15 @@ class StringFormattedTest : RewriteTest {
         """)
     )
 
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
+    fun doNotMatchLocale() = rewriteRun(
+        java("""
+            import java.util.Locale;
+            class A {
+                String str = String.format(Locale.US, "foo %s", "a");
+            }
+        """)
+    )
+
 }
