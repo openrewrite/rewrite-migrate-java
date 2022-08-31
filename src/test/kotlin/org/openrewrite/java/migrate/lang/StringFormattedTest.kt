@@ -193,4 +193,55 @@ class StringFormattedTest : RewriteTest {
         """)
     )
 
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
+    fun doNotMatchLocale() = rewriteRun(
+        java("""
+            import java.util.Locale;
+            class A {
+                String str = String.format(Locale.US, "foo %s", "a");
+            }
+        """)
+    )
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
+    fun doNotChangeLackOfWhitespace() = rewriteRun(
+        java("""
+            class A {
+                String str = String.format("foo %s","a","b");
+            }
+        """,
+        """
+            class A {
+                String str = "foo %s".formatted("a","b");
+            }
+        """)
+    )
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
+    fun doNotChangeWhitespaceWithNewlines() = rewriteRun(
+        java("""
+            class A {
+                String str = String.format("foo %s",
+                    "a",
+                    "b");
+            }
+        """)
+    )
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
+    fun doNotChangeWhitespaceWithNewlinesAndComments() = rewriteRun(
+        java("""
+            class A {
+                String str = String.format("foo %s",
+                    "a",
+                    // B
+                    "b");
+            }
+        """)
+    )
+
 }
