@@ -332,7 +332,7 @@ class NoGuavaImmutableSetOfTest : JavaRecipeTest {
     }
 
     private fun runRecipe(input: Array<String>): List<Result> {
-        return recipe.run(sourceFilesWithJavaVersion(input), executionContext)
+        return recipe.run(sourceFilesWithJavaVersion(input), executionContext).results
     }
 
     private fun sourceFilesWithJavaVersion(input: Array<String>): List<J.CompilationUnit> {

@@ -28,9 +28,7 @@ class ApacheIOUtilsUseExplicitCharsetTest : RewriteTest  {
 
     override fun defaults(spec: RecipeSpec) {
         spec.recipe(ApacheIOUtilsUseExplicitCharset(null))
-        spec.parser(
-            JavaParser.fromJavaVersion().classpath("commons-io").build()
-        )
+        spec.parser(JavaParser.fromJavaVersion().classpath("commons-io"))
     }
 
     @Test
