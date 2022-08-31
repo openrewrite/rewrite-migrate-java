@@ -27,7 +27,6 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 
 public class StringFormatted extends Recipe {
@@ -66,7 +65,7 @@ public class StringFormatted extends Recipe {
             String template = String.format(wrapperNotNeeded(arguments.get(0))
                     ? "#{any(java.lang.String)}.formatted(%s)"
                     : "(#{any(java.lang.String)}).formatted(%s)",
-                    String.join(", ", Collections.nCopies(arguments.size() - 1, "#{any()}")));
+                    varargsTemplateWithOriginalWhitespace(arguments));
             maybeRemoveImport("java.lang.String.format");
             return mi.withTemplate(
                     JavaTemplate.builder(this::getCursor, template)
@@ -80,6 +79,14 @@ public class StringFormatted extends Recipe {
             return expression instanceof J.Identifier
                     || expression instanceof J.Literal
                     || expression instanceof J.MethodInvocation;
+        }
+
+        private static String varargsTemplateWithOriginalWhitespace(List<Expression> arguments) {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Expression expression : arguments.subList(1, arguments.size())) {
+                stringBuilder.append(expression.getPrefix().format("#{any()},"));
+            }
+            return stringBuilder.toString();
         }
     }
 
