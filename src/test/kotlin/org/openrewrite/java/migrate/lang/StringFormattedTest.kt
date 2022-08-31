@@ -25,7 +25,7 @@ import org.openrewrite.test.RewriteTest
 class StringFormattedTest : RewriteTest {
     override fun defaults(spec: RecipeSpec) {
         spec.recipe(StringFormatted())
-        spec.parser(JavaParser.fromJavaVersion().build())
+        spec.parser(JavaParser.fromJavaVersion())
     }
 
     @Test
