@@ -18,15 +18,16 @@ package org.openrewrite.java.migrate.lang;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.internal.ListUtils;
+import org.openrewrite.java.*;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 
 public class StringFormatted extends Recipe {
@@ -45,7 +46,16 @@ public class StringFormatted extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(STRING_FORMAT);
+        return new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext executionContext) {
+                JavaSourceFile sf = (JavaSourceFile) new UsesJavaVersion<ExecutionContext>(17).visit(cu, executionContext);
+                if (sf != cu) {
+                    doAfterVisit(new UsesMethod<>(STRING_FORMAT));
+                }
+                return cu;
+            }
+        };
     }
 
     @Override
@@ -65,28 +75,26 @@ public class StringFormatted extends Recipe {
             String template = String.format(wrapperNotNeeded(arguments.get(0))
                     ? "#{any(java.lang.String)}.formatted(%s)"
                     : "(#{any(java.lang.String)}).formatted(%s)",
-                    varargsTemplateWithOriginalWhitespace(arguments));
+                    String.join(", ", Collections.nCopies(arguments.size() - 1, "#{any()}")));
             maybeRemoveImport("java.lang.String.format");
-            return mi.withTemplate(
+            mi = mi.withTemplate(
                     JavaTemplate.builder(this::getCursor, template)
                             .javaParser(() -> JavaParser.fromJavaVersion().build())
                             .build(),
                     mi.getCoordinates().replace(),
                     arguments.toArray());
+            if (arguments.size() > 1) {
+                arguments.remove(0);
+                mi = maybeAutoFormat(mi, mi.withArguments(
+                        ListUtils.map(mi.getArguments(), (a, b) -> b.withPrefix(arguments.get(a).getPrefix()))), p);
+            }
+            return mi;
         }
 
         private static boolean wrapperNotNeeded(Expression expression) {
             return expression instanceof J.Identifier
                     || expression instanceof J.Literal
                     || expression instanceof J.MethodInvocation;
-        }
-
-        private static String varargsTemplateWithOriginalWhitespace(List<Expression> arguments) {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (Expression expression : arguments.subList(1, arguments.size())) {
-                stringBuilder.append(expression.getPrefix().format("#{any()},"));
-            }
-            return stringBuilder.toString();
         }
     }
 

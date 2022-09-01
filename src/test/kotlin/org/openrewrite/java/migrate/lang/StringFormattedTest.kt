@@ -17,231 +17,278 @@ package org.openrewrite.java.migrate.lang
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Issue
-import org.openrewrite.java.Assertions.java
+import org.openrewrite.java.Assertions.*
 import org.openrewrite.java.JavaParser
 import org.openrewrite.test.RecipeSpec
 import org.openrewrite.test.RewriteTest
+import org.openrewrite.test.SourceSpec
+import org.openrewrite.test.TypeValidation
 
+@Suppress("RedundantStringFormatCall")
 class StringFormattedTest : RewriteTest {
     override fun defaults(spec: RecipeSpec) {
         spec.recipe(StringFormatted())
+        spec.typeValidationOptions(TypeValidation().methodInvocations(false))
         spec.parser(JavaParser.fromJavaVersion())
     }
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     fun oneArgument() = rewriteRun(
-        java("""
-            class A {
-                String str = String.format("foo");
-            }
-        """,
-        """
-            class A {
-                String str = "foo".formatted();
-            }
-        """)
+        version(
+            java("""
+                        class A {
+                            String str = String.format("foo");
+                        }
+                    """,
+                """
+                        class A {
+                            String str = "foo".formatted();
+                        }
+                    """) as SourceSpec<*>,
+            17)
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     fun twoArguments() = rewriteRun(
-        java("""
-            class A {
-                String str = String.format("foo %s", "a");
-            }
-        """,
-        """
-            class A {
-                String str = "foo %s".formatted("a");
-            }
-        """)
+        version(
+            java("""
+                class A {
+                    String str = String.format("foo %s", "a");
+                }
+            """,
+            """
+                class A {
+                    String str = "foo %s".formatted("a");
+                }
+            """) as SourceSpec<*>, 17
+        )
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     fun threeArguments() = rewriteRun(
-        java("""
-            class A {
-                String str = String.format("foo %s %d", "a", 1);
-            }
-        """,
-        """
-            class A {
-                String str = "foo %s %d".formatted("a", 1);
-            }
-        """)
+        version(
+            java("""
+                class A {
+                    String str = String.format("foo %s %d", "a", 1);
+                }
+            """,
+            """
+                class A {
+                    String str = "foo %s %d".formatted("a", 1);
+                }
+            """) as SourceSpec<*>, 17
+        )
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     fun fourArguments() = rewriteRun(
-        java("""
-            class A {
-                String str = String.format("foo %s %d %f", "a", 1, 2.0);
-            }
-        """,
-        """
-            class A {
-                String str = "foo %s %d %f".formatted("a", 1, 2.0);
-            }
-        """)
+        version(
+            java("""
+                class A {
+                    String str = String.format("foo %s %d %f", "a", 1, 2.0);
+                }
+            """,
+            """
+                class A {
+                    String str = "foo %s %d %f".formatted("a", 1, 2.0);
+                }
+            """) as SourceSpec<*>, 17
+        )
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     fun splitFirstArgument() = rewriteRun(
-        java("""
-            class A {
-                String str = String.format("foo " + "%s", "a");
-            }
-        """,
-        """
-            class A {
-                String str = ("foo " + "%s").formatted("a");
-            }
-        """)
+        version(
+            java("""
+                class A {
+                    String str = String.format("foo " + "%s", "a");
+                }
+            """,
+            """
+                class A {
+                    String str = ("foo " + "%s").formatted("a");
+                }
+            """) as SourceSpec<*>, 17
+        )
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     fun splitSecondArgument() = rewriteRun(
-        java("""
-            class A {
-                String str = String.format("foo %s", "a" + "b");
-            }
-        """,
-        """
-            class A {
-                String str = "foo %s".formatted("a" + "b");
-            }
-        """)
+        version(
+            java("""
+                class A {
+                    String str = String.format("foo %s", "a" + "b");
+                }
+            """,
+            """
+                class A {
+                    String str = "foo %s".formatted("a" + "b");
+                }
+            """) as SourceSpec<*>, 17
+        )
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     fun doNotWrapMethodInvocation() = rewriteRun(
-        java("""
-            class A {
-                String str = String.format(someMethod(), "a");
-                String someMethod() {
-                    return "foo %s";
+        version(
+            java("""
+                class A {
+                    String str = String.format(someMethod(), "a");
+                    String someMethod() {
+                        return "foo %s";
+                    }
                 }
-            }
-        """,
-        """
-            class A {
-                String str = someMethod().formatted("a");
-                String someMethod() {
-                    return "foo %s";
+            """,
+            """
+                class A {
+                    String str = someMethod().formatted("a");
+                    String someMethod() {
+                        return "foo %s";
+                    }
                 }
-            }
-        """)
+            """) as SourceSpec<*>, 17
+        )
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     fun doNotWrapLocalVariable() = rewriteRun(
-        java("""
-            class A {
-                String someMethod() {
-                    String fmt = "foo %s";
-                    String str = String.format(fmt, "a");
+        version(
+            java("""
+                class A {
+                    String someMethod() {
+                        String fmt = "foo %s";
+                        String str = String.format(fmt, "a");
+                    }
                 }
-            }
-        """,
-        """
-            class A {
-                String someMethod() {
-                    String fmt = "foo %s";
-                    String str = fmt.formatted("a");
+            """,
+            """
+                class A {
+                    String someMethod() {
+                        String fmt = "foo %s";
+                        String str = fmt.formatted("a");
+                    }
                 }
-            }
-        """)
+            """) as SourceSpec<*>, 17
+        )
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     fun doNotWrapField() = rewriteRun(
-        java("""
-            class A {
-                static final String fmt = "foo %s";
-                String str = String.format(fmt, "a");
-            }
-        """,
-        """
-            class A {
-                static final String fmt = "foo %s";
-                String str = fmt.formatted("a");
-            }
-        """)
+        version(
+            java("""
+                class A {
+                    static final String fmt = "foo %s";
+                    String str = String.format(fmt, "a");
+                }
+            """,
+            """
+                class A {
+                    static final String fmt = "foo %s";
+                    String str = fmt.formatted("a");
+                }
+            """) as SourceSpec<*>, 17
+        )
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     fun removeStaticImport() = rewriteRun(
-        java("""
-            import static java.lang.String.format;
-            class A {
-                String str = format("foo %s", "a");
-            }
-        """,
-        """
-            class A {
-                String str = "foo %s".formatted("a");
-            }
-        """)
+        version(
+            java("""
+                import static java.lang.String.format;
+                class A {
+                    String str = format("foo %s", "a");
+                }
+            """,
+            """
+                class A {
+                    String str = "foo %s".formatted("a");
+                }
+            """) as SourceSpec<*>, 17
+        )
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
     fun doNotMatchLocale() = rewriteRun(
-        java("""
-            import java.util.Locale;
-            class A {
-                String str = String.format(Locale.US, "foo %s", "a");
-            }
-        """)
+        version (
+            java("""
+                import java.util.Locale;
+                class A {
+                    String str = String.format(Locale.US, "foo %s", "a");
+                }
+            """) as SourceSpec<*>, 17
+        )
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
     fun doNotChangeLackOfWhitespace() = rewriteRun(
-        java("""
-            class A {
-                String str = String.format("foo %s","a","b");
-            }
-        """,
-        """
-            class A {
-                String str = "foo %s".formatted("a","b");
-            }
-        """)
+        version(
+            java("""
+                class A {
+                    String str = String.format("foo %s %s","a","b");
+                }
+            """,
+            """
+                class A {
+                    String str = "foo %s %s".formatted("a", "b");
+                }
+            """) as SourceSpec<*>, 17
+        )
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
     fun doNotChangeWhitespaceWithNewlines() = rewriteRun(
-        java("""
-            class A {
-                String str = String.format("foo %s",
-                    "a",
-                    "b");
-            }
-        """)
+        version(
+            java("""
+                class A {
+                    String str = String.format("foo %s %s",
+                        "a",
+                        "b");
+                }
+            """,
+            """
+                class A {
+                    String str = "foo %s %s".formatted(
+                            "a",
+                            "b");
+                }
+            """) as SourceSpec<*>, 17
+        )
     )
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
     fun doNotChangeWhitespaceWithNewlinesAndComments() = rewriteRun(
-        java("""
-            class A {
-                String str = String.format("foo %s",
-                    "a",
-                    // B
-                    "b");
-            }
-        """)
+        version(
+            java("""
+                class A {
+                    String str = String.format("foo %s %s",
+                        "a",
+                        // B
+                        "b");
+                }
+            """,
+            """
+                class A {
+                    String str = "foo %s %s".formatted(
+                            "a",
+                            // B
+                            "b");
+                }
+            """) as SourceSpec<*>, 17
+        )
     )
 
 }
