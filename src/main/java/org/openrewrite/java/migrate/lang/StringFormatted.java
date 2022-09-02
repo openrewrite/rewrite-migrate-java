@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -24,7 +25,6 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaSourceFile;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -46,16 +46,7 @@ public class StringFormatted extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext executionContext) {
-                JavaSourceFile sf = (JavaSourceFile) new UsesJavaVersion<ExecutionContext>(17).visit(cu, executionContext);
-                if (sf != cu) {
-                    doAfterVisit(new UsesMethod<>(STRING_FORMAT));
-                }
-                return cu;
-            }
-        };
+        return Applicability.and(new UsesJavaVersion<>(17),new UsesMethod<>(STRING_FORMAT));
     }
 
     @Override

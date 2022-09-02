@@ -21,7 +21,6 @@ import org.openrewrite.java.Assertions.*
 import org.openrewrite.java.JavaParser
 import org.openrewrite.test.RecipeSpec
 import org.openrewrite.test.RewriteTest
-import org.openrewrite.test.SourceSpec
 import org.openrewrite.test.TypeValidation
 
 @Suppress("RedundantStringFormatCall")
@@ -45,7 +44,7 @@ class StringFormattedTest : RewriteTest {
                         class A {
                             String str = "foo".formatted();
                         }
-                    """) as SourceSpec<*>,
+                    """),
             17)
     )
 
@@ -62,7 +61,7 @@ class StringFormattedTest : RewriteTest {
                 class A {
                     String str = "foo %s".formatted("a");
                 }
-            """) as SourceSpec<*>, 17
+            """), 17
         )
     )
 
@@ -79,7 +78,7 @@ class StringFormattedTest : RewriteTest {
                 class A {
                     String str = "foo %s %d".formatted("a", 1);
                 }
-            """) as SourceSpec<*>, 17
+            """), 17
         )
     )
 
@@ -96,7 +95,7 @@ class StringFormattedTest : RewriteTest {
                 class A {
                     String str = "foo %s %d %f".formatted("a", 1, 2.0);
                 }
-            """) as SourceSpec<*>, 17
+            """), 17
         )
     )
 
@@ -113,7 +112,7 @@ class StringFormattedTest : RewriteTest {
                 class A {
                     String str = ("foo " + "%s").formatted("a");
                 }
-            """) as SourceSpec<*>, 17
+            """), 17
         )
     )
 
@@ -130,7 +129,7 @@ class StringFormattedTest : RewriteTest {
                 class A {
                     String str = "foo %s".formatted("a" + "b");
                 }
-            """) as SourceSpec<*>, 17
+            """), 17
         )
     )
 
@@ -153,7 +152,7 @@ class StringFormattedTest : RewriteTest {
                         return "foo %s";
                     }
                 }
-            """) as SourceSpec<*>, 17
+            """), 17
         )
     )
 
@@ -176,7 +175,7 @@ class StringFormattedTest : RewriteTest {
                         String str = fmt.formatted("a");
                     }
                 }
-            """) as SourceSpec<*>, 17
+            """), 17
         )
     )
 
@@ -195,7 +194,7 @@ class StringFormattedTest : RewriteTest {
                     static final String fmt = "foo %s";
                     String str = fmt.formatted("a");
                 }
-            """) as SourceSpec<*>, 17
+            """), 17
         )
     )
 
@@ -213,7 +212,7 @@ class StringFormattedTest : RewriteTest {
                 class A {
                     String str = "foo %s".formatted("a");
                 }
-            """) as SourceSpec<*>, 17
+            """), 17
         )
     )
 
@@ -226,7 +225,7 @@ class StringFormattedTest : RewriteTest {
                 class A {
                     String str = String.format(Locale.US, "foo %s", "a");
                 }
-            """) as SourceSpec<*>, 17
+            """), 17
         )
     )
 
@@ -243,7 +242,7 @@ class StringFormattedTest : RewriteTest {
                 class A {
                     String str = "foo %s %s".formatted("a", "b");
                 }
-            """) as SourceSpec<*>, 17
+            """), 17
         )
     )
 
@@ -264,8 +263,7 @@ class StringFormattedTest : RewriteTest {
                             "a",
                             "b");
                 }
-            """) as SourceSpec<*>, 17
-        )
+            """), 17)
     )
 
     @Test
@@ -287,7 +285,7 @@ class StringFormattedTest : RewriteTest {
                             // B
                             "b");
                 }
-            """) as SourceSpec<*>, 17
+            """), 17
         )
     )
 
