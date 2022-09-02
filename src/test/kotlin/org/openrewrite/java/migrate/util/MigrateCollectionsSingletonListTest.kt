@@ -17,36 +17,41 @@ package org.openrewrite.java.migrate.util
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Issue
-import org.openrewrite.Recipe
-import org.openrewrite.java.JavaRecipeTest
+import org.openrewrite.java.Assertions.java
+import org.openrewrite.java.Assertions.version
+import org.openrewrite.test.RecipeSpec
+import org.openrewrite.test.RewriteTest
 
-class MigrateCollectionsSingletonListTest : JavaRecipeTest {
-    override val recipe: Recipe
-        get() = MigrateCollectionsSingletonList()
+class MigrateCollectionsSingletonListTest : RewriteTest {
+    override fun defaults(spec: RecipeSpec) {
+        spec.recipe(MigrateCollectionsSingletonList())
+    } 
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
-    fun singletonList() = assertChanged(
-        before = """
+    fun singletonList() = rewriteRun(
+        version(
+            java("""
             import java.util.*;
             
             class Test {
                 List<String> list = Collections.singletonList("ABC");
             }
         """,
-        after = """
+        """
             import java.util.List;
             
             class Test {
                 List<String> list = List.of("ABC");
             }
-        """
+        """), 9)
     )
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
-    fun singletonListCustomType() = assertChanged(
-        before = """
+    fun singletonListCustomType() = rewriteRun(
+        version(
+            java("""
             import java.util.*;
             import java.time.LocalDate;
             
@@ -54,14 +59,14 @@ class MigrateCollectionsSingletonListTest : JavaRecipeTest {
                 List<LocalDate> list = Collections.singletonList(LocalDate.now());
             }
         """,
-        after = """
+        """
             import java.util.List;
             import java.time.LocalDate;
             
             class Test {
                 List<LocalDate> list = List.of(LocalDate.now());
             }
-        """
+        """), 9)
     )
 
 }

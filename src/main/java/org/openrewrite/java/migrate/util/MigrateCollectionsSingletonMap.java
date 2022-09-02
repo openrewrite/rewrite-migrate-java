@@ -15,9 +15,10 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
-import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -49,15 +50,9 @@ public class MigrateCollectionsSingletonMap extends Recipe {
     }
 
     @Override
-    protected JavaVisitor<ExecutionContext> getSingleSourceApplicableTest() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
-                doAfterVisit(new UsesJavaVersion<>(9));
-                doAfterVisit(new UsesMethod<>(SINGLETON_MAP));
-                return cu;
-            }
-        };
+    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
+        return Applicability.and(new UsesJavaVersion<>(9),
+                new UsesMethod<>(SINGLETON_MAP));
     }
 
     @Override

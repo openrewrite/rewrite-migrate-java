@@ -16,16 +16,22 @@
 package org.openrewrite.java.migrate.util
 
 import org.junit.jupiter.api.Test
-import org.openrewrite.Recipe
-import org.openrewrite.java.JavaRecipeTest
+import org.openrewrite.java.Assertions.java
+import org.openrewrite.java.Assertions.version
+import org.openrewrite.test.RecipeSpec
+import org.openrewrite.test.RewriteTest
 
-class UseEnumSetOfTest : JavaRecipeTest {
-    override val recipe: Recipe
-        get() = UseEnumSetOf()
+@Suppress("UnusedAssignment")
+class UseEnumSetOfTest : RewriteTest {
+
+    override fun defaults(spec: RecipeSpec) {
+        spec.recipe(UseEnumSetOf())
+    }
 
     @Test
-    fun changeDeclaration() = assertChanged(
-        before = """
+    fun changeDeclaration() = rewriteRun(
+        version(
+            java("""
             import java.util.Set;
             
             class Test {
@@ -37,7 +43,7 @@ class UseEnumSetOfTest : JavaRecipeTest {
                 }
             }
         """.trimIndent(),
-        after = """
+        """
             import java.util.EnumSet;
             import java.util.Set;
             
@@ -49,12 +55,13 @@ class UseEnumSetOfTest : JavaRecipeTest {
                     Set<Color> warm = EnumSet.of(Color.RED);
                 }
             }
-        """.trimIndent()
+        """.trimIndent()), 9)
     )
 
     @Test
-    fun changeAssignment() = assertChanged(
-        before = """
+    fun changeAssignment() = rewriteRun(
+        version(
+            java("""
             import java.util.Set;
             
             class Test {
@@ -67,7 +74,7 @@ class UseEnumSetOfTest : JavaRecipeTest {
                 }
             }
         """.trimIndent(),
-        after = """
+        """
             import java.util.EnumSet;
             import java.util.Set;
             
@@ -80,6 +87,6 @@ class UseEnumSetOfTest : JavaRecipeTest {
                     warm = EnumSet.of(Color.RED);
                 }
             }
-        """.trimIndent()
+        """.trimIndent()), 9)
     )
 }

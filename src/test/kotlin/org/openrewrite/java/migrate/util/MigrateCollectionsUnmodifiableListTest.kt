@@ -17,36 +17,42 @@ package org.openrewrite.java.migrate.util
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Issue
-import org.openrewrite.Recipe
-import org.openrewrite.java.JavaRecipeTest
+import org.openrewrite.java.Assertions.java
+import org.openrewrite.java.Assertions.version
+import org.openrewrite.test.RecipeSpec
+import org.openrewrite.test.RewriteTest
 
-class MigrateCollectionsUnmodifiableListTest : JavaRecipeTest {
-    override val recipe: Recipe
-        get() = MigrateCollectionsUnmodifiableList()
+@Suppress("Java9CollectionFactory")
+class MigrateCollectionsUnmodifiableListTest : RewriteTest {
+    override fun defaults(spec: RecipeSpec) {
+        spec.recipe(MigrateCollectionsUnmodifiableList())
+    }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
     @Test
-    fun unmodifiableList() = assertChanged(
-        before = """
+    fun unmodifiableList() = rewriteRun(
+        version(
+            java("""
             import java.util.*;
             
             class Test {
                 List<Integer> l = Collections.unmodifiableList(Arrays.asList(1, 2, 3));
             }
         """,
-        after = """
+        """
             import java.util.List;
             
             class Test {
                 List<Integer> l = List.of(1, 2, 3);
             }
-        """
+        """), 9)
     )
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
     @Test
-    fun unmodifiableListTyped() = assertChanged(
-        before = """
+    fun unmodifiableListTyped() = rewriteRun(
+        version(
+            java("""
             import java.util.*;
             import java.time.LocalDate;
             
@@ -54,13 +60,13 @@ class MigrateCollectionsUnmodifiableListTest : JavaRecipeTest {
                 List<LocalDate> s = Collections.unmodifiableList(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now()));
             }
         """,
-        after = """
+        """
             import java.util.List;
             import java.time.LocalDate;
             
             class Test {
                 List<LocalDate> s = List.of(LocalDate.of(2010, 1, 1), LocalDate.now());
             }
-        """
+        """), 9)
     )
 }

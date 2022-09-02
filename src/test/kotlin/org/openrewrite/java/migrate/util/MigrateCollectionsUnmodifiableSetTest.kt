@@ -17,36 +17,43 @@ package org.openrewrite.java.migrate.util
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Issue
-import org.openrewrite.Recipe
-import org.openrewrite.java.JavaRecipeTest
+import org.openrewrite.java.Assertions.java
+import org.openrewrite.java.Assertions.version
+import org.openrewrite.test.RecipeSpec
+import org.openrewrite.test.RewriteTest
 
-class MigrateCollectionsUnmodifiableSetTest : JavaRecipeTest {
-    override val recipe: Recipe
-        get() = MigrateCollectionsUnmodifiableSet()
+@Suppress("Java9CollectionFactory")
+class MigrateCollectionsUnmodifiableSetTest : RewriteTest {
+
+    override fun defaults(spec: RecipeSpec) {
+        spec.recipe(MigrateCollectionsUnmodifiableSet())
+    }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
     @Test
-    fun unmodifiableSet() = assertChanged(
-        before = """
+    fun unmodifiableSet() = rewriteRun(
+        version(
+            java("""
             import java.util.*;
             
             class Test {
                 Set<Integer> s = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(1, 2, 3)));
             }
         """,
-        after = """
+        """
             import java.util.Set;
             
             class Test {
                 Set<Integer> s = Set.of(1, 2, 3);
             }
-        """
+        """), 9)
     )
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
     @Test
-    fun unmodifiableSetTyped() = assertChanged(
-        before = """
+    fun unmodifiableSetTyped() = rewriteRun(
+        version(
+            java("""
             import java.util.*;
             import java.time.LocalDate;
             
@@ -54,13 +61,13 @@ class MigrateCollectionsUnmodifiableSetTest : JavaRecipeTest {
                 Set<LocalDate> s = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now())));
             }
         """,
-        after = """
+        """
             import java.util.Set;
             import java.time.LocalDate;
             
             class Test {
                 Set<LocalDate> s = Set.of(LocalDate.of(2010, 1, 1), LocalDate.now());
             }
-        """
+        """), 9)
     )
 }

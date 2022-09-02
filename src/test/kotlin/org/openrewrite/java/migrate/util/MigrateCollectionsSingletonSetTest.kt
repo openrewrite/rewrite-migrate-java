@@ -17,36 +17,41 @@ package org.openrewrite.java.migrate.util
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Issue
-import org.openrewrite.Recipe
-import org.openrewrite.java.JavaRecipeTest
+import org.openrewrite.java.Assertions.java
+import org.openrewrite.java.Assertions.version
+import org.openrewrite.test.RecipeSpec
+import org.openrewrite.test.RewriteTest
 
-class MigrateCollectionsSingletonSetTest : JavaRecipeTest {
-    override val recipe: Recipe
-        get() = MigrateCollectionsSingletonSet()
+class MigrateCollectionsSingletonSetTest : RewriteTest {
+    override fun defaults(spec: RecipeSpec) {
+        spec.recipe(MigrateCollectionsSingletonSet())
+    }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
-    fun singleTonSet() = assertChanged(
-        before = """
+    fun singleTonSet() = rewriteRun(
+        version(
+            java("""
             import java.util.*;
             
             class Test {
                 Set<String> set = Collections.singleton("Hello");
             }
         """,
-        after = """
+        """
             import java.util.Set;
             
             class Test {
                 Set<String> set = Set.of("Hello");
             }
-        """
+        """), 9)
     )
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
-    fun singletonSetCustomType() = assertChanged(
-        before = """
+    fun singletonSetCustomType() = rewriteRun(
+        version(
+            java("""
             import java.util.*;
             import java.time.LocalDate;
             
@@ -54,14 +59,14 @@ class MigrateCollectionsSingletonSetTest : JavaRecipeTest {
                 Set<LocalDate> set = Collections.singleton(LocalDate.now());
             }
         """,
-        after = """
+        """
             import java.util.Set;
             import java.time.LocalDate;
             
             class Test {
                 Set<LocalDate> set = Set.of(LocalDate.now());
             }
-        """
+        """), 9)
     )
 
 }

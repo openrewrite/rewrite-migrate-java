@@ -17,36 +17,41 @@ package org.openrewrite.java.migrate.util
 
 import org.junit.jupiter.api.Test
 import org.openrewrite.Issue
-import org.openrewrite.Recipe
-import org.openrewrite.java.JavaRecipeTest
+import org.openrewrite.java.Assertions.java
+import org.openrewrite.java.Assertions.version
+import org.openrewrite.test.RecipeSpec
+import org.openrewrite.test.RewriteTest
 
-class MigrateCollectionsSingletonMapTest : JavaRecipeTest {
-    override val recipe: Recipe
-        get() = MigrateCollectionsSingletonMap()
+class MigrateCollectionsSingletonMapTest : RewriteTest {
+    override fun defaults(spec: RecipeSpec) {
+        spec.recipe(MigrateCollectionsSingletonMap())
+    }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
-    fun singletonMap() = assertChanged(
-        before = """
+    fun singletonMap() = rewriteRun(
+        version(
+            java("""
             import java.util.*;
             
             class Test {
                 Map<String,String> set = Collections.singletonMap("hello", "world");
             }
         """,
-        after = """
+        """
             import java.util.Map;
             
             class Test {
                 Map<String,String> set = Map.of("hello", "world");
             }
-        """
+        """), 9)
     )
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
-    fun singletonMapCustomType() = assertChanged(
-        before = """
+    fun singletonMapCustomType() = rewriteRun(
+        version(
+            java("""
             import java.util.*;
             import java.time.LocalDate;
             
@@ -54,14 +59,14 @@ class MigrateCollectionsSingletonMapTest : JavaRecipeTest {
                 Map<String,LocalDate> map = Collections.singletonMap("date", LocalDate.now());
             }
         """,
-        after = """
+        """
             import java.util.Map;
             import java.time.LocalDate;
             
             class Test {
                 Map<String,LocalDate> map = Map.of("date", LocalDate.now());
             }
-        """
+        """),9)
     )
 
 }
