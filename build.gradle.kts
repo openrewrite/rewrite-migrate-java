@@ -90,6 +90,7 @@ val rewriteVersion = if(project.hasProperty("releasing")) {
 dependencies {
     compileOnly("org.projectlombok:lombok:latest.release")
     annotationProcessor("org.projectlombok:lombok:latest.release")
+    testImplementation("org.projectlombok:lombok:latest.release")
 
     implementation("org.openrewrite:rewrite-java:${rewriteVersion}")
     implementation("org.openrewrite:rewrite-maven:${rewriteVersion}")
