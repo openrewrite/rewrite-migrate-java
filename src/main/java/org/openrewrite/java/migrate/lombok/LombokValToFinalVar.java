@@ -65,17 +65,17 @@ public class LombokValToFinalVar extends Recipe {
 
                 J.VariableDeclarations.NamedVariable nv = mv.getVariables().get(0);
 
-                String FINAL_VAR_ANY;
+                String finalVarVariableTemplateString;
                 Object[] args;
                 if (nv.getInitializer() == null) {
-                    FINAL_VAR_ANY = "final var #{}";
+                    finalVarVariableTemplateString = "final var #{}";
                     args = new Object[]{nv.getSimpleName()};
                 } else {
-                    FINAL_VAR_ANY = "final var #{} = #{any()};";
+                    finalVarVariableTemplateString = "final var #{} = #{any()};";
                     args = new Object[]{nv.getSimpleName(), nv.getInitializer()};
                 }
                 varDecls = mv.withTemplate(
-                        JavaTemplate.builder(this::getCursor, FINAL_VAR_ANY)
+                        JavaTemplate.builder(this::getCursor, finalVarVariableTemplateString)
                                 .javaParser(() -> JavaParser.fromJavaVersion().build())
                                 .build(),
                         varDecls.getCoordinates().replace(), args);
