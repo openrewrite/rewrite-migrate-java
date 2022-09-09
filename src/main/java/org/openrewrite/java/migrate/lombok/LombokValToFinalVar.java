@@ -19,12 +19,13 @@ import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.*;
 
 import java.time.Duration;
 
@@ -56,23 +57,40 @@ public class LombokValToFinalVar extends Recipe {
 
     private static class LombokValToFinalVarVisitor extends JavaIsoVisitor<ExecutionContext> {
 
-        private static final String FINAL_VAR_ANY = "final var #{} = #{any()};";
-
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations mv, ExecutionContext p) {
-            if (mv.getTypeAsFullyQualified().isAssignableTo(LOMBOK_VAL)) {
+            J.VariableDeclarations varDecls = super.visitVariableDeclarations(mv, p);
+            if (TypeUtils.isOfClassType(varDecls.getType(), LOMBOK_VAL)) {
                 maybeRemoveImport(LOMBOK_VAL);
-                return mv.withTemplate(
+
+                J.VariableDeclarations.NamedVariable nv = mv.getVariables().get(0);
+
+                String FINAL_VAR_ANY;
+                Object[] args;
+                if (nv.getInitializer() == null) {
+                    FINAL_VAR_ANY = "final var #{}";
+                    args = new Object[]{nv.getSimpleName()};
+                } else {
+                    FINAL_VAR_ANY = "final var #{} = #{any()};";
+                    args = new Object[]{nv.getSimpleName(), nv.getInitializer()};
+                }
+                varDecls = mv.withTemplate(
                         JavaTemplate.builder(this::getCursor, FINAL_VAR_ANY)
                                 .javaParser(() -> JavaParser.fromJavaVersion().build())
                                 .build(),
-                        mv.getCoordinates().replace(),
-                        mv.getVariables().get(0).getName().getSimpleName(),
-                        mv.getVariables().get(0).getInitializer());
-            }
-            return super.visitVariableDeclarations(mv, p);
-        }
+                        varDecls.getCoordinates().replace(), args);
 
+                if (nv.getInitializer() != null) {
+                    varDecls = varDecls.withVariables(ListUtils.map(varDecls.getVariables(), namedVar -> {
+                        //noinspection ConstantConditions
+                        return namedVar.withInitializer(namedVar.getInitializer().withPrefix(nv.getInitializer().getPrefix()));
+                    }));
+                }
+
+
+            }
+            return varDecls;
+        }
     }
 
     @Override

@@ -16,12 +16,12 @@
 package org.openrewrite.java.migrate.lombok
 
 import org.junit.jupiter.api.Test
-import org.openrewrite.Issue
 import org.openrewrite.java.Assertions.*
 import org.openrewrite.java.JavaParser
 import org.openrewrite.test.RecipeSpec
 import org.openrewrite.test.RewriteTest
 
+@Suppress("RedundantOperationOnEmptyContainer", "StatementWithEmptyBody")
 class LombokValToFinalVarTest : RewriteTest {
     override fun defaults(spec: RecipeSpec) {
         spec.recipe(LombokValToFinalVar())
@@ -44,6 +44,35 @@ class LombokValToFinalVarTest : RewriteTest {
                 class A {
                     void bar() {
                         final var foo = "foo";
+                    }
+                }
+                """),
+                17))
+
+    @Test
+    fun valInForEachStatement() = rewriteRun(
+        version(
+            java(
+                """
+                import lombok.val;
+                import java.util.List;
+                import java.util.ArrayList;
+                
+                class A {
+                    void bar() {
+                        List<String> lst = new ArrayList<>();
+                        for (val s : lst) {}
+                    }
+                }
+                """,
+                """
+                import java.util.List;
+                import java.util.ArrayList;
+                
+                class A {
+                    void bar() {
+                        List<String> lst = new ArrayList<>();
+                        for (final var s : lst) {}
                     }
                 }
                 """),
@@ -105,7 +134,7 @@ class LombokValToFinalVarTest : RewriteTest {
                 import lombok.val;
                 class A {
                     void bar() {
-                        val foo = "foo";
+                        val foo = 43;
                         // Suffix
                     }
                 }
@@ -113,7 +142,7 @@ class LombokValToFinalVarTest : RewriteTest {
                 """
                 class A {
                     void bar() {
-                        final var foo = "foo";
+                        final var foo = 43;
                         // Suffix
                     }
                 }
