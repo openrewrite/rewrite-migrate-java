@@ -16,9 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.search.FindMethods;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -41,6 +39,7 @@ public class UseJavaUtilBase64Test implements RewriteTest {
                     void test(byte[] bBytes) {
                         BASE64Encoder encoder = new BASE64Encoder();
                         String encoded = encoder.encode(bBytes);
+                        encoded += encoder.encodeBuffer(bBytes);
                         byte[] decoded = new BASE64Decoder().decodeBuffer(encoded);
                     }
                 }
@@ -54,6 +53,7 @@ public class UseJavaUtilBase64Test implements RewriteTest {
                     void test(byte[] bBytes) {
                         Base64.Encoder encoder = Base64.getEncoder();
                         String encoded = encoder.encodeToString(bBytes);
+                        encoded += encoder.encodeToString(bBytes);
                         byte[] decoded = Base64.getDecoder().decode(encoded);
                     }
                 }

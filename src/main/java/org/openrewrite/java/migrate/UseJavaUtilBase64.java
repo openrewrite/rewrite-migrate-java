@@ -70,6 +70,8 @@ public class UseJavaUtilBase64 extends Recipe {
                 JavaSourceFile c = cu;
                 c = (J.CompilationUnit) new ChangeMethodName(sunPackage + ".BASE64Encoder encode(byte[])", "encodeToString",
                         false, true).getVisitor().visitNonNull(c, ctx);
+                c = (J.CompilationUnit) new ChangeMethodName(sunPackage + ".BASE64Encoder encodeBuffer(byte[])", "encodeToString",
+                        false, true).getVisitor().visitNonNull(c, ctx);
                 c = (J.CompilationUnit) new ChangeMethodName(sunPackage + ".BASE64Decoder decodeBuffer(String)", "decode",
                         false, true).getVisitor().visitNonNull(c, ctx);
                 return super.visitJavaSourceFile(c, ctx);
