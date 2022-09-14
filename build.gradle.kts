@@ -94,7 +94,7 @@ dependencies {
 
     implementation("org.openrewrite:rewrite-java:${rewriteVersion}")
     implementation("org.openrewrite:rewrite-maven:${rewriteVersion}")
-    runtimeOnly("org.openrewrite:rewrite-java-11:${rewriteVersion}")
+    runtimeOnly("org.openrewrite:rewrite-java-17:${rewriteVersion}")
 
     // eliminates "unknown enum constant DeprecationLevel.WARNING" warnings from the build log
     // see https://github.com/gradle/kotlin-dsl-samples/issues/1301 for why (okhttp is leaking parts of kotlin stdlib)
@@ -112,13 +112,20 @@ dependencies {
 
     testImplementation("org.assertj:assertj-core:latest.release")
 
+    @Suppress("GradlePackageUpdate")
     testImplementation("com.google.guava:guava:29.0-jre")
 
     testImplementation("commons-codec:commons-codec:latest.release")
 
-    testRuntimeOnly("org.openrewrite:rewrite-java-11:${rewriteVersion}")
+    testRuntimeOnly("org.openrewrite:rewrite-java-17:${rewriteVersion}")
     testRuntimeOnly("org.openrewrite:rewrite-java-8:${rewriteVersion}")
     testRuntimeOnly("commons-io:commons-io:latest.release")
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
 
 tasks.named<Test>("test") {
