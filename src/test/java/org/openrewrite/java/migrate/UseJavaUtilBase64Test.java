@@ -81,7 +81,7 @@ public class UseJavaUtilBase64Test implements RewriteTest {
                     import java.nio.ByteBuffer;
                                  
                     @SuppressWarnings("RedundantThrows")
-                    class BASE64Encoder {
+                    class CharacterEncoder {
                         public void encode(InputStream inStream, OutputStream outStream) throws IOException {
                         }
 
@@ -117,7 +117,7 @@ public class UseJavaUtilBase64Test implements RewriteTest {
                         }
                     }
                 """,
-              """
+                """
                     package test.sun.misc;
                                                     
                     import java.io.InputStream;
@@ -129,7 +129,7 @@ public class UseJavaUtilBase64Test implements RewriteTest {
                     import java.nio.ByteBuffer;
                     
                     @SuppressWarnings("RedundantThrows")
-                    class BASE64Decoder {
+                    class CharacterDecoder {
                         public void decode(InputStream inStream, OutputStream outStream) throws IOException {
                         }
                     
@@ -150,6 +150,16 @@ public class UseJavaUtilBase64Test implements RewriteTest {
                             return new byte[0];
                         }
                     }
+                """,
+                """
+                  package test.sun.misc;
+                  class BASE64Encoder extends CharacterEncoder {
+                  }
+                """,
+                """
+                  package test.sun.misc;
+                  class BASE64Decoder extends CharacterDecoder {
+                  }
                 """
             ));
     }

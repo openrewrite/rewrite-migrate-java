@@ -23,7 +23,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 
 public class UseJavaUtilBase64 extends Recipe {
-    private String sunPackage;
+    private final String sunPackage;
 
     @Override
     public String getDisplayName() {
@@ -68,11 +68,11 @@ public class UseJavaUtilBase64 extends Recipe {
             @Override
             public J visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
                 JavaSourceFile c = cu;
-                c = (J.CompilationUnit) new ChangeMethodName(sunPackage + ".BASE64Encoder encode(byte[])", "encodeToString",
+                c = (J.CompilationUnit) new ChangeMethodName(sunPackage + ".CharacterEncoder encode(byte[])", "encodeToString",
                         false, true).getVisitor().visitNonNull(c, ctx);
-                c = (J.CompilationUnit) new ChangeMethodName(sunPackage + ".BASE64Encoder encodeBuffer(byte[])", "encodeToString",
+                c = (J.CompilationUnit) new ChangeMethodName(sunPackage + ".CharacterEncoder encodeBuffer(byte[])", "encodeToString",
                         false, true).getVisitor().visitNonNull(c, ctx);
-                c = (J.CompilationUnit) new ChangeMethodName(sunPackage + ".BASE64Decoder decodeBuffer(String)", "decode",
+                c = (J.CompilationUnit) new ChangeMethodName(sunPackage + ".CharacterDecoder decodeBuffer(String)", "decode",
                         false, true).getVisitor().visitNonNull(c, ctx);
                 return super.visitJavaSourceFile(c, ctx);
             }
