@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -34,13 +35,18 @@ public class UseJavaUtilBase64Test implements RewriteTest {
                 
                 import test.sun.misc.BASE64Encoder;
                 import test.sun.misc.BASE64Decoder;
-                
+                import java.io.IOException;
+
                 class Test {
                     void test(byte[] bBytes) {
                         BASE64Encoder encoder = new BASE64Encoder();
                         String encoded = encoder.encode(bBytes);
                         encoded += encoder.encodeBuffer(bBytes);
-                        byte[] decoded = new BASE64Decoder().decodeBuffer(encoded);
+                        try {
+                            byte[] decoded = new BASE64Decoder().decodeBuffer(encoded);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
               """,
@@ -142,11 +148,11 @@ public class UseJavaUtilBase64Test implements RewriteTest {
                         public void decodeBuffer(String inString, OutputStream outStream) throws IOException {
                         }
                                                     
-                        public byte[] decodeBuffer(String inString) {
+                        public byte[] decodeBuffer(String inString) throws IOException {
                             return new byte[0];
                         }
                         
-                        public byte[] decodeBuffer(InputStream inStream) {
+                        public byte[] decodeBuffer(InputStream inStream) throws IOException {
                             return new byte[0];
                         }
                     }

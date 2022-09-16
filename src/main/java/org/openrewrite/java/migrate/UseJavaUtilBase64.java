@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.openrewrite.*;
 import org.openrewrite.java.*;
+import org.openrewrite.java.cleanup.UnnecessaryCatch;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
@@ -46,8 +47,6 @@ public class UseJavaUtilBase64 extends Recipe {
 
     public UseJavaUtilBase64(String sunPackage) {
         this.sunPackage = sunPackage;
-        doNext(new ChangeType(sunPackage + ".BASE64Encoder", "java.util.Base64$Encoder", true));
-        doNext(new ChangeType(sunPackage + ".BASE64Decoder", "java.util.Base64$Decoder", true));
     }
 
     @JsonCreator
@@ -57,35 +56,79 @@ public class UseJavaUtilBase64 extends Recipe {
 
     @Override
     protected JavaVisitor<ExecutionContext> getVisitor() {
+
+        MethodMatcher base64EncodeMethod = new MethodMatcher(sunPackage + ".CharacterEncoder *(byte[])");
+        MethodMatcher base64DecodeBuffer = new MethodMatcher(sunPackage + ".CharacterDecoder decodeBuffer(String)");
+
         MethodMatcher newBase64Encoder = new MethodMatcher(sunPackage + ".BASE64Encoder <constructor>()");
         MethodMatcher newBase64Decoder = new MethodMatcher(sunPackage + ".BASE64Decoder <constructor>()");
 
         return new JavaVisitor<ExecutionContext>() {
-            final JavaTemplate getEncoderDecoder = JavaTemplate.builder(this::getCursor, "Base64.get#{}()")
+            final JavaTemplate getEncoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getEncoder();")
+                    .imports("java.util.Base64")
+                    .javaParser(() -> JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true).build())
+                    .build();
+            final JavaTemplate getDecoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getDecoder();")
+                    .imports("java.util.Base64")
+                    .javaParser(() -> JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true).build())
+                    .build();
+
+            final JavaTemplate encodeToString = JavaTemplate.builder(this::getCursor, "Base64.getEncoder().encodeToString((byte[]) null);")
+                    .imports("java.util.Base64")
+                    .doBeforeParseTemplate(System.out::println)
+                    .build();
+
+            final JavaTemplate decode = JavaTemplate.builder(this::getCursor, "Base64.getDecoder().decode((byte[]) null);")
                     .imports("java.util.Base64")
                     .build();
 
             @Override
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+
+                J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
+                if (base64EncodeMethod.matches(m) &&
+                    ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
+                    m = m.withTemplate(encodeToString, m.getCoordinates().replace());
+                    m = m.withArguments(method.getArguments());
+                    if (method.getSelect() instanceof J.Identifier) {
+                        m = m.withSelect(method.getSelect());
+                    }
+                } else if (base64DecodeBuffer.matches(method)) {
+                    m = m.withTemplate(decode, m.getCoordinates().replace());
+                    m = m.withArguments(method.getArguments());
+                    if (method.getSelect() instanceof J.Identifier) {
+                        m = m.withSelect(method.getSelect());
+                    }
+                    // Note: The sun.misc.CharacterDecoder#decodeBuffer throws an IOException, whereas the java
+                    // Base64Decoder.decode does not throw a checked exception. If this recipe converts decode, we
+                    // may need to remove the catch or completely unwrap a try/catch.
+                    doAfterVisit(new UnnecessaryCatch());
+                }
+                return m;
+            }
+
+            @Override
             public J visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
-                JavaSourceFile c = cu;
-                c = (J.CompilationUnit) new ChangeMethodName(sunPackage + ".CharacterEncoder encode(byte[])", "encodeToString",
-                        false, true).getVisitor().visitNonNull(c, ctx);
-                c = (J.CompilationUnit) new ChangeMethodName(sunPackage + ".CharacterEncoder encodeBuffer(byte[])", "encodeToString",
-                        false, true).getVisitor().visitNonNull(c, ctx);
-                c = (J.CompilationUnit) new ChangeMethodName(sunPackage + ".CharacterDecoder decodeBuffer(String)", "decode",
-                        false, true).getVisitor().visitNonNull(c, ctx);
-                return super.visitJavaSourceFile(c, ctx);
+
+                JavaSourceFile c = (JavaSourceFile) super.visitJavaSourceFile(cu, ctx);
+
+                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Encoder", "java.util.Base64$Encoder", true)
+                        .getVisitor().visitNonNull(c, ctx);
+                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Decoder", "java.util.Base64$Decoder", true)
+                        .getVisitor().visitNonNull(c, ctx);
+                return c;
             }
 
             @Override
             public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
-                if (newBase64Encoder.matches(newClass)) {
-                    return newClass.withTemplate(getEncoderDecoder, newClass.getCoordinates().replace(), "Encoder");
+                J.NewClass c = (J.NewClass) super.visitNewClass(newClass, ctx);
+                if (newBase64Encoder.matches(c)) {
+                    return c.withTemplate(getEncoderTemplate, c.getCoordinates().replace());
                 }
                 if (newBase64Decoder.matches(newClass)) {
-                    return newClass.withTemplate(getEncoderDecoder, newClass.getCoordinates().replace(), "Decoder");
+                    return c.withTemplate(getDecoderTemplate, c.getCoordinates().replace());
                 }
-                return super.visitNewClass(newClass, ctx);
+                return c;
             }
         };
     }
