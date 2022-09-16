@@ -73,12 +73,12 @@ public class UseJavaUtilBase64 extends Recipe {
                     .javaParser(() -> JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true).build())
                     .build();
 
-            final JavaTemplate encodeToString = JavaTemplate.builder(this::getCursor, "Base64.getEncoder().encodeToString((byte[]) null);")
+            final JavaTemplate encodeToString = JavaTemplate.builder(this::getCursor, "Base64.getEncoder().encodeToString(#{anyArray(byte)});")
                     .imports("java.util.Base64")
                     .doBeforeParseTemplate(System.out::println)
                     .build();
 
-            final JavaTemplate decode = JavaTemplate.builder(this::getCursor, "Base64.getDecoder().decode((byte[]) null);")
+            final JavaTemplate decode = JavaTemplate.builder(this::getCursor, "Base64.getDecoder().decode(#{any(String)});")
                     .imports("java.util.Base64")
                     .build();
 
@@ -88,14 +88,12 @@ public class UseJavaUtilBase64 extends Recipe {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
                 if (base64EncodeMethod.matches(m) &&
                     ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
-                    m = m.withTemplate(encodeToString, m.getCoordinates().replace());
-                    m = m.withArguments(method.getArguments());
+                    m = m.withTemplate(encodeToString, m.getCoordinates().replace(), method.getArguments().get(0));
                     if (method.getSelect() instanceof J.Identifier) {
                         m = m.withSelect(method.getSelect());
                     }
                 } else if (base64DecodeBuffer.matches(method)) {
-                    m = m.withTemplate(decode, m.getCoordinates().replace());
-                    m = m.withArguments(method.getArguments());
+                    m = m.withTemplate(decode, m.getCoordinates().replace(), method.getArguments().get(0));
                     if (method.getSelect() instanceof J.Identifier) {
                         m = m.withSelect(method.getSelect());
                     }
