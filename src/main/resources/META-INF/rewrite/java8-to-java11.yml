@@ -26,6 +26,7 @@ tags:
   - jakarta
 
 recipeList:
+  - org.openrewrite.java.migrate.UseJavaUtilBase64
   # Add javax dependencies if they are used by a project.
   - org.openrewrite.java.migrate.javax.AddJaxwsDependencies
   - org.openrewrite.java.migrate.javax.AddJaxbDependencies
