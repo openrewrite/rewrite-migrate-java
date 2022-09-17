@@ -64,18 +64,18 @@ public class UseJavaUtilBase64 extends Recipe {
         MethodMatcher newBase64Decoder = new MethodMatcher(sunPackage + ".BASE64Decoder <constructor>()");
 
         return new JavaVisitor<ExecutionContext>() {
-            final JavaTemplate getEncoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getEncoder();")
+            final JavaTemplate getEncoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getEncoder()")
                     .imports("java.util.Base64")
                     .build();
-            final JavaTemplate getDecoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getDecoder();")
-                    .imports("java.util.Base64")
-                    .build();
-
-            final JavaTemplate encodeToString = JavaTemplate.builder(this::getCursor, "Base64.getEncoder().encodeToString(#{anyArray(byte)});")
+            final JavaTemplate getDecoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getDecoder()")
                     .imports("java.util.Base64")
                     .build();
 
-            final JavaTemplate decode = JavaTemplate.builder(this::getCursor, "Base64.getDecoder().decode(#{any(String)});")
+            final JavaTemplate encodeToString = JavaTemplate.builder(this::getCursor, "Base64.getEncoder().encodeToString(#{anyArray(byte)})")
+                    .imports("java.util.Base64")
+                    .build();
+
+            final JavaTemplate decode = JavaTemplate.builder(this::getCursor, "Base64.getDecoder().decode(#{any(String)})")
                     .imports("java.util.Base64")
                     .build();
 
