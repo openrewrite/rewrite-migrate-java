@@ -66,16 +66,13 @@ public class UseJavaUtilBase64 extends Recipe {
         return new JavaVisitor<ExecutionContext>() {
             final JavaTemplate getEncoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getEncoder();")
                     .imports("java.util.Base64")
-                    .javaParser(() -> JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true).build())
                     .build();
             final JavaTemplate getDecoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getDecoder();")
                     .imports("java.util.Base64")
-                    .javaParser(() -> JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true).build())
                     .build();
 
             final JavaTemplate encodeToString = JavaTemplate.builder(this::getCursor, "Base64.getEncoder().encodeToString(#{anyArray(byte)});")
                     .imports("java.util.Base64")
-                    .doBeforeParseTemplate(System.out::println)
                     .build();
 
             final JavaTemplate decode = JavaTemplate.builder(this::getCursor, "Base64.getDecoder().decode(#{any(String)});")
