@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.search;
 
+import io.micrometer.core.instrument.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -43,12 +44,12 @@ public class AboutJavaVersion extends Recipe {
 
     @Override
     public String getDescription() {
-        return super.getDescription();
+        return "A diagnostic for studying the applicability of Java version constraints.";
     }
 
     @Override
     protected @Nullable TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return whenUsesType == null ? null : new UsesType<>(whenUsesType);
+        return StringUtils.isBlank(whenUsesType) ? null : new UsesType<>(whenUsesType);
     }
 
     @Override
