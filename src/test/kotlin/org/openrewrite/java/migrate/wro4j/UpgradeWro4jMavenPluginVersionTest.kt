@@ -16,20 +16,23 @@
 package org.openrewrite.java.migrate.wro4j
 
 import org.junit.jupiter.api.Test
-import org.openrewrite.Recipe
 import org.openrewrite.config.Environment
-import org.openrewrite.maven.MavenRecipeTest
+import org.openrewrite.maven.Assertions.pomXml
+import org.openrewrite.test.RecipeSpec
+import org.openrewrite.test.RewriteTest
 
-class UpgradeWro4jMavenPluginVersionTest : MavenRecipeTest {
-    override val recipe: Recipe = Environment.builder()
-        .scanRuntimeClasspath("org.openrewrite.java.migrate.wro4j")
-        .build()
-        .activateRecipes("org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion")
+class UpgradeWro4jMavenPluginVersionTest : RewriteTest {
+    override fun defaults(spec: RecipeSpec) {
+        spec.recipe(Environment.builder()
+            .scanRuntimeClasspath("org.openrewrite.java.migrate.wro4j")
+            .build()
+            .activateRecipes("org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion"))
+    }
 
     @Test
-    fun property() = assertChanged(
+    fun property() = rewriteRun(
         // As taken from Spring PetClinic 1.5.x
-        before = """
+        pomXml("""
             <project>
               <modelVersion>4.0.0</modelVersion>
                
@@ -74,7 +77,7 @@ class UpgradeWro4jMavenPluginVersionTest : MavenRecipeTest {
               </build>
             </project>
         """,
-        after = """
+        """
             <project>
               <modelVersion>4.0.0</modelVersion>
                
@@ -118,6 +121,6 @@ class UpgradeWro4jMavenPluginVersionTest : MavenRecipeTest {
                 </plugins>
               </build>
             </project>
-        """
+        """)
     )
 } 

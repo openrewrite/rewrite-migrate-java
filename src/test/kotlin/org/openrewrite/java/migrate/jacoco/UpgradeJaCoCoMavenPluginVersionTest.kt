@@ -16,19 +16,21 @@
 package org.openrewrite.java.migrate.jacoco
 
 import org.junit.jupiter.api.Test
-import org.openrewrite.Recipe
 import org.openrewrite.config.Environment
-import org.openrewrite.maven.MavenRecipeTest
+import org.openrewrite.maven.Assertions.pomXml
+import org.openrewrite.test.RecipeSpec
+import org.openrewrite.test.RewriteTest
 
-class UpgradeJaCoCoMavenPluginVersionTest : MavenRecipeTest {
-    override val recipe: Recipe = Environment.builder()
-        .scanRuntimeClasspath("org.openrewrite.java.migrate.jacoco")
-        .build()
-        .activateRecipes("org.openrewrite.java.migrate.jacoco.UpgradeJaCoCoMavenPluginVersion")
-
+class UpgradeJaCoCoMavenPluginVersionTest : RewriteTest {
+    override fun defaults(spec: RecipeSpec) {
+        spec.recipe(Environment.builder()
+            .scanRuntimeClasspath("org.openrewrite.java.migrate.jacoco")
+            .build()
+            .activateRecipes("org.openrewrite.java.migrate.jacoco.UpgradeJaCoCoMavenPluginVersion"))
+    }
     @Test
-    fun property() = assertChanged(
-        before = """
+    fun property() = rewriteRun(
+        pomXml("""
             <project>
               <modelVersion>4.0.0</modelVersion>
                
@@ -64,7 +66,7 @@ class UpgradeJaCoCoMavenPluginVersionTest : MavenRecipeTest {
               </build>
             </project>
         """,
-        after = """
+        """
             <project>
               <modelVersion>4.0.0</modelVersion>
                
@@ -99,6 +101,6 @@ class UpgradeJaCoCoMavenPluginVersionTest : MavenRecipeTest {
                 </plugins>
               </build>
             </project>
-        """
+        """)
     )
 }

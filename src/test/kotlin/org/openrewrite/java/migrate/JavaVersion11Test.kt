@@ -15,21 +15,22 @@
  */
 package org.openrewrite.java.migrate
 
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.openrewrite.Recipe
 import org.openrewrite.config.Environment
-import org.openrewrite.maven.MavenRecipeTest
+import org.openrewrite.maven.Assertions.pomXml
+import org.openrewrite.test.RecipeSpec
+import org.openrewrite.test.RewriteTest
 
-class JavaVersion11Test : MavenRecipeTest {
-    override val recipe: Recipe = Environment.builder()
-        .scanRuntimeClasspath("org.openrewrite.java.migrate")
-        .build()
-        .activateRecipes("org.openrewrite.java.migrate.JavaVersion11")
+class JavaVersion11Test : RewriteTest {
+    override fun defaults(spec: RecipeSpec) {
+        spec.recipe(Environment.builder()
+            .scanRuntimeClasspath("org.openrewrite.java.migrate")
+            .build().activateRecipes("org.openrewrite.java.migrate.JavaVersion11"))
+    }
 
     @Test
-    fun changeJavaVersion() = assertChanged(
-        before = """
+    fun changeJavaVersion() = rewriteRun (
+        pomXml("""
             <project>
               <modelVersion>4.0.0</modelVersion>
                
@@ -41,8 +42,7 @@ class JavaVersion11Test : MavenRecipeTest {
               <artifactId>my-app</artifactId>
               <version>1</version>
             </project>
-        """,
-        after = """
+        """, """
             <project>
               <modelVersion>4.0.0</modelVersion>
                
@@ -55,11 +55,12 @@ class JavaVersion11Test : MavenRecipeTest {
               <version>1</version>
             </project>
         """
+        )
     )
 
     @Test
-    fun changeMavenCompiler() = assertChanged(
-        before = """
+    fun changeMavenCompiler() = rewriteRun (
+        pomXml("""
             <project>
               <modelVersion>4.0.0</modelVersion>
                
@@ -73,7 +74,7 @@ class JavaVersion11Test : MavenRecipeTest {
               <version>1</version>
             </project>
         """,
-        after = """
+        """
             <project>
               <modelVersion>4.0.0</modelVersion>
                
@@ -86,6 +87,6 @@ class JavaVersion11Test : MavenRecipeTest {
               <artifactId>my-app</artifactId>
               <version>1</version>
             </project>
-        """
+        """)
     )
 }
