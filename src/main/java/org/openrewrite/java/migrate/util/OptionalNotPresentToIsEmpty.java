@@ -19,7 +19,6 @@ import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -33,6 +32,8 @@ import org.openrewrite.java.tree.Statement;
 import java.time.Duration;
 
 public class OptionalNotPresentToIsEmpty extends Recipe {
+
+    private static final String JAVA_UTIL_OPTIONAL_IS_PRESENT = "java.util.Optional isPresent()";
 
     @Override
     public String getDisplayName() {
@@ -53,7 +54,7 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
     protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
         return Applicability.and(
                 new UsesJavaVersion<>(11),
-                new UsesMethod<>("java.util.Optional isPresent()"));
+                new UsesMethod<>(JAVA_UTIL_OPTIONAL_IS_PRESENT));
     }
 
     @Override
@@ -68,12 +69,9 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
                         Expression expression = unary.getExpression();
                         if (expression instanceof J.MethodInvocation) {
                             J.MethodInvocation methodInvocation = (J.MethodInvocation) expression;
-                            if (new MethodMatcher("java.util.Optional isPresent()").matches(methodInvocation)) {
-                                JavaTemplate javaTemplate = JavaTemplate.builder(this::getCursor, "#{any()}.isEmpty()")
-                                        .javaParser(() -> JavaParser.fromJavaVersion().build())
-                                        .build();
+                            if (new MethodMatcher(JAVA_UTIL_OPTIONAL_IS_PRESENT).matches(methodInvocation)) {
                                 return statement.withTemplate(
-                                        javaTemplate,
+                                        JavaTemplate.builder(this::getCursor, "#{any()}.isEmpty()").build(),
                                         statement.getCoordinates().replace(),
                                         methodInvocation.getSelect());
                             }
