@@ -15,22 +15,15 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaVersion17
-displayName: Change Maven Java version property values to 17
-description: Change maven.compiler.source and maven.compiler.target values to 17.
+name: org.openrewrite.java.migrate.UpgradeJava17
+displayName: Upgrade to Java 17
+description: This recipe will apply changes commonly needed when migrating to Java 17, including intermediate versions.
 tags:
   - java17
-  - compiler
+  - lombok
 recipeList:
-  - org.openrewrite.maven.ChangePropertyValue:
-      key: java.version
-      newValue: 17
-      addIfMissing: false
-  - org.openrewrite.maven.ChangePropertyValue:
-      key: maven.compiler.source
-      newValue: 17
-      addIfMissing: false
-  - org.openrewrite.maven.ChangePropertyValue:
-      key: maven.compiler.target
-      newValue: 17
-      addIfMissing: false
+  - org.openrewrite.java.migrate.Java8toJava11
+  # Update compiler source and target versions
+  - org.openrewrite.java.migrate.JavaVersion17
+  - org.openrewrite.java.migrate.lang.StringFormatted
+  - org.openrewrite.java.migrate.lombok.LombokValToFinalVar
