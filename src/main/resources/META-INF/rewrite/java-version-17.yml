@@ -32,3 +32,5 @@ recipeList:
       newValue: 17
       addIfMissing: false
   - org.openrewrite.java.migrate.lang.StringFormatted
+  - org.openrewrite.java.migrate.AddJDeprScanPlugin:
+      release: 17

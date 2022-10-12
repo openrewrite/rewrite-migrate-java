@@ -15,11 +15,12 @@
  */
 package org.openrewrite.java.migrate;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Incubating;
-import org.openrewrite.Recipe;
-import org.openrewrite.SourceFile;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.maven.AddPlugin;
 import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.maven.tree.MavenResolutionResult;
@@ -29,11 +30,16 @@ import java.time.Duration;
 import java.util.List;
 
 /**
- * This imperative recipe will add the jdeprsacn plugin to a maven project. In the case of a multi-module project,
+ * This imperative recipe will add the jdeprscan plugin to a maven project. In the case of a multi-module project,
  * this recipe will attempt to add the plugin to only the top level project.
  */
 @Incubating(since = "0.2.0")
+@RequiredArgsConstructor
+@Getter
 public class AddJDeprScanPlugin extends Recipe {
+
+    @Option(displayName = "release", description = "Specifies the Java SE release that provides the set of deprecated APIs for scanning.", required = false, example = "11")
+    private final String release;
 
     @Override
     public String getDisplayName() {
@@ -53,14 +59,15 @@ public class AddJDeprScanPlugin extends Recipe {
     @Override
     protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
         return ListUtils.map(before, s -> {
-            if ("pom.xml".equals(s.getSourcePath().toString()) && s.getMarkers().findFirst(MavenResolutionResult.class).isPresent()) {
+            if ("pom.xml".equals(s.getSourcePath().toString())
+                    && s.getMarkers().findFirst(MavenResolutionResult.class).isPresent()) {
                 return (SourceFile) new AddJDeprScanPluginVisitor().visit(s, ctx);
             }
             return s;
         });
     }
 
-    private static class AddJDeprScanPluginVisitor extends MavenVisitor<ExecutionContext> {
+    private class AddJDeprScanPluginVisitor extends MavenVisitor<ExecutionContext> {
 
         @Override
         public Xml visitDocument(Xml.Document document, ExecutionContext o) {
@@ -68,10 +75,8 @@ public class AddJDeprScanPlugin extends Recipe {
                     "org.apache.maven.plugins",
                     "maven-jdeprscan-plugin",
                     "3.0.0-alpha-1",
-                    "" +
-                            "<configuration>\n" +
-                            "   <release>11</release>\n" +
-                            "</configuration>",
+                    String.format("<configuration>\n   <release>%s</release>\n</configuration>",
+                            StringUtils.isNullOrEmpty(getRelease()) ? "11" : getRelease()),
                     null,
                     null));
             return document;
