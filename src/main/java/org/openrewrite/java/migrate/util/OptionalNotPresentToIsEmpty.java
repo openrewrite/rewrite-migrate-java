@@ -59,6 +59,7 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
+        final MethodMatcher optionalIsPresentMatcher = new MethodMatcher(JAVA_UTIL_OPTIONAL_IS_PRESENT);
         return new JavaVisitor<ExecutionContext>() {
             @Override
             public Statement visitStatement(Statement s, ExecutionContext p) {
@@ -69,7 +70,7 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
                         Expression expression = unary.getExpression();
                         if (expression instanceof J.MethodInvocation) {
                             J.MethodInvocation methodInvocation = (J.MethodInvocation) expression;
-                            if (new MethodMatcher(JAVA_UTIL_OPTIONAL_IS_PRESENT).matches(methodInvocation)) {
+                            if (optionalIsPresentMatcher.matches(methodInvocation)) {
                                 return statement.withTemplate(
                                         JavaTemplate.builder(this::getCursor, "#{any()}.isEmpty()").build(),
                                         statement.getCoordinates().replace(),

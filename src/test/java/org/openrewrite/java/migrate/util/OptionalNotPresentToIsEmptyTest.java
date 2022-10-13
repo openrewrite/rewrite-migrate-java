@@ -49,7 +49,7 @@ class OptionalNotPresentToIsEmptyTest implements RewriteTest {
                         return bar.isEmpty();
                     }
                 }"""),
-                17));
+                11));
     }
 
 }
