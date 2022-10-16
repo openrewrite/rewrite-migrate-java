@@ -134,29 +134,6 @@ class StringFormattedTest : RewriteTest {
     )
 
     @Test
-    @Issue("https://github.com/openrewrite/rewrite/issues/2163")
-    fun formattedTextBlock() = rewriteRun(
-        version(
-            java("""
-                class A {
-                    String str = String.format(\"\"\"
-                    foo
-                    %s
-                    \"\"\", "a");
-                }
-            """,
-            """
-                class A {
-                    String str = \"\"\"
-                    foo
-                    %s
-                    \"\"\".formatted("a");
-                }
-            """), 17
-        )
-    )
-
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     fun doNotWrapMethodInvocation() = rewriteRun(
         version(
