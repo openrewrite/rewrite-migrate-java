@@ -119,7 +119,6 @@ dependencies {
     testImplementation("commons-codec:commons-codec:latest.release")
 
     testRuntimeOnly("org.openrewrite:rewrite-java-17:${rewriteVersion}")
-    testRuntimeOnly("org.openrewrite:rewrite-java-8:${rewriteVersion}")
     testRuntimeOnly("commons-io:commons-io:latest.release")
 }
 
