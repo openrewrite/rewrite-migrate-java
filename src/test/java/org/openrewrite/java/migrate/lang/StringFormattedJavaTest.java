@@ -54,4 +54,44 @@ class StringFormattedJavaTest implements RewriteTest {
                 17));
     }
 
+    @Test
+    void should_convert_concatenated_text() {
+        rewriteRun(version(java("""
+                package com.example.app;
+                class A {
+                    String str = String.format("foo"
+                            + "%s", "a");
+                }""", """
+                package com.example.app;
+                class A {
+                    String str = ("foo"
+                            + "%s").formatted("a");
+                }"""),
+                17));
+    }
+
+    @Test
+    void should_convert_when_calling_function() {
+        rewriteRun(version(java("""
+                package com.example.app;
+
+                class A {
+                    String str = String.format(getTemplateString(), "a");
+
+                    private String getTemplateString() {
+                        return "foo %s";
+                    }
+                }""", """
+                package com.example.app;
+
+                class A {
+                    String str = getTemplateString().formatted("a");
+
+                    private String getTemplateString() {
+                        return "foo %s";
+                    }
+                }"""),
+                17));
+    }
+
 }
