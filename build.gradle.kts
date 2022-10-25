@@ -85,6 +85,7 @@ val rewriteVersion = if(project.hasProperty("releasing")) {
 } else {
     "latest.integration"
 }
+val jacksonVersion = "2.13.x"
 
 dependencies {
     compileOnly("org.projectlombok:lombok:latest.release")
@@ -111,6 +112,9 @@ dependencies {
 
     testRuntimeOnly("org.openrewrite:rewrite-java-17:${rewriteVersion}")
     testRuntimeOnly("commons-io:commons-io:latest.release")
+    testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353:${jacksonVersion}")
+    testRuntimeOnly("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
+    testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
 }
 
 java {

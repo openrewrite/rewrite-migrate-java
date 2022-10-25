@@ -3,8 +3,11 @@ package org.openrewrite.java.migrate.jakarta;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.config.Environment;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 public class JacksonJavaxtoJakartaTest implements RewriteTest {
@@ -355,4 +358,48 @@ public class JacksonJavaxtoJakartaTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void changeJsonpModuleType() {
+
+        rewriteRun(
+          spec -> spec.parser(
+            JavaParser.fromJavaVersion().classpath(
+              "jackson-datatype-jsr353",
+              "jackson-core",
+              "jackson-databind")
+          ),
+          java(
+            """
+                import com.fasterxml.jackson.databind.ObjectMapper;
+                import com.fasterxml.jackson.databind.json.JsonMapper;
+                import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
+                
+                public class JacksonTest {
+                    ObjectMapper mapper = JsonMapper.builder().addModule(new JSR353Module()).build();
+                    ObjectMapper mapper2 = JsonMapper.builder().addModule(getModule()).build();
+                  
+                    private JSR353Module getModule() {
+                        return new JSR353Module();
+                    }
+                }
+            """,
+            """
+                import com.fasterxml.jackson.databind.ObjectMapper;
+                import com.fasterxml.jackson.databind.json.JsonMapper;
+                import com.fasterxml.jackson.datatype.jsonp.JSONPModule;
+                
+                public class JacksonTest {
+                    ObjectMapper mapper = JsonMapper.builder().addModule(new JSONPModule()).build();
+                    ObjectMapper mapper2 = JsonMapper.builder().addModule(getModule()).build();
+                  
+                    private JSONPModule getModule() {
+                        return new JSONPModule();
+                    }
+                }
+            """
+          )
+        );
+    }
+
 }

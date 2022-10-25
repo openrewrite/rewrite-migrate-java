@@ -1073,3 +1073,7 @@ recipeList:
       newGroupId: org.glassfish
       newArtifactId: jakarta.json
       newVersion: 2.0.x
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.fasterxml.jackson.datatype.jsr353.JSR353Module
+      newFullyQualifiedTypeName: com.fasterxml.jackson.datatype.jsonp.JSONPModule
+
