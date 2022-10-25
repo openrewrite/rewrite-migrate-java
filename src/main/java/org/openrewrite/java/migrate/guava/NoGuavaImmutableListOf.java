@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class NoGuavaImmutableListOf extends Recipe {
-    private final MethodMatcher IMMUTABLE_LIST_MATCHER = new MethodMatcher("com.google.common.collect.ImmutableList of(..)");
+    private static final MethodMatcher IMMUTABLE_LIST_MATCHER = new MethodMatcher("com.google.common.collect.ImmutableList of(..)");
 
     @Override
     public String getDisplayName() {

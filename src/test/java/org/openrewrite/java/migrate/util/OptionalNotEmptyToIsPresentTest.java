@@ -15,11 +15,10 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import org.junit.jupiter.api.Test;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
-import org.junit.jupiter.api.Test;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -35,21 +34,21 @@ class OptionalNotEmptyToIsPresentTest implements RewriteTest {
     @Test
     void should_replace_not_isEmpty_with_isPresent() {
         rewriteRun(version(java("""
-                package com.example.app;
-                import java.util.Optional;
-                class App {
-                    boolean notPresent(Optional<String> bar){
-                        return !bar.isEmpty();
-                    }
-                }""", """
-                package com.example.app;
-                import java.util.Optional;
-                class App {
-                    boolean notPresent(Optional<String> bar){
-                        return bar.isPresent();
-                    }
-                }"""),
-                11));
+            package com.example.app;
+            import java.util.Optional;
+            class App {
+                boolean notPresent(Optional<String> bar){
+                    return !bar.isEmpty();
+                }
+            }""", """
+            package com.example.app;
+            import java.util.Optional;
+            class App {
+                boolean notPresent(Optional<String> bar){
+                    return bar.isPresent();
+                }
+            }"""),
+          11));
     }
 
 }
