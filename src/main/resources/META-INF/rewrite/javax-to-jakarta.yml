@@ -15,7 +15,7 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxMigrationToJakarta
+name: org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
 displayName: Migrate deprecated `javax` packages to `jakarta`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 tags:
@@ -27,35 +27,36 @@ tags:
 # TODO: Rename bootstrapping files if necessary.
 # Note: ChangePackage does not update java doc references.
 recipeList:
-  - org.openrewrite.java.migrate.JavaxActivationMigrationToJakartaActivation
-  - org.openrewrite.java.migrate.JavaxAnnotationMigrationToJakartaAnnotation
-  - org.openrewrite.java.migrate.JavaxBatchMigrationToJakartaBatch
-  - org.openrewrite.java.migrate.JavaxValidationMigrationToJakartaValidation
-  - org.openrewrite.java.migrate.JavaxDecoratorToJakartaDecorator
-  - org.openrewrite.java.migrate.JavaxEjbToJakartaEjb
-  - org.openrewrite.java.migrate.JavaxElToJakartaEl
-  - org.openrewrite.java.migrate.JavaxEnterpriseToJakartaEnterprise
-  - org.openrewrite.java.migrate.JavaxFacesToJakartaFaces
-  - org.openrewrite.java.migrate.JavaxInjectMigrationToJakartaInject
-  - org.openrewrite.java.migrate.JavaxInterceptorToJakartaInterceptor
-  - org.openrewrite.java.migrate.JavaxJmsToJakartaJms
-  - org.openrewrite.java.migrate.JavaxJsonToJakartaJson
-  - org.openrewrite.java.migrate.JavaxJwsToJakartaJws
-  - org.openrewrite.java.migrate.JavaxMailToJakartaMail
-  - org.openrewrite.java.migrate.JavaxPersistenceToJakartaPersistence
-  - org.openrewrite.java.migrate.JavaxResourceToJakartaResource
-  - org.openrewrite.java.migrate.JavaxSecurityToJakartaSecurity
-  - org.openrewrite.java.migrate.JavaxServletToJakartaServlet
-  - org.openrewrite.java.migrate.JavaxTransactionMigrationToJakartaTransaction
-  - org.openrewrite.java.migrate.JavaxWebsocketToJakartaWebsocket
-  - org.openrewrite.java.migrate.JavaxWsToJakartaWs
-  - org.openrewrite.java.migrate.JavaxXmlBindMigrationToJakartaXmlBind
-  - org.openrewrite.java.migrate.JavaxXmlSoapToJakartaXmlSoap
-  - org.openrewrite.java.migrate.JavaxXmlWsMigrationToJakartaXmlWs
-  - org.openrewrite.java.migrate.JavaxPeristenceXmlToJakartaPersistenceXml
+  - org.openrewrite.java.migrate.jakarta.JavaxActivationMigrationToJakartaActivation
+  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
+  - org.openrewrite.java.migrate.jakarta.JavaxBatchMigrationToJakartaBatch
+  - org.openrewrite.java.migrate.jakarta.JavaxValidationMigrationToJakartaValidation
+  - org.openrewrite.java.migrate.jakarta.JavaxDecoratorToJakartaDecorator
+  - org.openrewrite.java.migrate.jakarta.JavaxEjbToJakartaEjb
+  - org.openrewrite.java.migrate.jakarta.JavaxElToJakartaEl
+  - org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
+  - org.openrewrite.java.migrate.jakarta.JavaxFacesToJakartaFaces
+  - org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
+  - org.openrewrite.java.migrate.jakarta.JavaxInterceptorToJakartaInterceptor
+  - org.openrewrite.java.migrate.jakarta.JavaxJmsToJakartaJms
+  - org.openrewrite.java.migrate.jakarta.JavaxJsonToJakartaJson
+  - org.openrewrite.java.migrate.jakarta.JavaxJwsToJakartaJws
+  - org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail
+  - org.openrewrite.java.migrate.jakarta.JavaxPersistenceToJakartaPersistence
+  - org.openrewrite.java.migrate.jakarta.JavaxResourceToJakartaResource
+  - org.openrewrite.java.migrate.jakarta.JavaxSecurityToJakartaSecurity
+  - org.openrewrite.java.migrate.jakarta.JavaxServletToJakartaServlet
+  - org.openrewrite.java.migrate.jakarta.JavaxTransactionMigrationToJakartaTransaction
+  - org.openrewrite.java.migrate.jakarta.JavaxWebsocketToJakartaWebsocket
+  - org.openrewrite.java.migrate.jakarta.JavaxWsToJakartaWs
+  - org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind
+  - org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
+  - org.openrewrite.java.migrate.jakarta.JavaxXmlWsMigrationToJakartaXmlWs
+  - org.openrewrite.java.migrate.jakarta.JavaxPeristenceXmlToJakartaPersistenceXml
+  - org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxActivationMigrationToJakartaActivation
+name: org.openrewrite.java.migrate.jakarta.JavaxActivationMigrationToJakartaActivation
 displayName: Migrate deprecated `javax.activation` packages to `jakarta.activation`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 tags:
@@ -90,7 +91,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxAnnotationMigrationToJakartaAnnotation
+name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
 displayName: Migrate deprecated `javax.annotation` packages to `jakarta.annotation`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 tags:
@@ -111,7 +112,7 @@ recipeList:
       artifactId: jakarta.annotation-api
       newVersion: 2.x
 
-  - org.openrewrite.java.migrate.ChangeJavaxAnnotationToJakarta
+  - org.openrewrite.java.migrate.jakarta.ChangeJavaxAnnotationToJakarta
 
   # Remove Javax Batch API(x)
   - org.openrewrite.maven.RemoveDependency:
@@ -120,7 +121,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.ChangeJavaxAnnotationToJakarta
+name: org.openrewrite.java.migrate.jakarta.ChangeJavaxAnnotationToJakarta
 displayName: Migrate deprecated `javax.annotation` packages to `jakarta.annotation`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation. Excludes `javax.annotation.processing`.
 tags:
@@ -129,13 +130,13 @@ tags:
   - jakarta
 
 recipeList:
-  - org.openrewrite.java.migrate.JavaxAnnotationPackageToJakarta
-  - org.openrewrite.java.migrate.JavaxAnnotationSecurityPackageToJakarta
-  - org.openrewrite.java.migrate.JavaxAnnotationSqlPackageToJakarta
+  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationPackageToJakarta
+  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationSecurityPackageToJakarta
+  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationSqlPackageToJakarta
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxAnnotationPackageToJakarta
+name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationPackageToJakarta
 displayName: Migrate deprecated `javax.annotation` packages to `jakarta.annotation`
 description: Change type of classes in the `javax.annotation` package to jakarta.
 tags:
@@ -168,7 +169,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxAnnotationSecurityPackageToJakarta
+name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationSecurityPackageToJakarta
 displayName: Migrate deprecated `javax.annotation.security` packages to `jakarta.annotation.security`
 description: Change type of classes in the `javax.annotation.security` package to jakarta.
 tags:
@@ -195,7 +196,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxAnnotationSqlPackageToJakarta
+name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationSqlPackageToJakarta
 displayName: Migrate deprecated `javax.annotation.sql` packages to `jakarta.annotation.sql`
 description: Change type of classes in the `javax.annotation.sql` package to jakarta.
 tags:
@@ -213,7 +214,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxBatchMigrationToJakartaBatch
+name: org.openrewrite.java.migrate.jakarta.JavaxBatchMigrationToJakartaBatch
 displayName: Migrate deprecated `javax.batch` packages to `jakarta.batch`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 tags:
@@ -247,7 +248,7 @@ recipeList:
       artifactId: javax.batch-api
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxValidationMigrationToJakartaValidation
+name: org.openrewrite.java.migrate.jakarta.JavaxValidationMigrationToJakartaValidation
 displayName: Migrate deprecated `javax.validation` packages to `jakarta.validation`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 tags:
@@ -281,7 +282,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxDecoratorToJakartaDecorator
+name: org.openrewrite.java.migrate.jakarta.JavaxDecoratorToJakartaDecorator
 displayName: Migrate deprecated `javax.decorator` packages to `jakarta.decorator`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -310,7 +311,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxEjbToJakartaEjb
+name: org.openrewrite.java.migrate.jakarta.JavaxEjbToJakartaEjb
 displayName: Migrate deprecated `javax.ejb` packages to `jakarta.ejb`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -338,7 +339,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxElToJakartaEl
+name: org.openrewrite.java.migrate.jakarta.JavaxElToJakartaEl
 displayName: Migrate deprecated `javax.el` packages to `jakarta.el`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -366,7 +367,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxEnterpriseToJakartaEnterprise
+name: org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
 displayName: Migrate deprecated `javax.enterprise` packages to `jakarta.enterprise`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -394,7 +395,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxFacesToJakartaFaces
+name: org.openrewrite.java.migrate.jakarta.JavaxFacesToJakartaFaces
 displayName: Migrate deprecated `javax.faces` packages to `jakarta.faces`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -427,7 +428,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxInjectMigrationToJakartaInject
+name: org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
 displayName: Migrate deprecated `javax.inject` packages to `jakarta.inject`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 tags:
@@ -462,7 +463,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxInterceptorToJakartaInterceptor
+name: org.openrewrite.java.migrate.jakarta.JavaxInterceptorToJakartaInterceptor
 displayName: Migrate deprecated `javax.interceptor` packages to `jakarta.interceptor`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -490,7 +491,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxJmsToJakartaJms
+name: org.openrewrite.java.migrate.jakarta.JavaxJmsToJakartaJms
 displayName: Migrate deprecated `javax.jms` packages to `jakarta.jms`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -518,7 +519,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxJsonToJakartaJson
+name: org.openrewrite.java.migrate.jakarta.JavaxJsonToJakartaJson
 displayName: Migrate deprecated `javax.json` packages to `jakarta.json`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -546,7 +547,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxJwsToJakartaJws
+name: org.openrewrite.java.migrate.jakarta.JavaxJwsToJakartaJws
 displayName: Migrate deprecated `javax.jws` packages to `jakarta.jws`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -574,7 +575,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxMailToJakartaMail
+name: org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail
 displayName: Migrate deprecated `javax.mail` packages to `jakarta.mail`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -602,7 +603,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxPersistenceToJakartaPersistence
+name: org.openrewrite.java.migrate.jakarta.JavaxPersistenceToJakartaPersistence
 displayName: Migrate deprecated `javax.persistence` packages to `jakarta.persistence`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation
 recipeList:
@@ -635,7 +636,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxResourceToJakartaResource
+name: org.openrewrite.java.migrate.jakarta.JavaxResourceToJakartaResource
 displayName: Migrate deprecated `javax.resource` packages to `jakarta.resource`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -663,7 +664,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxSecurityToJakartaSecurity
+name: org.openrewrite.java.migrate.jakarta.JavaxSecurityToJakartaSecurity
 displayName: Migrate deprecated `javax.security` packages to `jakarta.security`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -691,7 +692,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxServletToJakartaServlet
+name: org.openrewrite.java.migrate.jakarta.JavaxServletToJakartaServlet
 displayName: Migrate deprecated `javax.servlet` packages to `jakarta.servlet`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -719,7 +720,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxTransactionMigrationToJakartaTransaction
+name: org.openrewrite.java.migrate.jakarta.JavaxTransactionMigrationToJakartaTransaction
 displayName: Migrate deprecated `javax.transaction` packages to `jakarta.transaction`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 tags:
@@ -753,7 +754,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxWebsocketToJakartaWebsocket
+name: org.openrewrite.java.migrate.jakarta.JavaxWebsocketToJakartaWebsocket
 displayName: Migrate deprecated `javax.websocket` packages to `jakarta.websocket`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -781,7 +782,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxWsToJakartaWs
+name: org.openrewrite.java.migrate.jakarta.JavaxWsToJakartaWs
 displayName: Migrate deprecated `javax.ws` packages to `jakarta.ws`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -809,7 +810,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxXmlBindMigrationToJakartaXmlBind
+name: org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind
 displayName: Migrate deprecated `javax.xml.bind` packages to `jakarta.xml.bind`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 tags:
@@ -863,7 +864,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxXmlSoapToJakartaXmlSoap
+name: org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
 displayName: Migrate deprecated `javax.soap` packages to `jakarta.soap`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -890,7 +891,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxXmlWsMigrationToJakartaXmlWs
+name: org.openrewrite.java.migrate.jakarta.JavaxXmlWsMigrationToJakartaXmlWs
 displayName: Migrate deprecated `javax.xml.ws` packages to `jakarta.xml.ws`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 tags:
@@ -939,7 +940,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaxPeristenceXmlToJakartaPersistenceXml
+name: org.openrewrite.java.migrate.jakarta.JavaxPeristenceXmlToJakartaPersistenceXml
 displayName: migrate persistence.xml files
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
@@ -967,3 +968,108 @@ recipeList:
       elementName: persistence
       newValue: https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd
       fileMatcher: "**/persistence.xml"
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
+displayName: Migrate Jackson from javax to jakarta namespace
+recipeList:
+  # JAXB annotations support
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.module
+      oldArtifactId: jackson-module-jaxb-annotations
+      newGroupId: com.fasterxml.jackson.module
+      newArtifactId: jackson-module-jakarta-xmlbind-annotations
+      newVersion: 2.13.x
+  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.module
+      oldArtifactId: jackson-module-jaxb-annotations
+      newGroupId: com.fasterxml.jackson.module
+      newArtifactId: jackson-module-jakarta-xmlbind-annotations
+      newVersion: 2.13.x
+  # JAXRS providers
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.jaxrs
+      oldArtifactId: jackson-jaxrs-cbor-provider
+      newGroupId: com.fasterxml.jackson.jakarta.rs
+      newArtifactId: jackson-jakarta-rs-cbor-provider
+      newVersion: 2.13.x
+  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.jaxrs
+      oldArtifactId: jackson-jaxrs-cbor-provider
+      newGroupId: com.fasterxml.jackson.jakarta.rs
+      newArtifactId: jackson-jakarta-rs-cbor-provider
+      newVersion: 2.13.x
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.jaxrs
+      oldArtifactId: jackson-jaxrs-json-provider
+      newGroupId: com.fasterxml.jackson.jakarta.rs
+      newArtifactId: jackson-jakarta-rs-json-provider
+      newVersion: 2.13.x
+  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.jaxrs
+      oldArtifactId: jackson-jaxrs-json-provider
+      newGroupId: com.fasterxml.jackson.jakarta.rs
+      newArtifactId: jackson-jakarta-rs-json-provider
+      newVersion: 2.13.x
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.jaxrs
+      oldArtifactId: jackson-jaxrs-smile-provider
+      newGroupId: com.fasterxml.jackson.jakarta.rs
+      newArtifactId: jackson-jakarta-rs-smile-provider
+      newVersion: 2.13.x
+  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.jaxrs
+      oldArtifactId: jackson-jaxrs-smile-provider
+      newGroupId: com.fasterxml.jackson.jakarta.rs
+      newArtifactId: jackson-jakarta-rs-smile-provider
+      newVersion: 2.13.x
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.jaxrs
+      oldArtifactId: jackson-jaxrs-xml-provider
+      newGroupId: com.fasterxml.jackson.jakarta.rs
+      newArtifactId: jackson-jakarta-rs-xml-provider
+      newVersion: 2.13.x
+  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.jaxrs
+      oldArtifactId: jackson-jaxrs-xml-provider
+      newGroupId: com.fasterxml.jackson.jakarta.rs
+      newArtifactId: jackson-jakarta-rs-xml-provider
+      newVersion: 2.13.x
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.jaxrs
+      oldArtifactId: jackson-jaxrs-yaml-provider
+      newGroupId: com.fasterxml.jackson.jakarta.rs
+      newArtifactId: jackson-jakarta-rs-yaml-provider
+      newVersion: 2.13.x
+  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.jaxrs
+      oldArtifactId: jackson-jaxrs-yaml-provider
+      newGroupId: com.fasterxml.jackson.jakarta.rs
+      newArtifactId: jackson-jakarta-rs-yaml-provider
+      newVersion: 2.13.x
+  # JSONP datatypes
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.datatype
+      oldArtifactId: jackson-datatype-jsr353
+      newGroupId: com.fasterxml.jackson.datatype
+      newArtifactId: jackson-datatype-jakarta-jsonp
+      newVersion: 2.13.x
+  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
+      oldGroupId: com.fasterxml.jackson.datatype
+      oldArtifactId: jackson-datatype-jsr353
+      newGroupId: com.fasterxml.jackson.datatype
+      newArtifactId: jackson-datatype-jakarta-jsonp
+      newVersion: 2.13.x
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: org.glassfish
+      oldArtifactId: javax.json
+      newGroupId: org.glassfish
+      newArtifactId: jakarta.json
+      newVersion: 2.0.x
+  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
+      oldGroupId: org.glassfish
+      oldArtifactId: javax.json
+      newGroupId: org.glassfish
+      newArtifactId: jakarta.json
+      newVersion: 2.0.x

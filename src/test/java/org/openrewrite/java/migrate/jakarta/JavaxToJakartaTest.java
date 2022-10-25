@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate;
+package org.openrewrite.java.migrate.jakarta;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
@@ -51,7 +51,7 @@ class JavaxToJakartaTest implements RewriteTest {
           Environment.builder()
             .scanRuntimeClasspath("org.openrewrite.java.migrate")
             .build()
-            .activateRecipes("org.openrewrite.java.migrate.JavaxMigrationToJakarta")
+            .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
         );
     }
 
@@ -143,7 +143,7 @@ class JavaxToJakartaTest implements RewriteTest {
               spec.recipe(Environment.builder()
                 .scanRuntimeClasspath("org.openrewrite.java.migrate")
                 .build()
-                .activateRecipes("org.openrewrite.java.migrate.JavaxMigrationToJakarta")
+                .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
                 .doNext(new ChangeType("I1", "I2", false))
               );
               spec.parser(JavaParser.fromJavaVersion()
@@ -169,7 +169,7 @@ class JavaxToJakartaTest implements RewriteTest {
               .recipe(Environment.builder()
                 .scanRuntimeClasspath("org.openrewrite.java.migrate")
                 .build()
-                .activateRecipes("org.openrewrite.java.migrate.JavaxMigrationToJakarta")
+                .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
                 .doNext(new ChangeType("I1", "I2", false))
               )
               .parser(
