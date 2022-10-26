@@ -92,16 +92,19 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:latest.release")
     testImplementation("org.projectlombok:lombok:latest.release")
 
-    implementation("org.openrewrite:rewrite-java:${rewriteVersion}")
-    implementation("org.openrewrite:rewrite-maven:${rewriteVersion}")
-    runtimeOnly("org.openrewrite:rewrite-java-17:${rewriteVersion}")
+    implementation(platform("org.openrewrite:rewrite-bom:${rewriteVersion}"))
+    implementation("org.openrewrite:rewrite-java")
+    implementation("org.openrewrite:rewrite-maven")
+    runtimeOnly("org.openrewrite:rewrite-java-8")
+    runtimeOnly("org.openrewrite:rewrite-java-11")
+    runtimeOnly("org.openrewrite:rewrite-java-17")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-params:latest.release")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
 
-    testImplementation("org.openrewrite:rewrite-test:${rewriteVersion}")
-    testImplementation("org.openrewrite:rewrite-java-tck:${rewriteVersion}")
+    testImplementation("org.openrewrite:rewrite-test")
+    testImplementation("org.openrewrite:rewrite-java-tck")
 
     testImplementation("org.assertj:assertj-core:latest.release")
 
@@ -110,7 +113,6 @@ dependencies {
 
     testImplementation("commons-codec:commons-codec:latest.release")
 
-    testRuntimeOnly("org.openrewrite:rewrite-java-17:${rewriteVersion}")
     testRuntimeOnly("commons-io:commons-io:latest.release")
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353:${jacksonVersion}")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
