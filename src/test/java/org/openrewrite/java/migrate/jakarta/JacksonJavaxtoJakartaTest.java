@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
@@ -145,7 +144,6 @@ public class JacksonJavaxtoJakartaTest implements RewriteTest {
     }
 
     @Test
-    @Disabled("Disabled until ChangeManagedDependencyGroupAndArtifactId supports dynamic versions")
     void migrateJacksonManagedDependencies() {
         rewriteRun(
           pomXml(
@@ -251,123 +249,6 @@ public class JacksonJavaxtoJakartaTest implements RewriteTest {
                             </dependency>
                         </dependencies>
                     </dependencyManagement>
-                </project>
-            """
-          )
-        );
-    }
-
-    @Test
-    @Disabled("Disabled until ChangeDependencyGroupAndArtifactId follows property placeholders")
-    void migrateJacksonDependenciesWithVersionProperty() {
-        rewriteRun(
-          pomXml(
-            """
-                <project>
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example.jackson</groupId>
-                    <artifactId>jackson-legacy</artifactId>
-                    <version>1.0.0</version>
-                    <properties>
-                        <jackson.version>2.12.1</jackson.version>
-                        <glassfish.version>1.1.4</glassfish.version>
-                    </properties>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.module</groupId>
-                            <artifactId>jackson-module-jaxb-annotations</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                            <artifactId>jackson-jaxrs-cbor-provider</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                            <artifactId>jackson-jaxrs-json-provider</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                            <artifactId>jackson-jaxrs-smile-provider</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                            <artifactId>jackson-jaxrs-xml-provider</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                            <artifactId>jackson-jaxrs-yaml-provider</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.datatype</groupId>
-                            <artifactId>jackson-datatype-jsr353</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.glassfish</groupId>
-                            <artifactId>javax.json</artifactId>
-                            <version>${glassfish.version}</version>
-                        </dependency>
-                    </dependencies>
-                </project>
-            """,
-            """
-                <project>
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example.jackson</groupId>
-                    <artifactId>jackson-legacy</artifactId>
-                    <version>1.0.0</version>
-                    <properties>
-                        <jackson.version>2.13.4</jackson.version>
-                        <glassfish.version>2.0.1</glassfish.version>
-                    </properties>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.module</groupId>
-                            <artifactId>jackson-module-jaxb-annotations</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                            <artifactId>jackson-jaxrs-cbor-provider</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                            <artifactId>jackson-jaxrs-json-provider</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                            <artifactId>jackson-jaxrs-smile-provider</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                            <artifactId>jackson-jaxrs-xml-provider</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                            <artifactId>jackson-jaxrs-yaml-provider</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.datatype</groupId>
-                            <artifactId>jackson-datatype-jsr353</artifactId>
-                            <version>${jackson.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.glassfish</groupId>
-                            <artifactId>javax.json</artifactId>
-                            <version>${glassfish.version}</version>
-                        </dependency>
-                    </dependencies>
                 </project>
             """
           )
