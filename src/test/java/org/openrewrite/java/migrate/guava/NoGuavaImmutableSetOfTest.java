@@ -16,12 +16,10 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
-import java.util.UUID;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -37,260 +35,355 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
 
     @Test
     void doNotChangeReturnsImmutableSet() {
-        rewriteRun(
-          java(
-            """
-                  import com.google.common.collect.ImmutableSet;
-                  
-                  class Test {
-                      ImmutableSet<String> getSet() {
-                          return ImmutableSet.of();
-                      }
-                  }
-              """));
-
+      rewriteRun(
+        //language=java
+        java(
+          """
+            import com.google.common.collect.ImmutableSet;
+            
+            class Test {
+                ImmutableSet<String> getSet() {
+                    return ImmutableSet.of();
+                }
+            }
+          """
+        )
+      );
     }
 
     @Test
     void doNotChangeFieldAssignmentToImmutableSet() {
-        rewriteRun(java("""
-              import com.google.common.collect.ImmutableSet;
-              
-              class Test {
-                  ImmutableSet<String> m;
-              
-                  {
-                      this.m = ImmutableSet.of();
-                  }
-              }
-          """));
+      rewriteRun(
+        //language=java
+        java(
+          """
+            import com.google.common.collect.ImmutableSet;
+            
+            class Test {
+                ImmutableSet<String> m;
+            
+                {
+                    this.m = ImmutableSet.of();
+                }
+            }
+          """
+        )
+      );
     }
 
     @Test
     void doNotChangeAssignsToImmutableSet() {
-        rewriteRun(java("""
-              import com.google.common.collect.ImmutableSet;
-              
-              class Test {
-                  ImmutableSet<String> m;
-              
-                  void init() {
-                      m = ImmutableSet.of();
-                  }
-              }
-          """));
+      rewriteRun(
+        //language=java
+        java(
+          """
+            import com.google.common.collect.ImmutableSet;
+            
+            class Test {
+                ImmutableSet<String> m;
+            
+                void init() {
+                    m = ImmutableSet.of();
+                }
+            }
+          """
+        )
+      );
     }
 
     @Test
     void doNotChangeNewClass() {
-        rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion()
-            .dependsOn(
-              """
-                  import com.google.common.collect.ImmutableSet;
-                        
-                  public class A {
-                      ImmutableSet<String> immutableSet;
-                      public A(ImmutableSet<String> immutableSet) {
-                          this.immutableSet = immutableSet;
-                      }
+      rewriteRun(
+        //language=java
+        spec -> spec.parser(
+          JavaParser.fromJavaVersion().dependsOn(
+            """
+              import com.google.common.collect.ImmutableSet;
+                    
+              public class A {
+                  ImmutableSet<String> immutableSet;
+                  public A(ImmutableSet<String> immutableSet) {
+                      this.immutableSet = immutableSet;
                   }
-                """
-            )),
-          java("""
-                import com.google.common.collect.ImmutableSet;
-
-                class Test {
-                    A a = new A(ImmutableSet.of());
-                }
-            """));
+              }
+            """
+          )
+        ),
+        //language=java
+        java(
+          """
+            import com.google.common.collect.ImmutableSet;
+            
+            class Test {
+                A a = new A(ImmutableSet.of());
+            }
+          """
+        )
+      );
     }
 
     @Test
     void doNotChangeMethodInvocation() {
-        rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion()
-            .dependsOn(
-              """
-                  import com.google.common.collect.ImmutableSet;
-                        
-                  public class A {
-                      ImmutableSet<String> immutableSet;
-                      public void method(ImmutableSet<String> immutableSet) {
-                          this.immutableSet = immutableSet;
-                      }
+      rewriteRun(
+        //language=java
+        spec -> spec.parser(
+          JavaParser.fromJavaVersion().dependsOn(
+            """
+              import com.google.common.collect.ImmutableSet;
+                    
+              public class A {
+                  ImmutableSet<String> immutableSet;
+                  public void method(ImmutableSet<String> immutableSet) {
+                      this.immutableSet = immutableSet;
                   }
-                """
-            )),
-          java("""
-                import com.google.common.collect.ImmutableSet;
-
-                class Test {
-                    void method() {
-                        A a = new A();
-                        a.method(ImmutableSet.of());
-                    }
+              }
+            """
+          )
+        ),
+        //language=java
+        java(
+          """
+            import com.google.common.collect.ImmutableSet;
+            
+            class Test {
+                void method() {
+                    A a = new A();
+                    a.method(ImmutableSet.of());
                 }
-            """));
+            }
+          """
+        )
+      );
     }
 
     @Test
     void replaceArguments() {
-            rewriteRun(version(
-              java(
-                """
-                      import java.util.Set;
-                      import com.google.common.collect.ImmutableSet;
-                      
-                      class Test {
-                          Set<String> m = ImmutableSet.of("A", "B", "C", "D");
-                      }
-                  """,
-                """
-                      import java.util.Set;
-                      
-                      class Test {
-                          Set<String> m = Set.of("A", "B", "C", "D");
-                      }
-                  """), 9));
+      rewriteRun(
+        version(
+          //language=java
+          java(
+            """
+              import java.util.Set;
+              import com.google.common.collect.ImmutableSet;
+              
+              class Test {
+                  Set<String> m = ImmutableSet.of("A", "B", "C", "D");
+              }
+            """,
+            """
+              import java.util.Set;
+              
+              class Test {
+                  Set<String> m = Set.of("A", "B", "C", "D");
+              }
+            """),
+          9
+        )
+      );
     }
 
     @Test
     void fieldAssignmentToSet() {
-        rewriteRun(version(
+      rewriteRun(
+        version(
+          //language=java
           java(
-                """
-                      import java.util.Set;
-                      import com.google.common.collect.ImmutableSet;
-                      
-                      class Test {
-                          Set<String> m;
-                          {
-                              this.m = ImmutableSet.of();
-                          }
-                      }
-                  """,
-                """
-                      import java.util.Set;
-                      
-                      class Test {
-                          Set<String> m;
-                          {
-                              this.m = Set.of();
-                          }
-                      }
-                  """), 9));
+            """
+              import java.util.Set;
+              import com.google.common.collect.ImmutableSet;
+              
+              class Test {
+                  Set<String> m;
+                  {
+                      this.m = ImmutableSet.of();
+                  }
+              }
+            """,
+            """
+              import java.util.Set;
+              
+              class Test {
+                  Set<String> m;
+                  {
+                      this.m = Set.of();
+                  }
+              }
+            """),
+          9
+        )
+      );
     }
 
     @Test
     void assigmentToSet() {
-        rewriteRun(version(
-          java("""
-                    import java.util.Set;
-                    import com.google.common.collect.ImmutableSet;
-                    
-                    class Test {
-                        Set<String> m = ImmutableSet.of();
-                    }
-                """,
-              """
-                    import java.util.Set;
-                    
-                    class Test {
-                        Set<String> m = Set.of();
-                    }
-                """), 9));
+      rewriteRun(
+        version(
+          //language=java
+          java(
+            """
+              import java.util.Set;
+              import com.google.common.collect.ImmutableSet;
+              
+              class Test {
+                  Set<String> m = ImmutableSet.of();
+              }
+            """,
+            """
+              import java.util.Set;
+              
+              class Test {
+                  Set<String> m = Set.of();
+              }
+            """),
+          9
+        )
+      );
     }
 
     @Test
     void returnsSet() {
-        rewriteRun(version(
-          java("""
-                    import java.util.Set;
-                    import com.google.common.collect.ImmutableSet;
-                    
-                    class Test {
-                        Set<String> set() {
-                            return ImmutableSet.of();
-                        }
-                    }
-                """,
+      rewriteRun(
+        version(
+          //language=java
+          java(
+            """
+              import java.util.Set;
+              import com.google.common.collect.ImmutableSet;
+              
+              class Test {
+                  Set<String> set() {
+                      return ImmutableSet.of();
+                  }
+              }
+            """,
+            """
+              import java.util.Set;
+              
+              class Test {
+                  Set<String> set() {
+                      return Set.of();
+                  }
+              }
+            """),
+          9
+        )
+      );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/137")
+    @Test
+    void setOfInts() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
               """
-                    import java.util.Set;
-                    
-                    class Test {
-                        Set<String> set() {
-                            return Set.of();
-                        }
+                import java.util.Set;
+                import com.google.common.collect.ImmutableSet;
+                
+                class Test {
+                    Set<Integer> set() {
+                        return ImmutableSet.of(1, 2, 3);
                     }
-                """), 9));
+                }
+              """,
+              """
+                import java.util.Set;
+                
+                class Test {
+                    Set<Integer> set() {
+                        return Set.of(1, 2, 3);
+                    }
+                }
+              """
+            ),
+            9
+          )
+        );
     }
 
     @Test
     void newClassWithSetArgument() {
-            rewriteRun(
-              spec -> spec.parser(JavaParser.fromJavaVersion().classpath("guava").dependsOn(
-                """
-                      import java.util.Set;
-                          
-                      public class A {
-                          Set<String> set;
-                          public A(Set<String> set) {
-                              this.set = set;
-                          }
-                      }
-                  """
-              )),
-              version(java("""
-                      import com.google.common.collect.ImmutableSet;
-
-                      class Test {
-                          A a = new A(ImmutableSet.of());
-                      }
-                  """,
-                """
-                      import java.util.Set;
-
-                      class Test {
-                          A a = new A(Set.of());
-                      }
-                  """), 9));
+      rewriteRun(
+        //language=java
+        spec -> spec.parser(
+          JavaParser.fromJavaVersion().classpath("guava").dependsOn(
+            """
+              import java.util.Set;
+                  
+              public class A {
+                  Set<String> set;
+                  public A(Set<String> set) {
+                      this.set = set;
+                  }
+              }
+            """
+        )),
+        version(
+          //language=java
+          java(
+            """
+              import com.google.common.collect.ImmutableSet;
+              
+              class Test {
+                  A a = new A(ImmutableSet.of());
+              }
+            """,
+            """
+              import java.util.Set;
+              
+              class Test {
+                  A a = new A(Set.of());
+              }
+            """),
+          9
+        )
+      );
     }
 
     @Test
     void methodInvocationWithSetArgument() {
-            rewriteRun(
-              spec -> spec.parser(JavaParser.fromJavaVersion().classpath("guava").dependsOn(
-                """
-                      import java.util.Set;
-                          
-                      public class A {
-                          Set<String> set;
-                          public void method(Set<String> set) {
-                              this.set = set;
-                          }
-                      }
-                  """
-              )),
-              version(java("""
-                      import com.google.common.collect.ImmutableSet;
-
-                      class Test {
-                          void method() {
-                              A a = new A();
-                              a.method(ImmutableSet.of());
-                          }
-                      }
-                  """,
-                """
-                      import java.util.Set;
-
-                      class Test {
-                          void method() {
-                              A a = new A();
-                              a.method(Set.of());
-                          }
-                      }
-                  """), 9));
+      rewriteRun(
+        //language=java
+        spec -> spec.parser(
+          JavaParser.fromJavaVersion().classpath("guava").dependsOn(
+            """
+              import java.util.Set;
+              
+              public class A {
+                  Set<String> set;
+                  public void method(Set<String> set) {
+                      this.set = set;
+                  }
+              }
+            """
+          )
+        ),
+        version(
+          //language=java
+          java(
+            """
+              import com.google.common.collect.ImmutableSet;
+              
+              class Test {
+                  void method() {
+                      A a = new A();
+                      a.method(ImmutableSet.of());
+                  }
+              }
+            """,
+            """
+              import java.util.Set;
+              
+              class Test {
+                  void method() {
+                      A a = new A();
+                      a.method(Set.of());
+                  }
+              }
+            """),
+          9
+        )
+      );
     }
 }

@@ -74,27 +74,44 @@ public class NoGuavaImmutableListOf extends Recipe {
                     maybeRemoveImport("com.google.common.collect.ImmutableList");
                     maybeAddImport("java.util.List");
 
-                    JavaType.FullyQualified fq = TypeUtils.asFullyQualified(JavaType.buildType("java.util.List"));
-                    if (fq != null) {
-                        String template = method.getArguments().stream()
-                                .map(arg -> {
-                                    if (arg.getType() instanceof JavaType.Primitive) {
-                                        return TypeUtils.asFullyQualified(JavaType.buildType("java.lang." + arg.getType()));
-                                    } else {
-                                        return TypeUtils.asFullyQualified(arg.getType());
+                    String template = method.getArguments().stream()
+                            .map(arg -> {
+                                if (arg.getType() instanceof JavaType.Primitive) {
+                                    String type = "";
+                                    if (JavaType.Primitive.Boolean == arg.getType()) {
+                                        type = "Boolean";
+                                    } else if (JavaType.Primitive.Byte == arg.getType()) {
+                                        type = "Byte";
+                                    } else if (JavaType.Primitive.Char == arg.getType()) {
+                                        type = "Character";
+                                    } else if (JavaType.Primitive.Double == arg.getType()) {
+                                        type = "Double";
+                                    } else if (JavaType.Primitive.Float == arg.getType()) {
+                                        type = "Float";
+                                    } else if (JavaType.Primitive.Int == arg.getType()) {
+                                        type = "Integer";
+                                    } else if (JavaType.Primitive.Long == arg.getType()) {
+                                        type = "Long";
+                                    } else if (JavaType.Primitive.Short == arg.getType()) {
+                                        type = "Short";
+                                    } else if (JavaType.Primitive.String == arg.getType()) {
+                                        type = "java.lang.String";
                                     }
-                                })
-                                .filter(Objects::nonNull)
-                                .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
-                                .collect(Collectors.joining(",", fq.getClassName() + ".of(", ")"));
+                                    return TypeUtils.asFullyQualified(JavaType.buildType("java.lang." + type));
+                                } else {
+                                    return TypeUtils.asFullyQualified(arg.getType());
+                                }
+                            })
+                            .filter(Objects::nonNull)
+                            .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
+                            .collect(Collectors.joining(",",  "List.of(", ")"));
 
-                        return method.withTemplate(
-                                JavaTemplate.builder(this::getCursor, template)
-                                        .imports("java.util.List")
-                                        .build(),
-                                method.getCoordinates().replace(),
-                                method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
-                    }
+                    return method.withTemplate(
+                            JavaTemplate.builder(this::getCursor, template)
+                                    .imports("java.util.List")
+                                    .build(),
+                            method.getCoordinates().replace(),
+                            method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                 }
                 return super.visitMethodInvocation(method, executionContext);
             }
