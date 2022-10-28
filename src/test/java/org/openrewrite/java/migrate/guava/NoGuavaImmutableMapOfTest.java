@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
@@ -428,5 +429,62 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
           9
         )
       );
+    }
+
+    @Disabled("Requires handling J.Array")
+    @Test
+    void insideAnonymousArrayInitializer() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableMap;
+                
+                class A {
+                    Object[] o = new Object[] {
+                          ImmutableMap.of(1, 1, 2, 2, 3, 3)
+                    };
+                }
+              """,
+              """
+                import java.util.Map;
+                
+                class A {
+                    Object[] o = new Object[] {
+                          Map.of(1, 1, 2, 2, 3, 3)
+                    };
+                }
+              """
+            ),
+            11
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/136")
+    @Test
+    void assignToMoreGeneralType() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableMap;
+                
+                class A {
+                    Object o = ImmutableMap.of(1, 1, 2, 2, 3, 3);
+                }
+              """,
+              """
+                import java.util.Map;
+                
+                class A {
+                    Object o = Map.of(1, 1, 2, 2, 3, 3);
+                }
+              """),
+            11
+          )
+        );
     }
 }

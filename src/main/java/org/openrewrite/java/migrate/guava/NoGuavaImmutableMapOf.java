@@ -169,7 +169,7 @@ public class NoGuavaImmutableMapOf extends Recipe {
 
             private boolean isParentTypeMatched(@Nullable JavaType type) {
                 JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
-                return TypeUtils.isOfClassType(fq, "java.util.Map");
+                return TypeUtils.isOfClassType(fq, "java.util.Map") || TypeUtils.isOfType(fq, JavaType.ShallowClass.build("java.lang.Object"));
             }
         };
     }

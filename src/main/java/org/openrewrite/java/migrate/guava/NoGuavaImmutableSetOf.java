@@ -172,7 +172,7 @@ public class NoGuavaImmutableSetOf extends Recipe {
 
             private boolean isParentTypeMatched(@Nullable JavaType type) {
                 JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
-                return TypeUtils.isOfClassType(fq, "java.util.Set");
+                return TypeUtils.isOfClassType(fq, "java.util.Set") || TypeUtils.isOfType(fq, JavaType.ShallowClass.build("java.lang.Object"));
             }
         };
     }

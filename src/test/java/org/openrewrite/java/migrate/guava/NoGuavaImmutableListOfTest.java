@@ -392,8 +392,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
       );
     }
 
-    @Disabled
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/136")
+    @Disabled("Requires handling J.Array")
     @Test
     void insideAnonymousArrayInitializer() {
       rewriteRun(
@@ -424,7 +423,6 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
       );
     }
 
-    @Disabled
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/136")
     @Test
     void assignToMoreGeneralType() {
