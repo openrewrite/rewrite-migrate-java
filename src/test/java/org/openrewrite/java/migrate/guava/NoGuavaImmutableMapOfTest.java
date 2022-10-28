@@ -431,7 +431,8 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
       );
     }
 
-    @Disabled("Requires handling J.Array")
+    @Disabled("Requires https://github.com/openrewrite/rewrite/issues/2375")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/138")
     @Test
     void insideAnonymousArrayInitializer() {
         rewriteRun(
@@ -443,7 +444,7 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
                 
                 class A {
                     Object[] o = new Object[] {
-                          ImmutableMap.of(1, 1, 2, 2, 3, 3)
+                            ImmutableMap.of(1, 1, 2, 2, 3, 3)
                     };
                 }
               """,
@@ -452,7 +453,7 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
                 
                 class A {
                     Object[] o = new Object[] {
-                          Map.of(1, 1, 2, 2, 3, 3)
+                            Map.of(1, 1, 2, 2, 3, 3)
                     };
                 }
               """

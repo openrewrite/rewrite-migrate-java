@@ -163,6 +163,14 @@ public class NoGuavaImmutableListOf extends Recipe {
                             isParentTypeDownCast = isParentTypeMatched(c.getConstructorType().getParameterTypes().get(index));
                         }
                     }
+                } else if (parent instanceof J.NewArray) {
+                    J.NewArray a = (J.NewArray) parent;
+                    JavaType arrayType = a.getType();
+                    while (arrayType instanceof JavaType.Array) {
+                        arrayType = ((JavaType.Array) arrayType).getElemType();
+                    }
+
+                    isParentTypeDownCast = isParentTypeMatched(arrayType);
                 }
                 return isParentTypeDownCast;
             }
