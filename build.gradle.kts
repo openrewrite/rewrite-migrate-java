@@ -48,13 +48,21 @@ group = "org.openrewrite.recipe"
 description = "Eliminate legacy Spring patterns and migrate between major Spring Boot versions. Automatically."
 
 repositories {
-    if(!project.hasProperty("releasing")) {
-        mavenLocal()
+    if (!project.hasProperty("releasing")) {
+        mavenLocal {
+            content {
+                excludeVersionByRegex(".+", ".+", ".+-rc[0-9]*")
+            }
+        }
         maven {
             url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
         }
     }
-    mavenCentral()
+    mavenCentral {
+        content {
+            excludeVersionByRegex(".+", ".+", ".+-rc[0-9]*")
+        }
+    }
 }
 
 nexusPublishing {
@@ -85,7 +93,6 @@ val rewriteVersion = if(project.hasProperty("releasing")) {
 } else {
     "latest.integration"
 }
-val jacksonVersion = "2.13.x"
 
 dependencies {
     compileOnly("org.projectlombok:lombok:latest.release")
@@ -114,9 +121,9 @@ dependencies {
     testImplementation("commons-codec:commons-codec:latest.release")
 
     testRuntimeOnly("commons-io:commons-io:latest.release")
-    testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353:${jacksonVersion}")
-    testRuntimeOnly("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
-    testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+    testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353:latest.release")
+    testRuntimeOnly("com.fasterxml.jackson.core:jackson-core:latest.release")
+    testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind:latest.release")
 }
 
 java {
