@@ -98,7 +98,7 @@ public class NoGuavaImmutableSetOf extends Recipe {
                                     } else if (JavaType.Primitive.Short == arg.getType()) {
                                         type = "Short";
                                     } else if (JavaType.Primitive.String == arg.getType()) {
-                                        type = "java.lang.String";
+                                        type = "String";
                                     }
                                     return TypeUtils.asFullyQualified(JavaType.buildType("java.lang." + type));
                                 } else {
