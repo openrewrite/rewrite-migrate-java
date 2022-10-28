@@ -15,7 +15,9 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
@@ -289,5 +291,69 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                         }
                     }
                 """), 11));
+    }
+
+    @Disabled
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/136")
+    @Test
+    void insideAnonymousArrayInitializer() {
+        rewriteRun(
+          version(
+            //language=java
+            java("""
+                    import com.google.common.collect.ImmutableList;
+                    
+                    class A {
+                        {
+                            Object[] o = new Object[] {
+                                    ImmutableList.of(1, 2, 3)
+                            };
+                        }
+                    }
+              """,
+              """
+                    import java.util.List;
+                    
+                    class A {
+                        {
+                            Object[] o = new Object[] {
+                                    List.of(1, 2, 3)
+                            };
+                        }
+                    }
+              """),
+            11
+          )
+        );
+    }
+
+    @Disabled
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/136")
+    @Test
+    void assignToMoreGeneralType() {
+        rewriteRun(
+          version(
+            //language=java
+            java("""
+                    import com.google.common.collect.ImmutableList;
+                    
+                    class A {
+                        {
+                            Object o = ImmutableList.of(1, 2, 3);
+                        }
+                    }
+              """,
+              """
+                    import java.util.List;
+                    
+                    class A {
+                        {
+                            Object o = List.of(1, 2, 3);
+                        }
+                    }
+              """),
+            11
+          )
+        );
     }
 }
