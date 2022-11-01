@@ -15,7 +15,45 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaVersion11
+name: org.openrewrite.java.migrate.UpgradeToJava11
+displayName: Upgrade to Java 11
+description: This recipe will apply changes commonly needed when upgrading to Java 11
+tags:
+  - java11
+  - jaxb
+  - jaxws
+  - deprecated
+  - jakarta
+
+recipeList:
+  - org.openrewrite.java.migrate.UseJavaUtilBase64
+  # Add javax dependencies if they are used by a project.
+  - org.openrewrite.java.migrate.javax.AddJaxwsDependencies
+  - org.openrewrite.java.migrate.javax.AddJaxbDependencies
+  - org.openrewrite.java.migrate.javax.AddInjectDependencies
+  # Add jdeprscan plugin to a maven-based build.
+  - org.openrewrite.java.migrate.AddJDeprScanPlugin
+  # Remediate deprecations
+  - org.openrewrite.java.cleanup.BigDecimalRoundingConstantsToEnums
+  - org.openrewrite.java.cleanup.PrimitiveWrapperClassConstructorToValueOf
+  - org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
+  - org.openrewrite.java.migrate.lang.JavaLangAPIs
+  - org.openrewrite.java.migrate.logging.JavaLoggingAPIs
+  - org.openrewrite.java.migrate.net.JavaNetAPIs
+  - org.openrewrite.java.migrate.sql.JavaSqlAPIs
+  - org.openrewrite.java.migrate.javax.JavaxLangModelUtil
+  - org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
+  - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
+  - org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
+  - org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion
+  - org.openrewrite.java.migrate.jacoco.UpgradeJaCoCoMavenPluginVersion
+  - org.openrewrite.java.migrate.UpdateMavenToJava11
+  - org.openrewrite.java.migrate.util.JavaUtilAPIs
+  - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
+  - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpdateMavenToJava11
 displayName: Change Maven Java version property values to 11
 description: Change maven.compiler.source and maven.compiler.target values to 11.
 recipeList:
