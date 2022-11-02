@@ -52,6 +52,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
   - org.openrewrite.java.migrate.jakarta.JavaxXmlWsMigrationToJakartaXmlWs
   - org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
+  - org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
