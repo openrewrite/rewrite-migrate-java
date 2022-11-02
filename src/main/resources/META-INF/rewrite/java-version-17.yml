@@ -25,7 +25,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava11
   - org.openrewrite.java.migrate.UpdateMavenToJava17
   - org.openrewrite.java.migrate.lang.StringFormatted
-  - org.openrewrite.java.migrate.lombok.LombokValToFinalVar
+  - org.openrewrite.java.migrate.lombok.UpdateLombokToJava17
   - org.openrewrite.java.migrate.AddJDeprScanPlugin:
       release: 17
 ---
