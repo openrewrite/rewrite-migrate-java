@@ -927,7 +927,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
-displayName: Migrate Jackson from javax to jakarta namespace
+displayName: Migrate Ehcache from javax to jakarta namespace
 recipeList:
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: org.ehcache
