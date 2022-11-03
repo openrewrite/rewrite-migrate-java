@@ -53,6 +53,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxXmlWsMigrationToJakartaXmlWs
   - org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
+  - org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -934,7 +935,6 @@ recipeList:
       groupId: org.ehcache
       artifactId: "*"
       newVersion: 3.10.x
-
   # Do not use glob express for all ehcache artifacts, only two artifacts have jakarta classifiers.
   - org.openrewrite.maven.ChangeDependencyClassifier:
       groupId: org.ehcache
@@ -943,4 +943,18 @@ recipeList:
   - org.openrewrite.maven.ChangeDependencyClassifier:
       groupId: org.ehcache
       artifactId: ehcache-transactions
+      newClassifier: jakarta
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta
+displayName: Migrate Johnzon from javax to jakarta namespace
+recipeList:
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.apache.johnzon
+      artifactId: "*"
+      newVersion: 1.2.x
+  - org.openrewrite.maven.ChangeDependencyClassifier:
+      groupId: org.apache.johnzon
+      artifactId: "*"
       newClassifier: jakarta
