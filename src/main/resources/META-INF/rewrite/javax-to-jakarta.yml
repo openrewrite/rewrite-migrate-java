@@ -704,7 +704,7 @@ recipeList:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
       version: 3.x
-      onlyIfUsing: javax.xml.bind.*
+      onlyIfUsing: javax.xml.bind..*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
@@ -714,7 +714,7 @@ recipeList:
       artifactId: jaxb-runtime
       version: 3.x
       scope: runtime
-      onlyIfUsing: javax.xml.bind.*
+      onlyIfUsing: javax.xml.bind..*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: org.glassfish.jaxb
       artifactId: jaxb-runtime
@@ -740,7 +740,7 @@ recipeList:
       groupId: jakarta.xml.soap
       artifactId: jakarta.xml.soap-api
       version: 2.x
-      onlyIfUsing: javax.xml.soap.*
+      onlyIfUsing: javax.xml.soap..*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.soap
       artifactId: jakarta.xml.soap-api
@@ -768,7 +768,7 @@ recipeList:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       version: 3.x
-      onlyIfUsing: javax.xml.ws.*
+      onlyIfUsing: javax.xml.ws..*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
@@ -778,7 +778,7 @@ recipeList:
       artifactId: jaxws-rt
       version: 3.x
       scope: runtime
-      onlyIfUsing: javax.xml.ws.*
+      onlyIfUsing: javax.xml.ws..*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
