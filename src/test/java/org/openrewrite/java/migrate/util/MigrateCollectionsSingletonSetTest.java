@@ -33,47 +33,56 @@ class MigrateCollectionsSingletonSetTest implements RewriteTest {
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
     void singleTonSet() {
+        //language=java
         rewriteRun(
           version(
-            java("""
-                    import java.util.*;
-                    
-                    class Test {
-                        Set<String> set = Collections.singleton("Hello");
-                    }
+            java(
+              """
+                import java.util.*;
+                                
+                class Test {
+                    Set<String> set = Collections.singleton("Hello");
+                }
                 """,
               """
-                    import java.util.Set;
-                    
-                    class Test {
-                        Set<String> set = Set.of("Hello");
-                    }
-                """), 9)
+                import java.util.Set;
+                                
+                class Test {
+                    Set<String> set = Set.of("Hello");
+                }
+                """
+            ),
+            9
+          )
         );
     }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
     void singletonSetCustomType() {
+        //language=java
         rewriteRun(
           version(
-            java("""
-                    import java.util.*;
-                    import java.time.LocalDate;
-                    
-                    class Test {
-                        Set<LocalDate> set = Collections.singleton(LocalDate.now());
-                    }
+            java(
+              """
+                import java.util.*;
+                import java.time.LocalDate;
+                                
+                class Test {
+                    Set<LocalDate> set = Collections.singleton(LocalDate.now());
+                }
                 """,
               """
-                    import java.util.Set;
-                    import java.time.LocalDate;
-                    
-                    class Test {
-                        Set<LocalDate> set = Set.of(LocalDate.now());
-                    }
-                """), 9)
+                import java.util.Set;
+                import java.time.LocalDate;
+                                
+                class Test {
+                    Set<LocalDate> set = Set.of(LocalDate.now());
+                }
+                """
+            ),
+            9
+          )
         );
     }
-
 }

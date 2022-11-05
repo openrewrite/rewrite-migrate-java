@@ -22,6 +22,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
+@SuppressWarnings("UnusedAssignment")
 class UseEnumSetOfTest implements RewriteTest {
 
     @Override
@@ -31,69 +32,77 @@ class UseEnumSetOfTest implements RewriteTest {
 
     @Test
     void changeDeclaration() {
+        //language=java
         rewriteRun(
           version(
-            java("""
-                    import java.util.Set;
-                    
-                    class Test {
-                        public enum Color {
-                            RED, GREEN, BLUE
-                        }
-                        public void method() {
-                            Set<Color> warm = Set.of(Color.RED);
-                        }
+            java(
+              """
+                import java.util.Set;
+                                
+                class Test {
+                    public enum Color {
+                        RED, GREEN, BLUE
                     }
+                    public void method() {
+                        Set<Color> warm = Set.of(Color.RED);
+                    }
+                }
                 """,
               """
-                    import java.util.EnumSet;
-                    import java.util.Set;
-                    
-                    class Test {
-                        public enum Color {
-                            RED, GREEN, BLUE
-                        }
-                        public void method() {
-                            Set<Color> warm = EnumSet.of(Color.RED);
-                        }
+                import java.util.EnumSet;
+                import java.util.Set;
+                                
+                class Test {
+                    public enum Color {
+                        RED, GREEN, BLUE
                     }
-                """), 9
+                    public void method() {
+                        Set<Color> warm = EnumSet.of(Color.RED);
+                    }
+                }
+                """
+            ),
+            9
           )
         );
     }
 
     @Test
     void changeAssignment() {
+        //language=java
         rewriteRun(
           version(
-            java("""
-                    import java.util.Set;
-                    
-                    class Test {
-                        public enum Color {
-                            RED, GREEN, BLUE
-                        }
-                        public void method() {
-                            Set<Color> warm;
-                            warm = Set.of(Color.RED);
-                        }
+            java(
+              """
+                import java.util.Set;
+                                
+                class Test {
+                    public enum Color {
+                        RED, GREEN, BLUE
                     }
+                    public void method() {
+                        Set<Color> warm;
+                        warm = Set.of(Color.RED);
+                    }
+                }
                 """,
               """
-                    import java.util.EnumSet;
-                    import java.util.Set;
-                    
-                    class Test {
-                        public enum Color {
-                            RED, GREEN, BLUE
-                        }
-                        public void method() {
-                            Set<Color> warm;
-                            warm = EnumSet.of(Color.RED);
-                        }
+                import java.util.EnumSet;
+                import java.util.Set;
+                                
+                class Test {
+                    public enum Color {
+                        RED, GREEN, BLUE
                     }
-                """)
-            , 9)
+                    public void method() {
+                        Set<Color> warm;
+                        warm = EnumSet.of(Color.RED);
+                    }
+                }
+                """
+            ),
+            9
+          )
         );
     }
 }

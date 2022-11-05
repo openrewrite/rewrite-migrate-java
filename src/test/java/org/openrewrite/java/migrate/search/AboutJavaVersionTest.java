@@ -32,13 +32,13 @@ public class AboutJavaVersionTest implements RewriteTest {
           java(
             //language=java
             """
-                  class Test {
-                  }
+              class Test {
+              }
               """,
             //language=java
             """
-                  /*~~(Java version: 11)~~>*/class Test {
-                  }
+              /*~~(Java version: 11)~~>*/class Test {
+              }
               """,
             spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "me", "me", "11.0.15+10", "11.0.15+10"))
           )

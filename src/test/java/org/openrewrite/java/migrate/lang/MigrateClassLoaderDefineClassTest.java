@@ -21,7 +21,9 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@SuppressWarnings("deprecation")
 class MigrateClassLoaderDefineClassTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateClassLoaderDefineClass());
@@ -29,26 +31,30 @@ class MigrateClassLoaderDefineClassTest implements RewriteTest {
 
     @Test
     void migrateDefineClass() {
-        rewriteRun(java("""
-                package org.openrewrite;
-
-                class Test extends ClassLoader {
-                    public void method() {
-                        byte[] b = new byte[]{};
-                        super.defineClass(b, 10, 10);
-                    }
-                }
-            """,
-          """
-                package org.openrewrite;
-
-                class Test extends ClassLoader {
-                    public void method() {
-                        byte[] b = new byte[]{};
-                        super.defineClass(null, b, 10, 10);
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package org.openrewrite;
+
+              class Test extends ClassLoader {
+                  public void method() {
+                      byte[] b = new byte[]{};
+                      super.defineClass(b, 10, 10);
+                  }
+              }
+              """,
+            """
+              package org.openrewrite;
+
+              class Test extends ClassLoader {
+                  public void method() {
+                      byte[] b = new byte[]{};
+                      super.defineClass(null, b, 10, 10);
+                  }
+              }
+              """
+          )
+        );
     }
 }

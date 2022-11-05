@@ -22,6 +22,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 class MigrateDriverManagerSetLogStreamTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateDriverManagerSetLogStream());
@@ -29,28 +30,32 @@ class MigrateDriverManagerSetLogStreamTest implements RewriteTest {
 
     @Test
     void migrateDefineClass() {
-        rewriteRun(java("""
-                package org.openrewrite;
-
-                import java.sql.DriverManager;
-
-                class Test {
-                    public void method() {
-                        DriverManager.setLogStream(System.out);
-                    }
-                }
-            """,
-          """
-                package org.openrewrite;
-
-                import java.sql.DriverManager;
-
-                class Test {
-                    public void method() {
-                        DriverManager.setLogWriter(new java.io.PrintWriter(System.out));
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package org.openrewrite;
+
+              import java.sql.DriverManager;
+
+              class Test {
+                  public void method() {
+                      DriverManager.setLogStream(System.out);
+                  }
+              }
+              """,
+            """
+              package org.openrewrite;
+
+              import java.sql.DriverManager;
+
+              class Test {
+                  public void method() {
+                      DriverManager.setLogWriter(new java.io.PrintWriter(System.out));
+                  }
+              }
+              """
+          )
+        );
     }
 }

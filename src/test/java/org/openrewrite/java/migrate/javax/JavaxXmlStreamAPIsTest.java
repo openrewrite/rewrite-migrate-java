@@ -23,81 +23,93 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 class JavaxXmlStreamAPIsTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(
-          Environment.builder()
-            .scanRuntimeClasspath("org.openrewrite.java.migrate.javax")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs"));
+        spec.recipe(Environment.builder()
+          .scanRuntimeClasspath("org.openrewrite.java.migrate.javax")
+          .build()
+          .activateRecipes("org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs"));
     }
 
     @Test
     void xmlEventFactoryNewInstance() {
-        rewriteRun(java("""
-                import javax.xml.stream.XMLEventFactory;
-
-                public class Test {
-                    public void method() {
-                        XMLEventFactory eventFactory = XMLEventFactory.newInstance("test", Test.class.getClassLoader());
-                    }
-                }
-            """,
-          """
-                import javax.xml.stream.XMLEventFactory;
-
-                public class Test {
-                    public void method() {
-                        XMLEventFactory eventFactory = XMLEventFactory.newFactory("test", Test.class.getClassLoader());
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import javax.xml.stream.XMLEventFactory;
+
+              public class Test {
+                  public void method() {
+                      XMLEventFactory eventFactory = XMLEventFactory.newInstance("test", Test.class.getClassLoader());
+                  }
+              }
+              """,
+            """
+              import javax.xml.stream.XMLEventFactory;
+
+              public class Test {
+                  public void method() {
+                      XMLEventFactory eventFactory = XMLEventFactory.newFactory("test", Test.class.getClassLoader());
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void xmlInputFactoryNewInstance() {
-        rewriteRun(java("""
-                import javax.xml.stream.XMLInputFactory;
-
-                public class Test {
-                    public void method() {
-                        XMLInputFactory inputFactory = XMLInputFactory.newInstance("test", Test.class.getClassLoader());
-                    }
-                }
-            """,
-          """
-                import javax.xml.stream.XMLInputFactory;
-
-                public class Test {
-                    public void method() {
-                        XMLInputFactory inputFactory = XMLInputFactory.newFactory("test", Test.class.getClassLoader());
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import javax.xml.stream.XMLInputFactory;
+
+              public class Test {
+                  public void method() {
+                      XMLInputFactory inputFactory = XMLInputFactory.newInstance("test", Test.class.getClassLoader());
+                  }
+              }
+              """,
+            """
+              import javax.xml.stream.XMLInputFactory;
+
+              public class Test {
+                  public void method() {
+                      XMLInputFactory inputFactory = XMLInputFactory.newFactory("test", Test.class.getClassLoader());
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void xmlOutputFactoryNewInstance() {
-        rewriteRun(java("""
-                import javax.xml.stream.XMLOutputFactory;
-
-                public class Test {
-                    public void method() {
-                        XMLOutputFactory outputFactory = XMLOutputFactory.newInstance("test", Test.class.getClassLoader());
-                    }
-                }
-            """,
-          """
-                import javax.xml.stream.XMLOutputFactory;
-
-                public class Test {
-                    public void method() {
-                        XMLOutputFactory outputFactory = XMLOutputFactory.newFactory("test", Test.class.getClassLoader());
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import javax.xml.stream.XMLOutputFactory;
+
+              public class Test {
+                  public void method() {
+                      XMLOutputFactory outputFactory = XMLOutputFactory.newInstance("test", Test.class.getClassLoader());
+                  }
+              }
+              """,
+            """
+              import javax.xml.stream.XMLOutputFactory;
+
+              public class Test {
+                  public void method() {
+                      XMLOutputFactory outputFactory = XMLOutputFactory.newFactory("test", Test.class.getClassLoader());
+                  }
+              }
+              """
+          )
+        );
     }
 }

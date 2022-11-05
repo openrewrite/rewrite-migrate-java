@@ -34,78 +34,49 @@ class UpgradeJaCoCoMavenPluginVersionTest implements RewriteTest {
     @Test
     void property() {
         rewriteRun(
-          pomXml("""
-                  <project>
-                    <modelVersion>4.0.0</modelVersion>
-                     
-                    <properties>
-                      <jacoco.version>0.8.1</jacoco.version>
-                    </properties>
-                    
-                    <groupId>com.mycompany.app</groupId>
-                    <artifactId>my-app</artifactId>
-                    <version>1</version>
-                    <build>
-                      <plugins>
-                        <plugin>
-                          <groupId>org.jacoco</groupId>
-                          <artifactId>jacoco-maven-plugin</artifactId>
-                          <version>${jacoco.version}</version>
-                          <executions>
-                            <execution>
-                              <goals>
-                                <goal>prepare-agent</goal>
-                              </goals>
-                            </execution>
-                            <execution>
-                              <id>report</id>
-                              <phase>prepare-package</phase>
-                              <goals>
-                                <goal>report</goal>
-                              </goals>
-                            </execution>
-                          </executions>
-                        </plugin>
-                      </plugins>
-                    </build>
-                  </project>
+          //language=xml
+          pomXml(
+            """
+              <project>
+                <properties>
+                  <jacoco.version>0.8.1</jacoco.version>
+                </properties>
+                
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.jacoco</groupId>
+                      <artifactId>jacoco-maven-plugin</artifactId>
+                      <version>${jacoco.version}</version>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
               """,
             """
-                  <project>
-                    <modelVersion>4.0.0</modelVersion>
-                     
-                    <properties>
-                      <jacoco.version>0.8.8</jacoco.version>
-                    </properties>
-                    
-                    <groupId>com.mycompany.app</groupId>
-                    <artifactId>my-app</artifactId>
-                    <version>1</version>
-                    <build>
-                      <plugins>
-                        <plugin>
-                          <groupId>org.jacoco</groupId>
-                          <artifactId>jacoco-maven-plugin</artifactId>
-                          <version>${jacoco.version}</version>
-                          <executions>
-                            <execution>
-                              <goals>
-                                <goal>prepare-agent</goal>
-                              </goals>
-                            </execution>
-                            <execution>
-                              <id>report</id>
-                              <phase>prepare-package</phase>
-                              <goals>
-                                <goal>report</goal>
-                              </goals>
-                            </execution>
-                          </executions>
-                        </plugin>
-                      </plugins>
-                    </build>
-                  </project>
-              """)
+              <project>
+                <properties>
+                  <jacoco.version>0.8.8</jacoco.version>
+                </properties>
+                
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.jacoco</groupId>
+                      <artifactId>jacoco-maven-plugin</artifactId>
+                      <version>${jacoco.version}</version>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """
+          )
         );
     }
 }

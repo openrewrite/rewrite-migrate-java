@@ -22,6 +22,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 class MigrateLogRecordSetMillisToSetInstantTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateLogRecordSetMillisToSetInstant());
@@ -29,106 +30,117 @@ class MigrateLogRecordSetMillisToSetInstantTest implements RewriteTest {
 
     @Test
     void setMillisToSetInstantWhenParameterIsIdentifier() {
-        rewriteRun(java("""
-                package org.openrewrite.example;
-
-                import java.util.logging.Level;
-                import java.util.logging.LogRecord;
-
-                public class Test {
-                    public static void method(long millis) {
-                        LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
-                        logRecord.setMillis(millis);
-                    }
-                }
-            """,
-          """
-                package org.openrewrite.example;
-
-                import java.time.Instant;
-                import java.util.logging.Level;
-                import java.util.logging.LogRecord;
-
-                public class Test {
-                    public static void method(long millis) {
-                        LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
-                        logRecord.setInstant(Instant.ofEpochMilli(millis));
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package org.openrewrite.example;
+
+              import java.util.logging.Level;
+              import java.util.logging.LogRecord;
+
+              public class Test {
+                  public static void method(long millis) {
+                      LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
+                      logRecord.setMillis(millis);
+                  }
+              }
+              """,
+            """
+              package org.openrewrite.example;
+
+              import java.time.Instant;
+              import java.util.logging.Level;
+              import java.util.logging.LogRecord;
+
+              public class Test {
+                  public static void method(long millis) {
+                      LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
+                      logRecord.setInstant(Instant.ofEpochMilli(millis));
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void setMillisToSetInstantWhenParameterIsMethodCall() {
-        rewriteRun(java("""
-                package org.openrewrite.example;
-
-                import java.util.logging.Level;
-                import java.util.logging.LogRecord;
-
-                public class Test {
-                    private static long getLong() {
-                        return 1L;
-                    }
-
-                    public static void method() {
-                        LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
-                        logRecord.setMillis(getLong());
-                    }
-                }
-            """,
-          """
-                package org.openrewrite.example;
-
-                import java.time.Instant;
-                import java.util.logging.Level;
-                import java.util.logging.LogRecord;
-
-                public class Test {
-                    private static long getLong() {
-                        return 1L;
-                    }
-
-                    public static void method() {
-                        LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
-                        logRecord.setInstant(Instant.ofEpochMilli(getLong()));
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package org.openrewrite.example;
+
+              import java.util.logging.Level;
+              import java.util.logging.LogRecord;
+
+              public class Test {
+                  private static long getLong() {
+                      return 1L;
+                  }
+
+                  public static void method() {
+                      LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
+                      logRecord.setMillis(getLong());
+                  }
+              }
+              """,
+            """
+              package org.openrewrite.example;
+
+              import java.time.Instant;
+              import java.util.logging.Level;
+              import java.util.logging.LogRecord;
+
+              public class Test {
+                  private static long getLong() {
+                      return 1L;
+                  }
+
+                  public static void method() {
+                      LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
+                      logRecord.setInstant(Instant.ofEpochMilli(getLong()));
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void setMillisToSetInstantWhenParameterIsLiteral() {
-        rewriteRun(java("""
-                package org.openrewrite.example;
-
-                import java.util.logging.Level;
-                import java.util.logging.LogRecord;
-
-                public class Test {
-                    public static void method() {
-                        LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
-                        logRecord.setMillis(1L);
-                    }
-                }
-            """,
-          """
-                package org.openrewrite.example;
-
-                import java.time.Instant;
-                import java.util.logging.Level;
-                import java.util.logging.LogRecord;
-
-                public class Test {
-                    public static void method() {
-                        LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
-                        logRecord.setInstant(Instant.ofEpochMilli(1L));
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
-    }
+              package org.openrewrite.example;
 
+              import java.util.logging.Level;
+              import java.util.logging.LogRecord;
+
+              public class Test {
+                  public static void method() {
+                      LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
+                      logRecord.setMillis(1L);
+                  }
+              }
+              """,
+            """
+              package org.openrewrite.example;
+
+              import java.time.Instant;
+              import java.util.logging.Level;
+              import java.util.logging.LogRecord;
+
+              public class Test {
+                  public static void method() {
+                      LogRecord logRecord = new LogRecord(Level.parse("0"), "msg");
+                      logRecord.setInstant(Instant.ofEpochMilli(1L));
+                  }
+              }
+              """
+          )
+        );
+    }
 }

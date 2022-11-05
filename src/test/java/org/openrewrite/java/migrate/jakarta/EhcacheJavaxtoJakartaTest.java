@@ -25,70 +25,67 @@ import static org.openrewrite.maven.Assertions.pomXml;
 public class EhcacheJavaxtoJakartaTest implements RewriteTest {
 
     public void defaults(RecipeSpec spec) {
-        spec.recipe(
-          Environment.builder()
-            .scanRuntimeClasspath("org.openrewrite.java.migrate")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta")
-        );
+        spec.recipe(Environment.builder()
+          .scanRuntimeClasspath("org.openrewrite.java.migrate")
+          .build()
+          .activateRecipes("org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta"));
     }
 
     @Test
     void migrateEhcacheDependencies() {
         rewriteRun(
+          //language=xml
           pomXml(
             """
-                <project>
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example.ehcache</groupId>
-                    <artifactId>ehcache-legacy</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.ehcache</groupId>
-                            <artifactId>ehcache</artifactId>
-                            <version>3.9.10</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.ehcache</groupId>
-                            <artifactId>ehcache-clustered</artifactId>
-                            <version>3.9.10</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.ehcache</groupId>
-                            <artifactId>ehcache-transactions</artifactId>
-                            <version>3.9.10</version>
-                        </dependency>
-                    </dependencies>
-                </project>
-            """,
+              <project>
+                  <groupId>com.example.ehcache</groupId>
+                  <artifactId>ehcache-legacy</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.ehcache</groupId>
+                          <artifactId>ehcache</artifactId>
+                          <version>3.9.10</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.ehcache</groupId>
+                          <artifactId>ehcache-clustered</artifactId>
+                          <version>3.9.10</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.ehcache</groupId>
+                          <artifactId>ehcache-transactions</artifactId>
+                          <version>3.9.10</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
             """
-                <project>
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example.ehcache</groupId>
-                    <artifactId>ehcache-legacy</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.ehcache</groupId>
-                            <artifactId>ehcache</artifactId>
-                            <version>3.10.2</version>
-                            <classifier>jakarta</classifier>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.ehcache</groupId>
-                            <artifactId>ehcache-clustered</artifactId>
-                            <version>3.10.2</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.ehcache</groupId>
-                            <artifactId>ehcache-transactions</artifactId>
-                            <version>3.10.2</version>
-                            <classifier>jakarta</classifier>
-                        </dependency>
-                    </dependencies>
-                </project>
-            """
+              <project>
+                  <groupId>com.example.ehcache</groupId>
+                  <artifactId>ehcache-legacy</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.ehcache</groupId>
+                          <artifactId>ehcache</artifactId>
+                          <version>3.10.2</version>
+                          <classifier>jakarta</classifier>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.ehcache</groupId>
+                          <artifactId>ehcache-clustered</artifactId>
+                          <version>3.10.2</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.ehcache</groupId>
+                          <artifactId>ehcache-transactions</artifactId>
+                          <version>3.10.2</version>
+                          <classifier>jakarta</classifier>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """
           )
         );
     }

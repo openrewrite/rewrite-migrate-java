@@ -30,25 +30,26 @@ class UseMapOfTest implements RewriteTest {
 
     @Test
     void anonymousClass() {
+        //language=java
         rewriteRun(
           java(
             """
-                  import java.util.HashMap;
-                  import java.util.Map;
-                  
-                  class Test {
-                      Map<String, String> m = new HashMap<>() {{
-                          put("stru", "menta");
-                          put("mod", "erne");
-                      }};
-                  }
+              import java.util.HashMap;
+              import java.util.Map;
+                            
+              class Test {
+                  Map<String, String> m = new HashMap<>() {{
+                      put("stru", "menta");
+                      put("mod", "erne");
+                  }};
+              }
               """,
             """
-                  import java.util.Map;
-                  
-                  class Test {
-                      Map<String, String> m = Map.of("stru", "menta", "mod", "erne");
-                  }
+              import java.util.Map;
+                            
+              class Test {
+                  Map<String, String> m = Map.of("stru", "menta", "mod", "erne");
+              }
               """
           )
         );

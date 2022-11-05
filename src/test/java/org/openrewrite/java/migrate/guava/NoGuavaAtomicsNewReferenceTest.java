@@ -27,28 +27,31 @@ class NoGuavaAtomicsNewReferenceTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaAtomicsNewReference())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @Test
     void noNewReference() {
-        rewriteRun(java("""
-                import com.google.common.util.concurrent.Atomics;
-
-                class Test {
-                    Object o1 = Atomics.newReference();
-                    Object o2 = Atomics.newReference(0);
-                }
-            """,
-          """
-                import java.util.concurrent.atomic.AtomicReference;
-
-                class Test {
-                    Object o1 = new AtomicReference<>();
-                    Object o2 = new AtomicReference<>(0);
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.util.concurrent.Atomics;
+
+              class Test {
+                  Object o1 = Atomics.newReference();
+                  Object o2 = Atomics.newReference(0);
+              }
+              """,
+            """
+              import java.util.concurrent.atomic.AtomicReference;
+
+              class Test {
+                  Object o1 = new AtomicReference<>();
+                  Object o2 = new AtomicReference<>(0);
+              }
+              """
+          )
+        );
     }
 }

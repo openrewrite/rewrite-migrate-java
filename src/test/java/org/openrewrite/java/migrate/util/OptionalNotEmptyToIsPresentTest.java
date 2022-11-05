@@ -23,32 +23,43 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
+@SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "SimplifyOptionalCallChains"})
 class OptionalNotEmptyToIsPresentTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new OptionalNotEmptyToIsPresent());
-        spec.parser(JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true));
+        spec
+          .recipe(new OptionalNotEmptyToIsPresent())
+          .parser(JavaParser.fromJavaVersion());
     }
 
     @Test
-    void should_replace_not_isEmpty_with_isPresent() {
-        rewriteRun(version(java("""
-            package com.example.app;
-            import java.util.Optional;
-            class App {
-                boolean notPresent(Optional<String> bar){
-                    return !bar.isEmpty();
+    void replaceNotIsEmptyWithIsPresent() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                package com.example.app;
+                import java.util.Optional;
+                class App {
+                    boolean notPresent(Optional<String> bar){
+                        return !bar.isEmpty();
+                    }
                 }
-            }""", """
-            package com.example.app;
-            import java.util.Optional;
-            class App {
-                boolean notPresent(Optional<String> bar){
-                    return bar.isPresent();
+                """,
+              """
+                package com.example.app;
+                import java.util.Optional;
+                class App {
+                    boolean notPresent(Optional<String> bar){
+                        return bar.isPresent();
+                    }
                 }
-            }"""),
-          11));
+                """
+            ),
+            11
+          )
+        );
     }
-
 }

@@ -22,7 +22,9 @@ import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 
+@SuppressWarnings("deprecation")
 class MigrateLoggerGlobalToGetGlobalTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateLoggerGlobalToGetGlobal());
@@ -30,31 +32,33 @@ class MigrateLoggerGlobalToGetGlobalTest implements RewriteTest {
 
     @Test
     void globalToGetGlobal() {
+        //language=java
         rewriteRun(
           spec -> spec.typeValidationOptions(new TypeValidation(true, true, false, true)),
-          java("""
-                  package org.openrewrite.example;
+          java(
+            """
+              package org.openrewrite.example;
 
-                  import java.util.logging.Logger;
+              import java.util.logging.Logger;
 
-                  public class Test {
-                      public static void method() {
-                          Logger logger = Logger.global;
-                      }
+              public class Test {
+                  public static void method() {
+                      Logger logger = Logger.global;
                   }
+              }
               """,
             """
-                  package org.openrewrite.example;
+              package org.openrewrite.example;
 
-                  import java.util.logging.Logger;
+              import java.util.logging.Logger;
 
-                  public class Test {
-                      public static void method() {
-                          Logger logger = Logger.getGlobal();
-                      }
+              public class Test {
+                  public static void method() {
+                      Logger logger = Logger.getGlobal();
                   }
+              }
               """
-          ));
+          )
+        );
     }
-
 }

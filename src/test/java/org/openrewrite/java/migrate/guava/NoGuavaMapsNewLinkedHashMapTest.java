@@ -24,82 +24,94 @@ import static org.openrewrite.java.Assertions.java;
 
 
 class NoGuavaMapsNewLinkedHashMapTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaMapsNewLinkedHashMap())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @Test
     void replaceWithNewLinkedHashMap() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.Map;
-                
-                class Test {
-                    Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMap();
-                }
-            """,
-          """
-                import java.util.LinkedHashMap;
-                import java.util.Map;
-                
-                class Test {
-                    Map<Integer, Integer> cardinalsWorldSeries = new LinkedHashMap<>();
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.Map;
+                            
+              class Test {
+                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMap();
+              }
+              """,
+            """
+              import java.util.LinkedHashMap;
+              import java.util.Map;
+                            
+              class Test {
+                  Map<Integer, Integer> cardinalsWorldSeries = new LinkedHashMap<>();
+              }
+              """
+          )
+        );
     }
 
     @Test
     void replaceWithNewLinkedHashMapWithMap() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.Collections;
-                import java.util.Map;
-                
-                class Test {
-                    Map<Integer, Integer> m = Collections.emptyMap();
-                    Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMap(m);
-                }
-            """,
-          """
-                import java.util.Collections;
-                import java.util.LinkedHashMap;
-                import java.util.Map;
-                
-                class Test {
-                    Map<Integer, Integer> m = Collections.emptyMap();
-                    Map<Integer, Integer> cardinalsWorldSeries = new LinkedHashMap<>(m);
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.Collections;
+              import java.util.Map;
+                            
+              class Test {
+                  Map<Integer, Integer> m = Collections.emptyMap();
+                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMap(m);
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.LinkedHashMap;
+              import java.util.Map;
+                            
+              class Test {
+                  Map<Integer, Integer> m = Collections.emptyMap();
+                  Map<Integer, Integer> cardinalsWorldSeries = new LinkedHashMap<>(m);
+              }
+              """
+          )
+        );
     }
 
     @Test
     void replaceWithNewLinkedHashMapWithCapacity() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.LinkedHashMap;
-                import java.util.Map;
-                
-                class Test {
-                    Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMapWithExpectedSize(2);
-                }
-            """,
-          """
-                import java.util.LinkedHashMap;
-                import java.util.Map;
-                
-                class Test {
-                    Map<Integer, Integer> cardinalsWorldSeries = new LinkedHashMap<>(2);
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.LinkedHashMap;
+              import java.util.Map;
+                            
+              class Test {
+                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMapWithExpectedSize(2);
+              }
+              """,
+            """
+              import java.util.LinkedHashMap;
+              import java.util.Map;
+                            
+              class Test {
+                  Map<Integer, Integer> cardinalsWorldSeries = new LinkedHashMap<>(2);
+              }
+              """
+          )
+        );
     }
 }

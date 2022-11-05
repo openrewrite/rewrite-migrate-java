@@ -28,30 +28,33 @@ class NoGuavaSetsNewConcurrentHashSetTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaSetsNewConcurrentHashSet())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @Test
     void replaceWithNewConcurrentHashSet() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.Set;
-                
-                class Test {
-                    Set<Integer> cardinalsWorldSeries = Sets.newConcurrentHashSet();
-                }
-            """,
-          """
-                import java.util.Collections;
-                import java.util.Set;
-                import java.util.concurrent.ConcurrentHashMap;
-                
-                class Test {
-                    Set<Integer> cardinalsWorldSeries = Collections.newSetFromMap(new ConcurrentHashMap<>());
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.Set;
+                            
+              class Test {
+                  Set<Integer> cardinalsWorldSeries = Sets.newConcurrentHashSet();
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.Set;
+              import java.util.concurrent.ConcurrentHashMap;
+                            
+              class Test {
+                  Set<Integer> cardinalsWorldSeries = Collections.newSetFromMap(new ConcurrentHashMap<>());
+              }
+              """
+          )
+        );
     }
 }

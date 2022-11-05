@@ -28,80 +28,91 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaSetsNewHashSet())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @Test
     void replaceWithNewHashSet() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.Set;
-                
-                class Test {
-                    Set<Integer> cardinalsWorldSeries = Sets.newHashSet();
-                }
-            """,
-          """
-                import java.util.HashSet;
-                import java.util.Set;
-                
-                class Test {
-                    Set<Integer> cardinalsWorldSeries = new HashSet<>();
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.Set;
+                            
+              class Test {
+                  Set<Integer> cardinalsWorldSeries = Sets.newHashSet();
+              }
+              """,
+            """
+              import java.util.HashSet;
+              import java.util.Set;
+                            
+              class Test {
+                  Set<Integer> cardinalsWorldSeries = new HashSet<>();
+              }
+              """
+          )
+        );
     }
 
     @Test
     void replaceWithNewHashSetIterable() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.Collections;
-                import java.util.List;
-                import java.util.Set;
-                
-                class Test {
-                    List<Integer> l = Collections.emptyList();
-                    Set<Integer> cardinalsWorldSeries = Sets.newHashSet(l);
-                }
-            """,
-          """
-                import java.util.Collections;
-                import java.util.HashSet;
-                import java.util.List;
-                import java.util.Set;
-                
-                class Test {
-                    List<Integer> l = Collections.emptyList();
-                    Set<Integer> cardinalsWorldSeries = new HashSet<>(l);
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.Collections;
+              import java.util.List;
+              import java.util.Set;
+                            
+              class Test {
+                  List<Integer> l = Collections.emptyList();
+                  Set<Integer> cardinalsWorldSeries = Sets.newHashSet(l);
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.HashSet;
+              import java.util.List;
+              import java.util.Set;
+                            
+              class Test {
+                  List<Integer> l = Collections.emptyList();
+                  Set<Integer> cardinalsWorldSeries = new HashSet<>(l);
+              }
+              """
+          )
+        );
     }
 
     @Test
     void replaceWithNewHashSetVarargs() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.Set;
-                
-                class Test {
-                    Set<Integer> cardinalsWorldSeries = Sets.newHashSet(2006, 2011);
-                }
-            """,
-          """
-                import java.util.Arrays;
-                import java.util.HashSet;
-                import java.util.Set;
-                
-                class Test {
-                    Set<Integer> cardinalsWorldSeries = new HashSet<>(Arrays.asList(2006, 2011));
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.Set;
+                            
+              class Test {
+                  Set<Integer> cardinalsWorldSeries = Sets.newHashSet(2006, 2011);
+              }
+              """,
+            """
+              import java.util.Arrays;
+              import java.util.HashSet;
+              import java.util.Set;
+                            
+              class Test {
+                  Set<Integer> cardinalsWorldSeries = new HashSet<>(Arrays.asList(2006, 2011));
+              }
+              """
+          )
+        );
     }
 }

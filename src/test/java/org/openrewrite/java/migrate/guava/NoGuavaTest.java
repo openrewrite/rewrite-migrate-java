@@ -33,69 +33,72 @@ class NoGuavaTest implements RewriteTest {
               .build()
               .activateRecipes("org.openrewrite.java.migrate.guava.NoGuava")
           )
-          .parser(
-            JavaParser.fromJavaVersion()
-              .logCompilationWarningsAndErrors(true)
-              .classpath("guava")
-          );
+          .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/39#issuecomment-910673213")
     void preferJavaUtilObjectsHashCode() {
-        rewriteRun(java("""
-                package com.acme.product;
-
-                import com.google.common.base.Objects;
-
-                class MyPojo {
-                    String x;
-
-                    @Override
-                    public int hashCode() {
-                        return Objects.hashCode(x);
-                    }
-                }
-            """,
-          """
-                package com.acme.product;
-
-                import java.util.Objects;
-
-                class MyPojo {
-                    String x;
-
-                    @Override
-                    public int hashCode() {
-                        return Objects.hash(x);
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package com.acme.product;
+
+              import com.google.common.base.Objects;
+
+              class MyPojo {
+                  String x;
+
+                  @Override
+                  public int hashCode() {
+                      return Objects.hashCode(x);
+                  }
+              }
+              """,
+            """
+              package com.acme.product;
+
+              import java.util.Objects;
+
+              class MyPojo {
+                  String x;
+
+                  @Override
+                  public int hashCode() {
+                      return Objects.hash(x);
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/39#issuecomment-910673213")
     void preferJavaUtilObjectsEquals() {
-        rewriteRun(java("""
-                import com.google.common.base.Objects;
-
-                class Test {
-                    static boolean isEqual(Object obj0, Object obj1) {
-                        return Objects.equal(obj0, obj1);
-                    }
-                }
-            """,
-          """
-                import java.util.Objects;
-
-                class Test {
-                    static boolean isEqual(Object obj0, Object obj1) {
-                        return Objects.equals(obj0, obj1);
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
-    }
+              import com.google.common.base.Objects;
 
+              class Test {
+                  static boolean isEqual(Object obj0, Object obj1) {
+                      return Objects.equal(obj0, obj1);
+                  }
+              }
+              """,
+            """
+              import java.util.Objects;
+
+              class Test {
+                  static boolean isEqual(Object obj0, Object obj1) {
+                      return Objects.equals(obj0, obj1);
+                  }
+              }
+              """
+          )
+        );
+    }
 }

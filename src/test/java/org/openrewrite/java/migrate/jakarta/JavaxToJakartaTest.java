@@ -26,24 +26,25 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 class JavaxToJakartaTest implements RewriteTest {
+
     @Language("java")
     private static final String javax =
       """
-            package javax.xml.bind.annotation;
-            public class A {
-                public static void stat() {}
-                public void foo() {}
-            }
+        package javax.xml.bind.annotation;
+        public class A {
+            public static void stat() {}
+            public void foo() {}
+        }
         """;
 
     @Language("java")
     private static final String jakarta =
       """
-              package jakarta.xml.bind.annotation;
-              public class A {
-                  public static void stat() {}
-                  public void foo() {}
-              }
+        package jakarta.xml.bind.annotation;
+        public class A {
+            public static void stat() {}
+            public void foo() {}
+        }
         """;
 
     public void defaults(RecipeSpec spec) {
@@ -66,16 +67,17 @@ class JavaxToJakartaTest implements RewriteTest {
     void changeImport() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
+          //language=java
           java(
             """
-                  import javax.xml.bind.annotation.A;
-                  public class B {
-                  }
+              import javax.xml.bind.annotation.A;
+              public class B {
+              }
               """,
             """
-                  import jakarta.xml.bind.annotation.A;
-                  public class B {
-                  }
+              import jakarta.xml.bind.annotation.A;
+              public class B {
+              }
               """
           )
         );
@@ -85,6 +87,7 @@ class JavaxToJakartaTest implements RewriteTest {
     void fullyQualifiedName() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
+          //language=java
           java(
             "public class B extends javax.xml.bind.annotation.A {}",
             "public class B extends jakarta.xml.bind.annotation.A {}"
@@ -94,17 +97,18 @@ class JavaxToJakartaTest implements RewriteTest {
 
     @Test
     void annotation() {
+        //language=java
         rewriteRun(
           spec ->
             spec.parser(
               JavaParser.fromJavaVersion().dependsOn(
                 """
-                      package javax.xml.bind.annotation;
-                      public @interface A {}
+                  package javax.xml.bind.annotation;
+                  public @interface A {}
                   """,
                 """
-                      package jakarta.xml.bind.annotation;
-                      public @interface A {}
+                  package jakarta.xml.bind.annotation;
+                  public @interface A {}
                   """
               )
             )
@@ -116,21 +120,21 @@ class JavaxToJakartaTest implements RewriteTest {
         );
     }
 
-    // array types and new arrays
     @Test
-    void array() {
+    void arrayTypesAndNewArrays() {
+        //language=java
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
           java(
             """
-                  public class B {
-                     javax.xml.bind.annotation.A[] a = new javax.xml.bind.annotation.A[0];
-                  }
+              public class B {
+                 javax.xml.bind.annotation.A[] a = new javax.xml.bind.annotation.A[0];
+              }
               """,
             """
-                  public class B {
-                     jakarta.xml.bind.annotation.A[] a = new jakarta.xml.bind.annotation.A[0];
-                  }
+              public class B {
+                 jakarta.xml.bind.annotation.A[] a = new jakarta.xml.bind.annotation.A[0];
+              }
               """
           )
         );
@@ -139,58 +143,61 @@ class JavaxToJakartaTest implements RewriteTest {
     @Test
     void classDecl() {
         rewriteRun(
-          spec -> {
-              spec.recipe(Environment.builder()
-                .scanRuntimeClasspath("org.openrewrite.java.migrate")
-                .build()
-                .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
-                .doNext(new ChangeType("I1", "I2", false))
-              );
-              spec.parser(JavaParser.fromJavaVersion()
-                .dependsOn(
-                  javax,
-                  jakarta,
-                  "public interface I1 {}",
-                  "public interface I2 {}"
-                )
-              );
-          },
+          spec -> spec
+            .recipe(Environment.builder()
+              .scanRuntimeClasspath("org.openrewrite.java.migrate")
+              .build()
+              .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
+              .doNext(new ChangeType("I1", "I2", false))
+            )
+            .parser(JavaParser.fromJavaVersion()
+              //language=java
+              .dependsOn(
+                javax,
+                jakarta,
+                "public interface I1 {}",
+                "public interface I2 {}"
+              )
+            ),
+          //language=java
           java(
             "public class B extends javax.xml.bind.annotation.A implements I1 {}",
             "public class B extends jakarta.xml.bind.annotation.A implements I2 {}"
-          ));
+          )
+        );
     }
 
+    @SuppressWarnings("RedundantThrows")
     @Test
     void method() {
         rewriteRun(
-          spec ->
-            spec
-              .recipe(Environment.builder()
-                .scanRuntimeClasspath("org.openrewrite.java.migrate")
-                .build()
-                .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
-                .doNext(new ChangeType("I1", "I2", false))
+          spec -> spec
+            .recipe(Environment.builder()
+              .scanRuntimeClasspath("org.openrewrite.java.migrate")
+              .build()
+              .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
+              .doNext(new ChangeType("I1", "I2", false))
+            )
+            .parser(
+              //language=java
+              JavaParser.fromJavaVersion().dependsOn(
+                javax,
+                jakarta,
+                "package javax.xml.bind.annotation; public class NewException extends Throwable {}",
+                "package jakarta.xml.bind.annotation; public class NewException extends Throwable {}"
               )
-              .parser(
-                JavaParser.fromJavaVersion().dependsOn(
-                  javax,
-                  jakarta,
-                  "package javax.xml.bind.annotation; public class NewException extends Throwable {}",
-                  "package jakarta.xml.bind.annotation; public class NewException extends Throwable {}"
-                )
-              )
-          ,
+            ),
+          //language=java
           java(
             """
-                     public class B {
-                        public javax.xml.bind.annotation.A foo() throws javax.xml.bind.annotation.NewException { return null; }
-                     }
+              public class B {
+                  public javax.xml.bind.annotation.A foo() throws javax.xml.bind.annotation.NewException { return null; }
+              }
               """,
             """
-                  public class B {
-                     public jakarta.xml.bind.annotation.A foo() throws jakarta.xml.bind.annotation.NewException { return null; }
-                  }
+              public class B {
+                  public jakarta.xml.bind.annotation.A foo() throws jakarta.xml.bind.annotation.NewException { return null; }
+              }
               """
           )
         );
@@ -198,39 +205,42 @@ class JavaxToJakartaTest implements RewriteTest {
 
     @Test
     void methodInvocationTypeParametersAndWildcard() {
+        //language=java
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
           java(
             """
-                     import java.util.List;
-                     public class B {
-                        public <T extends javax.xml.bind.annotation.A> T generic(T n, List<? super javax.xml.bind.annotation.A> in) {
-                             return n;
-                        }
-                        public void test() {
-                            javax.xml.bind.annotation.A.stat();
-                            this.<javax.xml.bind.annotation.A>generic(null, null);
-                        }
-                     }
+              import java.util.List;
+              public class B {
+                 public <T extends javax.xml.bind.annotation.A> T generic(T n, List<? super javax.xml.bind.annotation.A> in) {
+                      return n;
+                 }
+                 public void test() {
+                     javax.xml.bind.annotation.A.stat();
+                     this.<javax.xml.bind.annotation.A>generic(null, null);
+                 }
+              }
               """,
             """
-                     import java.util.List;
-                     public class B {
-                        public <T extends jakarta.xml.bind.annotation.A> T generic(T n, List<? super jakarta.xml.bind.annotation.A> in) {
-                             return n;
-                        }
-                        public void test() {
-                            jakarta.xml.bind.annotation.A.stat();
-                            this.<jakarta.xml.bind.annotation.A>generic(null, null);
-                        }
-                     }
+              import java.util.List;
+              public class B {
+                 public <T extends jakarta.xml.bind.annotation.A> T generic(T n, List<? super jakarta.xml.bind.annotation.A> in) {
+                      return n;
+                 }
+                 public void test() {
+                     jakarta.xml.bind.annotation.A.stat();
+                     this.<jakarta.xml.bind.annotation.A>generic(null, null);
+                 }
+              }
               """
           )
         );
     }
 
+    @SuppressWarnings({"EmptyTryBlock", "CatchMayIgnoreException"})
     @Test
     void multiCatch() {
+        //language=java
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion()
             .dependsOn(
@@ -240,20 +250,20 @@ class JavaxToJakartaTest implements RewriteTest {
           ),
           java(
             """
-                     public class B {
-                        public void test() {
-                            try {}
-                            catch(javax.xml.bind.annotation.NewException | RuntimeException e) {}
-                        }
-                     }
+              public class B {
+                 public void test() {
+                     try {}
+                     catch(javax.xml.bind.annotation.NewException | RuntimeException e) {}
+                 }
+              }
               """,
             """
-                     public class B {
-                        public void test() {
-                            try {}
-                            catch(jakarta.xml.bind.annotation.NewException | RuntimeException e) {}
-                        }
-                     }
+              public class B {
+                 public void test() {
+                     try {}
+                     catch(jakarta.xml.bind.annotation.NewException | RuntimeException e) {}
+                 }
+              }
               """
           )
         );
@@ -261,18 +271,19 @@ class JavaxToJakartaTest implements RewriteTest {
 
     @Test
     void multiVariable() {
+        //language=java
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
           java(
             """
-                  public class B {
-                     javax.xml.bind.annotation.A f1, f2;
-                  }
+              public class B {
+                 javax.xml.bind.annotation.A f1, f2;
+              }
               """,
             """
-                  public class B {
-                     jakarta.xml.bind.annotation.A f1, f2;
-                  }
+              public class B {
+                 jakarta.xml.bind.annotation.A f1, f2;
+              }
               """
           )
         );
@@ -280,18 +291,19 @@ class JavaxToJakartaTest implements RewriteTest {
 
     @Test
     void newClass() {
+        //language=java
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
           java(
             """
-                  public class B {
-                     javax.xml.bind.annotation.A a = new javax.xml.bind.annotation.A();
-                  }
+              public class B {
+                 javax.xml.bind.annotation.A a = new javax.xml.bind.annotation.A();
+              }
               """,
             """
-                  public class B {
-                     jakarta.xml.bind.annotation.A a = new jakarta.xml.bind.annotation.A();
-                  }
+              public class B {
+                 jakarta.xml.bind.annotation.A a = new jakarta.xml.bind.annotation.A();
+              }
               """
           )
         );
@@ -299,39 +311,42 @@ class JavaxToJakartaTest implements RewriteTest {
 
     @Test
     void parameterizedType() {
+        //language=java
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
           java(
             """
-                  import java.util.Map;
-                  public class B {
-                     Map<javax.xml.bind.annotation.A, javax.xml.bind.annotation.A> m;
-                  }
+              import java.util.Map;
+              public class B {
+                 Map<javax.xml.bind.annotation.A, javax.xml.bind.annotation.A> m;
+              }
               """,
             """
-                  import java.util.Map;
-                  public class B {
-                     Map<jakarta.xml.bind.annotation.A, jakarta.xml.bind.annotation.A> m;
-                  }
+              import java.util.Map;
+              public class B {
+                 Map<jakarta.xml.bind.annotation.A, jakarta.xml.bind.annotation.A> m;
+              }
               """
           )
         );
     }
 
+    @SuppressWarnings("RedundantCast")
     @Test
     void typeCast() {
+        //language=java
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
           java(
             """
-                  public class B {
-                     javax.xml.bind.annotation.A a = (javax.xml.bind.annotation.A) null;
-                  }
+              public class B {
+                 javax.xml.bind.annotation.A a = (javax.xml.bind.annotation.A) null;
+              }
               """,
             """
-                  public class B {
-                     jakarta.xml.bind.annotation.A a = (jakarta.xml.bind.annotation.A) null;
-                  }
+              public class B {
+                 jakarta.xml.bind.annotation.A a = (jakarta.xml.bind.annotation.A) null;
+              }
               """
           )
         );
@@ -339,18 +354,19 @@ class JavaxToJakartaTest implements RewriteTest {
 
     @Test
     void classReference() {
+        //language=java
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
           java(
             """
-                  public class A {
-                      Class<?> clazz = javax.xml.bind.annotation.A.class;
-                  }
+              public class A {
+                  Class<?> clazz = javax.xml.bind.annotation.A.class;
+              }
               """,
             """
-                  public class A {
-                      Class<?> clazz = jakarta.xml.bind.annotation.A.class;
-                  }
+              public class A {
+                  Class<?> clazz = jakarta.xml.bind.annotation.A.class;
+              }
               """
           )
         );
@@ -358,20 +374,21 @@ class JavaxToJakartaTest implements RewriteTest {
 
     @Test
     void methodSelect() {
+        //language=java
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
           java(
             """
-                     public class B {
-                        javax.xml.bind.annotation.A a = null;
-                        public void test() { a.foo(); }
-                     }
+              public class B {
+                 javax.xml.bind.annotation.A a = null;
+                 public void test() { a.foo(); }
+              }
               """,
             """
-                     public class B {
-                        jakarta.xml.bind.annotation.A a = null;
-                        public void test() { a.foo(); }
-                     }
+              public class B {
+                 jakarta.xml.bind.annotation.A a = null;
+                 public void test() { a.foo(); }
+              }
               """
           )
         );
@@ -379,24 +396,25 @@ class JavaxToJakartaTest implements RewriteTest {
 
     @Test
     void staticImport() {
+        //language=java
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
           java(
             """
-                     import static javax.xml.bind.annotation.A.stat;
-                     public class B {
-                         public void test() {
-                             stat();
-                         }
-                     }
+              import static javax.xml.bind.annotation.A.stat;
+              public class B {
+                  public void test() {
+                      stat();
+                  }
+              }
               """,
             """
-                     import static jakarta.xml.bind.annotation.A.stat;
-                     public class B {
-                         public void test() {
-                             stat();
-                         }
-                     }
+              import static jakarta.xml.bind.annotation.A.stat;
+              public class B {
+                  public void test() {
+                      stat();
+                  }
+              }
               """
           )
         );

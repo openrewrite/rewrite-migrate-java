@@ -16,12 +16,12 @@
 package org.openrewrite.java.migrate.net;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@SuppressWarnings("deprecation")
 class MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
@@ -30,95 +30,103 @@ class MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorTest implements 
 
     @Test
     void httpUrlConnectionHttpServerErrorToHttpInternalError() {
-        rewriteRun(java("""
-                import java.net.HttpURLConnection;
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.net.HttpURLConnection;
 
-                class Test {
-                    private static final int ERROR = HttpURLConnection.HTTP_SERVER_ERROR;
+              class Test {
+                  private static final int ERROR = HttpURLConnection.HTTP_SERVER_ERROR;
 
-                    public static int method() {
-                        return HttpURLConnection.HTTP_SERVER_ERROR;
-                    }
-                }
-            """,
-          """
-                import java.net.HttpURLConnection;
+                  public static int method() {
+                      return HttpURLConnection.HTTP_SERVER_ERROR;
+                  }
+              }
+              """,
+            """
+              import java.net.HttpURLConnection;
 
-                class Test {
-                    private static final int ERROR = HttpURLConnection.HTTP_INTERNAL_ERROR;
+              class Test {
+                  private static final int ERROR = HttpURLConnection.HTTP_INTERNAL_ERROR;
 
-                    public static int method() {
-                        return HttpURLConnection.HTTP_INTERNAL_ERROR;
-                    }
-                }
-            """)
+                  public static int method() {
+                      return HttpURLConnection.HTTP_INTERNAL_ERROR;
+                  }
+              }
+              """
+          )
         );
     }
 
     @Test
     void httpUrlConnectionHttpServerErrorToHttpInternalErrorAsStaticImport() {
-        rewriteRun(java("""
-                import static java.net.HttpURLConnection.HTTP_SERVER_ERROR;
-
-                class Test {
-                    private static final int ERROR = HTTP_SERVER_ERROR;
-
-                    public static int method() {
-                        return HTTP_SERVER_ERROR;
-                    }
-                }
-            """,
-          """
-                import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
-
-                class Test {
-                    private static final int ERROR = HTTP_INTERNAL_ERROR;
-
-                    public static int method() {
-                        return HTTP_INTERNAL_ERROR;
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import static java.net.HttpURLConnection.HTTP_SERVER_ERROR;
+
+              class Test {
+                  private static final int ERROR = HTTP_SERVER_ERROR;
+
+                  public static int method() {
+                      return HTTP_SERVER_ERROR;
+                  }
+              }
+              """,
+            """
+              import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
+
+              class Test {
+                  private static final int ERROR = HTTP_INTERNAL_ERROR;
+
+                  public static int method() {
+                      return HTTP_INTERNAL_ERROR;
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void httpUrlConnectionHttpServerErrorToHttpInternalErrorTypeCheckStaticImport() {
+        //language=java
         rewriteRun(
-          spec -> spec.parser(
-            JavaParser.fromJavaVersion()
-              .dependsOn(
-                """
-                      public class LocalError {
-                          public static final int HTTP_SERVER_ERROR = 500;
-                      }
-                  """
-              )),
-          java("""
-                  import static java.net.HttpURLConnection.HTTP_SERVER_ERROR;
+          java(
+            """
+              public class LocalError {
+                  public static final int HTTP_SERVER_ERROR = 500;
+              }
+              """
+          ),
+          java(
+            """
+              import static java.net.HttpURLConnection.HTTP_SERVER_ERROR;
 
-                  class Test {
-                      private static final int ERROR = HTTP_SERVER_ERROR;
-                      private static final int LOCAL_ERROR = LocalError.HTTP_SERVER_ERROR;
+              class Test {
+                  private static final int ERROR = HTTP_SERVER_ERROR;
+                  private static final int LOCAL_ERROR = LocalError.HTTP_SERVER_ERROR;
 
-                      public static int method() {
-                          return HTTP_SERVER_ERROR;
-                      }
+                  public static int method() {
+                      return HTTP_SERVER_ERROR;
                   }
+              }
               """,
             """
-                  import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
+              import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 
-                  class Test {
-                      private static final int ERROR = HTTP_INTERNAL_ERROR;
-                      private static final int LOCAL_ERROR = LocalError.HTTP_SERVER_ERROR;
+              class Test {
+                  private static final int ERROR = HTTP_INTERNAL_ERROR;
+                  private static final int LOCAL_ERROR = LocalError.HTTP_SERVER_ERROR;
 
-                      public static int method() {
-                          return HTTP_INTERNAL_ERROR;
-                      }
+                  public static int method() {
+                      return HTTP_INTERNAL_ERROR;
                   }
+              }
               """
-          ));
+          )
+        );
     }
-
 }

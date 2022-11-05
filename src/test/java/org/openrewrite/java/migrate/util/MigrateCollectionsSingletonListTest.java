@@ -33,47 +33,56 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
     void singletonList() {
+        //language=java
         rewriteRun(
           version(
-            java("""
-                    import java.util.*;
-                    
-                    class Test {
-                        List<String> list = Collections.singletonList("ABC");
-                    }
+            java(
+              """
+                import java.util.*;
+                                
+                class Test {
+                    List<String> list = Collections.singletonList("ABC");
+                }
                 """,
               """
-                    import java.util.List;
-                    
-                    class Test {
-                        List<String> list = List.of("ABC");
-                    }
-                """), 9)
+                import java.util.List;
+                                
+                class Test {
+                    List<String> list = List.of("ABC");
+                }
+                """
+            ),
+            9
+          )
         );
     }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
     void singletonListCustomType() {
+        //language=java
         rewriteRun(
           version(
-            java("""
-                    import java.util.*;
-                    import java.time.LocalDate;
-                    
-                    class Test {
-                        List<LocalDate> list = Collections.singletonList(LocalDate.now());
-                    }
+            java(
+              """
+                import java.util.*;
+                import java.time.LocalDate;
+                                
+                class Test {
+                    List<LocalDate> list = Collections.singletonList(LocalDate.now());
+                }
                 """,
               """
-                    import java.util.List;
-                    import java.time.LocalDate;
-                    
-                    class Test {
-                        List<LocalDate> list = List.of(LocalDate.now());
-                    }
-                """), 9)
+                import java.util.List;
+                import java.time.LocalDate;
+                                
+                class Test {
+                    List<LocalDate> list = List.of(LocalDate.now());
+                }
+                """
+            ),
+            9
+          )
         );
     }
-
 }

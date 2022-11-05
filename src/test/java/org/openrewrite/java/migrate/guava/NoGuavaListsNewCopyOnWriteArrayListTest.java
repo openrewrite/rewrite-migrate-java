@@ -23,59 +23,67 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 class NoGuavaListsNewCopyOnWriteArrayListTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaListsNewCopyOnWriteArrayList())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @Test
     void replaceWithNewCopyOnWriteArrayList() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.List;
-                
-                class Test {
-                    List<Integer> cardinalsWorldSeries = Lists.newCopyOnWriteArrayList();
-                }
-            """,
-          """
-                import java.util.List;
-                import java.util.concurrent.CopyOnWriteArrayList;
-                
-                class Test {
-                    List<Integer> cardinalsWorldSeries = new CopyOnWriteArrayList<>();
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.List;
+                            
+              class Test {
+                  List<Integer> cardinalsWorldSeries = Lists.newCopyOnWriteArrayList();
+              }
+              """,
+            """
+              import java.util.List;
+              import java.util.concurrent.CopyOnWriteArrayList;
+                            
+              class Test {
+                  List<Integer> cardinalsWorldSeries = new CopyOnWriteArrayList<>();
+              }
+              """
+)
+);
     }
 
     @Test
     void replaceWithNewCopyOnWriteArrayListIterable() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.Collections;
-                import java.util.List;
-                
-                class Test {
-                    List<Integer> l = Collections.emptyList();
-                    List<Integer> cardinalsWorldSeries = Lists.newCopyOnWriteArrayList(l);
-                }
-            """,
-          """
-                import java.util.Collections;
-                import java.util.List;
-                import java.util.concurrent.CopyOnWriteArrayList;
-                
-                class Test {
-                    List<Integer> l = Collections.emptyList();
-                    List<Integer> cardinalsWorldSeries = new CopyOnWriteArrayList<>(l);
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.Collections;
+              import java.util.List;
+                            
+              class Test {
+                  List<Integer> l = Collections.emptyList();
+                  List<Integer> cardinalsWorldSeries = Lists.newCopyOnWriteArrayList(l);
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.List;
+              import java.util.concurrent.CopyOnWriteArrayList;
+                            
+              class Test {
+                  List<Integer> l = Collections.emptyList();
+                  List<Integer> cardinalsWorldSeries = new CopyOnWriteArrayList<>(l);
+              }
+              """
+          )
+        );
     }
 }

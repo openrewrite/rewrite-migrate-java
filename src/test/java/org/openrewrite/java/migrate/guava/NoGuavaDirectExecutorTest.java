@@ -27,27 +27,30 @@ class NoGuavaDirectExecutorTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaDirectExecutor())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @Test
     void noDirectExecutor() {
-        rewriteRun(java("""
-                import java.util.concurrent.Executor;
-                import com.google.common.util.concurrent.MoreExecutors;
-
-                class Test {
-                    Executor executor = MoreExecutors.directExecutor();
-                }
-            """,
-          """
-                import java.util.concurrent.Executor;
-
-                class Test {
-                    Executor executor = Runnable::run;
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import java.util.concurrent.Executor;
+              import com.google.common.util.concurrent.MoreExecutors;
+
+              class Test {
+                  Executor executor = MoreExecutors.directExecutor();
+              }
+              """,
+            """
+              import java.util.concurrent.Executor;
+
+              class Test {
+                  Executor executor = Runnable::run;
+              }
+              """
+)
+);
     }
 }

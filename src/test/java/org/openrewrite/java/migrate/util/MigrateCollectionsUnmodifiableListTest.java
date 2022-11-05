@@ -33,46 +33,56 @@ class MigrateCollectionsUnmodifiableListTest implements RewriteTest {
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
     @Test
     void unmodifiableList() {
+        //language=java
         rewriteRun(
           version(
-            java("""
-                    import java.util.*;
-                    
-                    class Test {
-                        List<Integer> l = Collections.unmodifiableList(Arrays.asList(1, 2, 3));
-                    }
+            java(
+              """
+                import java.util.*;
+                                
+                class Test {
+                    List<Integer> l = Collections.unmodifiableList(Arrays.asList(1, 2, 3));
+                }
                 """,
               """
-                    import java.util.List;
-                    
-                    class Test {
-                        List<Integer> l = List.of(1, 2, 3);
-                    }
-                """), 9)
+                import java.util.List;
+                                
+                class Test {
+                    List<Integer> l = List.of(1, 2, 3);
+                }
+                """
+            ),
+            9
+          )
         );
     }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
     @Test
     void unmodifiableListTyped() {
+        //language=java
         rewriteRun(
           version(
-            java("""
-                    import java.util.*;
-                    import java.time.LocalDate;
-                    
-                    class Test {
-                        List<LocalDate> s = Collections.unmodifiableList(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now()));
-                    }
+            java(
+              """
+                import java.util.*;
+                import java.time.LocalDate;
+                                
+                class Test {
+                    List<LocalDate> s = Collections.unmodifiableList(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now()));
+                }
                 """,
               """
-                    import java.util.List;
-                    import java.time.LocalDate;
-                    
-                    class Test {
-                        List<LocalDate> s = List.of(LocalDate.of(2010, 1, 1), LocalDate.now());
-                    }
-                """), 9)
+                import java.util.List;
+                import java.time.LocalDate;
+                                
+                class Test {
+                    List<LocalDate> s = List.of(LocalDate.of(2010, 1, 1), LocalDate.now());
+                }
+                """
+            ),
+            9
+          )
         );
     }
 }

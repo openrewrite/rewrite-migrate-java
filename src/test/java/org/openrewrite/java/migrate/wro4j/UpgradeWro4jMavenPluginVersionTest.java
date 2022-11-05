@@ -23,6 +23,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class UpgradeWro4jMavenPluginVersionTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(Environment.builder()
@@ -34,97 +35,48 @@ class UpgradeWro4jMavenPluginVersionTest implements RewriteTest {
     @Test
     void property() {
         rewriteRun(
-          // As taken from Spring PetClinic 1.5.x
-          pomXml("""
-                  <project>
-                    <modelVersion>4.0.0</modelVersion>
-                     
-                    <properties>
-                      <wro4j.version>1.8.0</wro4j.version>
-                    </properties>
-                    
-                    <groupId>com.mycompany.app</groupId>
-                    <artifactId>my-app</artifactId>
-                    <version>1</version>
-
-                    <build>
-                      <plugins>
-                        <plugin>
-                          <groupId>ro.isdc.wro4j</groupId>
-                          <artifactId>wro4j-maven-plugin</artifactId>
-                          <version>${wro4j.version}</version>
-                          <executions>
-                            <execution>
-                              <phase>generate-resources</phase>
-                              <goals>
-                                <goal>run</goal>
-                              </goals>
-                            </execution>
-                          </executions>
-                          <configuration>
-                            <wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory</wroManagerFactory>
-                            <cssDestinationFolder>${project.build.directory}/classes/static/resources/css</cssDestinationFolder>
-                            <wroFile>${basedir}/src/main/wro/wro.xml</wroFile>
-                            <extraConfigFile>${basedir}/src/main/wro/wro.properties</extraConfigFile>
-                            <contextFolder>${basedir}/src/main/less</contextFolder>
-                          </configuration>
-                          <dependencies>
-                            <dependency>
-                              <groupId>org.webjars</groupId>
-                              <artifactId>bootstrap</artifactId>
-                              <version>${webjars-bootstrap.version}</version>
-                            </dependency>
-                          </dependencies>
-                        </plugin>
-                      </plugins>
-                    </build>
-                  </project>
+          // as taken from Spring PetClinic 1.5.x
+          //language=xml
+          pomXml(
+            """
+              <project>
+                <properties>
+                  <wro4j.version>1.8.0</wro4j.version>
+                </properties>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>ro.isdc.wro4j</groupId>
+                      <artifactId>wro4j-maven-plugin</artifactId>
+                      <version>${wro4j.version}</version>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
               """,
             """
-                  <project>
-                    <modelVersion>4.0.0</modelVersion>
-                     
-                    <properties>
-                      <wro4j.version>1.10.1</wro4j.version>
-                    </properties>
-                    
-                    <groupId>com.mycompany.app</groupId>
-                    <artifactId>my-app</artifactId>
-                    <version>1</version>
-                
-                    <build>
-                      <plugins>
-                        <plugin>
-                          <groupId>ro.isdc.wro4j</groupId>
-                          <artifactId>wro4j-maven-plugin</artifactId>
-                          <version>${wro4j.version}</version>
-                          <executions>
-                            <execution>
-                              <phase>generate-resources</phase>
-                              <goals>
-                                <goal>run</goal>
-                              </goals>
-                            </execution>
-                          </executions>
-                          <configuration>
-                            <wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory</wroManagerFactory>
-                            <cssDestinationFolder>${project.build.directory}/classes/static/resources/css</cssDestinationFolder>
-                            <wroFile>${basedir}/src/main/wro/wro.xml</wroFile>
-                            <extraConfigFile>${basedir}/src/main/wro/wro.properties</extraConfigFile>
-                            <contextFolder>${basedir}/src/main/less</contextFolder>
-                          </configuration>
-                          <dependencies>
-                            <dependency>
-                              <groupId>org.webjars</groupId>
-                              <artifactId>bootstrap</artifactId>
-                              <version>${webjars-bootstrap.version}</version>
-                            </dependency>
-                          </dependencies>
-                        </plugin>
-                      </plugins>
-                    </build>
-                  </project>
-              """)
+              <project>
+                <properties>
+                  <wro4j.version>1.10.1</wro4j.version>
+                </properties>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>ro.isdc.wro4j</groupId>
+                      <artifactId>wro4j-maven-plugin</artifactId>
+                      <version>${wro4j.version}</version>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """
+          )
         );
     }
 }

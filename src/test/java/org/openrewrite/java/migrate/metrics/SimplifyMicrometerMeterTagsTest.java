@@ -33,45 +33,53 @@ class SimplifyMicrometerMeterTagsTest implements RewriteTest {
 
     @Test
     void simplifyNewArray() {
-        rewriteRun(java("""
-                import io.micrometer.core.instrument.*;
-                class Test {
-                    Counter c = Counter.builder("counter")
-                        .tags(new String[] { "key", "value" })
-                        .register(Metrics.globalRegistry);
-                }
-            """,
-          """
-                import io.micrometer.core.instrument.*;
-                class Test {
-                    Counter c = Counter.builder("counter")
-                        .tag("key", "value")
-                        .register(Metrics.globalRegistry);
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import io.micrometer.core.instrument.*;
+              class Test {
+                  Counter c = Counter.builder("counter")
+                      .tags(new String[] { "key", "value" })
+                      .register(Metrics.globalRegistry);
+              }
+              """,
+            """
+              import io.micrometer.core.instrument.*;
+              class Test {
+                  Counter c = Counter.builder("counter")
+                      .tag("key", "value")
+                      .register(Metrics.globalRegistry);
+              }
+              """
+          )
+        );
     }
 
     @Test
     void simplifyExistingArray() {
-        rewriteRun(java("""
-                import io.micrometer.core.instrument.*;
-                class Test {
-                    String[] tags = new String[] { "key", "value" };
-                    Counter c = Counter.builder("counter")
-                        .tags(tags)
-                        .register(Metrics.globalRegistry);
-                }
-            """,
-          """
-                import io.micrometer.core.instrument.*;
-                class Test {
-                    String[] tags = new String[] { "key", "value" };
-                    Counter c = Counter.builder("counter")
-                        .tag(tags[0], tags[1])
-                        .register(Metrics.globalRegistry);
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import io.micrometer.core.instrument.*;
+              class Test {
+                  String[] tags = new String[] { "key", "value" };
+                  Counter c = Counter.builder("counter")
+                      .tags(tags)
+                      .register(Metrics.globalRegistry);
+              }
+              """,
+            """
+              import io.micrometer.core.instrument.*;
+              class Test {
+                  String[] tags = new String[] { "key", "value" };
+                  Counter c = Counter.builder("counter")
+                      .tag(tags[0], tags[1])
+                      .register(Metrics.globalRegistry);
+              }
+              """
+          )
+        );
     }
 }

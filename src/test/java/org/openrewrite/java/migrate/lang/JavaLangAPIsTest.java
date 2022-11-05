@@ -22,165 +22,187 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@SuppressWarnings("deprecation")
 class JavaLangAPIsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(
-          Environment.builder()
-            .scanRuntimeClasspath("org.openrewrite.java.migrate.lang")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.lang.JavaLangAPIs")
-        );
+        spec.recipe(Environment.builder()
+          .scanRuntimeClasspath("org.openrewrite.java.migrate.lang")
+          .build()
+          .activateRecipes("org.openrewrite.java.migrate.lang.JavaLangAPIs"));
     }
 
     @Test
     void characterIsJavaLetterToIsJavaIdentifierStart() {
-        rewriteRun(java("""
-                package com.abc;
-
-                class A {
-                   public void test() {
-                       boolean result = Character.isJavaLetter('b');
-                   }
-                }
-            """,
-          """
-                package com.abc;
-
-                class A {
-                   public void test() {
-                       boolean result = Character.isJavaIdentifierStart('b');
-                   }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package com.abc;
+
+              class A {
+                 public void test() {
+                     boolean result = Character.isJavaLetter('b');
+                 }
+              }
+              """,
+            """
+              package com.abc;
+
+              class A {
+                 public void test() {
+                     boolean result = Character.isJavaIdentifierStart('b');
+                 }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void characterIsJavaLetterOrDigitToIsJavaIdentifierPart() {
-        rewriteRun(java("""
-                package com.abc;
-
-                class A {
-                   public void test() {
-                       boolean result = Character.isJavaLetterOrDigit('b');
-                   }
-                }
-            """,
-          """
-                package com.abc;
-
-                class A {
-                   public void test() {
-                       boolean result = Character.isJavaIdentifierPart('b');
-                   }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package com.abc;
+
+              class A {
+                 public void test() {
+                     boolean result = Character.isJavaLetterOrDigit('b');
+                 }
+              }
+              """,
+            """
+              package com.abc;
+
+              class A {
+                 public void test() {
+                     boolean result = Character.isJavaIdentifierPart('b');
+                 }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void characterIsSpaceToIsWhitespace() {
-        rewriteRun(java("""
-                package com.abc;
-
-                class A {
-                   public void test() {
-                       boolean result = Character.isSpace('b');
-                   }
-                }
-            """,
-          """
-                package com.abc;
-
-                class A {
-                   public void test() {
-                       boolean result = Character.isWhitespace('b');
-                   }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package com.abc;
+
+              class A {
+                 public void test() {
+                     boolean result = Character.isSpace('b');
+                 }
+              }
+              """,
+            """
+              package com.abc;
+
+              class A {
+                 public void test() {
+                     boolean result = Character.isWhitespace('b');
+                 }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void runtimeVersionMajorToFeature() {
-        rewriteRun(java("""
-                package com.abc;
-
-                import java.lang.Runtime.Version;
-                class A {
-                    public void test() {
-                        Runtime.Version runtimeVersion = Runtime.version();
-                        int version = runtimeVersion.major();
-                    }
-                }
-            """,
-          """
-                package com.abc;
-
-                import java.lang.Runtime.Version;
-                class A {
-                    public void test() {
-                        Runtime.Version runtimeVersion = Runtime.version();
-                        int version = runtimeVersion.feature();
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package com.abc;
+
+              import java.lang.Runtime.Version;
+              class A {
+                  public void test() {
+                      Runtime.Version runtimeVersion = Runtime.version();
+                      int version = runtimeVersion.major();
+                  }
+              }
+              """,
+            """
+              package com.abc;
+
+              import java.lang.Runtime.Version;
+              class A {
+                  public void test() {
+                      Runtime.Version runtimeVersion = Runtime.version();
+                      int version = runtimeVersion.feature();
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void runtimeVersionMinorToInterim() {
-        rewriteRun(java("""
-                package com.abc;
-
-                import java.lang.Runtime.Version;
-                class A {
-                    public void test() {
-                        Runtime.Version runtimeVersion = Runtime.version();
-                        int version = runtimeVersion.minor();
-                    }
-                }
-            """,
-          """
-                package com.abc;
-
-                import java.lang.Runtime.Version;
-                class A {
-                    public void test() {
-                        Runtime.Version runtimeVersion = Runtime.version();
-                        int version = runtimeVersion.interim();
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package com.abc;
+
+              import java.lang.Runtime.Version;
+              class A {
+                  public void test() {
+                      Runtime.Version runtimeVersion = Runtime.version();
+                      int version = runtimeVersion.minor();
+                  }
+              }
+              """,
+            """
+              package com.abc;
+
+              import java.lang.Runtime.Version;
+              class A {
+                  public void test() {
+                      Runtime.Version runtimeVersion = Runtime.version();
+                      int version = runtimeVersion.interim();
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void runtimeVersionSecurityToUpdate() {
-        rewriteRun(java("""
-                package com.abc;
-
-                import java.lang.Runtime.Version;
-                class A {
-                    public void test() {
-                        Runtime.Version runtimeVersion = Runtime.version();
-                        int version = runtimeVersion.security();
-                    }
-                }
-            """,
-          """
-                package com.abc;
-
-                import java.lang.Runtime.Version;
-                class A {
-                    public void test() {
-                        Runtime.Version runtimeVersion = Runtime.version();
-                        int version = runtimeVersion.update();
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
-    }
+              package com.abc;
 
+              import java.lang.Runtime.Version;
+              class A {
+                  public void test() {
+                      Runtime.Version runtimeVersion = Runtime.version();
+                      int version = runtimeVersion.security();
+                  }
+              }
+              """,
+            """
+              package com.abc;
+
+              import java.lang.Runtime.Version;
+              class A {
+                  public void test() {
+                      Runtime.Version runtimeVersion = Runtime.version();
+                      int version = runtimeVersion.update();
+                  }
+              }
+              """
+          )
+        );
+    }
 }

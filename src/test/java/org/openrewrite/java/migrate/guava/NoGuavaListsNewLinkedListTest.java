@@ -28,56 +28,63 @@ class NoGuavaListsNewLinkedListTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaListsNewLinkedList())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @Test
     void replaceWithNewLinkedList() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.List;
-                
-                class Test {
-                    List<Integer> cardinalsWorldSeries = Lists.newLinkedList();
-                }
-            """,
-          """
-                import java.util.LinkedList;
-                import java.util.List;
-                
-                class Test {
-                    List<Integer> cardinalsWorldSeries = new LinkedList<>();
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.List;
+                            
+              class Test {
+                  List<Integer> cardinalsWorldSeries = Lists.newLinkedList();
+              }
+              """,
+            """
+              import java.util.LinkedList;
+              import java.util.List;
+                            
+              class Test {
+                  List<Integer> cardinalsWorldSeries = new LinkedList<>();
+              }
+              """
+          )
+        );
     }
 
     @Test
     void replaceWithNewLinkedListIterable() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.Collections;
-                import java.util.LinkedList;
-                import java.util.List;
-                
-                class Test {
-                    List<Integer> l = Collections.emptyList();
-                    List<Integer> cardinalsWorldSeries = Lists.newLinkedList(l);
-                }
-            """,
-          """
-                import java.util.Collections;
-                import java.util.LinkedList;
-                import java.util.List;
-                
-                class Test {
-                    List<Integer> l = Collections.emptyList();
-                    List<Integer> cardinalsWorldSeries = new LinkedList<>(l);
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.Collections;
+              import java.util.LinkedList;
+              import java.util.List;
+                            
+              class Test {
+                  List<Integer> l = Collections.emptyList();
+                  List<Integer> cardinalsWorldSeries = Lists.newLinkedList(l);
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.LinkedList;
+              import java.util.List;
+                            
+              class Test {
+                  List<Integer> l = Collections.emptyList();
+                  List<Integer> cardinalsWorldSeries = new LinkedList<>(l);
+              }
+              """
+          )
+        );
     }
 }

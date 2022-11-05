@@ -33,47 +33,56 @@ class MigrateCollectionsSingletonMapTest implements RewriteTest {
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
     void singletonMap() {
+        //language=java
         rewriteRun(
           version(
-            java("""
-                    import java.util.*;
-                    
-                    class Test {
-                        Map<String,String> set = Collections.singletonMap("hello", "world");
-                    }
+            java(
+              """
+                import java.util.*;
+                                
+                class Test {
+                    Map<String,String> set = Collections.singletonMap("hello", "world");
+                }
                 """,
               """
-                    import java.util.Map;
-                    
-                    class Test {
-                        Map<String,String> set = Map.of("hello", "world");
-                    }
-                """), 9)
+                import java.util.Map;
+                                
+                class Test {
+                    Map<String,String> set = Map.of("hello", "world");
+                }
+                """
+            ),
+            9
+          )
         );
     }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
     void singletonMapCustomType() {
+        //language=java
         rewriteRun(
           version(
-            java("""
-                    import java.util.*;
-                    import java.time.LocalDate;
-                    
-                    class Test {
-                        Map<String,LocalDate> map = Collections.singletonMap("date", LocalDate.now());
-                    }
+            java(
+              """
+                import java.util.*;
+                import java.time.LocalDate;
+                                
+                class Test {
+                    Map<String,LocalDate> map = Collections.singletonMap("date", LocalDate.now());
+                }
                 """,
               """
-                    import java.util.Map;
-                    import java.time.LocalDate;
-                    
-                    class Test {
-                        Map<String,LocalDate> map = Map.of("date", LocalDate.now());
-                    }
-                """), 9)
+                import java.util.Map;
+                import java.time.LocalDate;
+                                
+                class Test {
+                    Map<String,LocalDate> map = Map.of("date", LocalDate.now());
+                }
+                """
+            ),
+            9
+          )
         );
     }
-
 }

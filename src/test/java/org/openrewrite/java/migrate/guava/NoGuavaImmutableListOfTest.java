@@ -30,256 +30,254 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaImmutableListOf())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @Test
     void doNotChangeReturnsImmutableList() {
-      rewriteRun(
-        //language=java
-        java(
-          """
-            import com.google.common.collect.ImmutableList;
-
-            class Test {
-                ImmutableList<String> getList() {
-                    return ImmutableList.of();
-                }
-            }
-          """
-        )
-      );
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.collect.ImmutableList;
+                            
+              class Test {
+                  ImmutableList<String> getList() {
+                      return ImmutableList.of();
+                  }
+              }
+              """
+          )
+        );
 
     }
 
     @Test
     void doNotChangeFieldAssignmentToImmutableList() {
-      rewriteRun(
-        //language=java
-        java(
-          """
-            import com.google.common.collect.ImmutableList;
-            
-            class Test {
-                ImmutableList<String> m;
-            
-                {
-                    this.m = ImmutableList.of();
-                }
-            }
-          """
-        )
-      );
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.collect.ImmutableList;
+                            
+              class Test {
+                  ImmutableList<String> m;
+                            
+                  {
+                      this.m = ImmutableList.of();
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void doNotChangeAssignsToImmutableList() {
-      rewriteRun(
-        //language=java
-        java(
-          """
-            import com.google.common.collect.ImmutableList;
-            
-            class Test {
-                ImmutableList<String> m;
-            
-                void init() {
-                    m = ImmutableList.of();
-                }
-            }
-          """
-        )
-      );
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.collect.ImmutableList;
+                            
+              class Test {
+                  ImmutableList<String> m;
+                            
+                  void init() {
+                      m = ImmutableList.of();
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void doNotChangeNewClass() {
-      rewriteRun(
         //language=java
-        spec -> spec.parser(
-          JavaParser.fromJavaVersion().dependsOn(
+        rewriteRun(
+          java(
             """
               import com.google.common.collect.ImmutableList;
-              
+                              
               public class A {
                   ImmutableList<String> immutableList;
                   public A(ImmutableList<String> immutableList) {
                       this.immutableList = immutableList;
                   }
               }
+              """
+          ),
+          //language=java
+          java(
             """
-          )
-        ),
-        //language=java
-        java(
-          """
-            import com.google.common.collect.ImmutableList;
-            
-            class Test {
-                A a = new A(ImmutableList.of());
-            }
-          """));
+              import com.google.common.collect.ImmutableList;
+                            
+              class Test {
+                  A a = new A(ImmutableList.of());
+              }
+              """
+)
+);
     }
 
     @Test
     void doNotChangeMethodInvocation() {
-      rewriteRun(
-        //language=java
-        spec -> spec.parser(
-          JavaParser.fromJavaVersion().dependsOn(
+        rewriteRun(
+          //language=java
+          spec -> spec.parser(
+            JavaParser.fromJavaVersion().dependsOn(
+              """
+                import com.google.common.collect.ImmutableList;
+                                
+                public class A {
+                    ImmutableList<String> immutableList;
+                    public void method(ImmutableList<String> immutableList) {
+                        this.immutableList = immutableList;
+                    }
+                }
+                """
+            )
+          ),
+          //language=java
+          java(
             """
               import com.google.common.collect.ImmutableList;
-              
-              public class A {
-                  ImmutableList<String> immutableList;
-                  public void method(ImmutableList<String> immutableList) {
-                      this.immutableList = immutableList;
+                      
+              class Test {
+                  void method() {
+                      A a = new A();
+                      a.method(ImmutableList.of());
                   }
               }
-            """
+              """
           )
-        ),
-        //language=java
-        java(
-          """
-            import com.google.common.collect.ImmutableList;
-          
-            class Test {
-                void method() {
-                    A a = new A();
-                    a.method(ImmutableList.of());
-                }
-            }
-          """
-        )
-      );
+        );
     }
 
     @Test
     void replaceArguments() {
-      rewriteRun(
-        version(
-          //language=java
-          java(
-            """
-              import java.util.List;
-              import com.google.common.collect.ImmutableList;
-              
-              class Test {
-                  List<String> m = ImmutableList.of("A", "B", "C", "D");
-              }
-            """,
-            """
-              import java.util.List;
-              
-              class Test {
-                  List<String> m = List.of("A", "B", "C", "D");
-              }
-            """
-          ),
-          9
-        )
-      );
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import java.util.List;
+                import com.google.common.collect.ImmutableList;
+                                
+                class Test {
+                    List<String> m = ImmutableList.of("A", "B", "C", "D");
+                }
+                """,
+              """
+                import java.util.List;
+                                
+                class Test {
+                    List<String> m = List.of("A", "B", "C", "D");
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Test
     void fieldAssignmentToList() {
-      rewriteRun(
-        version(
-          //language=java
-          java(
-            """
-              import java.util.List;
-              import com.google.common.collect.ImmutableList;
-              
-              class Test {
-                  List<String> m;
-                  {
-                      this.m = ImmutableList.of();
-                  }
-              }
-            """,
-            """
-              import java.util.List;
-              
-              class Test {
-                  List<String> m;
-                  {
-                      this.m = List.of();
-                  }
-              }
-            """
-          ),
-          9
-        )
-      );
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import java.util.List;
+                import com.google.common.collect.ImmutableList;
+                                
+                class Test {
+                    List<String> m;
+                    {
+                        this.m = ImmutableList.of();
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+                                
+                class Test {
+                    List<String> m;
+                    {
+                        this.m = List.of();
+                    }
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Test
     void assigmentToList() {
-      rewriteRun(
-        version(
-          //language=java
-          java(
-            """
-              import java.util.List;
-              import com.google.common.collect.ImmutableList;
-              
-              class Test {
-                  List<String> m = ImmutableList.of();
-              }
-            """,
-            """
-              import java.util.List;
-              
-              class Test {
-                  List<String> m = List.of();
-              }
-            """
-          ),
-          9
-        )
-      );
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import java.util.List;
+                import com.google.common.collect.ImmutableList;
+                                
+                class Test {
+                    List<String> m = ImmutableList.of();
+                }
+                """,
+              """
+                import java.util.List;
+                                
+                class Test {
+                    List<String> m = List.of();
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Test
     void returnsList() {
-      rewriteRun(
-        version(
-          //language=java
-          java(
-            """
-              import java.util.List;
-              import com.google.common.collect.ImmutableList;
-              
-              class Test {
-                  List<String> list() {
-                      return ImmutableList.of();
-                  }
-              }
-            """,
-            """
-              import java.util.List;
-              
-              class Test {
-                  List<String> list() {
-                      return List.of();
-                  }
-              }
-            """
-          ),
-          9
-        )
-      );
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import java.util.List;
+                import com.google.common.collect.ImmutableList;
+                                
+                class Test {
+                    List<String> list() {
+                        return ImmutableList.of();
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+                                
+                class Test {
+                    List<String> list() {
+                        return List.of();
+                    }
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Test
     void newClassWithListArgument() {
-      rewriteRun(
         //language=java
-        spec -> spec.parser(
-          JavaParser.fromJavaVersion().classpath("guava").dependsOn(
+        rewriteRun(
+          java(
             """
               import java.util.List;
                   
@@ -289,37 +287,36 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                       this.list = list;
                   }
               }
-            """
+              """
+          ),
+          version(
+            //language=java
+            java(
+              """
+                  import com.google.common.collect.ImmutableList;
+                  
+                  class Test {
+                      A a = new A(ImmutableList.of());
+                  }
+                """,
+              """
+                  import java.util.List;
+                  
+                  class Test {
+                      A a = new A(List.of());
+                  }
+                """
+            ),
+            11
           )
-        ),
-        version(
-          //language=java
-          java(
-            """
-              import com.google.common.collect.ImmutableList;
-              
-              class Test {
-                  A a = new A(ImmutableList.of());
-              }
-            """,
-            """
-              import java.util.List;
-              
-              class Test {
-                  A a = new A(List.of());
-              }
-            """),
-          11
-        )
-      );
+        );
     }
 
     @Test
     void methodInvocationWithListArgument() {
-      rewriteRun(
-        spec -> spec.parser(
-          //language=java
-          JavaParser.fromJavaVersion().classpath("guava").dependsOn(
+        //language=java
+        rewriteRun(
+          java(
             """
               import java.util.List;
                   
@@ -329,124 +326,125 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                       this.list = list;
                   }
               }
-            """
-          )
-        ),
-        version(
-          //language=java
-          java(
-            """
+              """
+          ),
+          version(
+            //language=java
+            java(
+              """
                 import com.google.common.collect.ImmutableList;
-                
+                                
                 class Test {
                     void method() {
                         A a = new A();
                         a.method(ImmutableList.of());
                     }
                 }
-              """,
-            """
+                """,
+              """
                 import java.util.List;
-                
+                                
                 class Test {
                     void method() {
                         A a = new A();
                         a.method(List.of());
                     }
                 }
-              """),
-          11
-        )
-      );
+                """
+            ),
+            11
+          )
+        );
     }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/137")
     @Test
     void listOfInts() {
-      rewriteRun(
-        version(
-          //language=java
-          java(
-            """
-              import java.util.List;
-              import com.google.common.collect.ImmutableList;
-              
-              class Test {
-                  List<Integer> list() {
-                      return ImmutableList.of(1, 2, 3);
-                  }
-              }
-            """,
-            """
-              import java.util.List;
-              
-              class Test {
-                  List<Integer> list() {
-                      return List.of(1, 2, 3);
-                  }
-              }
-            """
-          ),
-          9
-        )
-      );
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import java.util.List;
+                import com.google.common.collect.ImmutableList;
+                                
+                class Test {
+                    List<Integer> list() {
+                        return ImmutableList.of(1, 2, 3);
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+                                
+                class Test {
+                    List<Integer> list() {
+                        return List.of(1, 2, 3);
+                    }
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Disabled("Requires https://github.com/openrewrite/rewrite/issues/2375")
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/138")
     @Test
     void insideAnonymousArrayInitializer() {
-      rewriteRun(
-        version(
-          //language=java
-          java(
-            """
-              import com.google.common.collect.ImmutableList;
-              
-              class A {
-                  Object[] o = new Object[] {
-                          ImmutableList.of(1, 2, 3)
-                  };
-              }
-            """,
-            """
-              import java.util.List;
-              
-              class A {
-                  Object[] o = new Object[] {
-                          List.of(1, 2, 3)
-                  };
-              }
-            """
-          ),
-          9
-        )
-      );
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+                                
+                class A {
+                    Object[] o = new Object[] {
+                            ImmutableList.of(1, 2, 3)
+                    };
+                }
+                """,
+              """
+                import java.util.List;
+                                
+                class A {
+                    Object[] o = new Object[] {
+                            List.of(1, 2, 3)
+                    };
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/136")
     @Test
     void assignToMoreGeneralType() {
-      rewriteRun(
-        version(
-          //language=java
-          java(
-            """
-              import com.google.common.collect.ImmutableList;
-              
-              class A {
-                  Object o = ImmutableList.of(1, 2, 3);
-              }
-            """,
-            """
-              import java.util.List;
-              
-              class A {
-                  Object o = List.of(1, 2, 3);
-              }
-            """),
-          11
-        )
-      );
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+                                
+                class A {
+                    Object o = ImmutableList.of(1, 2, 3);
+                }
+                """,
+              """
+                import java.util.List;
+                                
+                class A {
+                    Object o = List.of(1, 2, 3);
+                }
+                """
+            ),
+            11
+          )
+        );
     }
 }

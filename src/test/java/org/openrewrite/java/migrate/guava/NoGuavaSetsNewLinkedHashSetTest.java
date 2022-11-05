@@ -28,77 +28,88 @@ class NoGuavaSetsNewLinkedHashSetTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaSetsNewLinkedHashSet())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @Test
     void replaceWithNewLinkedHashSet() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.Set;
-                
-                class Test {
-                    Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSet();
-                }
-            """,
-          """
-                import java.util.LinkedHashSet;
-                import java.util.Set;
-                
-                class Test {
-                    Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>();
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.Set;
+                            
+              class Test {
+                  Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSet();
+              }
+              """,
+            """
+              import java.util.LinkedHashSet;
+              import java.util.Set;
+                            
+              class Test {
+                  Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>();
+              }
+              """
+          )
+        );
     }
 
     @Test
     void replaceWithNewLinkedHashSetIterable() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.Collections;
-                import java.util.Set;
-                
-                class Test {
-                    Set<Integer> l = Collections.emptySet();
-                    Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSet(l);
-                }
-            """,
-          """
-                import java.util.Collections;
-                import java.util.LinkedHashSet;
-                import java.util.Set;
-                
-                class Test {
-                    Set<Integer> l = Collections.emptySet();
-                    Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>(l);
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.Collections;
+              import java.util.Set;
+                            
+              class Test {
+                  Set<Integer> l = Collections.emptySet();
+                  Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSet(l);
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.LinkedHashSet;
+              import java.util.Set;
+                            
+              class Test {
+                  Set<Integer> l = Collections.emptySet();
+                  Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>(l);
+              }
+              """
+          )
+        );
     }
 
     @Test
     void replaceWithNewLinkedHashSetWithCapacity() {
-        rewriteRun(java("""
-                import com.google.common.collect.*;
-                
-                import java.util.Set;
-                
-                class Test {
-                    Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSetWithExpectedSize(2);
-                }
-            """,
-          """
-                import java.util.LinkedHashSet;
-                import java.util.Set;
-                
-                class Test {
-                    Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>(2);
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import com.google.common.collect.*;
+                            
+              import java.util.Set;
+                            
+              class Test {
+                  Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSetWithExpectedSize(2);
+              }
+              """,
+            """
+              import java.util.LinkedHashSet;
+              import java.util.Set;
+                            
+              class Test {
+                  Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>(2);
+              }
+              """
+          )
+        );
     }
 }

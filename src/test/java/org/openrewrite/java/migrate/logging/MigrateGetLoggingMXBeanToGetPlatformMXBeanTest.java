@@ -22,6 +22,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 class MigrateGetLoggingMXBeanToGetPlatformMXBeanTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateGetLoggingMXBeanToGetPlatformMXBean());
@@ -29,27 +30,30 @@ class MigrateGetLoggingMXBeanToGetPlatformMXBeanTest implements RewriteTest {
 
     @Test
     void getLoggingMXBeanToGetPlatformMXBean() {
-        rewriteRun(java("""
-                import java.util.logging.LoggingMXBean;
-                import java.util.logging.LogManager;
-
-                class Test {
-                    static void method() {
-                        LoggingMXBean loggingBean = LogManager.getLoggingMXBean();
-                    }
-                }
-            """,
-          """
-                import java.lang.management.ManagementFactory;
-                import java.lang.management.PlatformLoggingMXBean;
-
-                class Test {
-                    static void method() {
-                        PlatformLoggingMXBean loggingBean = ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class);
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
-    }
+              import java.util.logging.LoggingMXBean;
+              import java.util.logging.LogManager;
 
+              class Test {
+                  static void method() {
+                      LoggingMXBean loggingBean = LogManager.getLoggingMXBean();
+                  }
+              }
+              """,
+            """
+              import java.lang.management.ManagementFactory;
+              import java.lang.management.PlatformLoggingMXBean;
+
+              class Test {
+                  static void method() {
+                      PlatformLoggingMXBean loggingBean = ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class);
+                  }
+              }
+              """
+          )
+        );
+    }
 }

@@ -23,8 +23,9 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
-
 class LombokValToFinalVarTest implements RewriteTest {
+
+    @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new LombokValToFinalVar())
           .parser(JavaParser.fromJavaVersion().classpath("lombok"));
@@ -32,6 +33,7 @@ class LombokValToFinalVarTest implements RewriteTest {
 
     @Test
     void replaceAssignment() {
+        //language=java
         rewriteRun(
           version(
             java(
@@ -49,12 +51,17 @@ class LombokValToFinalVarTest implements RewriteTest {
                         final var foo = "foo";
                     }
                 }
-                """),
-            17));
+                """
+            ),
+            17
+          )
+        );
     }
 
+    @SuppressWarnings({"StatementWithEmptyBody", "RedundantOperationOnEmptyContainer"})
     @Test
     void valInForEachStatement() {
+        //language=java
         rewriteRun(
           version(
             java(
@@ -80,12 +87,16 @@ class LombokValToFinalVarTest implements RewriteTest {
                         for (final var s : lst) {}
                     }
                 }
-                """),
-            17));
+                """
+            ),
+            17
+          )
+        );
     }
 
     @Test
     void retainPrefixComment() {
+        //language=java
         rewriteRun(
           version(
             java(
@@ -105,12 +116,16 @@ class LombokValToFinalVarTest implements RewriteTest {
                         final var foo = "foo";
                     }
                 }
-                """),
-            17));
+                """
+            ),
+            17
+          )
+        );
     }
 
     @Test
     void retainInfixComment() {
+        //language=java
         rewriteRun(
           version(
             java(
@@ -132,12 +147,16 @@ class LombokValToFinalVarTest implements RewriteTest {
                         "foo";
                     }
                 }
-                """),
-            17));
+                """
+            ),
+            17
+          )
+        );
     }
 
     @Test
     void retainSuffixComment() {
+        //language=java
         rewriteRun(
           version(
             java(
@@ -157,12 +176,16 @@ class LombokValToFinalVarTest implements RewriteTest {
                         // Suffix
                     }
                 }
-                """),
-            17));
+                """
+            ),
+            17
+          )
+        );
     }
 
     @Test
     void retainWhitespace() {
+        //language=java
         rewriteRun(
           version(
             java(
@@ -182,7 +205,10 @@ class LombokValToFinalVarTest implements RewriteTest {
                             "foo";
                     }
                 }
-                """),
-            17));
+                """
+            ),
+            17
+          )
+        );
     }
 }

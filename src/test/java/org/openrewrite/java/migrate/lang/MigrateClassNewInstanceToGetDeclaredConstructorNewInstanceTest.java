@@ -21,7 +21,9 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@SuppressWarnings("deprecation")
 class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateClassNewInstanceToGetDeclaredConstructorNewInstance());
@@ -29,7 +31,10 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
 
     @Test
     void doesNotThrowExceptionOrThrowable() {
-        rewriteRun(java("""
+        //language=java
+        rewriteRun(
+          java(
+            """
               package com.abc;
 
               class A {
@@ -38,72 +43,83 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
                      clazz.newInstance();
                  }
               }
-          """
-        ));
+              """
+          )
+        );
     }
 
     @Test
     void methodThrowsThrowable() {
-        rewriteRun(java("""
-                package com.abc;
-
-                class A {
-                   public void test() throws Throwable {
-                       Class<?> clazz = Class.forName("org.openrewrite.Test");
-                       clazz.newInstance();
-                   }
-                }
-            """,
-          """
-                package com.abc;
-
-                class A {
-                   public void test() throws Throwable {
-                       Class<?> clazz = Class.forName("org.openrewrite.Test");
-                       clazz.getDeclaredConstructor().newInstance();
-                   }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package com.abc;
+
+              class A {
+                 public void test() throws Throwable {
+                     Class<?> clazz = Class.forName("org.openrewrite.Test");
+                     clazz.newInstance();
+                 }
+              }
+              """,
+            """
+                  package com.abc;
+
+                  class A {
+                     public void test() throws Throwable {
+                         Class<?> clazz = Class.forName("org.openrewrite.Test");
+                         clazz.getDeclaredConstructor().newInstance();
+                     }
+                  }
+              """
+          )
+        );
     }
 
     @Test
     void tryBlockCatchesException() {
-        rewriteRun(java("""
-                package com.abc;
-
-                class A {
-                    public void test() {
-                        try {
-                            Class<?> clazz = Class.forName("org.openrewrite.Test");
-                            clazz.newInstance();
-                        } catch (Exception ex) {
-                            System.out.println(ex.getMessage());
-                        }
-                    }
-                }
-            """,
-          """
-                package com.abc;
-
-                class A {
-                    public void test() {
-                        try {
-                            Class<?> clazz = Class.forName("org.openrewrite.Test");
-                            clazz.getDeclaredConstructor().newInstance();
-                        } catch (Exception ex) {
-                            System.out.println(ex.getMessage());
-                        }
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package com.abc;
+
+              class A {
+                  public void test() {
+                      try {
+                          Class<?> clazz = Class.forName("org.openrewrite.Test");
+                          clazz.newInstance();
+                      } catch (Exception ex) {
+                          System.out.println(ex.getMessage());
+                      }
+                  }
+              }
+              """,
+            """
+              package com.abc;
+
+              class A {
+                  public void test() {
+                      try {
+                          Class<?> clazz = Class.forName("org.openrewrite.Test");
+                          clazz.getDeclaredConstructor().newInstance();
+                      } catch (Exception ex) {
+                          System.out.println(ex.getMessage());
+                      }
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void newInstanceInCatch() {
-
-        rewriteRun(java("""
+        //language=java
+        rewriteRun(
+          java(
+            """
               package com.abc;
 
               class A {
@@ -116,40 +132,45 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
                       }
                   }
               }
-          """
-        ));
+              """
+          )
+        );
     }
 
     @Test
     void newInstanceInCatchMethodDeclarationThrowsException() {
-        rewriteRun(java("""
-                package com.abc;
-
-                class A {
-                    public void test() throws Exception {
-                        try {
-                            System.out.println();
-                        } catch (Exception ex) {
-                            Class<?> clazz = Class.forName("org.openrewrite.Test");
-                            clazz.newInstance();
-                        }
-                    }
-                }
-            """,
-          """
-                package com.abc;
-
-                class A {
-                    public void test() throws Exception {
-                        try {
-                            System.out.println();
-                        } catch (Exception ex) {
-                            Class<?> clazz = Class.forName("org.openrewrite.Test");
-                            clazz.getDeclaredConstructor().newInstance();
-                        }
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package com.abc;
+
+              class A {
+                  public void test() throws Exception {
+                      try {
+                          System.out.println();
+                      } catch (Exception ex) {
+                          Class<?> clazz = Class.forName("org.openrewrite.Test");
+                          clazz.newInstance();
+                      }
+                  }
+              }
+              """,
+            """
+              package com.abc;
+
+              class A {
+                  public void test() throws Exception {
+                      try {
+                          System.out.println();
+                      } catch (Exception ex) {
+                          Class<?> clazz = Class.forName("org.openrewrite.Test");
+                          clazz.getDeclaredConstructor().newInstance();
+                      }
+                  }
+              }
+              """
+          )
+        );
     }
 }

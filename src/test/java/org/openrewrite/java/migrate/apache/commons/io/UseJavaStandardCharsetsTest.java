@@ -32,39 +32,42 @@ class UseJavaStandardCharsetsTest implements RewriteTest {
             .scanRuntimeClasspath("org.openrewrite.java.migrate.apache.commons.io")
             .build()
             .activateRecipes("org.openrewrite.java.migrate.apache.commons.io.UseStandardCharsets"))
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("commons-io"));
+          .parser(JavaParser.fromJavaVersion().classpath("commons-io"));
     }
 
     @Test
     @Disabled
     void toStandardCharsets() {
-        rewriteRun(java("""
-                import java.nio.charset.Charset;
-                import org.apache.commons.io.Charsets;
-                
-                class A {
-                     Charset iso88591 = Charsets.ISO_8859_1;
-                     Charset usAscii = Charsets.US_ASCII;
-                     Charset utf16 = Charsets.UTF_16;
-                     Charset utf16be = Charsets.UTF_16BE;
-                     Charset utf16le = Charsets.UTF_16LE;
-                     Charset utf8 = Charsets.UTF_8;
-                }
-            """,
-          """
-                import java.nio.charset.Charset;
-                import java.nio.charset.StandardCharsets;
-                
-                class A {
-                     Charset iso88591 = StandardCharsets.ISO_8859_1;
-                     Charset usAscii = StandardCharsets.US_ASCII;
-                     Charset utf16 = StandardCharsets.UTF_16;
-                     Charset utf16be = StandardCharsets.UTF_16BE;
-                     Charset utf16le = StandardCharsets.UTF_16LE;
-                     Charset utf8 = StandardCharsets.UTF_8;
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import java.nio.charset.Charset;
+              import org.apache.commons.io.Charsets;
+                            
+              class A {
+                   Charset iso88591 = Charsets.ISO_8859_1;
+                   Charset usAscii = Charsets.US_ASCII;
+                   Charset utf16 = Charsets.UTF_16;
+                   Charset utf16be = Charsets.UTF_16BE;
+                   Charset utf16le = Charsets.UTF_16LE;
+                   Charset utf8 = Charsets.UTF_8;
+              }
+              """,
+            """
+              import java.nio.charset.Charset;
+              import java.nio.charset.StandardCharsets;
+                            
+              class A {
+                   Charset iso88591 = StandardCharsets.ISO_8859_1;
+                   Charset usAscii = StandardCharsets.US_ASCII;
+                   Charset utf16 = StandardCharsets.UTF_16;
+                   Charset utf16be = StandardCharsets.UTF_16BE;
+                   Charset utf16le = StandardCharsets.UTF_16LE;
+                   Charset utf8 = StandardCharsets.UTF_8;
+              }
+              """
+          )
+        );
     }
 }

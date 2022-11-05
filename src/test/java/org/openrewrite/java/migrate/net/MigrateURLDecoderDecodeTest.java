@@ -22,6 +22,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 class MigrateURLDecoderDecodeTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateURLDecoderDecode());
@@ -29,30 +30,33 @@ class MigrateURLDecoderDecodeTest implements RewriteTest {
 
     @Test
     void urlDecoderDecode() {
-        rewriteRun(java("""
-                package org.openrewrite.example;
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package org.openrewrite.example;
 
-                import java.net.URLDecoder;
+              import java.net.URLDecoder;
 
-                class Test {
-                    public static void method(String url) {
-                        String message = URLDecoder.decode(url);
-                    }
-                }
-            """,
-          """
-                package org.openrewrite.example;
+              class Test {
+                  public static void method(String url) {
+                      String message = URLDecoder.decode(url);
+                  }
+              }
+              """,
+            """
+              package org.openrewrite.example;
 
-                import java.net.URLDecoder;
-                import java.nio.charset.StandardCharsets;
+              import java.net.URLDecoder;
+              import java.nio.charset.StandardCharsets;
 
-                class Test {
-                    public static void method(String url) {
-                        String message = URLDecoder.decode(url, StandardCharsets.UTF_8);
-                    }
-                }
-            """)
+              class Test {
+                  public static void method(String url) {
+                      String message = URLDecoder.decode(url, StandardCharsets.UTF_8);
+                  }
+              }
+              """
+          )
         );
     }
-
 }

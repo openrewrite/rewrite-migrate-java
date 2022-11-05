@@ -21,6 +21,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@SuppressWarnings("removal")
 class MigrateSecurityManagerMulticastTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
@@ -29,34 +30,38 @@ class MigrateSecurityManagerMulticastTest implements RewriteTest {
 
     @Test
     void migrateCheckMulticast() {
-        rewriteRun(java("""
-                package org.openrewrite;
-
-                import java.net.InetAddress;
-                import java.lang.SecurityManager;
-
-                class Test {
-                    public void method() {
-                        InetAddress maddr = InetAddress.getByName("127.0.0.1");
-                        byte b = 100;
-                        new SecurityManager().checkMulticast(maddr, b);
-                    }
-                }
-            """,
-          """
-                package org.openrewrite;
-
-                import java.net.InetAddress;
-                import java.lang.SecurityManager;
-
-                class Test {
-                    public void method() {
-                        InetAddress maddr = InetAddress.getByName("127.0.0.1");
-                        byte b = 100;
-                        new SecurityManager().checkMulticast(maddr);
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package org.openrewrite;
+
+              import java.net.InetAddress;
+              import java.lang.SecurityManager;
+
+              class Test {
+                  public void method() {
+                      InetAddress maddr = InetAddress.getByName("127.0.0.1");
+                      byte b = 100;
+                      new SecurityManager().checkMulticast(maddr, b);
+                  }
+              }
+              """,
+            """
+              package org.openrewrite;
+
+              import java.net.InetAddress;
+              import java.lang.SecurityManager;
+
+              class Test {
+                  public void method() {
+                      InetAddress maddr = InetAddress.getByName("127.0.0.1");
+                      byte b = 100;
+                      new SecurityManager().checkMulticast(maddr);
+                  }
+              }
+              """
+          )
+        );
     }
 }

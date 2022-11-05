@@ -29,37 +29,39 @@ class JavaNetAPIsTest implements RewriteTest {
           Environment.builder()
             .scanRuntimeClasspath("org.openrewrite.java.migrate.net")
             .build()
-            .activateRecipes("org.openrewrite.java.migrate.net.JavaNetAPIs")
-        );
+            .activateRecipes("org.openrewrite.java.migrate.net.JavaNetAPIs"));
     }
 
     @Test
     void multicastSocketGetTTLToGetTimeToLive() {
-        rewriteRun(java("""
-                package org.openrewrite.example;
-
-                import java.net.MulticastSocket;
-
-                public class Test {
-                    public static void method() {
-                        MulticastSocket s = new MulticastSocket(0);
-                        s.getTTL();
-                    }
-                }
-            """,
-          """
-                package org.openrewrite.example;
-
-                import java.net.MulticastSocket;
-
-                public class Test {
-                    public static void method() {
-                        MulticastSocket s = new MulticastSocket(0);
-                        s.getTimeToLive();
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
-    }
+              package org.openrewrite.example;
 
+              import java.net.MulticastSocket;
+
+              public class Test {
+                  public static void method() {
+                      MulticastSocket s = new MulticastSocket(0);
+                      s.getTTL();
+                  }
+              }
+              """,
+            """
+              package org.openrewrite.example;
+
+              import java.net.MulticastSocket;
+
+              public class Test {
+                  public static void method() {
+                      MulticastSocket s = new MulticastSocket(0);
+                      s.getTimeToLive();
+                  }
+              }
+              """
+          )
+        );
+    }
 }

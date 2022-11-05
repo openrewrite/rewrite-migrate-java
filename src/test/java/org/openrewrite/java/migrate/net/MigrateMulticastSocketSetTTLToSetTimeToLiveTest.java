@@ -21,7 +21,9 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@SuppressWarnings("resource")
 class MigrateMulticastSocketSetTTLToSetTimeToLiveTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateMulticastSocketSetTTLToSetTimeToLive());
@@ -29,66 +31,73 @@ class MigrateMulticastSocketSetTTLToSetTimeToLiveTest implements RewriteTest {
 
     @Test
     void multicastSocketSetTTLToSetTimeToLive() {
-        rewriteRun(java("""
-                package org.openrewrite.example;
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package org.openrewrite.example;
 
-                import java.net.MulticastSocket;
+              import java.net.MulticastSocket;
 
-                public class Test {
-                    public static void method() {
-                        MulticastSocket s = new MulticastSocket(0);
-                        s.setTTL((byte) 1);
-                    }
-                }
-            """,
-          """
-                package org.openrewrite.example;
+              public class Test {
+                  public static void method() {
+                      MulticastSocket s = new MulticastSocket(0);
+                      s.setTTL((byte) 1);
+                  }
+              }
+              """,
+            """
+              package org.openrewrite.example;
 
-                import java.net.MulticastSocket;
+              import java.net.MulticastSocket;
 
-                public class Test {
-                    public static void method() {
-                        MulticastSocket s = new MulticastSocket(0);
-                        s.setTimeToLive(Byte.valueOf((byte) 1).intValue());
-                    }
-                }
-            """)
+              public class Test {
+                  public static void method() {
+                      MulticastSocket s = new MulticastSocket(0);
+                      s.setTimeToLive(Byte.valueOf((byte) 1).intValue());
+                  }
+              }
+              """
+          )
         );
     }
 
     @Test
     void multicastSocketSetTTLToSetTimeToLiveFromOtherMethod() {
-        rewriteRun(java("""
-                  package org.openrewrite.example;
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package org.openrewrite.example;
 
-                  import java.net.MulticastSocket;
+              import java.net.MulticastSocket;
 
-                  public class Test {
-                      public static byte takeByte() {
-                          return 127;
-                      }
-
-                      public static void method() {
-                          MulticastSocket s = new MulticastSocket(0);
-                          s.setTTL(takeByte());
-                      }
+              public class Test {
+                  public static byte takeByte() {
+                      return 127;
                   }
+
+                  public static void method() {
+                      MulticastSocket s = new MulticastSocket(0);
+                      s.setTTL(takeByte());
+                  }
+              }
               """,
             """
-                  package org.openrewrite.example;
+              package org.openrewrite.example;
 
-                  import java.net.MulticastSocket;
+              import java.net.MulticastSocket;
 
-                  public class Test {
-                      public static byte takeByte() {
-                          return 127;
-                      }
-
-                      public static void method() {
-                          MulticastSocket s = new MulticastSocket(0);
-                          s.setTimeToLive(Byte.valueOf(takeByte()).intValue());
-                      }
+              public class Test {
+                  public static byte takeByte() {
+                      return 127;
                   }
+
+                  public static void method() {
+                      MulticastSocket s = new MulticastSocket(0);
+                      s.setTimeToLive(Byte.valueOf(takeByte()).intValue());
+                  }
+              }
               """
           )
         );

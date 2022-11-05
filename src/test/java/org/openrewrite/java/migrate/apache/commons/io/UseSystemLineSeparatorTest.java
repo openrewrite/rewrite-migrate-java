@@ -33,77 +33,88 @@ class UseSystemLineSeparatorTest implements RewriteTest {
             .scanRuntimeClasspath("org.openrewrite.java.migrate.apache.commons.io")
             .build()
             .activateRecipes("org.openrewrite.java.migrate.apache.commons.io.UseSystemLineSeparator"))
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("commons-io"));
+          .parser(JavaParser.fromJavaVersion().classpath("commons-io"));
     }
 
 
     @Test
     void migratesQualifiedField() {
+        //language=java
         rewriteRun(
-          java("""
-                  import org.apache.commons.io.IOUtils;
+          java(
+            """
+              import org.apache.commons.io.IOUtils;
 
-                  class A {
-                      static String lineSeparator() {
-                          return IOUtils.LINE_SEPARATOR;
-                      }
+              class A {
+                  static String lineSeparator() {
+                      return IOUtils.LINE_SEPARATOR;
                   }
+              }
               """,
             """
-                  class A {
-                      static String lineSeparator() {
-                          return System.lineSeparator();
-                      }
+              class A {
+                  static String lineSeparator() {
+                      return System.lineSeparator();
                   }
+              }
               """
-          ));
+)
+);
     }
 
     @Test
     void migratesStaticImportedField() {
+        //language=java
         rewriteRun(
-          java("""
-                  import static org.apache.commons.io.IOUtils.LINE_SEPARATOR;
+          java(
+            """
+              import static org.apache.commons.io.IOUtils.LINE_SEPARATOR;
 
-                  class A {
-                      static String lineSeparator() {
-                          return LINE_SEPARATOR;
-                      }
+              class A {
+                  static String lineSeparator() {
+                      return LINE_SEPARATOR;
                   }
+              }
               """,
             """
-                  class A {
-                      static String lineSeparator() {
-                          return System.lineSeparator();
-                      }
+              class A {
+                  static String lineSeparator() {
+                      return System.lineSeparator();
                   }
+              }
               """
-          ));
+          )
+        );
     }
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/54")
     void migratesFieldInitializer() {
-        rewriteRun(java("""
-                import org.apache.commons.io.IOUtils;
-
-                class A {
-                    private final String LINE_SEPARATOR_AND_INDENTATION = IOUtils.LINE_SEPARATOR;
-                }
-            """,
-          """
-                class A {
-                    private final String LINE_SEPARATOR_AND_INDENTATION = System.lineSeparator();
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import org.apache.commons.io.IOUtils;
+
+              class A {
+                  private final String LINE_SEPARATOR_AND_INDENTATION = IOUtils.LINE_SEPARATOR;
+              }
+              """,
+            """
+              class A {
+                  private final String LINE_SEPARATOR_AND_INDENTATION = System.lineSeparator();
+              }
+              """
+          )
+        );
     }
 
     @Test
     void ignoreUnrelatedFields() {
-
-        rewriteRun(java("""
+        //language=java
+        rewriteRun(
+          java(
+            """
               class A {
                   private static final String LINE_SEPARATOR = System.lineSeparator();
 
@@ -111,8 +122,8 @@ class UseSystemLineSeparatorTest implements RewriteTest {
                       return LINE_SEPARATOR;
                   }
               }
-          """
-        ));
+              """
+          )
+        );
     }
-
 }

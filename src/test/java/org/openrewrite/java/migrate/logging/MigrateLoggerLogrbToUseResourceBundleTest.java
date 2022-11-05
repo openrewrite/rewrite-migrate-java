@@ -21,7 +21,9 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@SuppressWarnings("deprecation")
 class MigrateLoggerLogrbToUseResourceBundleTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateLoggerLogrbToUseResourceBundle());
@@ -29,140 +31,155 @@ class MigrateLoggerLogrbToUseResourceBundleTest implements RewriteTest {
 
     @Test
     void logrbToLogrbResourceBundle() {
-        rewriteRun(java("""
-                package org.openrewrite.example;
-
-                import java.util.logging.Level;
-                import java.util.logging.Logger;
-
-                public class Test {
-                    Logger logger = Logger.getLogger("myLogger");
-
-                    public void method() {
-                        logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", "bundleName", "msg");
-                    }
-                }
-            """,
-          """
-                package org.openrewrite.example;
-
-                import java.util.ResourceBundle;
-                import java.util.logging.Level;
-                import java.util.logging.Logger;
-
-                public class Test {
-                    Logger logger = Logger.getLogger("myLogger");
-
-                    public void method() {
-                        logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", ResourceBundle.getBundle("bundleName"), "msg");
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package org.openrewrite.example;
+
+              import java.util.logging.Level;
+              import java.util.logging.Logger;
+
+              public class Test {
+                  Logger logger = Logger.getLogger("myLogger");
+
+                  public void method() {
+                      logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", "bundleName", "msg");
+                  }
+              }
+              """,
+            """
+              package org.openrewrite.example;
+
+              import java.util.ResourceBundle;
+              import java.util.logging.Level;
+              import java.util.logging.Logger;
+
+              public class Test {
+                  Logger logger = Logger.getLogger("myLogger");
+
+                  public void method() {
+                      logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", ResourceBundle.getBundle("bundleName"), "msg");
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void logrbToLogrbResourceBundleWithTrailingObject() {
-        rewriteRun(java("""
-                package org.openrewrite.example;
-
-                import java.util.logging.Level;
-                import java.util.logging.Logger;
-
-                public class Test {
-                    Logger logger = Logger.getLogger("myLogger");
-
-                    public void method() {
-                        logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", "bundleName", "msg", new Object());
-                    }
-                }
-            """,
-          """
-                package org.openrewrite.example;
-
-                import java.util.ResourceBundle;
-                import java.util.logging.Level;
-                import java.util.logging.Logger;
-
-                public class Test {
-                    Logger logger = Logger.getLogger("myLogger");
-
-                    public void method() {
-                        logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", ResourceBundle.getBundle("bundleName"), "msg", new Object());
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package org.openrewrite.example;
+
+              import java.util.logging.Level;
+              import java.util.logging.Logger;
+
+              public class Test {
+                  Logger logger = Logger.getLogger("myLogger");
+
+                  public void method() {
+                      logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", "bundleName", "msg", new Object());
+                  }
+              }
+              """,
+            """
+              package org.openrewrite.example;
+
+              import java.util.ResourceBundle;
+              import java.util.logging.Level;
+              import java.util.logging.Logger;
+
+              public class Test {
+                  Logger logger = Logger.getLogger("myLogger");
+
+                  public void method() {
+                      logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", ResourceBundle.getBundle("bundleName"), "msg", new Object());
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void logrbToLogrbResourceBundleWithTrailingObjectVarargs() {
-        rewriteRun(java("""
-                package org.openrewrite.example;
-
-                import java.util.logging.Level;
-                import java.util.logging.Logger;
-
-                public class Test {
-                    Logger logger = Logger.getLogger("myLogger");
-
-                    public void method() {
-                        Object[] objects = new Object[]{};
-                        logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", "bundleName", "msg", objects);
-                    }
-                }
-            """,
-          """
-                package org.openrewrite.example;
-
-                import java.util.ResourceBundle;
-                import java.util.logging.Level;
-                import java.util.logging.Logger;
-
-                public class Test {
-                    Logger logger = Logger.getLogger("myLogger");
-
-                    public void method() {
-                        Object[] objects = new Object[]{};
-                        logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", ResourceBundle.getBundle("bundleName"), "msg", objects);
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              package org.openrewrite.example;
+
+              import java.util.logging.Level;
+              import java.util.logging.Logger;
+
+              public class Test {
+                  Logger logger = Logger.getLogger("myLogger");
+
+                  public void method() {
+                      Object[] objects = new Object[]{};
+                      logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", "bundleName", "msg", objects);
+                  }
+              }
+              """,
+            """
+              package org.openrewrite.example;
+
+              import java.util.ResourceBundle;
+              import java.util.logging.Level;
+              import java.util.logging.Logger;
+
+              public class Test {
+                  Logger logger = Logger.getLogger("myLogger");
+
+                  public void method() {
+                      Object[] objects = new Object[]{};
+                      logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", ResourceBundle.getBundle("bundleName"), "msg", objects);
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void logrbToLogrbResourceBundleWithTrailingThrowable() {
-        rewriteRun(java("""
-                package org.openrewrite.example;
-
-                import java.util.logging.Level;
-                import java.util.logging.Logger;
-
-                public class Test {
-                    Logger logger = Logger.getLogger("myLogger");
-
-                    public void method() {
-                        logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", "bundleName", "msg", new Exception());
-                    }
-                }
-            """,
-          """
-                package org.openrewrite.example;
-
-                import java.util.ResourceBundle;
-                import java.util.logging.Level;
-                import java.util.logging.Logger;
-
-                public class Test {
-                    Logger logger = Logger.getLogger("myLogger");
-
-                    public void method() {
-                        logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", ResourceBundle.getBundle("bundleName"), "msg", new Exception());
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
-    }
+              package org.openrewrite.example;
 
+              import java.util.logging.Level;
+              import java.util.logging.Logger;
+
+              public class Test {
+                  Logger logger = Logger.getLogger("myLogger");
+
+                  public void method() {
+                      logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", "bundleName", "msg", new Exception());
+                  }
+              }
+              """,
+            """
+              package org.openrewrite.example;
+
+              import java.util.ResourceBundle;
+              import java.util.logging.Level;
+              import java.util.logging.Logger;
+
+              public class Test {
+                  Logger logger = Logger.getLogger("myLogger");
+
+                  public void method() {
+                      logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", ResourceBundle.getBundle("bundleName"), "msg", new Exception());
+                  }
+              }
+              """
+          )
+        );
+    }
 }

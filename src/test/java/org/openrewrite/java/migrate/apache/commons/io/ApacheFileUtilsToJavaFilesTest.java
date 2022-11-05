@@ -27,55 +27,58 @@ class ApacheFileUtilsToJavaFilesTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new ApacheFileUtilsToJavaFiles())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("commons-io"));
+          .parser(JavaParser.fromJavaVersion().classpath("commons-io"));
     }
 
     @Test
     void convertTest() {
+        //language=java
         rewriteRun(
-          java("""
-                  import java.io.File;
-                  import java.nio.charset.Charset;
-                  import org.apache.commons.io.FileUtils;
-                  import java.util.List;
-                  
-                  class A {
-                      byte[] readFileBytes(File file) {
-                          return FileUtils.readFileToByteArray(file);
-                      }
-                      List<String> readLines(File file) {
-                          return FileUtils.readLines(file);
-                      }
-                      List<String> readLinesWithCharset(File file, Charset charset) {
-                          return FileUtils.readLines(file, charset);
-                      }
-                      List<String> readLinesWithCharsetId(File file) {
-                          return FileUtils.readLines(file, "UTF_8");
-                      }
+          java(
+            """
+              import java.io.File;
+              import java.nio.charset.Charset;
+              import org.apache.commons.io.FileUtils;
+              import java.util.List;
+                            
+              class A {
+                  byte[] readFileBytes(File file) {
+                      return FileUtils.readFileToByteArray(file);
                   }
+                  List<String> readLines(File file) {
+                      return FileUtils.readLines(file);
+                  }
+                  List<String> readLinesWithCharset(File file, Charset charset) {
+                      return FileUtils.readLines(file, charset);
+                  }
+                  List<String> readLinesWithCharsetId(File file) {
+                      return FileUtils.readLines(file, "UTF_8");
+                  }
+              }
               """,
             """
-                  import java.io.File;
-                  import java.nio.charset.Charset;
-                  import java.nio.file.Files;
-                  
-                  import java.util.List;
-                  
-                  class A {
-                      byte[] readFileBytes(File file) {
-                          return Files.readAllBytes(file.toPath());
-                      }
-                      List<String> readLines(File file) {
-                          return Files.readAllLines(file.toPath());
-                      }
-                      List<String> readLinesWithCharset(File file, Charset charset) {
-                          return Files.readAllLines(file.toPath(), charset);
-                      }
-                      List<String> readLinesWithCharsetId(File file) {
-                          return Files.readAllLines(file.toPath(), Charset.forName("UTF_8"));
-                      }
+              import java.io.File;
+              import java.nio.charset.Charset;
+              import java.nio.file.Files;
+                            
+              import java.util.List;
+                            
+              class A {
+                  byte[] readFileBytes(File file) {
+                      return Files.readAllBytes(file.toPath());
                   }
-              """));
+                  List<String> readLines(File file) {
+                      return Files.readAllLines(file.toPath());
+                  }
+                  List<String> readLinesWithCharset(File file, Charset charset) {
+                      return Files.readAllLines(file.toPath(), charset);
+                  }
+                  List<String> readLinesWithCharsetId(File file) {
+                      return Files.readAllLines(file.toPath(), Charset.forName("UTF_8"));
+                  }
+              }
+              """
+          )
+        );
     }
 }

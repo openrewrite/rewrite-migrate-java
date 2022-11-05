@@ -22,117 +22,132 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@SuppressWarnings({"UnstableApiUsage", "ResultOfMethodCallIgnored"})
 class NoGuavaCreateTempDirTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaCreateTempDir())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @Test
     void inMethodThrowingException() {
-        rewriteRun(java("""
-                import java.io.File;
-                import java.io.IOException;
-                import com.google.common.io.Files;
-                
-                class A {
-                    void doSomething() throws IOException {
-                        File dir = Files.createTempDir();
-                        dir.createNewFile();
-                    }
-                    void doSomethingElse() throws Exception {
-                        File dir = Files.createTempDir();
-                        dir.createNewFile();
-                    }
-                }
-            """,
-          """
-                import java.io.File;
-                import java.io.IOException;
-                import java.nio.file.Files;
-                
-                class A {
-                    void doSomething() throws IOException {
-                        File dir = Files.createTempDirectory(null).toFile();
-                        dir.createNewFile();
-                    }
-                    void doSomethingElse() throws Exception {
-                        File dir = Files.createTempDirectory(null).toFile();
-                        dir.createNewFile();
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import java.io.File;
+              import java.io.IOException;
+              import com.google.common.io.Files;
+                            
+              class A {
+                  void doSomething() throws IOException {
+                      File dir = Files.createTempDir();
+                      dir.createNewFile();
+                  }
+                  void doSomethingElse() throws Exception {
+                      File dir = Files.createTempDir();
+                      dir.createNewFile();
+                  }
+              }
+              """,
+            """
+              import java.io.File;
+              import java.io.IOException;
+              import java.nio.file.Files;
+                            
+              class A {
+                  void doSomething() throws IOException {
+                      File dir = Files.createTempDirectory(null).toFile();
+                      dir.createNewFile();
+                  }
+                  void doSomethingElse() throws Exception {
+                      File dir = Files.createTempDirectory(null).toFile();
+                      dir.createNewFile();
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void tempDirIsFieldVar() {
-        rewriteRun(java("""
+        //language=java
+        rewriteRun(
+          java(
+            """
               import java.io.File;
               import com.google.common.io.Files;
               
               class A {
                   File gDir = Files.createTempDir();
               }
-          """)
+              """
+          )
         );
     }
 
     @Test
     void tempDirIsStaticBlock() {
-        rewriteRun(java("""
-                import java.io.File;
-                import java.io.IOException;
-                import com.google.common.io.Files;
-                
-                class A {
-                    public void doSomething() {
-                        try {
-                            File dir = Files.createTempDir();
-                        } catch (IOException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    }
-                    public void doSomethingElse() {
-                        try {
-                            File dir = Files.createTempDir();
-                        } catch (Exception ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    }
-                }
-            """,
-          """
-                import java.io.File;
-                import java.io.IOException;
-                import java.nio.file.Files;
-                
-                class A {
-                    public void doSomething() {
-                        try {
-                            File dir = Files.createTempDirectory(null).toFile();
-                        } catch (IOException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    }
-                    public void doSomethingElse() {
-                        try {
-                            File dir = Files.createTempDirectory(null).toFile();
-                        } catch (Exception ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
+              import java.io.File;
+              import java.io.IOException;
+              import com.google.common.io.Files;
+              
+              class A {
+                  public void doSomething() {
+                      try {
+                          File dir = Files.createTempDir();
+                      } catch (IOException ex) {
+                          throw new RuntimeException(ex);
+                      }
+                  }
+                  public void doSomethingElse() {
+                      try {
+                          File dir = Files.createTempDir();
+                      } catch (Exception ex) {
+                          throw new RuntimeException(ex);
+                      }
+                  }
+              }
+              """,
+            """
+              import java.io.File;
+              import java.io.IOException;
+              import java.nio.file.Files;
+              
+              class A {
+                  public void doSomething() {
+                      try {
+                          File dir = Files.createTempDirectory(null).toFile();
+                      } catch (IOException ex) {
+                          throw new RuntimeException(ex);
+                      }
+                  }
+                  public void doSomethingElse() {
+                      try {
+                          File dir = Files.createTempDirectory(null).toFile();
+                      } catch (Exception ex) {
+                          throw new RuntimeException(ex);
+                      }
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void tempDirIsInMethodNotThrowingIOException() {
-        rewriteRun(java("""
+        //language=java
+        rewriteRun(
+          java(
+            """
               import java.io.File;
               import com.google.common.io.Files;
               
@@ -141,13 +156,17 @@ class NoGuavaCreateTempDirTest implements RewriteTest {
                       File gDir = Files.createTempDir();
                   }
               }
-          """
-        ));
+              """
+          )
+        );
     }
 
     @Test
     void guavaCreateTempDirIsMethodArgument() {
-        rewriteRun(java("""
+        //language=java
+        rewriteRun(
+          java(
+            """
               import java.io.File;
               import com.google.common.io.Files;
               
@@ -158,7 +177,8 @@ class NoGuavaCreateTempDirTest implements RewriteTest {
                   void doSomething(File file, String content) {
                   }
               }
-          """
-        ));
+              """
+          )
+        );
     }
 }

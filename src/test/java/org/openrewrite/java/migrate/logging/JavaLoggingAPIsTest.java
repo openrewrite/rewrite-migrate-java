@@ -22,37 +22,41 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@SuppressWarnings("deprecation")
 class JavaLoggingAPIsTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(
-          Environment.builder()
-            .scanRuntimeClasspath("org.openrewrite.java.migrate.logging")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.logging.JavaLoggingAPIs"));
+        spec.recipe(Environment.builder()
+          .scanRuntimeClasspath("org.openrewrite.java.migrate.logging")
+          .build()
+          .activateRecipes("org.openrewrite.java.migrate.logging.JavaLoggingAPIs"));
     }
 
     @Test
     void loggingMXBeanToPlatformLoggingMXBean() {
-        rewriteRun(java("""
-                import java.util.logging.LoggingMXBean;
-
-                class Test {
-                    static void method() {
-                        LoggingMXBean loggingBean = null;
-                    }
-                }
-            """,
-          """
-                import java.lang.management.PlatformLoggingMXBean;
-
-                class Test {
-                    static void method() {
-                        PlatformLoggingMXBean loggingBean = null;
-                    }
-                }
+        //language=java
+        rewriteRun(
+          java(
             """
-        ));
-    }
+              import java.util.logging.LoggingMXBean;
 
+              class Test {
+                  static void method() {
+                      LoggingMXBean loggingBean = null;
+                  }
+              }
+              """,
+            """
+              import java.lang.management.PlatformLoggingMXBean;
+
+              class Test {
+                  static void method() {
+                      PlatformLoggingMXBean loggingBean = null;
+                  }
+              }
+              """
+          )
+        );
+    }
 }

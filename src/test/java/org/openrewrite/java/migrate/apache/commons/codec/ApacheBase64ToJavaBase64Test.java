@@ -28,62 +28,63 @@ class ApacheBase64ToJavaBase64Test implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new ApacheBase64ToJavaBase64())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("commons-codec"));
+          .parser(JavaParser.fromJavaVersion().classpath("commons-codec"));
     }
 
     @Test
     void toJavaBase64() {
         rewriteRun(
+          //language=java
           java(
             """
-                  import org.apache.commons.codec.binary.Base64;
-                  
-                  class Test {
-                      static byte[] decodeBytes(byte[] encodedBytes) {
-                          return Base64.decodeBase64(encodedBytes);
-                      }
-                      static byte[] decodeToBytes(String encodedString) {
-                          return Base64.decodeBase64(encodedString);
-                      }
-                      static String encodeToString(byte[] decodedByteArr) {
-                          return Base64.encodeBase64String(decodedByteArr);
-                      }
-                      static byte[] encodeBase64(byte[] binaryData) {
-                          return Base64.encodeBase64(binaryData);
-                      }
-                      static byte[] encodeBytesUrlSafe(byte [] encodeBytes) {
-                          return Base64.encodeBase64URLSafe(encodeBytes);
-                      }
-                      static String encodeBytesUrlSafeString(byte [] encodeBytes) {
-                          return Base64.encodeBase64URLSafeString(encodeBytes);
-                      }
+              import org.apache.commons.codec.binary.Base64;
+                            
+              class Test {
+                  static byte[] decodeBytes(byte[] encodedBytes) {
+                      return Base64.decodeBase64(encodedBytes);
                   }
+                  static byte[] decodeToBytes(String encodedString) {
+                      return Base64.decodeBase64(encodedString);
+                  }
+                  static String encodeToString(byte[] decodedByteArr) {
+                      return Base64.encodeBase64String(decodedByteArr);
+                  }
+                  static byte[] encodeBase64(byte[] binaryData) {
+                      return Base64.encodeBase64(binaryData);
+                  }
+                  static byte[] encodeBytesUrlSafe(byte [] encodeBytes) {
+                      return Base64.encodeBase64URLSafe(encodeBytes);
+                  }
+                  static String encodeBytesUrlSafeString(byte [] encodeBytes) {
+                      return Base64.encodeBase64URLSafeString(encodeBytes);
+                  }
+              }
               """,
             """
-                 import java.util.Base64;
+              import java.util.Base64;
 
-                 class Test {
-                     static byte[] decodeBytes(byte[] encodedBytes) {
-                         return Base64.getDecoder().decode(encodedBytes);
-                     }
-                     static byte[] decodeToBytes(String encodedString) {
-                         return Base64.getDecoder().decode(encodedString);
-                     }
-                     static String encodeToString(byte[] decodedByteArr) {
-                         return Base64.getEncoder().encodeToString(decodedByteArr);
-                     }
-                     static byte[] encodeBase64(byte[] binaryData) {
-                         return Base64.getEncoder().encode(binaryData);
-                     }
-                     static byte[] encodeBytesUrlSafe(byte [] encodeBytes) {
-                         return Base64.getUrlEncoder().withoutPadding().encode(encodeBytes);
-                     }
-                     static String encodeBytesUrlSafeString(byte [] encodeBytes) {
-                         return Base64.getUrlEncoder().withoutPadding().encodeToString(encodeBytes);
-                     }
-                 }
-              """)
+              class Test {
+                  static byte[] decodeBytes(byte[] encodedBytes) {
+                      return Base64.getDecoder().decode(encodedBytes);
+                  }
+                  static byte[] decodeToBytes(String encodedString) {
+                      return Base64.getDecoder().decode(encodedString);
+                  }
+                  static String encodeToString(byte[] decodedByteArr) {
+                      return Base64.getEncoder().encodeToString(decodedByteArr);
+                  }
+                  static byte[] encodeBase64(byte[] binaryData) {
+                      return Base64.getEncoder().encode(binaryData);
+                  }
+                  static byte[] encodeBytesUrlSafe(byte [] encodeBytes) {
+                      return Base64.getUrlEncoder().withoutPadding().encode(encodeBytes);
+                  }
+                  static String encodeBytesUrlSafeString(byte [] encodeBytes) {
+                      return Base64.getUrlEncoder().withoutPadding().encodeToString(encodeBytes);
+                  }
+              }
+              """
+          )
         );
     }
 }

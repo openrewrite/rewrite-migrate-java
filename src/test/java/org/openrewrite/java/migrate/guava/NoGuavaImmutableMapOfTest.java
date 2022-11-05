@@ -30,276 +30,270 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaImmutableMapOf())
-          .parser(JavaParser.fromJavaVersion()
-            .classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @Test
     void doNotChangeReturnsImmutableMap() {
-      rewriteRun(
         //language=java
-        java(
-          """
-            import com.google.common.collect.ImmutableMap;
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.ImmutableMap;
 
-            class Test {
-                ImmutableMap<String, String> getMap() {
-                    return ImmutableMap.of();
-                }
-            }
-         """
-        )
-      );
+              class Test {
+                  ImmutableMap<String, String> getMap() {
+                      return ImmutableMap.of();
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void doNotChangeFieldAssignmentToImmutableMap() {
-      rewriteRun(
-        //language=java
-        java(
-          """
-            import com.google.common.collect.ImmutableMap;
-            
-            class Test {
-                ImmutableMap<String, String> m;
-            
-                {
-                    this.m = ImmutableMap.of();
-                }
-            }
-          """
-        )
-      );
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.collect.ImmutableMap;
+                            
+              class Test {
+                  ImmutableMap<String, String> m;
+                            
+                  {
+                      this.m = ImmutableMap.of();
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void doNotChangeAssignsToImmutableMap() {
-      rewriteRun(
         //language=java
-        java(
-          """
-            import com.google.common.collect.ImmutableMap;
-            
-            class Test {
-                ImmutableMap<String, String> m;
-            
-                void init() {
-                    m = ImmutableMap.of();
-                }
-            }
-          """
-        )
-      );
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.ImmutableMap;
+                            
+              class Test {
+                  ImmutableMap<String, String> m;
+                            
+                  void init() {
+                      m = ImmutableMap.of();
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void doNotChangeNewClass() {
-      rewriteRun(
         //language=java
-        spec -> spec.parser(
-          JavaParser.fromJavaVersion().dependsOn(
+        rewriteRun(
+          java(
             """
               import com.google.common.collect.ImmutableMap;
-              
+                              
               public class A {
                   ImmutableMap<String, String> immutableMap;
                   public A(ImmutableMap<String, String> immutableMap) {
                       this.immutableMap = immutableMap;
                   }
               }
+              """
+          ),
+          java(
             """
+              import com.google.common.collect.ImmutableMap;
+                            
+              class Test {
+                  A a = new A(ImmutableMap.of());
+              }
+              """
           )
-        ),
-        //language=java
-        java(
-          """
-            import com.google.common.collect.ImmutableMap;
-            
-            class Test {
-                A a = new A(ImmutableMap.of());
-            }
-          """
-        )
-      );
+        );
     }
 
     @Test
     void doNotChangeMethodInvocation() {
-      rewriteRun(
         //language=java
-        spec -> spec.parser(
-          JavaParser.fromJavaVersion().dependsOn(
+        rewriteRun(
+          java(
             """
               import com.google.common.collect.ImmutableMap;
-              
+                              
               public class A {
                   ImmutableMap<String, String> immutableMap;
                   public void method(ImmutableMap<String, String> immutableMap) {
                       this.immutableMap = immutableMap;
                   }
               }
+              """
+          ),
+          java(
             """
-          )
-        ),
-        //language=java
-        java(
-          """
-            import com.google.common.collect.ImmutableMap;
+              import com.google.common.collect.ImmutableMap;
 
-            class Test {
-                void method() {
-                    A a = new A();
-                    a.method(ImmutableMap.of());
-                }
-            }
-          """
-        )
-      );
+              class Test {
+                  void method() {
+                      A a = new A();
+                      a.method(ImmutableMap.of());
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
     void replaceArguments() {
-      rewriteRun(
-        version(
-          //language=java
-          java(
-            """
-              import java.util.Map;
-              import com.google.common.collect.ImmutableMap;
-              
-              class Test {
-                  Map<String, String> m = ImmutableMap.of("A", "B", "C", "D");
-              }
-            """,
-            """
-              import java.util.Map;
-              
-              class Test {
-                  Map<String, String> m = Map.of("A", "B", "C", "D");
-              }
-            """
-          ),
-          9
-        )
-      );
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.Map;
+                import com.google.common.collect.ImmutableMap;
+                                
+                class Test {
+                    Map<String, String> m = ImmutableMap.of("A", "B", "C", "D");
+                }
+                """,
+              """
+                import java.util.Map;
+                                
+                class Test {
+                    Map<String, String> m = Map.of("A", "B", "C", "D");
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Test
     void fieldAssignmentToMap() {
-      rewriteRun(
-        version(
-          //language=java
-          java(
-            """
-              import java.util.Map;
-              import com.google.common.collect.ImmutableMap;
-              
-              class Test {
-                  Map<String, String> m;
-                  {
-                      this.m = ImmutableMap.of();
-                  }
-              }
-            """,
-            """
-              import java.util.Map;
-              
-              class Test {
-                  Map<String, String> m;
-                  {
-                      this.m = Map.of();
-                  }
-              }
-            """
-          ),
-          9
-        )
-      );
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.Map;
+                import com.google.common.collect.ImmutableMap;
+                                
+                class Test {
+                    Map<String, String> m;
+                    {
+                        this.m = ImmutableMap.of();
+                    }
+                }
+                """,
+              """
+                import java.util.Map;
+                                
+                class Test {
+                    Map<String, String> m;
+                    {
+                        this.m = Map.of();
+                    }
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Test
     void assigmentToMap() {
-      rewriteRun(
-        version(
-          //language=java
-          java(
-            """
-              import java.util.Map;
-              import com.google.common.collect.ImmutableMap;
-              
-              class Test {
-                  Map<String, String> m = ImmutableMap.of();
-              }
-            """,
-            """
-              import java.util.Map;
-              
-              class Test {
-                  Map<String, String> m = Map.of();
-              }
-            """),
-          9
-        )
-      );
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.Map;
+                import com.google.common.collect.ImmutableMap;
+                                
+                class Test {
+                    Map<String, String> m = ImmutableMap.of();
+                }
+                """,
+              """
+                import java.util.Map;
+                                
+                class Test {
+                    Map<String, String> m = Map.of();
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Test
     void returnsMap() {
-      rewriteRun(
-        version(
-          //language=java
-          java(
-            """
-              import java.util.Map;
-              import com.google.common.collect.ImmutableMap;
-              
-              class Test {
-                  Map<String, String> map() {
-                      return ImmutableMap.of();
-                  }
-              }
-            """,
-            """
-                  import java.util.Map;
-                  
-                  class Test {
-                      Map<String, String> map() {
-                          return Map.of();
-                      }
-                  }
-            """
-          ),
-          9
-        )
-      );
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.Map;
+                import com.google.common.collect.ImmutableMap;
+                                
+                class Test {
+                    Map<String, String> map() {
+                        return ImmutableMap.of();
+                    }
+                }
+                """,
+              """
+                import java.util.Map;
+                                
+                class Test {
+                    Map<String, String> map() {
+                        return Map.of();
+                    }
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/137")
     @Test
     void mapOfInts() {
+        //language=java
         rewriteRun(
           version(
-            //language=java
             java(
               """
                 import java.util.Map;
                 import com.google.common.collect.ImmutableMap;
-                
+                                
                 class Test {
                     Map<Integer, Integer> map() {
                         return ImmutableMap.of(1, 1, 2, 2, 3, 3);
                     }
                 }
-              """,
+                """,
               """
-                    import java.util.Map;
-                    
-                    class Test {
-                        Map<Integer, Integer> map() {
-                            return Map.of(1, 1, 2, 2, 3, 3);
-                        }
+                import java.util.Map;
+                                
+                class Test {
+                    Map<Integer, Integer> map() {
+                        return Map.of(1, 1, 2, 2, 3, 3);
                     }
-              """
+                }
+                """
             ),
             9
           )
@@ -308,10 +302,9 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
 
     @Test
     void newClassWithMapArgument() {
-      rewriteRun(
         //language=java
-        spec -> spec.parser(
-          JavaParser.fromJavaVersion().classpath("guava").dependsOn(
+        rewriteRun(
+          java(
             """
               import java.util.Map;
                   
@@ -321,38 +314,35 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
                       this.map = map;
                   }
               }
-            """
-          )
-        ),
-        version(
-          //language=java
-          java(
-            """
-              import com.google.common.collect.ImmutableMap;
-              
-              class Test {
-                  A a = new A(ImmutableMap.of());
-              }
-            """,
-          """
-              import java.util.Map;
-              
-              class Test {
-                  A a = new A(Map.of());
-              }
-            """
+              """
           ),
-          9
-        )
-      );
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableMap;
+                                
+                class Test {
+                    A a = new A(ImmutableMap.of());
+                }
+                """,
+              """
+                import java.util.Map;
+                                
+                class Test {
+                    A a = new A(Map.of());
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Test
     void methodInvocationWithMapArgument() {
-      rewriteRun(
         //language=java
-        spec -> spec.parser(
-          JavaParser.fromJavaVersion().classpath("guava").dependsOn(
+        rewriteRun(
+          java(
             """
               import java.util.Map;
                   
@@ -362,48 +352,47 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
                       this.map = map;
                   }
               }
-            """
+              """
+          ),
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableMap;
+                                
+                class Test {
+                    void method() {
+                        A a = new A();
+                        a.method(ImmutableMap.of());
+                    }
+                }
+                """,
+              """
+                import java.util.Map;
+                                
+                class Test {
+                    void method() {
+                        A a = new A();
+                        a.method(Map.of());
+                    }
+                }
+                """
+            ),
+            9
           )
-        ),
-        version(
-          //language=java
-          java(
-            """
-              import com.google.common.collect.ImmutableMap;
-              
-              class Test {
-                  void method() {
-                      A a = new A();
-                      a.method(ImmutableMap.of());
-                  }
-              }
-            """,
-            """
-              import java.util.Map;
-              
-              class Test {
-                  void method() {
-                      A a = new A();
-                      a.method(Map.of());
-                  }
-              }
-            """),
-          9
-        )
-      );
+        );
     }
 
     @Test
     void variableIsMap() {
-      rewriteRun(
-        version(
-          //language=java
-          java(
-            """
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
                 import java.util.HashMap;
                 import java.util.Map;
                 import com.google.common.collect.ImmutableMap;
-                
+                                
                 class Test {
                     Map<Integer, Map<String, String>> map = new HashMap<>();
                     void setMap(String value) {
@@ -412,51 +401,52 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
                         }
                     }
                 }
-              """,
+                """,
               """
-              import java.util.HashMap;
-              import java.util.Map;
-              
-              class Test {
-                  Map<Integer, Map<String, String>> map = new HashMap<>();
-                  void setMap(String value) {
-                      for (int i = 0; i < 10; i++) {
-                          map.getOrDefault(i, Map.of());
-                      }
-                  }
-              }
-            """),
-          9
-        )
-      );
+                import java.util.HashMap;
+                import java.util.Map;
+                                
+                class Test {
+                    Map<Integer, Map<String, String>> map = new HashMap<>();
+                    void setMap(String value) {
+                        for (int i = 0; i < 10; i++) {
+                            map.getOrDefault(i, Map.of());
+                        }
+                    }
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Disabled("Requires https://github.com/openrewrite/rewrite/issues/2375")
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/138")
     @Test
     void insideAnonymousArrayInitializer() {
+        //language=java
         rewriteRun(
           version(
-            //language=java
             java(
               """
                 import com.google.common.collect.ImmutableMap;
-                
+                                
                 class A {
                     Object[] o = new Object[] {
                             ImmutableMap.of(1, 1, 2, 2, 3, 3)
                     };
                 }
-              """,
+                """,
               """
                 import java.util.Map;
-                
+                                
                 class A {
                     Object[] o = new Object[] {
                             Map.of(1, 1, 2, 2, 3, 3)
                     };
                 }
-              """
+                """
             ),
             11
           )
@@ -466,24 +456,25 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/136")
     @Test
     void assignToMoreGeneralType() {
+        //language=java
         rewriteRun(
           version(
-            //language=java
             java(
               """
                 import com.google.common.collect.ImmutableMap;
-                
+                                
                 class A {
                     Object o = ImmutableMap.of(1, 1, 2, 2, 3, 3);
                 }
-              """,
+                """,
               """
                 import java.util.Map;
-                
+                                
                 class A {
                     Object o = Map.of(1, 1, 2, 2, 3, 3);
                 }
-              """),
+                """
+            ),
             11
           )
         );

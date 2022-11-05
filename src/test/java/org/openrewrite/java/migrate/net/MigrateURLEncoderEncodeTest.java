@@ -29,30 +29,33 @@ class MigrateURLEncoderEncodeTest implements RewriteTest {
 
     @Test
     void urlEncoderEncode() {
-        rewriteRun(java("""
-                package org.openrewrite.example;
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package org.openrewrite.example;
 
-                import java.net.URLEncoder;
+              import java.net.URLEncoder;
 
-                class Test {
-                    public static void method(String url) {
-                        String message = URLEncoder.encode(url);
-                    }
-                }
-            """,
-          """
-                package org.openrewrite.example;
+              class Test {
+                  public static void method(String url) {
+                      String message = URLEncoder.encode(url);
+                  }
+              }
+              """,
+            """
+              package org.openrewrite.example;
 
-                import java.net.URLEncoder;
-                import java.nio.charset.StandardCharsets;
+              import java.net.URLEncoder;
+              import java.nio.charset.StandardCharsets;
 
-                class Test {
-                    public static void method(String url) {
-                        String message = URLEncoder.encode(url, StandardCharsets.UTF_8);
-                    }
-                }
-            """)
+              class Test {
+                  public static void method(String url) {
+                      String message = URLEncoder.encode(url, StandardCharsets.UTF_8);
+                  }
+              }
+              """
+          )
         );
     }
-
 }
