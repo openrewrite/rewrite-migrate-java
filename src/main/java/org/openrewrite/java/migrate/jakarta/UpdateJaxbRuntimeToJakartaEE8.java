@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.j2ee;
+package org.openrewrite.java.migrate.jakarta;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -70,7 +70,7 @@ public class UpdateJaxbRuntimeToJakartaEE8 extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return new HashSet<>(Arrays.asList("javax", "jakarta", "j2ee", "jaxb", "glassfish", "java11"));
+        return new HashSet<>(Arrays.asList("javax", "jakarta", "javaee", "jaxb", "glassfish", "java11"));
     }
 
     @Override

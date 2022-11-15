@@ -28,9 +28,9 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UseJavaUtilBase64
   # Add an explicit JAXB/JAX-WS runtime and upgrade the dependencies to Jakarta EE 8
-  - org.openrewrite.java.migrate.j2ee.UpdateJaxbRuntimeToJakartaEE8:
-      runtime: sun
-  - org.openrewrite.java.migrate.j2ee.UpdateJaxwsRuntimeToJakartaEE8
+  - org.openrewrite.java.migrate.jakarta.UpdateJaxbRuntimeToJakartaEE8:
+      runtime: glassfish
+  - org.openrewrite.java.migrate.jakarta.UpdateJaxwsRuntimeToJakartaEE8
   - org.openrewrite.java.migrate.javax.AddInjectDependencies
   # Add jdeprscan plugin to a maven-based build.
   - org.openrewrite.java.migrate.AddJDeprScanPlugin
