@@ -60,7 +60,7 @@ public class UpdateJaxbRuntimeToJakartaEE8 extends Recipe {
                "existing dependencies on `javax.xml.bind:jax-api` to `jakarta.xml.bind:jakarta.xml.bind-api`. The " +
                "recipe will also add a JAXB run-time, in `provided` scope, to any project that has a transitive dependency " +
                "on the JAXB API. **The resulting dependencies still use the `javax` namespace, despite the move " +
-               "to the Jakarta artifact.**";
+               "to the Jakarta artifact**.";
     }
 
     @Override

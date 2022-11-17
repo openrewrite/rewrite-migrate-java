@@ -55,7 +55,7 @@ public class UpdateJaxwsRuntimeToJakartaEE8 extends Recipe {
                "existing dependencies on `javax.xml.ws:jaxws-api` to `jakarta.xml.ws:jakarta.xml.ws-api`. The " +
                "recipe will also add a JAXWS run-time, in `provided` scope, to any project that has a transitive dependency " +
                "on the JAXWS API. **The resulting dependencies still use the `javax` namespace, despite the move " +
-               "to the Jakarta artifact.**";
+               "to the Jakarta artifact**.";
     }
 
     @Override

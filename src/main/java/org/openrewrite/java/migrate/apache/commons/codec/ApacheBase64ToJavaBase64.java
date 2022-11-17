@@ -34,7 +34,7 @@ public class ApacheBase64ToJavaBase64 extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Migrate `apache.commons.codec.binary.Base64#encodeBase64` to `java.util.Base64.Encoder#encodeBase64`, `apache.commons.codec.binary.Base64#encodeBase64String` to `java.util.Base64.Encoder#encodeToString`, and `apache.commons.codec.binary.Base64#decodeBase64` to `java.util.Base64.Decoder#decode`";
+        return "Migrate `apache.commons.codec.binary.Base64#encodeBase64` to `java.util.Base64.Encoder#encodeBase64`, `apache.commons.codec.binary.Base64#encodeBase64String` to `java.util.Base64.Encoder#encodeToString`, and `apache.commons.codec.binary.Base64#decodeBase64` to `java.util.Base64.Decoder#decode`.";
     }
 
     @Override

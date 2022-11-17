@@ -76,7 +76,7 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
 
     @Override
     public String getDescription() {
-        return "This convert deprecated `IOUtils` method invocations with their charset specific equivalent, e.g. converts `IOUtils.readLines(inputStream);` to `IOUtils.readLines(inputStream, StandardCharsets.UTF_8);`";
+        return "This convert deprecated `IOUtils` method invocations with their charset specific equivalent, e.g. converts `IOUtils.readLines(inputStream)` to `IOUtils.readLines(inputStream, StandardCharsets.UTF_8)`.";
     }
 
     @Override
