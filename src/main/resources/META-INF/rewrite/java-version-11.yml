@@ -15,9 +15,14 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpgradeToJava11
-displayName: Upgrade to Java 11
-description: This recipe will apply changes commonly needed when upgrading to Java 11
+name: org.openrewrite.java.migrate.Java8toJava11
+displayName: Migrate to Java 11 from Java 8 through 10
+description: >
+  This recipe will apply changes commonly needed when upgrading to Java 11. Specifically, for those applications that
+  are built on Java 8, this recipe will update and add dependencies on J2EE libraries that are no longer directly
+  bundled with the JDK. This recipe will also replace deprecated API with equivalents when there is a clear migration
+  strategy. Build files will also be updated to use Java 11 as the target/source and plugins will be also be upgraded
+  to versions that are compatible with Java 11.
 tags:
   - java11
   - jaxb
@@ -48,13 +53,13 @@ recipeList:
   - org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
   - org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion
   - org.openrewrite.java.migrate.jacoco.UpgradeJaCoCoMavenPluginVersion
-  - org.openrewrite.java.migrate.UpdateMavenToJava11
+  - org.openrewrite.java.migrate.JavaVersion11
   - org.openrewrite.java.migrate.util.JavaUtilAPIs
   - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
   - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpdateMavenToJava11
+name: org.openrewrite.java.migrate.JavaVersion11
 displayName: Change Maven Java version property values to 11
 description: Change maven.compiler.source and maven.compiler.target values to 11.
 recipeList:

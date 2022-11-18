@@ -16,21 +16,26 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeToJava17
-displayName: Upgrade to Java 17
-description: This recipe will apply changes commonly needed when migrating to Java 17, including intermediate versions.
+displayName: Migrate to Java 11 from Java 8 through 16
+description: >
+  This recipe will apply changes commonly needed when migrating to Java 17. Specifically, for those
+  applications that are built on Java 8, this recipe will update and add dependencies on J2EE libraries that are no
+  longer directly bundled with the JDK. This recipe will also replace deprecated API with equivalents when there is a
+  clear migration strategy. Build files will also be updated to use Java 17 as the target/source and plugins will be
+  also be upgraded to versions that are compatible with Java 17.
 tags:
   - java17
   - lombok
 recipeList:
-  - org.openrewrite.java.migrate.UpgradeToJava11
-  - org.openrewrite.java.migrate.UpdateMavenToJava17
+  - org.openrewrite.java.migrate.Java8toJava11
+  - org.openrewrite.java.migrate.JavaVersion17
   - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.java.migrate.lombok.UpdateLombokToJava17
   - org.openrewrite.java.migrate.AddJDeprScanPlugin:
       release: 17
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpdateMavenToJava17
+name: org.openrewrite.java.migrate.JavaVersion17
 displayName: Change Maven Java version property values to 17
 description: Change maven.compiler.source and maven.compiler.target values to 17.
 tags:
