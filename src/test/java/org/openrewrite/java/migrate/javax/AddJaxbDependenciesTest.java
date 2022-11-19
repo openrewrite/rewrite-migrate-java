@@ -13,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.jakarta;
+package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.maven.Assertions.pomXml;
 
-public class UpdateJaxbRuntimeToJakartaEE8Test implements RewriteTest {
+public class AddJaxbDependenciesTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec
-          .recipe(new UpdateJaxbRuntimeToJakartaEE8("sun"))
-        ;
+        spec.recipe(Environment.builder()
+          .scanRuntimeClasspath("org.openrewrite.java.migrate.javax")
+          .build()
+          .activateRecipes("org.openrewrite.java.migrate.javax.AddJaxbDependencies"));
     }
 
     @Test
@@ -58,12 +60,12 @@ public class UpdateJaxbRuntimeToJakartaEE8Test implements RewriteTest {
                             <dependency>
                                 <groupId>jakarta.xml.bind</groupId>
                                 <artifactId>jakarta.xml.bind-api</artifactId>
-                                <version>2.3.2</version>
+                                <version>2.3.3</version>
                             </dependency>
                             <dependency>
-                                <groupId>com.sun.xml.bind</groupId>
-                                <artifactId>jaxb-impl</artifactId>
-                                <version>2.3.2</version>
+                                <groupId>org.glassfish.jaxb</groupId>
+                                <artifactId>jaxb-runtime</artifactId>
+                                <version>2.3.7</version>
                                 <scope>provided</scope>
                             </dependency>
                         </dependencies>
@@ -87,12 +89,12 @@ public class UpdateJaxbRuntimeToJakartaEE8Test implements RewriteTest {
                         <dependency>
                             <groupId>jakarta.xml.bind</groupId>
                             <artifactId>jakarta.xml.bind-api</artifactId>
-                            <version>2.3.2</version>
+                            <version>2.3.3</version>
                         </dependency>
                         <dependency>
-                            <groupId>org.glassfish.jaxb</groupId>
-                            <artifactId>jaxb-runtime</artifactId>
-                            <version>2.3.2</version>
+                            <groupId>com.sun.xml.bind</groupId>
+                            <artifactId>jaxb-impl</artifactId>
+                            <version>2.3.3</version>
                             <scope>provided</scope>
                         </dependency>
                     </dependencies>
@@ -107,12 +109,12 @@ public class UpdateJaxbRuntimeToJakartaEE8Test implements RewriteTest {
                         <dependency>
                             <groupId>jakarta.xml.bind</groupId>
                             <artifactId>jakarta.xml.bind-api</artifactId>
-                            <version>2.3.2</version>
+                            <version>2.3.3</version>
                         </dependency>
                         <dependency>
-                            <groupId>com.sun.xml.bind</groupId>
-                            <artifactId>jaxb-impl</artifactId>
-                            <version>2.3.2</version>
+                            <groupId>org.glassfish.jaxb</groupId>
+                            <artifactId>jaxb-runtime</artifactId>
+                            <version>2.3.7</version>
                             <scope>provided</scope>
                         </dependency>
                     </dependencies>
@@ -156,12 +158,12 @@ public class UpdateJaxbRuntimeToJakartaEE8Test implements RewriteTest {
                         <dependency>
                             <groupId>jakarta.xml.bind</groupId>
                             <artifactId>jakarta.xml.bind-api</artifactId>
-                            <version>2.3.2</version>
+                            <version>2.3.3</version>
                         </dependency>
                         <dependency>
-                            <groupId>com.sun.xml.bind</groupId>
-                            <artifactId>jaxb-impl</artifactId>
-                            <version>2.3.2</version>
+                            <groupId>org.glassfish.jaxb</groupId>
+                            <artifactId>jaxb-runtime</artifactId>
+                            <version>2.3.7</version>
                             <scope>provided</scope>
                         </dependency>
                     </dependencies>
@@ -190,10 +192,9 @@ public class UpdateJaxbRuntimeToJakartaEE8Test implements RewriteTest {
                                 <version>2.3.1</version>
                             </dependency>
                             <dependency>
-                                <groupId>org.glassfish.jaxb</groupId>
-                                <artifactId>jaxb-runtime</artifactId>
+                                <groupId>com.sun.xml.bind</groupId>
+                                <artifactId>jaxb-impl</artifactId>
                                 <version>2.3.1</version>
-                                <scope>provided</scope>
                             </dependency>
                         </dependencies>
                     </dependencyManagement>
@@ -215,13 +216,12 @@ public class UpdateJaxbRuntimeToJakartaEE8Test implements RewriteTest {
                             <dependency>
                                 <groupId>jakarta.xml.bind</groupId>
                                 <artifactId>jakarta.xml.bind-api</artifactId>
-                                <version>2.3.2</version>
+                                <version>2.3.3</version>
                             </dependency>
                             <dependency>
-                                <groupId>com.sun.xml.bind</groupId>
-                                <artifactId>jaxb-impl</artifactId>
-                                <version>2.3.2</version>
-                                <scope>provided</scope>
+                                <groupId>org.glassfish.jaxb</groupId>
+                                <artifactId>jaxb-runtime</artifactId>
+                                <version>2.3.7</version>
                             </dependency>
                         </dependencies>
                     </dependencyManagement>
@@ -231,8 +231,8 @@ public class UpdateJaxbRuntimeToJakartaEE8Test implements RewriteTest {
                             <artifactId>jakarta.xml.bind-api</artifactId>
                         </dependency>
                         <dependency>
-                            <groupId>com.sun.xml.bind</groupId>
-                            <artifactId>jaxb-impl</artifactId>
+                            <groupId>org.glassfish.jaxb</groupId>
+                            <artifactId>jaxb-runtime</artifactId>
                             <scope>provided</scope>
                         </dependency>
                     </dependencies>

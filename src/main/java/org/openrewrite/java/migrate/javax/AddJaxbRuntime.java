@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.jakarta;
+package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -28,10 +28,7 @@ import java.util.*;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
-public class UpdateJaxbRuntimeToJakartaEE8 extends Recipe {
-
-    private static final String LEGACY_JAVA_JAXB_API_GROUP = "javax.xml.bind";
-    private static final String LEGACY_JAVA_JAXB_API_ARTIFACT = "jaxb-api";
+public class AddJaxbRuntime extends Recipe {
 
     private static final String JAKARTA_API_GROUP = "jakarta.xml.bind";
     private static final String JAKARTA_API_ARTIFACT = "jakarta.xml.bind-api";
@@ -55,12 +52,10 @@ public class UpdateJaxbRuntimeToJakartaEE8 extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Update maven build files to use the latest JAXB API from Jakarta EE8 and add a compatible runtime " +
-               "dependency to maintain compatibility with Java versions greater than Java 8. This recipe will change " +
-               "existing dependencies on `javax.xml.bind:jax-api` to `jakarta.xml.bind:jakarta.xml.bind-api`. The " +
-               "recipe will also add a JAXB run-time, in `provided` scope, to any project that has a transitive dependency " +
-               "on the JAXB API. **The resulting dependencies still use the `javax` namespace, despite the move " +
-               "to the Jakarta artifact**.";
+        return "Update maven build files to use the latest JAXB runtime from Jakarta EE 8 to maintain compatibility " +
+               "with Java version 11 or greater.  The recipe will add a JAXB run-time, in `provided` scope, to any project " +
+               "that has a transitive dependency on the JAXB API. **The resulting dependencies still use the `javax` " +
+               "namespace, despite the move to the Jakarta artifact**.";
     }
 
     @Override
@@ -74,26 +69,24 @@ public class UpdateJaxbRuntimeToJakartaEE8 extends Recipe {
     }
 
     @Override
+    public boolean causesAnotherCycle() {
+        return true;
+    }
+
+    @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MavenIsoVisitor<ExecutionContext>() {
             @SuppressWarnings("ConstantConditions")
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
-                //remove legacy jaxb-core, regardless of which runtime is being used.
-                doAfterVisit(new RemoveDependency("com.sun.xml.bind", "jaxb-core", null));
                 Xml.Document d = super.visitDocument(document, ctx);
-
-                d = (Xml.Document) new ChangeDependencyGroupIdAndArtifactId(
-                        LEGACY_JAVA_JAXB_API_GROUP, LEGACY_JAVA_JAXB_API_ARTIFACT,
-                        JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT, "2.3.2", null
-                ).getVisitor().visit(d, ctx);
-                d = (Xml.Document) new ChangeManagedDependencyGroupIdAndArtifactId(
-                        LEGACY_JAVA_JAXB_API_GROUP, LEGACY_JAVA_JAXB_API_ARTIFACT,
-                        JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT, "2.3.2"
-                ).getVisitor().visit(d, ctx);
 
                 //Normalize any existing runtimes to the one selected in this recipe.
                 if ("sun".equals(runtime)) {
+                    if (getRecipeList().isEmpty()) {
+                        //Upgrade any previous runtimes to the most current 2.3.x version
+                        doNext(new UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null));
+                    }
                     d = (Xml.Document) new ChangeDependencyGroupIdAndArtifactId(
                             GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
                             SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.2", null
@@ -103,6 +96,10 @@ public class UpdateJaxbRuntimeToJakartaEE8 extends Recipe {
                             SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.2"
                     ).getVisitor().visit(d, ctx);
                 } else {
+                    if (getRecipeList().isEmpty()) {
+                        //Upgrade any previous runtimes to the most current 2.3.x version
+                        doNext(new UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null));
+                    }
                     d = (Xml.Document) new ChangeDependencyGroupIdAndArtifactId(
                             SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
                             GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.2", null
@@ -113,17 +110,10 @@ public class UpdateJaxbRuntimeToJakartaEE8 extends Recipe {
                     ).getVisitor().visit(d, ctx);
                 }
                 if (d != document) {
-                    //If any changes to dependencies were made, return now to allow the maven model to be updated.
-                    //The logic for adding missing dependencies will happen in the next cycle.
+                    //If changes have been made, update the maven model, next cycle, runtime will be added.
                     return d;
                 }
-                d = maybeAddRuntimeDependency(d, ctx);
-                if (d != document) {
-                    doAfterVisit(new RemoveRedundantDependencyVersions("org.glassfish.jaxb", "*", true));
-                    doAfterVisit(new RemoveRedundantDependencyVersions("com.sun.xml.bind", "*", true));
-                    doAfterVisit(new RemoveRedundantDependencyVersions("jakarta.xml.bind", "*", true));
-                }
-                return d;
+                return maybeAddRuntimeDependency(d, ctx);
             }
 
             @SuppressWarnings("ConstantConditions")
@@ -139,8 +129,8 @@ public class UpdateJaxbRuntimeToJakartaEE8 extends Recipe {
                 if (apiScope != null && (runtimeScope == null || !apiScope.isInClasspathOf(runtimeScope))) {
                     String resolvedScope = apiScope == Scope.Test ? "test" : "provided";
                     AddDependencyVisitor addDependency = "sun".equals(runtime) ?
-                            new AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.2", null, resolvedScope, null, null, null, null, null) :
-                            new AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.2", null, resolvedScope, null, null, null, null, null);
+                            new AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, resolvedScope, null, null, null, null, null) :
+                            new AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, resolvedScope, null, null, null, null, null);
                     return (Xml.Document) addDependency.visit(d, ctx);
                 }
 

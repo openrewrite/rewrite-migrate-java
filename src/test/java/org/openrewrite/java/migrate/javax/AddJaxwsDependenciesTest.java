@@ -13,29 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.jakarta;
+package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.maven.Assertions.pomXml;
 
-public class UpdateJaxwsRuntimeToJakartaEE8Test implements RewriteTest {
+public class AddJaxwsDependenciesTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec
-          .recipe(new UpdateJaxwsRuntimeToJakartaEE8())
-          .cycles(3)
-        ;
+        spec.recipe(Environment.builder()
+          .scanRuntimeClasspath("org.openrewrite.java.migrate.javax")
+          .build()
+          .activateRecipes("org.openrewrite.java.migrate.javax.AddJaxwsDependencies"));
     }
 
     @Test
     void addJaxwsRuntimeOnce() {
 
         rewriteRun(
-          spec -> spec.cycles(2),
           pomXml(
             """
                 <project>
@@ -60,12 +60,12 @@ public class UpdateJaxwsRuntimeToJakartaEE8Test implements RewriteTest {
                         <dependency>
                             <groupId>jakarta.xml.ws</groupId>
                             <artifactId>jakarta.xml.ws-api</artifactId>
-                            <version>2.3.2</version>
+                            <version>2.3.3</version>
                         </dependency>
                         <dependency>
                             <groupId>com.sun.xml.ws</groupId>
                             <artifactId>jaxws-rt</artifactId>
-                            <version>2.3.2</version>
+                            <version>2.3.5</version>
                             <scope>provided</scope>
                         </dependency>
                     </dependencies>
@@ -109,12 +109,12 @@ public class UpdateJaxwsRuntimeToJakartaEE8Test implements RewriteTest {
                         <dependency>
                             <groupId>jakarta.xml.ws</groupId>
                             <artifactId>jakarta.xml.ws-api</artifactId>
-                            <version>2.3.2</version>
+                            <version>2.3.3</version>
                         </dependency>
                         <dependency>
                             <groupId>com.sun.xml.ws</groupId>
                             <artifactId>jaxws-rt</artifactId>
-                            <version>2.3.2</version>
+                            <version>2.3.5</version>
                             <scope>provided</scope>
                         </dependency>
                     </dependencies>
@@ -158,12 +158,12 @@ public class UpdateJaxwsRuntimeToJakartaEE8Test implements RewriteTest {
                         <dependency>
                             <groupId>jakarta.xml.ws</groupId>
                             <artifactId>jakarta.xml.ws-api</artifactId>
-                            <version>2.3.2</version>
+                            <version>2.3.3</version>
                         </dependency>
                         <dependency>
                             <groupId>com.sun.xml.ws</groupId>
                             <artifactId>jaxws-rt</artifactId>
-                            <version>2.3.2</version>
+                            <version>2.3.5</version>
                             <scope>provided</scope>
                         </dependency>
                     </dependencies>
@@ -215,7 +215,7 @@ public class UpdateJaxwsRuntimeToJakartaEE8Test implements RewriteTest {
                             <dependency>
                                 <groupId>jakarta.xml.ws</groupId>
                                 <artifactId>jakarta.xml.ws-api</artifactId>
-                                <version>2.3.2</version>
+                                <version>2.3.3</version>
                             </dependency>
                         </dependencies>
                     </dependencyManagement>
@@ -227,7 +227,7 @@ public class UpdateJaxwsRuntimeToJakartaEE8Test implements RewriteTest {
                         <dependency>
                             <groupId>com.sun.xml.ws</groupId>
                             <artifactId>jaxws-rt</artifactId>
-                            <version>2.3.2</version>
+                            <version>2.3.5</version>
                             <scope>provided</scope>
                         </dependency>
                     </dependencies>
