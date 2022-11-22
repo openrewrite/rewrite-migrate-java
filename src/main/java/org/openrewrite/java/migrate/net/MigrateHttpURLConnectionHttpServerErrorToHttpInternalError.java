@@ -26,6 +26,8 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class MigrateHttpURLConnectionHttpServerErrorToHttpInternalError extends Recipe {
     @Override
@@ -35,12 +37,16 @@ public class MigrateHttpURLConnectionHttpServerErrorToHttpInternalError extends 
 
     @Override
     public String getDescription() {
-        return "`java.net.HttpURLConnection.HTTP_SERVER_ERROR` has been deprecated.";
+        return "Use `java.net.HttpURLConnection.HTTP_INTERNAL_ERROR` instead of the deprecated `java.net.HttpURLConnection.HTTP_SERVER_ERROR`.";
     }
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(5);
+    }
+
+    public Set<String> getTags() {
+        return Collections.singleton("deprecated");
     }
 
     @Override

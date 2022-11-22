@@ -29,10 +29,7 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 @Value
@@ -71,12 +68,17 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Convert deprecated IOUtils method invocations with their charset specific equivalent";
+        return "Use IOUtils method that include  their charset encoding";
     }
 
     @Override
     public String getDescription() {
-        return "This convert deprecated `IOUtils` method invocations with their charset specific equivalent, e.g. converts `IOUtils.readLines(inputStream)` to `IOUtils.readLines(inputStream, StandardCharsets.UTF_8)`.";
+        return "Use `IOUtils` method invocations that include the charset encoding instead of using the deprecated versions that do not include a charset encoding. (e.g. converts `IOUtils.readLines(inputStream)` to `IOUtils.readLines(inputStream, StandardCharsets.UTF_8)`.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return new HashSet<>(Arrays.asList("apache", "commons"));
     }
 
     @Override

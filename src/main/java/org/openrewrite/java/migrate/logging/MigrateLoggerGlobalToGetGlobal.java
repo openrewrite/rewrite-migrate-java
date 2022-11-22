@@ -34,7 +34,7 @@ public class MigrateLoggerGlobalToGetGlobal extends Recipe {
 
     @Override
     public String getDescription() {
-        return "The preferred way to get the global logger object is via the call `Logger#getGlobal()`.";
+        return "The preferred way to get the global logger object is via the call `Logger#getGlobal()` over direct field access to `java.util.logging.Logger.global`.";
     }
 
     @Override

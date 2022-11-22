@@ -25,21 +25,29 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ApacheBase64ToJavaBase64 extends Recipe {
     @Override
     public String getDisplayName() {
-        return "Migrate apache.commons.codec.binary.Base64 to java.util.Base64";
+        return "Prefer `java.util.Base64`";
     }
 
     @Override
     public String getDescription() {
-        return "Migrate `apache.commons.codec.binary.Base64#encodeBase64` to `java.util.Base64.Encoder#encodeBase64`, `apache.commons.codec.binary.Base64#encodeBase64String` to `java.util.Base64.Encoder#encodeToString`, and `apache.commons.codec.binary.Base64#decodeBase64` to `java.util.Base64.Decoder#decode`.";
+        return "Prefer the Java standard library's `java.util.Base64` over third-party usage of apache's `apache.commons.codec.binary.Base64`.";
     }
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(5);
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return new HashSet<>(Arrays.asList("apache", "commons"));
     }
 
     @Override

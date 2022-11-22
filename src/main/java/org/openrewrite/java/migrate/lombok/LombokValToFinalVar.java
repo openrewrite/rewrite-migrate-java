@@ -23,11 +23,12 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class LombokValToFinalVar extends Recipe {
 
@@ -35,12 +36,17 @@ public class LombokValToFinalVar extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Replace `lombok.val` with `final var`";
+        return "Prefer `final var`";
     }
 
     @Override
     public String getDescription() {
-        return "Replace `lombok.val` with `final var` on projects using Java 11 or higher.";
+        return "Prefer the Java standard library's `final var` over third-party usage of Lombok's `lombok.val` in Java 10 or higher.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("lombok");
     }
 
     @Override

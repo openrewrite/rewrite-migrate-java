@@ -16,8 +16,11 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuava
-displayName: Use Java standard library instead of Guava
-description: Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they migrate to standard library for these functions.
+displayName: Prefer the Java standard library instead of Guava
+description: >
+  Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface
+  area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they
+  migrate to standard library for these functions.
 tags:
   - guava
 recipeList:
@@ -54,44 +57,48 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
 displayName: Prefer `java.util.function.Function`
-description: Guava's `Function` extends `java.util.function.Function`.
+description: Prefer `java.util.function.Function` instead of using `com.google.common.base.Function`.
 tags:
   - guava, RSPEC-4738
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Function
       newFullyQualifiedTypeName: java.util.function.Function
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate
 displayName: Prefer `java.util.function.Predicate`
-description: Guava's `Predicate` extends `java.util.function.Predicate`.
+description: Prefer `java.util.function.Predicate` instead of using `com.google.common.base.Predicate`.
 tags:
   - guava, RSPEC-4738
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Predicate
       newFullyQualifiedTypeName: java.util.function.Predicate
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier
 displayName: Prefer `java.util.function.Supplier`
-description: Guava's `Supplier` extends `java.util.function.Supplier`.
+description: Prefer `java.util.function.Supplier` instead of using `com.google.common.base.Supplier`.
 tags:
   - guava, RSPEC-4738
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Supplier
       newFullyQualifiedTypeName: java.util.function.Supplier
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsEquals
 displayName: Prefer `java.util.Objects#equals`
-description: This method exists in the Java standard library now.
+description: Prefer `java.util.Objects#equals` instead of using `com.google.common.base.Objects#equal`.
 tags:
   - guava
 recipeList:
@@ -101,11 +108,12 @@ recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.base.Objects equals(Object, Object)
       fullyQualifiedTargetTypeName: java.util.Objects
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsHashCode
 displayName: Prefer `java.util.Objects#hash`
-description: This method exists in the Java standard library now.
+description: Prefer `java.util.Objects#hash` instead of using `com.google.common.base.Objects#hashCode` or `com.google.common.base.Objects hash(..)`.
 tags:
   - guava
 recipeList:
@@ -115,77 +123,86 @@ recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.base.Objects hash(..)
       fullyQualifiedTargetTypeName: java.util.Objects
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsUnmodifiableNavigableMap
 displayName: Prefer `java.util.Collections#unmodifiableNavigableMap`
-description: This method exists in the Java standard library now.
+description: Prefer `java.util.Collections#unmodifiableNavigableMap` instead of using `com.google.common.collect.Maps#unmodifiableNavigableMap`.
 tags:
   - guava
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.collect.Maps unmodifiableNavigableMap(java.util.NavigableMap)
       fullyQualifiedTargetTypeName: java.util.Collections
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsSynchronizedNavigableMap
 displayName: Prefer `java.util.Collections#synchronizedNavigableMap`
-description: This method exists in the Java standard library now.
+description: Prefer `java.util.Collections#synchronizedNavigableMap` instead of using `com.google.common.collect.Maps#synchronizedNavigableMap`.
 tags:
   - guava
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.collect.Maps synchronizedNavigableMap(java.util.NavigableMap)
       fullyQualifiedTargetTypeName: java.util.Collections
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferCharCompare
-displayName: Prefer `Char#compare`
-description: This method exists in the Java standard library now.
+displayName: Prefer `java.lang.Char#compare`
+description: Prefer `java.lang.Char#compare` instead of using `com.google.common.primitives.Chars#compare`.
 tags:
   - guava
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.Chars compare(char, char)
       fullyQualifiedTargetTypeName: java.lang.Char
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerCompare
 displayName: Prefer `Integer#compare`
-description: This method exists in the Java standard library now.
+description: Prefer `java.lang.Integer#compare` instead of using `com.google.common.primitives.Ints#compare`.
 tags:
   - guava
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.Ints compare(int, int)
       fullyQualifiedTargetTypeName: java.lang.Integer
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongCompare
 displayName: Prefer `Long#compare`
-description: This method exists in the Java standard library now.
+description: Prefer `java.lang.Long#compare` instead of using `com.google.common.primitives.Longs#compare`.
 tags:
   - guava
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.Longs compare(long, long)
       fullyQualifiedTargetTypeName: java.lang.Long
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferShortCompare
 displayName: Prefer `Short#compare`
-description: This method exists in the Java standard library now.
+description: Prefer `java.lang.Short#compare` instead of using `com.google.common.primitives.Shorts#compare`.
 tags:
   - guava
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.Shorts compare(short, short)
       fullyQualifiedTargetTypeName: java.lang.Short
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerCompareUnsigned
 displayName: Prefer `Integer#compareUnsigned`
-description: This method exists in the Java standard library now.
+description: >
+  Prefer `java.lang.Integer#compareUnsigned` instead of using `com.google.common.primitives.UnsignedInts#compare` or
+  `com.google.common.primitives.UnsignedInts#compareUnsigned`.
 tags:
   - guava
 recipeList:
@@ -195,11 +212,14 @@ recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.UnsignedInts compareUnsigned(int, int)
       fullyQualifiedTargetTypeName: java.lang.Integer
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerDivideUnsigned
 displayName: Prefer `Integer#divideUnsigned`
-description: This method exists in the Java standard library now.
+description: >
+  Prefer `java.lang.Integer#divideUnsigned` instead of using `com.google.common.primitives.UnsignedInts#divide` or
+  `com.google.common.primitives.UnsignedInts#divideUnsigned`.
 tags:
   - guava
 recipeList:
@@ -209,33 +229,38 @@ recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.UnsignedInts divideUnsigned(int, int)
       fullyQualifiedTargetTypeName: java.lang.Integer
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerParseUnsignedInt
 displayName: Prefer `Integer#parseUnsignedInt`
-description: This method exists in the Java standard library now.
+description: Prefer `java.lang.Integer#parseUnsignedInt` instead of using `com.google.common.primitives.UnsignedInts#parseUnsignedInt`.
 tags:
   - guava
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.UnsignedInts parseUnsignedInt(String, ..)
       fullyQualifiedTargetTypeName: java.lang.Integer
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerRemainderUnsigned
 displayName: Prefer `Integer#remainderUnsigned`
-description: This method exists in the Java standard library now.
+description: Prefer `java.lang.Integer#remainderUnsigned` instead of using `com.google.common.primitives.UnsignedInts#remainderUnsigned`.
 tags:
   - guava
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.UnsignedInts remainderUnsigned(int, int)
       fullyQualifiedTargetTypeName: java.lang.Integer
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongCompareUnsigned
 displayName: Prefer `Long#compareUnsigned`
-description: This method exists in the Java standard library now.
+description: >
+  Prefer `java.lang.Long#compareUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#compare` or
+  `com.google.common.primitives.UnsignedLongs#compareUnsigned`.
 tags:
   - guava
 recipeList:
@@ -249,7 +274,9 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongDivideUnsigned
 displayName: Prefer `Long#divideUnsigned`
-description: This method exists in the Java standard library now.
+description: >
+  Prefer `java.lang.Long#divideUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#divide` or
+  `com.google.common.primitives.UnsignedLongs#divideUnsigned`.
 tags:
   - guava
 recipeList:
@@ -259,33 +286,36 @@ recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.UnsignedLongs divideUnsigned(int, int)
       fullyQualifiedTargetTypeName: java.lang.Long
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongParseUnsignedLong
 displayName: Prefer `Long#parseUnsignedInt`
-description: This method exists in the Java standard library now.
+description: Prefer `java.lang.Long#parseUnsignedInt` instead of using `com.google.common.primitives.UnsignedLongs#parseUnsignedInt`.
 tags:
   - guava
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.UnsignedInts parseUnsignedLong(String, ..)
       fullyQualifiedTargetTypeName: java.lang.Long
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongRemainderUnsigned
 displayName: Prefer `Long#remainderUnsigned`
-description: This method exists in the Java standard library now.
+description: Prefer `java.lang.Long#remainderUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#remainderUnsigned`.
 tags:
   - guava
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.UnsignedLongs remainderUnsigned(int, int)
       fullyQualifiedTargetTypeName: java.lang.Long
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathAddExact
 displayName: Prefer `Math#addExact`
-description: This method exists in the Java standard library now.
+description: Prefer `java.lang.Math#addExact` instead of using `com.google.common.math.IntMath#checkedAdd` or `com.google.common.math.IntMath#addExact`
 tags:
   - guava
 recipeList:
@@ -295,11 +325,14 @@ recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.math.IntMath addExact(..)
       fullyQualifiedTargetTypeName: java.lang.Math
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathSubtractExact
 displayName: Prefer `Math#subtractExact`
-description: This method exists in the Java standard library now.
+description: >
+  Prefer `java.lang.Math#subtractExact` instead of using `com.google.common.primitives.IntMath#checkedSubtract`
+  or `com.google.common.primitives.IntMath#subtractExact`.
 tags:
   - guava
 recipeList:
@@ -309,11 +342,14 @@ recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.math.IntMath subtractExact(..)
       fullyQualifiedTargetTypeName: java.lang.Math
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
 displayName: Prefer `Math#multiplyExact`
-description: This method exists in the Java standard library now.
+description: >
+  Prefer `java.lang.Math#multiplyExact` instead of using `com.google.common.primitives.IntMath#checkedMultiply`
+  or `com.google.common.primitives.IntMath#multiplyExact`.
 tags:
   - guava
 recipeList:

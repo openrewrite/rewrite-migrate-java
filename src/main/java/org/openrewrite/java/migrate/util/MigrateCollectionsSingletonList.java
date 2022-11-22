@@ -33,7 +33,7 @@ public class MigrateCollectionsSingletonList extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `List.of(..)` in Java 9 or higher";
+        return "Prefer `List.of(..)`";
     }
 
     @Override
@@ -43,7 +43,7 @@ public class MigrateCollectionsSingletonList extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Replaces `Collections.singletonList(<args>)))` with `List.Of(<args>)`.";
+        return "Prefer `List.Of(..)` instead of using `Collections.singletonList()` in Java 9 or higher.";
     }
 
     @Override

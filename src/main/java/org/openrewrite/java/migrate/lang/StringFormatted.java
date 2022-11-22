@@ -36,12 +36,12 @@ public class StringFormatted extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Replace `String#format(String, Object...)` with `String#formatted(Object...)`";
+        return "Prefer `String#formatted(Object...)`";
     }
 
     @Override
     public String getDescription() {
-        return "Call `String#formatted(Object...)` on first argument to `String#format(String, Object...)`.";
+        return "Prefer `String#formatted(Object...)` over `String#format(String, Object...)' in Java 17 or higher.";
     }
 
     @Override

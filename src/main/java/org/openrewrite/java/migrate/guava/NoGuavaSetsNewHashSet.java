@@ -27,6 +27,8 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class NoGuavaSetsNewHashSet extends Recipe {
@@ -34,7 +36,7 @@ public class NoGuavaSetsNewHashSet extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `new HashSet<>()` instead of Guava";
+        return "Prefer `new HashSet<>()`";
     }
 
     @Override
@@ -45,6 +47,11 @@ public class NoGuavaSetsNewHashSet extends Recipe {
     @Override
     public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(5);
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("guava");
     }
 
     @Override

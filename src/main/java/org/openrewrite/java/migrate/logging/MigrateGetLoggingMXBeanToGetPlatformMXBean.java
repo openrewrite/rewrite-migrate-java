@@ -26,6 +26,8 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.util.logging.LogManager getLoggingMXBean()");
@@ -37,12 +39,16 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
 
     @Override
     public String getDescription() {
-        return "`LogManager#getLoggingMXBean()` was deprecated in Java 9.";
+        return "Use `ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)` instead of the deprecated `LogManager#getLoggingMXBean()` in Java 9 or higher.";
     }
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(5);
+    }
+
+    public Set<String> getTags() {
+        return Collections.singleton("deprecated");
     }
 
     @Override

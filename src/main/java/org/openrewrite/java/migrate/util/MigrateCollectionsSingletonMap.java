@@ -36,17 +36,17 @@ public class MigrateCollectionsSingletonMap extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `Map.of(..)` in Java 9 or higher";
+        return "Prefer `Map.of(..)`";
     }
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(5);
     }
-
+    
     @Override
     public String getDescription() {
-        return "Replaces `Collections.singletonMap(<args>)))` with `Map.Of(<args>)`.";
+        return "Prefer `Map.Of(..)` instead of using `Collections.singletonMap()` in Java 9 or higher.";
     }
 
     @Override

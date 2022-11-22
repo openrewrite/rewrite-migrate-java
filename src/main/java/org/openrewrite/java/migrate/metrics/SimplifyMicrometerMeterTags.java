@@ -24,6 +24,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class SimplifyMicrometerMeterTags extends Recipe {
     private static final MethodMatcher COUNTER_TAGS = new MethodMatcher("io.micrometer.core.instrument.Counter.Builder tags(String[])");
@@ -41,6 +43,11 @@ public class SimplifyMicrometerMeterTags extends Recipe {
     @Override
     public String getDescription() {
         return "Use the simplest method to add new tags.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("micrometer");
     }
 
     @Override

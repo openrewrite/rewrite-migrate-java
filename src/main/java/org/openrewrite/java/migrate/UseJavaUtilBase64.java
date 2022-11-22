@@ -28,13 +28,13 @@ public class UseJavaUtilBase64 extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `java.util.Base64` instead of `sun.misc`";
+        return "Prefer `java.util.Base64` instead of `sun.misc`";
     }
 
     @Override
     public String getDescription() {
-        return "The `sun.misc` package became is not intended for use beyond Java 9. " +
-                "`java.util.Base64` was introduced in Java 8 for general use.";
+        return "Prefer `java.util.Base64` instead of using `sun.misc` in Java 8 or higher. `sun.misc` is no exported " +
+               "by the Java module system and accessing this class will result in a warning in Java 11 and an error in Java 17.";
     }
 
     @Override

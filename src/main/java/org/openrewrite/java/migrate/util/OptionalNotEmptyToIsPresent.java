@@ -37,12 +37,12 @@ public class OptionalNotEmptyToIsPresent extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Replace !optional.isEmpty() with optional.isPresent()";
+        return "Prefer `Optional.isPresent()`";
     }
 
     @Override
     public String getDescription() {
-        return "Replace negated Optional.isEmpty() calls with Optional.isPresent() in Java 11 and above.";
+        return "Prefer `Optional.isPresent()` instead of using `!Optional.isEmpty()` in Java 11 or higher.";
     }
 
     @Override

@@ -26,6 +26,8 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
     private static final MethodMatcher NEW_ARRAY_LIST = new MethodMatcher("com.google.common.collect.Lists newCopyOnWriteArrayList()");
@@ -33,7 +35,7 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `new CopyOnWriteArrayList<>()` instead of Guava";
+        return "Prefer `new CopyOnWriteArrayList<>()`";
     }
 
     @Override
@@ -44,6 +46,11 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
     @Override
     public String getDescription() {
         return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("guava");
     }
 
     @Override

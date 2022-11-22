@@ -28,9 +28,7 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class NoGuavaImmutableSetOf extends Recipe {
@@ -38,7 +36,7 @@ public class NoGuavaImmutableSetOf extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `Set.of(..)` in Java 9 or higher";
+        return "Prefer `Set.of(..)` in Java 9 or higher";
     }
 
     @Override
@@ -51,13 +49,14 @@ public class NoGuavaImmutableSetOf extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("RSPEC-4738");
+        return new HashSet<>(Arrays.asList("RSPEC-4738", "guava"));
     }
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(10);
     }
+
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {

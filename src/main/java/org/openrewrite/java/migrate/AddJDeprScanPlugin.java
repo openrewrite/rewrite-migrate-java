@@ -43,12 +43,12 @@ public class AddJDeprScanPlugin extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Add JDeprScan Maven Plug-in";
+        return "Add `JDeprScan` Maven Plug-in";
     }
 
     @Override
     public String getDescription() {
-        return "JDeprScan scans class files for uses of deprecated APIs.";
+        return "Add the `JDeprScan` Maven plugin to scan class files for uses of deprecated APIs.";
     }
 
     @Override

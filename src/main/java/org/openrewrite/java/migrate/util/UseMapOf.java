@@ -37,7 +37,7 @@ public class UseMapOf extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `Map.of(..)` where possible";
+        return "Prefer `Map.of(..)`";
     }
 
     @Override
@@ -47,7 +47,7 @@ public class UseMapOf extends Recipe {
 
     @Override
     public String getDescription() {
-        return "This succinct syntax was introduced in Java 10.";
+        return "Prefer `Map.of(..)` instead of using `java.util.Map#put(..)` in Java 10 or higher.";
     }
 
     @Override

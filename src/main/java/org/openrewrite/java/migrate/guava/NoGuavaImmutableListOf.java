@@ -28,9 +28,7 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class NoGuavaImmutableListOf extends Recipe {
@@ -38,7 +36,7 @@ public class NoGuavaImmutableListOf extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `List.of(..)` in Java 9 or higher";
+        return "Prefer `List.of(..)` in Java 9 or higher";
     }
 
     @Override
@@ -48,7 +46,7 @@ public class NoGuavaImmutableListOf extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("RSPEC-4738");
+        return new HashSet<>(Arrays.asList("RSPEC-4738", "guava"));
     }
 
     @Override

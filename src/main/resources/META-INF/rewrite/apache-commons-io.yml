@@ -20,6 +20,7 @@ displayName: Relocate `org.apache.commons:commons-io` to `commons-io:commons-io`
 description: The deployment of `org.apache.commons:commons-io` [was a publishing mistake around 2012](https://issues.sonatype.org/browse/MVNCENTRAL-244) which was corrected by changing the deployment GAV to be located under `commons-io:commons-io`.
 tags:
   - apache
+  - commons
   - security
 recipeList:
   - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
@@ -30,10 +31,11 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.apache.commons.io.UseSystemLineSeparator
-displayName: Use `System.lineSeparator()`
-description: Migrate `IOUtils.LINE_SEPARATOR` to `System.lineSeparator()`.
+displayName: Prefer `System.lineSeparator()`
+description: Prefer the Java standard library's `System.lineSeparator()` over third-party usage of apache's `IOUtils.LINE_SEPARATOR`.
 tags:
   - apache
+  - commons
 recipeList:
   - org.openrewrite.java.ChangeStaticFieldToMethod:
       oldClassName: org.apache.commons.io.IOUtils
@@ -43,10 +45,11 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.apache.commons.io.UseStandardCharsets
-displayName: Use `java.nio.charset.StandardCharsets`
-description: Migrate `org.apache.commons.io.Charsets` to `java.nio.charset.StandardCharsets`.
+displayName: Prefer `java.nio.charset.StandardCharsets`
+description: Prefer the Java standard library's `java.nio.charset.StandardCharsets` over third-party usage of apache's `org.apache.commons.io.Charsets`.
 tags:
   - apache
+  - commons
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.apache.commons.io.Charsets.ISO_8859_1

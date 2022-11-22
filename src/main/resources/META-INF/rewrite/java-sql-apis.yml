@@ -16,7 +16,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.sql.JavaSqlAPIs
-displayName: Migrate deprecated `java.sql` APIs
+displayName: Use modernized `java.sql` APIs
 description: Certain Java sql APIs have become deprecated and their usages changed, necessitating usage changes.
 recipeList:
   - org.openrewrite.java.migrate.sql.MigrateDriverManagerSetLogStream

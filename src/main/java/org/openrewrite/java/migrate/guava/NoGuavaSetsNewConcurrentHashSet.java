@@ -25,13 +25,15 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
     private static final MethodMatcher NEW_HASH_SET = new MethodMatcher("com.google.common.collect.Sets newConcurrentHashSet()");
 
     @Override
     public String getDisplayName() {
-        return "Construct a set from a `new ConcurrentHashMap<>()` instead of Guava";
+        return "Prefer `new ConcurrentHashMap<>()`";
     }
 
     @Override
@@ -42,6 +44,11 @@ public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
     @Override
     public String getDescription() {
         return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("guava");
     }
 
     @Override

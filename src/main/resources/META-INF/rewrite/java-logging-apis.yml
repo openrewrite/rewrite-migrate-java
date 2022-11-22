@@ -16,7 +16,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.logging.JavaLoggingAPIs
-displayName: Migrate deprecated `java.util.logging` APIs
+displayName: Use modernized `java.util.logging` APIs
 description: Certain Java logging APIs have become deprecated and their usages changed, necessitating usage changes.
 tags:
   - logging

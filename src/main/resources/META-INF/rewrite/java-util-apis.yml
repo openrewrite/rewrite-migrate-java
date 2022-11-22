@@ -16,7 +16,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.util.JavaUtilAPIs
-displayName: Migrate `java.util` APIs
+displayName: Use modernized `java.util` APIs
 description: Certain java util APIs have been introduced and are favored over previous APIs.
 recipeList:
   - org.openrewrite.java.migrate.util.MigrateCollectionsSingletonList

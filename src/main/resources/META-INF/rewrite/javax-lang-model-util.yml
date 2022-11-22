@@ -16,7 +16,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.JavaxLangModelUtil
-displayName: Migrate deprecated `javax.lang.model.util` APIs in openjdk.
+displayName: Use modernized `javax.lang.model.util` APIs
 description: Certain `javax.lang.model.util` APIs have become deprecated and their usages changed, necessitating usage changes.
 recipeList:
   - org.openrewrite.java.migrate.javax.MigrateAbstractAnnotationValueVisitor6To9

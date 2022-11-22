@@ -27,13 +27,14 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
 
 import java.time.Duration;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 public class NoGuavaCreateTempDir extends Recipe {
     @Override
     public String getDisplayName() {
-        return "Use `Files#createTempDirectory()` instead of Guava";
+        return "Prefer `Files#createTempDirectory()`";
     }
 
     @Override
@@ -48,7 +49,7 @@ public class NoGuavaCreateTempDir extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("RSPEC-4738");
+        return new HashSet<>(Arrays.asList("RSPEC-4738", "guava"));
     }
 
     @Override

@@ -25,6 +25,8 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class MigrateMulticastSocketSetTTLToSetTimeToLive extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.net.MulticastSocket setTTL(byte)");
@@ -36,7 +38,12 @@ public class MigrateMulticastSocketSetTTLToSetTimeToLive extends Recipe {
 
     @Override
     public String getDescription() {
-        return "`java.net.MulticastSocket#setTTL(byte)` has been deprecated.";
+        return "Use `java.net.MulticastSocket#setTimeToLive(int)` instead of the deprecated `java.net.MulticastSocket#setTTL(byte)` in Java 1.2 or higher.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("deprecated");
     }
 
     @Override

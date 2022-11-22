@@ -24,6 +24,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class MigrateDriverManagerSetLogStream extends Recipe {
     private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.sql.DriverManager setLogStream(java.io.PrintStream)");
@@ -40,7 +42,12 @@ public class MigrateDriverManagerSetLogStream extends Recipe {
 
     @Override
     public String getDescription() {
-        return "`DriverManager#setLogStream(java.io.PrintStream)` was deprecated in Java 1.2.";
+        return "Use `DriverManager#setLogWriter(java.io.PrintWriter)` instead of the deprecated `DriverManager#setLogStream(java.io.PrintStream)` in Java 1.2 or higher.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("deprecated");
     }
 
     @Override

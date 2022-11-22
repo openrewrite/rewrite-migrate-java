@@ -26,6 +26,8 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class MigrateURLEncoderEncode extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.net.URLEncoder encode(String)");
@@ -37,7 +39,12 @@ public class MigrateURLEncoderEncode extends Recipe {
 
     @Override
     public String getDescription() {
-        return "`java.net.URLEncoder#encode(String)` is platform-dependent. It's advised to specify an encoding.";
+        return "Use `java.net.URLEncoder#encode(String, StandardCharsets.UTF_8)` instead of the deprecated `java.net.URLEncoder#encode(String)` in Java 10 or higher.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("deprecated");
     }
 
     @Override

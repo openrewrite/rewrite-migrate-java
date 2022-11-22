@@ -26,6 +26,8 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class NoGuavaMapsNewLinkedHashMap extends Recipe {
     private static final MethodMatcher NEW_LINKED_HASH_MAP = new MethodMatcher("com.google.common.collect.Maps newLinkedHashMap()");
@@ -34,7 +36,7 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `new LinkedHashMap<>()` instead of Guava";
+        return "Prefer `new LinkedHashMap<>()`";
     }
 
     @Override
@@ -45,6 +47,11 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
     @Override
     public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(5);
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("guava");
     }
 
     @Override

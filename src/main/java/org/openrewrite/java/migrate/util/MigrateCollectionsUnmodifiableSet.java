@@ -37,7 +37,7 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `Set.of(..)` in Java 9 or higher";
+        return "Prefer `Set.of(..)`";
     }
 
     @Override
@@ -47,7 +47,7 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Replaces `unmodifiableSet(java.util.Set(java.util.Arrays asList(<args>)))` with `Set.Of(<args>)`.";
+        return "Prefer `Set.Of(..)` instead of using `unmodifiableSet(java.util.Set(java.util.Arrays asList(<args>)))` in Java 9 or higher.";
     }
 
     @Override

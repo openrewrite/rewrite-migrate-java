@@ -25,13 +25,15 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class NoGuavaAtomicsNewReference extends Recipe {
     private static final MethodMatcher NEW_ATOMIC_REFERENCE = new MethodMatcher("com.google.common.util.concurrent.Atomics newReference(..)");
 
     @Override
     public String getDisplayName() {
-        return "Use `new AtomicReference<>()` instead of Guava";
+        return "Prefer `new AtomicReference<>()`";
     }
 
     @Override
@@ -42,6 +44,11 @@ public class NoGuavaAtomicsNewReference extends Recipe {
     @Override
     public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(5);
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("guava");
     }
 
     @Override

@@ -16,7 +16,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
-displayName: Migrate deprecated `javax.management.monitor` APIs
+displayName: Use modernized `javax.management.monitor` APIs
 description: Certain `javax.management.monitor` APIs have become deprecated and their usages changed, necessitating usage changes.
 recipeList:
   - org.openrewrite.java.migrate.javax.MigrateCounterMonitorSetThreshholdToSetInitThreshold

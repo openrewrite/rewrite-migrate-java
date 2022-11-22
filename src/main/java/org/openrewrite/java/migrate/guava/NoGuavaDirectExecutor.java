@@ -25,13 +25,15 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class NoGuavaDirectExecutor extends Recipe {
     private static final MethodMatcher DIRECT_EXECUTOR = new MethodMatcher("com.google.common.util.concurrent.MoreExecutors directExecutor()");
 
     @Override
     public String getDisplayName() {
-        return "Use Java SDK instead of `MoreExecutors#directExecutor()`";
+        return "Prefer `Runnable::run`";
     }
 
     @Override
@@ -42,6 +44,11 @@ public class NoGuavaDirectExecutor extends Recipe {
     @Override
     public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(5);
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("guava");
     }
 
     @Override

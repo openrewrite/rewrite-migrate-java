@@ -37,7 +37,7 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `List.of(..)` in Java 9 or higher";
+        return "Prefer `List.of(..)`";
     }
 
     @Override
@@ -47,7 +47,7 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Replaces `unmodifiableList(java.util.Arrays asList(<args>))` with `List.Of(<args>)`.";
+        return "Prefer `List.Of(..)` instead of using `unmodifiableList(java.util.Arrays asList(<args>))` in Java 9 or higher.";
     }
 
     @Override

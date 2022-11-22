@@ -25,6 +25,7 @@ import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Set;
 
 public class MigrateSecurityManagerMulticast extends Recipe {
     private static final MethodMatcher MULTICAST_METHOD = new MethodMatcher("java.lang.SecurityManager checkMulticast(java.net.InetAddress, byte)");
@@ -36,12 +37,16 @@ public class MigrateSecurityManagerMulticast extends Recipe {
 
     @Override
     public String getDescription() {
-        return "`SecurityManager#checkMulticast(InetAddress, byte)` was deprecated in Java 1.1.";
+        return "Use `SecurityManager#checkMulticast(InetAddress)` instead of the deprecated `SecurityManager#checkMulticast(InetAddress, byte)` in Java 1.1 or higher.";
     }
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(5);
+    }
+
+    public Set<String> getTags() {
+        return Collections.singleton("deprecated");
     }
 
     @Override

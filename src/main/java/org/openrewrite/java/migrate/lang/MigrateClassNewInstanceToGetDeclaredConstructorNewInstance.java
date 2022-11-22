@@ -27,6 +27,8 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends Recipe {
     private static final MethodMatcher NEW_INSTANCE_MATCHER = new MethodMatcher("java.lang.Class newInstance()");
@@ -38,12 +40,16 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
 
     @Override
     public String getDescription() {
-        return "`Class#newInstance()` was deprecated in Java 9.";
+        return "Use `Class#getDeclaredConstructor().newInstance()` instead of the deprecated `Class#newInstance()` in Java 9 or higher.";
     }
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(5);
+    }
+
+    public Set<String> getTags() {
+        return Collections.singleton("deprecated");
     }
 
     @Override

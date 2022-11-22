@@ -25,16 +25,19 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ApacheFileUtilsToJavaFiles extends Recipe {
     @Override
     public String getDisplayName() {
-        return "Use java.nio.file.Files";
+        return "Prefer `java.nio.file.Files`";
     }
 
     @Override
     public String getDescription() {
-        return "Migrate `apache.commons.io.FileUtils` to `java.nio.file.Files`.";
+        return "Prefer the Java standard library's `java.nio.file.Files` over third-party usage of apache's `apache.commons.io.FileUtils`.";
     }
 
     @Override
@@ -45,6 +48,11 @@ public class ApacheFileUtilsToJavaFiles extends Recipe {
     @Override
     protected UsesType<ExecutionContext> getSingleSourceApplicableTest() {
         return new UsesType<>("org.apache.commons.io.FileUtils");
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return new HashSet<>(Arrays.asList("apache", "commons"));
     }
 
     @Override

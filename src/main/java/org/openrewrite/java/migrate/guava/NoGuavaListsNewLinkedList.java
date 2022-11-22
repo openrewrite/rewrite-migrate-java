@@ -26,6 +26,8 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 public class NoGuavaListsNewLinkedList extends Recipe {
     private static final MethodMatcher NEW_LINKED_LIST = new MethodMatcher("com.google.common.collect.Lists newLinkedList()");
@@ -33,7 +35,7 @@ public class NoGuavaListsNewLinkedList extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Use `new LinkedList<>()` instead of Guava";
+        return "Prefer `new LinkedList<>()`";
     }
 
     @Override
@@ -44,6 +46,11 @@ public class NoGuavaListsNewLinkedList extends Recipe {
     @Override
     public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(5);
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("guava");
     }
 
     @Override
