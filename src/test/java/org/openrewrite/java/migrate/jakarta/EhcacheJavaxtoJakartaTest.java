@@ -69,18 +69,18 @@ public class EhcacheJavaxtoJakartaTest implements RewriteTest {
                       <dependency>
                           <groupId>org.ehcache</groupId>
                           <artifactId>ehcache</artifactId>
-                          <version>3.10.6</version>
+                          <version>3.10.8</version>
                           <classifier>jakarta</classifier>
                       </dependency>
                       <dependency>
                           <groupId>org.ehcache</groupId>
                           <artifactId>ehcache-clustered</artifactId>
-                          <version>3.10.6</version>
+                          <version>3.10.8</version>
                       </dependency>
                       <dependency>
                           <groupId>org.ehcache</groupId>
                           <artifactId>ehcache-transactions</artifactId>
-                          <version>3.10.6</version>
+                          <version>3.10.8</version>
                           <classifier>jakarta</classifier>
                       </dependency>
                   </dependencies>
