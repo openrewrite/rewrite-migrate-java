@@ -389,7 +389,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/138")
     @Test
-    void insideAnonymousArrayInitializer2() {
+    void insideAnonymousArrayInitializer() {
         rewriteRun(
           version(
             //language=java
