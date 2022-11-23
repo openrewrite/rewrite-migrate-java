@@ -33,7 +33,7 @@ public class UseJavaUtilBase64 extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Prefer `java.util.Base64` instead of using `sun.misc` in Java 8 or higher. `sun.misc` is no exported " +
+        return "Prefer `java.util.Base64` instead of using `sun.misc` in Java 8 or higher. `sun.misc` is not exported " +
                "by the Java module system and accessing this class will result in a warning in Java 11 and an error in Java 17.";
     }
 
