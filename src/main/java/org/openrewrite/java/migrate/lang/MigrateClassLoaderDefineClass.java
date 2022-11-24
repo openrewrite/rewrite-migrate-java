@@ -37,7 +37,7 @@ public class MigrateClassLoaderDefineClass extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Use `ClassLoader#defineClass(String, byte[], int, int)` instead of the deprecated `ClassLoader#defineClass(byte[], int, int)` in Java 1.1 or higher";
+        return "Use `ClassLoader#defineClass(String, byte[], int, int)` instead of the deprecated `ClassLoader#defineClass(byte[], int, int)` in Java 1.1 or higher.";
     }
 
     @Override
