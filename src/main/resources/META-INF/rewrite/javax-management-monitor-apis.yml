@@ -24,8 +24,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateCounterMonitorSetThreshholdToSetInitThreshold
-displayName: Use `CounterMonitor#setInitThreshold(java.lang.Number)`
-description: '`CounterMonitor#setThreshhold` has been deprecated in JMX 1.2.'
+displayName: Use `javax.management.monitor.CounterMonitor#setInitThreshold`
+description: Use `javax.management.monitor.CounterMonitor#setInitThreshold` instead of the deprecated `javax.management.monitor.CounterMonitor#setThreshhold` in JMX 1.2 or higher.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: javax.management.monitor.CounterMonitor setThreshold(java.lang.Number)

@@ -43,7 +43,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.concurrent.MigrateAtomicIntegerWeakCompareAndSetToWeakCompareAndSetPlain
 displayName: Use `AtomicInteger#weakCompareAndSetPlain(int, int)`
-description: 'Use `AtomicInteger#weakCompareAndSetPlain(int, int)` instead of the deprecated `AtomicInteger#weakCompareAndSet(int, int)` in Java 9 or higher.'
+description: Use `AtomicInteger#weakCompareAndSetPlain(int, int)` instead of the deprecated `AtomicInteger#weakCompareAndSet(int, int)` in Java 9 or higher.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.concurrent.atomic.AtomicInteger weakCompareAndSet(int, int)

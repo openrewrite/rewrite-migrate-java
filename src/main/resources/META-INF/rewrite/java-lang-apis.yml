@@ -33,7 +33,8 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.MigrateCharacterIsJavaLetterToIsJavaIdentifierStart
 displayName: Use `Character#isJavaIdentifierStart(char)`
-description: '`Character#isJavaLetter(char)` was deprecated in Java 1.1.'
+description: Use `Character#isJavaIdentifierStart(char)` instead of the deprecated `Character#isJavaLetter(char)` in Java 1.1 or higher.
+
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.lang.Character isJavaLetter(char)
@@ -43,7 +44,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.MigrateCharacterIsJavaLetterOrDigitToIsJavaIdentifierPart
 displayName: Use `Character#isJavaIdentifierPart(char)`
-description: '`Character#isJavaLetterOrDigit(char)` was deprecated in Java 1.1.'
+description: Use `Character#isJavaIdentifierPart(char)` instead of the deprecated `Character#isJavaLetterOrDigit(char)` in Java 1.1 or higher.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.lang.Character isJavaLetterOrDigit(char)
@@ -53,7 +54,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.MigrateCharacterIsSpaceToIsWhitespace
 displayName: Use `Character#isWhitespace(char)`
-description: '`Character#isSpace(char)` was deprecated in Java 1.1.'
+description: Use `Character#isWhitespace(char)` instead of the deprecated `Character#isSpace(char)` in Java 1.1 or higher.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.lang.Character isSpace(char)
@@ -63,7 +64,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.MigrateRuntimeVersionMajorToFeature
 displayName: Use `Runtime.Version#feature()`
-description: '`Runtime.Version#major()` was deprecated in Java 10.'
+description: Use `Runtime.Version#feature()` instead of the deprecated `Runtime.Version#major()` in Java 10 or higher.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.lang.Runtime.Version major()
@@ -73,7 +74,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.MigrateRuntimeVersionMinorToInterim
 displayName: Use `Runtime.Version#interim()`
-description: '`Runtime.Version#minor()` was deprecated in Java 10.'
+description: Use `Runtime.Version#interim()` instead of the deprecated `Runtime.Version#minor()` in Java 10 or higher.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.lang.Runtime.Version minor()
@@ -83,7 +84,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.MigrateRuntimeVersionSecurityToUpdate
 displayName: Use `Runtime.Version#update()`
-description: '`Runtime.Version#security()` was deprecated in Java 10.'
+description: Use `Runtime.Version#update()` instead of the deprecated `Runtime.Version#security()` in Java 10 or higher.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.lang.Runtime.Version security()

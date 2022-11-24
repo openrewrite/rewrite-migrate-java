@@ -31,7 +31,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.net.MigrateMulticastSocketGetTTLToGetTimeToLive
 displayName: Use `java.net.MulticastSocket#getTimeToLive()`
-description: '`java.net.MulticastSocket#getTTL()` has been deprecated.'
+description: Use `java.net.MulticastSocket#getTimeToLive()` instead of the deprecated `java.net.MulticastSocket#getTTL()` in Java 1.2 or higher.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.net.MulticastSocket getTTL()

@@ -30,8 +30,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.logging.MigrateInterfaceLoggingMXBeanToPlatformLoggingMXBean
-displayName: Use `PlatformLoggingMXBean`
-description: '`java.util.logging.LoggingMXBean` has been deprecated.'
+displayName: Use `java.lang.management.PlatformLoggingMXBean`
+description: Use `java.lang.management.PlatformLoggingMXBean` instead of the deprecated `java.util.logging.LoggingMXBean` in Java 9 or higher.
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: java.util.logging.LoggingMXBean

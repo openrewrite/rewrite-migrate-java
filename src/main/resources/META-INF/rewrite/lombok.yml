@@ -16,8 +16,8 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lombok.UpdateLombokToJava17
-displayName: Update Lombok dependency to a Java 17 compatible version
-description: Update Lombok dependency to a version that is compatible with Java 17.
+displayName: Migrate Lombok to a Java 17 compatible version
+description: Update Lombok dependency to a version that is compatible with Java 17 and migrate experimental Lombok types that have been promoted.
 tags:
   - java17
   - lombok
