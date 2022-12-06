@@ -45,7 +45,7 @@ dependencyCheck {
 }
 
 group = "org.openrewrite.recipe"
-description = "Eliminate legacy Spring patterns and migrate between major Spring Boot versions. Automatically."
+description = "Migrate to later Java versions. Automatically."
 
 repositories {
     if (!project.hasProperty("releasing")) {
@@ -118,9 +118,9 @@ dependencies {
     @Suppress("GradlePackageUpdate")
     testImplementation("com.google.guava:guava:29.0-jre")
 
-    testImplementation("commons-codec:commons-codec:latest.release")
+    testImplementation("commons-codec:commons-codec:1.+")
 
-    testRuntimeOnly("commons-io:commons-io:latest.release")
+    testRuntimeOnly("commons-io:commons-io:2.+")
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353:latest.release")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core:latest.release")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind:latest.release")
