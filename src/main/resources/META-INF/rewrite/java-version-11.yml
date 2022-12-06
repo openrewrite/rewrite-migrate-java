@@ -74,6 +74,8 @@ recipeList:
       key: maven.compiler.target
       newValue: 11
       addIfMissing: false
+  - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
+      releaseVersion: 11
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxbDependencies
