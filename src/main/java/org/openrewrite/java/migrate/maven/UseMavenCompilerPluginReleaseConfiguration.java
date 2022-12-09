@@ -18,18 +18,19 @@ package org.openrewrite.java.migrate.maven;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.maven.MavenIsoVisitor;
+import org.openrewrite.maven.search.FindProperties;
 import org.openrewrite.xml.XPathMatcher;
-import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
 
 import java.util.Optional;
 
 import static org.openrewrite.xml.AddOrUpdateChild.addOrUpdateChild;
-import static org.openrewrite.xml.FilterTagChildrenVisitor.filterChildren;
+import static org.openrewrite.xml.FilterTagChildrenVisitor.filterTagChildren;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
@@ -38,7 +39,7 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
 
     @Option(
             displayName = "Release Version",
-            description = "The new value for the release configuration.",
+            description = "The new value for the release configuration. This recipe prefers ${java.version} if defined.",
             example = "11"
     )
     String releaseVersion;
@@ -62,30 +63,45 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
                 if (!PLUGINS_MATCHER.matches(getCursor())) {
                     return superVisit;
                 }
-                Optional<Xml.Tag> compilerPluginConfig = superVisit.getChildren()
-                        .stream()
-                        .filter(plugin -> "plugin".equals(plugin.getName()) &&
-                                "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse(null)) &&
-                                "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
-                        .findAny()
+                Optional<Xml.Tag> maybeCompilerPlugin = superVisit.getChildren().stream()
+                        .filter(plugin -> "plugin".equals(plugin.getName())
+                                && "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse(null))
+                                && "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
+                        .findAny();
+                Optional<Xml.Tag> maybeCompilerPluginConfig = maybeCompilerPlugin
                         .flatMap(it -> it.getChild("configuration"));
-                if (!compilerPluginConfig.isPresent()) {
+                if (!maybeCompilerPluginConfig.isPresent()) {
                     return superVisit;
                 }
-                Xml.Tag updated = filterChildren(superVisit, compilerPluginConfig.get(),
-                        child -> !(hasName(child, "source") || hasName(child, "target")));
-                if (updated == superVisit
-                        && !compilerPluginConfig.flatMap(it -> it.getChild("release")).isPresent()) {
+                Xml.Tag compilerPluginConfig = maybeCompilerPluginConfig.get();
+                Optional<String> source = compilerPluginConfig.getChildValue("source");
+                Optional<String> target = compilerPluginConfig.getChildValue("target");
+                Optional<String> release = compilerPluginConfig.getChildValue("release");
+                if (!source.isPresent()
+                        && !target.isPresent()
+                        && !release.isPresent()) {
                     return superVisit;
                 }
-                updated = addOrUpdateChild(updated, compilerPluginConfig.get(),
-                        Xml.Tag.build("<release>" + releaseVersion + "</release>"), getCursor().getParentOrThrow());
+                Xml.Tag updated = filterTagChildren(superVisit, compilerPluginConfig,
+                        child -> !("source".equals(child.getName()) || "target".equals(child.getName())));
+                if (updated != superVisit
+                        && source.map("${maven.compiler.source}"::equals).orElse(true)
+                        && target.map("${maven.compiler.target}"::equals).orElse(true)) {
+                    return filterTagChildren(updated, maybeCompilerPlugin.get(),
+                            child -> !("configuration".equals(child.getName()) && child.getChildren().isEmpty()));
+                }
+                String releaseVersionValue = hasJavaVersionProperty(getCursor().firstEnclosingOrThrow(Xml.Document.class))
+                        ? "${java.version}" : releaseVersion;
+                updated = addOrUpdateChild(updated, compilerPluginConfig,
+                        Xml.Tag.build("<release>" + releaseVersionValue + "</release>"), getCursor().getParentOrThrow());
                 return updated;
             }
 
-            private boolean hasName(Content child, String name) {
-                return child instanceof Xml.Tag && name.equals(((Xml.Tag) child).getName());
-            }
         };
+    }
+
+    private boolean hasJavaVersionProperty(Xml.Document xml) {
+        return xml !=
+                new FindProperties("java.version").getVisitor().visit(xml, new InMemoryExecutionContext());
     }
 }
