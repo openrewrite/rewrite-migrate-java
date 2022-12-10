@@ -36,8 +36,6 @@ recipeList:
   - org.openrewrite.java.migrate.javax.AddJaxbDependencies
   - org.openrewrite.java.migrate.javax.AddJaxwsDependencies
   - org.openrewrite.java.migrate.javax.AddInjectDependencies
-  # Add jdeprscan plugin to a maven-based build.
-  - org.openrewrite.java.migrate.AddJDeprScanPlugin
   # Remediate deprecations
   - org.openrewrite.java.cleanup.BigDecimalRoundingConstantsToEnums
   - org.openrewrite.java.cleanup.PrimitiveWrapperClassConstructorToValueOf
