@@ -82,6 +82,166 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     }
 
     @Test
+    void deletesSourceAndTargetConfigWithNoReplacementIfDefaultAndCleansUpConfiguration() {
+        rewriteRun(
+          pomXml("""
+            <?xml version="1.0" encoding="UTF-8"?>
+            <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>sample</artifactId>
+              <version>1.0.0</version>
+              
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                    <configuration>
+                      <source>${maven.compiler.source}</source>
+                      <target>${maven.compiler.target}</target>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+              
+            </project>
+            """,
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>sample</artifactId>
+              <version>1.0.0</version>
+              
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                  </plugin>
+                </plugins>
+              </build>
+              
+            </project>
+            """
+          )
+        );
+    }
+
+    @Test
+    void deletesSourceAndTargetConfigWithNoReplacementIfDefault() {
+        rewriteRun(
+          pomXml("""
+            <?xml version="1.0" encoding="UTF-8"?>
+            <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>sample</artifactId>
+              <version>1.0.0</version>
+              
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                    <configuration>
+                      <parameters>true</parameters>
+                      <source>${maven.compiler.source}</source>
+                      <target>${maven.compiler.target}</target>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+              
+            </project>
+            """,
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>sample</artifactId>
+              <version>1.0.0</version>
+              
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                    <configuration>
+                      <parameters>true</parameters>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+              
+            </project>
+            """
+          )
+        );
+    }
+
+    @Test
+    void reusesJavaVersionVariableIfSameInSourceAndTarget() {
+        rewriteRun(
+          pomXml("""
+            <?xml version="1.0" encoding="UTF-8"?>
+            <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>sample</artifactId>
+              <version>1.0.0</version>
+              
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                    <configuration>
+                      <source>${java.version}</source>
+                      <target>${java.version}</target>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+              
+            </project>
+            """,
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>sample</artifactId>
+              <version>1.0.0</version>
+              
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                    <configuration>
+                      <release>${java.version}</release>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+              
+            </project>
+            """
+          )
+        );
+    }
+
+    @Test
     void upgradesExistingReleaseConfig() {
         rewriteRun(
           pomXml("""
@@ -123,6 +283,67 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     <version>3.8.0</version>
                     <configuration>
                       <release>11</release>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+              
+            </project>
+            """
+          )
+        );
+    }
+
+    @Test
+    void prefersJavaVersionIfAvailable() {
+        rewriteRun(
+          pomXml("""
+            <?xml version="1.0" encoding="UTF-8"?>
+            <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>sample</artifactId>
+              <version>1.0.0</version>
+              
+              <properties>
+                <java.version>11</java.version>
+              </properties>
+              
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                    <configuration>
+                      <release>10</release>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+              
+            </project>
+            """,
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>sample</artifactId>
+              <version>1.0.0</version>
+              
+              <properties>
+                <java.version>11</java.version>
+              </properties>
+              
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                    <configuration>
+                      <release>${java.version}</release>
                     </configuration>
                   </plugin>
                 </plugins>
