@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.maven;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -101,7 +100,6 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
     }
 
     private boolean hasJavaVersionProperty(Xml.Document xml) {
-        return xml !=
-                new FindProperties("java.version").getVisitor().visit(xml, new InMemoryExecutionContext());
+        return !FindProperties.find(xml, "java.version").isEmpty();
     }
 }
