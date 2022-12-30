@@ -24,15 +24,9 @@ plugins {
     id("nebula.javadoc-jar") version "17.3.2"
     id("nebula.source-jar") version "17.3.2"
     id("nebula.maven-apache-license") version "17.3.2"
-
-    id("org.openrewrite.rewrite") version "latest.release"
 }
 
 apply(plugin = "nebula.publish-verification")
-
-rewrite {
-    activeRecipe("org.openrewrite.java.format.AutoFormat", "org.openrewrite.java.cleanup.Cleanup")
-}
 
 configure<nebula.plugin.release.git.base.ReleasePluginExtension> {
     defaultVersionStrategy = nebula.plugin.release.NetflixOssStrategies.SNAPSHOT(project)
