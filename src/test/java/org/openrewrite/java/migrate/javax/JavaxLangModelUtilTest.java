@@ -58,14 +58,14 @@ class JavaxLangModelUtilTest implements RewriteTest {
         rewriteRun(
           java(
             """
-                  import javax.lang.model.util.AbstractElementVisitor6;
-                  
-                  abstract class Test extends AbstractElementVisitor6 {}
+              import javax.lang.model.util.AbstractElementVisitor6;
+              
+              abstract class Test extends AbstractElementVisitor6 {}
               """,
             """
-                  import javax.lang.model.util.AbstractElementVisitor9;
-                  
-                  abstract class Test extends AbstractElementVisitor9 {}
+              import javax.lang.model.util.AbstractElementVisitor9;
+              
+              abstract class Test extends AbstractElementVisitor9 {}
               """
           )
         );

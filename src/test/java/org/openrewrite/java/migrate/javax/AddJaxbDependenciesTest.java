@@ -38,38 +38,38 @@ public class AddJaxbDependenciesTest implements RewriteTest {
         rewriteRun(
             pomXml(
                 """
-                    <project>
-                        <groupId>com.example.jaxb</groupId>
-                        <artifactId>jaxb-example</artifactId>
-                        <version>1.0.0</version>
-                        <dependencies>
-                            <dependency>
-                                <groupId>jakarta.xml.bind</groupId>
-                                <artifactId>jakarta.xml.bind-api</artifactId>
-                                <version>2.3.2</version>
-                            </dependency>
-                        </dependencies>
-                    </project>
+                <project>
+                    <groupId>com.example.jaxb</groupId>
+                    <artifactId>jaxb-example</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.xml.bind</groupId>
+                            <artifactId>jakarta.xml.bind-api</artifactId>
+                            <version>2.3.2</version>
+                        </dependency>
+                    </dependencies>
+                </project>
                 """,
                 """
-                    <project>
-                        <groupId>com.example.jaxb</groupId>
-                        <artifactId>jaxb-example</artifactId>
-                        <version>1.0.0</version>
-                        <dependencies>
-                            <dependency>
-                                <groupId>jakarta.xml.bind</groupId>
-                                <artifactId>jakarta.xml.bind-api</artifactId>
-                                <version>2.3.3</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.glassfish.jaxb</groupId>
-                                <artifactId>jaxb-runtime</artifactId>
-                                <version>2.3.7</version>
-                                <scope>provided</scope>
-                            </dependency>
-                        </dependencies>
-                    </project>
+                <project>
+                    <groupId>com.example.jaxb</groupId>
+                    <artifactId>jaxb-example</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.xml.bind</groupId>
+                            <artifactId>jakarta.xml.bind-api</artifactId>
+                            <version>2.3.3</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.glassfish.jaxb</groupId>
+                            <artifactId>jaxb-runtime</artifactId>
+                            <version>2.3.7</version>
+                            <scope>provided</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
                 """
             )
         );
@@ -81,44 +81,44 @@ public class AddJaxbDependenciesTest implements RewriteTest {
         rewriteRun(
           pomXml(
             """
-                <project>
-                    <groupId>com.example.jaxb</groupId>
-                    <artifactId>jaxb-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.bind</groupId>
-                            <artifactId>jakarta.xml.bind-api</artifactId>
-                            <version>2.3.3</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.bind</groupId>
-                            <artifactId>jaxb-impl</artifactId>
-                            <version>2.3.3</version>
-                            <scope>provided</scope>
-                        </dependency>
-                    </dependencies>
-                </project>
+            <project>
+                <groupId>com.example.jaxb</groupId>
+                <artifactId>jaxb-example</artifactId>
+                <version>1.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>2.3.3</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                        <version>2.3.3</version>
+                        <scope>provided</scope>
+                    </dependency>
+                </dependencies>
+            </project>
             """,
             """
-                <project>
-                    <groupId>com.example.jaxb</groupId>
-                    <artifactId>jaxb-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.bind</groupId>
-                            <artifactId>jakarta.xml.bind-api</artifactId>
-                            <version>2.3.3</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.glassfish.jaxb</groupId>
-                            <artifactId>jaxb-runtime</artifactId>
-                            <version>2.3.7</version>
-                            <scope>provided</scope>
-                        </dependency>
-                    </dependencies>
-                </project>
+            <project>
+                <groupId>com.example.jaxb</groupId>
+                <artifactId>jaxb-example</artifactId>
+                <version>1.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>2.3.3</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.glassfish.jaxb</groupId>
+                        <artifactId>jaxb-runtime</artifactId>
+                        <version>2.3.7</version>
+                        <scope>provided</scope>
+                    </dependency>
+                </dependencies>
+            </project>
             """
           )
         );
@@ -130,44 +130,44 @@ public class AddJaxbDependenciesTest implements RewriteTest {
         rewriteRun(
           pomXml(
             """
-                <project>
-                    <groupId>com.example.jaxb</groupId>
-                    <artifactId>jaxb-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>javax.xml.bind</groupId>
-                            <artifactId>jaxb-api</artifactId>
-                            <version>2.3.1</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.glassfish.jaxb</groupId>
-                            <artifactId>jaxb-runtime</artifactId>
-                            <version>2.3.1</version>
-                            <scope>provided</scope>
-                        </dependency>
-                    </dependencies>
-                </project>
+            <project>
+                <groupId>com.example.jaxb</groupId>
+                <artifactId>jaxb-example</artifactId>
+                <version>1.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                        <version>2.3.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.glassfish.jaxb</groupId>
+                        <artifactId>jaxb-runtime</artifactId>
+                        <version>2.3.1</version>
+                        <scope>provided</scope>
+                    </dependency>
+                </dependencies>
+            </project>
             """,
             """
-                <project>
-                    <groupId>com.example.jaxb</groupId>
-                    <artifactId>jaxb-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.bind</groupId>
-                            <artifactId>jakarta.xml.bind-api</artifactId>
-                            <version>2.3.3</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.glassfish.jaxb</groupId>
-                            <artifactId>jaxb-runtime</artifactId>
-                            <version>2.3.7</version>
-                            <scope>provided</scope>
-                        </dependency>
-                    </dependencies>
-                </project>
+            <project>
+                <groupId>com.example.jaxb</groupId>
+                <artifactId>jaxb-example</artifactId>
+                <version>1.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>2.3.3</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.glassfish.jaxb</groupId>
+                        <artifactId>jaxb-runtime</artifactId>
+                        <version>2.3.7</version>
+                        <scope>provided</scope>
+                    </dependency>
+                </dependencies>
+            </project>
             """
           )
         );
@@ -180,63 +180,63 @@ public class AddJaxbDependenciesTest implements RewriteTest {
           spec -> spec.cycles(3),
           pomXml(
             """
-                <project>
-                    <groupId>com.example.jaxb</groupId>
-                    <artifactId>jaxb-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencyManagement>
-                        <dependencies>
-                            <dependency>
-                                <groupId>javax.xml.bind</groupId>
-                                <artifactId>jaxb-api</artifactId>
-                                <version>2.3.1</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>com.sun.xml.bind</groupId>
-                                <artifactId>jaxb-impl</artifactId>
-                                <version>2.3.1</version>
-                            </dependency>
-                        </dependencies>
-                    </dependencyManagement>
+            <project>
+                <groupId>com.example.jaxb</groupId>
+                <artifactId>jaxb-example</artifactId>
+                <version>1.0.0</version>
+                <dependencyManagement>
                     <dependencies>
                         <dependency>
                             <groupId>javax.xml.bind</groupId>
                             <artifactId>jaxb-api</artifactId>
+                            <version>2.3.1</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.sun.xml.bind</groupId>
+                            <artifactId>jaxb-impl</artifactId>
+                            <version>2.3.1</version>
                         </dependency>
                     </dependencies>
-                </project>
+                </dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </dependency>
+                </dependencies>
+            </project>
             """,
             """
-                <project>
-                    <groupId>com.example.jaxb</groupId>
-                    <artifactId>jaxb-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencyManagement>
-                        <dependencies>
-                            <dependency>
-                                <groupId>jakarta.xml.bind</groupId>
-                                <artifactId>jakarta.xml.bind-api</artifactId>
-                                <version>2.3.3</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.glassfish.jaxb</groupId>
-                                <artifactId>jaxb-runtime</artifactId>
-                                <version>2.3.7</version>
-                            </dependency>
-                        </dependencies>
-                    </dependencyManagement>
+            <project>
+                <groupId>com.example.jaxb</groupId>
+                <artifactId>jaxb-example</artifactId>
+                <version>1.0.0</version>
+                <dependencyManagement>
                     <dependencies>
                         <dependency>
                             <groupId>jakarta.xml.bind</groupId>
                             <artifactId>jakarta.xml.bind-api</artifactId>
+                            <version>2.3.3</version>
                         </dependency>
                         <dependency>
                             <groupId>org.glassfish.jaxb</groupId>
                             <artifactId>jaxb-runtime</artifactId>
-                            <scope>provided</scope>
+                            <version>2.3.7</version>
                         </dependency>
                     </dependencies>
-                </project>
+                </dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.glassfish.jaxb</groupId>
+                        <artifactId>jaxb-runtime</artifactId>
+                        <scope>provided</scope>
+                    </dependency>
+                </dependencies>
+            </project>
             """
           )
         );

@@ -64,14 +64,14 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
               }
               """,
             """
-                  package com.abc;
+              package com.abc;
 
-                  class A {
-                     public void test() throws Throwable {
-                         Class<?> clazz = Class.forName("org.openrewrite.Test");
-                         clazz.getDeclaredConstructor().newInstance();
-                     }
-                  }
+              class A {
+                 public void test() throws Throwable {
+                     Class<?> clazz = Class.forName("org.openrewrite.Test");
+                     clazz.getDeclaredConstructor().newInstance();
+                 }
+              }
               """
           )
         );

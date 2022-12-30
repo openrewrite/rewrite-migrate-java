@@ -38,38 +38,38 @@ public class AddJaxwsDependenciesTest implements RewriteTest {
         rewriteRun(
           pomXml(
             """
-                <project>
-                    <groupId>com.example.jaxws</groupId>
-                    <artifactId>jaxws-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.ws</groupId>
-                            <artifactId>jakarta.xml.ws-api</artifactId>
-                            <version>2.3.2</version>
-                        </dependency>
-                    </dependencies>
-                </project>
+            <project>
+                <groupId>com.example.jaxws</groupId>
+                <artifactId>jaxws-example</artifactId>
+                <version>1.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
+                        <version>2.3.2</version>
+                    </dependency>
+                </dependencies>
+            </project>
             """,
             """
-                <project>
-                    <groupId>com.example.jaxws</groupId>
-                    <artifactId>jaxws-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.ws</groupId>
-                            <artifactId>jakarta.xml.ws-api</artifactId>
-                            <version>2.3.3</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.ws</groupId>
-                            <artifactId>jaxws-rt</artifactId>
-                            <version>2.3.5</version>
-                            <scope>provided</scope>
-                        </dependency>
-                    </dependencies>
-                </project>
+            <project>
+                <groupId>com.example.jaxws</groupId>
+                <artifactId>jaxws-example</artifactId>
+                <version>1.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
+                        <version>2.3.3</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-rt</artifactId>
+                        <version>2.3.5</version>
+                        <scope>provided</scope>
+                    </dependency>
+                </dependencies>
+            </project>
             """
           )
         );
@@ -81,44 +81,44 @@ public class AddJaxwsDependenciesTest implements RewriteTest {
         rewriteRun(
           pomXml(
             """
-                <project>
-                    <groupId>com.example.jaxws</groupId>
-                    <artifactId>jaxws-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>javax.xml.ws</groupId>
-                            <artifactId>jaxws-api</artifactId>
-                            <version>2.3.1</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.ws</groupId>
-                            <artifactId>jaxws-ri</artifactId>
-                            <version>2.3.2</version>
-                            <scope>provided</scope>
-                        </dependency>
-                    </dependencies>
-                </project>
+            <project>
+                <groupId>com.example.jaxws</groupId>
+                <artifactId>jaxws-example</artifactId>
+                <version>1.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>javax.xml.ws</groupId>
+                        <artifactId>jaxws-api</artifactId>
+                        <version>2.3.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-ri</artifactId>
+                        <version>2.3.2</version>
+                        <scope>provided</scope>
+                    </dependency>
+                </dependencies>
+            </project>
             """,
             """
-                <project>
-                    <groupId>com.example.jaxws</groupId>
-                    <artifactId>jaxws-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.ws</groupId>
-                            <artifactId>jakarta.xml.ws-api</artifactId>
-                            <version>2.3.3</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.ws</groupId>
-                            <artifactId>jaxws-rt</artifactId>
-                            <version>2.3.5</version>
-                            <scope>provided</scope>
-                        </dependency>
-                    </dependencies>
-                </project>
+            <project>
+                <groupId>com.example.jaxws</groupId>
+                <artifactId>jaxws-example</artifactId>
+                <version>1.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
+                        <version>2.3.3</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-rt</artifactId>
+                        <version>2.3.5</version>
+                        <scope>provided</scope>
+                    </dependency>
+                </dependencies>
+            </project>
             """
           )
         );
@@ -130,44 +130,44 @@ public class AddJaxwsDependenciesTest implements RewriteTest {
         rewriteRun(
           pomXml(
             """
-                <project>
-                    <groupId>com.example.jaxws</groupId>
-                    <artifactId>jaxws-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.ws</groupId>
-                            <artifactId>jakarta.xml.ws-api</artifactId>
-                            <version>2.3.2</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.ws</groupId>
-                            <artifactId>jaxws-ri</artifactId>
-                            <version>2.3.2</version>
-                            <scope>provided</scope>
-                        </dependency>
-                    </dependencies>
-                </project>
+            <project>
+                <groupId>com.example.jaxws</groupId>
+                <artifactId>jaxws-example</artifactId>
+                <version>1.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
+                        <version>2.3.2</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-ri</artifactId>
+                        <version>2.3.2</version>
+                        <scope>provided</scope>
+                    </dependency>
+                </dependencies>
+            </project>
             """,
             """
-                <project>
-                    <groupId>com.example.jaxws</groupId>
-                    <artifactId>jaxws-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.ws</groupId>
-                            <artifactId>jakarta.xml.ws-api</artifactId>
-                            <version>2.3.3</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.ws</groupId>
-                            <artifactId>jaxws-rt</artifactId>
-                            <version>2.3.5</version>
-                            <scope>provided</scope>
-                        </dependency>
-                    </dependencies>
-                </project>
+            <project>
+                <groupId>com.example.jaxws</groupId>
+                <artifactId>jaxws-example</artifactId>
+                <version>1.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
+                        <version>2.3.3</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-rt</artifactId>
+                        <version>2.3.5</version>
+                        <scope>provided</scope>
+                    </dependency>
+                </dependencies>
+            </project>
             """
           )
         );
@@ -179,59 +179,59 @@ public class AddJaxwsDependenciesTest implements RewriteTest {
         rewriteRun(
           pomXml(
             """
-                <project>
-                    <groupId>com.example.jaxws</groupId>
-                    <artifactId>jaxws-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencyManagement>
-                        <dependencies>
-                            <dependency>
-                                <groupId>javax.xml.ws</groupId>
-                                <artifactId>jaxws-api</artifactId>
-                                <version>2.3.1</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>com.sun.xml.ws</groupId>
-                                <artifactId>jaxws-ri</artifactId>
-                                <version>2.3.2</version>
-                            </dependency>
-                        </dependencies>
-                    </dependencyManagement>
+            <project>
+                <groupId>com.example.jaxws</groupId>
+                <artifactId>jaxws-example</artifactId>
+                <version>1.0.0</version>
+                <dependencyManagement>
                     <dependencies>
                         <dependency>
                             <groupId>javax.xml.ws</groupId>
                             <artifactId>jaxws-api</artifactId>
+                            <version>2.3.1</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.sun.xml.ws</groupId>
+                            <artifactId>jaxws-ri</artifactId>
+                            <version>2.3.2</version>
                         </dependency>
                     </dependencies>
-                </project>
+                </dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>javax.xml.ws</groupId>
+                        <artifactId>jaxws-api</artifactId>
+                    </dependency>
+                </dependencies>
+            </project>
             """,
             """
-                <project>
-                    <groupId>com.example.jaxws</groupId>
-                    <artifactId>jaxws-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencyManagement>
-                        <dependencies>
-                            <dependency>
-                                <groupId>jakarta.xml.ws</groupId>
-                                <artifactId>jakarta.xml.ws-api</artifactId>
-                                <version>2.3.3</version>
-                            </dependency>
-                        </dependencies>
-                    </dependencyManagement>
+            <project>
+                <groupId>com.example.jaxws</groupId>
+                <artifactId>jaxws-example</artifactId>
+                <version>1.0.0</version>
+                <dependencyManagement>
                     <dependencies>
                         <dependency>
                             <groupId>jakarta.xml.ws</groupId>
                             <artifactId>jakarta.xml.ws-api</artifactId>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.ws</groupId>
-                            <artifactId>jaxws-rt</artifactId>
-                            <version>2.3.5</version>
-                            <scope>provided</scope>
+                            <version>2.3.3</version>
                         </dependency>
                     </dependencies>
-                </project>
+                </dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-rt</artifactId>
+                        <version>2.3.5</version>
+                        <scope>provided</scope>
+                    </dependency>
+                </dependencies>
+            </project>
             """
           )
         );
