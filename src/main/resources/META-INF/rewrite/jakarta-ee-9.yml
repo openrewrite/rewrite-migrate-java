@@ -572,21 +572,21 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxSecurityToJakartaSecurity
-displayName: Migrate deprecated `javax.security` packages to `jakarta.security`
+displayName: Migrate deprecated `javax.security.enterprise` packages to `jakarta.security.enterprise`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.security.enterprise
       artifactId: jakarta.security.enterprise-api
       version: 2.x
-      onlyIfUsing: javax.security.*
+      onlyIfUsing: javax.security.enterprise.+
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.security.enterprise
       artifactId: jakarta.security.enterprise-api
       newVersion: 2.x
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.security
-      newPackageName: jakarta.security
+      oldPackageName: javax.security.enterprise
+      newPackageName: jakarta.security.enterprise
       recursive: true
   - org.openrewrite.maven.RemoveDependency:
       groupId: javax.security.enterprise
