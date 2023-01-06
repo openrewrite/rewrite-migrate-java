@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
@@ -421,7 +420,6 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
         );
     }
 
-    @Disabled("Requires https://github.com/openrewrite/rewrite/issues/2375")
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/138")
     @Test
     void insideAnonymousArrayInitializer() {
