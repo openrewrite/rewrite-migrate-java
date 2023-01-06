@@ -269,7 +269,7 @@ recipeList:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       version: 2.x
-      onlyIfUsing: javax.decorator.+
+      onlyIfUsing: javax.decorator.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
@@ -292,7 +292,7 @@ recipeList:
       groupId: jakarta.ejb
       artifactId: jakarta.ejb-api
       version: 4.x
-      onlyIfUsing: javax.ejb.+
+      onlyIfUsing: javax.ejb.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.ejb
       artifactId: jakarta.ejb-api
@@ -338,7 +338,7 @@ recipeList:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       version: 3.0.1
-      onlyIfUsing: javax.enterprise.+
+      onlyIfUsing: javax.enterprise.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
@@ -361,7 +361,7 @@ recipeList:
       groupId: jakarta.faces
       artifactId: jakarta.faces-api
       version: 3.x
-      onlyIfUsing: javax.faces.+
+      onlyIfUsing: javax.faces.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.faces
       artifactId: jakarta.faces-api
@@ -572,21 +572,21 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxSecurityToJakartaSecurity
-displayName: Migrate deprecated `javax.security` packages to `jakarta.security`
+displayName: Migrate deprecated `javax.security.enterprise` packages to `jakarta.security.enterprise`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.security.enterprise
       artifactId: jakarta.security.enterprise-api
       version: 2.x
-      onlyIfUsing: javax.security.*
+      onlyIfUsing: javax.security.enterprise.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.security.enterprise
       artifactId: jakarta.security.enterprise-api
       newVersion: 2.x
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.security
-      newPackageName: jakarta.security
+      oldPackageName: javax.security.enterprise
+      newPackageName: jakarta.security.enterprise
       recursive: true
   - org.openrewrite.maven.RemoveDependency:
       groupId: javax.security.enterprise
@@ -676,7 +676,7 @@ recipeList:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       version: 3.x
-      onlyIfUsing: javax.ws.+
+      onlyIfUsing: javax.ws.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
