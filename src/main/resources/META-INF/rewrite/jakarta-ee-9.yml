@@ -269,7 +269,7 @@ recipeList:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       version: 2.x
-      onlyIfUsing: javax.decorator.+
+      onlyIfUsing: javax.decorator.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
@@ -292,7 +292,7 @@ recipeList:
       groupId: jakarta.ejb
       artifactId: jakarta.ejb-api
       version: 4.x
-      onlyIfUsing: javax.ejb.+
+      onlyIfUsing: javax.ejb.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.ejb
       artifactId: jakarta.ejb-api
@@ -338,7 +338,7 @@ recipeList:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       version: 3.0.1
-      onlyIfUsing: javax.enterprise.+
+      onlyIfUsing: javax.enterprise.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
@@ -361,7 +361,7 @@ recipeList:
       groupId: jakarta.faces
       artifactId: jakarta.faces-api
       version: 3.x
-      onlyIfUsing: javax.faces.+
+      onlyIfUsing: javax.faces.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.faces
       artifactId: jakarta.faces-api
@@ -579,7 +579,7 @@ recipeList:
       groupId: jakarta.security.enterprise
       artifactId: jakarta.security.enterprise-api
       version: 2.x
-      onlyIfUsing: javax.security.enterprise.+
+      onlyIfUsing: javax.security.enterprise.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.security.enterprise
       artifactId: jakarta.security.enterprise-api
@@ -676,7 +676,7 @@ recipeList:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       version: 3.x
-      onlyIfUsing: javax.ws.+
+      onlyIfUsing: javax.ws.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
