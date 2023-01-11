@@ -856,7 +856,9 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxPersistenceXmlToJakartaPersistenceXml
-displayName: migrate persistence.xml files
+displayName: Migrate xmlns entries in `persistence.xml` files
+description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
+
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: name
@@ -885,6 +887,10 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
 displayName: Migrate Jackson from javax to jakarta namespace
+description: >
+  Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Jackson dependencies with their counterparts
+  that are compatible with Jakarta EE 9.
+
 recipeList:
   # JAXB annotations support
   - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
@@ -993,6 +999,10 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
 displayName: Migrate Ehcache from javax to jakarta namespace
+description: >
+  Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Ehcache dependencies with their counterparts
+  that are compatible with Jakarta EE 9.
+
 recipeList:
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: org.ehcache
@@ -1012,6 +1022,10 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta
 displayName: Migrate Johnzon from javax to jakarta namespace
+description: >
+  Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Johnzon dependencies with their counterparts
+  that are compatible with Jakarta EE 9.
+
 recipeList:
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: org.apache.johnzon
@@ -1028,6 +1042,9 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RestAssuredJavaxToJakarta
 displayName: Migrate RestAssured from javax to jakarta namespace by upgrading to a version compatible with J2EE9
+description: >
+  Java EE has been rebranded to Jakarta EE.  This recipe replaces existing RestAssured dependencies with their
+  counterparts that are compatible with Jakarta EE 9.
 recipeList:
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: io.rest-assured
