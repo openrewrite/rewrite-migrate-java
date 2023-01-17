@@ -307,8 +307,7 @@ recipeList:
       groupId: jakarta.validation
       artifactId: jakarta.validation-api
       version: 3.x
-      onlyIfUsing:
-        - javax.validation..*
+      onlyIfUsing: javax.validation..*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.validation
       artifactId: jakarta.validation-api
