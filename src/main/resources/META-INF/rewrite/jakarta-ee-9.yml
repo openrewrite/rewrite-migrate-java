@@ -251,7 +251,7 @@ recipeList:
       groupId: jakarta.authorization
       artifactId: jakarta.authorization-api
       version: 2.x
-      onlyIfUsing: jakarta.security.jacc..*
+      onlyIfUsing: javax.security.jacc..*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.authorization
       artifactId: jakarta.authorization-api
