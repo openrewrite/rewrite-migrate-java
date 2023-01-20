@@ -115,7 +115,7 @@ public class NoGuavaImmutableListOf extends Recipe {
             }
 
             private boolean isParentTypeDownCast() {
-                J parent = getCursor().dropParentUntil(is -> is instanceof J).getValue();
+                J parent = getCursor().dropParentUntil(J.class::isInstance).getValue();
                 boolean isParentTypeDownCast = false;
                 if (parent instanceof J.VariableDeclarations.NamedVariable) {
                     isParentTypeDownCast = isParentTypeMatched(((J.VariableDeclarations.NamedVariable) parent).getType());

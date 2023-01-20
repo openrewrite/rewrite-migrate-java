@@ -87,10 +87,7 @@ public class LombokValToFinalVar extends Recipe {
                         varDecls.getCoordinates().replace(), args);
 
                 if (nv.getInitializer() != null) {
-                    varDecls = varDecls.withVariables(ListUtils.map(varDecls.getVariables(), namedVar -> {
-                        //noinspection ConstantConditions
-                        return namedVar.withInitializer(namedVar.getInitializer().withPrefix(nv.getInitializer().getPrefix()));
-                    }));
+                    varDecls = varDecls.withVariables(ListUtils.map(varDecls.getVariables(), namedVar -> namedVar.withInitializer(namedVar.getInitializer().withPrefix(nv.getInitializer().getPrefix()))));
                 }
 
 
