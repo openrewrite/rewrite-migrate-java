@@ -41,17 +41,7 @@ tags:
   - java17
   - compiler
 recipeList:
-  - org.openrewrite.maven.ChangePropertyValue:
-      key: java.version
-      newValue: 17
-      addIfMissing: false
-  - org.openrewrite.maven.ChangePropertyValue:
-      key: maven.compiler.source
-      newValue: 17
-      addIfMissing: false
-  - org.openrewrite.maven.ChangePropertyValue:
-      key: maven.compiler.target
-      newValue: 17
-      addIfMissing: false
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 17
   - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
       releaseVersion: 17

@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.maven;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -30,6 +31,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     @Test
     void replacesSourceAndTargetConfig() {
         rewriteRun(
+          //language=xml
           pomXml("""
             <?xml version="1.0" encoding="UTF-8"?>
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -84,6 +86,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     @Test
     void deletesSourceAndTargetConfigWithNoReplacementIfDefaultAndCleansUpConfiguration() {
         rewriteRun(
+          //language=xml
           pomXml("""
             <?xml version="1.0" encoding="UTF-8"?>
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -135,6 +138,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     @Test
     void deletesSourceAndTargetConfigWithNoReplacementIfDefault() {
         rewriteRun(
+          //language=xml
           pomXml("""
             <?xml version="1.0" encoding="UTF-8"?>
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -190,6 +194,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     @Test
     void reusesJavaVersionVariableIfAvailable() {
         rewriteRun(
+          //language=xml
           pomXml("""
             <?xml version="1.0" encoding="UTF-8"?>
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -252,6 +257,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     @Test
     void upgradesExistingReleaseConfig() {
         rewriteRun(
+          //language=xml
           pomXml("""
             <?xml version="1.0" encoding="UTF-8"?>
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -305,6 +311,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     @Test
     void prefersJavaVersionIfAvailable() {
         rewriteRun(
+          //language=xml
           pomXml("""
             <?xml version="1.0" encoding="UTF-8"?>
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -366,6 +373,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     @Test
     void notMisledByUnrelatedProperty() {
         rewriteRun(
+          //language=xml
           pomXml("""
             <?xml version="1.0" encoding="UTF-8"?>
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -386,7 +394,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     <version>3.8.0</version>
                     <configuration>
                       <release>10</release>
-                      <barfoo>${foobar}</barfoo>
+                      <basedir>${foobar}</basedir>
                     </configuration>
                   </plugin>
                 </plugins>
@@ -414,7 +422,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     <version>3.8.0</version>
                     <configuration>
                       <release>11</release>
-                      <barfoo>${foobar}</barfoo>
+                      <basedir>${foobar}</basedir>
                     </configuration>
                   </plugin>
                 </plugins>
@@ -429,6 +437,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     @Test
     void doesNotChangeIfNoSourceOrTargetConfig() {
         rewriteRun(
+          //language=xml
           pomXml("""
             <?xml version="1.0" encoding="UTF-8"?>
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -453,6 +462,37 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
             </project>
             """
           )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/169")
+    @Test
+    void noVersionDowngrade() {
+        rewriteRun(
+          //language=xml
+          pomXml("""
+            <?xml version="1.0" encoding="UTF-8"?>
+            <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>sample</artifactId>
+              <version>1.0.0</version>
+              
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                    <configuration>
+                      <release>17</release>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+              
+            </project>
+            """)
         );
     }
 }

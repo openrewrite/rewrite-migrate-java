@@ -50,7 +50,8 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Replaces any explicit `source` or `target` configuration (if present) on the maven-compiler-plugin with `release`, and updates the `release` value if needed.";
+        return "Replaces any explicit `source` or `target` configuration (if present) on the maven-compiler-plugin with " +
+                "`release`, and updates the `release` value if needed. Will not downgrade the java version if the current version is higher.";
     }
 
     @Override
@@ -58,11 +59,11 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
         return new MavenIsoVisitor<ExecutionContext>() {
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
-                final Xml.Tag superVisit = super.visitTag(tag, ctx);
+                final Xml.Tag t = super.visitTag(tag, ctx);
                 if (!PLUGINS_MATCHER.matches(getCursor())) {
-                    return superVisit;
+                    return t;
                 }
-                Optional<Xml.Tag> maybeCompilerPlugin = superVisit.getChildren().stream()
+                Optional<Xml.Tag> maybeCompilerPlugin = t.getChildren().stream()
                         .filter(plugin -> "plugin".equals(plugin.getName())
                                 && "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse(null))
                                 && "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
@@ -70,7 +71,7 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
                 Optional<Xml.Tag> maybeCompilerPluginConfig = maybeCompilerPlugin
                         .flatMap(it -> it.getChild("configuration"));
                 if (!maybeCompilerPluginConfig.isPresent()) {
-                    return superVisit;
+                    return t;
                 }
                 Xml.Tag compilerPluginConfig = maybeCompilerPluginConfig.get();
                 Optional<String> source = compilerPluginConfig.getChildValue("source");
@@ -78,12 +79,13 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
                 Optional<String> release = compilerPluginConfig.getChildValue("release");
                 if (!source.isPresent()
                         && !target.isPresent()
-                        && !release.isPresent()) {
-                    return superVisit;
+                        && !release.isPresent()
+                        || currentNewerThanProposed(release)) {
+                    return t;
                 }
-                Xml.Tag updated = filterTagChildren(superVisit, compilerPluginConfig,
+                Xml.Tag updated = filterTagChildren(t, compilerPluginConfig,
                         child -> !("source".equals(child.getName()) || "target".equals(child.getName())));
-                if (updated != superVisit
+                if (updated != t
                         && source.map("${maven.compiler.source}"::equals).orElse(true)
                         && target.map("${maven.compiler.target}"::equals).orElse(true)) {
                     return filterTagChildren(updated, maybeCompilerPlugin.get(),
@@ -97,6 +99,19 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
             }
 
         };
+    }
+
+    private boolean currentNewerThanProposed(@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<String> maybeRelease) {
+        if(!maybeRelease.isPresent()) {
+            return false;
+        }
+        try {
+            float currentVersion = Float.parseFloat(maybeRelease.get());
+            float proposedVersion = Float.parseFloat(releaseVersion);
+            return proposedVersion < currentVersion;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     private boolean hasJavaVersionProperty(Xml.Document xml) {

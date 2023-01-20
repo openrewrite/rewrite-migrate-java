@@ -218,6 +218,10 @@ tags:
   - jakarta
 
 recipeList:
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: jakarta.authorization
+      artifactId: jakarta.authorization-api
+      newVersion: 2.x
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.authentication
       artifactId: jakarta.authentication-api

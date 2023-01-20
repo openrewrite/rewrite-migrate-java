@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -92,6 +93,29 @@ public class UpdateMavenToJava11Test implements RewriteTest {
                 <properties>
                   <maven.compiler.source>11</maven.compiler.source>
                   <maven.compiler.target>11</maven.compiler.target>
+                </properties>
+                
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+              </project>
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/169")
+    @Test
+    void noDowngrade() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                 
+                <properties>
+                  <maven.compiler.source>17</maven.compiler.source>
+                  <maven.compiler.target>17</maven.compiler.target>
                 </properties>
                 
                 <groupId>com.mycompany.app</groupId>

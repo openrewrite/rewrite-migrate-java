@@ -60,18 +60,8 @@ name: org.openrewrite.java.migrate.JavaVersion11
 displayName: Change Maven Java version property values to 11
 description: Change maven.compiler.source and maven.compiler.target values to 11.
 recipeList:
-  - org.openrewrite.maven.ChangePropertyValue:
-      key: java.version
-      newValue: 11
-      addIfMissing: false
-  - org.openrewrite.maven.ChangePropertyValue:
-      key: maven.compiler.source
-      newValue: 11
-      addIfMissing: false
-  - org.openrewrite.maven.ChangePropertyValue:
-      key: maven.compiler.target
-      newValue: 11
-      addIfMissing: false
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 11
   - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
       releaseVersion: 11
 ---
