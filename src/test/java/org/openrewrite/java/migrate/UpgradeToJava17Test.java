@@ -38,7 +38,6 @@ class UpgradeToJava17Test implements RewriteTest {
     @Test
     void upgradeFromJava8ToJava17() {
         rewriteRun(
-          spec -> spec.expectedCyclesThatMakeChanges(2),
           //language=xml
           pomXml(
             """
