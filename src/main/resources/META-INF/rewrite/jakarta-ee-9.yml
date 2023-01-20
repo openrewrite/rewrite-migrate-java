@@ -16,7 +16,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
-displayName: Migrate to Jakarta EE 9 from Jakarta EE 8
+displayName: Migrate to Jakarta EE 9
 description: Jakarta EE 9 is the first version of Jakarta EE that uses the new `jakarta` namespace.
 tags:
   - jaxb

@@ -17,11 +17,11 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.hibernate.MigrateToHibernate61
-displayName: Migrate to Hibernate 6.1.x from Hibernate 5.5 through 5.6
+displayName: Migrate to Hibernate 6.1.x
 description: >
   This recipe will apply changes commonly needed when migrating to Hibernate 6.1.x. The hibernate dependencies will  
   be updated to use the new org.hibernate.orm group ID and the recipe will make changes necessary to use Hibernate
-  with Jakarta EE 9.0    
+  with Jakarta EE 9.0.
 
 recipeList:
   - org.openrewrite.java.migrate.hibernate.MigrateToHibernateDependencies61
@@ -31,7 +31,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.hibernate.MigrateToHibernateDependencies61
-displayName: Migrate Hibernate dependencies to 6.1.x from Hibernate 5.x
+displayName: Migrate Hibernate dependencies to 6.1.x
 description: >
   This recipe will migrate any existing dependencies on Hibernate 5.x to the latest 6.1.x release. This migration will
   include the adjustment to the new `org.hibernate.orm` group ID. It accounts for artifacts names that both do and do

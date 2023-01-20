@@ -16,7 +16,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeToJava17
-displayName: Migrate to Java 17 from Java 8 through 16
+displayName: Migrate to Java 17
 description: >
   This recipe will apply changes commonly needed when migrating to Java 17. Specifically, for those
   applications that are built on Java 8, this recipe will update and add dependencies on J2EE libraries that are no
