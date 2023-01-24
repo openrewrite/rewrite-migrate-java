@@ -28,7 +28,7 @@ public class UpdateMavenToJava11Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(Environment.builder()
-          .scanRuntimeClasspath("org.openrewrite.java.migrate")
+          .scanRuntimeClasspath()
           .build().activateRecipes("org.openrewrite.java.migrate.JavaVersion11"));
     }
 

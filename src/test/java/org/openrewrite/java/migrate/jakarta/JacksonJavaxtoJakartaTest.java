@@ -28,7 +28,7 @@ public class JacksonJavaxtoJakartaTest implements RewriteTest {
 
     public void defaults(RecipeSpec spec) {
         spec.recipe(Environment.builder()
-          .scanRuntimeClasspath("org.openrewrite.java.migrate")
+          .scanRuntimeClasspath()
           .build()
           .activateRecipes("org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta"));
     }
@@ -96,37 +96,37 @@ public class JacksonJavaxtoJakartaTest implements RewriteTest {
                       <dependency>
                           <groupId>com.fasterxml.jackson.module</groupId>
                           <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
-                          <version>2.13.4</version>
+                          <version>2.13.5</version>
                       </dependency>
                       <dependency>
                           <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
                           <artifactId>jackson-jakarta-rs-cbor-provider</artifactId>
-                          <version>2.13.4</version>
+                          <version>2.13.5</version>
                       </dependency>
                       <dependency>
                           <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
                           <artifactId>jackson-jakarta-rs-json-provider</artifactId>
-                          <version>2.13.4</version>
+                          <version>2.13.5</version>
                       </dependency>
                       <dependency>
                           <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
                           <artifactId>jackson-jakarta-rs-smile-provider</artifactId>
-                          <version>2.13.4</version>
+                          <version>2.13.5</version>
                       </dependency>
                       <dependency>
                           <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
                           <artifactId>jackson-jakarta-rs-xml-provider</artifactId>
-                          <version>2.13.4</version>
+                          <version>2.13.5</version>
                       </dependency>
                       <dependency>
                           <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
                           <artifactId>jackson-jakarta-rs-yaml-provider</artifactId>
-                          <version>2.13.4</version>
+                          <version>2.13.5</version>
                       </dependency>
                       <dependency>
                           <groupId>com.fasterxml.jackson.datatype</groupId>
                           <artifactId>jackson-datatype-jakarta-jsonp</artifactId>
-                          <version>2.13.4</version>
+                          <version>2.13.5</version>
                       </dependency>
                       <dependency>
                           <groupId>org.glassfish</groupId>
@@ -135,7 +135,7 @@ public class JacksonJavaxtoJakartaTest implements RewriteTest {
                       </dependency>
                   </dependencies>
               </project>
-              """
+                """
           )
         );
     }
@@ -206,37 +206,37 @@ public class JacksonJavaxtoJakartaTest implements RewriteTest {
                           <dependency>
                               <groupId>com.fasterxml.jackson.module</groupId>
                               <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
-                              <version>2.13.4</version>
+                              <version>2.13.5</version>
                           </dependency>
                           <dependency>
                               <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
                               <artifactId>jackson-jakarta-rs-cbor-provider</artifactId>
-                              <version>2.13.4</version>
+                              <version>2.13.5</version>
                           </dependency>
                           <dependency>
                               <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
                               <artifactId>jackson-jakarta-rs-json-provider</artifactId>
-                              <version>2.13.4</version>
+                              <version>2.13.5</version>
                           </dependency>
                           <dependency>
                               <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
                               <artifactId>jackson-jakarta-rs-smile-provider</artifactId>
-                              <version>2.13.4</version>
+                              <version>2.13.5</version>
                           </dependency>
                           <dependency>
                               <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
                               <artifactId>jackson-jakarta-rs-xml-provider</artifactId>
-                              <version>2.13.4</version>
+                              <version>2.13.5</version>
                           </dependency>
                           <dependency>
                               <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
                               <artifactId>jackson-jakarta-rs-yaml-provider</artifactId>
-                              <version>2.13.4</version>
+                              <version>2.13.5</version>
                           </dependency>
                           <dependency>
                               <groupId>com.fasterxml.jackson.datatype</groupId>
                               <artifactId>jackson-datatype-jakarta-jsonp</artifactId>
-                              <version>2.13.4</version>
+                              <version>2.13.5</version>
                           </dependency>
                           <dependency>
                               <groupId>org.glassfish</groupId>
@@ -246,7 +246,7 @@ public class JacksonJavaxtoJakartaTest implements RewriteTest {
                       </dependencies>
                   </dependencyManagement>
               </project>
-              """
+                            """
           )
         );
     }
@@ -255,16 +255,16 @@ public class JacksonJavaxtoJakartaTest implements RewriteTest {
     void changeJsonpModuleType() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
-              "jackson-datatype-jsr353",
-              "jackson-core",
-              "jackson-databind")),
+            "jackson-datatype-jsr353",
+            "jackson-core",
+            "jackson-databind")),
           //language=java
           java(
             """
               import com.fasterxml.jackson.databind.ObjectMapper;
               import com.fasterxml.jackson.databind.json.JsonMapper;
               import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
-              
+                            
               public class JacksonTest {
                   ObjectMapper mapper = JsonMapper.builder().addModule(new JSR353Module()).build();
                   ObjectMapper mapper2 = JsonMapper.builder().addModule(getModule()).build();
@@ -278,7 +278,7 @@ public class JacksonJavaxtoJakartaTest implements RewriteTest {
               import com.fasterxml.jackson.databind.ObjectMapper;
               import com.fasterxml.jackson.databind.json.JsonMapper;
               import com.fasterxml.jackson.datatype.jsonp.JSONPModule;
-              
+                            
               public class JacksonTest {
                   ObjectMapper mapper = JsonMapper.builder().addModule(new JSONPModule()).build();
                   ObjectMapper mapper2 = JsonMapper.builder().addModule(getModule()).build();
