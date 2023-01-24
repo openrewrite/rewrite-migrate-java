@@ -27,6 +27,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.marker.SearchResult;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -58,8 +59,7 @@ public class AboutJavaVersion extends Recipe {
             @Override
             public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext executionContext) {
                 return cu.getMarkers().findFirst(JavaVersion.class)
-                        .map(version -> (JavaSourceFile) cu.withMarkers(cu.getMarkers()
-                                .searchResult("Java version: " + version.getMajorVersion())))
+                        .map(version -> SearchResult.found(cu, "Java version: " + version.getMajorVersion()))
                         .orElse(cu);
             }
         };
