@@ -96,6 +96,8 @@ dependencies {
     implementation(platform("org.openrewrite:rewrite-bom:${rewriteVersion}"))
     implementation("org.openrewrite:rewrite-java")
     implementation("org.openrewrite:rewrite-maven")
+    implementation("org.openrewrite:rewrite-github-actions")
+
     runtimeOnly("org.openrewrite:rewrite-java-8")
     runtimeOnly("org.openrewrite:rewrite-java-11")
     runtimeOnly("org.openrewrite:rewrite-java-17")
