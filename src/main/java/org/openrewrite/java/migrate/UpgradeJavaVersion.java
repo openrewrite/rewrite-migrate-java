@@ -50,14 +50,15 @@ public class UpgradeJavaVersion extends Recipe {
             @Override
             public Xml visitTag(Xml.Tag tag, ExecutionContext executionContext) {
                 Xml.Tag t = (Xml.Tag) super.visitTag(tag, executionContext);
-                if(!isPropertyTag()) {
+                if (!isPropertyTag()) {
                     return t;
                 }
-                if(!"java.version".equals(t.getName()) && !"maven.compiler.source".equals(t.getName()) && !"maven.compiler.target".equals(t.getName())) {
+                if (!"java.version".equals(t.getName()) && !"maven.compiler.source".equals(t.getName()) && !"maven.compiler.target".equals(t.getName()) ||
+                        (tag.getValue().isPresent() && tag.getValue().get().startsWith("${"))) {
                     return t;
                 }
                 float value = tag.getValue().map(Float::parseFloat).orElse(0f);
-                if(value >= version) {
+                if (value >= version) {
                     return t;
                 }
                 return t.withValue(String.valueOf(version));
