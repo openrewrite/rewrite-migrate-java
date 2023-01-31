@@ -32,7 +32,7 @@ recipeList:
   - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.java.migrate.lombok.UpdateLombokToJava17
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion
-  - org.openrewrite.java.InstanceOfPatternMatch
+  - org.openrewrite.java.cleanup.InstanceOfPatternMatch
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaVersion17
