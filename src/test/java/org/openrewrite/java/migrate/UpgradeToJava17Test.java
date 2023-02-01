@@ -92,10 +92,6 @@ class UpgradeToJava17Test implements RewriteTest {
                          Set<String> stringSet = Collections.singleton("aaa");
                          List<String> stringList = Collections.singletonList("bbb");
                          Map<String, Object> stringMap = Collections.singletonMap("a-key", "a-value");
-                         Object value = stringMap.get("a-key");
-                         if (value instanceof String) {
-                             System.out.println(((String) value).length());
-                         }
                      }
                   }
                   """,
@@ -115,10 +111,6 @@ class UpgradeToJava17Test implements RewriteTest {
                          Set<String> stringSet = Set.of("aaa");
                          List<String> stringList = List.of("bbb");
                          Map<String, Object> stringMap = Map.of("a-key", "a-value");
-                         Object value = stringMap.get("a-key");
-                         if (value instanceof String s) {
-                             System.out.println(s.length());
-                         }
                      }
                   }
                   """
@@ -185,10 +177,6 @@ class UpgradeToJava17Test implements RewriteTest {
                          Set<String> stringSet = Collections.singleton("aaa");
                          List<String> stringList = Collections.singletonList("bbb");
                          Map<String, Object> stringMap = Collections.singletonMap("a-key", "a-value");
-                         Object value = stringMap.get("a-key");
-                         if (value instanceof String) {
-                             System.out.println(((String) value).length());
-                         }
                      }
                   }
                   """,
@@ -208,10 +196,6 @@ class UpgradeToJava17Test implements RewriteTest {
                          Set<String> stringSet = Set.of("aaa");
                          List<String> stringList = List.of("bbb");
                          Map<String, Object> stringMap = Map.of("a-key", "a-value");
-                         Object value = stringMap.get("a-key");
-                         if (value instanceof String s) {
-                             System.out.println(s.length());
-                         }
                      }
                   }
                   """
