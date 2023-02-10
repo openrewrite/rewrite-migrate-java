@@ -34,7 +34,9 @@ class MigrateLoggerGlobalToGetGlobalTest implements RewriteTest {
     void globalToGetGlobal() {
         //language=java
         rewriteRun(
-          spec -> spec.typeValidationOptions(new TypeValidation(true, true, false, true)),
+          spec -> spec.typeValidationOptions(TypeValidation.builder()
+            .methodInvocations(false)
+            .build()),
           java(
             """
               package org.openrewrite.example;
