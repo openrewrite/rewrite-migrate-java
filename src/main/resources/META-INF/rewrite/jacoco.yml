@@ -14,6 +14,10 @@
 # limitations under the License.
 #
 ---
+type: specs.openrewrite.org/v1beta/category
+name: 'JaCoCo'
+packageName: org.openrewrite.java.migrate.jacoco
+---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jacoco.UpgradeJaCoCoMavenPluginVersion
 displayName: Upgrade JaCoCo Maven plugin version
