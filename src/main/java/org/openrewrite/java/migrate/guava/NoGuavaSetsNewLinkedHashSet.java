@@ -24,6 +24,7 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -74,7 +75,7 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
                     .imports("java.util.LinkedHashSet")
                     .build();
 
-            private final JavaTemplate newLinkedHashSetIterable = JavaTemplate.builder(this::getCursor, "new LinkedHashSet<>(#{any(java.lang.Iterable)})")
+            private final JavaTemplate newLinkedHashSetCollection = JavaTemplate.builder(this::getCursor, "new LinkedHashSet<>(#{any(java.util.Collection)})")
                     .imports("java.util.LinkedHashSet")
                     .build();
 
@@ -88,10 +89,11 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
                     return method.withTemplate(newLinkedHashSet, method.getCoordinates().replace());
-                } else if (NEW_LINKED_HASH_SET_ITERABLE.matches(method)) {
+                } else if (NEW_LINKED_HASH_SET_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
+                           TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
-                    return method.withTemplate(newLinkedHashSetIterable, method.getCoordinates().replace(),
+                    return method.withTemplate(newLinkedHashSetCollection, method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 } else if (NEW_LINKED_HASH_SET_CAPACITY.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Sets");

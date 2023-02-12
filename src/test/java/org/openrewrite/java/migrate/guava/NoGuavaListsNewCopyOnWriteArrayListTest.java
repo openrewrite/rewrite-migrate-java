@@ -58,7 +58,7 @@ class NoGuavaListsNewCopyOnWriteArrayListTest implements RewriteTest {
     }
 
     @Test
-    void replaceWithNewCopyOnWriteArrayListIterable() {
+    void replaceWithNewCopyOnWriteArrayListCollection() {
         //language=java
         rewriteRun(
           java(

@@ -24,6 +24,7 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -72,7 +73,7 @@ public class NoGuavaListsNewLinkedList extends Recipe {
                     .imports("java.util.LinkedList")
                     .build();
 
-            private final JavaTemplate newLinkedListIterable = JavaTemplate.builder(this::getCursor, "new LinkedList<>(#{any(java.lang.Iterable)})")
+            private final JavaTemplate newLinkedListCollection = JavaTemplate.builder(this::getCursor, "new LinkedList<>(#{any(java.util.Collection)})")
                     .imports("java.util.LinkedList")
                     .build();
 
@@ -82,10 +83,11 @@ public class NoGuavaListsNewLinkedList extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.LinkedList");
                     return method.withTemplate(newLinkedList, method.getCoordinates().replace());
-                } else if (NEW_LINKED_LIST_ITERABLE.matches(method)) {
+                } else if (NEW_LINKED_LIST_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
+                           TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.LinkedList");
-                    return method.withTemplate(newLinkedListIterable, method.getCoordinates().replace(),
+                    return method.withTemplate(newLinkedListCollection, method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 }
                 return super.visitMethodInvocation(method, executionContext);

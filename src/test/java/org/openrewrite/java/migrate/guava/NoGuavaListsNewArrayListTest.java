@@ -53,12 +53,12 @@ class NoGuavaListsNewArrayListTest implements RewriteTest {
                   List<Integer> cardinalsWorldSeries = new ArrayList<>();
               }
               """
-)
-);
+          )
+        );
     }
 
     @Test
-    void replaceWithNewArrayListIterable() {
+    void replaceWithNewArrayListCollection() {
         //language=java
         rewriteRun(
           java(
@@ -83,8 +83,8 @@ class NoGuavaListsNewArrayListTest implements RewriteTest {
                   List<Integer> cardinalsWorldSeries = new ArrayList<>(l);
               }
               """
-)
-);
+          )
+        );
     }
 
     @Test

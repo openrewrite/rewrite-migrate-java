@@ -23,7 +23,6 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
@@ -66,7 +65,7 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                     .imports("java.util.HashSet")
                     .build();
 
-            private final JavaTemplate newHashSetIterable = JavaTemplate.builder(this::getCursor, "new HashSet<>(#{any(java.lang.Iterable)})")
+            private final JavaTemplate newHashSetCollection = JavaTemplate.builder(this::getCursor, "new HashSet<>(#{any(java.util.Collection)})")
                     .imports("java.util.HashSet")
                     .build();
 
@@ -77,9 +76,8 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                     maybeAddImport("java.util.HashSet");
                     if (method.getArguments().isEmpty() || (!method.getArguments().isEmpty() && method.getArguments().get(0) instanceof J.Empty)) {
                         return method.withTemplate(newHashSet, method.getCoordinates().replace());
-                    } else if (method.getArguments().size() == 1 && TypeUtils.isAssignableTo(JavaType.ShallowClass.build("java.lang.Iterable"),
-                            method.getArguments().get(0).getType())) {
-                        return method.withTemplate(newHashSetIterable, method.getCoordinates().replace(),
+                    } else if (method.getArguments().size() == 1 && TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
+                        return method.withTemplate(newHashSetCollection, method.getCoordinates().replace(),
                                 method.getArguments().get(0));
                     } else {
                         maybeAddImport("java.util.Arrays");

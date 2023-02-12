@@ -1,8 +1,4 @@
-import com.github.jk1.license.LicenseReportExtension
-import nebula.plugin.contacts.Contact
-import nebula.plugin.contacts.ContactsExtension
-import nl.javadude.gradle.plugins.license.LicenseExtension
-import java.util.*
+@Suppress("GradlePackageUpdate")
 
 plugins {
     id("org.openrewrite.build.recipe-library") version "latest.release"
@@ -11,12 +7,7 @@ plugins {
 group = "org.openrewrite.recipe"
 description = "Migrate to later Java versions. Automatically."
 
-val rewriteVersion = if(project.hasProperty("releasing")) {
-    "latest.release"
-} else {
-    "latest.integration"
-}
-
+val rewriteVersion = rewriteRecipe.rewriteVersion.get()
 dependencies {
     compileOnly("org.projectlombok:lombok:latest.release")
     annotationProcessor("org.projectlombok:lombok:latest.release")
@@ -40,7 +31,6 @@ dependencies {
 
     testImplementation("org.assertj:assertj-core:latest.release")
 
-    @Suppress("GradlePackageUpdate")
     testImplementation("com.google.guava:guava:29.0-jre")
 
     testImplementation("commons-codec:commons-codec:1.+")

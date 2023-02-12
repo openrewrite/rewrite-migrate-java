@@ -58,7 +58,7 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
     }
 
     @Test
-    void replaceWithNewHashSetIterable() {
+    void replaceWithNewHashSetCollection() {
         //language=java
         rewriteRun(
           java(

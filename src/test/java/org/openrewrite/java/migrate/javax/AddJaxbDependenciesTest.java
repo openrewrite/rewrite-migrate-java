@@ -20,7 +20,11 @@ import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static org.openrewrite.maven.Assertions.pomXml;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AddJaxbDependenciesTest implements RewriteTest {
 
@@ -34,210 +38,242 @@ public class AddJaxbDependenciesTest implements RewriteTest {
 
     @Test
     void addJaxbRuntimeOnce() {
-
         rewriteRun(
-            pomXml(
-                """
-                <project>
-                    <groupId>com.example.jaxb</groupId>
-                    <artifactId>jaxb-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.bind</groupId>
-                            <artifactId>jakarta.xml.bind-api</artifactId>
-                            <version>2.3.2</version>
-                        </dependency>
-                    </dependencies>
-                </project>
-                """,
-                """
-                <project>
-                    <groupId>com.example.jaxb</groupId>
-                    <artifactId>jaxb-example</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.bind</groupId>
-                            <artifactId>jakarta.xml.bind-api</artifactId>
-                            <version>2.3.3</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.glassfish.jaxb</groupId>
-                            <artifactId>jaxb-runtime</artifactId>
-                            <version>2.3.7</version>
-                            <scope>provided</scope>
-                        </dependency>
-                    </dependencies>
-                </project>
-                """
-            )
+          pomXml(
+            //language=xml
+            """
+              <project>
+                  <groupId>com.example.jaxb</groupId>
+                  <artifactId>jaxb-example</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>jakarta.xml.bind</groupId>
+                          <artifactId>jakarta.xml.bind-api</artifactId>
+                          <version>2.3.2</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> {
+                Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(pom);
+                assertThat(version.find()).isTrue();
+                String bindApiVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String runtimeVersion = version.group(0);
+                //language=xml
+                return """
+                  <project>
+                      <groupId>com.example.jaxb</groupId>
+                      <artifactId>jaxb-example</artifactId>
+                      <version>1.0.0</version>
+                      <dependencies>
+                          <dependency>
+                              <groupId>jakarta.xml.bind</groupId>
+                              <artifactId>jakarta.xml.bind-api</artifactId>
+                              <version>%s</version>
+                          </dependency>
+                          <dependency>
+                              <groupId>org.glassfish.jaxb</groupId>
+                              <artifactId>jaxb-runtime</artifactId>
+                              <version>%s</version>
+                              <scope>provided</scope>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """.formatted(bindApiVersion, runtimeVersion);
+            })
+          )
         );
     }
 
     @Test
     void renameRuntime() {
-
         rewriteRun(
           pomXml(
+            //language=xml
             """
-            <project>
-                <groupId>com.example.jaxb</groupId>
-                <artifactId>jaxb-example</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                        <version>2.3.3</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                        <version>2.3.3</version>
-                        <scope>provided</scope>
-                    </dependency>
-                </dependencies>
-            </project>
-            """,
-            """
-            <project>
-                <groupId>com.example.jaxb</groupId>
-                <artifactId>jaxb-example</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                        <version>2.3.3</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-runtime</artifactId>
-                        <version>2.3.7</version>
-                        <scope>provided</scope>
-                    </dependency>
-                </dependencies>
-            </project>
-            """
+              <project>
+                  <groupId>com.example.jaxb</groupId>
+                  <artifactId>jaxb-example</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>jakarta.xml.bind</groupId>
+                          <artifactId>jakarta.xml.bind-api</artifactId>
+                          <version>2.3.3</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.sun.xml.bind</groupId>
+                          <artifactId>jaxb-impl</artifactId>
+                          <version>2.3.3</version>
+                          <scope>provided</scope>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> {
+                Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(pom);
+                assertThat(version.find()).isTrue();
+                String bindApiVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String runtimeVersion = version.group(0);
+                //language=xml
+                return """
+                  <project>
+                      <groupId>com.example.jaxb</groupId>
+                      <artifactId>jaxb-example</artifactId>
+                      <version>1.0.0</version>
+                      <dependencies>
+                          <dependency>
+                              <groupId>jakarta.xml.bind</groupId>
+                              <artifactId>jakarta.xml.bind-api</artifactId>
+                              <version>%s</version>
+                          </dependency>
+                          <dependency>
+                              <groupId>org.glassfish.jaxb</groupId>
+                              <artifactId>jaxb-runtime</artifactId>
+                              <version>%s</version>
+                              <scope>provided</scope>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """.formatted(bindApiVersion, runtimeVersion);
+            })
           )
         );
     }
 
     @Test
     void renameAndUpdateApiAndRuntime() {
-
         rewriteRun(
           pomXml(
+            //language=xml
             """
-            <project>
-                <groupId>com.example.jaxb</groupId>
-                <artifactId>jaxb-example</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                        <version>2.3.1</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-runtime</artifactId>
-                        <version>2.3.1</version>
-                        <scope>provided</scope>
-                    </dependency>
-                </dependencies>
-            </project>
-            """,
-            """
-            <project>
-                <groupId>com.example.jaxb</groupId>
-                <artifactId>jaxb-example</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                        <version>2.3.3</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-runtime</artifactId>
-                        <version>2.3.7</version>
-                        <scope>provided</scope>
-                    </dependency>
-                </dependencies>
-            </project>
-            """
+              <project>
+                  <groupId>com.example.jaxb</groupId>
+                  <artifactId>jaxb-example</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>javax.xml.bind</groupId>
+                          <artifactId>jaxb-api</artifactId>
+                          <version>2.3.1</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.glassfish.jaxb</groupId>
+                          <artifactId>jaxb-runtime</artifactId>
+                          <version>2.3.1</version>
+                          <scope>provided</scope>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> {
+                Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(pom);
+                assertThat(version.find()).isTrue();
+                String bindApiVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String runtimeVersion = version.group(0);
+                //language=xml
+                return """
+                  <project>
+                      <groupId>com.example.jaxb</groupId>
+                      <artifactId>jaxb-example</artifactId>
+                      <version>1.0.0</version>
+                      <dependencies>
+                          <dependency>
+                              <groupId>jakarta.xml.bind</groupId>
+                              <artifactId>jakarta.xml.bind-api</artifactId>
+                              <version>%s</version>
+                          </dependency>
+                          <dependency>
+                              <groupId>org.glassfish.jaxb</groupId>
+                              <artifactId>jaxb-runtime</artifactId>
+                              <version>%s</version>
+                              <scope>provided</scope>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """.formatted(bindApiVersion, runtimeVersion);
+            })
           )
         );
     }
 
     @Test
     void renameAndUpdateApiAndAddRuntimeManagedDependencies() {
-
         rewriteRun(
           spec -> spec.cycles(3),
           pomXml(
+            //language=xml
             """
-            <project>
-                <groupId>com.example.jaxb</groupId>
-                <artifactId>jaxb-example</artifactId>
-                <version>1.0.0</version>
-                <dependencyManagement>
-                    <dependencies>
-                        <dependency>
-                            <groupId>javax.xml.bind</groupId>
-                            <artifactId>jaxb-api</artifactId>
-                            <version>2.3.1</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.bind</groupId>
-                            <artifactId>jaxb-impl</artifactId>
-                            <version>2.3.1</version>
-                        </dependency>
-                    </dependencies>
-                </dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                    </dependency>
-                </dependencies>
-            </project>
-            """,
-            """
-            <project>
-                <groupId>com.example.jaxb</groupId>
-                <artifactId>jaxb-example</artifactId>
-                <version>1.0.0</version>
-                <dependencyManagement>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.bind</groupId>
-                            <artifactId>jakarta.xml.bind-api</artifactId>
-                            <version>2.3.3</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.glassfish.jaxb</groupId>
-                            <artifactId>jaxb-runtime</artifactId>
-                            <version>2.3.7</version>
-                        </dependency>
-                    </dependencies>
-                </dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-runtime</artifactId>
-                        <scope>provided</scope>
-                    </dependency>
-                </dependencies>
-            </project>
-            """
+              <project>
+                  <groupId>com.example.jaxb</groupId>
+                  <artifactId>jaxb-example</artifactId>
+                  <version>1.0.0</version>
+                  <dependencyManagement>
+                      <dependencies>
+                          <dependency>
+                              <groupId>javax.xml.bind</groupId>
+                              <artifactId>jaxb-api</artifactId>
+                              <version>2.3.1</version>
+                          </dependency>
+                          <dependency>
+                              <groupId>com.sun.xml.bind</groupId>
+                              <artifactId>jaxb-impl</artifactId>
+                              <version>2.3.1</version>
+                          </dependency>
+                      </dependencies>
+                  </dependencyManagement>
+                  <dependencies>
+                      <dependency>
+                          <groupId>javax.xml.bind</groupId>
+                          <artifactId>jaxb-api</artifactId>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> {
+                Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(pom);
+                assertThat(version.find()).isTrue();
+                String bindApiVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String runtimeVersion = version.group(0);
+                //language=xml
+                return """
+                  <project>
+                      <groupId>com.example.jaxb</groupId>
+                      <artifactId>jaxb-example</artifactId>
+                      <version>1.0.0</version>
+                      <dependencyManagement>
+                          <dependencies>
+                              <dependency>
+                                  <groupId>jakarta.xml.bind</groupId>
+                                  <artifactId>jakarta.xml.bind-api</artifactId>
+                                  <version>%s</version>
+                              </dependency>
+                              <dependency>
+                                  <groupId>org.glassfish.jaxb</groupId>
+                                  <artifactId>jaxb-runtime</artifactId>
+                                  <version>%s</version>
+                              </dependency>
+                          </dependencies>
+                      </dependencyManagement>
+                      <dependencies>
+                          <dependency>
+                              <groupId>jakarta.xml.bind</groupId>
+                              <artifactId>jakarta.xml.bind-api</artifactId>
+                          </dependency>
+                          <dependency>
+                              <groupId>org.glassfish.jaxb</groupId>
+                              <artifactId>jaxb-runtime</artifactId>
+                              <scope>provided</scope>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """.formatted(bindApiVersion, runtimeVersion);
+            })
           )
         );
     }

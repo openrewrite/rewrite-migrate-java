@@ -58,7 +58,7 @@ class NoGuavaListsNewLinkedListTest implements RewriteTest {
     }
 
     @Test
-    void replaceWithNewLinkedListIterable() {
+    void replaceWithNewLinkedListCollection() {
         //language=java
         rewriteRun(
           java(

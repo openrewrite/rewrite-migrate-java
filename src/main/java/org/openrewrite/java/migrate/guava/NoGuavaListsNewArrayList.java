@@ -25,6 +25,7 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -75,7 +76,7 @@ public class NoGuavaListsNewArrayList extends Recipe {
                     .imports("java.util.ArrayList")
                     .build();
 
-            private final JavaTemplate newArrayListIterable = JavaTemplate.builder(this::getCursor, "new ArrayList<>(#{any(java.lang.Iterable)})")
+            private final JavaTemplate newArrayListCollection = JavaTemplate.builder(this::getCursor, "new ArrayList<>(#{any(java.util.Collection)})")
                     .imports("java.util.ArrayList")
                     .build();
 
@@ -89,10 +90,11 @@ public class NoGuavaListsNewArrayList extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.ArrayList");
                     return method.withTemplate(newArrayList, method.getCoordinates().replace());
-                } else if (NEW_ARRAY_LIST_ITERABLE.matches(method)) {
+                } else if (NEW_ARRAY_LIST_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
+                           TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.ArrayList");
-                    return method.withTemplate(newArrayListIterable, method.getCoordinates().replace(),
+                    return method.withTemplate(newArrayListCollection, method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 } else if (NEW_ARRAY_LIST_CAPACITY.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Lists");

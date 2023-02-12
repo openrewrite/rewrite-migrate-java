@@ -20,6 +20,10 @@ import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 public class AddJaxwsDependenciesTest implements RewriteTest {
@@ -34,205 +38,237 @@ public class AddJaxwsDependenciesTest implements RewriteTest {
 
     @Test
     void addJaxwsRuntimeOnce() {
-
         rewriteRun(
           pomXml(
+            //language=xml
             """
-            <project>
-                <groupId>com.example.jaxws</groupId>
-                <artifactId>jaxws-example</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                        <version>2.3.2</version>
-                    </dependency>
-                </dependencies>
-            </project>
-            """,
-            """
-            <project>
-                <groupId>com.example.jaxws</groupId>
-                <artifactId>jaxws-example</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                        <version>2.3.3</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.sun.xml.ws</groupId>
-                        <artifactId>jaxws-rt</artifactId>
-                        <version>2.3.5</version>
-                        <scope>provided</scope>
-                    </dependency>
-                </dependencies>
-            </project>
-            """
+              <project>
+                  <groupId>com.example.jaxws</groupId>
+                  <artifactId>jaxws-example</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>jakarta.xml.ws</groupId>
+                          <artifactId>jakarta.xml.ws-api</artifactId>
+                          <version>2.3.2</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> {
+                Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(pom);
+                assertThat(version.find()).isTrue();
+                String wsApiVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String rtVersion = version.group(0);
+                //language=xml
+                return """
+                  <project>
+                      <groupId>com.example.jaxws</groupId>
+                      <artifactId>jaxws-example</artifactId>
+                      <version>1.0.0</version>
+                      <dependencies>
+                          <dependency>
+                              <groupId>jakarta.xml.ws</groupId>
+                              <artifactId>jakarta.xml.ws-api</artifactId>
+                              <version>%s</version>
+                          </dependency>
+                          <dependency>
+                              <groupId>com.sun.xml.ws</groupId>
+                              <artifactId>jaxws-rt</artifactId>
+                              <version>%s</version>
+                              <scope>provided</scope>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """.formatted(wsApiVersion, rtVersion);
+            })
           )
         );
     }
 
     @Test
     void removeReferenceImplementationRuntime() {
-
         rewriteRun(
           pomXml(
+            //language=xml
             """
-            <project>
-                <groupId>com.example.jaxws</groupId>
-                <artifactId>jaxws-example</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>javax.xml.ws</groupId>
-                        <artifactId>jaxws-api</artifactId>
-                        <version>2.3.1</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.sun.xml.ws</groupId>
-                        <artifactId>jaxws-ri</artifactId>
-                        <version>2.3.2</version>
-                        <scope>provided</scope>
-                    </dependency>
-                </dependencies>
-            </project>
-            """,
-            """
-            <project>
-                <groupId>com.example.jaxws</groupId>
-                <artifactId>jaxws-example</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                        <version>2.3.3</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.sun.xml.ws</groupId>
-                        <artifactId>jaxws-rt</artifactId>
-                        <version>2.3.5</version>
-                        <scope>provided</scope>
-                    </dependency>
-                </dependencies>
-            </project>
-            """
+              <project>
+                  <groupId>com.example.jaxws</groupId>
+                  <artifactId>jaxws-example</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>javax.xml.ws</groupId>
+                          <artifactId>jaxws-api</artifactId>
+                          <version>2.3.1</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.sun.xml.ws</groupId>
+                          <artifactId>jaxws-ri</artifactId>
+                          <version>2.3.2</version>
+                          <scope>provided</scope>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> {
+                Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(pom);
+                assertThat(version.find()).isTrue();
+                String wsApiVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String rtVersion = version.group(0);
+                //language=xml
+                return """
+                  <project>
+                      <groupId>com.example.jaxws</groupId>
+                      <artifactId>jaxws-example</artifactId>
+                      <version>1.0.0</version>
+                      <dependencies>
+                          <dependency>
+                              <groupId>jakarta.xml.ws</groupId>
+                              <artifactId>jakarta.xml.ws-api</artifactId>
+                              <version>%s</version>
+                          </dependency>
+                          <dependency>
+                              <groupId>com.sun.xml.ws</groupId>
+                              <artifactId>jaxws-rt</artifactId>
+                              <version>%s</version>
+                              <scope>provided</scope>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """.formatted(wsApiVersion, rtVersion);
+            })
           )
         );
     }
 
     @Test
     void renameAndUpdateApiAndRuntime() {
-
         rewriteRun(
           pomXml(
+            //language=xml
             """
-            <project>
-                <groupId>com.example.jaxws</groupId>
-                <artifactId>jaxws-example</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                        <version>2.3.2</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.sun.xml.ws</groupId>
-                        <artifactId>jaxws-ri</artifactId>
-                        <version>2.3.2</version>
-                        <scope>provided</scope>
-                    </dependency>
-                </dependencies>
-            </project>
-            """,
-            """
-            <project>
-                <groupId>com.example.jaxws</groupId>
-                <artifactId>jaxws-example</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                        <version>2.3.3</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.sun.xml.ws</groupId>
-                        <artifactId>jaxws-rt</artifactId>
-                        <version>2.3.5</version>
-                        <scope>provided</scope>
-                    </dependency>
-                </dependencies>
-            </project>
-            """
+              <project>
+                  <groupId>com.example.jaxws</groupId>
+                  <artifactId>jaxws-example</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>jakarta.xml.ws</groupId>
+                          <artifactId>jakarta.xml.ws-api</artifactId>
+                          <version>2.3.2</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.sun.xml.ws</groupId>
+                          <artifactId>jaxws-ri</artifactId>
+                          <version>2.3.2</version>
+                          <scope>provided</scope>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> {
+                Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(pom);
+                assertThat(version.find()).isTrue();
+                String wsApiVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String rtVersion = version.group(0);
+                //language=xml
+                return """
+                  <project>
+                      <groupId>com.example.jaxws</groupId>
+                      <artifactId>jaxws-example</artifactId>
+                      <version>1.0.0</version>
+                      <dependencies>
+                          <dependency>
+                              <groupId>jakarta.xml.ws</groupId>
+                              <artifactId>jakarta.xml.ws-api</artifactId>
+                              <version>%s</version>
+                          </dependency>
+                          <dependency>
+                              <groupId>com.sun.xml.ws</groupId>
+                              <artifactId>jaxws-rt</artifactId>
+                              <version>%s</version>
+                              <scope>provided</scope>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """.formatted(wsApiVersion, rtVersion);
+            })
           )
         );
     }
 
     @Test
     void renameAndUpdateApiAndAddRuntimeManagedDependencies() {
-
         rewriteRun(
           pomXml(
+            //language=xml
             """
-            <project>
-                <groupId>com.example.jaxws</groupId>
-                <artifactId>jaxws-example</artifactId>
-                <version>1.0.0</version>
-                <dependencyManagement>
-                    <dependencies>
-                        <dependency>
-                            <groupId>javax.xml.ws</groupId>
-                            <artifactId>jaxws-api</artifactId>
-                            <version>2.3.1</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.ws</groupId>
-                            <artifactId>jaxws-ri</artifactId>
-                            <version>2.3.2</version>
-                        </dependency>
-                    </dependencies>
-                </dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>javax.xml.ws</groupId>
-                        <artifactId>jaxws-api</artifactId>
-                    </dependency>
-                </dependencies>
-            </project>
-            """,
-            """
-            <project>
-                <groupId>com.example.jaxws</groupId>
-                <artifactId>jaxws-example</artifactId>
-                <version>1.0.0</version>
-                <dependencyManagement>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.ws</groupId>
-                            <artifactId>jakarta.xml.ws-api</artifactId>
-                            <version>2.3.3</version>
-                        </dependency>
-                    </dependencies>
-                </dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.sun.xml.ws</groupId>
-                        <artifactId>jaxws-rt</artifactId>
-                        <version>2.3.5</version>
-                        <scope>provided</scope>
-                    </dependency>
-                </dependencies>
-            </project>
-            """
+              <project>
+                  <groupId>com.example.jaxws</groupId>
+                  <artifactId>jaxws-example</artifactId>
+                  <version>1.0.0</version>
+                  <dependencyManagement>
+                      <dependencies>
+                          <dependency>
+                              <groupId>javax.xml.ws</groupId>
+                              <artifactId>jaxws-api</artifactId>
+                              <version>2.3.1</version>
+                          </dependency>
+                          <dependency>
+                              <groupId>com.sun.xml.ws</groupId>
+                              <artifactId>jaxws-ri</artifactId>
+                              <version>2.3.2</version>
+                          </dependency>
+                      </dependencies>
+                  </dependencyManagement>
+                  <dependencies>
+                      <dependency>
+                          <groupId>javax.xml.ws</groupId>
+                          <artifactId>jaxws-api</artifactId>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> {
+                Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(pom);
+                assertThat(version.find()).isTrue();
+                String wsApiVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String rtVersion = version.group(0);
+                //language=xml
+                return """
+                  <project>
+                      <groupId>com.example.jaxws</groupId>
+                      <artifactId>jaxws-example</artifactId>
+                      <version>1.0.0</version>
+                      <dependencyManagement>
+                          <dependencies>
+                              <dependency>
+                                  <groupId>jakarta.xml.ws</groupId>
+                                  <artifactId>jakarta.xml.ws-api</artifactId>
+                                  <version>%s</version>
+                              </dependency>
+                          </dependencies>
+                      </dependencyManagement>
+                      <dependencies>
+                          <dependency>
+                              <groupId>jakarta.xml.ws</groupId>
+                              <artifactId>jakarta.xml.ws-api</artifactId>
+                          </dependency>
+                          <dependency>
+                              <groupId>com.sun.xml.ws</groupId>
+                              <artifactId>jaxws-rt</artifactId>
+                              <version>%s</version>
+                              <scope>provided</scope>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """.formatted(wsApiVersion, rtVersion);
+            })
           )
         );
     }

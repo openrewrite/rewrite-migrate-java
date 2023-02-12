@@ -21,6 +21,10 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.java.Assertions.java;
 
@@ -69,8 +73,8 @@ public class UpdateLombokToJava17Test implements RewriteTest {
     @Test
     void upgradeLombokToJava17() {
         rewriteRun(
-          //language=xml
           pomXml(
+            //language=xml
             """
               <project>
                   <modelVersion>4.0.0</modelVersion>
@@ -86,21 +90,26 @@ public class UpdateLombokToJava17Test implements RewriteTest {
                   </dependencies>
               </project>
               """,
-            """
-              <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>com.example.jackson</groupId>
-                  <artifactId>jackson-legacy</artifactId>
-                  <version>1.0.0</version>
-                  <dependencies>
-                      <dependency>
-                          <groupId>org.projectlombok</groupId>
-                          <artifactId>lombok</artifactId>
-                          <version>1.18.24</version>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """
+            spec -> spec.after(pom -> {
+                Matcher version = Pattern.compile("1.[1-9]\\d+(.\\d+)?").matcher(pom);
+                assertThat(version.find()).isTrue();
+                //language=xml
+                return """
+                  <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <groupId>com.example.jackson</groupId>
+                      <artifactId>jackson-legacy</artifactId>
+                      <version>1.0.0</version>
+                      <dependencies>
+                          <dependency>
+                              <groupId>org.projectlombok</groupId>
+                              <artifactId>lombok</artifactId>
+                              <version>%s</version>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """.formatted(version.group(0));
+            })
           ),
           //language=java
           java(
