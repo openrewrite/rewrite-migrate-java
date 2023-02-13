@@ -13,6 +13,8 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:latest.release")
     testImplementation("org.projectlombok:lombok:latest.release")
 
+    annotationProcessor("org.openrewrite:rewrite-templating:latest.integration")
+
     implementation(platform("org.openrewrite:rewrite-bom:${rewriteVersion}"))
     implementation("org.openrewrite:rewrite-java")
     implementation("org.openrewrite:rewrite-maven")

@@ -23,6 +23,8 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 
+import java.util.Base64;
+
 public class UseJavaUtilBase64 extends Recipe {
     private final String sunPackage;
 
@@ -64,9 +66,6 @@ public class UseJavaUtilBase64 extends Recipe {
         MethodMatcher newBase64Decoder = new MethodMatcher(sunPackage + ".BASE64Decoder <constructor>()");
 
         return new JavaVisitor<ExecutionContext>() {
-            final JavaTemplate getEncoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getEncoder()")
-                    .imports("java.util.Base64")
-                    .build();
             final JavaTemplate getDecoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getDecoder()")
                     .imports("java.util.Base64")
                     .build();
@@ -81,7 +80,6 @@ public class UseJavaUtilBase64 extends Recipe {
 
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
                 if (base64EncodeMethod.matches(m) &&
                     ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
@@ -118,7 +116,11 @@ public class UseJavaUtilBase64 extends Recipe {
             public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                 J.NewClass c = (J.NewClass) super.visitNewClass(newClass, ctx);
                 if (newBase64Encoder.matches(c)) {
-                    return c.withTemplate(getEncoderTemplate, c.getCoordinates().replace());
+                    return c.withTemplate(
+                            JavaTemplate.compile(this, "getEncoder",
+                                    () -> Base64.getEncoder()).build(),
+                            c.getCoordinates().replace()
+                    );
                 }
                 if (newBase64Decoder.matches(newClass)) {
                     return c.withTemplate(getDecoderTemplate, c.getCoordinates().replace());
