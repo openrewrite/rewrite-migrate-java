@@ -22,6 +22,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.NoMissingTypes;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
@@ -43,13 +44,13 @@ public class MigrateCollectionsSingletonList extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Prefer `List.Of(..)` instead of using `Collections.singletonList()` in Java 9 or higher.";
+        return "Prefer `List.of(..)` instead of using `Collections.singletonList()` in Java 9 or higher.";
     }
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
         return Applicability.and(new UsesJavaVersion<>(9),
-                new UsesMethod<>(SINGLETON_LIST));
+                new UsesMethod<>(SINGLETON_LIST), new NoMissingTypes());
     }
 
     @Override

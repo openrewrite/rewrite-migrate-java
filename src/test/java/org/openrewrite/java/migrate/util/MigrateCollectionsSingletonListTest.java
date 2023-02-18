@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -78,6 +79,37 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
                                 
                 class Test {
                     List<LocalDate> list = List.of(LocalDate.now());
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/150")
+    @Test
+    void lombokAllArgsConstructor() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath("lombok")),
+          //language=java
+          version(
+            java(
+              """
+                import lombok.AllArgsConstructor;
+                import java.util.List;
+                
+                import static java.util.Collections.singletonList;
+                
+                enum FooEnum {
+                    FOO, BAR;
+                
+                    @AllArgsConstructor
+                    public enum BarEnum {
+                        foobar(singletonList(FOO));
+
+                        private final List<FooEnum> expectedStates;
+                    }
                 }
                 """
             ),
