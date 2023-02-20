@@ -17,12 +17,14 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Option;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
+import org.openrewrite.internal.ListUtils;
+import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.xml.tree.Xml;
+
+import java.util.List;
+import java.util.Optional;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
@@ -35,14 +37,22 @@ public class UpgradeJavaVersion extends Recipe {
     @Override
     public String getDescription() {
         return "Upgrade build plugin configuration to use the specified Java version. " +
-                "This recipe changes maven-compiler-plugin target version and related settings. " +
-                "Will not downgrade if the version is newer than the specified version.";
+               "This recipe changes maven-compiler-plugin target version and related settings. " +
+               "Will not downgrade if the version is newer than the specified version.";
     }
 
     @Option(displayName = "Java version",
             description = "The Java version to upgrade to.",
             example = "11")
     Integer version;
+
+    @Override
+    protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
+        return ListUtils.map(before, sourceFile -> sourceFile.getMarkers().findFirst(JavaVersion.class)
+                .map(version -> (SourceFile) sourceFile.withMarkers(sourceFile.getMarkers().computeByType(version,
+                        (v, acc) -> v.withSourceCompatibility("17").withTargetCompatibility("17"))))
+                .orElse(sourceFile));
+    }
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -54,7 +64,7 @@ public class UpgradeJavaVersion extends Recipe {
                     return t;
                 }
                 if (!"java.version".equals(t.getName()) && !"maven.compiler.source".equals(t.getName()) && !"maven.compiler.target".equals(t.getName()) ||
-                        (tag.getValue().isPresent() && tag.getValue().get().startsWith("${"))) {
+                    (tag.getValue().isPresent() && tag.getValue().get().startsWith("${"))) {
                     return t;
                 }
                 float value = tag.getValue().map(Float::parseFloat).orElse(0f);

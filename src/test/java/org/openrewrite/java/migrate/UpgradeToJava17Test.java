@@ -17,9 +17,11 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.config.Environment;
+import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.srcMainJava;
 import static org.openrewrite.java.Assertions.version;
@@ -157,9 +159,9 @@ class UpgradeToJava17Test implements RewriteTest {
               """
           ),
           version(
-            //language=java
             srcMainJava(
               java(
+                //language=java
                 """
                   package com.abc;
                           
@@ -180,6 +182,7 @@ class UpgradeToJava17Test implements RewriteTest {
                      }
                   }
                   """,
+                //language=java
                 """
                   package com.abc;
                           
@@ -198,7 +201,10 @@ class UpgradeToJava17Test implements RewriteTest {
                          Map<String, Object> stringMap = Map.of("a-key", "a-value");
                      }
                   }
-                  """
+                  """,
+                spec -> spec.afterRecipe(cu ->
+                  assertThat(cu.getMarkers().findFirst(JavaVersion.class).map(JavaVersion::getSourceCompatibility).get())
+                    .isEqualTo("17"))
               )
             ),
             17)
