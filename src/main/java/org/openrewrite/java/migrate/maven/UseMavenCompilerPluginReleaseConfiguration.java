@@ -59,7 +59,7 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
         return new MavenIsoVisitor<ExecutionContext>() {
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
-                final Xml.Tag t = super.visitTag(tag, ctx);
+                Xml.Tag t = super.visitTag(tag, ctx);
                 if (!PLUGINS_MATCHER.matches(getCursor())) {
                     return t;
                 }

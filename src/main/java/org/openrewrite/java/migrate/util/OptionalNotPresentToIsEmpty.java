@@ -59,7 +59,7 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        final MethodMatcher optionalIsPresentMatcher = new MethodMatcher(JAVA_UTIL_OPTIONAL_IS_PRESENT);
+        MethodMatcher optionalIsPresentMatcher = new MethodMatcher(JAVA_UTIL_OPTIONAL_IS_PRESENT);
         return new JavaVisitor<ExecutionContext>() {
             @Override
             public Statement visitStatement(Statement s, ExecutionContext p) {
