@@ -19,6 +19,7 @@ import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.*;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
@@ -28,6 +29,8 @@ import java.time.Duration;
 
 public class MigrateCollectionsSingletonList extends Recipe {
     private static final MethodMatcher SINGLETON_LIST = new MethodMatcher("java.util.Collections singletonList(..)", true);
+    @Nullable
+    private static J.MethodInvocation listOfTemplate = null;
 
     @Override
     public String getDisplayName() {
@@ -59,15 +62,22 @@ public class MigrateCollectionsSingletonList extends Recipe {
                 if (SINGLETON_LIST.matches(method)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.List");
-                    J.MethodInvocation listOfTemplate = PartProvider.buildPart("import java.util.List;" +
-                                           "class A {\n" +
-                                           "    Object a=List.of(\"X\");" +
-                                           "\n}", J.MethodInvocation.class);
-                    return listOfTemplate.withArguments(m.getArguments()).withPrefix(m.getPrefix());
+                    return getListOfTemplate().withArguments(m.getArguments()).withPrefix(m.getPrefix());
                 }
 
                 return m;
             }
         };
+    }
+
+    private static J.MethodInvocation getListOfTemplate() {
+        if (listOfTemplate == null) {
+            listOfTemplate = PartProvider.buildPart("import java.util.List;" +
+                                                    "class A {\n" +
+                                                    "    Object a=List.of(\"X\");" +
+                                                    "\n}", J.MethodInvocation.class);
+        }
+
+        return listOfTemplate;
     }
 }
