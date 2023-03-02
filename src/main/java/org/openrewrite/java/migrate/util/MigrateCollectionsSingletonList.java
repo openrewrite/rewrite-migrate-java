@@ -19,10 +19,7 @@ import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.NoMissingTypes;
+import org.openrewrite.java.*;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
@@ -62,14 +59,11 @@ public class MigrateCollectionsSingletonList extends Recipe {
                 if (SINGLETON_LIST.matches(method)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.List");
-                    return autoFormat(m.withTemplate(
-                            JavaTemplate
-                                    .builder(this::getCursor, "List.of(#{any()})")
-                                    .imports("java.util.List")
-                                    .build(),
-                            m.getCoordinates().replace(),
-                            m.getArguments().get(0)
-                    ), executionContext);
+                    J.MethodInvocation listOfTemplate = PartProvider.buildPart("import java.util.List;" +
+                                           "class A {\n" +
+                                           "    Object a=List.of(\"X\");" +
+                                           "\n}", J.MethodInvocation.class);
+                    return listOfTemplate.withArguments(m.getArguments()).withPrefix(m.getPrefix());
                 }
 
                 return m;

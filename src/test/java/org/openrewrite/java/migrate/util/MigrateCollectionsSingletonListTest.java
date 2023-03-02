@@ -31,6 +31,58 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
         spec.recipe(new MigrateCollectionsSingletonList());
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/186")
+    @Test
+    void templateError() {
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.*;
+
+                interface ConnectionListener {
+                 void onCreate();
+                }
+
+                class A {
+                 public void setConnectionListeners(List<? extends ConnectionListener> listeners) {
+                 }
+
+                 public void test() {
+                     setConnectionListeners(Collections.singletonList(new ConnectionListener() {
+                         @Override
+                         public void onCreate() {
+                         }
+                     }));
+                 }
+                }
+                """,
+              """
+                import java.util.List;
+
+                interface ConnectionListener {
+                 void onCreate();
+                }
+
+                class A {
+                 public void setConnectionListeners(List<? extends ConnectionListener> listeners) {
+                 }
+
+                 public void test() {
+                     setConnectionListeners(List.of(new ConnectionListener() {
+                         @Override
+                         public void onCreate() {
+                         }
+                     }));
+                 }
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
     void singletonList() {
