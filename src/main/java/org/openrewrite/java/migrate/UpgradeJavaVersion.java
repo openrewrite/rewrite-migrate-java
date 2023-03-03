@@ -48,9 +48,25 @@ public class UpgradeJavaVersion extends Recipe {
 
     @Override
     protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
+        String newVersion = this.version.toString();
+
+        // Create a new JavaVersion marker with the new version
+        Optional<JavaVersion> currentMarker = before.stream()
+                .map(it -> it.getMarkers().findFirst(JavaVersion.class))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findAny();
+        if(!currentMarker.isPresent() || (Integer.parseInt(currentMarker.get().getTargetCompatibility()) >= version &&
+                Integer.parseInt(currentMarker.get().getSourceCompatibility()) >= version)) {
+            return before;
+        }
+        JavaVersion updatedMarker = currentMarker.get()
+                .withSourceCompatibility(newVersion)
+                .withTargetCompatibility(newVersion);
+
         return ListUtils.map(before, sourceFile -> sourceFile.getMarkers().findFirst(JavaVersion.class)
                 .map(version -> (SourceFile) sourceFile.withMarkers(sourceFile.getMarkers().computeByType(version,
-                        (v, acc) -> v.withSourceCompatibility("17").withTargetCompatibility("17"))))
+                        (v, acc) -> updatedMarker)))
                 .orElse(sourceFile));
     }
 
