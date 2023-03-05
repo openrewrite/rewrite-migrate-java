@@ -118,7 +118,7 @@ public class UseJavaUtilBase64 extends Recipe {
                 if (newBase64Encoder.matches(c)) {
                     return c.withTemplate(
                             JavaTemplate.compile(this, "getEncoder",
-                                    () -> Base64.getEncoder()).build(),
+                            Base64::getEncoder).build(),
                             c.getCoordinates().replace()
                     );
                 }

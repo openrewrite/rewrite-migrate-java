@@ -30,7 +30,7 @@ import java.time.Duration;
 public class MigrateCollectionsSingletonList extends Recipe {
     private static final MethodMatcher SINGLETON_LIST = new MethodMatcher("java.util.Collections singletonList(..)", true);
     @Nullable
-    private static J.MethodInvocation listOfTemplate = null;
+    private static J.MethodInvocation listOfTemplate;
 
     @Override
     public String getDisplayName() {
