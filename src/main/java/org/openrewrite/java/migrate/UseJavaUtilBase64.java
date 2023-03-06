@@ -23,6 +23,7 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 
+import java.util.Base64;
 
 public class UseJavaUtilBase64 extends Recipe {
     private final String sunPackage;
@@ -115,15 +116,13 @@ public class UseJavaUtilBase64 extends Recipe {
             public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                 J.NewClass c = (J.NewClass) super.visitNewClass(newClass, ctx);
                 if (newBase64Encoder.matches(c)) {
+                    //noinspection Convert2MethodRef,ResultOfMethodCallIgnored
                     return c.withTemplate(
-                            JavaTemplate.builder(this::getCursor, "Base64.getEncoder()")
-                                .imports("java.util.Base64")
-                                .build(),
+                            JavaTemplate.compile(this, "getEncoder",
+                                    () -> Base64.getEncoder()).build(),
                             c.getCoordinates().replace()
                     );
-                }
-
-                if (newBase64Decoder.matches(newClass)) {
+                } else if (newBase64Decoder.matches(c)) {
                     return c.withTemplate(getDecoderTemplate, c.getCoordinates().replace());
                 }
                 return c;
