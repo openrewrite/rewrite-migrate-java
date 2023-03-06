@@ -56,8 +56,7 @@ public class UpgradeJavaVersion extends Recipe {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findAny();
-        if(!currentMarker.isPresent() || (Integer.parseInt(currentMarker.get().getTargetCompatibility()) >= version &&
-                Integer.parseInt(currentMarker.get().getSourceCompatibility()) >= version)) {
+        if (!currentMarker.isPresent() || currentMarker.get().getMajorVersion() >= version) {
             return before;
         }
         JavaVersion updatedMarker = currentMarker.get()
