@@ -41,7 +41,7 @@ public class StringFormatted extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Prefer `String#formatted(Object...)` over `String#format(String, Object...)' in Java 17 or higher.";
+        return "Prefer `String#formatted(Object...)` over `String#format(String, Object...)` in Java 17 or higher.";
     }
 
     @Override

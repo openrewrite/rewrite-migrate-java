@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
@@ -447,39 +446,6 @@ class StringFormattedTest implements RewriteTest {
                             "a",
                             // B
                             "b");
-                }
-                """
-            ),
-            17
-          )
-        );
-    }
-
-    @Disabled
-    @Test
-    void ternary() {
-        //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                class A {
-                    String foo(String s) { return s; }
-                    void bar() {
-                        String s = (true) ?
-                            foo(String.format("%s", "sam")) :
-                            "";
-                    }
-                }
-                """,
-              """
-                class A {
-                    String foo(String s) { return s; }
-                    void bar() {
-                        String s = (true) ?
-                            foo("%s".formatted("sam")) :
-                            "";
-                    }
                 }
                 """
             ),
