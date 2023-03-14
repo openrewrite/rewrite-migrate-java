@@ -23,7 +23,7 @@ public class JavaVersionPerFile extends DataTable<JavaVersionRow> {
     public JavaVersionPerFile(Recipe recipe) {
         super(
                 recipe,
-                "Use of Java versions by file",
+                "Java versions by file",
                 "A per-file view of Java version in use."
         );
     }
