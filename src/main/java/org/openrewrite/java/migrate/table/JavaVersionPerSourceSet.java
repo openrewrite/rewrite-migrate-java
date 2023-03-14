@@ -23,7 +23,7 @@ public class JavaVersionPerSourceSet extends DataTable<JavaVersionRow> {
     public JavaVersionPerSourceSet(Recipe recipe) {
         super(
                 recipe,
-                "Java version",
+                "Use of Java versions by source set",
                 "Java version information, including the JDK release that was used."
         );
     }
