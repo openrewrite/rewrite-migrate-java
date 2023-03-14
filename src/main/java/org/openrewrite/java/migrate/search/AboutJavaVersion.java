@@ -32,6 +32,9 @@ import org.openrewrite.marker.SearchResult;
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class AboutJavaVersion extends Recipe {
+    transient org.openrewrite.java.migrate.table.JavaVersion javaVersion =
+            new org.openrewrite.java.migrate.table.JavaVersion(this);
+
     @Option(required = false,
             description = "Only mark the Java version when this type is in use.",
             example = "lombok.val")
@@ -49,7 +52,7 @@ public class AboutJavaVersion extends Recipe {
     }
 
     @Override
-    protected @Nullable TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
+    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
         return StringUtils.isBlank(whenUsesType) ? null : new UsesType<>(whenUsesType);
     }
 
@@ -57,9 +60,16 @@ public class AboutJavaVersion extends Recipe {
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext executionContext) {
+            public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
                 return cu.getMarkers().findFirst(JavaVersion.class)
-                        .map(version -> SearchResult.found(cu, "Java version: " + version.getMajorVersion()))
+                        .map(version -> {
+                            javaVersion.insertRow(ctx, new org.openrewrite.java.migrate.table.JavaVersion.Row(
+                                    version.getCreatedBy(),
+                                    version.getVmVendor(),
+                                    version.getSourceCompatibility(),
+                                    version.getTargetCompatibility()));
+                            return SearchResult.found(cu, "Java version: " + version.getMajorVersion());
+                        })
                         .orElse(cu);
             }
         };
