@@ -49,12 +49,13 @@ public class AboutJavaVersion extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "List calculated information about Java version on source files";
+        return "Find which Java version is in use";
     }
 
     @Override
     public String getDescription() {
-        return "A diagnostic for studying the applicability of Java version constraints.";
+        return "A diagnostic for studying the distribution of Java language version levels " +
+               "(both source and target compatibility across files and source sets).";
     }
 
     @Override
