@@ -18,22 +18,28 @@ package org.openrewrite.java.migrate.search;
 import io.micrometer.core.instrument.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Option;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.marker.JavaProject;
+import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.marker.JavaVersion;
+import org.openrewrite.java.migrate.table.JavaVersionPerFile;
+import org.openrewrite.java.migrate.table.JavaVersionPerSourceSet;
+import org.openrewrite.java.migrate.table.JavaVersionRow;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.marker.SearchResult;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class AboutJavaVersion extends Recipe {
-    transient org.openrewrite.java.migrate.table.JavaVersion javaVersion =
-            new org.openrewrite.java.migrate.table.JavaVersion(this);
+    transient JavaVersionPerFile javaVersionPerFile = new JavaVersionPerFile(this);
+    transient JavaVersionPerSourceSet javaVersionPerSourceSet = new JavaVersionPerSourceSet(this);
 
     @Option(required = false,
             description = "Only mark the Java version when this type is in use.",
@@ -57,21 +63,65 @@ public class AboutJavaVersion extends Recipe {
     }
 
     @Override
+    protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
+        Map<ProjectSourceSet, JavaVersionRow> sourceSetVersion = new HashMap<>();
+
+        for (SourceFile sourceFile : before) {
+            sourceFile.getMarkers().findFirst(JavaProject.class).ifPresent(javaProject ->
+                    sourceFile.getMarkers().findFirst(JavaSourceSet.class).ifPresent(sourceSet ->
+                            sourceFile.getMarkers().findFirst(JavaVersion.class).ifPresent(version -> sourceSetVersion.put(new ProjectSourceSet(javaProject, sourceSet),
+                                    new JavaVersionRow(
+                                            javaProject.getProjectName(),
+                                            sourceSet.getName(),
+                                            version.getCreatedBy(),
+                                            version.getVmVendor(),
+                                            version.getSourceCompatibility(),
+                                            Integer.toString(version.getMajorReleaseVersion()),
+                                            version.getTargetCompatibility()
+                                    ))
+                            )
+                    )
+            );
+        }
+
+        for (JavaVersionRow row : sourceSetVersion.values()) {
+            javaVersionPerSourceSet.insertRow(ctx, row);
+        }
+
+        return super.visit(before, ctx);
+    }
+
+    @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
                 return cu.getMarkers().findFirst(JavaVersion.class)
                         .map(version -> {
-                            javaVersion.insertRow(ctx, new org.openrewrite.java.migrate.table.JavaVersion.Row(
+                            String projectName = cu.getMarkers().findFirst(JavaProject.class).map(JavaProject::getProjectName)
+                                    .orElse("");
+                            String sourceSet = cu.getMarkers().findFirst(JavaSourceSet.class).map(JavaSourceSet::getName)
+                                    .orElse("");
+
+                            javaVersionPerFile.insertRow(ctx, new JavaVersionRow(
+                                    projectName,
+                                    sourceSet,
                                     version.getCreatedBy(),
                                     version.getVmVendor(),
                                     version.getSourceCompatibility(),
-                                    version.getTargetCompatibility()));
+                                    Integer.toString(version.getMajorReleaseVersion()),
+                                    version.getTargetCompatibility()
+                            ));
                             return SearchResult.found(cu, "Java version: " + version.getMajorVersion());
                         })
                         .orElse(cu);
             }
         };
+    }
+
+    @Value
+    private static class ProjectSourceSet {
+        JavaProject javaProject;
+        JavaSourceSet javaSourceSet;
     }
 }

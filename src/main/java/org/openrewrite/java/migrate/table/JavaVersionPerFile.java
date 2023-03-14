@@ -15,37 +15,16 @@
  */
 package org.openrewrite.java.migrate.table;
 
-import lombok.Value;
-import org.openrewrite.Column;
 import org.openrewrite.DataTable;
 import org.openrewrite.Recipe;
 
-public class JavaVersion extends DataTable<JavaVersion.Row> {
+public class JavaVersionPerFile extends DataTable<JavaVersionRow> {
 
-    public JavaVersion(Recipe recipe) {
+    public JavaVersionPerFile(Recipe recipe) {
         super(
                 recipe,
                 "Java version",
                 "Java version information, including the JDK release that was used."
         );
-    }
-
-    @Value
-    public static class Row {
-        @Column(displayName = "Created by",
-                description = "The JDK release that was used to compile the source file.")
-        String createdBy;
-
-        @Column(displayName = "VM vendor",
-                description = "The vendor of the JVM that was used to compile the source file.")
-        String vmVendor;
-
-        @Column(displayName = "Source compatibility",
-                description = "The source compatibity of the source file.")
-        String sourceCompatibility;
-
-        @Column(displayName = "Target compatibility",
-                description = "The target compatibity or `--release` version of the source file.")
-        String targetCompatibility;
     }
 }
