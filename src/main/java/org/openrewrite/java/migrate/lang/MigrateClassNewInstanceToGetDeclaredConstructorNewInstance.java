@@ -15,12 +15,15 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -53,8 +56,10 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
     }
 
     @Override
-    protected UsesMethod<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>("java.lang.Class newInstance()");
+    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
+        return Applicability.and(
+                new UsesJavaVersion<>(9),
+                new UsesMethod<>("java.lang.Class newInstance()"));
     }
 
     @Override

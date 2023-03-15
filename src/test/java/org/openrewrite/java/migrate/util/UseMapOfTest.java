@@ -19,13 +19,14 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.*;
 
 class UseMapOfTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new UseMapOf());
+        spec.recipe(new UseMapOf())
+          .allSources(s -> s.markers(javaVersion(10)));
     }
 
     @Test

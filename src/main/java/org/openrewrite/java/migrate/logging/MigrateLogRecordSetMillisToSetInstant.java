@@ -15,12 +15,14 @@
  */
 package org.openrewrite.java.migrate.logging;
 
+import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
@@ -52,7 +54,9 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(MATCHER);
+        return Applicability.and(
+                new UsesJavaVersion<>(9),
+                new UsesMethod<>(MATCHER));
     }
 
     @Override

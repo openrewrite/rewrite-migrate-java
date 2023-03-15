@@ -20,13 +20,15 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 @SuppressWarnings("deprecation")
 class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new MigrateClassNewInstanceToGetDeclaredConstructorNewInstance());
+        spec.recipe(new MigrateClassNewInstanceToGetDeclaredConstructorNewInstance())
+          .allSources(s -> s.markers(javaVersion(9)));
     }
 
     @Test

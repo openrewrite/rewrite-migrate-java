@@ -116,7 +116,7 @@ public class UseJavaUtilBase64 extends Recipe {
             public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                 J.NewClass c = (J.NewClass) super.visitNewClass(newClass, ctx);
                 if (newBase64Encoder.matches(c)) {
-                    //noinspection Convert2MethodRef,ResultOfMethodCallIgnored
+                    // noinspection Convert2MethodRef
                     return c.withTemplate(
                             JavaTemplate.compile(this, "getEncoder",
                                     () -> Base64.getEncoder()).build(),
