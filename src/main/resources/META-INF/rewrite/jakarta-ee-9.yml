@@ -75,6 +75,7 @@ recipeList:
       artifactId: jakarta.activation-api
       version: latest.release
       onlyIfUsing: javax.activation.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.activation
       artifactId: jakarta.activation-api
@@ -102,6 +103,7 @@ recipeList:
       artifactId: jakarta.annotation-api
       version: latest.release
       onlyIfUsing: javax.annotation..*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
@@ -217,6 +219,7 @@ recipeList:
       artifactId: jakarta.authentication-api
       version: latest.release
       onlyIfUsing: javax.security.auth.message..*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.authentication
       artifactId: jakarta.authentication-api
@@ -246,6 +249,7 @@ recipeList:
       artifactId: jakarta.authorization-api
       version: latest.release
       onlyIfUsing: javax.security.jacc..*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.authorization
       artifactId: jakarta.authorization-api
@@ -274,6 +278,7 @@ recipeList:
       artifactId: jakarta.batch-api
       version: latest.release
       onlyIfUsing: javax.batch..*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.batch
       artifactId: jakarta.batch-api
@@ -302,6 +307,7 @@ recipeList:
       artifactId: jakarta.validation-api
       version: latest.release
       onlyIfUsing: javax.validation..*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.validation
       artifactId: jakarta.validation-api
@@ -325,6 +331,7 @@ recipeList:
       artifactId: jakarta.enterprise.cdi-api
       version: latest.release
       onlyIfUsing: javax.decorator.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
@@ -348,6 +355,7 @@ recipeList:
       artifactId: jakarta.ejb-api
       version: latest.release
       onlyIfUsing: javax.ejb.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.ejb
       artifactId: jakarta.ejb-api
@@ -371,6 +379,7 @@ recipeList:
       artifactId: jakarta.el-api
       version: latest.release
       onlyIfUsing: javax.el.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.el
       artifactId: jakarta.el-api
@@ -394,6 +403,7 @@ recipeList:
       artifactId: jakarta.enterprise.cdi-api
       version: 3.0.1
       onlyIfUsing: javax.enterprise.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
@@ -417,6 +427,7 @@ recipeList:
       artifactId: jakarta.faces-api
       version: latest.release
       onlyIfUsing: javax.faces.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.faces
       artifactId: jakarta.faces-api
@@ -448,6 +459,7 @@ recipeList:
       artifactId: jakarta.inject-api
       version: latest.release
       onlyIfUsing: javax.inject.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.inject
       artifactId: jakarta.inject-api
@@ -471,6 +483,7 @@ recipeList:
       artifactId: jakarta.interceptor-api
       version: latest.release
       onlyIfUsing: javax.interceptor.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.interceptor
       artifactId: jakarta.interceptor-api
@@ -494,6 +507,7 @@ recipeList:
       artifactId: jakarta.jms-api
       version: latest.release
       onlyIfUsing: javax.jms.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.jms
       artifactId: jakarta.jms-api
@@ -517,6 +531,7 @@ recipeList:
       artifactId: jakarta.json-api
       version: latest.release
       onlyIfUsing: javax.json.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.json
       artifactId: jakarta.json-api
@@ -540,6 +555,7 @@ recipeList:
       artifactId: jakarta.jws-api
       version: latest.release
       onlyIfUsing: javax.jws.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.jws
       artifactId: jakarta.jws-api
@@ -563,6 +579,7 @@ recipeList:
       artifactId: jakarta.mail-api
       version: latest.release
       onlyIfUsing: javax.mail.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.mail
       artifactId: jakarta.mail-api
@@ -586,6 +603,7 @@ recipeList:
       artifactId: jakarta.persistence-api
       version: latest.release
       onlyIfUsing: javax.persistence.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.persistence
       artifactId: jakarta.persistence-api
@@ -612,6 +630,7 @@ recipeList:
       artifactId: jakarta.resource-api
       version: latest.release
       onlyIfUsing: javax.resource.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.resource
       artifactId: jakarta.resource-api
@@ -635,6 +654,7 @@ recipeList:
       artifactId: jakarta.security.enterprise-api
       version: latest.release
       onlyIfUsing: javax.security.enterprise..*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.security.enterprise
       artifactId: jakarta.security.enterprise-api
@@ -663,6 +683,7 @@ recipeList:
       artifactId: jakarta.servlet-api
       version: 5.x
       onlyIfUsing: javax.servlet.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.servlet
       artifactId: jakarta.servlet-api
@@ -691,6 +712,7 @@ recipeList:
       artifactId: jakarta.transaction-api
       version: latest.release
       onlyIfUsing: javax.transaction.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.transaction
       artifactId: jakarta.transaction-api
@@ -714,6 +736,7 @@ recipeList:
       artifactId: jakarta.websocket-api
       version: latest.release
       onlyIfUsing: javax.websocket.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.websocket
       artifactId: jakarta.websocket-api
@@ -737,6 +760,7 @@ recipeList:
       artifactId: jakarta.ws.rs-api
       version: latest.release
       onlyIfUsing: javax.ws.rs.*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
@@ -765,6 +789,7 @@ recipeList:
       artifactId: jakarta.xml.bind-api
       version: latest.release
       onlyIfUsing: javax.xml.bind..*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
@@ -775,6 +800,7 @@ recipeList:
       version: latest.release
       scope: runtime
       onlyIfUsing: javax.xml.bind..*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: org.glassfish.jaxb
       artifactId: jaxb-runtime
@@ -801,6 +827,7 @@ recipeList:
       artifactId: jakarta.xml.soap-api
       version: latest.release
       onlyIfUsing: javax.xml.soap..*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.soap
       artifactId: jakarta.xml.soap-api
@@ -829,6 +856,7 @@ recipeList:
       artifactId: jakarta.xml.ws-api
       version: latest.release
       onlyIfUsing: javax.xml.ws..*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
@@ -839,6 +867,7 @@ recipeList:
       version: latest.release
       scope: runtime
       onlyIfUsing: javax.xml.ws..*
+      acceptTransitive: true
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
