@@ -652,6 +652,11 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxServletToJakartaServlet
 displayName: Migrate deprecated `javax.servlet` packages to `jakarta.servlet`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+applicability:
+  singleSource:
+    - org.openrewrite.maven.search.DoesNotIncludeDependency:
+        groupId: org.springframework.boot
+        artifactId: spring-boot-starter-web
 recipeList:
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.servlet
