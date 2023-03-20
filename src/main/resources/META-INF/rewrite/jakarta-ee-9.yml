@@ -656,12 +656,12 @@ recipeList:
   - org.openrewrite.maven.AddDependency:
       groupId: jakarta.servlet
       artifactId: jakarta.servlet-api
-      version: 5.x
+      version: 6.x
       onlyIfUsing: javax.servlet.*
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.servlet
       artifactId: jakarta.servlet-api
-      newVersion: 5.x
+      newVersion: 6.x
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.servlet
       newPackageName: jakarta.servlet
