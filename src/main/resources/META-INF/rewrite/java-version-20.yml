@@ -23,7 +23,6 @@ description: >
   target/source and plugins will be also be upgraded to versions that are compatible with Java 20.
 tags:
   - java20
-  - lombok
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.util.UseLocaleOf
