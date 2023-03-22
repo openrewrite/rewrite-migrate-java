@@ -109,6 +109,7 @@ recipeList:
       artifactId: jakarta.xml.bind-api
       version: 2.3.x
       onlyIfUsing: javax.xml.bind..*
+      acceptTransitive: true
   # If a project already had the jakarta api, make sure it is at the latest version.
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
@@ -171,6 +172,7 @@ recipeList:
       artifactId: jakarta.xml.ws-api
       version: 2.3.x
       onlyIfUsing: javax.jws..*
+      acceptTransitive: true
   # If a project already had the jakarta api, make sure it is at the latest version.
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: jakarta.xml.ws

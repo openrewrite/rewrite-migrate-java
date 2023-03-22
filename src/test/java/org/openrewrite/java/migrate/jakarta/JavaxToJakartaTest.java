@@ -23,7 +23,8 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.*;
+import static org.openrewrite.maven.Assertions.pomXml;
 
 class JavaxToJakartaTest implements RewriteTest {
 
@@ -31,6 +32,16 @@ class JavaxToJakartaTest implements RewriteTest {
     private static final String javax =
       """
         package javax.xml.bind.annotation;
+        public class A {
+            public static void stat() {}
+            public void foo() {}
+        }
+        """;
+
+    @Language("java")
+    private static final String javaxServlet =
+      """
+        package javax.servlet;
         public class A {
             public static void stat() {}
             public void foo() {}
@@ -416,6 +427,64 @@ class JavaxToJakartaTest implements RewriteTest {
                   }
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void projectWithSpringBootStarterWeb() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javaxServlet)),
+          mavenProject(
+            "Sample",
+            pomXml("""
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+                  	<modelVersion>4.0.0</modelVersion>
+                  	<parent>
+                  		<groupId>org.springframework.boot</groupId>
+                  		<artifactId>spring-boot-starter-parent</artifactId>
+                  		<version>2.7.6</version>
+                  		<relativePath/> <!-- lookup parent from repository -->
+                  	</parent>
+                  	<groupId>com.example</groupId>
+                  	<artifactId>demo</artifactId>
+                  	<version>0.0.1-SNAPSHOT</version>
+                  	<name>demo</name>
+                  	<description>Demo project for Spring Boot</description>
+                  	<properties>
+                  		<java.version>17</java.version>
+                  	</properties>
+                  	<dependencies>
+                  		<dependency>
+                  			<groupId>org.springframework.boot</groupId>
+                  			<artifactId>spring-boot-starter-web</artifactId>
+                  		</dependency>
+                  	</dependencies>
+
+                  	<build>
+                  		<plugins>
+                  			<plugin>
+                  				<groupId>org.springframework.boot</groupId>
+                  				<artifactId>spring-boot-maven-plugin</artifactId>
+                  			</plugin>
+                  		</plugins>
+                  	</build>
+
+                  </project>
+              """),
+            srcMainJava(
+              java("""
+                import javax.servlet.A;
+                public class TestApplication {
+                }
+            """, """
+                import jakarta.servlet.A;
+                public class TestApplication {
+                }
+            """)
+            )
           )
         );
     }
