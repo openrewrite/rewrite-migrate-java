@@ -672,6 +672,25 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxServletToJakartaServlet
 displayName: Migrate deprecated `javax.servlet` packages to `jakarta.servlet`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+recipeList:
+  - org.openrewrite.java.migrate.jakarta.MaybeAddJakartaServletApi
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: jakarta.servlet
+      artifactId: jakarta.servlet-api
+      newVersion: 5.x
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.servlet
+      newPackageName: jakarta.servlet
+      recursive: true
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: javax.servlet
+      artifactId: javax.servlet-api
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.MaybeAddJakartaServletApi
+displayName: Maybe add jakarta.servlet-api
+description: Adds the jakarta.servlet-api dependency, unless the project already uses spring-boot-starter-web, which transitively includes a compatible implementation under a different GAV
 applicability:
   singleSource:
     - org.openrewrite.maven.search.DoesNotIncludeDependency:
@@ -684,17 +703,6 @@ recipeList:
       version: 5.x
       onlyIfUsing: javax.servlet.*
       acceptTransitive: true
-  - org.openrewrite.maven.UpgradeDependencyVersion:
-      groupId: jakarta.servlet
-      artifactId: jakarta.servlet-api
-      newVersion: 5.x
-  - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.servlet
-      newPackageName: jakarta.servlet
-      recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.servlet
-      artifactId: javax.servlet-api
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
