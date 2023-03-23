@@ -18,35 +18,21 @@ package org.openrewrite.java.migrate.lang;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.HasJavaVersion;
-import org.openrewrite.java.style.IntelliJ;
-import org.openrewrite.java.style.TabsAndIndentsStyle;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.*;
+import org.openrewrite.marker.Markers;
 
-import java.util.Optional;
-import java.util.StringJoiner;
-import java.util.regex.Pattern;
-
-import static java.util.Objects.requireNonNull;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import static org.openrewrite.Tree.randomId;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UseTextBlocks extends Recipe {
-
-    @Option(displayName = "End line delimiter",
-            description = "A regex of the end line delimiter that should be present on a " +
-                          "string for replacement to happen. IntelliJ only suggests replacing " +
-                          "concatenated strings with text blocks when each string ends with a newline, " +
-                          "but sometimes it is preferable to widen this to any whitespace character, for example.",
-            example = "\\s+",
-            required = false)
-    @Nullable
-    String endLineDelimiter;
 
     @Override
     public String getDisplayName() {
@@ -59,91 +45,124 @@ public class UseTextBlocks extends Recipe {
     }
 
     @Override
+    public @Nullable Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(3);
+    }
+
+    @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
         return new HasJavaVersion("17", true).getVisitor();
     }
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        Pattern endLinePattern = Pattern.compile((endLineDelimiter == null ? "\\s+" : endLineDelimiter) + "$");
         return new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitBinary(J.Binary binary, ExecutionContext ctx) {
-                if (isMultilineRegularString(binary, true)) {
-                    TabsAndIndentsStyle tabsAndIndentsStyle = Optional.ofNullable(getCursor().firstEnclosingOrThrow(SourceFile.class)
-                            .getStyle(TabsAndIndentsStyle.class)).orElse(IntelliJ.tabsAndIndents());
+                List<J.Literal> stringLiterals = new ArrayList<>();
 
-                    J.Literal last = (J.Literal) binary.getRight();
+                StringBuilder contentSb = new StringBuilder();
+                StringBuilder concatenationSb = new StringBuilder();
 
-                    StringJoiner joiner = new StringJoiner("\n");
-                    new JavaIsoVisitor<Integer>() {
-                        int joined = 0;
-
-                        @Override
-                        public J.Literal visitLiteral(J.Literal literal, Integer p) {
-                            String s = requireNonNull((String) literal.getValue());
-                            if (s.isEmpty() && joined == 0) {
-                                return literal;
-                            }
-                            s = last.getPrefix().getIndent() + s.replaceAll("\\s+$", "");
-                            if (binary.getPrefix().getWhitespace().contains("\n")) {
-                                for (int i = 0; i < tabsAndIndentsStyle.getContinuationIndent(); i++) {
-                                    s = (tabsAndIndentsStyle.getUseTabCharacter() ? "\t" : " ") + s;
-                                }
-                            }
-                            joiner.add(s);
-                            joined++;
-                            return literal;
-                        }
-                    }.visit(binary, 0);
-
-                    String value = "\n" + joiner + "\n" + last.getPrefix().getIndent();
-                    if (binary.getPrefix().getWhitespace().contains("\n")) {
-                        for (int i = 0; i < tabsAndIndentsStyle.getContinuationIndent(); i++) {
-                            value += (tabsAndIndentsStyle.getUseTabCharacter() ? "\t" : " ");
-                        }
-                    }
-
-                    return last.withValue(value)
-                            .withValueSource(String.format("\"\"\"%s\"\"\"", value))
-                            .withPrefix(binary.getPrefix());
+                boolean flattenable = flatAdditiveStringLiterals(binary, stringLiterals, contentSb, concatenationSb);
+                if (!flattenable) {
+                    return super.visitBinary(binary, ctx);
                 }
+
+                String content = contentSb.toString();
+                boolean hasNewLineInConcatenation = containsNewLineInContent(concatenationSb.toString());
+                boolean hasNewLineInContent = containsNewLineInContent(content);
+
+                if (hasNewLineInConcatenation && hasNewLineInContent) {
+                    String indents = getIndents(concatenationSb.toString());
+                    String newContentSB = content.replace("\n", "\n" + indents);
+                    newContentSB = "\n" + indents + newContentSB;
+
+                    return new J.Literal(randomId(), binary.getPrefix(), Markers.EMPTY, newContentSB,
+                        String.format("\"\"\"%s\"\"\"", newContentSB), null, JavaType.Primitive.String);
+                }
+
                 return super.visitBinary(binary, ctx);
             }
+        };
+    }
 
-            private J.Literal firstLiteral(J.Binary binary) {
-                if (binary.getLeft() instanceof J.Binary) {
-                    return firstLiteral((J.Binary) binary.getLeft());
-                }
-                return (J.Literal) binary.getLeft();
+    private static boolean flatAdditiveStringLiterals(Expression expression,
+                                                      List<J.Literal> stringLiterals,
+                                                      StringBuilder contentSb,
+                                                      StringBuilder concatenationSb) {
+        if (expression instanceof J.Binary) {
+            J.Binary b = (J.Binary) expression;
+            if (b.getOperator() != J.Binary.Type.Addition) {
+                return false;
             }
+            concatenationSb.append(b.getPrefix().getWhitespace()).append("-");
+            concatenationSb.append(b.getPadding().getOperator().getBefore().getWhitespace()).append("-");
+            return flatAdditiveStringLiterals(b.getLeft(), stringLiterals, contentSb, concatenationSb)
+                   && flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
+        } else if (isRegularStringLiteral(expression)) {
+            J.Literal l = (J.Literal) expression;
+            stringLiterals.add(l);
+            contentSb.append(l.getValue().toString());
+            concatenationSb.append(l.getPrefix().getWhitespace()).append("-");
+            return true;
+        }
 
-            private boolean isMultilineRegularString(J.Binary binary, boolean outermost) {
-                return isRegularString(binary.getRight(), outermost) &&
-                       (
-                               binary.getRight().getPrefix().getWhitespace().contains("\n") ||
-                               binary.getPadding().getOperator().getBefore().getWhitespace().contains("\n")
-                       ) &&
-                       (
-                               isRegularString(binary.getLeft(), false) ||
-                               (binary.getLeft() instanceof J.Binary && isMultilineRegularString((J.Binary) binary.getLeft(), false))
-                       );
-            }
+        return false;
+    }
 
-            private boolean isRegularString(Expression expr, boolean last) {
-                if (!(expr instanceof J.Literal) || ((J.Literal) expr).getType() != JavaType.Primitive.String) {
-                    return false;
-                }
-                if (((J.Literal) expr).getValueSource() == null ||
-                    ((J.Literal) expr).getValueSource().startsWith("\"\"\"")) {
-                    return false;
-                }
-                String s = (String) requireNonNull(((J.Literal) expr).getValue());
-                if (!last && !endLinePattern.matcher(s).find()) {
-                    return s.isEmpty();
-                }
+    private static boolean isRegularStringLiteral(Expression expr) {
+        if ( expr instanceof J.Literal) {
+            J.Literal l = (J.Literal) expr;
+
+            return TypeUtils.isString(l.getType()) &&
+                   l.getValueSource() != null &&
+                    !l.getValueSource().startsWith("\"\"\"");
+        }
+        return false;
+    }
+
+    private static boolean containsNewLineInContent(String content) {
+        // ignore the new line is the last character
+        for (int i = 0; i < content.length() - 1; i++) {
+            char c = content.charAt(i);
+            if (c == '\n') {
                 return true;
             }
-        };
+        }
+        return false;
+    }
+
+    private static String getIndents(String concatenation) {
+        return StringUtils.repeat(" ", shortestSpaceAfterNewline(concatenation));
+    }
+
+    public static int shortestSpaceAfterNewline(String str) {
+        int minSpace = Integer.MAX_VALUE;
+        int spaceCount = 0;
+        boolean afterNewline = false;
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c != ' ' && afterNewline) {
+                minSpace = Math.min(minSpace, spaceCount);
+                afterNewline = false;
+            }
+
+            if (c == '\n') {
+                afterNewline = true;
+                spaceCount = 0;
+            } else if (c == ' ') {
+                if (afterNewline) {
+                    spaceCount++;
+                }
+            } else {
+                afterNewline = false;
+                spaceCount = 0;
+            }
+        }
+        if (spaceCount > 0) {
+            minSpace = Math.min(minSpace, spaceCount);
+        }
+        return minSpace == Integer.MAX_VALUE ? 0 : minSpace;
     }
 }
