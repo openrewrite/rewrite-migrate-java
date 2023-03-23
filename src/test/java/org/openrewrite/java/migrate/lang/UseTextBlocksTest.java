@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -257,6 +258,7 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/195")
     @Test
     void newlinesAlignment() {
         rewriteRun(

@@ -70,10 +70,10 @@ public class UseTextBlocks extends Recipe {
                 }
 
                 String content = contentSb.toString();
-                boolean hasNewLinesInConcatenation = containsNewLineInContent(concatenationSb.toString());
-                boolean hasNewLinesInContent = containsNewLineInContent(content);
+                boolean hasNewLineInConcatenation = containsNewLineInContent(concatenationSb.toString());
+                boolean hasNewLineInContent = containsNewLineInContent(content);
 
-                if (hasNewLinesInConcatenation && hasNewLinesInContent) {
+                if (hasNewLineInConcatenation && hasNewLineInContent) {
                     String indents = getIndents(concatenationSb.toString());
                     String newContentSB = content.replace("\n", "\n" + indents);
                     newContentSB = "\n" + indents + newContentSB;
