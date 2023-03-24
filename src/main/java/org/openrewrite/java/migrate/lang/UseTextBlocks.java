@@ -31,6 +31,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.openrewrite.Tree.randomId;
 
@@ -102,15 +103,15 @@ public class UseTextBlocks extends Recipe {
                 }
 
                 StringBuilder sb = new StringBuilder();
+
+                stringLiterals = stringLiterals.stream().filter(s -> !s.getValue().toString().isEmpty()).collect(Collectors.toList());
                 for (int i = 0; i < stringLiterals.size(); i++) {
                     String s = stringLiterals.get(i).getValue().toString();
-                    if (s.isEmpty()) {
-                        continue;
-                    }
                     sb.append(s);
                     if (i != stringLiterals.size() - 1) {
-                        char nextChar = stringLiterals.get(i + 1).getValue().toString().charAt(0);
-                        if (!s.endsWith("\n") && nextChar != '\n') {
+                        String nextLine = stringLiterals.get(i + 1).getValue().toString();
+                        char nextChar = nextLine.charAt(0);
+                        if (!s.endsWith("\n") &&  nextChar != '\n') {
                             sb.append(passPhrase);
                         }
                     }
