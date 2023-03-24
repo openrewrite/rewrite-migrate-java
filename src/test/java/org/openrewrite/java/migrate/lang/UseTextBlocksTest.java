@@ -15,11 +15,13 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
 
 class UseTextBlocksTest implements RewriteTest {
@@ -379,37 +381,44 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    /**
-     * In this test, s1, s2 and s3 are equivalent, and we do translate s1 to s2.
-     * String s1 = "\n========================================================="
-     * + "\n                                                         "
-     * + "\n          Welcome to Spring Integration!                 "
-     * + "\n                                                         "
-     * + "\n    For more information please visit:                   "
-     * + "\n    https://www.springsource.org/spring-integration      "
-     * + "\n                                                         "
-     * + "\n=========================================================";
-     * String s2 = """
-     * =========================================================
-     * \s
-     * Welcome to Spring Integration!                \s
-     * \s
-     * For more information please visit:                  \s
-     * https://www.springsource.org/spring-integration     \s
-     * \s
-     * =========================================================\
-     * """;
-     * String s3 = """
-     * \n=========================================================\
-     * \n                                                         \
-     * \n          Welcome to Spring Integration!                 \
-     * \n                                                         \
-     * \n    For more information please visit:                   \
-     * \n    https://www.springsource.org/spring-integration      \
-     * \n                                                         \
-     * \n=========================================================\
-     * """;
-     */
+    @Disabled("""
+            This test is to demonstrate that the text block conversion is correct.
+            In this test, s1, s2, and s3 are equivalent, and we translate s1 to s2.
+            """)
+    @Test
+    void textBlockDemo() {
+        String s1 = "\n========================================================="
+                    + "\n                                                         "
+                    + "\n          Welcome to Spring Integration!                 "
+                    + "\n                                                         "
+                    + "\n    For more information please visit:                   "
+                    + "\n    https://www.springsource.org/spring-integration      "
+                    + "\n                                                         "
+                    + "\n=========================================================";
+        String s2 = """
+                    
+                    =========================================================
+                                                                            \s
+                              Welcome to Spring Integration!                \s
+                                                                            \s
+                        For more information please visit:                  \s
+                        https://www.springsource.org/spring-integration     \s
+                                                                            \s
+                    =========================================================\
+                    """;
+        String s3 = """
+                    \n=========================================================\
+                    \n                                                         \
+                    \n          Welcome to Spring Integration!                 \
+                    \n                                                         \
+                    \n    For more information please visit:                   \
+                    \n    https://www.springsource.org/spring-integration      \
+                    \n                                                         \
+                    \n=========================================================\
+                    """;
+        assertThat(s1).isEqualTo(s2).isEqualTo(s3);
+    }
+
     @Test
     void newlineAtBeginningOfLines() {
         rewriteRun(
