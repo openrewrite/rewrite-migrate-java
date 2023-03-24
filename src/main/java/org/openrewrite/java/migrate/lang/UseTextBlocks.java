@@ -25,9 +25,13 @@ import org.openrewrite.java.search.HasJavaVersion;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+
 import static org.openrewrite.Tree.randomId;
 
 @Value
@@ -83,43 +87,58 @@ public class UseTextBlocks extends Recipe {
                     return super.visitBinary(binary, ctx);
                 }
 
-                String content = contentSb.toString();
                 boolean hasNewLineInConcatenation = containsNewLineInContent(concatenationSb.toString());
                 if (!hasNewLineInConcatenation) {
                     return super.visitBinary(binary, ctx);
                 }
+
+                String content = contentSb.toString();
+
+                final String passPhrase;
+                try {
+                    passPhrase = generatePassword(content);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                }
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < stringLiterals.size(); i++) {
+                    String s = stringLiterals.get(i).getValue().toString();
+                    if (s.isEmpty()) {
+                        continue;
+                    }
+                    sb.append(s);
+                    if (i != stringLiterals.size() - 1) {
+                        char nextChar = stringLiterals.get(i + 1).getValue().toString().charAt(0);
+                        if (!s.endsWith("\n") && nextChar != '\n') {
+                            sb.append(passPhrase);
+                        }
+                    }
+                }
+
+                content = sb.toString();
 
                 if (!convertStringsWithoutNewlines && !containsNewLineInContent(content)) {
                     return super.visitBinary(binary, ctx);
                 }
 
                 String indentation = getIndents(concatenationSb.toString());
-                StringBuilder finalContentSb = new StringBuilder().append("\n");
 
-                for (J.Literal stingLiteral : stringLiterals) {
-                    String line = indentation + stingLiteral.getValue().toString();
+                boolean isEndsWithNewLine = content.endsWith("\n");
+                content = content.replace("\n", "\n" + indentation);
+                content = content.replace(" \n", "\\s\n");
+                content = content.replace(passPhrase, "\\\n" + indentation);
 
-                    if (line.endsWith(" \n")) {
-                        // Change line ending from " \n" -> "\s" to preserve trailing spaces,
-                        // since `\s` can act as fence to prevent the stripping of trailing white space.
-                        // see https://docs.oracle.com/en/java/javase/20/text-blocks/index.html
-                        line = line.substring(0, line.length() - 2) + "\\s\n";
-                    } else if (!line.endsWith("\n")) {
-                        // Adds the `\<line-terminator>` escape sequence
-                        line = line + "\\\n";
-                    }
+                // add first line
+                content = "\n" + indentation + content;
 
-                    finalContentSb.append(line);
+                // add last line to ensure the closing delimiter is in a new line to manage indentation
+                if (!isEndsWithNewLine) {
+                    content = content + "\\\n" + indentation;
                 }
 
-                // Adds last line
-                if (!finalContentSb.toString().endsWith("\n")) {
-                    finalContentSb.append("\\\n");
-                }
-                finalContentSb.append(indentation);
-
-                return new J.Literal(randomId(), binary.getPrefix(), Markers.EMPTY, finalContentSb,
-                    String.format("\"\"\"%s\"\"\"", finalContentSb), null, JavaType.Primitive.String);
+                return new J.Literal(randomId(), binary.getPrefix(), Markers.EMPTY, content,
+                    String.format("\"\"\"%s\"\"\"", content), null, JavaType.Primitive.String);
             }
         };
     }
@@ -201,5 +220,23 @@ public class UseTextBlocks extends Recipe {
             minSpace = Math.min(minSpace, spaceCount);
         }
         return minSpace == Integer.MAX_VALUE ? 0 : minSpace;
+    }
+
+    private static String generatePassword(String originalStr) throws NoSuchAlgorithmException {
+        final String SALT = "kun";
+        String password = "";
+        String saltedStr = originalStr + SALT;
+
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = md.digest(saltedStr.getBytes());
+
+        password = Base64.getEncoder().encodeToString(hashBytes);
+
+        while (originalStr.contains(password)) {
+            hashBytes = md.digest(password.getBytes());
+            password = Base64.getEncoder().encodeToString(hashBytes);
+        }
+
+        return password;
     }
 }

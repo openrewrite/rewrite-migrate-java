@@ -273,7 +273,6 @@ class UseTextBlocksTest implements RewriteTest {
               """
                 class Test {
                     String query = \"""
-                            \\
                             SELECT * FROM
                             my_table
                             WHERE something = 1;\\
@@ -387,6 +386,80 @@ class UseTextBlocksTest implements RewriteTest {
                     public static void main(String[] args) {
                         new A().method();
                     }
+                }
+                """
+            ), 17
+          )
+        );
+    }
+
+    /**
+     * In this test, s1, s2 and s3 are equivalent, and we do translate s1 to s2.
+     *         String s1 = "\n========================================================="
+     *                 + "\n                                                         "
+     *                 + "\n          Welcome to Spring Integration!                 "
+     *                 + "\n                                                         "
+     *                 + "\n    For more information please visit:                   "
+     *                 + "\n    https://www.springsource.org/spring-integration      "
+     *                 + "\n                                                         "
+     *                 + "\n=========================================================";
+     *         String s2 = """
+     *                     =========================================================
+     *                                                                             \s
+     *                               Welcome to Spring Integration!                \s
+     *                                                                             \s
+     *                         For more information please visit:                  \s
+     *                         https://www.springsource.org/spring-integration     \s
+     *                                                                             \s
+     *                     =========================================================\
+     *                     """;
+     *         String s3 = """
+     *                     \n=========================================================\
+     *                     \n                                                         \
+     *                     \n          Welcome to Spring Integration!                 \
+     *                     \n                                                         \
+     *                     \n    For more information please visit:                   \
+     *                     \n    https://www.springsource.org/spring-integration      \
+     *                     \n                                                         \
+     *                     \n=========================================================\
+     *                     """;
+     */
+    @Test
+    void newlineAtBeginningOfLines() {
+        rewriteRun(
+          version(
+            java(
+              """
+                class A {
+                    void welcome() {
+                        log("\\n========================================================="
+                            + "\\n                                                         "
+                            + "\\n          Welcome to Spring Integration!                 "
+                            + "\\n                                                         "
+                            + "\\n    For more information please visit:                   "
+                            + "\\n    https://www.springsource.org/spring-integration      "
+                            + "\\n                                                         "
+                            + "\\n=========================================================");
+                    }
+                    void log(String s) {}
+                }
+                """,
+              """
+                class A {
+                    void welcome() {
+                        log(\"""
+                           \s
+                            =========================================================
+                                                                                    \\s
+                                      Welcome to Spring Integration!                \\s
+                                                                                    \\s
+                                For more information please visit:                  \\s
+                                https://www.springsource.org/spring-integration     \\s
+                                                                                    \\s
+                            =========================================================\\
+                            \""");
+                    }
+                    void log(String s) {}
                 }
                 """
             ), 17
