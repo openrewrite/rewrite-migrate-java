@@ -140,8 +140,8 @@ public class UseTextBlocks extends Recipe {
                 String indentation = getIndents(concatenationSb.toString(), tabSize);
 
                 boolean isEndsWithNewLine = content.endsWith("\n");
-                content = content.replace("\n", "\n" + indentation);
                 content = content.replace(" \n", "\\s\n");
+                content = content.replace("\n", "\n" + indentation);
                 content = content.replace(passPhrase, "\\\n" + indentation);
 
                 // add first line
