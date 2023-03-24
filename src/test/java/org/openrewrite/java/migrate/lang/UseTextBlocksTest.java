@@ -316,7 +316,7 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
-    void indents() {
+    void indentations() {
         rewriteRun(
           //language=java
           version(
@@ -335,6 +335,34 @@ class UseTextBlocksTest implements RewriteTest {
                         my_table
                         WHERE something = 1;
                         \""";
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void indentationsWithTabs() {
+        rewriteRun(
+          //language=java
+          version(
+            java(
+              """
+                class Test {
+                	String query = "SELECT * FROM\\n" +
+                			"my_table\\n" +
+                			"WHERE something = 1;\\n";
+                }
+                """,
+              """
+                class Test {
+               		String query = \"""
+                            SELECT * FROM
+                            my_table
+                            WHERE something = 1;
+                            \""";
                 }
                 """
             ),
