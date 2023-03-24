@@ -83,43 +83,33 @@ public class UseTextBlocks extends Recipe {
                     return super.visitBinary(binary, ctx);
                 }
 
-                String content = contentSb.toString();
                 boolean hasNewLineInConcatenation = containsNewLineInContent(concatenationSb.toString());
                 if (!hasNewLineInConcatenation) {
                     return super.visitBinary(binary, ctx);
                 }
+
+                String content = contentSb.toString();
 
                 if (!convertStringsWithoutNewlines && !containsNewLineInContent(content)) {
                     return super.visitBinary(binary, ctx);
                 }
 
                 String indentation = getIndents(concatenationSb.toString());
-                StringBuilder finalContentSb = new StringBuilder().append("\n");
 
-                for (J.Literal stingLiteral : stringLiterals) {
-                    String line = indentation + stingLiteral.getValue().toString();
+                boolean isEndsWithNewLine = content.endsWith("\n");
+                content = content.replace("\n", "\n" + indentation);
+                content = content.replace(" \n", "\\s\n");
 
-                    if (line.endsWith(" \n")) {
-                        // Change line ending from " \n" -> "\s" to preserve trailing spaces,
-                        // since `\s` can act as fence to prevent the stripping of trailing white space.
-                        // see https://docs.oracle.com/en/java/javase/20/text-blocks/index.html
-                        line = line.substring(0, line.length() - 2) + "\\s\n";
-                    } else if (!line.endsWith("\n")) {
-                        // Adds the `\<line-terminator>` escape sequence
-                        line = line + "\\\n";
-                    }
+                // add first line
+                content = "\n" + indentation + content;
 
-                    finalContentSb.append(line);
+                // add last line to ensure the closing delimiter is in a new line to manage indentation
+                if (!isEndsWithNewLine) {
+                    content = content + "\\\n" + indentation;
                 }
 
-                // Adds last line
-                if (!finalContentSb.toString().endsWith("\n")) {
-                    finalContentSb.append("\\\n");
-                }
-                finalContentSb.append(indentation);
-
-                return new J.Literal(randomId(), binary.getPrefix(), Markers.EMPTY, finalContentSb,
-                    String.format("\"\"\"%s\"\"\"", finalContentSb), null, JavaType.Primitive.String);
+                return new J.Literal(randomId(), binary.getPrefix(), Markers.EMPTY, content,
+                    String.format("\"\"\"%s\"\"\"", content), null, JavaType.Primitive.String);
             }
         };
     }
