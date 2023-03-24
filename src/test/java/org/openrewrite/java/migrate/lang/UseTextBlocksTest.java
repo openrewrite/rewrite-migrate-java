@@ -48,7 +48,64 @@ class UseTextBlocksTest implements RewriteTest {
                     String query = \"""
                             SELECT * FROM
                             my_table
-                            WHERE something = 1;\""";
+                            WHERE something = 1;\\
+                            \""";
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void preserveTrailingWhiteSpaces() {
+        rewriteRun(
+          //language=java
+          version(
+            java(
+              """
+                class Test {
+                        String query = "SELECT * FROM    \\n" +
+                            "my_table    \\n" +
+                            "WHERE something = 1; ";
+                }
+                """,
+              """
+                class Test {
+                        String query = \"""
+                            SELECT * FROM   \\s
+                            my_table   \\s
+                            WHERE something = 1; \\
+                            \""";
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void preserveTrailingWhiteSpaces2() {
+        rewriteRun(
+          //language=java
+          version(
+            java(
+              """
+                class Test {
+                    String color = "red   \\n" +
+                                   "green \\n" +
+                                   "blue  \\n";
+                }
+                """,
+              """
+                class Test {
+                    String color = \"""
+                                   red  \\s
+                                   green\\s
+                                   blue \\s
+                                   ""\";
                 }
                 """
             ),
@@ -135,15 +192,43 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
-    void noChangeIfNoNewLineInContent() {
+    void preferChangeIfNoNewLineInContent() {
         rewriteRun(
           //language=java
           version(
             java(
               """
                 class Test {
-                    String query = "" +
-                            "SELECT * FROM " +
+                    String query = "SELECT * FROM " +
+                            "my_table" +
+                            " WHERE something = 1;";
+                }
+                """,
+              """
+                class Test {
+                    String query = \"""
+                            SELECT * FROM \\
+                            my_table\\
+                             WHERE something = 1;\\
+                            \""";
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void preferNoChangeIfNoNewLineInContent() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(false)),
+          //language=java
+          version(
+            java(
+              """
+                class Test {
+                    String query = "SELECT * FROM " +
                             "my_table " +
                             "WHERE something = 1;";
                 }
@@ -155,7 +240,7 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
-    void noChangeIfNoNewLineInBinaryConcatenation() {
+    void noChangeIfNoNewLineInConcatenation() {
         rewriteRun(
           //language=java
           version(
@@ -188,9 +273,11 @@ class UseTextBlocksTest implements RewriteTest {
               """
                 class Test {
                     String query = \"""
+                            \\
                             SELECT * FROM
                             my_table
-                            WHERE something = 1;\""";
+                            WHERE something = 1;\\
+                            \""";
                 }
                 """
             ),
@@ -209,8 +296,8 @@ class UseTextBlocksTest implements RewriteTest {
                 class Test {
                     String query =
                             "SELECT * FROM\\n" +
-                                "my_table\\n" +
-                                    "WHERE something = 1;\\n";
+                            "my_table\\n" +
+                            "WHERE something = 1;\\n";
                 }
                 """,
               """
@@ -228,7 +315,6 @@ class UseTextBlocksTest implements RewriteTest {
           )
         );
     }
-
 
     @Test
     void indents() {
@@ -288,7 +374,8 @@ class UseTextBlocksTest implements RewriteTest {
                     void method() {
                         print(String.format(\"""
                                             CREATE KEYSPACE IF NOT EXISTS %s
-                                            WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };\""", keyspace()));
+                                            WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };\\
+                                            \""", keyspace()));
                     }
                     String keyspace() {
                         return "key";
