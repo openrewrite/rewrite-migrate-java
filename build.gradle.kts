@@ -26,6 +26,7 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-params:latest.release")
+    testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
 
     testImplementation("org.openrewrite:rewrite-test")
