@@ -15,20 +15,17 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import org.openrewrite.Applicability;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.ListUtils;
-import org.openrewrite.java.*;
+import org.openrewrite.*;
+import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.*;
+import org.openrewrite.marker.Markers;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class StringFormatted extends Recipe {
 
@@ -57,29 +54,21 @@ public class StringFormatted extends Recipe {
     private static class StringFormattedVisitor extends JavaVisitor<ExecutionContext> {
         @Override
         public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext p) {
-            J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, p);
-            if (!STRING_FORMAT.matches(mi)) {
-                return mi;
+            method = (J.MethodInvocation) super.visitMethodInvocation(method, p);
+            if (!STRING_FORMAT.matches(method) || method.getMethodType() == null) {
+                return method;
             }
 
-            List<Expression> arguments = mi.getArguments();
-            String template = String.format(wrapperNotNeeded(arguments.get(0))
-                    ? "#{any(java.lang.String)}.formatted(%s)"
-                    : "(#{any(java.lang.String)}).formatted(%s)",
-                    String.join(", ", Collections.nCopies(arguments.size() - 1, "#{any()}")));
+            List<Expression> arguments = method.getArguments();
+            boolean wrapperNotNeeded = wrapperNotNeeded(arguments.get(0));
             maybeRemoveImport("java.lang.String.format");
-            mi = mi.withTemplate(
-                    JavaTemplate.builder(this::getCursor, template)
-                            .javaParser(() -> JavaParser.fromJavaVersion().build())
-                            .build(),
-                    mi.getCoordinates().replace(),
-                    arguments.toArray());
-            if (arguments.size() > 1) {
-                arguments.remove(0);
-                mi = maybeAutoFormat(mi, mi.withArguments(
-                        ListUtils.map(mi.getArguments(), (a, b) -> b.withPrefix(arguments.get(a).getPrefix()))), p);
-            }
-            return mi;
+            J.MethodInvocation mi = method.withName(method.getName().withSimpleName("formatted"));
+            Optional<JavaType.Method> formatted = method.getMethodType().getDeclaringType().getMethods().stream().filter(m -> m.getName().equals("formatted")).findAny();
+            mi = mi.withMethodType(formatted.orElse(null));
+            Expression select = wrapperNotNeeded ? arguments.get(0) : new J.Parentheses<>(Tree.randomId(), Space.EMPTY, Markers.EMPTY, JRightPadded.build(arguments.get(0)));
+            mi = mi.withSelect(select);
+            mi = mi.withArguments(arguments.subList(1, arguments.size()));
+            return maybeAutoFormat(method, mi, p);
         }
 
         private static boolean wrapperNotNeeded(Expression expression) {
