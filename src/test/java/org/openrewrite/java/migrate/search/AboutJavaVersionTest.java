@@ -23,7 +23,7 @@ import java.util.UUID;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class AboutJavaVersionTest implements RewriteTest {
+class AboutJavaVersionTest implements RewriteTest {
 
     @Test
     void aboutJavaVersion() {
