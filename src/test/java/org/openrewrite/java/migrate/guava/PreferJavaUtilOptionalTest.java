@@ -62,6 +62,29 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     }
 
     @Test
+    void orNullToOrElseNull() {
+        // Comparison to java.util.Optional: this method is equivalent to Java 8's Optional.orElse(null).
+        //language=java
+        rewriteRun(java("""
+              import com.google.common.base.Optional;
+
+              class A {
+                  String foo(Optional<String> optional) {
+                      return optional.orNull();
+                  }
+              }
+              """, """
+              import java.util.Optional;
+
+              class A {
+                  String foo(Optional<String> optional) {
+                      return optional.orElse(null);
+                  }
+              }
+              """));
+    }
+
+    @Test
     void orToOrElse() {
         //language=java
         rewriteRun(java("""
@@ -227,30 +250,6 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                       } catch (NoSuchElementException e) {
                           return "";
                       }
-                  }
-              }
-              """));
-        }
-
-        @Test
-        @ExpectedToFail("Not yet implemented")
-        void orNullToOrElseNull() {
-            // Comparison to java.util.Optional: this method is equivalent to Java 8's Optional.orElse(null).
-            //language=java
-            rewriteRun(java("""
-              import com.google.common.base.Optional;
-
-              class A {
-                  String foo(Optional<String> optional) {
-                      return optional.orNull();
-                  }
-              }
-              """, """
-              import java.util.Optional;
-
-              class A {
-                  String foo(Optional<String> optional) {
-                      return optional.orElse(null);
                   }
               }
               """));

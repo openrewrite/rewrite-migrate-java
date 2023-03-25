@@ -79,6 +79,7 @@ description: Prefer `java.util.Optional` instead of using `com.google.common.bas
 tags:
   - guava, RSPEC-4738
 recipeList:
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrElseNull
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.base.Optional absent()
       newMethodName: empty
