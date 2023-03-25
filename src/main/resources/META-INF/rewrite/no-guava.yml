@@ -86,11 +86,14 @@ recipeList:
       methodPattern: com.google.common.base.Optional fromNullable(..)
       newMethodName: ofNullable
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: com.google.common.base.Optional or(..)
-      newMethodName: orElse
+      methodPattern: com.google.common.base.Optional or(com.google.common.base.Supplier)
+      newMethodName: orElseGet
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.base.Optional or(..)
       newMethodName: orElse
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.Optional transform(com.google.common.base.Function)
+      newMethodName: map
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Optional
       newFullyQualifiedTypeName: java.util.Optional

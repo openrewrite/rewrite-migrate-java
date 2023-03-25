@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.Issue;
@@ -39,13 +40,13 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     }
 
     @Test
-    void optionalAbsent() {
+    void absentToEmpty() {
         //language=java
         rewriteRun(java("""
           import com.google.common.base.Optional;
 
           class A {
-              Optional absentToEmpty() {
+              Optional foo() {
                   return Optional.absent();
               }
           }
@@ -53,7 +54,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
           import java.util.Optional;
 
           class A {
-              Optional absentToEmpty() {
+              Optional foo() {
                   return Optional.empty();
               }
           }
@@ -61,25 +62,249 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     }
 
     @Test
-    @ExpectedToFail("Not yet implemented")
-    void removeToJavaUtil() {
+    void orToOrElse() {
         //language=java
         rewriteRun(java("""
           import com.google.common.base.Optional;
 
           class A {
-              boolean absentToEmpty() {
-                  return Optional.absent().toJavaUtil().isEmpty();
+              Optional foo(Optional<String> optional) {
+                  return optional.or("other");
               }
           }
           """, """
           import java.util.Optional;
 
           class A {
-              boolean absentToEmpty() {
-                  return Optional.empty().isEmpty();
+              Optional foo(Optional<String> optional) {
+                  return optional.orElse("other");
               }
           }
           """));
+    }
+
+    @Test
+    void orSupplierToOrElseGet() {
+        //language=java
+        rewriteRun(java("""
+          import com.google.common.base.Optional;
+
+          class A {
+              Optional foo(Optional<String> optional) {
+                  return optional.or(() -> "other");
+              }
+          }
+          """, """
+          import java.util.Optional;
+
+          class A {
+              Optional foo(Optional<String> optional) {
+                  return optional.orElseGet(() -> "other");
+              }
+          }
+          """));
+    }
+
+    @Test
+    void transformToMap() {
+        //language=java
+        rewriteRun(java("""
+          import com.google.common.base.Optional;
+
+          class A {
+              Optional foo(Optional<String> optional) {
+                  return optional.transform(String::toUpperCase);
+              }
+          }
+          """, """
+          import java.util.Optional;
+
+          class A {
+              Optional foo(Optional<String> optional) {
+                  return optional.map(String::toUpperCase);
+              }
+          }
+          """));
+    }
+
+    @Nested
+    class NotYetImplemented {
+        @Test
+        @ExpectedToFail("Not yet implemented")
+        void orOptionalToTernary() {
+            // Comparison to java.util.Optional: this method has no equivalent in Java 8's Optional class; write thisOptional.isPresent() ? thisOptional : secondChoice instead.
+            //language=java
+            rewriteRun(java("""
+              import com.google.common.base.Optional;
+
+              class A {
+                  Optional foo(Optional<String> firstChoice, Optional<String> secondChoice) {
+                      return firstChoice.or(secondChoice);
+                  }
+              }
+              """, """
+              import java.util.Optional;
+
+              class A {
+                  Optional foo(Optional<String> firstChoice, Optional<String> secondChoice) {
+                      return a.isPresent()? firstChoice : secondChoice;
+                  }
+              }
+              """));
+        }
+
+        @Test
+        @ExpectedToFail("Not yet implemented")
+        void removeToJavaUtil() {
+            //language=java
+            rewriteRun(java("""
+              import com.google.common.base.Optional;
+
+              class A {
+                  boolean foo() {
+                      return Optional.absent().toJavaUtil().isEmpty();
+                  }
+              }
+              """, """
+              import java.util.Optional;
+
+              class A {
+                  boolean foo() {
+                      return Optional.empty().isEmpty();
+                  }
+              }
+              """));
+        }
+
+        @Test
+        @ExpectedToFail("Not yet implemented")
+        void removeFromJavaUtil() {
+            //language=java
+            rewriteRun(java("""
+              import com.google.common.base.Optional;
+
+              class A {
+                  Optional<String> foo(java.util.Optional<String> optional) {
+                      return Optional.fromJavaUtil(optional);
+                  }
+              }
+              """, """
+              import java.util.Optional;
+
+              class A {
+                  Optional<String> foo(java.util.Optional<String> optional) {
+                      return optional;
+                  }
+              }
+              """));
+        }
+
+        @Test
+        @ExpectedToFail("Not yet implemented")
+        void getCatchIllegalStateExceptionToNoSuchElementException() {
+            // > when the value is absent, this method throws IllegalStateException, whereas the Java 8 counterpart throws NoSuchElementException.
+            // Sure hope no one actually does this, but you never know.
+            //language=java
+            rewriteRun(java("""
+              import com.google.common.base.Optional;
+
+              class A {
+                  String foo(Optional<String> optional) {
+                      try {
+                          return optional.get();
+                      } catch (IllegalStateException e) {
+                          return "";
+                      }
+                  }
+              }
+              """, """
+              import java.util.Optional;
+
+              class A {
+                  String foo(Optional<String> optional) {
+                      try {
+                          return optional.get();
+                      } catch (NoSuchElementException e) {
+                          return "";
+                      }
+                  }
+              }
+              """));
+        }
+
+        @Test
+        @ExpectedToFail("Not yet implemented")
+        void orNullToOrElseNull() {
+            // Comparison to java.util.Optional: this method is equivalent to Java 8's Optional.orElse(null).
+            //language=java
+            rewriteRun(java("""
+              import com.google.common.base.Optional;
+
+              class A {
+                  String foo(Optional<String> optional) {
+                      return optional.orNull();
+                  }
+              }
+              """, """
+              import java.util.Optional;
+
+              class A {
+                  String foo(Optional<String> optional) {
+                      return optional.orElse(null);
+                  }
+              }
+              """));
+        }
+
+        @Test
+        @ExpectedToFail("Not yet implemented")
+        void asSetToStreamCollectToSet() {
+            // Comparison to java.util.Optional: this method has no equivalent in Java 8's Optional class. However, some use cases can be written with calls to optional.stream().
+            //language=java
+            rewriteRun(java("""
+              import com.google.common.base.Optional;
+
+              class A {
+                  Set<String> foo(Optional<String> optional) {
+                      return optional.asSet();
+                  }
+              }
+              """, """
+              import java.util.Optional;
+              import java.util.Set;
+              import java.util.stream.Collectors;
+
+              class A {
+                  Set<String> foo(Optional<String> optional) {
+                      return optional.stream().collect(Collectors.toSet());
+                  }
+              }
+              """));
+        }
+
+        @Test
+        @ExpectedToFail("Not yet implemented")
+        void presentInstances() {
+            // Comparison to java.util.Optional: this method has no equivalent in Java 8's Optional class; use optionals.stream().filter(Optional::isPresent).map(Optional::get) instead.
+            //language=java
+            rewriteRun(java("""
+              import com.google.common.base.Optional;
+
+              class A {
+                  Iterable<String> foo(Iterable<Optional<String>> optionals) {
+                      return Optional.presentInstances(optionals);
+                  }
+              }
+              """, """
+              import java.util.Optional;
+              import java.util.stream.Collectors;
+                        
+              class A {
+                  Iterable<String> foo(Iterable<Optional<String>> optionals) {
+                      return optionals.stream().flatMap(Optional::stream).collect(Collectors.toList());
+                  }
+              }
+              """));
+        }
     }
 }
