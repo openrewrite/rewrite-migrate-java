@@ -46,7 +46,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
           import com.google.common.base.Optional;
 
           class A {
-              Optional foo() {
+              Optional<String> foo() {
                   return Optional.absent();
               }
           }
@@ -54,7 +54,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
           import java.util.Optional;
 
           class A {
-              Optional foo() {
+              Optional<String> foo() {
                   return Optional.empty();
               }
           }
@@ -68,7 +68,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
           import com.google.common.base.Optional;
 
           class A {
-              Optional foo(Optional<String> optional) {
+              Optional<String> foo(Optional<String> optional) {
                   return optional.or("other");
               }
           }
@@ -76,7 +76,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
           import java.util.Optional;
 
           class A {
-              Optional foo(Optional<String> optional) {
+              Optional<String> foo(Optional<String> optional) {
                   return optional.orElse("other");
               }
           }
@@ -90,7 +90,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
           import com.google.common.base.Optional;
 
           class A {
-              Optional foo(Optional<String> optional) {
+              Optional<String> foo(Optional<String> optional) {
                   return optional.or(() -> "other");
               }
           }
@@ -98,7 +98,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
           import java.util.Optional;
 
           class A {
-              Optional foo(Optional<String> optional) {
+              Optional<String> foo(Optional<String> optional) {
                   return optional.orElseGet(() -> "other");
               }
           }
@@ -112,7 +112,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
           import com.google.common.base.Optional;
 
           class A {
-              Optional foo(Optional<String> optional) {
+              Optional<String> foo(Optional<String> optional) {
                   return optional.transform(String::toUpperCase);
               }
           }
@@ -120,7 +120,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
           import java.util.Optional;
 
           class A {
-              Optional foo(Optional<String> optional) {
+              Optional<String> foo(Optional<String> optional) {
                   return optional.map(String::toUpperCase);
               }
           }
@@ -138,7 +138,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
               import com.google.common.base.Optional;
 
               class A {
-                  Optional foo(Optional<String> firstChoice, Optional<String> secondChoice) {
+                  Optional<String> foo(Optional<String> firstChoice, Optional<String> secondChoice) {
                       return firstChoice.or(secondChoice);
                   }
               }
@@ -146,7 +146,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
               import java.util.Optional;
 
               class A {
-                  Optional foo(Optional<String> firstChoice, Optional<String> secondChoice) {
+                  Optional<String> foo(Optional<String> firstChoice, Optional<String> secondChoice) {
                       return a.isPresent()? firstChoice : secondChoice;
                   }
               }
