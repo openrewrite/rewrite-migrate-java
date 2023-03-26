@@ -170,7 +170,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
 
               class A {
                   Optional<String> foo(Optional<String> firstChoice, Optional<String> secondChoice) {
-                      return a.isPresent()? firstChoice : secondChoice;
+                      return firstChoice.or(() -> secondChoice);
                   }
               }
               """));
