@@ -45,8 +45,6 @@ public class UseTextBlocks extends Recipe {
     @Nullable
     boolean convertStringsWithoutNewlines;
 
-    private static final int TAB_FACTOR = 1000;
-
     public UseTextBlocks() {
         convertStringsWithoutNewlines = true;
     }
@@ -194,42 +192,55 @@ public class UseTextBlocks extends Recipe {
     }
 
     private static String getIndents(String concatenation) {
-        int num = shortestPrefixAfterNewline(concatenation);
-        return StringUtils.repeat("\t", num / TAB_FACTOR) +
-               StringUtils.repeat(" ", num % TAB_FACTOR);
+        int[] tabAndSpaceCounts = shortestPrefixAfterNewline(concatenation);
+        return StringUtils.repeat("\t", tabAndSpaceCounts[0]) +
+               StringUtils.repeat(" ", tabAndSpaceCounts[1]);
     }
 
-    public static int shortestPrefixAfterNewline(String str) {
-        int minSpace = Integer.MAX_VALUE;
+    // Each tab and space count for 1, so the shortest prefix means the minimum of the sum of tabs and spaces count.
+    private static int[] shortestPrefixAfterNewline(String str) {
+        int shortest = Integer.MAX_VALUE;
+        int[] shortestPair = new int[]{0, 0};
+        int tabCount = 0;
         int spaceCount = 0;
+
         boolean afterNewline = false;
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             if (c != ' ' && c != '\t' && afterNewline) {
-                minSpace = Math.min(minSpace, spaceCount);
+                if ((spaceCount + tabCount) < shortest) {
+                    shortest = spaceCount + tabCount;
+                    shortestPair[0] = tabCount;
+                    shortestPair[1] = spaceCount;
+                }
                 afterNewline = false;
             }
 
             if (c == '\n') {
                 afterNewline = true;
                 spaceCount = 0;
+                tabCount = 0;
             } else if (c == ' ') {
                 if (afterNewline) {
                     spaceCount++;
                 }
             } else if (c == '\t') {
                 if (afterNewline) {
-                    spaceCount += TAB_FACTOR;
+                    tabCount++;
                 }
             } else {
                 afterNewline = false;
                 spaceCount = 0;
+                tabCount = 0;
             }
         }
-        if (spaceCount > 0) {
-            minSpace = Math.min(minSpace, spaceCount);
+
+        if ((spaceCount + tabCount > 0) && ((spaceCount + tabCount) < shortest)) {
+            shortestPair[0] = tabCount;
+            shortestPair[1] = spaceCount;
         }
-        return minSpace == Integer.MAX_VALUE ? 0 : minSpace;
+
+        return shortestPair;
     }
 
     private static String generatePassword(String originalStr) throws NoSuchAlgorithmException {
