@@ -18,10 +18,18 @@ package org.openrewrite.java.migrate.lang;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.style.TabsAndIndentsStyle;
+import org.openrewrite.style.NamedStyles;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.Assertions.*;
 
 class UseTextBlocksTest implements RewriteTest {
@@ -309,7 +317,7 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
-    void indentationsWithTabs() {
+    void indentationsWithTabsOnly() {
         rewriteRun(
           //language=java
           java(
@@ -323,10 +331,77 @@ class UseTextBlocksTest implements RewriteTest {
             """
               class Test {
               	String query = \"""
-                          SELECT * FROM
-                          my_table
-                          WHERE something = 1;
-                          \""";
+              			SELECT * FROM
+              			my_table
+              			WHERE something = 1;
+              			\""";
+              }
+              """
+          )
+        );
+    }
+
+    private static Consumer<RecipeSpec> tabsAndIndents(UnaryOperator<TabsAndIndentsStyle> with, int tabSize) {
+        return spec -> spec.recipe(new UseTextBlocks())
+          .parser(JavaParser.fromJavaVersion().styles(singletonList(
+            new NamedStyles(
+              randomId(), "TabsOnlyFile", "TabsOnlyFile", "tabSize is 1", emptySet(),
+              singletonList(with.apply(buildTabsAndIndents(1)))
+            )
+          )));
+    }
+
+    private static TabsAndIndentsStyle buildTabsAndIndents(int tabSize) {
+        return new TabsAndIndentsStyle(true, tabSize, tabSize, tabSize * 2, false,
+          new TabsAndIndentsStyle.MethodDeclarationParameters(true));
+    }
+
+    @Test
+    void indentationsWithTabsOnlyAndTabSizeIs1() {
+        rewriteRun(
+          tabsAndIndents(style -> style.withUseTabCharacter(true), 1),
+          //language=java
+          java(
+            """
+              class Test {
+              	String query = "SELECT * FROM\\n" +
+              			"my_table\\n" +
+              			"WHERE something = 1;\\n";
+              }
+              """,
+            """
+              class Test {
+              	String query = \"""
+              			SELECT * FROM
+              			my_table
+              			WHERE something = 1;
+              			\""";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void indentationsWithTabsAndWhitespacesCombined() {
+        rewriteRun(
+          tabsAndIndents(style -> style.withUseTabCharacter(true), 8),
+          //language=java
+          java(
+            """
+              class Test {
+              	String query = "SELECT * FROM\\n" +
+              			    "my_table\\n" +
+              			    "WHERE something = 1;\\n";
+              }
+              """,
+            """
+              class Test {
+              	String query = \"""
+              			    SELECT * FROM
+              			    my_table
+              			    WHERE something = 1;
+              			    \""";
               }
               """
           )

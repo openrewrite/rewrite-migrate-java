@@ -22,8 +22,6 @@ import org.openrewrite.internal.StringUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.HasJavaVersion;
-import org.openrewrite.java.style.IntelliJ;
-import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
@@ -46,6 +44,8 @@ public class UseTextBlocks extends Recipe {
         required = false)
     @Nullable
     boolean convertStringsWithoutNewlines;
+
+    private static final int TAB_FACTOR = 1000;
 
     public UseTextBlocks() {
         convertStringsWithoutNewlines = true;
@@ -78,17 +78,6 @@ public class UseTextBlocks extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
-            private int tabSize = 4;
-
-            @Override
-            public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
-                TabsAndIndentsStyle style = cu.getStyle(TabsAndIndentsStyle.class);
-                if (style == null) {
-                    style = IntelliJ.tabsAndIndents();
-                }
-                tabSize = style.getTabSize();
-                return super.visitCompilationUnit(cu, executionContext);
-            }
 
             @Override
             public J visitBinary(J.Binary binary, ExecutionContext ctx) {
@@ -137,7 +126,7 @@ public class UseTextBlocks extends Recipe {
                     return super.visitBinary(binary, ctx);
                 }
 
-                String indentation = getIndents(concatenationSb.toString(), tabSize);
+                String indentation = getIndents(concatenationSb.toString());
 
                 boolean isEndsWithNewLine = content.endsWith("\n");
                 content = content.replace(" \n", "\\s\n");
@@ -204,11 +193,13 @@ public class UseTextBlocks extends Recipe {
         return false;
     }
 
-    private static String getIndents(String concatenation, int tabSize) {
-        return StringUtils.repeat(" ", shortestSpaceAfterNewline(concatenation, tabSize));
+    private static String getIndents(String concatenation) {
+        int num = shortestPrefixAfterNewline(concatenation);
+        return StringUtils.repeat("\t", num / TAB_FACTOR) +
+               StringUtils.repeat(" ", num % TAB_FACTOR);
     }
 
-    public static int shortestSpaceAfterNewline(String str, int tabSize) {
+    public static int shortestPrefixAfterNewline(String str) {
         int minSpace = Integer.MAX_VALUE;
         int spaceCount = 0;
         boolean afterNewline = false;
@@ -228,7 +219,7 @@ public class UseTextBlocks extends Recipe {
                 }
             } else if (c == '\t') {
                 if (afterNewline) {
-                    spaceCount += tabSize;
+                    spaceCount += TAB_FACTOR;
                 }
             } else {
                 afterNewline = false;
