@@ -36,7 +36,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
               .build()
               .activateRecipes("org.openrewrite.java.migrate.guava.PreferJavaUtilOptional")
           )
-          .parser(JavaParser.fromJavaVersion().classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpath("rewrite-java", "guava"));
     }
 
     @Test
