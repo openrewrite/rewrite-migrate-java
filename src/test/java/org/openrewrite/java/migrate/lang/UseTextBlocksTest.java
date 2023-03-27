@@ -342,11 +342,10 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     private static Consumer<RecipeSpec> tabsAndIndents(UnaryOperator<TabsAndIndentsStyle> with, int tabSize) {
-        return spec -> spec.recipe(new UseTextBlocks())
-          .parser(JavaParser.fromJavaVersion().styles(singletonList(
+        return spec -> spec.parser(JavaParser.fromJavaVersion().styles(singletonList(
             new NamedStyles(
               randomId(), "TabsOnlyFile", "TabsOnlyFile", "tabSize is 1", emptySet(),
-              singletonList(with.apply(buildTabsAndIndents(1)))
+              singletonList(with.apply(buildTabsAndIndents(tabSize)))
             )
           )));
     }
