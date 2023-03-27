@@ -66,7 +66,7 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
     }
 
     private static class PreferJavaUtilOptionalOrElseNullVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private static final MethodMatcher guavaCreateTempDirMatcher = new MethodMatcher("com.google.common.base.Optional orNull()");
+        private static final MethodMatcher OPTIONAL_OR_NULL_MATCHER = new MethodMatcher("com.google.common.base.Optional orNull()");
 
         @Override
         public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
@@ -79,7 +79,7 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
             J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
-            if (guavaCreateTempDirMatcher.matches(mi)) {
+            if (OPTIONAL_OR_NULL_MATCHER.matches(mi)) {
                 return mi.withName(mi.getName().withSimpleName("orElse"))
                         .withTemplate(JavaTemplate.builder(this::getCursor, "null").build(), mi.getCoordinates().replaceArguments());
             }
