@@ -80,10 +80,6 @@ description: Prefer `java.util.Optional` instead of using `com.google.common.bas
 tags:
   - guava
   - RSPEC-4738
-applicability:
-  singleSource:
-    - org.openrewrite.java.search.UsesJavaVersion:
-        majorVersionMin: 9
 recipeList:
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrElseNull
   - org.openrewrite.java.ChangeMethodName:
