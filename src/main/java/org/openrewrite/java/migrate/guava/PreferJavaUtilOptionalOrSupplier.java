@@ -15,11 +15,14 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
@@ -54,8 +57,10 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
     }
 
     @Override
-    protected UsesType<ExecutionContext> getApplicableTest() {
-        return new UsesType<>("com.google.common.base.Optional");
+    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
+        return Applicability.and(
+                new UsesJavaVersion<>(9),
+                new UsesType<>("com.google.common.base.Optional"));
     }
 
     @Override

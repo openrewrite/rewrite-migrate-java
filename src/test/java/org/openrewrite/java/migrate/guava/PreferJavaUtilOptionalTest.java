@@ -25,6 +25,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/197")
 class PreferJavaUtilOptionalTest implements RewriteTest {
@@ -135,7 +136,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
           import com.google.common.base.Optional;
 
           class A {
-              Optional<String> foo(java.util.Optional<String> optional) {
+              Optional<String> foo(Optional<String> optional) {
                   return optional.transform(String::toUpperCase);
               }
           }
@@ -198,7 +199,9 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     void orOptionalToOrSupplier() {
         // Comparison to java.util.Optional: this method has no equivalent in Java 8's Optional class; write thisOptional.isPresent() ? thisOptional : secondChoice instead.
         //language=java
-        rewriteRun(java("""
+        rewriteRun(
+          spec -> spec.allSources(s -> s.markers(javaVersion(9))),
+          java("""
               import com.google.common.base.Optional;
 
               class A {
