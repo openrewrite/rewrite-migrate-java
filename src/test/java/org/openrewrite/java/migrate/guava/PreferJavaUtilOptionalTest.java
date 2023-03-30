@@ -194,14 +194,11 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
               """));
     }
 
-    @Nested
-    class NotYetImplemented {
-        @Test
-        @ExpectedToFail("Not yet implemented")
-        void orOptionalToTernary() {
-            // Comparison to java.util.Optional: this method has no equivalent in Java 8's Optional class; write thisOptional.isPresent() ? thisOptional : secondChoice instead.
-            //language=java
-            rewriteRun(java("""
+    @Test
+    void orOptionalToOrSupplier() {
+        // Comparison to java.util.Optional: this method has no equivalent in Java 8's Optional class; write thisOptional.isPresent() ? thisOptional : secondChoice instead.
+        //language=java
+        rewriteRun(java("""
               import com.google.common.base.Optional;
 
               class A {
@@ -218,7 +215,10 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                   }
               }
               """));
-        }
+    }
+
+    @Nested
+    class NotYetImplemented {
 
         @Test
         @ExpectedToFail("Not yet implemented")

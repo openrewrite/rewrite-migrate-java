@@ -81,6 +81,7 @@ tags:
   - guava
   - RSPEC-4738
 recipeList:
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrSupplier
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrElseNull
   - org.openrewrite.java.migrate.guava.NoGuavaOptionalFromJavaUtil
   - org.openrewrite.java.migrate.guava.NoGuavaOptionalToJavaUtil
