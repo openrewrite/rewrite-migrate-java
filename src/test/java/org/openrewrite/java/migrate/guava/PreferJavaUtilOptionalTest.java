@@ -135,7 +135,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
           import com.google.common.base.Optional;
 
           class A {
-              Optional<String> foo(Optional<String> optional) {
+              Optional<String> foo(java.util.Optional<String> optional) {
                   return optional.transform(String::toUpperCase);
               }
           }
@@ -148,6 +148,28 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
               }
           }
           """));
+    }
+
+    @Test
+    void removeFromJavaUtil() {
+        //language=java
+        rewriteRun(java("""
+              import com.google.common.base.Optional;
+
+              class A {
+                  Optional<String> foo(java.util.Optional<String> optional) {
+                      return Optional.fromJavaUtil(optional);
+                  }
+              }
+              """, """
+              import java.util.Optional;
+
+              class A {
+                  Optional<String> foo(java.util.Optional<String> optional) {
+                      return optional;
+                  }
+              }
+              """));
     }
 
     @Nested
@@ -194,29 +216,6 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
               class A {
                   boolean foo() {
                       return Optional.empty().isEmpty();
-                  }
-              }
-              """));
-        }
-
-        @Test
-        @ExpectedToFail("Not yet implemented")
-        void removeFromJavaUtil() {
-            //language=java
-            rewriteRun(java("""
-              import com.google.common.base.Optional;
-
-              class A {
-                  Optional<String> foo(java.util.Optional<String> optional) {
-                      return Optional.fromJavaUtil(optional);
-                  }
-              }
-              """, """
-              import java.util.Optional;
-
-              class A {
-                  Optional<String> foo(java.util.Optional<String> optional) {
-                      return optional;
                   }
               }
               """));

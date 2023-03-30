@@ -82,6 +82,7 @@ tags:
   - RSPEC-4738
 recipeList:
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrElseNull
+  - org.openrewrite.java.migrate.guava.NoGuavaOptionalFromJavaUtil
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.base.Optional absent()
       newMethodName: empty
