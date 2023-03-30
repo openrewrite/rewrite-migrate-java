@@ -64,10 +64,10 @@ public class NoGuavaOptionalToJavaUtil extends Recipe {
 
     @Override
     protected JavaVisitor<ExecutionContext> getVisitor() {
-        return new PreferJavaUtilOptionalOrElseNullVisitor();
+        return new ReplaceToJavaUtilVisitor();
     }
 
-    private static class PreferJavaUtilOptionalOrElseNullVisitor extends JavaVisitor<ExecutionContext> {
+    private static class ReplaceToJavaUtilVisitor extends JavaVisitor<ExecutionContext> {
 
         @Override
         public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
