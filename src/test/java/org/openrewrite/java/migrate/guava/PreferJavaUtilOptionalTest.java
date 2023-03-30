@@ -172,6 +172,28 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
               """));
     }
 
+    @Test
+    void removeToJavaUtil() {
+        //language=java
+        rewriteRun(java("""
+              import com.google.common.base.Optional;
+
+              class A {
+                  boolean foo() {
+                      return Optional.absent().toJavaUtil().isEmpty();
+                  }
+              }
+              """, """
+              import java.util.Optional;
+
+              class A {
+                  boolean foo() {
+                      return Optional.empty().isEmpty();
+                  }
+              }
+              """));
+    }
+
     @Nested
     class NotYetImplemented {
         @Test
@@ -193,29 +215,6 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
               class A {
                   Optional<String> foo(Optional<String> firstChoice, Optional<String> secondChoice) {
                       return firstChoice.or(() -> secondChoice);
-                  }
-              }
-              """));
-        }
-
-        @Test
-        @ExpectedToFail("Not yet implemented")
-        void removeToJavaUtil() {
-            //language=java
-            rewriteRun(java("""
-              import com.google.common.base.Optional;
-
-              class A {
-                  boolean foo() {
-                      return Optional.absent().toJavaUtil().isEmpty();
-                  }
-              }
-              """, """
-              import java.util.Optional;
-
-              class A {
-                  boolean foo() {
-                      return Optional.empty().isEmpty();
                   }
               }
               """));

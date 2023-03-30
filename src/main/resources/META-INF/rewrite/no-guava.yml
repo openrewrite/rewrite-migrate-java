@@ -83,6 +83,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrElseNull
   - org.openrewrite.java.migrate.guava.NoGuavaOptionalFromJavaUtil
+  - org.openrewrite.java.migrate.guava.NoGuavaOptionalToJavaUtil
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.base.Optional absent()
       newMethodName: empty
