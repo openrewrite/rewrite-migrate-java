@@ -79,7 +79,6 @@ public class UseTextBlocks extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
-
             @Override
             public J visitBinary(J.Binary binary, ExecutionContext ctx) {
                 List<J.Literal> stringLiterals = new ArrayList<>();
@@ -201,12 +200,14 @@ public class UseTextBlocks extends Recipe {
 
     private static String getIndents(String concatenation, boolean useTabCharacter, int tabSize) {
         int[] tabAndSpaceCounts = shortestPrefixAfterNewline(concatenation, tabSize);
+        int tabCount = tabAndSpaceCounts[0];
+        int spaceCount = tabAndSpaceCounts[1];
         if (useTabCharacter) {
-            return StringUtils.repeat("\t", tabAndSpaceCounts[0]) +
-                   StringUtils.repeat(" ", tabAndSpaceCounts[1]);
+            return StringUtils.repeat("\t", tabCount) +
+                   StringUtils.repeat(" ", spaceCount);
         } else {
             // replace tab with spaces if the style is using spaces
-            return StringUtils.repeat(" ", tabAndSpaceCounts[0] * tabSize + tabAndSpaceCounts[1]);
+            return StringUtils.repeat(" ", tabCount * tabSize + spaceCount);
         }
     }
 
