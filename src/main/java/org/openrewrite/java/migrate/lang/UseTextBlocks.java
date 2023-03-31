@@ -33,6 +33,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.openrewrite.Tree.randomId;
@@ -78,18 +79,6 @@ public class UseTextBlocks extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
-            private int tabSize = 4;
-
-            @Override
-            public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
-                TabsAndIndentsStyle style = cu.getStyle(TabsAndIndentsStyle.class);
-                if (style == null) {
-                    style = IntelliJ.tabsAndIndents();
-                }
-                tabSize = style.getTabSize();
-                return super.visitCompilationUnit(cu, executionContext);
-            }
-
             @Override
             public J visitBinary(J.Binary binary, ExecutionContext ctx) {
                 List<J.Literal> stringLiterals = new ArrayList<>();
@@ -137,7 +126,12 @@ public class UseTextBlocks extends Recipe {
                     return super.visitBinary(binary, ctx);
                 }
 
-                String indentation = getIndents(concatenationSb.toString(), tabSize);
+                TabsAndIndentsStyle tabsAndIndentsStyle = Optional.ofNullable(getCursor().firstEnclosingOrThrow(SourceFile.class)
+                    .getStyle(TabsAndIndentsStyle.class)).orElse(IntelliJ.tabsAndIndents());
+                boolean useTab = tabsAndIndentsStyle.getUseTabCharacter();
+                int tabSize = tabsAndIndentsStyle.getTabSize();
+
+                String indentation = getIndents(concatenationSb.toString(), useTab, tabSize);
 
                 boolean isEndsWithNewLine = content.endsWith("\n");
                 content = content.replace(" \n", "\\s\n");
@@ -204,41 +198,68 @@ public class UseTextBlocks extends Recipe {
         return false;
     }
 
-    private static String getIndents(String concatenation, int tabSize) {
-        return StringUtils.repeat(" ", shortestSpaceAfterNewline(concatenation, tabSize));
+    private static String getIndents(String concatenation, boolean useTabCharacter, int tabSize) {
+        int[] tabAndSpaceCounts = shortestPrefixAfterNewline(concatenation, tabSize);
+        int tabCount = tabAndSpaceCounts[0];
+        int spaceCount = tabAndSpaceCounts[1];
+        if (useTabCharacter) {
+            return StringUtils.repeat("\t", tabCount) +
+                   StringUtils.repeat(" ", spaceCount);
+        } else {
+            // replace tab with spaces if the style is using spaces
+            return StringUtils.repeat(" ", tabCount * tabSize + spaceCount);
+        }
     }
 
-    public static int shortestSpaceAfterNewline(String str, int tabSize) {
-        int minSpace = Integer.MAX_VALUE;
+    /**
+     *
+     * @param concatenation a string to present concatenation context
+     * @param tabSize from autoDetect
+     * @return an int array of size 2, 1st value is tab count, 2nd value is space count
+     */
+    private static int[] shortestPrefixAfterNewline(String concatenation, int tabSize) {
+        int shortest = Integer.MAX_VALUE;
+        int[] shortestPair = new int[]{0, 0};
+        int tabCount = 0;
         int spaceCount = 0;
+
         boolean afterNewline = false;
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
+        for (int i = 0; i < concatenation.length(); i++) {
+            char c = concatenation.charAt(i);
             if (c != ' ' && c != '\t' && afterNewline) {
-                minSpace = Math.min(minSpace, spaceCount);
+                if ((spaceCount + tabCount * tabSize) < shortest) {
+                    shortest = spaceCount + tabCount;
+                    shortestPair[0] = tabCount;
+                    shortestPair[1] = spaceCount;
+                }
                 afterNewline = false;
             }
 
             if (c == '\n') {
                 afterNewline = true;
                 spaceCount = 0;
+                tabCount = 0;
             } else if (c == ' ') {
                 if (afterNewline) {
                     spaceCount++;
                 }
             } else if (c == '\t') {
                 if (afterNewline) {
-                    spaceCount += tabSize;
+                    tabCount++;
                 }
             } else {
                 afterNewline = false;
                 spaceCount = 0;
+                tabCount = 0;
             }
         }
-        if (spaceCount > 0) {
-            minSpace = Math.min(minSpace, spaceCount);
+
+        if ((spaceCount + tabCount > 0) && ((spaceCount + tabCount) < shortest)) {
+            shortestPair[0] = tabCount;
+            shortestPair[1] = spaceCount;
         }
-        return minSpace == Integer.MAX_VALUE ? 0 : minSpace;
+
+        return shortestPair;
     }
 
     private static String generatePassword(String originalStr) throws NoSuchAlgorithmException {
