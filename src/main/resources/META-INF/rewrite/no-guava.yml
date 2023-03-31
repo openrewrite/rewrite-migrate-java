@@ -32,8 +32,8 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet
-  - org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptional
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
   - org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate
   - org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsEquals
