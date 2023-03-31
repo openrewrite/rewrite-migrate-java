@@ -52,7 +52,7 @@ public class ApacheBase64ToJavaBase64 extends Recipe {
 
     @Override
     protected UsesType<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesType<>("org.apache.commons.codec.binary.Base64");
+        return new UsesType<>("org.apache.commons.codec.binary.Base64", false);
     }
 
     @Override

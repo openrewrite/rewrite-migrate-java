@@ -89,7 +89,7 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
 
     @Override
     protected UsesType<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesType<>("org.apache.commons.io.IOUtils");
+        return new UsesType<>("org.apache.commons.io.IOUtils", false);
     }
 
     @Override

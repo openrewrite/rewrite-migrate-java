@@ -54,7 +54,7 @@ public class NoGuavaCreateTempDir extends Recipe {
 
     @Override
     protected UsesType<ExecutionContext> getApplicableTest() {
-        return new UsesType<>("com.google.common.io.Files");
+        return new UsesType<>("com.google.common.io.Files", false);
     }
 
     @Override
