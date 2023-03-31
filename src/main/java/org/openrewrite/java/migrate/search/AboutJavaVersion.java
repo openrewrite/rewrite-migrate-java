@@ -60,7 +60,7 @@ public class AboutJavaVersion extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return StringUtils.isBlank(whenUsesType) ? null : new UsesType<>(whenUsesType);
+        return StringUtils.isBlank(whenUsesType) ? null : new UsesType<>(whenUsesType, false);
     }
 
     @Override

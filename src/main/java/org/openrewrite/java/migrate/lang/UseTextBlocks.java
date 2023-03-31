@@ -22,6 +22,8 @@ import org.openrewrite.internal.StringUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.HasJavaVersion;
+import org.openrewrite.java.style.IntelliJ;
+import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
@@ -31,6 +33,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.openrewrite.Tree.randomId;
@@ -124,7 +127,12 @@ public class UseTextBlocks extends Recipe {
                     return super.visitBinary(binary, ctx);
                 }
 
-                String indentation = getIndents(concatenationSb.toString());
+                TabsAndIndentsStyle tabsAndIndentsStyle = Optional.ofNullable(getCursor().firstEnclosingOrThrow(SourceFile.class)
+                    .getStyle(TabsAndIndentsStyle.class)).orElse(IntelliJ.tabsAndIndents());
+                boolean useTab = tabsAndIndentsStyle.getUseTabCharacter();
+                int tabSize = tabsAndIndentsStyle.getTabSize();
+
+                String indentation = getIndents(concatenationSb.toString(), useTab, tabSize);
 
                 boolean isEndsWithNewLine = content.endsWith("\n");
                 content = content.replace(" \n", "\\s\n");
@@ -191,24 +199,34 @@ public class UseTextBlocks extends Recipe {
         return false;
     }
 
-    private static String getIndents(String concatenation) {
-        int[] tabAndSpaceCounts = shortestPrefixAfterNewline(concatenation);
-        return StringUtils.repeat("\t", tabAndSpaceCounts[0]) +
-               StringUtils.repeat(" ", tabAndSpaceCounts[1]);
+    private static String getIndents(String concatenation, boolean useTabCharacter, int tabSize) {
+        int[] tabAndSpaceCounts = shortestPrefixAfterNewline(concatenation, tabSize);
+        if (useTabCharacter) {
+            return StringUtils.repeat("\t", tabAndSpaceCounts[0]) +
+                   StringUtils.repeat(" ", tabAndSpaceCounts[1]);
+        } else {
+            // replace tab with spaces if the style is using spaces
+            return StringUtils.repeat(" ", tabAndSpaceCounts[0] * tabSize + tabAndSpaceCounts[1]);
+        }
     }
 
-    // Each tab and space count for 1, so the shortest prefix means the minimum of the sum of tabs and spaces count.
-    private static int[] shortestPrefixAfterNewline(String str) {
+    /**
+     *
+     * @param concatenation a string to present concatenation context
+     * @param tabSize from autoDetect
+     * @return an int array of size 2, 1st value is tab count, 2nd value is space count
+     */
+    private static int[] shortestPrefixAfterNewline(String concatenation, int tabSize) {
         int shortest = Integer.MAX_VALUE;
         int[] shortestPair = new int[]{0, 0};
         int tabCount = 0;
         int spaceCount = 0;
 
         boolean afterNewline = false;
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
+        for (int i = 0; i < concatenation.length(); i++) {
+            char c = concatenation.charAt(i);
             if (c != ' ' && c != '\t' && afterNewline) {
-                if ((spaceCount + tabCount) < shortest) {
+                if ((spaceCount + tabCount * tabSize) < shortest) {
                     shortest = spaceCount + tabCount;
                     shortestPair[0] = tabCount;
                     shortestPair[1] = spaceCount;
