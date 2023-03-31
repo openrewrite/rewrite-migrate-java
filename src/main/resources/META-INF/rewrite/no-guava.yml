@@ -32,6 +32,7 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilOptional
   - org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
   - org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate
   - org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier
@@ -64,7 +65,8 @@ name: org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
 displayName: Prefer `java.util.function.Function`
 description: Prefer `java.util.function.Function` instead of using `com.google.common.base.Function`.
 tags:
-  - guava, RSPEC-4738
+  - guava
+  - RSPEC-4738
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Function
@@ -72,11 +74,44 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferJavaUtilOptional
+displayName: Prefer `java.util.Optional`
+description: Prefer `java.util.Optional` instead of using `com.google.common.base.Optional`.
+tags:
+  - guava
+  - RSPEC-4738
+recipeList:
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrSupplier
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrElseNull
+  - org.openrewrite.java.migrate.guava.NoGuavaOptionalFromJavaUtil
+  - org.openrewrite.java.migrate.guava.NoGuavaOptionalToJavaUtil
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.Optional absent()
+      newMethodName: empty
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.Optional fromNullable(..)
+      newMethodName: ofNullable
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.Optional or(com.google.common.base.Supplier)
+      newMethodName: orElseGet
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.Optional or(..)
+      newMethodName: orElse
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.Optional transform(com.google.common.base.Function)
+      newMethodName: map
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.google.common.base.Optional
+      newFullyQualifiedTypeName: java.util.Optional
+
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate
 displayName: Prefer `java.util.function.Predicate`
 description: Prefer `java.util.function.Predicate` instead of using `com.google.common.base.Predicate`.
 tags:
-  - guava, RSPEC-4738
+  - guava
+  - RSPEC-4738
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Predicate
@@ -88,7 +123,8 @@ name: org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier
 displayName: Prefer `java.util.function.Supplier`
 description: Prefer `java.util.function.Supplier` instead of using `com.google.common.base.Supplier`.
 tags:
-  - guava, RSPEC-4738
+  - guava
+  - RSPEC-4738
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Supplier
