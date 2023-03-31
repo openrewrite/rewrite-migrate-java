@@ -20,6 +20,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -64,10 +65,11 @@ public class NoGuavaImmutableMapOf extends Recipe {
     // Updates to either may apply to each of the recipes.
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+                method = super.visitMethodInvocation(method, executionContext);
                 if (IMMUTABLE_MAP_MATCHER.matches(method) && isParentTypeDownCast()) {
                     maybeRemoveImport("com.google.common.collect.ImmutableMap");
                     maybeAddImport("java.util.Map");
@@ -111,7 +113,7 @@ public class NoGuavaImmutableMapOf extends Recipe {
                             method.getCoordinates().replace(),
                             method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                 }
-                return super.visitMethodInvocation(method, executionContext);
+                return method;
             }
 
             private boolean isParentTypeDownCast() {
@@ -150,7 +152,7 @@ public class NoGuavaImmutableMapOf extends Recipe {
                 } else if (parent instanceof J.NewClass) {
                     J.NewClass c = (J.NewClass) parent;
                     int index = 0;
-                    if (c.getConstructorType() != null && c.getArguments() != null) {
+                    if (c.getConstructorType() != null) {
                         for (Expression argument : c.getArguments()) {
                             if (IMMUTABLE_MAP_MATCHER.matches(argument)) {
                                 break;
@@ -175,7 +177,9 @@ public class NoGuavaImmutableMapOf extends Recipe {
 
             private boolean isParentTypeMatched(@Nullable JavaType type) {
                 JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
-                return TypeUtils.isOfClassType(fq, "java.util.Map") || TypeUtils.isOfType(fq, JavaType.ShallowClass.build("java.lang.Object"));
+                return TypeUtils.isOfClassType(fq, "java.util.Map")
+                       || TypeUtils.isOfClassType(fq, "java.lang.Object")
+                       || TypeUtils.isOfClassType(fq, "com.google.common.collect.ImmutableMap");
             }
         };
     }
