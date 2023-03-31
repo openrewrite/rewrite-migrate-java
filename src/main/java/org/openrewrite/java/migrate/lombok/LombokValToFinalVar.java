@@ -53,7 +53,7 @@ public class LombokValToFinalVar extends Recipe {
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
         return Applicability.and(
 //                new UsesJavaVersion<>(11),
-                new UsesType<>(LOMBOK_VAL));
+                new UsesType<>(LOMBOK_VAL, false));
     }
 
     @Override

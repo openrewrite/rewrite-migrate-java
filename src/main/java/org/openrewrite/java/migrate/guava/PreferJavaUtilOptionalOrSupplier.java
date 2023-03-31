@@ -60,7 +60,7 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
     protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
         return Applicability.and(
                 new UsesJavaVersion<>(9),
-                new UsesType<>("com.google.common.base.Optional"));
+                new UsesType<>("com.google.common.base.Optional", true));
     }
 
     @Override

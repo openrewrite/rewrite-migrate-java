@@ -52,7 +52,7 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
 
     @Override
     protected UsesType<ExecutionContext> getApplicableTest() {
-        return new UsesType<>("com.google.common.base.Optional");
+        return new UsesType<>("com.google.common.base.Optional", true);
     }
 
     @Override

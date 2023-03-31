@@ -44,7 +44,7 @@ public class MigrateLoggerGlobalToGetGlobal extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesType<>("java.util.logging.Logger");
+        return new UsesType<>("java.util.logging.Logger", false);
     }
 
     @Override

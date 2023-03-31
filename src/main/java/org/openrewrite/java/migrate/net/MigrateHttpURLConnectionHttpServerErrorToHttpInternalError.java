@@ -51,7 +51,7 @@ public class MigrateHttpURLConnectionHttpServerErrorToHttpInternalError extends 
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesType<>("java.net.HttpURLConnection");
+        return new UsesType<>("java.net.HttpURLConnection", false);
     }
 
     @Override

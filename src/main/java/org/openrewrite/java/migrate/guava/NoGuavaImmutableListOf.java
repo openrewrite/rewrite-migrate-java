@@ -57,7 +57,7 @@ public class NoGuavaImmutableListOf extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
         return Applicability.and(new UsesJavaVersion<>(9),
-                new UsesType<>("com.google.common.collect.ImmutableList"));
+                new UsesType<>("com.google.common.collect.ImmutableList", false));
     }
 
     // Code is shared between `NoGuavaImmutableMapOf`, `NoGuavaImmutableListOf`, and `NoGuavaImmutableSetOf`.

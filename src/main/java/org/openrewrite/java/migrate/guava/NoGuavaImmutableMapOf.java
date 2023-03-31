@@ -22,7 +22,6 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
@@ -58,7 +57,7 @@ public class NoGuavaImmutableMapOf extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
         return  Applicability.and(new UsesJavaVersion<>(9),
-                new UsesType<>("com.google.common.collect.ImmutableMap"));
+                new UsesType<>("com.google.common.collect.ImmutableMap", false));
     }
 
     // Code is shared between `NoGuavaImmutableMapOf`, `NoGuavaImmutableListOf`, and `NoGuavaImmutableSetOf`.

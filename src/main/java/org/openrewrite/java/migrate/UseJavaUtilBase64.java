@@ -42,8 +42,8 @@ public class UseJavaUtilBase64 extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
         return Applicability.or(
-                new UsesType<>(sunPackage + ".BASE64Encoder"),
-                new UsesType<>(sunPackage + ".BASE64Decoder")
+                new UsesType<>(sunPackage + ".BASE64Encoder", false),
+                new UsesType<>(sunPackage + ".BASE64Decoder", false)
         );
     }
 
