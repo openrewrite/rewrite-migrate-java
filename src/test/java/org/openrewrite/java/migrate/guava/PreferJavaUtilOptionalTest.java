@@ -108,7 +108,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     }
 
     @Test
-    void orSupplierToOrElseGet() {
+    void orSupplierToOrElseGetWithLambda() {
         //language=java
         rewriteRun(java("""
           import com.google.common.base.Optional;
@@ -127,6 +127,31 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
               }
           }
           """));
+    }
+
+    @Test
+    void orSupplierToOrElseGetWithSupplierArgument() {
+        //language=java
+        rewriteRun(
+          java("""
+              import com.google.common.base.Optional;
+              import com.google.common.base.Supplier;
+
+              class A {
+                  String foo(Optional<String> optional, Supplier<String> supplier) {
+                      return optional.or(supplier);
+                  }
+              }
+              """, """
+              import java.util.Optional;
+              import java.util.function.Supplier;
+
+              class A {
+                  String foo(Optional<String> optional, Supplier<String> supplier) {
+                      return optional.orElseGet(supplier);
+                  }
+              }
+              """));
     }
 
     @Test
