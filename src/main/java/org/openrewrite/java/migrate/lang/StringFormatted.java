@@ -53,8 +53,8 @@ public class StringFormatted extends Recipe {
 
     private static class StringFormattedVisitor extends JavaVisitor<ExecutionContext> {
         @Override
-        public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext p) {
-            method = (J.MethodInvocation) super.visitMethodInvocation(method, p);
+        public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            method = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
             if (!STRING_FORMAT.matches(method) || method.getMethodType() == null) {
                 return method;
             }
@@ -68,7 +68,7 @@ public class StringFormatted extends Recipe {
             Expression select = wrapperNotNeeded ? arguments.get(0) : new J.Parentheses<>(Tree.randomId(), Space.EMPTY, Markers.EMPTY, JRightPadded.build(arguments.get(0)));
             mi = mi.withSelect(select);
             mi = mi.withArguments(arguments.subList(1, arguments.size()));
-            return maybeAutoFormat(method, mi, p);
+            return maybeAutoFormat(method, mi, ctx);
         }
 
         private static boolean wrapperNotNeeded(Expression expression) {

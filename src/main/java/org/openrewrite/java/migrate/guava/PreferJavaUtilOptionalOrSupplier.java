@@ -75,16 +75,16 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
 
     private static class PreferJavaUtilOptionalOrSupplierVisitor extends JavaIsoVisitor<ExecutionContext> {
         @Override
-        public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
-            J.CompilationUnit c = super.visitCompilationUnit(cu, executionContext);
+        public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+            J.CompilationUnit c = super.visitCompilationUnit(cu, ctx);
             maybeAddImport("java.util.Optional");
             maybeRemoveImport("com.google.common.base.Optional");
             return c;
         }
 
         @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-            J.MethodInvocation j = super.visitMethodInvocation(method, executionContext);
+        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            J.MethodInvocation j = super.visitMethodInvocation(method, ctx);
             if (METHOD_MATCHER.matches(method)) {
                 j = j.withTemplate(
                         JavaTemplate.builder(this::getCursor, "#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})")

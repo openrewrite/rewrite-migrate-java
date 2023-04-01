@@ -65,8 +65,8 @@ public class ApacheBase64ToJavaBase64 extends Recipe {
             private final MethodMatcher apacheEncode64UrlSafeString = new MethodMatcher("org.apache.commons.codec.binary.Base64 encodeBase64URLSafeString(..)");
 
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
                 String templatePrefix = null;
                 if (apacheEncodeToString.matches(mi)) {
                     String argType = mi.getArguments().get(0).getType() instanceof JavaType.Array ? "#{anyArray()}" : "#{any(String)}";

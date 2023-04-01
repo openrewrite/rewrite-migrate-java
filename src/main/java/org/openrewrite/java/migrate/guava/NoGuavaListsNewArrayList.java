@@ -60,7 +60,7 @@ public class NoGuavaListsNewArrayList extends Recipe {
     protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext context) {
+            public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
                 doAfterVisit(new UsesMethod<>(NEW_ARRAY_LIST));
                 doAfterVisit(new UsesMethod<>(NEW_ARRAY_LIST_ITERABLE));
                 doAfterVisit(new UsesMethod<>(NEW_ARRAY_LIST_CAPACITY));
@@ -85,7 +85,7 @@ public class NoGuavaListsNewArrayList extends Recipe {
                     .build();
 
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_ARRAY_LIST.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.ArrayList");
@@ -102,7 +102,7 @@ public class NoGuavaListsNewArrayList extends Recipe {
                     return method.withTemplate(newArrayListCapacity, method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 }
-                return super.visitMethodInvocation(method, executionContext);
+                return super.visitMethodInvocation(method, ctx);
             }
         };
     }

@@ -60,8 +60,8 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
     protected JavaVisitor<ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (UNMODIFIABLE_LIST.matches(method)) {
                     if (m.getArguments().get(0) instanceof J.MethodInvocation) {
                         if (ARRAYS_AS_LIST.matches((J.MethodInvocation) m.getArguments().get(0))) {
@@ -80,7 +80,7 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
                                             .build(),
                                     m.getCoordinates().replace(),
                                     args.toArray()
-                            ), executionContext);
+                            ), ctx);
                         }
                     }
                 }

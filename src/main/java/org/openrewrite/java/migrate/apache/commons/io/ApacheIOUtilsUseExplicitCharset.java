@@ -98,8 +98,8 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
             private final Supplier<JavaParser> parserSupplier = () -> JavaParser.fromJavaVersion().classpath("commons-io").build();
 
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
                 if (STRING_GET_BYTES.matches(mi)) {
                     mi = mi.withSelect(method.getArguments().get(0));
                     //noinspection ConstantConditions

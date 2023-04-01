@@ -80,8 +80,8 @@ public class UseJavaUtilBase64 extends Recipe {
                     .build();
 
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (base64EncodeMethod.matches(m) &&
                     ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
                     m = m.withTemplate(encodeToString, m.getCoordinates().replace(), method.getArguments().get(0));

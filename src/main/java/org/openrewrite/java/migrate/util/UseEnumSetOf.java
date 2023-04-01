@@ -60,8 +60,8 @@ public class UseEnumSetOf extends Recipe {
 
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                J.MethodInvocation m = super.visitMethodInvocation(method, executionContext);
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
                 if (SET_OF.matches(method) && method.getType() instanceof JavaType.Parameterized
                         && !TypeUtils.isOfClassType(method.getType(), "java.util.EnumSet")) {
@@ -81,7 +81,7 @@ public class UseEnumSetOf extends Recipe {
                                                     .imports("java.util.EnumSet").build(),
                                             m.getCoordinates().replace(),
                                             args.toArray()),
-                                    executionContext);
+                                    ctx);
                         }
                     }
                 }

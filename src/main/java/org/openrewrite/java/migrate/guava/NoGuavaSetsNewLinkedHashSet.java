@@ -59,7 +59,7 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
     protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
                 doAfterVisit(new UsesMethod<>(NEW_LINKED_HASH_SET));
                 doAfterVisit(new UsesMethod<>(NEW_LINKED_HASH_SET_ITERABLE));
                 doAfterVisit(new UsesMethod<>(NEW_LINKED_HASH_SET_CAPACITY));
@@ -84,7 +84,7 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
                     .build();
 
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_LINKED_HASH_SET.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
@@ -101,7 +101,7 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
                     return method.withTemplate(newLinkedHashSetCapacity, method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 }
-                return super.visitMethodInvocation(method, executionContext);
+                return super.visitMethodInvocation(method, ctx);
             }
         };
     }

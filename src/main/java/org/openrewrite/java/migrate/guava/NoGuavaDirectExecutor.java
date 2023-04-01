@@ -64,12 +64,12 @@ public class NoGuavaDirectExecutor extends Recipe {
                     .build();
 
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (DIRECT_EXECUTOR.matches(method)) {
                     maybeRemoveImport("com.google.common.util.concurrent.MoreExecutors");
                     return method.withTemplate(template, method.getCoordinates().replace());
                 }
-                return super.visitMethodInvocation(method, executionContext);
+                return super.visitMethodInvocation(method, ctx);
             }
         };
     }

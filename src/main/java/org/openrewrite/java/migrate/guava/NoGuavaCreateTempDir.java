@@ -71,8 +71,8 @@ public class NoGuavaCreateTempDir extends Recipe {
         private static final MethodMatcher guavaCreateTempDirMatcher = new MethodMatcher("com.google.common.io.Files createTempDir()");
 
         @Override
-        public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
-            J.CompilationUnit c = super.visitCompilationUnit(cu, executionContext);
+        public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+            J.CompilationUnit c = super.visitCompilationUnit(cu, ctx);
             maybeAddImport("java.nio.file.Files");
             maybeAddImport("java.io.IOException");
             maybeAddImport("java.io.File");
@@ -81,8 +81,8 @@ public class NoGuavaCreateTempDir extends Recipe {
         }
 
         @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-            J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
+        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
             if (guavaCreateTempDirMatcher.matches(mi)) {
                 Cursor parent = getCursor().dropParentUntil(j -> j instanceof J.MethodDeclaration || j instanceof J.Try || j instanceof J.ClassDeclaration);
                 J parentValue = parent.getValue();

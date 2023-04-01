@@ -64,14 +64,14 @@ public class NoGuavaAtomicsNewReference extends Recipe {
                     .build();
 
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_ATOMIC_REFERENCE.matches(method)) {
                     maybeRemoveImport("com.google.common.util.concurrent.Atomics");
                     maybeAddImport("java.util.concurrent.atomic.AtomicReference");
                     return ((J.NewClass) method.withTemplate(newAtomicReference, method.getCoordinates().replace()))
                             .withArguments(method.getArguments());
                 }
-                return super.visitMethodInvocation(method, executionContext);
+                return super.visitMethodInvocation(method, ctx);
             }
         };
     }

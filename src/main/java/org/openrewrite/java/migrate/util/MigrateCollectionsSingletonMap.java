@@ -59,8 +59,8 @@ public class MigrateCollectionsSingletonMap extends Recipe {
     protected JavaVisitor<ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (SINGLETON_MAP.matches(method)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Map");
@@ -75,7 +75,7 @@ public class MigrateCollectionsSingletonMap extends Recipe {
                                     .build(),
                             m.getCoordinates().replace(),
                             m.getArguments().toArray()
-                    ), executionContext);
+                    ), ctx);
                 }
 
                 return m;

@@ -70,7 +70,7 @@ public class AddJDeprScanPlugin extends Recipe {
     private class AddJDeprScanPluginVisitor extends MavenVisitor<ExecutionContext> {
 
         @Override
-        public Xml visitDocument(Xml.Document document, ExecutionContext o) {
+        public Xml visitDocument(Xml.Document document, ExecutionContext ctx) {
             doAfterVisit(new AddPlugin(
                     "org.apache.maven.plugins",
                     "maven-jdeprscan-plugin",

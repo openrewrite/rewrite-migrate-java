@@ -64,8 +64,8 @@ public class ApacheFileUtilsToJavaFiles extends Recipe {
             private final MethodMatcher readLinesWithCharsetIdToByteArrayMatcher = new MethodMatcher("org.apache.commons.io.FileUtils readLines(java.io.File, String)");
 
             @Override
-            public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext executionContext) {
-                JavaSourceFile sf = super.visitJavaSourceFile(cu, executionContext);
+            public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
+                JavaSourceFile sf = super.visitJavaSourceFile(cu, ctx);
                 if (sf != cu) {
                     maybeAddImport("java.nio.file.Files");
                     maybeRemoveImport("org.apache.commons.io.FileUtils");
@@ -74,8 +74,8 @@ public class ApacheFileUtilsToJavaFiles extends Recipe {
             }
 
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
                 if (readFileToByteArrayMatcher.matches(mi)) {
                     return mi.withTemplate(JavaTemplate.builder(this::getCursor, "Files.readAllBytes(#{any(java.io.File)}.toPath())")
                             .imports("java.nio.file.Files").build(), mi.getCoordinates().replace(), mi.getArguments().get(0));

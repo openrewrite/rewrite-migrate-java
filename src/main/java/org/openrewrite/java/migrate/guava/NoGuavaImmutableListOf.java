@@ -67,7 +67,7 @@ public class NoGuavaImmutableListOf extends Recipe {
         return new JavaVisitor<ExecutionContext>() {
 
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (IMMUTABLE_LIST_MATCHER.matches(method) && isParentTypeDownCast()) {
                     maybeRemoveImport("com.google.common.collect.ImmutableList");
                     maybeAddImport("java.util.List");
@@ -111,7 +111,7 @@ public class NoGuavaImmutableListOf extends Recipe {
                             method.getCoordinates().replace(),
                             method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                 }
-                return super.visitMethodInvocation(method, executionContext);
+                return super.visitMethodInvocation(method, ctx);
             }
 
             private boolean isParentTypeDownCast() {

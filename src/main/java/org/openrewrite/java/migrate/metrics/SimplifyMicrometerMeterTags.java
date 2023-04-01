@@ -54,8 +54,8 @@ public class SimplifyMicrometerMeterTags extends Recipe {
     protected JavaVisitor<ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                J.MethodInvocation m = super.visitMethodInvocation(method, executionContext);
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
                 if (COUNTER_TAGS.matches(m)) {
                     if (m.getArguments().get(0) instanceof J.NewArray) {
                         J.NewArray arr = (J.NewArray) m.getArguments().get(0);

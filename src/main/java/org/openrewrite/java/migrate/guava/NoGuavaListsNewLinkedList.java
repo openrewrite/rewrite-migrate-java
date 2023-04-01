@@ -58,7 +58,7 @@ public class NoGuavaListsNewLinkedList extends Recipe {
     protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
                 doAfterVisit(new UsesMethod<>(NEW_LINKED_LIST));
                 doAfterVisit(new UsesMethod<>(NEW_LINKED_LIST_ITERABLE));
                 return cu;
@@ -78,7 +78,7 @@ public class NoGuavaListsNewLinkedList extends Recipe {
                     .build();
 
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_LINKED_LIST.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.LinkedList");
@@ -90,7 +90,7 @@ public class NoGuavaListsNewLinkedList extends Recipe {
                     return method.withTemplate(newLinkedListCollection, method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 }
-                return super.visitMethodInvocation(method, executionContext);
+                return super.visitMethodInvocation(method, ctx);
             }
         };
     }

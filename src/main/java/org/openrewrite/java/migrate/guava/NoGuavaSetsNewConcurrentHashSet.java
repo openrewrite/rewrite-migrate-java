@@ -65,14 +65,14 @@ public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
                     .build();
 
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_HASH_SET.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.Collections");
                     maybeAddImport("java.util.concurrent.ConcurrentHashMap");
                     return method.withTemplate(newConcurrentHashSet, method.getCoordinates().replace());
                 }
-                return super.visitMethodInvocation(method, executionContext);
+                return super.visitMethodInvocation(method, ctx);
             }
         };
     }

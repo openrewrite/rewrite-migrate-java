@@ -56,8 +56,8 @@ public class MigrateCollectionsSingletonSet extends Recipe {
     protected JavaVisitor<ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (SINGLETON_SET.matches(method)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Set");
@@ -68,7 +68,7 @@ public class MigrateCollectionsSingletonSet extends Recipe {
                                     .build(),
                             m.getCoordinates().replace(),
                             m.getArguments().get(0)
-                    ), executionContext);
+                    ), ctx);
                 }
 
                 return m;

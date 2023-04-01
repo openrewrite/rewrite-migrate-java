@@ -68,8 +68,8 @@ public class NoGuavaImmutableMapOf extends Recipe {
         return new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                method = super.visitMethodInvocation(method, executionContext);
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                method = super.visitMethodInvocation(method, ctx);
                 if (IMMUTABLE_MAP_MATCHER.matches(method) && isParentTypeDownCast()) {
                     maybeRemoveImport("com.google.common.collect.ImmutableMap");
                     maybeAddImport("java.util.Map");

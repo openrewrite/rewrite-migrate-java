@@ -73,8 +73,8 @@ public class UpgradeJavaVersion extends Recipe {
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MavenVisitor<ExecutionContext>() {
             @Override
-            public Xml visitTag(Xml.Tag tag, ExecutionContext executionContext) {
-                Xml.Tag t = (Xml.Tag) super.visitTag(tag, executionContext);
+            public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
+                Xml.Tag t = (Xml.Tag) super.visitTag(tag, ctx);
                 if (!isPropertyTag()) {
                     return t;
                 }

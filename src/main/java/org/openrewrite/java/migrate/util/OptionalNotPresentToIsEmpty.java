@@ -62,8 +62,8 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
         MethodMatcher optionalIsPresentMatcher = new MethodMatcher(JAVA_UTIL_OPTIONAL_IS_PRESENT);
         return new JavaVisitor<ExecutionContext>() {
             @Override
-            public Statement visitStatement(Statement s, ExecutionContext p) {
-                Statement statement = (Statement) super.visitStatement(s, p);
+            public Statement visitStatement(Statement s, ExecutionContext ctx) {
+                Statement statement = (Statement) super.visitStatement(s, ctx);
                 if (statement instanceof J.Unary) {
                     J.Unary unary = (J.Unary) statement;
                     if (unary.getOperator() == Type.Not) {

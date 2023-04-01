@@ -69,16 +69,16 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
         private static final MethodMatcher OPTIONAL_OR_NULL_MATCHER = new MethodMatcher("com.google.common.base.Optional orNull()");
 
         @Override
-        public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
-            J.CompilationUnit c = super.visitCompilationUnit(cu, executionContext);
+        public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+            J.CompilationUnit c = super.visitCompilationUnit(cu, ctx);
             maybeAddImport("java.util.Optional");
             maybeRemoveImport("com.google.common.base.Optional");
             return c;
         }
 
         @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-            J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
+        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
             if (OPTIONAL_OR_NULL_MATCHER.matches(mi)) {
                 return mi.withName(mi.getName().withSimpleName("orElse"))
                         .withTemplate(JavaTemplate.builder(this::getCursor, "null").build(), mi.getCoordinates().replaceArguments());

@@ -70,16 +70,16 @@ public class NoGuavaOptionalFromJavaUtil extends Recipe {
     private static class ReplaceFromJavaUtilVisitor extends JavaVisitor<ExecutionContext> {
 
         @Override
-        public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
-            J c = super.visitCompilationUnit(cu, executionContext);
+        public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+            J c = super.visitCompilationUnit(cu, ctx);
             maybeAddImport("java.util.Optional");
             maybeRemoveImport("com.google.common.base.Optional");
             return c;
         }
 
         @Override
-        public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-            J j = super.visitMethodInvocation(method, executionContext);
+        public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            J j = super.visitMethodInvocation(method, ctx);
             if (j instanceof J.MethodInvocation) {
                 J.MethodInvocation mi = (J.MethodInvocation) j;
                 if (METHOD_MATCHER.matches(mi)) {

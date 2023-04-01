@@ -64,8 +64,8 @@ public class LombokValToFinalVar extends Recipe {
     private static class LombokValToFinalVarVisitor extends JavaIsoVisitor<ExecutionContext> {
 
         @Override
-        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations mv, ExecutionContext p) {
-            J.VariableDeclarations varDecls = super.visitVariableDeclarations(mv, p);
+        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations mv, ExecutionContext ctx) {
+            J.VariableDeclarations varDecls = super.visitVariableDeclarations(mv, ctx);
             if (TypeUtils.isOfClassType(varDecls.getType(), LOMBOK_VAL)) {
                 maybeRemoveImport(LOMBOK_VAL);
 
