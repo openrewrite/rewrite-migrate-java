@@ -82,7 +82,7 @@ public class LombokValToFinalVar extends Recipe {
                 }
                 varDecls = mv.withTemplate(
                         JavaTemplate.builder(this::getCursor, finalVarVariableTemplateString)
-                                .javaParser(() -> JavaParser.fromJavaVersion().build())
+                                .javaParser(JavaParser.fromJavaVersion())
                                 .build(),
                         varDecls.getCoordinates().replace(), args);
 
