@@ -41,8 +41,9 @@ import static org.openrewrite.Tree.randomId;
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UseTextBlocks extends Recipe {
-    @Option(displayName = "Whether convert strings without newlines",
-        description = "whether or not strings without newlines should be converted to text block when processing code.",
+    @Option(displayName = "Whether to convert strings without newlines (the default value is true).",
+        description = "Whether or not strings without newlines should be converted to text block when processing code. " +
+                      "The default value is true.",
         example = "true",
         required = false)
     @Nullable
