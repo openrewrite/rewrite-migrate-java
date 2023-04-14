@@ -24,6 +24,10 @@ dependencies {
     runtimeOnly("org.openrewrite:rewrite-java-11")
     runtimeOnly("org.openrewrite:rewrite-java-17")
 
+    implementation("org.apache.commons:commons-lang3:3.+")
+    implementation("org.codehaus.plexus:plexus-utils:3.+")
+    implementation("org.apache.maven.shared:maven-shared-utils:3.+")
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-params:latest.release")
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
