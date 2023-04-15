@@ -18,49 +18,56 @@ package org.openrewrite.java.migrate.apache.commons.lang;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
 public class IsNotEmptyToJdk extends Recipe {
     @Override
     public String getDisplayName() {
-        return "StringUtils.isNotEmpty to JDK methods";
+        return "Replace any StringUtils#isEmpty(String) and #isNotEmpty(String)";
     }
 
     @Override
     public String getDescription() {
-        return "Converts Apache Commons Lang3's StringUtils.isNotEmpty to JDK methods.";
+        return "Replace any `StringUtils#isEmpty(String)` and `#isNotEmpty(String)` with `s == null || s.isEmpty()` and `s != null && !s.isEmpty()`.";
     }
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        String className = "org.apache.commons.lang3.StringUtils";
-        // TODO: Add StringUtils for Plexus and Maven shared as well
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return new JavaVisitor<ExecutionContext>() {
 
-            final MethodMatcher isEmptyMatcher = new MethodMatcher(className + " isEmpty(..)");
-            final MethodMatcher isNotEmptyMatcher = new MethodMatcher(className + " isNotEmpty(..)");
+            private final MethodMatcher commonsIsEmptyMatcher = new MethodMatcher(org.apache.commons.lang3.StringUtils.class.getName() + " isEmpty(..)");
+            private final MethodMatcher commonsIsNotEmptyMatcher = new MethodMatcher(org.apache.commons.lang3.StringUtils.class.getName() + " isNotEmpty(..)");
+            private final MethodMatcher plexusIsEmptyMatcher = new MethodMatcher(org.codehaus.plexus.util.StringUtils.class.getName() + " isEmpty(..)");
+            private final MethodMatcher plexusIsNotEmptyMatcher = new MethodMatcher(org.codehaus.plexus.util.StringUtils.class.getName() + " isNotEmpty(..)");
+            private final MethodMatcher mavenSharedIsEmptyMatcher = new MethodMatcher(org.apache.maven.shared.utils.StringUtils.class.getName() + " isEmpty(..)");
+            private final MethodMatcher mavenSharedIsNotEmptyMatcher = new MethodMatcher(org.apache.maven.shared.utils.StringUtils.class.getName() + " isNotEmpty(..)");
 
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
-                if (isEmptyMatcher.matches(mi)) {
-                    // Replace with == null || .isEmpty()
-                    return mi.withTemplate(
-                            JavaTemplate.compile(this, "isEmpty", (String str) -> str == null || str.isEmpty()).build(),
-                            mi.getCoordinates().replace());
-                } else if (isNotEmptyMatcher.matches(mi)) {
-                    // Replace with != null && !.isEmpty()
-                    return mi.withTemplate(
-                            JavaTemplate.compile(this, "isNotEmpty", (String str) -> str != null && !str.isEmpty()).build(),
-                            mi.getCoordinates().replace());
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+                J j = super.visitMethodInvocation(method, executionContext);
+                if (j instanceof J.MethodInvocation) {
+                    J.MethodInvocation mi = (J.MethodInvocation) j;
+                    // JavaTemplate.compile name can not be an expression; only a string literal; hence repetition here
+                    if (commonsIsEmptyMatcher.matches(mi)) {
+                        return mi.withTemplate(JavaTemplate.compile(this, "CommonsIsEmpty", (String s) -> s == null || s.isEmpty()).build(), mi.getCoordinates().replace());
+                    } else if (commonsIsNotEmptyMatcher.matches(mi)) {
+                        return mi.withTemplate(JavaTemplate.compile(this, "CommonsIsNotEmpty", (String s) -> s != null && !s.isEmpty()).build(), mi.getCoordinates().replace());
+                    } else if (plexusIsEmptyMatcher.matches(mi)) {
+                        return mi.withTemplate(JavaTemplate.compile(this, "PlexusIsEmpty", (String s) -> s == null || s.isEmpty()).build(), mi.getCoordinates().replace());
+                    } else if (plexusIsNotEmptyMatcher.matches(mi)) {
+                        return mi.withTemplate(JavaTemplate.compile(this, "PlexusIsNotEmpty", (String s) -> s != null && !s.isEmpty()).build(), mi.getCoordinates().replace());
+                    } else if (mavenSharedIsEmptyMatcher.matches(mi)) {
+                        return mi.withTemplate(JavaTemplate.compile(this, "MavenSharedIsEmpty", (String s) -> s == null || s.isEmpty()).build(), mi.getCoordinates().replace());
+                    } else if (mavenSharedIsNotEmptyMatcher.matches(mi)) {
+                        return mi.withTemplate(JavaTemplate.compile(this, "MavenSharedIsNotEmpty", (String s) -> s != null && !s.isEmpty()).build(), mi.getCoordinates().replace());
+                    }
                 }
-                return mi;
+                return j;
             }
         };
     }
 
 }
-

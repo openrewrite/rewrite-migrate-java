@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.apache.commons.lang;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -28,73 +27,96 @@ class IsNotEmptyToJdkTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().classpath("commons-lang3"
-          //  , "plexus-utils", "maven-shared-utils"
-          ))
-                .recipe(new IsNotEmptyToJdk());
+        spec.parser(JavaParser.fromJavaVersion().classpath("commons-lang3", "plexus-utils", "maven-shared-utils"))
+          .recipe(new IsNotEmptyToJdk());
     }
 
     @ParameterizedTest
-    @CsvSource(delimiter = '|', textBlock = """
-            org.apache.commons.lang3.StringUtils | StringUtils.isEmpty(first) | first == null || first.isEmpty()
-            org.apache.commons.lang3.StringUtils | !StringUtils.isEmpty(first) | first != null && !first.isEmpty()
-            org.apache.commons.lang3.StringUtils | StringUtils.isNotEmpty(first) | first != null && !first.isEmpty()
-            org.apache.commons.lang3.StringUtils | !StringUtils.isNotEmpty(first) | first == null || first.isEmpty()
-            """)
-//    org.apache.maven.shared.utils.StringUtils | StringUtils.isEmpty(first) | first == null || first.isEmpty()
-//    org.apache.maven.shared.utils.StringUtils | !StringUtils.isEmpty(first) | first != null && !first.isEmpty()
-//    org.apache.maven.shared.utils.StringUtils | StringUtils.isNotEmpty(first) | first != null && !first.isEmpty()
-//    org.apache.maven.shared.utils.StringUtils | !StringUtils.isNotEmpty(first) | first == null || first.isEmpty()
-//    org.codehaus.plexus.util.StringUtils | StringUtils.isEmpty(first) | first == null || !first.isEmpty()
-//    org.codehaus.plexus.util.StringUtils | !StringUtils.isEmpty(first) | first != null && !first.isEmpty()
-//    org.codehaus.plexus.util.StringUtils | StringUtils.isNotEmpty(first) | first != null && !first.isEmpty()
-//    org.codehaus.plexus.util.StringUtils | !StringUtils.isNotEmpty(first) | first == null || !first.isEmpty()
-    void replace(String classname, String beforeLine, String afterLine) {
+    @CsvSource(delimiter = '#', textBlock = """
+      org.apache.commons.lang3.StringUtils # StringUtils.isEmpty(first) # first == null || first.isEmpty()
+      org.apache.commons.lang3.StringUtils # StringUtils.isNotEmpty(first) # first != null && !first.isEmpty()
+      org.apache.maven.shared.utils.StringUtils # StringUtils.isEmpty(first) # first == null || first.isEmpty()
+      org.apache.maven.shared.utils.StringUtils # StringUtils.isNotEmpty(first) # first != null && !first.isEmpty()
+      org.codehaus.plexus.util.StringUtils # StringUtils.isEmpty(first) # first == null || !first.isEmpty()
+      org.codehaus.plexus.util.StringUtils # StringUtils.isNotEmpty(first) # first != null && !first.isEmpty()
+      """)
+    void replaceNow(String classname, String beforeLine, String afterLine) {
         // language=java
         rewriteRun(
-                java(
-                        """
-                                import %s;
+          java(
+            """
+              import %s;
 
-                                class A {
-                                    boolean test(String first) {
-                                        return %s;
-                                    }
-                                }
-                                """.formatted(classname, beforeLine),
-                        """
-                                class A {
-                                    boolean test(String first) {
-                                        return %s;
-                                    }
-                                }
-                                """.formatted(afterLine)));
+              class A {
+                  boolean test(String first) {
+                      return %s;
+                  }
+              }
+              """.formatted(classname, beforeLine),
+            """
+              class A {
+                  boolean test(String first) {
+                      return %s;
+                  }
+              }
+              """.formatted(afterLine)));
     }
 
     @ParameterizedTest
-    @CsvSource(delimiter = '|', textBlock = """
-            org.apache.commons.lang3.StringUtils | StringUtils.isEmpty(foo())
-            org.apache.commons.lang3.StringUtils | StringUtils.isEmpty(first + second)
-            org.apache.commons.lang3.StringUtils | StringUtils.isNotEmpty(foo())
-            org.apache.commons.lang3.StringUtils | StringUtils.isNotEmpty(first + second)
-            org.apache.maven.shared.utils.StringUtils | StringUtils.isEmpty(foo())
-            org.codehaus.plexus.util.StringUtils | StringUtils.isEmpty(foo())
-            """)
+    @CsvSource(delimiter = '#', textBlock = """
+      org.apache.commons.lang3.StringUtils # !StringUtils.isEmpty(first) # first != null && !first.isEmpty()
+      org.apache.commons.lang3.StringUtils # !StringUtils.isNotEmpty(first) # first == null || first.isEmpty()
+      org.apache.maven.shared.utils.StringUtils # !StringUtils.isEmpty(first) # first != null && !first.isEmpty()
+      org.apache.maven.shared.utils.StringUtils # !StringUtils.isNotEmpty(first) # first == null || first.isEmpty()
+      org.codehaus.plexus.util.StringUtils # !StringUtils.isEmpty(first) # first != null && !first.isEmpty()
+      org.codehaus.plexus.util.StringUtils # !StringUtils.isNotEmpty(first) # first == null || !first.isEmpty()
+      """)
+    void replaceSoon(String classname, String beforeLine, String afterLine) {
+        // language=java
+        rewriteRun(
+          java(
+            """
+              import %s;
+
+              class A {
+                  boolean test(String first) {
+                      return %s;
+                  }
+              }
+              """.formatted(classname, beforeLine),
+            """
+              class A {
+                  boolean test(String first) {
+                      return %s;
+                  }
+              }
+              """.formatted(afterLine)));
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '#', textBlock = """
+      org.apache.commons.lang3.StringUtils # StringUtils.isEmpty(foo())
+      org.apache.commons.lang3.StringUtils # StringUtils.isEmpty(first + second)
+      org.apache.commons.lang3.StringUtils # StringUtils.isNotEmpty(foo())
+      org.apache.commons.lang3.StringUtils # StringUtils.isNotEmpty(first + second)
+      org.apache.maven.shared.utils.StringUtils # StringUtils.isEmpty(foo())
+      org.codehaus.plexus.util.StringUtils # StringUtils.isEmpty(foo())
+      """)
     void retain(String classname, String beforeLine) {
         // language=java
         rewriteRun(
-                java(
-                        """
-                                %s;
+          java(
+            """
+              %s;
 
-                                class A {
-                                    boolean test(String first, String second) {
-                                        return %s;
-                                    }
-                                    private String foo() {
-                                        return "foo";
-                                    }
-                                }
-                                """.formatted(classname, beforeLine)));
+              class A {
+                  boolean test(String first, String second) {
+                      return %s;
+                  }
+                  private String foo() {
+                      return "foo";
+                  }
+              }
+              """.formatted(classname, beforeLine)));
     }
 }
