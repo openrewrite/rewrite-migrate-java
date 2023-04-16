@@ -109,7 +109,7 @@ class IsNotEmptyToJdkTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              %s;
+              import %s;
 
               class A {
                   boolean test(String first, String second) {
