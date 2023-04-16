@@ -46,13 +46,12 @@ public class IsNotEmptyToJdk extends Recipe {
             private final MethodMatcher mavenSharedIsEmptyMatcher = new MethodMatcher(org.apache.maven.shared.utils.StringUtils.class.getName() + " isEmpty(..)");
             private final MethodMatcher mavenSharedIsNotEmptyMatcher = new MethodMatcher(org.apache.maven.shared.utils.StringUtils.class.getName() + " isNotEmpty(..)");
 
-            private final JavaTemplate commonsIsEmptyTemplate = JavaTemplate.compile(this, "CommonsIsEmpty", (String s) -> s == null || s.isEmpty()).build();
-            private final JavaTemplate commonsIsNotEmptyTemplate = JavaTemplate.compile(this, "CommonsIsNotEmpty", (String s) -> s != null && !s.isEmpty()).build();
-            private final JavaTemplate plexusIsEmptyTemplate = JavaTemplate.compile(this, "PlexusIsEmpty", (String s) -> s == null || s.isEmpty()).build();
-            private final JavaTemplate plexusIsNotEmptyTemplate = JavaTemplate.compile(this, "PlexusIsNotEmpty", (String s) -> s != null && !s.isEmpty()).build();
-            private final JavaTemplate mavenSharedIsEmptyTemplate = JavaTemplate.compile(this, "MavenSharedIsEmpty", (String s) -> s == null || s.isEmpty()).build();
-            private final JavaTemplate mavenSharedIsNotEmptyTemplate = JavaTemplate.compile(this, "MavenSharedIsNotEmpty", (String s) -> s != null && !s.isEmpty()).build();
-
+            private final JavaTemplate commonsIsEmptyTemplate = JavaTemplate.compile(this, "CommonsIsEmpty", (String s) -> (s == null || s.isEmpty())).build();
+            private final JavaTemplate commonsIsNotEmptyTemplate = JavaTemplate.compile(this, "CommonsIsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
+            private final JavaTemplate plexusIsEmptyTemplate = JavaTemplate.compile(this, "PlexusIsEmpty", (String s) -> (s == null || s.isEmpty())).build();
+            private final JavaTemplate plexusIsNotEmptyTemplate = JavaTemplate.compile(this, "PlexusIsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
+            private final JavaTemplate mavenSharedIsEmptyTemplate = JavaTemplate.compile(this, "MavenSharedIsEmpty", (String s) -> (s == null || s.isEmpty())).build();
+            private final JavaTemplate mavenSharedIsNotEmptyTemplate = JavaTemplate.compile(this, "MavenSharedIsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
 
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
@@ -65,6 +64,9 @@ public class IsNotEmptyToJdk extends Recipe {
                     maybeRemoveImport("org.apache.commons.lang3.StringUtils");
                     maybeRemoveImport("org.codehaus.plexus.util.StringUtils");
                     maybeRemoveImport("org.apache.maven.shared.utils.StringUtils");
+
+                    // Remove excess parentheses
+                    doAfterVisit(new org.openrewrite.java.cleanup.UnnecessaryParentheses());
 
                     // JavaTemplate.compile name can not be an expression; only a string literal; hence repetition here
                     if (commonsIsEmptyMatcher.matches(mi)) {
