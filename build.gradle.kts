@@ -24,10 +24,6 @@ dependencies {
     runtimeOnly("org.openrewrite:rewrite-java-11")
     runtimeOnly("org.openrewrite:rewrite-java-17")
 
-    implementation("org.apache.commons:commons-lang3:3.+")
-    implementation("org.codehaus.plexus:plexus-utils:3.+")
-    implementation("org.apache.maven.shared:maven-shared-utils:3.+")
-
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-params:latest.release")
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
@@ -41,6 +37,9 @@ dependencies {
     testImplementation("com.google.guava:guava:29.0-jre")
 
     testImplementation("commons-codec:commons-codec:1.+")
+    testImplementation("org.apache.commons:commons-lang3:3.+")
+    testImplementation("org.codehaus.plexus:plexus-utils:3.+")
+    testImplementation("org.apache.maven.shared:maven-shared-utils:3.+")
 
     testRuntimeOnly("commons-io:commons-io:2.+")
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353:latest.release")
