@@ -21,6 +21,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 public class IsNotEmptyToJdk extends Recipe {
@@ -58,19 +59,26 @@ public class IsNotEmptyToJdk extends Recipe {
                 J j = super.visitMethodInvocation(method, executionContext);
                 if (j instanceof J.MethodInvocation) {
                     J.MethodInvocation mi = (J.MethodInvocation) j;
+                    Expression arg = mi.getArguments().get(0);
+
+                    // Maybe remove imports
+                    maybeRemoveImport("org.apache.commons.lang3.StringUtils");
+                    maybeRemoveImport("org.codehaus.plexus.util.StringUtils");
+                    maybeRemoveImport("org.apache.maven.shared.utils.StringUtils");
+
                     // JavaTemplate.compile name can not be an expression; only a string literal; hence repetition here
                     if (commonsIsEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(commonsIsEmptyTemplate, mi.getCoordinates().replace());
+                        return mi.withTemplate(commonsIsEmptyTemplate, mi.getCoordinates().replace(), arg, arg);
                     } else if (commonsIsNotEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(commonsIsNotEmptyTemplate, mi.getCoordinates().replace());
+                        return mi.withTemplate(commonsIsNotEmptyTemplate, mi.getCoordinates().replace(), arg, arg);
                     } else if (plexusIsEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(plexusIsEmptyTemplate, mi.getCoordinates().replace());
+                        return mi.withTemplate(plexusIsEmptyTemplate, mi.getCoordinates().replace(), arg, arg);
                     } else if (plexusIsNotEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(plexusIsNotEmptyTemplate, mi.getCoordinates().replace());
+                        return mi.withTemplate(plexusIsNotEmptyTemplate, mi.getCoordinates().replace(), arg, arg);
                     } else if (mavenSharedIsEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(mavenSharedIsEmptyTemplate, mi.getCoordinates().replace());
+                        return mi.withTemplate(mavenSharedIsEmptyTemplate, mi.getCoordinates().replace(), arg, arg);
                     } else if (mavenSharedIsNotEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(mavenSharedIsNotEmptyTemplate, mi.getCoordinates().replace());
+                        return mi.withTemplate(mavenSharedIsNotEmptyTemplate, mi.getCoordinates().replace(), arg, arg);
                     }
                 }
                 return j;

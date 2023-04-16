@@ -37,7 +37,7 @@ class IsNotEmptyToJdkTest implements RewriteTest {
       org.apache.commons.lang3.StringUtils # StringUtils.isNotEmpty(first) # first != null && !first.isEmpty()
       org.apache.maven.shared.utils.StringUtils # StringUtils.isEmpty(first) # first == null || first.isEmpty()
       org.apache.maven.shared.utils.StringUtils # StringUtils.isNotEmpty(first) # first != null && !first.isEmpty()
-      org.codehaus.plexus.util.StringUtils # StringUtils.isEmpty(first) # first == null || !first.isEmpty()
+      org.codehaus.plexus.util.StringUtils # StringUtils.isEmpty(first) # first == null || first.isEmpty()
       org.codehaus.plexus.util.StringUtils # StringUtils.isNotEmpty(first) # first != null && !first.isEmpty()
       """)
     void replaceNow(String classname, String beforeLine, String afterLine) {
