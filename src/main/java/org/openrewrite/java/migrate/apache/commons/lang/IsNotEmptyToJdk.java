@@ -46,12 +46,8 @@ public class IsNotEmptyToJdk extends Recipe {
             private final MethodMatcher mavenSharedIsEmptyMatcher = new MethodMatcher(org.apache.maven.shared.utils.StringUtils.class.getName() + " isEmpty(..)");
             private final MethodMatcher mavenSharedIsNotEmptyMatcher = new MethodMatcher(org.apache.maven.shared.utils.StringUtils.class.getName() + " isNotEmpty(..)");
 
-            private final JavaTemplate commonsIsEmptyTemplate = JavaTemplate.compile(this, "CommonsIsEmpty", (String s) -> (s == null || s.isEmpty())).build();
-            private final JavaTemplate commonsIsNotEmptyTemplate = JavaTemplate.compile(this, "CommonsIsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
-            private final JavaTemplate plexusIsEmptyTemplate = JavaTemplate.compile(this, "PlexusIsEmpty", (String s) -> (s == null || s.isEmpty())).build();
-            private final JavaTemplate plexusIsNotEmptyTemplate = JavaTemplate.compile(this, "PlexusIsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
-            private final JavaTemplate mavenSharedIsEmptyTemplate = JavaTemplate.compile(this, "MavenSharedIsEmpty", (String s) -> (s == null || s.isEmpty())).build();
-            private final JavaTemplate mavenSharedIsNotEmptyTemplate = JavaTemplate.compile(this, "MavenSharedIsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
+            private final JavaTemplate isEmptyReplacement = JavaTemplate.compile(this, "IsEmpty", (String s) -> (s == null || s.isEmpty())).build();
+            private final JavaTemplate isNotEmptyReplacement = JavaTemplate.compile(this, "IsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
 
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
@@ -69,18 +65,10 @@ public class IsNotEmptyToJdk extends Recipe {
                     doAfterVisit(new org.openrewrite.java.cleanup.UnnecessaryParentheses());
 
                     // JavaTemplate.compile name can not be an expression; only a string literal; hence repetition here
-                    if (commonsIsEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(commonsIsEmptyTemplate, mi.getCoordinates().replace(), arg, arg);
-                    } else if (commonsIsNotEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(commonsIsNotEmptyTemplate, mi.getCoordinates().replace(), arg, arg);
-                    } else if (plexusIsEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(plexusIsEmptyTemplate, mi.getCoordinates().replace(), arg, arg);
-                    } else if (plexusIsNotEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(plexusIsNotEmptyTemplate, mi.getCoordinates().replace(), arg, arg);
-                    } else if (mavenSharedIsEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(mavenSharedIsEmptyTemplate, mi.getCoordinates().replace(), arg, arg);
-                    } else if (mavenSharedIsNotEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(mavenSharedIsNotEmptyTemplate, mi.getCoordinates().replace(), arg, arg);
+                    if (commonsIsEmptyMatcher.matches(mi) || plexusIsEmptyMatcher.matches(mi) || mavenSharedIsEmptyMatcher.matches(mi)) {
+                        return mi.withTemplate(isEmptyReplacement, mi.getCoordinates().replace(), arg, arg);
+                    } else if (commonsIsNotEmptyMatcher.matches(mi) || plexusIsNotEmptyMatcher.matches(mi) || mavenSharedIsNotEmptyMatcher.matches(mi)) {
+                        return mi.withTemplate(isNotEmptyReplacement, mi.getCoordinates().replace(), arg, arg);
                     }
                 }
                 return j;
