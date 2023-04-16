@@ -37,6 +37,9 @@ dependencies {
     testImplementation("com.google.guava:guava:29.0-jre")
 
     testImplementation("commons-codec:commons-codec:1.+")
+    testImplementation("org.apache.commons:commons-lang3:3.+")
+    testImplementation("org.codehaus.plexus:plexus-utils:3.+")
+    testImplementation("org.apache.maven.shared:maven-shared-utils:3.+")
 
     testRuntimeOnly("commons-io:commons-io:2.+")
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353:latest.release")
