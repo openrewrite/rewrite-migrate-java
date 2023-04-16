@@ -45,6 +45,14 @@ public class IsNotEmptyToJdk extends Recipe {
             private final MethodMatcher mavenSharedIsEmptyMatcher = new MethodMatcher(org.apache.maven.shared.utils.StringUtils.class.getName() + " isEmpty(..)");
             private final MethodMatcher mavenSharedIsNotEmptyMatcher = new MethodMatcher(org.apache.maven.shared.utils.StringUtils.class.getName() + " isNotEmpty(..)");
 
+            private final JavaTemplate commonsIsEmptyTemplate = JavaTemplate.compile(this, "CommonsIsEmpty", (String s) -> s == null || s.isEmpty()).build();
+            private final JavaTemplate commonsIsNotEmptyTemplate = JavaTemplate.compile(this, "CommonsIsNotEmpty", (String s) -> s != null && !s.isEmpty()).build();
+            private final JavaTemplate plexusIsEmptyTemplate = JavaTemplate.compile(this, "PlexusIsEmpty", (String s) -> s == null || s.isEmpty()).build();
+            private final JavaTemplate plexusIsNotEmptyTemplate = JavaTemplate.compile(this, "PlexusIsNotEmpty", (String s) -> s != null && !s.isEmpty()).build();
+            private final JavaTemplate mavenSharedIsEmptyTemplate = JavaTemplate.compile(this, "MavenSharedIsEmpty", (String s) -> s == null || s.isEmpty()).build();
+            private final JavaTemplate mavenSharedIsNotEmptyTemplate = JavaTemplate.compile(this, "MavenSharedIsNotEmpty", (String s) -> s != null && !s.isEmpty()).build();
+
+
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
                 J j = super.visitMethodInvocation(method, executionContext);
@@ -52,22 +60,21 @@ public class IsNotEmptyToJdk extends Recipe {
                     J.MethodInvocation mi = (J.MethodInvocation) j;
                     // JavaTemplate.compile name can not be an expression; only a string literal; hence repetition here
                     if (commonsIsEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(JavaTemplate.compile(this, "CommonsIsEmpty", (String s) -> s == null || s.isEmpty()).build(), mi.getCoordinates().replace());
+                        return mi.withTemplate(commonsIsEmptyTemplate, mi.getCoordinates().replace());
                     } else if (commonsIsNotEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(JavaTemplate.compile(this, "CommonsIsNotEmpty", (String s) -> s != null && !s.isEmpty()).build(), mi.getCoordinates().replace());
+                        return mi.withTemplate(commonsIsNotEmptyTemplate, mi.getCoordinates().replace());
                     } else if (plexusIsEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(JavaTemplate.compile(this, "PlexusIsEmpty", (String s) -> s == null || s.isEmpty()).build(), mi.getCoordinates().replace());
+                        return mi.withTemplate(plexusIsEmptyTemplate, mi.getCoordinates().replace());
                     } else if (plexusIsNotEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(JavaTemplate.compile(this, "PlexusIsNotEmpty", (String s) -> s != null && !s.isEmpty()).build(), mi.getCoordinates().replace());
+                        return mi.withTemplate(plexusIsNotEmptyTemplate, mi.getCoordinates().replace());
                     } else if (mavenSharedIsEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(JavaTemplate.compile(this, "MavenSharedIsEmpty", (String s) -> s == null || s.isEmpty()).build(), mi.getCoordinates().replace());
+                        return mi.withTemplate(mavenSharedIsEmptyTemplate, mi.getCoordinates().replace());
                     } else if (mavenSharedIsNotEmptyMatcher.matches(mi)) {
-                        return mi.withTemplate(JavaTemplate.compile(this, "MavenSharedIsNotEmpty", (String s) -> s != null && !s.isEmpty()).build(), mi.getCoordinates().replace());
+                        return mi.withTemplate(mavenSharedIsNotEmptyTemplate, mi.getCoordinates().replace());
                     }
                 }
                 return j;
             }
         };
     }
-
 }
