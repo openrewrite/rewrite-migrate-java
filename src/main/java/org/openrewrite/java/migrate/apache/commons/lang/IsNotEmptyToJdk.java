@@ -55,6 +55,9 @@ public class IsNotEmptyToJdk extends Recipe {
                 if (j instanceof J.MethodInvocation) {
                     J.MethodInvocation mi = (J.MethodInvocation) j;
                     Expression arg = mi.getArguments().get(0);
+                    if (!(arg instanceof J.Identifier)) {
+                        return j;
+                    }
 
                     // Maybe remove imports
                     maybeRemoveImport("org.apache.commons.lang3.StringUtils");
