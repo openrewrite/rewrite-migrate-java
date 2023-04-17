@@ -40,7 +40,7 @@ class IsNotEmptyToJdkTest implements RewriteTest {
       org.codehaus.plexus.util.StringUtils # StringUtils.isEmpty(first) # first == null || first.isEmpty()
       org.codehaus.plexus.util.StringUtils # StringUtils.isNotEmpty(first) # first != null && !first.isEmpty()
       """)
-    void replaceNow(String classname, String beforeLine, String afterLine) {
+    void replaceDirectUse(String classname, String beforeLine, String afterLine) {
         // language=java
         rewriteRun(
           java(
@@ -104,7 +104,7 @@ class IsNotEmptyToJdkTest implements RewriteTest {
       org.apache.maven.shared.utils.StringUtils # StringUtils.isEmpty(foo())
       org.codehaus.plexus.util.StringUtils # StringUtils.isEmpty(foo())
       """)
-    void retain(String classname, String beforeLine) {
+    void retainComplexUse(String classname, String beforeLine) {
         // language=java
         rewriteRun(
           java(

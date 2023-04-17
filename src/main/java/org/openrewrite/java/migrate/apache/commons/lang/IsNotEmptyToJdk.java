@@ -16,16 +16,27 @@
 package org.openrewrite.java.migrate.apache.commons.lang;
 
 import org.jetbrains.annotations.Nullable;
+import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class IsNotEmptyToJdk extends Recipe {
+
+    static final String ORG_APACHE_COMMONS_LANG_3_STRING_UTILS = "org.apache.commons.lang3.StringUtils";
+    static final String ORG_APACHE_MAVEN_SHARED_UTILS_STRING_UTILS = "org.apache.maven.shared.utils.StringUtils";
+    static final String ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS = "org.codehaus.plexus.util.StringUtils";
 
     @Override
     public String getDisplayName() {
@@ -38,19 +49,32 @@ public class IsNotEmptyToJdk extends Recipe {
     }
 
     @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(1);
+    }
+
+    @Override
+    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
+        return Applicability.or(
+                new UsesType<>(ORG_APACHE_COMMONS_LANG_3_STRING_UTILS, false),
+                new UsesType<>(ORG_APACHE_MAVEN_SHARED_UTILS_STRING_UTILS, false),
+                new UsesType<>(ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS, false));
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return new HashSet<>(Arrays.asList("apache", "commons"));
+    }
+
+    @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
-
-            private static final String ORG_APACHE_COMMONS_LANG_3_STRING_UTILS = "org.apache.commons.lang3.StringUtils";
-            private static final String ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS = "org.codehaus.plexus.util.StringUtils";
-            private static final String ORG_APACHE_MAVEN_SHARED_UTILS_STRING_UTILS = "org.apache.maven.shared.utils.StringUtils";
-
             private final MethodMatcher commonsIsEmptyMatcher = new MethodMatcher(ORG_APACHE_COMMONS_LANG_3_STRING_UTILS + " isEmpty(..)");
             private final MethodMatcher commonsIsNotEmptyMatcher = new MethodMatcher(ORG_APACHE_COMMONS_LANG_3_STRING_UTILS + " isNotEmpty(..)");
-            private final MethodMatcher plexusIsEmptyMatcher = new MethodMatcher(ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS + " isEmpty(..)");
-            private final MethodMatcher plexusIsNotEmptyMatcher = new MethodMatcher(ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS + " isNotEmpty(..)");
             private final MethodMatcher mavenSharedIsEmptyMatcher = new MethodMatcher(ORG_APACHE_MAVEN_SHARED_UTILS_STRING_UTILS + " isEmpty(..)");
             private final MethodMatcher mavenSharedIsNotEmptyMatcher = new MethodMatcher(ORG_APACHE_MAVEN_SHARED_UTILS_STRING_UTILS + " isNotEmpty(..)");
+            private final MethodMatcher plexusIsEmptyMatcher = new MethodMatcher(ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS + " isEmpty(..)");
+            private final MethodMatcher plexusIsNotEmptyMatcher = new MethodMatcher(ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS + " isNotEmpty(..)");
 
             private final JavaTemplate isEmptyReplacement = JavaTemplate.compile(this, "IsEmpty", (String s) -> (s == null || s.isEmpty())).build();
             private final JavaTemplate isNotEmptyReplacement = JavaTemplate.compile(this, "IsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
@@ -71,8 +95,8 @@ public class IsNotEmptyToJdk extends Recipe {
                 if (replacementTemplate != null) {
                     // Maybe remove imports
                     maybeRemoveImport(ORG_APACHE_COMMONS_LANG_3_STRING_UTILS);
-                    maybeRemoveImport(ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS);
                     maybeRemoveImport(ORG_APACHE_MAVEN_SHARED_UTILS_STRING_UTILS);
+                    maybeRemoveImport(ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS);
 
                     // Remove excess parentheses
                     doAfterVisit(new org.openrewrite.java.cleanup.UnnecessaryParentheses());
@@ -84,9 +108,9 @@ public class IsNotEmptyToJdk extends Recipe {
 
             @Nullable
             private JavaTemplate getReplacementTemplate(J.MethodInvocation mi) {
-                if (commonsIsEmptyMatcher.matches(mi) || plexusIsEmptyMatcher.matches(mi) || mavenSharedIsEmptyMatcher.matches(mi)) {
+                if (commonsIsEmptyMatcher.matches(mi) || mavenSharedIsEmptyMatcher.matches(mi) || plexusIsEmptyMatcher.matches(mi)) {
                     return isEmptyReplacement;
-                } else if (commonsIsNotEmptyMatcher.matches(mi) || plexusIsNotEmptyMatcher.matches(mi) || mavenSharedIsNotEmptyMatcher.matches(mi)) {
+                } else if (commonsIsNotEmptyMatcher.matches(mi) || mavenSharedIsNotEmptyMatcher.matches(mi) || plexusIsNotEmptyMatcher.matches(mi)) {
                     return isNotEmptyReplacement;
                 }
                 return null;
