@@ -34,6 +34,7 @@ class IsNotEmptyToJdkTest implements RewriteTest {
     @ParameterizedTest
     @CsvSource(delimiter = '#', textBlock = """
       org.apache.commons.lang3.StringUtils # StringUtils.isEmpty(first) # first == null || first.isEmpty()
+      org.apache.commons.lang3.StringUtils # StringUtils.isEmpty(field) # field == null || field.isEmpty()
       org.apache.commons.lang3.StringUtils # StringUtils.isNotEmpty(first) # first != null && !first.isEmpty()
       org.apache.maven.shared.utils.StringUtils # StringUtils.isEmpty(first) # first == null || first.isEmpty()
       org.apache.maven.shared.utils.StringUtils # StringUtils.isNotEmpty(first) # first != null && !first.isEmpty()
@@ -48,6 +49,7 @@ class IsNotEmptyToJdkTest implements RewriteTest {
               import %s;
 
               class A {
+                  String field = "foo";
                   boolean test(String first) {
                       return %s;
                   }
@@ -55,6 +57,7 @@ class IsNotEmptyToJdkTest implements RewriteTest {
               """.formatted(classname, beforeLine),
             """
               class A {
+                  String field = "foo";
                   boolean test(String first) {
                       return %s;
                   }
@@ -99,6 +102,7 @@ class IsNotEmptyToJdkTest implements RewriteTest {
     @CsvSource(delimiter = '#', textBlock = """
       org.apache.commons.lang3.StringUtils # StringUtils.isEmpty(foo())
       org.apache.commons.lang3.StringUtils # StringUtils.isEmpty(first + second)
+      org.apache.commons.lang3.StringUtils # StringUtils.isEmpty(this.field)
       org.apache.commons.lang3.StringUtils # StringUtils.isNotEmpty(foo())
       org.apache.commons.lang3.StringUtils # StringUtils.isNotEmpty(first + second)
       org.apache.maven.shared.utils.StringUtils # StringUtils.isEmpty(foo())
@@ -112,6 +116,7 @@ class IsNotEmptyToJdkTest implements RewriteTest {
               import %s;
 
               class A {
+                  String field;
                   boolean test(String first, String second) {
                       return %s;
                   }
