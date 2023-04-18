@@ -79,7 +79,7 @@ public class IsNotEmptyToJdk extends Recipe {
                 }
                 J.MethodInvocation mi = (J.MethodInvocation) j;
                 Expression arg = mi.getArguments().get(0);
-                if (!(arg instanceof J.Identifier)) {
+                if (!(arg instanceof J.Identifier) && !(arg instanceof J.FieldAccess)) {
                     return j;
                 }
 
