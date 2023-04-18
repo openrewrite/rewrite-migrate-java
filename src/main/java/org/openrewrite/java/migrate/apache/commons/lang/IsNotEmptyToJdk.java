@@ -34,10 +34,6 @@ import java.util.Set;
 
 public class IsNotEmptyToJdk extends Recipe {
 
-    static final String ORG_APACHE_COMMONS_LANG_3_STRING_UTILS = "org.apache.commons.lang3.StringUtils";
-    static final String ORG_APACHE_MAVEN_SHARED_UTILS_STRING_UTILS = "org.apache.maven.shared.utils.StringUtils";
-    static final String ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS = "org.codehaus.plexus.util.StringUtils";
-
     @Override
     public String getDisplayName() {
         return "Replace any StringUtils#isEmpty(String) and #isNotEmpty(String)";
@@ -56,9 +52,9 @@ public class IsNotEmptyToJdk extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
         return Applicability.or(
-                new UsesType<>(ORG_APACHE_COMMONS_LANG_3_STRING_UTILS, false),
-                new UsesType<>(ORG_APACHE_MAVEN_SHARED_UTILS_STRING_UTILS, false),
-                new UsesType<>(ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS, false));
+                new UsesType<>("org.apache.commons.lang3.StringUtils", false),
+                new UsesType<>("org.apache.maven.shared.utils.StringUtils", false),
+                new UsesType<>("org.codehaus.plexus.util.StringUtils", false));
     }
 
     @Override
@@ -69,12 +65,8 @@ public class IsNotEmptyToJdk extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
-            private final MethodMatcher commonsIsEmptyMatcher = new MethodMatcher(ORG_APACHE_COMMONS_LANG_3_STRING_UTILS + " isEmpty(..)");
-            private final MethodMatcher commonsIsNotEmptyMatcher = new MethodMatcher(ORG_APACHE_COMMONS_LANG_3_STRING_UTILS + " isNotEmpty(..)");
-            private final MethodMatcher mavenSharedIsEmptyMatcher = new MethodMatcher(ORG_APACHE_MAVEN_SHARED_UTILS_STRING_UTILS + " isEmpty(..)");
-            private final MethodMatcher mavenSharedIsNotEmptyMatcher = new MethodMatcher(ORG_APACHE_MAVEN_SHARED_UTILS_STRING_UTILS + " isNotEmpty(..)");
-            private final MethodMatcher plexusIsEmptyMatcher = new MethodMatcher(ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS + " isEmpty(..)");
-            private final MethodMatcher plexusIsNotEmptyMatcher = new MethodMatcher(ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS + " isNotEmpty(..)");
+            private final MethodMatcher isEmptyMatcher = new MethodMatcher("*..StringUtils isEmpty(..)");
+            private final MethodMatcher isNotEmptyMatcher = new MethodMatcher("*..StringUtils isNotEmpty(..)");
 
             private final JavaTemplate isEmptyReplacement = JavaTemplate.compile(this, "IsEmpty", (String s) -> (s == null || s.isEmpty())).build();
             private final JavaTemplate isNotEmptyReplacement = JavaTemplate.compile(this, "IsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
@@ -94,9 +86,9 @@ public class IsNotEmptyToJdk extends Recipe {
                 JavaTemplate replacementTemplate = getReplacementTemplate(mi);
                 if (replacementTemplate != null) {
                     // Maybe remove imports
-                    maybeRemoveImport(ORG_APACHE_COMMONS_LANG_3_STRING_UTILS);
-                    maybeRemoveImport(ORG_APACHE_MAVEN_SHARED_UTILS_STRING_UTILS);
-                    maybeRemoveImport(ORG_CODEHAUS_PLEXUS_UTIL_STRING_UTILS);
+                    maybeRemoveImport("org.apache.commons.lang3.StringUtils");
+                    maybeRemoveImport("org.apache.maven.shared.utils.StringUtils");
+                    maybeRemoveImport("org.codehaus.plexus.util.StringUtils");
 
                     // Remove excess parentheses
                     doAfterVisit(new org.openrewrite.java.cleanup.UnnecessaryParentheses());
@@ -108,9 +100,9 @@ public class IsNotEmptyToJdk extends Recipe {
 
             @Nullable
             private JavaTemplate getReplacementTemplate(J.MethodInvocation mi) {
-                if (commonsIsEmptyMatcher.matches(mi) || mavenSharedIsEmptyMatcher.matches(mi) || plexusIsEmptyMatcher.matches(mi)) {
+                if (isEmptyMatcher.matches(mi)) {
                     return isEmptyReplacement;
-                } else if (commonsIsNotEmptyMatcher.matches(mi) || mavenSharedIsNotEmptyMatcher.matches(mi) || plexusIsNotEmptyMatcher.matches(mi)) {
+                } else if (isNotEmptyMatcher.matches(mi)) {
                     return isNotEmptyReplacement;
                 }
                 return null;
