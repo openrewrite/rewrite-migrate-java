@@ -24,12 +24,11 @@ import java.util.UUID;
 
 import static org.openrewrite.java.Assertions.java;
 
-class UpgradeJavaVersionTest implements RewriteTest {
-
+class MarkJavaVersionTest implements RewriteTest {
     @Test
     void upgradeJavaVersionTo17From11() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeJavaVersion(17).doNext(new AboutJavaVersion(null))),
+          spec -> spec.recipe(new MarkJavaVersion(17).doNext(new AboutJavaVersion(null))),
           java(
             //language=java
             """
@@ -49,7 +48,7 @@ class UpgradeJavaVersionTest implements RewriteTest {
     @Test
     void upgradeJavaVersionTo11From8() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeJavaVersion(11).doNext(new AboutJavaVersion(null))),
+          spec -> spec.recipe(new MarkJavaVersion(11).doNext(new AboutJavaVersion(null))),
           java(
             //language=java
             """

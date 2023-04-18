@@ -38,7 +38,11 @@ tags:
   - java20
   - compiler
 recipeList:
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+  - org.openrewrite.java.migrate.MarkJavaVersion:
+      version: 20
+  - org.openrewrite.java.migrate.UpgradeJavaVersionMaven:
+      version: 20
+  - org.openrewrite.java.migrate.UpgradeJavaVersionGradle:
       version: 20
   - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
       releaseVersion: 20

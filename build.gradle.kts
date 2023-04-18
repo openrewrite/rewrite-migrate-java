@@ -10,6 +10,8 @@ description = "Migrate to later Java versions. Automatically."
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
 dependencies {
     compileOnly("org.projectlombok:lombok:latest.release")
+    compileOnly("org.codehaus.groovy:groovy:latest.release")
+
     annotationProcessor("org.projectlombok:lombok:latest.release")
     testImplementation("org.projectlombok:lombok:latest.release")
 
@@ -18,6 +20,7 @@ dependencies {
     implementation(platform("org.openrewrite:rewrite-bom:${rewriteVersion}"))
     implementation("org.openrewrite:rewrite-java")
     implementation("org.openrewrite:rewrite-maven")
+    implementation("org.openrewrite:rewrite-gradle")
     implementation("org.openrewrite.recipe:rewrite-github-actions:$rewriteVersion")
 
     runtimeOnly("org.openrewrite:rewrite-java-8")
@@ -45,4 +48,6 @@ dependencies {
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353:latest.release")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core:latest.release")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind:latest.release")
+    testRuntimeOnly("org.codehaus.groovy:groovy:latest.release")
+    testRuntimeOnly(gradleApi())
 }

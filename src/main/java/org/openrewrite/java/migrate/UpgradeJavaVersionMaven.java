@@ -18,17 +18,13 @@ package org.openrewrite.java.migrate;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
-import org.openrewrite.internal.ListUtils;
-import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.List;
-import java.util.Optional;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
-public class UpgradeJavaVersion extends Recipe {
+public class UpgradeJavaVersionMaven extends Recipe {
     @Override
     public String getDisplayName() {
         return "Upgrade Java version";
@@ -45,29 +41,6 @@ public class UpgradeJavaVersion extends Recipe {
             description = "The Java version to upgrade to.",
             example = "11")
     Integer version;
-
-    @Override
-    protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
-        String newVersion = this.version.toString();
-
-        // Create a new JavaVersion marker with the new version
-        Optional<JavaVersion> currentMarker = before.stream()
-                .map(it -> it.getMarkers().findFirst(JavaVersion.class))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .findAny();
-        if (!currentMarker.isPresent() || currentMarker.get().getMajorVersion() >= version) {
-            return before;
-        }
-        JavaVersion updatedMarker = currentMarker.get()
-                .withSourceCompatibility(newVersion)
-                .withTargetCompatibility(newVersion);
-
-        return ListUtils.map(before, sourceFile -> sourceFile.getMarkers().findFirst(JavaVersion.class)
-                .map(version -> (SourceFile) sourceFile.withMarkers(sourceFile.getMarkers().computeByType(version,
-                        (v, acc) -> updatedMarker)))
-                .orElse(sourceFile));
-    }
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
