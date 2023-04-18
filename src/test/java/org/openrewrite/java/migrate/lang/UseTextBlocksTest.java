@@ -561,4 +561,49 @@ class UseTextBlocksTest implements RewriteTest {
           )
         );
     }
+
+    @Disabled
+    @Test
+    void grouping() {
+        rewriteRun(
+          java(
+            """
+              public class Test {
+                  public void method() {
+                      int variable = 1;
+                      String stringWithVariableInIt =
+                          "This " +
+                          "is  " +
+                          "text " +
+                          "BEFORE the variable " +
+                          variable +
+                          "This " +
+                          "is  " +
+                          "text " +
+                          "AFTER the variable. ";
+                  }
+              }
+              """,
+            """
+              public class Test {
+                  public void method() {
+                      int variable = 1;
+                      String stringWithVariableInIt =
+                          \"""
+                          This \\
+                          is  \\
+                          text \\
+                          BEFORE the variable \\
+                          \"""
+                          This \\
+                          is \\
+                          text \\
+                          AFTER the variable. \\
+                          \""";
+                  }
+              }
+              """
+          )
+        );
+    }
 }

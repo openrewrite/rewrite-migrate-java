@@ -99,6 +99,15 @@ public class UseTextBlocks extends Recipe {
 
                 String content = contentSb.toString();
 
+                if (!convertStringsWithoutNewlines && !containsNewLineInContent(content)) {
+                    return super.visitBinary(binary, ctx);
+                }
+
+                return toTextBlock(binary, content, stringLiterals, concatenationSb.toString());
+            }
+
+
+            private J.Literal toTextBlock(J.Binary binary, String content, List<J.Literal> stringLiterals, String concatenation) {
                 final String passPhrase;
                 try {
                     passPhrase = generatePassword(content);
@@ -123,16 +132,12 @@ public class UseTextBlocks extends Recipe {
 
                 content = sb.toString();
 
-                if (!convertStringsWithoutNewlines && !containsNewLineInContent(content)) {
-                    return super.visitBinary(binary, ctx);
-                }
-
                 TabsAndIndentsStyle tabsAndIndentsStyle = Optional.ofNullable(getCursor().firstEnclosingOrThrow(SourceFile.class)
                     .getStyle(TabsAndIndentsStyle.class)).orElse(IntelliJ.tabsAndIndents());
                 boolean useTab = tabsAndIndentsStyle.getUseTabCharacter();
                 int tabSize = tabsAndIndentsStyle.getTabSize();
 
-                String indentation = getIndents(concatenationSb.toString(), useTab, tabSize);
+                String indentation = getIndents(concatenation.toString(), useTab, tabSize);
 
                 boolean isEndsWithNewLine = content.endsWith("\n");
                 content = content.replace(" \n", "\\s\n");
