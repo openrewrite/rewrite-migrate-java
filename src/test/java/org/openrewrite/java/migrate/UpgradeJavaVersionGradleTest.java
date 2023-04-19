@@ -43,4 +43,20 @@ class UpgradeJavaVersionGradleTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void noChangeIfUpgradeFromJava11ToJava8() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaVersionGradle(8)),
+          buildGradle(
+            """
+              java {
+                toolchain {
+                  languageVersion = JavaLanguageVersion.of(11)
+                }
+              }
+              """
+          )
+        );
+    }
 }

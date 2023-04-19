@@ -24,6 +24,7 @@ import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.marker.SearchResult;
 
 import java.util.Collections;
 import java.util.List;
@@ -64,11 +65,23 @@ public class UpgradeJavaVersionGradle extends Recipe {
                 method = super.visitMethodInvocation(method, executionContext);
                 if (javaLanguageVersionMatcher.matches(method)) {
                     List<Expression> args = method.getArguments();
-                    J.Literal versionNumber = (J.Literal) args.get(0);
-                    if ( (Integer) versionNumber.getValue() < version) {
-                        return method.withArguments(Collections.singletonList(versionNumber.withValue(version)
-                            .withValueSource(version.toString())));
+
+                    if (args.size() == 1 && args.get(0) instanceof J.Literal) {
+                        J.Literal versionArg = (J.Literal) args.get(0);
+                        if (versionArg.getValue() instanceof Integer) {
+                            Integer versionNumber = (Integer)  versionArg.getValue();
+                            if (versionNumber < version) {
+                                return method.withArguments(
+                                    Collections.singletonList(versionArg.withValue(version)
+                                    .withValueSource(version.toString())));
+                            } else {
+                                return method;
+                            }
+                        }
                     }
+
+                    return SearchResult.found(method, "Attempted to update to Java version to " + version
+                                                      + "  but was unsuccessful, please update manually");
                 }
                 return method;
             }
