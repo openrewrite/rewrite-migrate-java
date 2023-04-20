@@ -63,7 +63,7 @@ class UpgradeJavaVersionTest implements RewriteTest {
                 <artifactId>my-app</artifactId>
                 <version>1</version>
               </project>
-              """, spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "1.8.0+x", ""))
+              """
           )
         );
     }
@@ -87,7 +87,6 @@ class UpgradeJavaVersionTest implements RewriteTest {
                 }
               }
               """
-            ,spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
           )
         );
     }
