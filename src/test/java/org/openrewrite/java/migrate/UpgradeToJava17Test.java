@@ -207,7 +207,7 @@ class UpgradeToJava17Test implements RewriteTest {
                     .isEqualTo("17"))
               )
             ),
-            17)
+            8)
         );
     }
 }

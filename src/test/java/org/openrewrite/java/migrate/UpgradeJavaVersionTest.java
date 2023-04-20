@@ -22,9 +22,90 @@ import org.openrewrite.test.RewriteTest;
 
 import java.util.UUID;
 
+import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.maven.Assertions.pomXml;
 
 class UpgradeJavaVersionTest implements RewriteTest {
+
+    @Test
+    void mavenUpgradeFromJava8ToJava17() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaVersion(17)),
+          //language=xml
+          pomXml(
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                 
+                <properties>
+                  <java.version>1.8</java.version>
+                  <maven.compiler.source>1.8</maven.compiler.source>
+                  <maven.compiler.target>1.8</maven.compiler.target>
+                </properties>
+                
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+              </project>
+              """,
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                 
+                <properties>
+                  <java.version>17</java.version>
+                  <maven.compiler.source>17</maven.compiler.source>
+                  <maven.compiler.target>17</maven.compiler.target>
+                </properties>
+                
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+              </project>
+              """
+          )
+        );
+    }
+
+    @Test
+    void gradleUpgradeFromJava11ToJava17() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaVersion(17)),
+          buildGradle(
+            """
+              java {
+                toolchain {
+                  languageVersion = JavaLanguageVersion.of(11)
+                }
+              }
+              """,
+            """
+              java {
+                toolchain {
+                  languageVersion = JavaLanguageVersion.of(17)
+                }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void gradleNoChangeIfUpgradeFromJava11ToJava8() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaVersion(8)),
+          buildGradle(
+            """
+              java {
+                toolchain {
+                  languageVersion = JavaLanguageVersion.of(11)
+                }
+              }
+              """,spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
+          )
+        );
+    }
 
     @Test
     void upgradeJavaVersionTo17From11() {
