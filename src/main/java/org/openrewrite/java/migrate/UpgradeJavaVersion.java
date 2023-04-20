@@ -56,58 +56,17 @@ public class UpgradeJavaVersion extends Recipe {
 
     @Override
     protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
+
+        GradleUpdateJavaVersionVisitor gradleUpdateJavaVersionVisitor = new GradleUpdateJavaVersionVisitor();
+        MavenUpdateJavaVersionVisitor mavenUpdateVisitor = new MavenUpdateJavaVersionVisitor();
+
+        before = ListUtils.map(before, s -> {
+            s = (SourceFile) mavenUpdateVisitor.visit(s, ctx);
+            s = (SourceFile) gradleUpdateJavaVersionVisitor.visit(s, ctx);
+            return s;
+        });
+
         String newVersion = this.version.toString();
-
-        GroovyIsoVisitor groovyIsoVisitor = new GroovyIsoVisitor<ExecutionContext>() {
-            MethodMatcher javaLanguageVersionMatcher = new MethodMatcher("org.gradle.jvm.toolchain.JavaLanguageVersion of(int)");
-
-            @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method,
-                                                            ExecutionContext executionContext) {
-                method = super.visitMethodInvocation(method, executionContext);
-                if (javaLanguageVersionMatcher.matches(method)) {
-                    List<Expression> args = method.getArguments();
-
-                    if (args.size() == 1 && args.get(0) instanceof J.Literal) {
-                        J.Literal versionArg = (J.Literal) args.get(0);
-                        if (versionArg.getValue() instanceof Integer) {
-                            Integer versionNumber = (Integer)  versionArg.getValue();
-                            if (versionNumber < version) {
-                                return method.withArguments(
-                                    Collections.singletonList(versionArg.withValue(version)
-                                        .withValueSource(version.toString())));
-                            } else {
-                                return method;
-                            }
-                        }
-                    }
-
-                    return SearchResult.found(method, "Attempted to update to Java version to " + version
-                                                      + "  but was unsuccessful, please update manually");
-                }
-                return method;
-            }
-        };
-
-        MavenVisitor mavenVisitor = new MavenVisitor<ExecutionContext>() {
-            @Override
-            public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
-                Xml.Tag t = (Xml.Tag) super.visitTag(tag, ctx);
-                if (!isPropertyTag()) {
-                    return t;
-                }
-                if (!"java.version".equals(t.getName()) && !"maven.compiler.source".equals(t.getName()) && !"maven.compiler.target".equals(t.getName()) ||
-                    (tag.getValue().isPresent() && tag.getValue().get().startsWith("${"))) {
-                    return t;
-                }
-                float value = tag.getValue().map(Float::parseFloat).orElse(0f);
-                if (value >= version) {
-                    return t;
-                }
-                return t.withValue(String.valueOf(version));
-            }
-        };
-
         // Create a new JavaVersion marker with the new version
         Optional<JavaVersion> currentMarker = before.stream()
             .map(it -> it.getMarkers().findFirst(JavaVersion.class))
@@ -124,11 +83,56 @@ public class UpgradeJavaVersion extends Recipe {
         return ListUtils.map(before, sourceFile -> sourceFile.getMarkers().findFirst(JavaVersion.class)
             .map(version -> (SourceFile) sourceFile.withMarkers(sourceFile.getMarkers().computeByType(version,
                 (v, acc) -> updatedMarker)))
-            .map(s -> {
-                s = (SourceFile) mavenVisitor.visit(s, ctx);
-                s = (SourceFile) groovyIsoVisitor.visit(s, ctx);
-                return s;
-            })
             .orElse(sourceFile));
+    }
+
+    private class GradleUpdateJavaVersionVisitor extends GroovyIsoVisitor<ExecutionContext> {
+        MethodMatcher javaLanguageVersionMatcher = new MethodMatcher("org.gradle.jvm.toolchain.JavaLanguageVersion of(int)");
+
+        @Override
+        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method,
+                                                        ExecutionContext executionContext) {
+            method = super.visitMethodInvocation(method, executionContext);
+            if (javaLanguageVersionMatcher.matches(method)) {
+                List<Expression> args = method.getArguments();
+
+                if (args.size() == 1 && args.get(0) instanceof J.Literal) {
+                    J.Literal versionArg = (J.Literal) args.get(0);
+                    if (versionArg.getValue() instanceof Integer) {
+                        Integer versionNumber = (Integer)  versionArg.getValue();
+                        if (versionNumber < version) {
+                            return method.withArguments(
+                                Collections.singletonList(versionArg.withValue(version)
+                                    .withValueSource(version.toString())));
+                        } else {
+                            return method;
+                        }
+                    }
+                }
+
+                return SearchResult.found(method, "Attempted to update to Java version to " + version
+                                                  + "  but was unsuccessful, please update manually");
+            }
+            return method;
+        }
+    }
+
+    private class MavenUpdateJavaVersionVisitor extends MavenVisitor<ExecutionContext> {
+        @Override
+        public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
+            Xml.Tag t = (Xml.Tag) super.visitTag(tag, ctx);
+            if (!isPropertyTag()) {
+                return t;
+            }
+            if (!"java.version".equals(t.getName()) && !"maven.compiler.source".equals(t.getName()) && !"maven.compiler.target".equals(t.getName()) ||
+                (tag.getValue().isPresent() && tag.getValue().get().startsWith("${"))) {
+                return t;
+            }
+            float value = tag.getValue().map(Float::parseFloat).orElse(0f);
+            if (value >= version) {
+                return t;
+            }
+            return t.withValue(String.valueOf(version));
+        }
     }
 }
