@@ -116,11 +116,12 @@ public class UseTextBlocks extends Recipe {
                 }
 
                 StringBuilder sb = new StringBuilder();
-
+                StringBuilder originalContent = new StringBuilder();
                 stringLiterals = stringLiterals.stream().filter(s -> !s.getValue().toString().isEmpty()).collect(Collectors.toList());
                 for (int i = 0; i < stringLiterals.size(); i++) {
                     String s = stringLiterals.get(i).getValue().toString();
                     sb.append(s);
+                    originalContent.append(s);
                     if (i != stringLiterals.size() - 1) {
                         String nextLine = stringLiterals.get(i + 1).getValue().toString();
                         char nextChar = nextLine.charAt(0);
@@ -152,7 +153,7 @@ public class UseTextBlocks extends Recipe {
                     content = content + "\\\n" + indentation;
                 }
 
-                return new J.Literal(randomId(), binary.getPrefix(), Markers.EMPTY, content,
+                return new J.Literal(randomId(), binary.getPrefix(), Markers.EMPTY, originalContent.toString(),
                     String.format("\"\"\"%s\"\"\"", content), null, JavaType.Primitive.String);
             }
         };
