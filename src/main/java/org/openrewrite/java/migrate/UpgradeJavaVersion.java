@@ -143,10 +143,18 @@ public class UpgradeJavaVersion extends Recipe {
             tag = (Xml.Tag) super.visitTag(tag, ctx);
 
             if (JAVA_VERSION_XPATH_MATCHERS.stream().anyMatch(matcher -> matcher.matches(getCursor()))) {
-                Optional<Float> maybeVersion = tag.getValue().map(Float::parseFloat);
+                Optional<Float> maybeVersion = tag.getValue().flatMap(
+                    value -> {
+                        try {
+                            return Optional.of(Float.parseFloat(value));
+                        } catch (NumberFormatException e) {
+                            return Optional.empty();
+                        }
+                    }
+                );
+
                 if (!maybeVersion.isPresent()) {
-                    SearchResult.found(tag, "Attempted to update to Java version to " + version
-                                               + "  but was unsuccessful, please update manually");
+                    return tag;
                 }
                 float currentVersion = maybeVersion.get();
                 if (currentVersion >= version) {
