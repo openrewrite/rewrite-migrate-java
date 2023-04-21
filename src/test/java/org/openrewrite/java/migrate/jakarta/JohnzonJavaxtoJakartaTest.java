@@ -20,6 +20,10 @@ import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 public class JohnzonJavaxtoJakartaTest implements RewriteTest {
@@ -51,93 +55,33 @@ public class JohnzonJavaxtoJakartaTest implements RewriteTest {
                           <artifactId>johnzon-core</artifactId>
                           <version>${johnzon.version}</version>
                       </dependency>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-jaxrs</artifactId>
-                          <version>${johnzon.version}</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-jsonb</artifactId>
-                          <version>${johnzon.version}</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-jsonb-extras</artifactId>
-                          <version>${johnzon.version}</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-jsonschema</artifactId>
-                          <version>${johnzon.version}</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-mapper</artifactId>
-                          <version>${johnzon.version}</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-websocket</artifactId>
-                          <version>${johnzon.version}</version>
-                      </dependency>
                   </dependencies>
               </project>
               """,
-            """
-              <project>
-                  <groupId>com.example.ehcache</groupId>
-                  <artifactId>johnzon-legacy</artifactId>
-                  <version>1.0.0</version>
-                  <properties>
-                      <johnzon.version>1.2.19</johnzon.version>
-                  </properties>
-                  <dependencies>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-core</artifactId>
-                          <version>${johnzon.version}</version>
-                          <classifier>jakarta</classifier>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-jaxrs</artifactId>
-                          <version>${johnzon.version}</version>
-                          <classifier>jakarta</classifier>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-jsonb</artifactId>
-                          <version>${johnzon.version}</version>
-                          <classifier>jakarta</classifier>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-jsonb-extras</artifactId>
-                          <version>${johnzon.version}</version>
-                          <classifier>jakarta</classifier>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-jsonschema</artifactId>
-                          <version>${johnzon.version}</version>
-                          <classifier>jakarta</classifier>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-mapper</artifactId>
-                          <version>${johnzon.version}</version>
-                          <classifier>jakarta</classifier>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-websocket</artifactId>
-                          <version>${johnzon.version}</version>
-                          <classifier>jakarta</classifier>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """
+            spec -> spec.after(actual -> {
+                assertThat(actual).isNotNull();
+                Matcher version = Pattern.compile("<johnzon.version>([0-9]+\\.[0-9]+\\.[0-9]+)</johnzon.version>")
+                  .matcher(actual);
+                assertThat(version.find()).isTrue();
+                return """
+                <project>
+                    <groupId>com.example.ehcache</groupId>
+                    <artifactId>johnzon-legacy</artifactId>
+                    <version>1.0.0</version>
+                    <properties>
+                        <johnzon.version>%s</johnzon.version>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.johnzon</groupId>
+                            <artifactId>johnzon-core</artifactId>
+                            <version>${johnzon.version}</version>
+                            <classifier>jakarta</classifier>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """.formatted(version.group(1));
+            })
           )
         );
     }
