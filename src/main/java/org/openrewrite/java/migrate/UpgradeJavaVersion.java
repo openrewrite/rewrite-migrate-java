@@ -26,11 +26,15 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.MavenVisitor;
+import org.openrewrite.xml.XPathMatcher;
+import org.openrewrite.xml.search.FindTags;
 import org.openrewrite.xml.tree.Xml;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Value
@@ -117,22 +121,49 @@ public class UpgradeJavaVersion extends Recipe {
         }
     }
 
+    private static final List<String> JAVA_VERSION_XPATHS = Arrays.asList(
+        "/project/properties/java.version",
+        "/project/properties/jdk.version",
+        "/project/properties/javaVersion",
+        "/project/properties/jdkVersion",
+        "/project/properties/maven.compiler.source",
+        "/project/properties/maven.compiler.target",
+        "/project/properties/maven.compiler.release",
+        "/project/build/plugins/plugin[artifactId='maven-compiler-plugin']/configuration/source",
+        "/project/build/plugins/plugin[artifactId='maven-compiler-plugin']/configuration/target",
+        "/project/build/plugins/plugin[artifactId='maven-compiler-plugin']/configuration/release");
+
+    private static final List<XPathMatcher> JAVA_VERSION_XPATH_MATCHERS =
+        JAVA_VERSION_XPATHS.stream().map(XPathMatcher::new).collect(Collectors.toList());
+
+
     private class MavenUpdateJavaVersionVisitor extends MavenVisitor<ExecutionContext> {
         @Override
         public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
-            Xml.Tag t = (Xml.Tag) super.visitTag(tag, ctx);
-            if (!isPropertyTag()) {
-                return t;
+            tag = (Xml.Tag) super.visitTag(tag, ctx);
+
+            if (JAVA_VERSION_XPATH_MATCHERS.stream().anyMatch(matcher -> matcher.matches(getCursor()))) {
+                Optional<Float> maybeVersion = tag.getValue().flatMap(
+                    value -> {
+                        try {
+                            return Optional.of(Float.parseFloat(value));
+                        } catch (NumberFormatException e) {
+                            return Optional.empty();
+                        }
+                    }
+                );
+
+                if (!maybeVersion.isPresent()) {
+                    return tag;
+                }
+                float currentVersion = maybeVersion.get();
+                if (currentVersion >= version) {
+                    return tag;
+                }
+                return tag.withValue(String.valueOf(version));
             }
-            if (!"java.version".equals(t.getName()) && !"maven.compiler.source".equals(t.getName()) && !"maven.compiler.target".equals(t.getName()) ||
-                (tag.getValue().isPresent() && tag.getValue().get().startsWith("${"))) {
-                return t;
-            }
-            float value = tag.getValue().map(Float::parseFloat).orElse(0f);
-            if (value >= version) {
-                return t;
-            }
-            return t.withValue(String.valueOf(version));
+
+            return tag;
         }
     }
 }

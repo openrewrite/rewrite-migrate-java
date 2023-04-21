@@ -29,7 +29,7 @@ import static org.openrewrite.maven.Assertions.pomXml;
 class UpgradeJavaVersionTest implements RewriteTest {
 
     @Test
-    void mavenUpgradeFromJava8ToJava17() {
+    void mavenUpgradeFromJava8ToJava17ViaProperties() {
         rewriteRun(
           spec -> spec.recipe(new UpgradeJavaVersion(17)),
           //language=xml
@@ -62,6 +62,56 @@ class UpgradeJavaVersionTest implements RewriteTest {
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
+              </project>
+              """
+          )
+        );
+    }
+
+    @Test
+    void mavenUpgradeFromJava8ToJava17ViaConfiguration() {
+        //language=xml
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaVersion(17)),
+          pomXml(
+            """
+              <project>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <version>3.8.0</version>
+                      <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                      </configuration>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """,
+            """
+              <project>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <version>3.8.0</version>
+                      <configuration>
+                        <source>17</source>
+                        <target>17</target>
+                      </configuration>
+                    </plugin>
+                  </plugins>
+                </build>
               </project>
               """
           )
