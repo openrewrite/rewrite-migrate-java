@@ -22,8 +22,11 @@ import org.openrewrite.java.cleanup.UnnecessaryCatch;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.marker.Markup;
 
 import java.util.Base64;
+import java.util.Objects;
 
 public class UseJavaUtilBase64 extends Recipe {
     private final String sunPackage;
@@ -80,6 +83,21 @@ public class UseJavaUtilBase64 extends Recipe {
                     .build();
 
             @Override
+            public J visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
+                if(alreadyUsingIncompatibleBase64(cu)) {
+                    return Markup.warn(cu, new IllegalStateException(
+                            "Already using a class named Base64 other than java.util.Base64. Manual intervention required."));
+                }
+                JavaSourceFile c = (JavaSourceFile) super.visitJavaSourceFile(cu, ctx);
+
+                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Encoder", "java.util.Base64$Encoder", true)
+                        .getVisitor().visitNonNull(c, ctx);
+                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Decoder", "java.util.Base64$Decoder", true)
+                        .getVisitor().visitNonNull(c, ctx);
+                return c;
+            }
+
+            @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (base64EncodeMethod.matches(m) &&
@@ -102,18 +120,6 @@ public class UseJavaUtilBase64 extends Recipe {
             }
 
             @Override
-            public J visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
-
-                JavaSourceFile c = (JavaSourceFile) super.visitJavaSourceFile(cu, ctx);
-
-                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Encoder", "java.util.Base64$Encoder", true)
-                        .getVisitor().visitNonNull(c, ctx);
-                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Decoder", "java.util.Base64$Decoder", true)
-                        .getVisitor().visitNonNull(c, ctx);
-                return c;
-            }
-
-            @Override
             public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                 J.NewClass c = (J.NewClass) super.visitNewClass(newClass, ctx);
                 if (newBase64Encoder.matches(c)) {
@@ -129,5 +135,15 @@ public class UseJavaUtilBase64 extends Recipe {
                 return c;
             }
         };
+    }
+
+    private boolean alreadyUsingIncompatibleBase64(JavaSourceFile cu) {
+        return cu.getClasses().stream().anyMatch(it -> "Base64".equals(it.getSimpleName())) ||
+               cu.getTypesInUse().getTypesInUse().stream()
+                .filter(it -> it instanceof JavaType.FullyQualified)
+                .map(JavaType.FullyQualified.class::cast)
+                .map(JavaType.FullyQualified::getFullyQualifiedName)
+                .filter(it -> !"java.util.Base64".equals(it))
+                .anyMatch(it -> it.endsWith(".Base64"));
     }
 }

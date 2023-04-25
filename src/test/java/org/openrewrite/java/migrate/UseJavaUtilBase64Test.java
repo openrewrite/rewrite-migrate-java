@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -29,6 +30,7 @@ public class UseJavaUtilBase64Test implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec.recipe(new UseJavaUtilBase64("test.sun.misc"))
           .parser(JavaParser.fromJavaVersion()
+            .logCompilationWarningsAndErrors(true)
             //language=java
             .dependsOn(
               """
@@ -166,6 +168,38 @@ public class UseJavaUtilBase64Test implements RewriteTest {
               }
               """
           )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/212")
+    @Test
+    void otherBase64() {
+        //language=java
+        rewriteRun(
+          java("""
+              package test.sun.misc;
+              
+              public class App {
+                  public static void main(String[] args) {
+                      String encode = new BASE64Encoder().encode(new byte[16]);
+                  }
+              }
+              
+              class Base64 {
+              }
+              """,
+            """
+              /*~~(Already using a class named Base64 other than java.util.Base64. Manual intervention required.)~~>*/package test.sun.misc;
+              
+              public class App {
+                  public static void main(String[] args) {
+                      String encode = new BASE64Encoder().encode(new byte[16]);
+                  }
+              }
+              
+              class Base64 {
+              }
+              """)
         );
     }
 }
