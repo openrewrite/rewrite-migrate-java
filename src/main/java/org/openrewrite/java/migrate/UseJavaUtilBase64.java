@@ -96,7 +96,7 @@ public class UseJavaUtilBase64 extends Recipe {
                     // Note: The sun.misc.CharacterDecoder#decodeBuffer throws an IOException, whereas the java
                     // Base64Decoder.decode does not throw a checked exception. If this recipe converts decode, we
                     // may need to remove the catch or completely unwrap a try/catch.
-                    doAfterVisit(new UnnecessaryCatch());
+                    doAfterVisit(new UnnecessaryCatch(false));
                 }
                 return m;
             }
