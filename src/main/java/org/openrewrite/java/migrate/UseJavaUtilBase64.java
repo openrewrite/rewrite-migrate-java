@@ -26,7 +26,6 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.marker.Markup;
 
 import java.util.Base64;
-import java.util.Objects;
 
 public class UseJavaUtilBase64 extends Recipe {
     private final String sunPackage;
