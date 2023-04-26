@@ -16,6 +16,9 @@ dependencies {
     testImplementation("org.projectlombok:lombok:latest.release")
 
     annotationProcessor("org.openrewrite:rewrite-templating:latest.integration")
+    implementation("com.google.errorprone:error_prone_core:2.10.0:with-dependencies") {
+        exclude("com.google.auto.service", "auto-service-annotations")
+    }
 
     implementation(platform("org.openrewrite:rewrite-bom:${rewriteVersion}"))
     implementation("org.openrewrite:rewrite-java")
@@ -45,9 +48,9 @@ dependencies {
     testImplementation("org.apache.maven.shared:maven-shared-utils:3.+")
 
     testRuntimeOnly("commons-io:commons-io:2.+")
-    testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353:latest.release")
-    testRuntimeOnly("com.fasterxml.jackson.core:jackson-core:latest.release")
-    testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind:latest.release")
+    testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
+    testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
+    testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind")
     testRuntimeOnly("org.codehaus.groovy:groovy:latest.release")
     testRuntimeOnly(gradleApi())
 }
