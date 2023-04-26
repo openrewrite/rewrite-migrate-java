@@ -687,6 +687,52 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
+    /**
+     * Quote in a string literal is escaped as: " -> \"
+     * <p>
+     * On converting this to a text block, it needs to be escaped if it is the last character:
+     * <pre>
+     *             """
+     * "test\"" -> test\""""
+     * </pre>
+     * However, this is not required in case we use the newline escape (\) to put the ending delimiter on the next line:
+     * <pre>
+     *             """
+     * "test\"" -> test"\
+     *             """
+     * </pre>
+     */
+    @Test
+    void endingQuote() {
+        rewriteRun(
+          //language=java
+          java(
+            // Before:
+            // String myPlay = "Alice: \"Hi Bob!\"\n" +
+            //                 "Bob: \"Don't use plaintext Alice!\"";
+            """
+              class Test {
+                  String myPlay = "Alice: \\"Hi Bob!\\"\\n" +
+                                  "Bob: \\"Don't use plaintext Alice!\\"";
+              }
+              """,
+            // After:
+            // String myPlay = """
+            //                 Alice: "Hi Bob!"
+            //                 Bob: "Don't use plaintext Alice!"\
+            //                 """;
+            """
+              class Test {
+                  String myPlay = ""\"
+                                  Alice: "Hi Bob!"
+                                  Bob: "Don't use plaintext Alice!"\\
+                                  ""\";
+              }
+              """
+          )
+        );
+    }
+
     @Disabled
     @Test
     void grouping() {

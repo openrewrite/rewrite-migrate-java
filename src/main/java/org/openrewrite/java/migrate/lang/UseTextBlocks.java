@@ -150,7 +150,8 @@ public class UseTextBlocks extends Recipe {
                 // add first line
                 content = "\n" + indentation + content;
 
-                // add last line to ensure the closing delimiter is in a new line to manage indentation
+                // add last line to ensure the closing delimiter is in a new line to manage indentation & remove the
+                // need to escape ending quote in the content
                 if (!isEndsWithNewLine) {
                     content = content + "\\\n" + indentation;
                 }
