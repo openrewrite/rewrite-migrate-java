@@ -141,6 +141,7 @@ public class UseTextBlocks extends Recipe {
                 String indentation = getIndents(concatenation.toString(), useTab, tabSize);
 
                 boolean isEndsWithNewLine = content.endsWith("\n");
+                content = content.replace("\\", "\\\\"); // Escape backslashes
                 content = content.replace(" \n", "\\s\n");
                 content = content.replace("\n", "\n" + indentation);
                 content = content.replace(passPhrase, "\\\n" + indentation);

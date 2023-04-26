@@ -562,6 +562,87 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
+    /**
+     * Single escaping a quote in a string literal provides: " -> \"
+     * <p>
+     * On converting this to a text block, we can let go of the escaping for the double quote: \" -> "
+     */
+    @Test
+    void singleEscapedQuote() {
+        rewriteRun(
+          //language=java
+          java(
+            // Before:
+            // String json = "{" +
+            //               "\"key\": \"value\"" +
+            //               "}";
+            """
+              class Test {
+                  String json = "{" +
+                                "\\"key\\": \\"value\\"" +
+                                "}";
+              }
+              """,
+            // After:
+            // String json = """
+            //               {\
+            //               "key": "value"\
+            //               }\
+            //               """;
+            """
+              class Test {
+                  String json = ""\"
+                                {\\
+                                "key": "value"\\
+                                }\\
+                                ""\";
+              }
+              """
+          )
+        );
+    }
+
+    /**
+     * Double escaping a quote in a string literal provides: " -> \" -> \\\"
+     * <p>
+     * On converting this to a text block, the escaped backslash should remain, but we can let go of the
+     * escaping for the double quote: \\\" -> \\"
+     */
+    @Test
+    void doubleEscapedQuote() {
+        rewriteRun(
+          //language=java
+          java(
+            // Before:
+            // String stringifiedJson = "{" +
+            //                          "\\\"key\\\": \\\"value\\\"" +
+            //                          "}";
+            """
+              class Test {
+                  String stringifiedJson = "{" +
+                                           "\\\\\\"key\\\\\\": \\\\\\"value\\\\\\"" +
+                                           "}";
+              }
+              """,
+            // After:
+            // String stringifiedJson = """
+            //                          {\
+            //                          \\"key\\": \\"value\\"\
+            //                          }\
+            //                          """;
+            """
+              class Test {
+                  String stringifiedJson = ""\"
+                                           {\\
+                                           \\\\"key\\\\": \\\\"value\\\\"\\
+                                           }\\
+                                           ""\";
+              }
+              """
+          )
+        );
+    }
+
     @Disabled
     @Test
     void grouping() {
