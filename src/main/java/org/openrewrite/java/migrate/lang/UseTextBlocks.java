@@ -141,10 +141,20 @@ public class UseTextBlocks extends Recipe {
                 String indentation = getIndents(concatenation.toString(), useTab, tabSize);
 
                 boolean isEndsWithNewLine = content.endsWith("\n");
-                content = content.replace("\\", "\\\\"); // Escape backslashes
-                content = content.replace("\"\"\"", "\"\"\\\""); // Escape triple quotes
+
+                // references:
+                //  - https://docs.oracle.com/en/java/javase/14/docs/specs/text-blocks-jls.html
+                //  - https://javaalmanac.io/features/textblocks/
+
+                // escape backslashes
+                content = content.replace("\\", "\\\\");
+                // escape triple quotes
+                content = content.replace("\"\"\"", "\"\"\\\"");
+                // preserve trailing spaces
                 content = content.replace(" \n", "\\s\n");
+                // handle preceding indentation
                 content = content.replace("\n", "\n" + indentation);
+                // handle line continuations
                 content = content.replace(passPhrase, "\\\n" + indentation);
 
                 // add first line
