@@ -643,6 +643,50 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
+    /**
+     * Triple quotes in a string literal are escaped as: """ -> \"\"\"
+     * <p>
+     * On converting this to a text block, only one of the quotes needs to be escaped: \"\"\" -> ""\"
+     */
+    @Test
+    void tripleQuotes() {
+        rewriteRun(
+          //language=java
+          java(
+            // Before:
+            // String myFaceInASCII = "\"\"\"\"\"\"\"\"\n" +
+            //                        "| o  o |\n" +
+            //                        "|  ==  |\n" +
+            //                        "\\------/\n";
+            """
+              class Test {
+                  String myFaceInASCII = "\\"\\"\\"\\"\\"\\"\\"\\"\\n" +
+                                         "| o  o |\\n" +
+                                         "|  ==  |\\n" +
+                                         "\\\\------/\\n";
+              }
+              """,
+            // After:
+            // String myFaceInASCII = """
+            //                        ""\"""\"""
+            //                        | o  o |
+            //                        |  ==  |
+            //                        \\------/
+            //                        """;
+            """
+              class Test {
+                  String myFaceInASCII = ""\"
+                                         ""\\""\"\\""\"
+                                         | o  o |
+                                         |  ==  |
+                                         \\\\------/
+                                         ""\";
+              }
+              """
+          )
+        );
+    }
+
     @Disabled
     @Test
     void grouping() {

@@ -142,6 +142,7 @@ public class UseTextBlocks extends Recipe {
 
                 boolean isEndsWithNewLine = content.endsWith("\n");
                 content = content.replace("\\", "\\\\"); // Escape backslashes
+                content = content.replace("\"\"\"", "\"\"\\\""); // Escape triple quotes
                 content = content.replace(" \n", "\\s\n");
                 content = content.replace("\n", "\n" + indentation);
                 content = content.replace(passPhrase, "\\\n" + indentation);
