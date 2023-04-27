@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.jacoco;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -31,6 +32,7 @@ class UpgradeJaCoCoMavenPluginVersionTest implements RewriteTest {
           .activateRecipes("org.openrewrite.java.migrate.jacoco.UpgradeJaCoCoMavenPluginVersion"));
     }
 
+    @DocumentExample
     @Test
     void property() {
         rewriteRun(

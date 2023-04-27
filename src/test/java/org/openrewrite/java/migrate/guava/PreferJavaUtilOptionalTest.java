@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.guava;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
@@ -40,6 +41,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().classpath("rewrite-java", "guava"));
     }
 
+    @DocumentExample
     @Test
     void absentToEmpty() {
         //language=java
@@ -248,6 +250,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     @Nested
     class NotYetImplemented {
 
+        @DocumentExample
         @Test
         @ExpectedToFail("Not yet implemented")
         void getCatchIllegalStateExceptionToNoSuchElementException() {

@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
@@ -32,6 +33,7 @@ public class UpdateMavenToJava11Test implements RewriteTest {
           .build().activateRecipes("org.openrewrite.java.migrate.JavaVersion11"));
     }
 
+    @DocumentExample
     @Test
     void changeJavaVersion() {
         //language=xml

@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.apache.commons.io;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
@@ -37,6 +38,7 @@ class UseSystemLineSeparatorTest implements RewriteTest {
     }
 
 
+    @DocumentExample
     @Test
     void migratesQualifiedField() {
         //language=java

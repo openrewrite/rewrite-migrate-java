@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.logging;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
@@ -30,6 +31,7 @@ class MigrateLoggerGlobalToGetGlobalTest implements RewriteTest {
         spec.recipe(new MigrateLoggerGlobalToGetGlobal());
     }
 
+    @DocumentExample
     @Test
     void globalToGetGlobal() {
         //language=java

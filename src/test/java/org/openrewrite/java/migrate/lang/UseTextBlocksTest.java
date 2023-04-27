@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.style.TabsAndIndentsStyle;
@@ -40,6 +41,7 @@ class UseTextBlocksTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(17)));
     }
 
+    @DocumentExample
     @Test
     void regular() {
         rewriteRun(

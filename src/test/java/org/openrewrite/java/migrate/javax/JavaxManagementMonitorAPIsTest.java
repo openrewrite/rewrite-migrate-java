@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -33,6 +34,7 @@ class JavaxManagementMonitorAPIsTest implements RewriteTest {
           .activateRecipes("org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs"));
     }
 
+    @DocumentExample
     @Test
     void counterMonitorSetInitThreshold() {
         //language=java

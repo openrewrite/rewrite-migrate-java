@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.metrics;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -31,6 +32,7 @@ class SimplifyMicrometerMeterTagsTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().classpath("micrometer-core"));
     }
 
+    @DocumentExample
     @Test
     void simplifyNewArray() {
         //language=java

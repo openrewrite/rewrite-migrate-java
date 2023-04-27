@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.logging;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -29,6 +30,7 @@ class MigrateGetLoggingMXBeanToGetPlatformMXBeanTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(9)));
     }
 
+    @DocumentExample
     @Test
     void getLoggingMXBeanToGetPlatformMXBean() {
         //language=java

@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.net;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -28,6 +29,7 @@ class MigrateURLEncoderEncodeTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(10)));
     }
 
+    @DocumentExample
     @Test
     void urlEncoderEncode() {
         //language=java

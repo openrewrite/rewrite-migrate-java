@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -31,6 +32,7 @@ class NoGuavaListsNewLinkedListTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
+    @DocumentExample
     @Test
     void replaceWithNewLinkedList() {
         //language=java

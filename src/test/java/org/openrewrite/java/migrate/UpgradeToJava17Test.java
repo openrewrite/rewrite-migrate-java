@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
@@ -37,6 +38,7 @@ class UpgradeToJava17Test implements RewriteTest {
           .activateRecipes("org.openrewrite.java.migrate.UpgradeToJava17"));
     }
 
+    @DocumentExample
     @Test
     void upgradeFromJava8ToJava17() {
         rewriteRun(

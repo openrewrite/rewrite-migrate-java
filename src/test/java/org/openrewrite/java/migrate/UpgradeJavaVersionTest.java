@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.migrate.search.AboutJavaVersion;
 import org.openrewrite.test.RewriteTest;
@@ -28,6 +29,7 @@ import static org.openrewrite.maven.Assertions.pomXml;
 
 class UpgradeJavaVersionTest implements RewriteTest {
 
+    @DocumentExample
     @Test
     void mavenUpgradeFromJava8ToJava17ViaProperties() {
         rewriteRun(

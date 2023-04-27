@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RewriteTest;
 
@@ -25,6 +26,7 @@ import static org.openrewrite.java.Assertions.java;
 
 class AboutJavaVersionTest implements RewriteTest {
 
+    @DocumentExample
     @Test
     void aboutJavaVersion() {
         rewriteRun(

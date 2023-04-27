@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.JavaParser;
@@ -74,6 +75,7 @@ class JavaxToJakartaTest implements RewriteTest {
         );
     }
 
+    @DocumentExample
     @Test
     void changeImport() {
         rewriteRun(

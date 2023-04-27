@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.maven;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -28,6 +29,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
         spec.recipe(new UseMavenCompilerPluginReleaseConfiguration("11"));
     }
 
+    @DocumentExample
     @Test
     void replacesSourceAndTargetConfig() {
         rewriteRun(

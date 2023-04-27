@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.wro4j;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -32,6 +33,7 @@ class UpgradeWro4jMavenPluginVersionTest implements RewriteTest {
           .activateRecipes("org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion"));
     }
 
+    @DocumentExample
     @Test
     void property() {
         rewriteRun(

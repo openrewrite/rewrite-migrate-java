@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.net;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -28,6 +29,7 @@ class MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorTest implements 
         spec.recipe(new MigrateHttpURLConnectionHttpServerErrorToHttpInternalError());
     }
 
+    @DocumentExample
     @Test
     void httpUrlConnectionHttpServerErrorToHttpInternalError() {
         //language=java
