@@ -74,7 +74,7 @@ public class AddJaxbRuntime extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MavenIsoVisitor<ExecutionContext>() {
             @SuppressWarnings("ConstantConditions")
             @Override

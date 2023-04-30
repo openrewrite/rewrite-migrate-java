@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -51,14 +51,10 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(new UsesJavaVersion<>(9),
-                 new UsesMethod<>(UNMODIFIABLE_SET));
-    }
-
-    @Override
-    protected JavaVisitor<ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
+                new UsesMethod<>(UNMODIFIABLE_SET));
+        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
@@ -88,6 +84,6 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
                 }
                 return m;
             }
-        };
+        });
     }
 }

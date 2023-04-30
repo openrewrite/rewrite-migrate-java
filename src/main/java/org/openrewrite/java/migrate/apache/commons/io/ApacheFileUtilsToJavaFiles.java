@@ -56,7 +56,7 @@ public class ApacheFileUtilsToJavaFiles extends Recipe {
     }
 
     @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             private final MethodMatcher readFileToByteArrayMatcher = new MethodMatcher("org.apache.commons.io.FileUtils readFileToByteArray(java.io.File)");
             private final MethodMatcher readLinesToByteArrayMatcher = new MethodMatcher("org.apache.commons.io.FileUtils readLines(java.io.File)");

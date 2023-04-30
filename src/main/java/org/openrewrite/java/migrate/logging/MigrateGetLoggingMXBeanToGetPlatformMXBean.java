@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java.migrate.logging;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -54,15 +54,11 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(9),
                 new UsesMethod<>(MATCHER));
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
                 cu = (J.CompilationUnit) new ChangeType(
@@ -91,7 +87,7 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
                 }
                 return m;
             }
-        };
+        });
     }
 
 }

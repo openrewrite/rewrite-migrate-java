@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -51,16 +51,12 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return Applicability.and(
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(11),
                 new UsesMethod<>(JAVA_UTIL_OPTIONAL_IS_PRESENT));
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
         MethodMatcher optionalIsPresentMatcher = new MethodMatcher(JAVA_UTIL_OPTIONAL_IS_PRESENT);
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public Statement visitStatement(Statement s, ExecutionContext ctx) {
                 Statement statement = (Statement) super.visitStatement(s, ctx);
@@ -81,6 +77,6 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
                 }
                 return statement;
             }
-        };
+        });
     }
 }

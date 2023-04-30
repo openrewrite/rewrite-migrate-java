@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -48,15 +48,11 @@ public class UseLocaleOf extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(19),
                 new UsesMethod<>(NEW_LOCALE));
-    }
-
-    @Override
-    protected JavaVisitor<ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                 J.NewClass nc = (J.NewClass) super.visitNewClass(newClass, ctx);
@@ -74,6 +70,6 @@ public class UseLocaleOf extends Recipe {
                 }
                 return nc;
             }
-        };
+        });
     }
 }

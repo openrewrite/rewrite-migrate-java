@@ -57,7 +57,7 @@ public class NoGuavaAtomicsNewReference extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newAtomicReference = JavaTemplate.builder(this::getCursor, "new AtomicReference<>()")
                     .imports("java.util.concurrent.atomic.AtomicReference")

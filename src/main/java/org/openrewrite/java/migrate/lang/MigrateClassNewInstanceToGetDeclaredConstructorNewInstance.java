@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -56,15 +56,11 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(
-                new UsesJavaVersion<>(9),
-                new UsesMethod<>("java.lang.Class newInstance()"));
-    }
-
-    @Override
-    protected NewInstanceToDeclaredConstructorVisitor getVisitor() {
-        return new NewInstanceToDeclaredConstructorVisitor();
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(Preconditions.and(
+                        new UsesJavaVersion<>(9),
+                        new UsesMethod<>("java.lang.Class newInstance()")),
+                new NewInstanceToDeclaredConstructorVisitor());
     }
 
     private static class NewInstanceToDeclaredConstructorVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -80,7 +76,7 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
                 J.Try.Catch ctch = getCursor().firstEnclosing(J.Try.Catch.class);
                 J.MethodDeclaration md = getCursor().firstEnclosing(J.MethodDeclaration.class);
                 if ((ctch == null && tri != null && tri.getCatches().stream().anyMatch(c -> isExceptionType(c.getParameter().getType())))
-                        || (md != null && md.getThrows() != null && md.getThrows().stream().anyMatch(nt -> isExceptionType(nt.getType())))) {
+                    || (md != null && md.getThrows() != null && md.getThrows().stream().anyMatch(nt -> isExceptionType(nt.getType())))) {
                     mi = (J.MethodInvocation) TO_DECLARED_CONS_NEW_INSTANCE.getVisitor().visitNonNull(mi, ctx);
                 }
             }
@@ -89,7 +85,7 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
 
         private boolean isExceptionType(@Nullable JavaType type) {
             return TypeUtils.isOfType(type, exType)
-                    || TypeUtils.isOfType(type, thType);
+                   || TypeUtils.isOfType(type, thType);
         }
     }
 }

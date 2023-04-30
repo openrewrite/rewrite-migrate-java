@@ -51,12 +51,12 @@ public class UseEnumSetOf extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(new UsesJavaVersion<>(9),
+        return Preconditions.and(new UsesJavaVersion<>(9),
                 new UsesMethod<>(SET_OF));
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
 
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override

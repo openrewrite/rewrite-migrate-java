@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -57,20 +57,11 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return Applicability.and(
-                new UsesJavaVersion<>(9),
-                new UsesType<>("com.google.common.base.Optional", false));
-    }
-
-    @Override
-    protected UsesMethod<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(METHOD_MATCHER);
-    }
-
-    @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
-        return new PreferJavaUtilOptionalOrSupplierVisitor();
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(
+                Preconditions.and(new UsesJavaVersion<>(9),
+                        new UsesMethod<>(METHOD_MATCHER)),
+                new PreferJavaUtilOptionalOrSupplierVisitor());
     }
 
     private static class PreferJavaUtilOptionalOrSupplierVisitor extends JavaIsoVisitor<ExecutionContext> {

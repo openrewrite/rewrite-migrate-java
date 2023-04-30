@@ -93,7 +93,7 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
     }
 
     @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             private final Supplier<JavaParser> parserSupplier = () -> JavaParser.fromJavaVersion().classpath("commons-io").build();
 

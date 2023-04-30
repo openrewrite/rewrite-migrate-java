@@ -63,7 +63,7 @@ public class NoGuavaOptionalFromJavaUtil extends Recipe {
     }
 
     @Override
-    protected JavaVisitor<ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new ReplaceFromJavaUtilVisitor();
     }
 

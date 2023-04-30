@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -50,13 +51,8 @@ public class MigrateSecurityManagerMulticast extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(MULTICAST_METHOD);
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(new UsesMethod<>(MULTICAST_METHOD), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
@@ -66,7 +62,7 @@ public class MigrateSecurityManagerMulticast extends Recipe {
                 }
                 return m;
             }
-        };
+        });
     }
 
 }

@@ -67,7 +67,7 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newArrayList = JavaTemplate.builder(this::getCursor, "new CopyOnWriteArrayList<>()")
                     .imports("java.util.concurrent.CopyOnWriteArrayList")

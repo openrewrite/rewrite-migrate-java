@@ -56,7 +56,7 @@ public class ApacheBase64ToJavaBase64 extends Recipe {
     }
 
     @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             private final MethodMatcher apacheEncodeToString = new MethodMatcher("org.apache.commons.codec.binary.Base64 encodeBase64String(byte[])");
             private final MethodMatcher apacheEncode64 = new MethodMatcher("org.apache.commons.codec.binary.Base64 encodeBase64(byte[])");

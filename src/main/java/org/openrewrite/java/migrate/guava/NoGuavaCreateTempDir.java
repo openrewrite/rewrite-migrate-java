@@ -15,9 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.openrewrite.Cursor;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Recipe;
+import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -53,18 +51,8 @@ public class NoGuavaCreateTempDir extends Recipe {
     }
 
     @Override
-    protected UsesType<ExecutionContext> getApplicableTest() {
-        return new UsesType<>("com.google.common.io.Files", false);
-    }
-
-    @Override
-    protected UsesMethod<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>("com.google.common.io.Files createTempDir()");
-    }
-
-    @Override
-    protected NoGuavaTempDirVisitor getVisitor() {
-        return new NoGuavaTempDirVisitor();
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(new UsesMethod<>("com.google.common.io.Files createTempDir()"),  new NoGuavaTempDirVisitor());
     }
 
     private static class NoGuavaTempDirVisitor extends JavaIsoVisitor<ExecutionContext> {

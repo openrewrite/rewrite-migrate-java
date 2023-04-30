@@ -57,7 +57,7 @@ public class NoGuavaDirectExecutor extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate template = JavaTemplate.builder(this::getCursor, "Runnable::run")
                     .imports("java.lang.Runnable")

@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java.migrate.logging;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -53,15 +53,11 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(9),
                 new UsesMethod<>(MATCHER));
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = method;
@@ -77,7 +73,6 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
                 }
                 return super.visitMethodInvocation(m, ctx);
             }
-        };
+        });
     }
-
 }

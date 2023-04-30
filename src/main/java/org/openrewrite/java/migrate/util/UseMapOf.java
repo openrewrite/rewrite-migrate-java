@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -53,15 +53,11 @@ public class UseMapOf extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(10),
                 new UsesMethod<>(NEW_HASH_MAP));
-    }
-
-    @Override
-    protected JavaVisitor<ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(check,new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                 J.NewClass n = (J.NewClass) super.visitNewClass(newClass, ctx);
@@ -98,6 +94,6 @@ public class UseMapOf extends Recipe {
                 }
                 return n;
             }
-        };
+        });
     }
 }

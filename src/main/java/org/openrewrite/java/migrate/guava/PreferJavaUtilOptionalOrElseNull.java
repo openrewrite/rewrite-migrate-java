@@ -61,7 +61,7 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
     }
 
     @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new PreferJavaUtilOptionalOrElseNullVisitor();
     }
 

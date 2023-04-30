@@ -57,7 +57,7 @@ public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newConcurrentHashSet = JavaTemplate.builder(this::getCursor, "Collections.newSetFromMap(new ConcurrentHashMap<>())")
                     .imports("java.util.Collections")

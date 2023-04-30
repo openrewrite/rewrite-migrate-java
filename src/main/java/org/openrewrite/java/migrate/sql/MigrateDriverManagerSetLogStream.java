@@ -51,7 +51,7 @@ public class MigrateDriverManagerSetLogStream extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             final JavaTemplate template = JavaTemplate.builder(this::getCursor, "new java.io.PrintWriter(#{any(java.io.PrintStream)})")
                     .build();

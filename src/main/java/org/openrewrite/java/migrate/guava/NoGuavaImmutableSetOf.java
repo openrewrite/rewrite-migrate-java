@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -36,15 +36,20 @@ public class NoGuavaImmutableSetOf extends Recipe {
 
     @Override
     public String getDisplayName() {
+        //language=markdown
         return "Prefer `Set.of(..)` in Java 9 or higher";
     }
 
     @Override
     public String getDescription() {
+        //language=markdown
         return "Replaces `ImmutableSet.of(..)` if the returned type is immediately down-cast.\n" +
-                "  Java 9 introduced `List#of(..)`, `Map#of(..)`, `Set#of(..)` which is similar to `ImmutableList#of(..)`, `ImmutableMap#of(..)`, `ImmutableSet#of(..)`, but has a subtle difference.\n" +
-                "  As per the Java 9 documentation, [`Set.of` provides an unspecified iteration order on the set of elements and is subject to change](https://docs.oracle.com/javase/9/docs/api/java/util/Set.html), whereas [Guava `ImmutableSet` preserves the order from construction time](https://github.com/google/guava/wiki/ImmutableCollectionsExplained#how).\n" +
-                "  This is worth pointing out in case your usage calls for iteration order being important.";
+               "  Java 9 introduced `List#of(..)`, `Map#of(..)`, `Set#of(..)` which is similar to `ImmutableList#of(..)`, " +
+               "`ImmutableMap#of(..)`, `ImmutableSet#of(..)`, but has a subtle difference.\n" +
+               "  As per the Java 9 documentation, [`Set.of` provides an unspecified iteration order on the set of " +
+               "elements and is subject to change](https://docs.oracle.com/javase/9/docs/api/java/util/Set.html), whereas " +
+               "[Guava `ImmutableSet` preserves the order from construction time](https://github.com/google/guava/wiki/ImmutableCollectionsExplained#how).\n" +
+               "  This is worth pointing out in case your usage calls for iteration order being important.";
     }
 
     @Override
@@ -57,18 +62,14 @@ public class NoGuavaImmutableSetOf extends Recipe {
         return Duration.ofMinutes(10);
     }
 
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(new UsesJavaVersion<>(9),
-                new UsesType<>("com.google.common.collect.ImmutableSet", false));
-    }
-
     // Code is shared between `NoGuavaImmutableMapOf`, `NoGuavaImmutableListOf`, and `NoGuavaImmutableSetOf`.
     // Updates to either may apply to each of the recipes.
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
+                new UsesType<>("com.google.common.collect.ImmutableSet", false));
+
+        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
 
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -181,7 +182,7 @@ public class NoGuavaImmutableSetOf extends Recipe {
                 JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
                 return TypeUtils.isOfClassType(fq, "java.util.Set") || TypeUtils.isOfType(fq, JavaType.ShallowClass.build("java.lang.Object"));
             }
-        };
+        });
     }
 }
 

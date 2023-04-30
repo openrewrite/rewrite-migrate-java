@@ -67,7 +67,7 @@ public class NoGuavaListsNewLinkedList extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newLinkedList = JavaTemplate.builder(this::getCursor, "new LinkedList<>()")
                     .imports("java.util.LinkedList")

@@ -70,7 +70,7 @@ public class NoGuavaListsNewArrayList extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newArrayList = JavaTemplate.builder(this::getCursor, "new ArrayList<>()")
                     .imports("java.util.ArrayList")

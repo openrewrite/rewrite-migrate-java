@@ -59,7 +59,7 @@ public class NoGuavaSetsNewHashSet extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newHashSet = JavaTemplate.builder(this::getCursor, "new HashSet<>()")
                     .imports("java.util.HashSet")

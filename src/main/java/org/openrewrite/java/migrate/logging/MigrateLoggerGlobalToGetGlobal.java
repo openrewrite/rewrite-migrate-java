@@ -48,7 +48,7 @@ public class MigrateLoggerGlobalToGetGlobal extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitFieldAccess(J.FieldAccess fieldAccess, ExecutionContext ctx) {

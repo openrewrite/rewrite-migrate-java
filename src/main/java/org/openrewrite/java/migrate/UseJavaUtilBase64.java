@@ -42,14 +42,6 @@ public class UseJavaUtilBase64 extends Recipe {
                "by the Java module system and accessing this class will result in a warning in Java 11 and an error in Java 17.";
     }
 
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.or(
-                new UsesType<>(sunPackage + ".BASE64Encoder", false),
-                new UsesType<>(sunPackage + ".BASE64Decoder", false)
-        );
-    }
-
     public UseJavaUtilBase64(String sunPackage) {
         this.sunPackage = sunPackage;
     }
@@ -60,15 +52,18 @@ public class UseJavaUtilBase64 extends Recipe {
     }
 
     @Override
-    protected JavaVisitor<ExecutionContext> getVisitor() {
-
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.or(
+                new UsesType<>(sunPackage + ".BASE64Encoder", false),
+                new UsesType<>(sunPackage + ".BASE64Decoder", false)
+        );
         MethodMatcher base64EncodeMethod = new MethodMatcher(sunPackage + ".CharacterEncoder *(byte[])");
         MethodMatcher base64DecodeBuffer = new MethodMatcher(sunPackage + ".CharacterDecoder decodeBuffer(String)");
 
         MethodMatcher newBase64Encoder = new MethodMatcher(sunPackage + ".BASE64Encoder <constructor>()");
         MethodMatcher newBase64Decoder = new MethodMatcher(sunPackage + ".BASE64Decoder <constructor>()");
 
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             final JavaTemplate getDecoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getDecoder()")
                     .imports("java.util.Base64")
                     .build();
@@ -133,7 +128,7 @@ public class UseJavaUtilBase64 extends Recipe {
                 }
                 return c;
             }
-        };
+        });
     }
 
     private boolean alreadyUsingIncompatibleBase64(JavaSourceFile cu) {

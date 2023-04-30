@@ -16,8 +16,8 @@
 package org.openrewrite.java.migrate.apache.commons.lang;
 
 import org.jetbrains.annotations.Nullable;
-import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -50,25 +50,24 @@ public class IsNotEmptyToJdk extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.or(
-                new UsesType<>("org.apache.commons.lang3.StringUtils", false),
-                new UsesType<>("org.apache.maven.shared.utils.StringUtils", false),
-                new UsesType<>("org.codehaus.plexus.util.StringUtils", false));
-    }
-
-    @Override
     public Set<String> getTags() {
         return new HashSet<>(Arrays.asList("apache", "commons"));
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> precondition = Preconditions.or(
+                new UsesType<>("org.apache.commons.lang3.StringUtils", false),
+                new UsesType<>("org.apache.maven.shared.utils.StringUtils", false),
+                new UsesType<>("org.codehaus.plexus.util.StringUtils", false));
+
+        return Preconditions.check(precondition, new JavaVisitor<ExecutionContext>() {
             private final MethodMatcher isEmptyMatcher = new MethodMatcher("*..StringUtils isEmpty(..)");
             private final MethodMatcher isNotEmptyMatcher = new MethodMatcher("*..StringUtils isNotEmpty(..)");
 
+            @SuppressWarnings("ConstantValue")
             private final JavaTemplate isEmptyReplacement = JavaTemplate.compile(this, "IsEmpty", (String s) -> (s == null || s.isEmpty())).build();
+            @SuppressWarnings("ConstantValue")
             private final JavaTemplate isNotEmptyReplacement = JavaTemplate.compile(this, "IsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
 
             @Override
@@ -107,6 +106,6 @@ public class IsNotEmptyToJdk extends Recipe {
                 }
                 return null;
             }
-        };
+        });
     }
 }

@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java.migrate.net;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -55,15 +55,11 @@ public class MigrateURLEncoderEncode extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(10),
                 new UsesMethod<>(MATCHER));
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MigrateURLEncoderEncodeVisitor();
+        return Preconditions.check(check, new MigrateURLEncoderEncodeVisitor());
     }
 
     private static class MigrateURLEncoderEncodeVisitor extends JavaIsoVisitor<ExecutionContext> {
