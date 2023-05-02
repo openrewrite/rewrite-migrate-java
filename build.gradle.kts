@@ -25,6 +25,7 @@ dependencies {
     implementation("org.openrewrite:rewrite-maven")
     implementation("org.openrewrite:rewrite-gradle")
     implementation("org.openrewrite.recipe:rewrite-github-actions:$rewriteVersion")
+    implementation("org.openrewrite.recipe:rewrite-static-analysis:${rewriteVersion}")
 
     runtimeOnly("org.openrewrite:rewrite-java-8")
     runtimeOnly("org.openrewrite:rewrite-java-11")
@@ -39,8 +40,6 @@ dependencies {
     testImplementation("org.openrewrite:rewrite-java-tck")
 
     testImplementation("org.assertj:assertj-core:latest.release")
-
-    testImplementation("com.google.guava:guava:29.0-jre")
 
     testImplementation("commons-codec:commons-codec:1.+")
     testImplementation("org.apache.commons:commons-lang3:3.+")

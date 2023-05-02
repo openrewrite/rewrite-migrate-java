@@ -50,15 +50,9 @@ public class UseEnumSetOf extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Preconditions.and(new UsesJavaVersion<>(9),
-                new UsesMethod<>(SET_OF));
-    }
-
-    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(9),
+                new UsesMethod<>(SET_OF)), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
@@ -100,6 +94,6 @@ public class UseEnumSetOf extends Recipe {
                 }
                 return false;
             }
-        };
+        });
     }
 }

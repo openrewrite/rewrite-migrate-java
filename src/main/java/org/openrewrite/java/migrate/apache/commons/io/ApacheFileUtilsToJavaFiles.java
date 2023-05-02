@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.apache.commons.io;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -23,9 +24,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaSourceFile;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,31 +41,26 @@ public class ApacheFileUtilsToJavaFiles extends Recipe {
     }
 
     @Override
-    protected UsesType<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesType<>("org.apache.commons.io.FileUtils", false);
-    }
-
-    @Override
     public Set<String> getTags() {
         return new HashSet<>(Arrays.asList("apache", "commons"));
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesType<>("org.apache.commons.io.FileUtils", false), new JavaIsoVisitor<ExecutionContext>() {
             private final MethodMatcher readFileToByteArrayMatcher = new MethodMatcher("org.apache.commons.io.FileUtils readFileToByteArray(java.io.File)");
             private final MethodMatcher readLinesToByteArrayMatcher = new MethodMatcher("org.apache.commons.io.FileUtils readLines(java.io.File)");
             private final MethodMatcher readLinesWithCharsetToByteArrayMatcher = new MethodMatcher("org.apache.commons.io.FileUtils readLines(java.io.File, java.nio.charset.Charset)");
             private final MethodMatcher readLinesWithCharsetIdToByteArrayMatcher = new MethodMatcher("org.apache.commons.io.FileUtils readLines(java.io.File, String)");
 
             @Override
-            public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
-                JavaSourceFile sf = super.visitJavaSourceFile(cu, ctx);
-                if (sf != cu) {
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                J.CompilationUnit c = super.visitCompilationUnit(cu, ctx);
+                if (c != cu) {
                     maybeAddImport("java.nio.file.Files");
                     maybeRemoveImport("org.apache.commons.io.FileUtils");
                 }
-                return sf;
+                return c;
             }
 
             @Override
@@ -87,6 +81,6 @@ public class ApacheFileUtilsToJavaFiles extends Recipe {
                 }
                 return mi;
             }
-        };
+        });
     }
 }

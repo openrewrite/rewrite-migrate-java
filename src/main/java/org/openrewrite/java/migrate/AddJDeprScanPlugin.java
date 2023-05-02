@@ -17,17 +17,13 @@ package org.openrewrite.java.migrate;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
 import org.openrewrite.*;
-import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.StringUtils;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.maven.AddPlugin;
+import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.MavenVisitor;
-import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.xml.tree.Xml;
-
-import java.time.Duration;
-import java.util.List;
 
 /**
  * This imperative recipe will add the jdeprscan plugin to a maven project. In the case of a multi-module project,
@@ -52,14 +48,14 @@ public class AddJDeprScanPlugin extends Recipe {
     }
 
     @Override
-    protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
-        return ListUtils.map(before, s -> {
-            if ("pom.xml".equals(s.getSourcePath().toString())
-                    && s.getMarkers().findFirst(MavenResolutionResult.class).isPresent()) {
-                return (SourceFile) new AddJDeprScanPluginVisitor().visit(s, ctx);
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return new MavenIsoVisitor<ExecutionContext>() {
+            @Override
+            public @Nullable Xml preVisit(Xml tree, ExecutionContext ctx) {
+                stopAfterPreVisit();
+                return new AddJDeprScanPluginVisitor().visit(tree, ctx);
             }
-            return s;
-        });
+        };
     }
 
     private class AddJDeprScanPluginVisitor extends MavenVisitor<ExecutionContext> {

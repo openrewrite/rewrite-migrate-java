@@ -85,7 +85,7 @@ public class AddJaxbRuntime extends Recipe {
                 if ("sun".equals(runtime)) {
                     if (getRecipeList().isEmpty()) {
                         //Upgrade any previous runtimes to the most current 2.3.x version
-                        doNext(new UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null));
+                        doAfterVisit(new UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null));
                     }
                     d = (Xml.Document) new ChangeDependencyGroupIdAndArtifactId(
                             GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
@@ -98,7 +98,7 @@ public class AddJaxbRuntime extends Recipe {
                 } else {
                     if (getRecipeList().isEmpty()) {
                         //Upgrade any previous runtimes to the most current 2.3.x version
-                        doNext(new UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null));
+                        doAfterVisit(new UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null));
                     }
                     d = (Xml.Document) new ChangeDependencyGroupIdAndArtifactId(
                             SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,

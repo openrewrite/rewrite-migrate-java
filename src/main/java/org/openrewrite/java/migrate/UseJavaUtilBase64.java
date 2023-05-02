@@ -24,12 +24,12 @@ import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.cleanup.UnnecessaryCatch;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.marker.Markup;
+import org.openrewrite.staticanalysis.UnnecessaryCatch;
 
 import java.util.Base64;
 
@@ -83,12 +83,12 @@ public class UseJavaUtilBase64 extends Recipe {
                     .build();
 
             @Override
-            public J visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
+            public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
                 if (alreadyUsingIncompatibleBase64(cu)) {
                     return Markup.warn(cu, new IllegalStateException(
                             "Already using a class named Base64 other than java.util.Base64. Manual intervention required."));
                 }
-                JavaSourceFile c = (JavaSourceFile) super.visitJavaSourceFile(cu, ctx);
+                J.CompilationUnit c = (J.CompilationUnit) super.visitCompilationUnit(cu, ctx);
 
                 c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Encoder", "java.util.Base64$Encoder", true)
                         .getVisitor().visitNonNull(c, ctx);

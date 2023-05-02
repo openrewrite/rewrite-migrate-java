@@ -27,7 +27,6 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -85,14 +84,9 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
     }
 
     @Override
-    protected UsesType<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesType<>("org.apache.commons.io.IOUtils", false);
-    }
-
-    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            private final Supplier<JavaParser> parserSupplier = () -> JavaParser.fromJavaVersion().classpath("commons-io").build();
+        return Preconditions.check(new UsesType<>("org.apache.commons.io.IOUtils", false), new JavaIsoVisitor<ExecutionContext>() {
+            private final JavaParser.Builder<?, ?> javaParser = JavaParser.fromJavaVersion().classpath("commons-io");
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -102,7 +96,7 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
                     //noinspection ConstantConditions
                     mi = mi.withMethodType(mi.getMethodType().withName("getBytes"));
                     mi = mi.withTemplate(JavaTemplate.builder(this::getCursor, "#{any(String)}.getBytes(StandardCharsets.#{})}")
-                                    .javaParser(parserSupplier)
+                                    .javaParser(javaParser)
                                     .imports("java.nio.charset.StandardCharsets").build(),
                             mi.getCoordinates().replaceMethod(), mi.getArguments().get(0), encoding == null ? "UTF_8" : encoding);
                 } else {
@@ -111,7 +105,7 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
                             List<Object> args = new ArrayList<>(mi.getArguments());
                             args.add(encoding == null ? "UTF_8" : encoding);
                             mi = mi.withTemplate(JavaTemplate.builder(this::getCursor, entry.getValue())
-                                            .javaParser(parserSupplier)
+                                            .javaParser(javaParser)
                                             .imports("java.nio.charset.StandardCharsets").build(),
                                     mi.getCoordinates().replaceMethod(), args.toArray());
                         }
@@ -122,6 +116,6 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
                 }
                 return mi;
             }
-        };
+        });
     }
 }
