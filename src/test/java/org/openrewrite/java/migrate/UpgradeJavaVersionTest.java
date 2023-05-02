@@ -17,10 +17,12 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.config.CompositeRecipe;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.migrate.search.AboutJavaVersion;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.openrewrite.gradle.Assertions.buildGradle;
@@ -162,7 +164,7 @@ class UpgradeJavaVersionTest implements RewriteTest {
     @Test
     void upgradeJavaVersionTo17From11() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeJavaVersion(17).doNext(new AboutJavaVersion(null))),
+          spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(17), new AboutJavaVersion(null)))),
           java(
             //language=java
             """
@@ -182,7 +184,7 @@ class UpgradeJavaVersionTest implements RewriteTest {
     @Test
     void upgradeJavaVersionTo11From8() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeJavaVersion(11).doNext(new AboutJavaVersion(null))),
+          spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(11), new AboutJavaVersion(null)))),
           java(
             //language=java
             """
