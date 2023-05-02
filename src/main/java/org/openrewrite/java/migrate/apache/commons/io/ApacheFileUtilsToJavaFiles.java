@@ -42,11 +42,6 @@ public class ApacheFileUtilsToJavaFiles extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     protected UsesType<ExecutionContext> getSingleSourceApplicableTest() {
         return new UsesType<>("org.apache.commons.io.FileUtils", false);
     }

@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.logging;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -23,8 +24,6 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.time.Duration;
 
 public class MigrateLoggerGlobalToGetGlobal extends Recipe {
     @Override
@@ -38,18 +37,8 @@ public class MigrateLoggerGlobalToGetGlobal extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesType<>("java.util.logging.Logger", false);
-    }
-
-    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesType<>("java.util.logging.Logger", false), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitFieldAccess(J.FieldAccess fieldAccess, ExecutionContext ctx) {
                 J j = super.visitFieldAccess(fieldAccess, ctx);
@@ -62,9 +51,7 @@ public class MigrateLoggerGlobalToGetGlobal extends Recipe {
 
                 return j;
             }
-        };
-
-
+        });
     }
 
 }

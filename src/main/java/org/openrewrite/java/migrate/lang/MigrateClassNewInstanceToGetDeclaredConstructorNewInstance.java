@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
@@ -29,7 +29,6 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -44,11 +43,6 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
     @Override
     public String getDescription() {
         return "Use `Class#getDeclaredConstructor().newInstance()` instead of the deprecated `Class#newInstance()` in Java 9 or higher.";
-    }
-
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
     }
 
     public Set<String> getTags() {

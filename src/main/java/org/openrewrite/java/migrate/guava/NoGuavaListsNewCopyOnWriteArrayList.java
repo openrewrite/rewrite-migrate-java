@@ -16,9 +16,9 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -26,7 +26,6 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -40,11 +39,6 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public String getDescription() {
         return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
     }
@@ -55,20 +49,10 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-                doAfterVisit(new UsesMethod<>(NEW_ARRAY_LIST));
-                doAfterVisit(new UsesMethod<>(NEW_ARRAY_LIST_ITERABLE));
-                return cu;
-            }
-        };
-    }
-
-    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(Preconditions.or(
+                new UsesMethod<>(NEW_ARRAY_LIST),
+                new UsesMethod<>(NEW_ARRAY_LIST_ITERABLE)), new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newArrayList = JavaTemplate.builder(this::getCursor, "new CopyOnWriteArrayList<>()")
                     .imports("java.util.concurrent.CopyOnWriteArrayList")
                     .build();
@@ -84,7 +68,7 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
                     maybeAddImport("java.util.concurrent.CopyOnWriteArrayList");
                     return method.withTemplate(newArrayList, method.getCoordinates().replace());
                 } else if (NEW_ARRAY_LIST_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
-                           TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
+                        TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.concurrent.CopyOnWriteArrayList");
                     return method.withTemplate(newArrayListCollection, method.getCoordinates().replace(),
@@ -92,6 +76,6 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
                 }
                 return super.visitMethodInvocation(method, ctx);
             }
-        };
+        });
     }
 }

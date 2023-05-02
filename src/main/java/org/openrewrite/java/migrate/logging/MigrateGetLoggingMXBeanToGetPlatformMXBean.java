@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.logging;
 
-import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeType;
@@ -27,7 +27,6 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -42,11 +41,6 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
     @Override
     public String getDescription() {
         return "Use `ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)` instead of the deprecated `LogManager#getLoggingMXBean()` in Java 9 or higher.";
-    }
-
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
     }
 
     public Set<String> getTags() {

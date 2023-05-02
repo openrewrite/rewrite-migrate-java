@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.net;
 
-import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.AddImport;
@@ -27,7 +27,6 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -75,11 +74,6 @@ public class MigrateURLDecoderDecode extends Recipe {
             }
             return super.visitMethodInvocation(m, ctx);
         }
-    }
-
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
     }
 
 }

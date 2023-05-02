@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.net;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -24,7 +25,6 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -47,18 +47,8 @@ public class MigrateMulticastSocketSetTTLToSetTimeToLive extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(MATCHER);
-    }
-
-    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MigrateMulticastSocketSetTTLToSetTimeToLiveVisitor();
+        return Preconditions.check(new UsesMethod<>(MATCHER), new MigrateMulticastSocketSetTTLToSetTimeToLiveVisitor());
     }
 
     private static class MigrateMulticastSocketSetTTLToSetTimeToLiveVisitor extends JavaIsoVisitor<ExecutionContext> {

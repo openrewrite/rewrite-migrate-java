@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -24,7 +25,6 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -42,23 +42,13 @@ public class NoGuavaAtomicsNewReference extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public Set<String> getTags() {
         return Collections.singleton("guava");
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return new UsesMethod<>(NEW_ATOMIC_REFERENCE);
-    }
-
-    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesMethod<>(NEW_ATOMIC_REFERENCE), new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newAtomicReference = JavaTemplate.builder(this::getCursor, "new AtomicReference<>()")
                     .imports("java.util.concurrent.atomic.AtomicReference")
                     .build();
@@ -73,6 +63,6 @@ public class NoGuavaAtomicsNewReference extends Recipe {
                 }
                 return super.visitMethodInvocation(method, ctx);
             }
-        };
+        });
     }
 }

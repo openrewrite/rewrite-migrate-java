@@ -25,8 +25,6 @@ import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.tree.Xml;
 
-import java.time.Duration;
-
 /**
  * This imperative recipe will add the maven jar plugin to a maven project. The maven jar plugin will be configured to suppress
  * Illegal Reflection Warnings. In the case of a multi-module project, this recipe will attempt to add the plugin to only the top level project.
@@ -53,11 +51,6 @@ public class AddSuppressionForIllegalReflectionWarningsPlugin extends Recipe {
     @Override
     public String getDescription() {
         return "Adds a maven jar plugin that's configured to suppress Illegal Reflection Warnings.";
-    }
-
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
     }
 
     @Override

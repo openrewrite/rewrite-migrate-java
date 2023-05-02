@@ -16,16 +16,15 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -45,31 +44,16 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public Set<String> getTags() {
         return Collections.singleton("guava");
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-                doAfterVisit(new UsesMethod<>(NEW_LINKED_HASH_MAP));
-                doAfterVisit(new UsesMethod<>(NEW_LINKED_HASH_MAP_WITH_MAP));
-                doAfterVisit(new UsesMethod<>(NEW_LINKED_HASH_MAP_CAPACITY));
-                return cu;
-            }
-        };
-    }
-
-    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(Preconditions.or(
+                new UsesMethod<>(NEW_LINKED_HASH_MAP),
+                new UsesMethod<>(NEW_LINKED_HASH_MAP_WITH_MAP),
+                new UsesMethod<>(NEW_LINKED_HASH_MAP_CAPACITY)), new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newLinkedHashMap = JavaTemplate.builder(this::getCursor, "new LinkedHashMap<>()")
                     .imports("java.util.LinkedHashMap")
                     .build();
@@ -101,6 +85,6 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
                 }
                 return super.visitMethodInvocation(method, ctx);
             }
-        };
+        });
     }
 }

@@ -16,15 +16,14 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,28 +43,13 @@ public class NoGuavaOptionalFromJavaUtil extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public Set<String> getTags() {
         return new HashSet<>(Arrays.asList("RSPEC-4738", "guava"));
     }
 
     @Override
-    protected UsesType<ExecutionContext> getApplicableTest() {
-        return new UsesType<>("com.google.common.base.Optional", false);
-    }
-
-    @Override
-    protected UsesMethod<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(METHOD_MATCHER);
-    }
-
-    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new ReplaceFromJavaUtilVisitor();
+        return Preconditions.check(new UsesMethod<>(METHOD_MATCHER), new ReplaceFromJavaUtilVisitor());
     }
 
     private static class ReplaceFromJavaUtilVisitor extends JavaVisitor<ExecutionContext> {

@@ -16,8 +16,14 @@
 package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import org.openrewrite.*;
-import org.openrewrite.java.*;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.ChangeType;
+import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.cleanup.UnnecessaryCatch;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
@@ -39,7 +45,7 @@ public class UseJavaUtilBase64 extends Recipe {
     public String getDescription() {
         //language=markdown
         return "Prefer `java.util.Base64` instead of using `sun.misc` in Java 8 or higher. `sun.misc` is not exported " +
-               "by the Java module system and accessing this class will result in a warning in Java 11 and an error in Java 17.";
+                "by the Java module system and accessing this class will result in a warning in Java 11 and an error in Java 17.";
     }
 
     public UseJavaUtilBase64(String sunPackage) {
@@ -78,7 +84,7 @@ public class UseJavaUtilBase64 extends Recipe {
 
             @Override
             public J visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
-                if(alreadyUsingIncompatibleBase64(cu)) {
+                if (alreadyUsingIncompatibleBase64(cu)) {
                     return Markup.warn(cu, new IllegalStateException(
                             "Already using a class named Base64 other than java.util.Base64. Manual intervention required."));
                 }
@@ -95,7 +101,7 @@ public class UseJavaUtilBase64 extends Recipe {
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (base64EncodeMethod.matches(m) &&
-                    ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
+                        ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
                     m = m.withTemplate(encodeToString, m.getCoordinates().replace(), method.getArguments().get(0));
                     if (method.getSelect() instanceof J.Identifier) {
                         m = m.withSelect(method.getSelect());
@@ -133,11 +139,11 @@ public class UseJavaUtilBase64 extends Recipe {
 
     private boolean alreadyUsingIncompatibleBase64(JavaSourceFile cu) {
         return cu.getClasses().stream().anyMatch(it -> "Base64".equals(it.getSimpleName())) ||
-               cu.getTypesInUse().getTypesInUse().stream()
-                .filter(it -> it instanceof JavaType.FullyQualified)
-                .map(JavaType.FullyQualified.class::cast)
-                .map(JavaType.FullyQualified::getFullyQualifiedName)
-                .filter(it -> !"java.util.Base64".equals(it))
-                .anyMatch(it -> it.endsWith(".Base64"));
+                cu.getTypesInUse().getTypesInUse().stream()
+                        .filter(it -> it instanceof JavaType.FullyQualified)
+                        .map(JavaType.FullyQualified.class::cast)
+                        .map(JavaType.FullyQualified::getFullyQualifiedName)
+                        .filter(it -> !"java.util.Base64".equals(it))
+                        .anyMatch(it -> it.endsWith(".Base64"));
     }
 }

@@ -52,11 +52,6 @@ public class AddJDeprScanPlugin extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
         return ListUtils.map(before, s -> {
             if ("pom.xml".equals(s.getSourcePath().toString())

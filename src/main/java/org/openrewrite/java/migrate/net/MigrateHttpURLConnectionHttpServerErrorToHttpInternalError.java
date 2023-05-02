@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.net;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeFieldName;
@@ -25,7 +26,6 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -40,23 +40,13 @@ public class MigrateHttpURLConnectionHttpServerErrorToHttpInternalError extends 
         return "Use `java.net.HttpURLConnection.HTTP_INTERNAL_ERROR` instead of the deprecated `java.net.HttpURLConnection.HTTP_SERVER_ERROR`.";
     }
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
     public Set<String> getTags() {
         return Collections.singleton("deprecated");
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesType<>("java.net.HttpURLConnection", false);
-    }
-
-    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorVisitor();
+        return Preconditions.check(new UsesType<>("java.net.HttpURLConnection", false), new MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorVisitor());
     }
 
     private static class MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorVisitor extends JavaIsoVisitor<ExecutionContext> {

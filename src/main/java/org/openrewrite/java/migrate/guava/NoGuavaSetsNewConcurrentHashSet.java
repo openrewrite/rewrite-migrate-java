@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -24,7 +25,6 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -34,11 +34,6 @@ public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
     @Override
     public String getDisplayName() {
         return "Prefer `new ConcurrentHashMap<>()`";
-    }
-
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
     }
 
     @Override
@@ -52,13 +47,8 @@ public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return new UsesMethod<>(NEW_HASH_SET);
-    }
-
-    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesMethod<>(NEW_HASH_SET), new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newConcurrentHashSet = JavaTemplate.builder(this::getCursor, "Collections.newSetFromMap(new ConcurrentHashMap<>())")
                     .imports("java.util.Collections")
                     .imports("java.util.concurrent.ConcurrentHashMap")
@@ -74,6 +64,6 @@ public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
                 }
                 return super.visitMethodInvocation(method, ctx);
             }
-        };
+        });
     }
 }
