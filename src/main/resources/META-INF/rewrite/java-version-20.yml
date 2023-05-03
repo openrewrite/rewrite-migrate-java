@@ -27,7 +27,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.JavaVersion20
   - org.openrewrite.java.migrate.util.UseLocaleOf
-  - org.openrewrite.java.cleanup.ReplaceDeprecatedRuntimeExecMethods
+  - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
