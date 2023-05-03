@@ -20,7 +20,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.marker.JavaVersion;
@@ -32,7 +31,6 @@ import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.marker.SearchResult;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Value
@@ -68,7 +66,7 @@ public class AboutJavaVersion extends ScanningRecipe<Map<AboutJavaVersion.Projec
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             @Nullable
-            public Tree visit(@Nullable Tree sourceFile, ExecutionContext executionContext) {
+            public Tree visit(@Nullable Tree sourceFile, ExecutionContext ctx) {
                 sourceFile.getMarkers().findFirst(JavaProject.class).ifPresent(javaProject ->
                         sourceFile.getMarkers().findFirst(JavaSourceSet.class).ifPresent(sourceSet ->
                                 sourceFile.getMarkers().findFirst(JavaVersion.class).ifPresent(version -> sourceSetVersion.put(new ProjectSourceSet(javaProject, sourceSet),

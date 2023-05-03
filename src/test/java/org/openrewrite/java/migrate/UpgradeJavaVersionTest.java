@@ -74,9 +74,9 @@ class UpgradeJavaVersionTest implements RewriteTest {
 
     @Test
     void mavenUpgradeFromJava8ToJava17ViaConfiguration() {
-        //language=xml
         rewriteRun(
           spec -> spec.recipe(new UpgradeJavaVersion(17)),
+          //language=xml
           pomXml(
             """
               <project>
@@ -126,6 +126,7 @@ class UpgradeJavaVersionTest implements RewriteTest {
     void gradleUpgradeFromJava11ToJava17() {
         rewriteRun(
           spec -> spec.recipe(new UpgradeJavaVersion(17)),
+          //language=groovy
           buildGradle(
             """
               java {
@@ -149,6 +150,7 @@ class UpgradeJavaVersionTest implements RewriteTest {
     void gradleNoChangeIfUpgradeFromJava11ToJava8() {
         rewriteRun(
           spec -> spec.recipe(new UpgradeJavaVersion(8)),
+          //language=groovy
           buildGradle(
             """
               java {
@@ -165,13 +167,12 @@ class UpgradeJavaVersionTest implements RewriteTest {
     void upgradeJavaVersionTo17From11() {
         rewriteRun(
           spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(17), new AboutJavaVersion(null)))),
+          //language=java
           java(
-            //language=java
             """
               class Test {
               }
               """,
-            //language=java
             """
               /*~~(Java version: 17)~~>*/class Test {
               }
@@ -185,13 +186,12 @@ class UpgradeJavaVersionTest implements RewriteTest {
     void upgradeJavaVersionTo11From8() {
         rewriteRun(
           spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(11), new AboutJavaVersion(null)))),
+          //language=java
           java(
-            //language=java
             """
               class Test {
               }
               """,
-            //language=java
             """
               /*~~(Java version: 11)~~>*/class Test {
               }

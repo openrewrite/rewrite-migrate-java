@@ -71,8 +71,8 @@ public class IsNotEmptyToJdk extends Recipe {
             private final JavaTemplate isNotEmptyReplacement = JavaTemplate.compile(this, "IsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
 
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                J j = super.visitMethodInvocation(method, executionContext);
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J j = super.visitMethodInvocation(method, ctx);
                 if (!(j instanceof J.MethodInvocation)) {
                     return j;
                 }

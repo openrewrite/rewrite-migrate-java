@@ -83,13 +83,9 @@ public class UpgradeJavaVersion extends ScanningRecipe<AtomicReference<JavaVersi
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(AtomicReference<JavaVersion> acc) {
-        if (acc.get() == null || acc.get().getMajorVersion() >= version) {
-            return TreeVisitor.noop();
-        }
-
-        JavaVersion updatedMarker = acc.get()
-                .withSourceCompatibility(version.toString())
-                .withTargetCompatibility(version.toString());
+        Optional<JavaVersion> updatedMarker = Optional.ofNullable(acc.get())
+                .map(jv -> jv.getMajorVersion() >= version ? null
+                        : jv.withSourceCompatibility(version.toString()).withTargetCompatibility(version.toString()));
 
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
@@ -104,8 +100,8 @@ public class UpgradeJavaVersion extends ScanningRecipe<AtomicReference<JavaVersi
                     source = (SourceFile) new MavenUpdateJavaVersionVisitor().visitNonNull(source, ctx);
                 }
 
-                if (source.getMarkers().findFirst(JavaVersion.class).isPresent()) {
-                    source = source.withMarkers(source.getMarkers().computeByType(updatedMarker,
+                if (updatedMarker.isPresent() && source.getMarkers().findFirst(JavaVersion.class).isPresent()) {
+                    source = source.withMarkers(source.getMarkers().computeByType(updatedMarker.get(),
                             (existing, updated) -> updated));
                 }
                 return source;
@@ -117,9 +113,8 @@ public class UpgradeJavaVersion extends ScanningRecipe<AtomicReference<JavaVersi
         MethodMatcher javaLanguageVersionMatcher = new MethodMatcher("org.gradle.jvm.toolchain.JavaLanguageVersion of(int)");
 
         @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method,
-                                                        ExecutionContext executionContext) {
-            method = super.visitMethodInvocation(method, executionContext);
+        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            method = super.visitMethodInvocation(method, ctx);
             if (javaLanguageVersionMatcher.matches(method)) {
                 List<Expression> args = method.getArguments();
 
