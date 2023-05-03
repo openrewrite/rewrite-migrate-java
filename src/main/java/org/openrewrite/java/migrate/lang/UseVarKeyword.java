@@ -28,7 +28,7 @@ import java.time.Duration;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class VarKeyword extends Recipe {
+public class UseVarKeyword extends Recipe {
     public String getDisplayName() {
         return "Use local variable type-inference (var) where possible";
     }
