@@ -496,6 +496,7 @@ class UseTextBlocksTest implements RewriteTest {
         assertThat(s1).isEqualTo(s2).isEqualTo(s3);
     }
 
+    @DocumentExample
     @Test
     void newlineAtBeginningOfLines() {
         rewriteRun(
@@ -650,6 +651,7 @@ class UseTextBlocksTest implements RewriteTest {
      * <p>
      * On converting this to a text block, only one of the quotes needs to be escaped: \"\"\" -> ""\"
      */
+    @DocumentExample
     @Test
     void tripleQuotes() {
         rewriteRun(
@@ -683,6 +685,29 @@ class UseTextBlocksTest implements RewriteTest {
                                          |  ==  |
                                          \\\\------/
                                          ""\";
+              }
+              """
+          )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void eightQuotes() {
+        rewriteRun(
+          java(
+            """
+              class Test {
+                  String eightQuotes = "\\"\\"\\"\\"\\"\\"\\"\\"" +
+                                 "after 8 quotes";
+              }
+              """,
+            """
+              class Test {
+                  String eightQuotes = ""\"
+                                 ""\\""\"\\""\"\\
+                                 after 8 quotes\\
+                                 ""\";
               }
               """
           )
