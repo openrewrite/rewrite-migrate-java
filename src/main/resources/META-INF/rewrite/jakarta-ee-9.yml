@@ -688,24 +688,6 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.MaybeAddJakartaServletApi
-displayName: Maybe add jakarta.servlet-api
-description: Adds the jakarta.servlet-api dependency, unless the project already uses spring-boot-starter-web, which transitively includes a compatible implementation under a different GAV
-applicability:
-  singleSource:
-    - org.openrewrite.maven.search.DoesNotIncludeDependency:
-        groupId: org.springframework.boot
-        artifactId: spring-boot-starter-web
-recipeList:
-  - org.openrewrite.maven.AddDependency:
-      groupId: jakarta.servlet
-      artifactId: jakarta.servlet-api
-      version: 6.x
-      onlyIfUsing: javax.servlet.*
-      acceptTransitive: true
-
----
-type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxTransactionMigrationToJakartaTransaction
 displayName: Migrate deprecated `javax.transaction` packages to `jakarta.transaction`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
