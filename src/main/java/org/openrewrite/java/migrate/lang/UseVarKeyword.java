@@ -45,12 +45,12 @@ public class UseVarKeyword extends Recipe {
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new HasJavaVersion("11", true).getVisitor();
+        return new HasJavaVersion("10", true).getVisitor();
     }
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
-        };
+        // J.VariableDeclarations
+        return new JavaVisitor<ExecutionContext>() {};
     }
 }

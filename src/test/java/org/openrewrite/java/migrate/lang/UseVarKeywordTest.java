@@ -23,17 +23,20 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
-class VarUsageTest implements RewriteTest {
+class UseVarKeywordTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec.recipe(new UseVarKeyword());
     }
 
-    @Test
-    void donotTransformNull() {
-        //language=java
-        rewriteRun(
-          version(
-            java("""
+    @Nested
+    class GeneralNotApplicable {
+
+        @Test
+        void assignNull() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
               package com.example.app;
                         
               class A {
@@ -42,9 +45,87 @@ class VarUsageTest implements RewriteTest {
                 }
               }
               """),
-            10
-          )
-        );
+                10
+              )
+            );
+        }
+
+        @Test
+        void assignNothing() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+              package com.example.app;
+                        
+              class A {
+                void m() {
+                  String str;
+                }
+              }
+              """),
+                10
+              )
+            );
+        }
+
+        @Test
+        void compoundDeclaration() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+              package com.example.app;
+                        
+              class A {
+                void m() {
+                  String str1, str2 = "Hello World!";
+                }
+              }
+              """),
+                10
+              )
+            );
+        }
+
+        @Test
+        void simpleAssigment() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+              package com.example.app;
+                        
+              class A {
+                void m() {
+                  String str1;
+                  str1 = "Hello World!";
+                }
+              }
+              """),
+                10
+              )
+            );
+        }
+
+        @Test
+        void varUsage() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+              package com.example.app;
+                        
+              class A {
+                void m() {
+                  var str1 = "Hello World!";
+                }
+              }
+              """),
+                10
+              )
+            );
+        }
     }
 
     @Nested
