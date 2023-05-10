@@ -21,8 +21,13 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.HasJavaVersion;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeTree;
 
 import java.time.Duration;
 
@@ -51,6 +56,32 @@ public class UseVarKeyword extends Recipe {
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         // J.VariableDeclarations
-        return new JavaVisitor<ExecutionContext>() {};
+        return new JavaVisitor<ExecutionContext>() {
+
+            private final JavaTemplate template = JavaTemplate.builder(this::getCursor, "var #{} = #{any()}")
+                    .javaParser(JavaParser.fromJavaVersion()).build();
+
+            @Override
+            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
+                J.VariableDeclarations vd = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, executionContext);
+                TypeTree typeExpression = vd.getTypeExpression();
+
+                boolean targetIsPrimitiv = typeExpression instanceof J.Primitive;
+                if (targetIsPrimitiv) return multiVariable;
+
+                boolean hasNoVariable = vd.getVariables().isEmpty();
+                boolean isCompound = vd.getVariables().size() < 1;
+                if (hasNoVariable || isCompound) return multiVariable;
+
+                boolean alreadyUseVar = typeExpression instanceof J.Identifier && "var".equals(((J.Identifier) typeExpression).getSimpleName());
+                if(alreadyUseVar) return multiVariable;
+
+                Expression initializer = vd.getVariables().get(0).getInitializer();
+                String simpleName = vd.getVariables().get(0).getSimpleName();
+                J.VariableDeclarations result = vd.withTemplate(template, vd.getCoordinates().replace(), simpleName, initializer);
+
+                return result;
+            }
+        };
     }
 }

@@ -37,14 +37,14 @@ class UseVarKeywordTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-              package com.example.app;
-                        
-              class A {
-                void m() {
-                  String str = null;
-                }
-              }
-              """),
+                  package com.example.app;
+                            
+                  class A {
+                    void m() {
+                      String str = null;
+                    }
+                  }
+                  """),
                 10
               )
             );
@@ -56,14 +56,14 @@ class UseVarKeywordTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-              package com.example.app;
-                        
-              class A {
-                void m() {
-                  String str;
-                }
-              }
-              """),
+                  package com.example.app;
+                            
+                  class A {                   
+                    void m() {
+                        String str;
+                    }
+                  }
+                  """),
                 10
               )
             );
@@ -75,14 +75,14 @@ class UseVarKeywordTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-              package com.example.app;
-                        
-              class A {
-                void m() {
-                  String str1, str2 = "Hello World!";
-                }
-              }
-              """),
+                  package com.example.app;
+                            
+                  class A {
+                    void m() {
+                      String str1, str2 = "Hello World!";
+                    }
+                  }
+                  """),
                 10
               )
             );
@@ -94,15 +94,15 @@ class UseVarKeywordTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-              package com.example.app;
-                        
-              class A {
-                void m() {
-                  String str1;
-                  str1 = "Hello World!";
-                }
-              }
-              """),
+                  package com.example.app;
+                            
+                  class A {
+                    void m() {
+                        String str1;
+                        str1 = "Hello World!";
+                    }
+                  }
+                  """),
                 10
               )
             );
@@ -114,14 +114,16 @@ class UseVarKeywordTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-              package com.example.app;
+                  package com.example.app;
                         
-              class A {
-                void m() {
-                  var str1 = "Hello World!";
-                }
-              }
-              """),
+                  import java.util.Date;
+                        
+                  class A {
+                    void m() {
+                        var str1 = "Hello World!";
+                    }
+                  }
+                  """),
                 10
               )
             );
@@ -148,7 +150,7 @@ class UseVarKeywordTest implements RewriteTest {
                                     
                   class A {
                     void m() {
-                      var o = new Object();
+                        var o = new Object();
                     }
                   }
                   """),
@@ -226,7 +228,7 @@ class UseVarKeywordTest implements RewriteTest {
                                         
                       class A {
                         void m() {
-                          var str = new ArrayList<String>();
+                            var str = new ArrayList<String>();
                         }
                       }
                       """),
@@ -257,7 +259,7 @@ class UseVarKeywordTest implements RewriteTest {
                                         
                       class A {
                         void m() {
-                          var str = new ArrayList<String>();
+                            var str = new ArrayList<String>();
                         }
                       }
                       """),
@@ -289,7 +291,7 @@ class UseVarKeywordTest implements RewriteTest {
                                             
                         class A {
                           void m() {
-                            var str = List.of("one","two");
+                              var str = List.of("one","two");
                           }
                         }
                         """),
@@ -314,7 +316,7 @@ class UseVarKeywordTest implements RewriteTest {
                           
                           class A {
                             void m() {
-                              List<String> strs = List.of();
+                                List<String> strs = List.of();
                             }
                           }
                         """),
@@ -336,7 +338,7 @@ class UseVarKeywordTest implements RewriteTest {
                           
                           class A {
                             void m() {
-                              List<String> strs = List.of();
+                                List<String> strs = List.of();
                             }
                           }
                         """),
@@ -361,7 +363,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          short mask = 0x7fff;
+                            short mask = 0x7fff;
                         }
                       }
                       """),
@@ -380,7 +382,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          byte flags = 0;
+                            byte flags = 0;
                         }
                       }
                       """),
@@ -402,7 +404,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          String str = "I am a value";
+                            String str = "I am a value";
                         }
                       }
                       """, """
@@ -410,7 +412,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          var str = "I am a value";
+                            var str = "I am a value";
                         }
                       }
                       """),
@@ -429,7 +431,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          boolean b = true;
+                            boolean b = true;
                         }
                       }
                       """, """
@@ -437,7 +439,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          var b = true;
+                            var b = true;
                         }
                       }
                       """),
@@ -456,7 +458,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          char ch = '\ufffd';
+                            char ch = '\ufffd';
                         }
                       }
                       """, """
@@ -464,7 +466,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          var ch = '\ufffd';
+                            var ch = '\ufffd';
                         }
                       }
                       """),
@@ -483,7 +485,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          double d = 2.0;
+                            double d = 2.0;
                         }
                       }
                       """, """
@@ -491,7 +493,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          var d = 2.0;
+                            var d = 2.0;
                         }
                       }
                       """),
@@ -510,15 +512,15 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          float f = 2.0;
+                            float f = 2.0;
                         }
                       }
                       """, """
                       package com.example.app;
                                 
-                      class A {
+                      class A {                       
                         void m() {
-                          var f = 2.0F;
+                            var f = 2.0F;
                         }
                       }
                       """),
@@ -537,7 +539,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          long l = 2;
+                            long l = 2;
                         }
                       }
                       """, """
@@ -545,7 +547,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          var l = 2L;
+                            var l = 2L;
                         }
                       }
                       """),
@@ -564,7 +566,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          double d = 2.0D;
+                            double d = 2.0D;
                         }
                       }
                       """, """
@@ -572,7 +574,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          var d = 2.0D;
+                            var d = 2.0D;
                         }
                       }
                       """),
@@ -591,7 +593,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          float f = 2.0F;
+                            float f = 2.0F;
                         }
                       }
                       """, """
@@ -599,7 +601,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          var f = 2.0F;
+                            var f = 2.0F;
                         }
                       }
                       """),
@@ -618,7 +620,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          long l = 2L;
+                            long l = 2L;
                         }
                       }
                       """, """
@@ -626,7 +628,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 
                       class A {
                         void m() {
-                          var l = 2L;
+                            var l = 2L;
                         }
                       }
                       """),
