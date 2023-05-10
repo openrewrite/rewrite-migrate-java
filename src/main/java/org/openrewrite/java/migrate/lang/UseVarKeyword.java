@@ -17,6 +17,8 @@ package org.openrewrite.java.migrate.lang;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -27,9 +29,13 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.HasJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeTree;
 
 import java.time.Duration;
+
+import static java.lang.String.format;
+import static java.util.Objects.*;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -57,30 +63,99 @@ public class UseVarKeyword extends Recipe {
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         // J.VariableDeclarations
         return new JavaVisitor<ExecutionContext>() {
-
+            private final JavaType.Primitive SHORT_TYPE = JavaType.Primitive.Short;
+            private final JavaType.Primitive BYTE_TYPE = JavaType.Primitive.Byte;
             private final JavaTemplate template = JavaTemplate.builder(this::getCursor, "var #{} = #{any()}")
                     .javaParser(JavaParser.fromJavaVersion()).build();
 
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
                 J.VariableDeclarations vd = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, executionContext);
+
+                boolean isOutsideMethode = !determineIfIsInsideMethode(this.getCursor());
+                boolean isMethodeParameter = determineIfMethodeParameter(vd, this.getCursor());
+                if (isOutsideMethode || isMethodeParameter) return vd;
+
                 TypeTree typeExpression = vd.getTypeExpression();
+                boolean isByteVariable = typeExpression instanceof J.Primitive && BYTE_TYPE.equals(typeExpression.getType());
+                boolean isShortVariable = typeExpression instanceof J.Primitive && SHORT_TYPE.equals(typeExpression.getType());
+                if (isByteVariable || isShortVariable) return vd;
 
-                boolean targetIsPrimitiv = typeExpression instanceof J.Primitive;
-                if (targetIsPrimitiv) return multiVariable;
-
-                boolean hasNoVariable = vd.getVariables().isEmpty();
-                boolean isCompound = vd.getVariables().size() < 1;
-                if (hasNoVariable || isCompound) return multiVariable;
-
-                boolean alreadyUseVar = typeExpression instanceof J.Identifier && "var".equals(((J.Identifier) typeExpression).getSimpleName());
-                if(alreadyUseVar) return multiVariable;
+                boolean definesNoVariable = vd.getVariables().isEmpty();
+                boolean isCompoundDefinition = vd.getVariables().size() < 1;
+                boolean isPureAssigment = isNull(vd.getTypeExpression());
+                if (definesNoVariable || isCompoundDefinition || isPureAssigment) return vd;
 
                 Expression initializer = vd.getVariables().get(0).getInitializer();
-                String simpleName = vd.getVariables().get(0).getSimpleName();
-                J.VariableDeclarations result = vd.withTemplate(template, vd.getCoordinates().replace(), simpleName, initializer);
+                boolean isDeclarationOnly = isNull(initializer);
+                boolean isNullAssigment = initializer instanceof J.Literal && isNull(((J.Literal) initializer).getValue());
+                boolean alreadyUseVar = typeExpression instanceof J.Identifier && "var".equals(((J.Identifier) typeExpression).getSimpleName());
 
+                if (alreadyUseVar || isDeclarationOnly || isNullAssigment) return vd;
+
+                J.VariableDeclarations result = transformToVar(vd);
                 return result;
+            }
+
+            private boolean determineIfMethodeParameter(@NotNull J.VariableDeclarations vd, @NotNull Cursor cursor) {
+                J.MethodDeclaration methodDeclaration = cursor.firstEnclosing(J.MethodDeclaration.class);
+                return nonNull(methodDeclaration) && methodDeclaration.getParameters().contains(vd);
+            }
+
+            /**
+             * Determines if a cursor is contained inside a Methode declaration without an intermediate Class declaration
+             * @param cursor value to determine
+             */
+            private boolean determineIfIsInsideMethode(@NotNull Cursor cursor) {
+                Object current = cursor.getValue();
+
+                if (Cursor.ROOT_VALUE.equals(current)) return false; // we are at the top, no further climbing needed
+                if (current instanceof J.ClassDeclaration)
+                    return false; // after a ClassDeclaration we left the scope of search
+                if (current instanceof J.MethodDeclaration) return true; // we found the MethodeDeclaration
+
+                return determineIfIsInsideMethode(requireNonNull(cursor.getParent())); // climb up
+            }
+
+            @NotNull
+            private J.VariableDeclarations transformToVar(@NotNull J.VariableDeclarations vd) {
+                Expression initializer = vd.getVariables().get(0).getInitializer();
+                String simpleName = vd.getVariables().get(0).getSimpleName();
+
+                if (initializer instanceof J.Literal) {
+                    initializer = expandWithPrimitivTypeHint(vd, initializer);
+                }
+
+                return vd.withTemplate(template, vd.getCoordinates().replace(), simpleName, initializer);
+            }
+
+            @NotNull
+            private Expression expandWithPrimitivTypeHint(@NotNull J.VariableDeclarations vd, @NotNull Expression initializer) {
+                String valueSource = ((J.Literal) initializer).getValueSource();
+
+                if (isNull(valueSource)) return initializer;
+
+                boolean isLongLiteral = JavaType.Primitive.Long.equals(vd.getType());
+                boolean inferredAsLong = valueSource.endsWith("l") || valueSource.endsWith("L");
+                boolean isFloatLiteral = JavaType.Primitive.Float.equals(vd.getType());
+                boolean inferredAsFloat = valueSource.endsWith("f") || valueSource.endsWith("F");
+                boolean isDoubleLiteral = JavaType.Primitive.Double.equals(vd.getType());
+                boolean inferredAsDouble = valueSource.endsWith("d") || valueSource.endsWith("D") || valueSource.contains(".");
+
+                String typNotation = null;
+                if (isLongLiteral && !inferredAsLong) {
+                    typNotation = "L";
+                } else if (isFloatLiteral && !inferredAsFloat) {
+                    typNotation = "F";
+                } else if (isDoubleLiteral && !inferredAsDouble) {
+                    typNotation = "D";
+                }
+
+                if (nonNull(typNotation)) {
+                    initializer = ((J.Literal) initializer).withValueSource(format("%s%s", valueSource, typNotation));
+                }
+
+                return initializer;
             }
         };
     }

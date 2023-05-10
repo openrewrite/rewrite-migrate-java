@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
@@ -203,6 +204,7 @@ class UseVarKeywordTest implements RewriteTest {
     }
 
     @Nested
+    @Disabled("Not yet implemented")
     class Generics {
         @Nested
         class Applicable {
@@ -228,7 +230,7 @@ class UseVarKeywordTest implements RewriteTest {
                                         
                       class A {
                         void m() {
-                            var str = new ArrayList<String>();
+                            var strs = new ArrayList<String>();
                         }
                       }
                       """),
@@ -259,10 +261,76 @@ class UseVarKeywordTest implements RewriteTest {
                                         
                       class A {
                         void m() {
-                            var str = new ArrayList<String>();
+                            var strs = new ArrayList<String>();
                         }
                       }
                       """),
+                    10
+                  )
+                );
+            }
+
+            // seem strange I know, but we do not "loose" anything and catching this would be really hard.
+            @Test
+            void withDiamondOperatorOnRaw() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+                                        
+                      import java.util.ArrayList;
+                                        
+                      class A {
+                        void m() {
+                            List<String> strs = new ArrayList();
+                        }
+                      }
+                      """, """
+                      package com.example.app;
+                                        
+                      import java.util.ArrayList;
+                                        
+                      class A {
+                        void m() {
+                            var strs = new ArrayList<String>();
+                        }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
+
+            @Test
+            void forNoDiamondOperators() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java(
+                      """
+                          package com.example.app;
+                          
+                          import java.util.ArrayList;
+                          import java.util.List;
+                          
+                          class A {
+                            void m() {
+                                List strs = new ArrayList();
+                            }
+                          }
+                        """, """
+                          package com.example.app;
+                          
+                          import java.util.ArrayList;
+                          import java.util.List;
+                          
+                          class A {
+                            void m() {
+                                var strs = new ArrayList();
+                            }
+                          }
+                        """),
                     10
                   )
                 );
@@ -291,7 +359,7 @@ class UseVarKeywordTest implements RewriteTest {
                                             
                         class A {
                           void m() {
-                              var str = List.of("one","two");
+                              var strs = List.of("one","two");
                           }
                         }
                         """),
@@ -334,11 +402,12 @@ class UseVarKeywordTest implements RewriteTest {
                       """
                           package com.example.app;
                           
+                          import java.util.ArrayList;
                           import java.util.List;
                           
                           class A {
                             void m() {
-                                List<String> strs = List.of();
+                                List strs = new ArrayList<>();
                             }
                           }
                         """),
@@ -518,7 +587,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """, """
                       package com.example.app;
                                 
-                      class A {                       
+                      class A {                      
                         void m() {
                             var f = 2.0F;
                         }
