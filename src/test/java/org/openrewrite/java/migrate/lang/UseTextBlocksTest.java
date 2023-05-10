@@ -496,6 +496,7 @@ class UseTextBlocksTest implements RewriteTest {
         assertThat(s1).isEqualTo(s2).isEqualTo(s3);
     }
 
+    @DocumentExample
     @Test
     void newlineAtBeginningOfLines() {
         rewriteRun(
@@ -558,6 +559,201 @@ class UseTextBlocksTest implements RewriteTest {
                              \s
                               line6
                               \""";
+              }
+              """
+          )
+        );
+    }
+
+    /**
+     * Single escaping a quote in a string literal provides: " -> \"
+     * <p>
+     * On converting this to a text block, we can let go of the escaping for the double quote: \" -> "
+     */
+    @Test
+    void singleEscapedQuote() {
+        rewriteRun(
+          //language=java
+          java(
+            // Before:
+            // String json = "{" +
+            //               "\"key\": \"value\"" +
+            //               "}";
+            """
+              class Test {
+                  String json = "{" +
+                                "\\"key\\": \\"value\\"" +
+                                "}";
+              }
+              """,
+            // After:
+            // String json = """
+            //               {\
+            //               "key": "value"\
+            //               }\
+            //               """;
+            """
+              class Test {
+                  String json = ""\"
+                                {\\
+                                "key": "value"\\
+                                }\\
+                                ""\";
+              }
+              """
+          )
+        );
+    }
+
+    /**
+     * Double escaping a quote in a string literal provides: " -> \" -> \\\"
+     * <p>
+     * On converting this to a text block, the escaped backslash should remain, but we can let go of the
+     * escaping for the double quote: \\\" -> \\"
+     */
+    @Test
+    void doubleEscapedQuote() {
+        rewriteRun(
+          //language=java
+          java(
+            // Before:
+            // String stringifiedJson = "{" +
+            //                          "\\\"key\\\": \\\"value\\\"" +
+            //                          "}";
+            """
+              class Test {
+                  String stringifiedJson = "{" +
+                                           "\\\\\\"key\\\\\\": \\\\\\"value\\\\\\"" +
+                                           "}";
+              }
+              """,
+            // After:
+            // String stringifiedJson = """
+            //                          {\
+            //                          \\"key\\": \\"value\\"\
+            //                          }\
+            //                          """;
+            """
+              class Test {
+                  String stringifiedJson = ""\"
+                                           {\\
+                                           \\\\"key\\\\": \\\\"value\\\\"\\
+                                           }\\
+                                           ""\";
+              }
+              """
+          )
+        );
+    }
+
+    /**
+     * Triple quotes in a string literal are escaped as: """ -> \"\"\"
+     * <p>
+     * On converting this to a text block, only one of the quotes needs to be escaped: \"\"\" -> ""\"
+     */
+    @DocumentExample
+    @Test
+    void tripleQuotes() {
+        rewriteRun(
+          //language=java
+          java(
+            // Before:
+            // String myFaceInASCII = "\"\"\"\"\"\"\"\"\n" +
+            //                        "| o  o |\n" +
+            //                        "|  ==  |\n" +
+            //                        "\\------/\n";
+            """
+              class Test {
+                  String myFaceInASCII = "\\"\\"\\"\\"\\"\\"\\"\\"\\n" +
+                                         "| o  o |\\n" +
+                                         "|  ==  |\\n" +
+                                         "\\\\------/\\n";
+              }
+              """,
+            // After:
+            // String myFaceInASCII = """
+            //                        ""\"""\"""
+            //                        | o  o |
+            //                        |  ==  |
+            //                        \\------/
+            //                        """;
+            """
+              class Test {
+                  String myFaceInASCII = ""\"
+                                         ""\\""\"\\""\"
+                                         | o  o |
+                                         |  ==  |
+                                         \\\\------/
+                                         ""\";
+              }
+              """
+          )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void eightQuotes() {
+        rewriteRun(
+          java(
+            """
+              class Test {
+                  String eightQuotes = "\\"\\"\\"\\"\\"\\"\\"\\"" +
+                                 "after 8 quotes";
+              }
+              """,
+            """
+              class Test {
+                  String eightQuotes = ""\"
+                                 ""\\""\"\\""\"\\
+                                 after 8 quotes\\
+                                 ""\";
+              }
+              """
+          )
+        );
+    }
+
+    /**
+     * Quote in a string literal is escaped as: " -> \"
+     * <p>
+     * On converting this to a text block, it needs to be escaped if it is the last character:
+     * <pre>
+     *             """
+     * "test\"" -> test\""""
+     * </pre>
+     * However, this is not required in case we use the newline escape (\) to put the ending delimiter on the next line:
+     * <pre>
+     *             """
+     * "test\"" -> test"\
+     *             """
+     * </pre>
+     */
+    @Test
+    void endingQuote() {
+        rewriteRun(
+          //language=java
+          java(
+            // Before:
+            // String myPlay = "Alice: \"Hi Bob!\"\n" +
+            //                 "Bob: \"Don't use plaintext Alice!\"";
+            """
+              class Test {
+                  String myPlay = "Alice: \\"Hi Bob!\\"\\n" +
+                                  "Bob: \\"Don't use plaintext Alice!\\"";
+              }
+              """,
+            // After:
+            // String myPlay = """
+            //                 Alice: "Hi Bob!"
+            //                 Bob: "Don't use plaintext Alice!"\
+            //                 """;
+            """
+              class Test {
+                  String myPlay = ""\"
+                                  Alice: "Hi Bob!"
+                                  Bob: "Don't use plaintext Alice!"\\
+                                  ""\";
               }
               """
           )
