@@ -90,8 +90,8 @@ public class UseVarKeyword extends Recipe {
                 boolean isDeclarationOnly = isNull(initializer);
                 boolean isNullAssigment = initializer instanceof J.Literal && isNull(((J.Literal) initializer).getValue());
                 boolean alreadyUseVar = typeExpression instanceof J.Identifier && "var".equals(((J.Identifier) typeExpression).getSimpleName());
-
-                if (alreadyUseVar || isDeclarationOnly || isNullAssigment) return vd;
+                boolean isGeneric = typeExpression instanceof J.ParameterizedType; // todo implement generics!
+                if (alreadyUseVar || isDeclarationOnly || isNullAssigment || isGeneric) return vd;
 
                 J.VariableDeclarations result = transformToVar(vd);
                 return result;
