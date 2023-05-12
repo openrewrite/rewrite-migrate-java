@@ -71,7 +71,7 @@ class UseVarKeywordTest implements RewriteTest {
         }
 
         @Test
-        void compoundDeclaration() {
+        void multipleVariables() {
             //language=java
             rewriteRun(
               version(
@@ -372,7 +372,7 @@ class UseVarKeywordTest implements RewriteTest {
         @Nested
         class NotApplicable {
             @Test
-            void forEmptyFactoryMethode() {
+            void forEmptyFactoryMethod() {
                 //language=java
                 rewriteRun(
                   version(

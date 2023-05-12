@@ -72,19 +72,18 @@ public class UseVarKeyword extends Recipe {
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
                 J.VariableDeclarations vd = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, executionContext);
 
-                boolean isOutsideMethode = !determineIfIsInsideMethode(this.getCursor());
-                boolean isMethodeParameter = determineIfMethodeParameter(vd, this.getCursor());
-                if (isOutsideMethode || isMethodeParameter) return vd;
+                boolean isOutsideMethod = !determineIfIsInsideMethod(this.getCursor());
+                boolean isMethodParameter = determineIfMethodParameter(vd, this.getCursor());
+                if (isOutsideMethod || isMethodParameter) return vd;
 
                 TypeTree typeExpression = vd.getTypeExpression();
                 boolean isByteVariable = typeExpression instanceof J.Primitive && BYTE_TYPE.equals(typeExpression.getType());
                 boolean isShortVariable = typeExpression instanceof J.Primitive && SHORT_TYPE.equals(typeExpression.getType());
                 if (isByteVariable || isShortVariable) return vd;
 
-                boolean definesNoVariable = vd.getVariables().isEmpty();
-                boolean isCompoundDefinition = vd.getVariables().size() < 1;
-                boolean isPureAssigment = isNull(vd.getTypeExpression());
-                if (definesNoVariable || isCompoundDefinition || isPureAssigment) return vd;
+                boolean definesSigleVariable = vd.getVariables().size() == 1;
+                boolean isPureAssigment = JavaType.Primitive.Null.equals(vd.getType());
+                if (!definesSigleVariable || isPureAssigment) return vd;
 
                 Expression initializer = vd.getVariables().get(0).getInitializer();
                 boolean isDeclarationOnly = isNull(initializer);
@@ -97,24 +96,24 @@ public class UseVarKeyword extends Recipe {
                 return result;
             }
 
-            private boolean determineIfMethodeParameter(@NotNull J.VariableDeclarations vd, @NotNull Cursor cursor) {
+            private boolean determineIfMethodParameter(@NotNull J.VariableDeclarations vd, @NotNull Cursor cursor) {
                 J.MethodDeclaration methodDeclaration = cursor.firstEnclosing(J.MethodDeclaration.class);
                 return nonNull(methodDeclaration) && methodDeclaration.getParameters().contains(vd);
             }
 
             /**
-             * Determines if a cursor is contained inside a Methode declaration without an intermediate Class declaration
+             * Determines if a cursor is contained inside a Method declaration without an intermediate Class declaration
              * @param cursor value to determine
              */
-            private boolean determineIfIsInsideMethode(@NotNull Cursor cursor) {
+            private boolean determineIfIsInsideMethod(@NotNull Cursor cursor) {
                 Object current = cursor.getValue();
 
                 if (Cursor.ROOT_VALUE.equals(current)) return false; // we are at the top, no further climbing needed
                 if (current instanceof J.ClassDeclaration)
                     return false; // after a ClassDeclaration we left the scope of search
-                if (current instanceof J.MethodDeclaration) return true; // we found the MethodeDeclaration
+                if (current instanceof J.MethodDeclaration) return true; // we found the MethodDeclaration
 
-                return determineIfIsInsideMethode(requireNonNull(cursor.getParent())); // climb up
+                return determineIfIsInsideMethod(requireNonNull(cursor.getParent())); // climb up
             }
 
             @NotNull
