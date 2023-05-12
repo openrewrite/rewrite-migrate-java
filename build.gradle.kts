@@ -25,6 +25,9 @@ dependencies {
     implementation("org.openrewrite:rewrite-maven")
     implementation("org.openrewrite:rewrite-gradle")
     implementation("org.openrewrite.recipe:rewrite-github-actions:$rewriteVersion")
+    implementation("com.github.vertical-blank:sql-formatter:2.0.3")
+    implementation("com.github.jsqlparser:jsqlparser:4.6")
+    implementation("org.json:json:20230227")
 
     runtimeOnly("org.openrewrite:rewrite-java-8")
     runtimeOnly("org.openrewrite:rewrite-java-11")

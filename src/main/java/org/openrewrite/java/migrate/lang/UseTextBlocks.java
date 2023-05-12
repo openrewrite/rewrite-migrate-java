@@ -27,6 +27,15 @@ import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
+import com.github.vertical_blank.sqlformatter.SqlFormatter;
+import com.github.vertical_blank.sqlformatter.languages.Dialect;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
@@ -49,13 +58,62 @@ public class UseTextBlocks extends Recipe {
     @Nullable
     boolean convertStringsWithoutNewlines;
 
+    @Option(displayName = "Whether to detect if a String is SQL and format it (the default value is false).",
+        description = "",
+        example = "true",
+        required = false)
+    @Nullable
+    boolean formatSql;
+
+    @Option(displayName = "SQL dialect to be used to format SQL snippets.",
+        description = "",
+        example = "PostgreSql",
+        required = false)
+    @Nullable
+    String sqlDialect;
+
+    @Option(displayName = "Whether to detect if a String is JSON and format it (the default value is false).",
+        description = "",
+        example = "true",
+        required = false)
+    @Nullable
+    boolean formatJson;
+
     public UseTextBlocks() {
         convertStringsWithoutNewlines = true;
+        formatSql = false;
+        formatJson = false;
+        sqlDialect = "sql";
     }
 
     public UseTextBlocks(boolean convertStringsWithoutNewlines) {
         this.convertStringsWithoutNewlines = convertStringsWithoutNewlines;
+        this.formatSql = false;
+        this.formatJson = false;
+        this.sqlDialect = "sql";
     }
+
+    public UseTextBlocks(boolean convertStringsWithoutNewlines, boolean formatSql) {
+        this.convertStringsWithoutNewlines = convertStringsWithoutNewlines;
+        this.formatSql = formatSql;
+        this.formatJson = false;
+        this.sqlDialect = "sql";
+    }
+
+    public UseTextBlocks(boolean convertStringsWithoutNewlines, boolean formatSql, boolean formatJson) {
+        this.convertStringsWithoutNewlines = convertStringsWithoutNewlines;
+        this.formatSql = formatSql;
+        this.formatJson = formatJson;
+        this.sqlDialect = "sql";
+    }
+
+    public UseTextBlocks(boolean convertStringsWithoutNewlines, boolean formatSql, String sqlDialect, boolean formatJson) {
+        this.convertStringsWithoutNewlines = convertStringsWithoutNewlines;
+        this.formatSql = formatSql;
+        this.formatJson = formatJson;
+        this.sqlDialect = sqlDialect;
+    }
+
 
     @Override
     public String getDisplayName() {
@@ -133,6 +191,13 @@ public class UseTextBlocks extends Recipe {
 
                 content = sb.toString();
 
+                if(formatSql && isSQL(content)){
+                    content = SqlFormatter.of(Dialect.valueOf(sqlDialect)).format(content);
+                } else if(formatJson && isJSON(content)){
+                    JSONObject jsonObject = new JSONObject(content);
+                    content = jsonObject.toString(4);
+                }
+
                 TabsAndIndentsStyle tabsAndIndentsStyle = Optional.ofNullable(getCursor().firstEnclosingOrThrow(SourceFile.class)
                     .getStyle(TabsAndIndentsStyle.class)).orElse(IntelliJ.tabsAndIndents());
                 boolean useTab = tabsAndIndentsStyle.getUseTabCharacter();
@@ -168,6 +233,29 @@ public class UseTextBlocks extends Recipe {
 
                 return new J.Literal(randomId(), binary.getPrefix(), Markers.EMPTY, originalContent.toString(),
                     String.format("\"\"\"%s\"\"\"", content), null, JavaType.Primitive.String);
+            }
+
+
+            private boolean isJSON(String content) {
+                try {
+                    new JSONObject(content);
+                } catch (JSONException ignored) {
+                    try {
+                        new JSONArray(content);
+                    } catch (JSONException ignored1) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            private boolean isSQL(String content) {
+                try {
+                    CCJSqlParserUtil.parse(content);
+                } catch (JSQLParserException e) {
+                    return false;
+                }
+                return true;
             }
         };
     }
