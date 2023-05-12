@@ -34,8 +34,8 @@ class UpgradeJavaVersionTest implements RewriteTest {
     void mavenUpgradeFromJava8ToJava17ViaProperties() {
         rewriteRun(
           spec -> spec.recipe(new UpgradeJavaVersion(17)),
-          //language=xml
           pomXml(
+            //language=xml
             """
               <project>
                 <modelVersion>4.0.0</modelVersion>
@@ -51,6 +51,7 @@ class UpgradeJavaVersionTest implements RewriteTest {
                 <version>1</version>
               </project>
               """,
+            //language=xml
             """
               <project>
                 <modelVersion>4.0.0</modelVersion>
@@ -65,17 +66,18 @@ class UpgradeJavaVersionTest implements RewriteTest {
                 <artifactId>my-app</artifactId>
                 <version>1</version>
               </project>
-              """
+              """,
+            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
           )
         );
     }
 
     @Test
     void mavenUpgradeFromJava8ToJava17ViaConfiguration() {
-        //language=xml
         rewriteRun(
           spec -> spec.recipe(new UpgradeJavaVersion(17)),
           pomXml(
+            //language=xml
             """
               <project>
                 <groupId>com.mycompany.app</groupId>
@@ -96,6 +98,7 @@ class UpgradeJavaVersionTest implements RewriteTest {
                 </build>
               </project>
               """,
+            //language=xml
             """
               <project>
                 <groupId>com.mycompany.app</groupId>
@@ -115,7 +118,8 @@ class UpgradeJavaVersionTest implements RewriteTest {
                   </plugins>
                 </build>
               </project>
-              """
+              """,
+            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
           )
         );
     }
@@ -138,7 +142,8 @@ class UpgradeJavaVersionTest implements RewriteTest {
                   languageVersion = JavaLanguageVersion.of(17)
                 }
               }
-              """
+              """,
+            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
           )
         );
     }
@@ -154,7 +159,8 @@ class UpgradeJavaVersionTest implements RewriteTest {
                   languageVersion = JavaLanguageVersion.of(11)
                 }
               }
-              """,spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
+              """,
+            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
           )
         );
     }

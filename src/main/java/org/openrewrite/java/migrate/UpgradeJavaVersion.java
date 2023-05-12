@@ -18,21 +18,16 @@ package org.openrewrite.java.migrate;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
-import org.openrewrite.groovy.GroovyIsoVisitor;
+import org.openrewrite.gradle.UpdateJavaCompatibility;
 import org.openrewrite.internal.ListUtils;
-import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.marker.JavaVersion;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.xml.XPathMatcher;
-import org.openrewrite.xml.search.FindTags;
 import org.openrewrite.xml.tree.Xml;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -60,65 +55,30 @@ public class UpgradeJavaVersion extends Recipe {
 
     @Override
     protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
-
-        GradleUpdateJavaVersionVisitor gradleUpdateJavaVersionVisitor = new GradleUpdateJavaVersionVisitor();
-        MavenUpdateJavaVersionVisitor mavenUpdateVisitor = new MavenUpdateJavaVersionVisitor();
-
-        before = ListUtils.map(before, s -> {
-            s = (SourceFile) mavenUpdateVisitor.visit(s, ctx);
-            s = (SourceFile) gradleUpdateJavaVersionVisitor.visit(s, ctx);
-            return s;
-        });
-
         String newVersion = this.version.toString();
         // Create a new JavaVersion marker with the new version
         Optional<JavaVersion> currentMarker = before.stream()
-            .map(it -> it.getMarkers().findFirst(JavaVersion.class))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .findAny();
+                .map(it -> it.getMarkers().findFirst(JavaVersion.class))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findAny();
         if (!currentMarker.isPresent() || currentMarker.get().getMajorVersion() >= version) {
             return before;
         }
+
         JavaVersion updatedMarker = currentMarker.get()
-            .withSourceCompatibility(newVersion)
-            .withTargetCompatibility(newVersion);
+                .withSourceCompatibility(newVersion)
+                .withTargetCompatibility(newVersion);
 
-        return ListUtils.map(before, sourceFile -> sourceFile.getMarkers().findFirst(JavaVersion.class)
-            .map(version -> (SourceFile) sourceFile.withMarkers(sourceFile.getMarkers().computeByType(version,
-                (v, acc) -> updatedMarker)))
-            .orElse(sourceFile));
-    }
+        TreeVisitor<?, ExecutionContext> gradleUpdateJavaVersionVisitor = new UpdateJavaCompatibility(version, null, null).getVisitor();
+        MavenUpdateJavaVersionVisitor mavenUpdateVisitor = new MavenUpdateJavaVersionVisitor();
 
-    private class GradleUpdateJavaVersionVisitor extends GroovyIsoVisitor<ExecutionContext> {
-        MethodMatcher javaLanguageVersionMatcher = new MethodMatcher("org.gradle.jvm.toolchain.JavaLanguageVersion of(int)");
-
-        @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method,
-                                                        ExecutionContext executionContext) {
-            method = super.visitMethodInvocation(method, executionContext);
-            if (javaLanguageVersionMatcher.matches(method)) {
-                List<Expression> args = method.getArguments();
-
-                if (args.size() == 1 && args.get(0) instanceof J.Literal) {
-                    J.Literal versionArg = (J.Literal) args.get(0);
-                    if (versionArg.getValue() instanceof Integer) {
-                        Integer versionNumber = (Integer)  versionArg.getValue();
-                        if (versionNumber < version) {
-                            return method.withArguments(
-                                Collections.singletonList(versionArg.withValue(version)
-                                    .withValueSource(version.toString())));
-                        } else {
-                            return method;
-                        }
-                    }
-                }
-
-                return SearchResult.found(method, "Attempted to update to Java version to " + version
-                                                  + "  but was unsuccessful, please update manually");
-            }
-            return method;
-        }
+        return ListUtils.map(before, s -> {
+            s = (SourceFile) mavenUpdateVisitor.visit(s, ctx);
+            s = (SourceFile) Objects.requireNonNull(gradleUpdateJavaVersionVisitor.visit(s, ctx));
+            s = s.withMarkers(s.getMarkers().setByType(updatedMarker));
+            return s;
+        });
     }
 
     private static final List<String> JAVA_VERSION_XPATHS = Arrays.asList(
