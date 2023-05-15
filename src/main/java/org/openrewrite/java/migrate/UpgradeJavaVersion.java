@@ -25,10 +25,7 @@ import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -56,27 +53,29 @@ public class UpgradeJavaVersion extends Recipe {
     @Override
     protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
         String newVersion = this.version.toString();
-        // Create a new JavaVersion marker with the new version
-        Optional<JavaVersion> currentMarker = before.stream()
+        boolean needsUpgrade = before.stream()
                 .map(it -> it.getMarkers().findFirst(JavaVersion.class))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .findAny();
-        if (!currentMarker.isPresent() || currentMarker.get().getMajorVersion() >= version) {
+                .anyMatch(current -> current.getMajorVersion() < version);
+        if (!needsUpgrade) {
             return before;
         }
-
-        JavaVersion updatedMarker = currentMarker.get()
-                .withSourceCompatibility(newVersion)
-                .withTargetCompatibility(newVersion);
 
         TreeVisitor<?, ExecutionContext> gradleUpdateJavaVersionVisitor = new UpdateJavaCompatibility(version, null, null).getVisitor();
         MavenUpdateJavaVersionVisitor mavenUpdateVisitor = new MavenUpdateJavaVersionVisitor();
 
+        Map<JavaVersion, JavaVersion> updatedMarkers = new HashMap<>();
         return ListUtils.map(before, s -> {
             s = (SourceFile) mavenUpdateVisitor.visit(s, ctx);
             s = (SourceFile) Objects.requireNonNull(gradleUpdateJavaVersionVisitor.visit(s, ctx));
-            s = s.withMarkers(s.getMarkers().setByType(updatedMarker));
+            s = s.withMarkers(s.getMarkers().withMarkers(ListUtils.map(s.getMarkers().getMarkers(), marker -> {
+                if (marker instanceof JavaVersion) {
+                    return updatedMarkers.computeIfAbsent((JavaVersion) marker, m -> m.withSourceCompatibility(newVersion)
+                            .withTargetCompatibility(newVersion));
+                }
+                return marker;
+            })));
             return s;
         });
     }
