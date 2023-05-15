@@ -54,12 +54,12 @@ public class SimplifyMicrometerMeterTags extends Recipe {
                     if (m.getArguments().get(0) instanceof J.NewArray) {
                         J.NewArray arr = (J.NewArray) m.getArguments().get(0);
                         if (arr.getInitializer() != null && arr.getInitializer().size() > 1) {
-                            m = m.withTemplate(JavaTemplate.builder(this::getCursor, "#{any(String)}, #{any(String)}").build(),
-                                    m.getCoordinates().replaceArguments(), arr.getInitializer().get(0), arr.getInitializer().get(1));
+                            m = m.withTemplate(JavaTemplate.builder("#{any(String)}, #{any(String)}").context(getCursor()).build(),
+                                    getCursor(), m.getCoordinates().replaceArguments(), arr.getInitializer().get(0), arr.getInitializer().get(1));
                         }
                     } else {
-                        m = m.withTemplate(JavaTemplate.builder(this::getCursor, "#{any()}[0], #{any()}[1]").build(),
-                                m.getCoordinates().replaceArguments(), m.getArguments().get(0), m.getArguments().get(0));
+                        m = m.withTemplate(JavaTemplate.builder("#{any()}[0], #{any()}[1]").context(getCursor()).build(),
+                                getCursor(), m.getCoordinates().replaceArguments(), m.getArguments().get(0), m.getArguments().get(0));
                     }
                     m = m.withName(m.getName().withSimpleName("tag"));
                 }

@@ -51,11 +51,13 @@ public class NoGuavaSetsNewHashSet extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesMethod<>(NEW_HASH_SET), new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newHashSet = JavaTemplate.builder(this::getCursor, "new HashSet<>()")
+            private final JavaTemplate newHashSet = JavaTemplate.builder("new HashSet<>()")
+                    .context(this::getCursor)
                     .imports("java.util.HashSet")
                     .build();
 
-            private final JavaTemplate newHashSetCollection = JavaTemplate.builder(this::getCursor, "new HashSet<>(#{any(java.util.Collection)})")
+            private final JavaTemplate newHashSetCollection = JavaTemplate.builder("new HashSet<>(#{any(java.util.Collection)})")
+                    .context(this::getCursor)
                     .imports("java.util.HashSet")
                     .build();
 
@@ -65,17 +67,18 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.HashSet");
                     if (method.getArguments().isEmpty() || (!method.getArguments().isEmpty() && method.getArguments().get(0) instanceof J.Empty)) {
-                        return method.withTemplate(newHashSet, method.getCoordinates().replace());
+                        return method.withTemplate(newHashSet, getCursor(), method.getCoordinates().replace());
                     } else if (method.getArguments().size() == 1 && TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
-                        return method.withTemplate(newHashSetCollection, method.getCoordinates().replace(),
+                        return method.withTemplate(newHashSetCollection, getCursor(), method.getCoordinates().replace(),
                                 method.getArguments().get(0));
                     } else {
                         maybeAddImport("java.util.Arrays");
-                        JavaTemplate newHashSetVarargs = JavaTemplate.builder(this::getCursor, "new HashSet<>(Arrays.asList(" + method.getArguments().stream().map(a -> "#{any()}").collect(Collectors.joining(",")) + "))")
+                        JavaTemplate newHashSetVarargs = JavaTemplate.builder("new HashSet<>(Arrays.asList(" + method.getArguments().stream().map(a -> "#{any()}").collect(Collectors.joining(",")) + "))")
+                                .context(getCursor())
                                 .imports("java.util.Arrays")
                                 .imports("java.util.HashSet")
                                 .build();
-                        return method.withTemplate(newHashSetVarargs, method.getCoordinates().replace(),
+                        return method.withTemplate(newHashSetVarargs, getCursor(), method.getCoordinates().replace(),
                                 method.getArguments().toArray());
                     }
                 }

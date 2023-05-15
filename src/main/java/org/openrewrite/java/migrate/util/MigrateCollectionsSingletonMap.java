@@ -60,10 +60,11 @@ public class MigrateCollectionsSingletonMap extends Recipe {
                     args.forEach(o -> mapOf.add("#{any()}"));
 
                     return autoFormat(m.withTemplate(
-                            JavaTemplate
-                                    .builder(this::getCursor, mapOf.toString())
+                            JavaTemplate.builder(mapOf.toString())
+                                    .context(getCursor())
                                     .imports("java.util.Map")
                                     .build(),
+                            getCursor(),
                             m.getCoordinates().replace(),
                             m.getArguments().toArray()
                     ), ctx);

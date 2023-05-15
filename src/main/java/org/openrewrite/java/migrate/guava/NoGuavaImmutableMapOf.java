@@ -102,9 +102,11 @@ public class NoGuavaImmutableMapOf extends Recipe {
                             .collect(Collectors.joining(",", "Map.of(", ")"));
 
                     return method.withTemplate(
-                            JavaTemplate.builder(this::getCursor, template)
+                            JavaTemplate.builder(template)
+                                    .context(getCursor())
                                     .imports("java.util.Map")
                                     .build(),
+                            getCursor(),
                             method.getCoordinates().replace(),
                             method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                 }

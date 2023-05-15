@@ -72,10 +72,11 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
                     maybeRemoveImport("java.util.logging.LogManager");
 
                     m = m.withTemplate(
-                            JavaTemplate.builder(this::getCursor, "ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class)")
+                            JavaTemplate.builder("ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class)")
                                     .imports("java.lang.management.ManagementFactory")
                                     .imports("java.lang.management.PlatformLoggingMXBean")
                                     .build(),
+                            getCursor(),
                             m.getCoordinates().replace()
                     );
                 }

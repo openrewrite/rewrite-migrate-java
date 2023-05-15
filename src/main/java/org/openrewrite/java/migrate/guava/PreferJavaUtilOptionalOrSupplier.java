@@ -71,9 +71,11 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
             J.MethodInvocation j = super.visitMethodInvocation(method, ctx);
             if (METHOD_MATCHER.matches(method)) {
                 j = j.withTemplate(
-                        JavaTemplate.builder(this::getCursor, "#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})")
+                        JavaTemplate.builder("#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})")
+                                .context(getCursor())
                                 .imports("java.util.Optional")
                                 .build(),
+                        getCursor(),
                         method.getCoordinates().replace(),
                         j.getSelect(),
                         j.getArguments().get(0)

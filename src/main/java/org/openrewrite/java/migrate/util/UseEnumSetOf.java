@@ -71,8 +71,10 @@ public class UseEnumSetOf extends Recipe {
                             args.forEach(o -> setOf.add("#{any()}"));
                             return autoFormat(
                                     m.withTemplate(
-                                            JavaTemplate.builder(this::getCursor, "EnumSet.of(#{any()})")
+                                            JavaTemplate.builder("EnumSet.of(#{any()})")
+                                                    .context(getCursor())
                                                     .imports("java.util.EnumSet").build(),
+                                            getCursor(),
                                             m.getCoordinates().replace(),
                                             args.toArray()),
                                     ctx);

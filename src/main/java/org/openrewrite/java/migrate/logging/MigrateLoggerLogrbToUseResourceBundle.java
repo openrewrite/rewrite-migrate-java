@@ -53,9 +53,11 @@ public class MigrateLoggerLogrbToUseResourceBundle extends Recipe {
                 J.MethodInvocation m = method;
                 if (MATCHER.matches(m)) {
                     m = m.withTemplate(
-                            JavaTemplate.builder(this::getCursor, "#{any(java.util.logging.Level)}, #{any(String)}, #{any(String)}, ResourceBundle.getBundle(#{any(String)}), #{any(String)}" + (m.getArguments().size() == 6 ? ", #{any()}" : ""))
+                            JavaTemplate.builder("#{any(java.util.logging.Level)}, #{any(String)}, #{any(String)}, ResourceBundle.getBundle(#{any(String)}), #{any(String)}" + (m.getArguments().size() == 6 ? ", #{any()}" : ""))
+                                    .context(getCursor())
                                     .imports("java.util.ResourceBundle")
                                     .build(),
+                            getCursor(),
                             m.getCoordinates().replaceArguments(),
                             m.getArguments().toArray()
                     );

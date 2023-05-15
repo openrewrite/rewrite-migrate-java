@@ -49,7 +49,8 @@ public class NoGuavaAtomicsNewReference extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesMethod<>(NEW_ATOMIC_REFERENCE), new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newAtomicReference = JavaTemplate.builder(this::getCursor, "new AtomicReference<>()")
+            private final JavaTemplate newAtomicReference = JavaTemplate.builder("new AtomicReference<>()")
+                    .context(this::getCursor)
                     .imports("java.util.concurrent.atomic.AtomicReference")
                     .build();
 
@@ -58,7 +59,7 @@ public class NoGuavaAtomicsNewReference extends Recipe {
                 if (NEW_ATOMIC_REFERENCE.matches(method)) {
                     maybeRemoveImport("com.google.common.util.concurrent.Atomics");
                     maybeAddImport("java.util.concurrent.atomic.AtomicReference");
-                    return ((J.NewClass) method.withTemplate(newAtomicReference, method.getCoordinates().replace()))
+                    return ((J.NewClass) method.withTemplate(newAtomicReference, getCursor(), method.getCoordinates().replace()))
                             .withArguments(method.getArguments());
                 }
                 return super.visitMethodInvocation(method, ctx);

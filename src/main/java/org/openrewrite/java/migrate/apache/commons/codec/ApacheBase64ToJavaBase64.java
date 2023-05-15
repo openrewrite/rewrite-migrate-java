@@ -72,10 +72,10 @@ public class ApacheBase64ToJavaBase64 extends Recipe {
                     templatePrefix = "Base64.getUrlEncoder().withoutPadding().encodeToString(#{anyArray()})";
                 }
                 if (templatePrefix != null) {
-                    JavaTemplate t = JavaTemplate.builder(this::getCursor, templatePrefix).imports("java.util.Base64").build();
+                    JavaTemplate t = JavaTemplate.builder(templatePrefix).imports("java.util.Base64").build();
                     maybeRemoveImport("org.apache.commons.codec.binary.Base64");
                     maybeAddImport("java.util.Base64");
-                    mi = mi.withTemplate(t, mi.getCoordinates().replace(), mi.getArguments().get(0));
+                    mi = mi.withTemplate(t, getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0));
                 }
                 return mi;
             }

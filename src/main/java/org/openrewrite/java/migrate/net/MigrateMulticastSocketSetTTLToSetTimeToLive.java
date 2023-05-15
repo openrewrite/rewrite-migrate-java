@@ -58,7 +58,8 @@ public class MigrateMulticastSocketSetTTLToSetTimeToLive extends Recipe {
             if (MATCHER.matches(m)) {
                 m = m.withName(m.getName().withSimpleName("setTimeToLive"))
                         .withTemplate(
-                                JavaTemplate.builder(this::getCursor, "Byte.valueOf(#{any(byte)}).intValue()").build(),
+                                JavaTemplate.builder("Byte.valueOf(#{any(byte)}).intValue()").build(),
+                                getCursor(),
                                 m.getCoordinates().replaceArguments(),
                                 m.getArguments().get(0)
                         );

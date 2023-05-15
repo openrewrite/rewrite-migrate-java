@@ -54,10 +54,10 @@ public class UseLocaleOf extends Recipe {
                     StringJoiner localeOf = new StringJoiner(", ", "Locale.of(", ")");
                     nc.getArguments().forEach(a -> localeOf.add("#{any(String)}"));
                     return autoFormat(nc.withTemplate(
-                            JavaTemplate
-                                    .builder(this::getCursor, localeOf.toString())
+                            JavaTemplate.builder(localeOf.toString())
                                     .imports("java.util.Locale")
                                     .build(),
+                            getCursor(),
                             nc.getCoordinates().replace(),
                             nc.getArguments().toArray()
                     ), ctx);

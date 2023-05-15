@@ -62,9 +62,11 @@ public class MigrateURLEncoderEncode extends Recipe {
             J.MethodInvocation m = method;
             if (MATCHER.matches(m)) {
                 m = m.withTemplate(
-                        JavaTemplate.builder(this::getCursor, "#{any(String)}, StandardCharsets.UTF_8")
+                        JavaTemplate.builder("#{any(String)}, StandardCharsets.UTF_8")
+                                .context(getCursor())
                                 .imports("java.nio.charset.StandardCharsets")
                                 .build(),
+                        getCursor(),
                         m.getCoordinates().replaceArguments(),
                         m.getArguments().toArray()
                 );

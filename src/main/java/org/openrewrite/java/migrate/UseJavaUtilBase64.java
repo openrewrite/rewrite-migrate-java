@@ -70,15 +70,16 @@ public class UseJavaUtilBase64 extends Recipe {
         MethodMatcher newBase64Decoder = new MethodMatcher(sunPackage + ".BASE64Decoder <constructor>()");
 
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
-            final JavaTemplate getDecoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getDecoder()")
+            final JavaTemplate getDecoderTemplate = JavaTemplate.builder("Base64.getDecoder()")
+                    .context(this::getCursor)
                     .imports("java.util.Base64")
                     .build();
 
-            final JavaTemplate encodeToString = JavaTemplate.builder(this::getCursor, "Base64.getEncoder().encodeToString(#{anyArray(byte)})")
+            final JavaTemplate encodeToString = JavaTemplate.builder("Base64.getEncoder().encodeToString(#{anyArray(byte)})")
                     .imports("java.util.Base64")
                     .build();
 
-            final JavaTemplate decode = JavaTemplate.builder(this::getCursor, "Base64.getDecoder().decode(#{any(String)})")
+            final JavaTemplate decode = JavaTemplate.builder("Base64.getDecoder().decode(#{any(String)})")
                     .imports("java.util.Base64")
                     .build();
 
@@ -102,12 +103,12 @@ public class UseJavaUtilBase64 extends Recipe {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (base64EncodeMethod.matches(m) &&
                         ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
-                    m = m.withTemplate(encodeToString, m.getCoordinates().replace(), method.getArguments().get(0));
+                    m = m.withTemplate(encodeToString, getCursor(), m.getCoordinates().replace(), method.getArguments().get(0));
                     if (method.getSelect() instanceof J.Identifier) {
                         m = m.withSelect(method.getSelect());
                     }
                 } else if (base64DecodeBuffer.matches(method)) {
-                    m = m.withTemplate(decode, m.getCoordinates().replace(), method.getArguments().get(0));
+                    m = m.withTemplate(decode, getCursor(), m.getCoordinates().replace(), method.getArguments().get(0));
                     if (method.getSelect() instanceof J.Identifier) {
                         m = m.withSelect(method.getSelect());
                     }
@@ -127,10 +128,11 @@ public class UseJavaUtilBase64 extends Recipe {
                     return c.withTemplate(
                             JavaTemplate.compile(this, "getEncoder",
                                     () -> Base64.getEncoder()).build(),
+                            getCursor(),
                             c.getCoordinates().replace()
                     );
                 } else if (newBase64Decoder.matches(c)) {
-                    return c.withTemplate(getDecoderTemplate, c.getCoordinates().replace());
+                    return c.withTemplate(getDecoderTemplate, getCursor(), c.getCoordinates().replace());
                 }
                 return c;
             }

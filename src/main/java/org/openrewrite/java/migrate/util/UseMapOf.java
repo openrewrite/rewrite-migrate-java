@@ -76,10 +76,11 @@ public class UseMapOf extends Recipe {
                             maybeRemoveImport("java.util.HashMap");
                             maybeAddImport("java.util.Map");
                             return autoFormat(n.withTemplate(
-                                    JavaTemplate
-                                            .builder(this::getCursor, mapOf.toString())
+                                    JavaTemplate.builder(mapOf.toString())
+                                            .context(getCursor())
                                             .imports("java.util.Map")
                                             .build(),
+                                    getCursor(),
                                     n.getCoordinates().replace(),
                                     args.toArray()
                             ), ctx);

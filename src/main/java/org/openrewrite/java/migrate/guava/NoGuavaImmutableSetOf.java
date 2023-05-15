@@ -110,9 +110,11 @@ public class NoGuavaImmutableSetOf extends Recipe {
                             .collect(Collectors.joining(",", "Set.of(", ")"));
 
                     return method.withTemplate(
-                            JavaTemplate.builder(this::getCursor, template)
+                            JavaTemplate.builder(template)
+                                    .context(getCursor())
                                     .imports("java.util.Set")
                                     .build(),
+                            getCursor(),
                             method.getCoordinates().replace(),
                             method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                 }

@@ -47,7 +47,7 @@ public class MigrateDriverManagerSetLogStream extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
-            final JavaTemplate template = JavaTemplate.builder(this::getCursor, "new java.io.PrintWriter(#{any(java.io.PrintStream)})")
+            final JavaTemplate template = JavaTemplate.builder("new java.io.PrintWriter(#{any(java.io.PrintStream)})")
                     .build();
 
             @Override
@@ -57,6 +57,7 @@ public class MigrateDriverManagerSetLogStream extends Recipe {
                 if (METHOD_MATCHER.matches(m)) {
                     m = method.withName(m.getName().withSimpleName("setLogWriter"))
                             .withTemplate(template,
+                                    getCursor(),
                                     m.getCoordinates().replaceArguments(),
                                     m.getArguments().get(0));
                 }

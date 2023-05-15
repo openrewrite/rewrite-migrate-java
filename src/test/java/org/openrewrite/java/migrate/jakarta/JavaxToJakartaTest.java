@@ -475,15 +475,18 @@ class JavaxToJakartaTest implements RewriteTest {
                   </project>
               """),
             srcMainJava(
-              java("""
-                import javax.servlet.A;
-                public class TestApplication {
-                }
-            """, """
-                import jakarta.servlet.A;
-                public class TestApplication {
-                }
-            """)
+              java(
+                """
+                  import javax.servlet.A;
+                  public class TestApplication {
+                  }
+                  """,
+                """
+                  import jakarta.servlet.A;
+                  public class TestApplication {
+                  }
+                  """
+              )
             )
           )
         );

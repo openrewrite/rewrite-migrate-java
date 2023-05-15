@@ -100,9 +100,11 @@ public class NoGuavaImmutableListOf extends Recipe {
                             .collect(Collectors.joining(",", "List.of(", ")"));
 
                     return method.withTemplate(
-                            JavaTemplate.builder(this::getCursor, template)
+                            JavaTemplate.builder(template)
+                                    .context(getCursor())
                                     .imports("java.util.List")
                                     .build(),
+                            getCursor(),
                             method.getCoordinates().replace(),
                             method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                 }

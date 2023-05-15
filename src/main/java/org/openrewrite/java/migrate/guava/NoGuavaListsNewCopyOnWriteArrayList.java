@@ -53,11 +53,13 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
         return Preconditions.check(Preconditions.or(
                 new UsesMethod<>(NEW_ARRAY_LIST),
                 new UsesMethod<>(NEW_ARRAY_LIST_ITERABLE)), new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newArrayList = JavaTemplate.builder(this::getCursor, "new CopyOnWriteArrayList<>()")
+            private final JavaTemplate newArrayList = JavaTemplate.builder("new CopyOnWriteArrayList<>()")
+                    .context(this::getCursor)
                     .imports("java.util.concurrent.CopyOnWriteArrayList")
                     .build();
 
-            private final JavaTemplate newArrayListCollection = JavaTemplate.builder(this::getCursor, "new CopyOnWriteArrayList<>(#{any(java.util.Collection)})")
+            private final JavaTemplate newArrayListCollection = JavaTemplate.builder("new CopyOnWriteArrayList<>(#{any(java.util.Collection)})")
+                    .context(this::getCursor)
                     .imports("java.util.concurrent.CopyOnWriteArrayList")
                     .build();
 
@@ -66,12 +68,12 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
                 if (NEW_ARRAY_LIST.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.concurrent.CopyOnWriteArrayList");
-                    return method.withTemplate(newArrayList, method.getCoordinates().replace());
+                    return method.withTemplate(newArrayList, getCursor(), method.getCoordinates().replace());
                 } else if (NEW_ARRAY_LIST_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
                         TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.concurrent.CopyOnWriteArrayList");
-                    return method.withTemplate(newArrayListCollection, method.getCoordinates().replace(),
+                    return method.withTemplate(newArrayListCollection, getCursor(),method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 }
                 return super.visitMethodInvocation(method, ctx);

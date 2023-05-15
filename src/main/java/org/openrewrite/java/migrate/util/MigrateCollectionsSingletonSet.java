@@ -51,10 +51,11 @@ public class MigrateCollectionsSingletonSet extends Recipe {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Set");
                     return autoFormat(m.withTemplate(
-                            JavaTemplate
-                                    .builder(this::getCursor, "Set.of(#{any()})")
+                            JavaTemplate.builder("Set.of(#{any()})")
+                                    .context(this::getCursor)
                                     .imports("java.util.Set")
                                     .build(),
+                            getCursor(),
                             m.getCoordinates().replace(),
                             m.getArguments().get(0)
                     ), ctx);

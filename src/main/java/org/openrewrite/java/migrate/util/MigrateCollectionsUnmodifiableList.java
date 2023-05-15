@@ -64,10 +64,11 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
                             args.forEach(o -> setOf.add("#{any()}"));
 
                             return autoFormat(m.withTemplate(
-                                    JavaTemplate
-                                            .builder(this::getCursor, setOf.toString())
+                                    JavaTemplate.builder(setOf.toString())
+                                            .context(getCursor())
                                             .imports("java.util.List")
                                             .build(),
+                                    getCursor(),
                                     m.getCoordinates().replace(),
                                     args.toArray()
                             ), ctx);
