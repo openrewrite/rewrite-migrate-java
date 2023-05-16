@@ -25,6 +25,17 @@ tags:
   - java20
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
+  - org.openrewrite.java.migrate.Java17toJava20
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.Java17toJava20
+displayName: Migrate to Java 20 from 17
+description: >
+  Applies any migrations specific to Java 20, without any migrations from older versions.
+tags:
+  - java20
+recipeList:
   - org.openrewrite.java.migrate.JavaVersion20
   - org.openrewrite.java.migrate.util.UseLocaleOf
   - org.openrewrite.java.cleanup.ReplaceDeprecatedRuntimeExecMethods

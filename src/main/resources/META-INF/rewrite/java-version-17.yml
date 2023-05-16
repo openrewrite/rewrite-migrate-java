@@ -28,6 +28,18 @@ tags:
   - lombok
 recipeList:
   - org.openrewrite.java.migrate.Java8toJava11
+  - org.openrewrite.java.migrate.Java11toJava17
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.Java11toJava17
+displayName: Migrate to Java 17 from 11
+description: >
+  Applies any migrations specific to Java 17, without any migrations from older versions.
+tags:
+  - java17
+  - lombok
+recipeList:
   - org.openrewrite.java.migrate.JavaVersion17
   - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.java.migrate.lombok.UpdateLombokToJava17
