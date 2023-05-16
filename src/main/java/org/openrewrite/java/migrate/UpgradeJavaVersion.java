@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
+import org.openrewrite.gradle.IsBuildGradle;
 import org.openrewrite.gradle.UpdateJavaCompatibility;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.marker.JavaVersion;
@@ -53,29 +54,27 @@ public class UpgradeJavaVersion extends Recipe {
     @Override
     protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
         String newVersion = this.version.toString();
-        boolean needsUpgrade = before.stream()
-                .map(it -> it.getMarkers().findFirst(JavaVersion.class))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .anyMatch(current -> current.getMajorVersion() < version);
-        if (!needsUpgrade) {
-            return before;
-        }
-
         TreeVisitor<?, ExecutionContext> gradleUpdateJavaVersionVisitor = new UpdateJavaCompatibility(version, null, null).getVisitor();
         MavenUpdateJavaVersionVisitor mavenUpdateVisitor = new MavenUpdateJavaVersionVisitor();
 
         Map<JavaVersion, JavaVersion> updatedMarkers = new HashMap<>();
         return ListUtils.map(before, s -> {
-            s = (SourceFile) mavenUpdateVisitor.visit(s, ctx);
-            s = (SourceFile) Objects.requireNonNull(gradleUpdateJavaVersionVisitor.visit(s, ctx));
-            s = s.withMarkers(s.getMarkers().withMarkers(ListUtils.map(s.getMarkers().getMarkers(), marker -> {
-                if (marker instanceof JavaVersion) {
-                    return updatedMarkers.computeIfAbsent((JavaVersion) marker, m -> m.withSourceCompatibility(newVersion)
-                            .withTargetCompatibility(newVersion));
-                }
-                return marker;
-            })));
+            Optional<JavaVersion> maybeJavaVersion = s.getMarkers().findFirst(JavaVersion.class);
+            if (!maybeJavaVersion.isPresent()) {
+                return s;
+            }
+
+            JavaVersion javaVersion = maybeJavaVersion.get();
+            if (javaVersion.getMajorVersion() >= version) {
+                return s;
+            }
+
+            s = (SourceFile) mavenUpdateVisitor.visitNonNull(s, ctx);
+            if (new IsBuildGradle<ExecutionContext>().visit(s, ctx) != s) {
+                s = (SourceFile) gradleUpdateJavaVersionVisitor.visitNonNull(s, ctx);
+            }
+            s = s.withMarkers(s.getMarkers().setByType(updatedMarkers.computeIfAbsent(maybeJavaVersion.get(),
+                    m -> m.withSourceCompatibility(newVersion).withTargetCompatibility(newVersion))));
             return s;
         });
     }
