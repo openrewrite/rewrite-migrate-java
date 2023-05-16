@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class UpgradeJavaVersionTest implements RewriteTest {
@@ -149,6 +150,28 @@ class UpgradeJavaVersionTest implements RewriteTest {
     }
 
     @Test
+    void gradleSourceTargetFromJava11ToJava17() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaVersion(17)),
+          buildGradle(
+            """
+              java {
+                sourceCompatibility = 11
+                targetCompatibility = 11
+              }
+              """,
+            """
+              java {
+                sourceCompatibility = 17
+                targetCompatibility = 17
+              }
+              """,
+            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
+          )
+        );
+    }
+
+    @Test
     void gradleNoChangeIfUpgradeFromJava11ToJava8() {
         rewriteRun(
           spec -> spec.recipe(new UpgradeJavaVersion(8)),
@@ -201,6 +224,108 @@ class UpgradeJavaVersionTest implements RewriteTest {
               }
               """,
             spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "1.8.0+x", ""))
+          )
+        );
+    }
+
+    @Test
+    void upgradeAllThatNeedUpgrading() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaVersion(11).doNext(new AboutJavaVersion(null))),
+          version(
+            java(
+              //language=java
+              """
+                class Test {
+                }
+                """,
+              //language=java
+              """
+                /*~~(Java version: 11)~~>*/class Test {
+                }
+                """
+            ),
+            8
+          ),
+          version(
+            java(
+              //language=java
+              """
+                class Test2 {
+                }
+                """,
+              """
+                /*~~(Java version: 11)~~>*/class Test2 {
+                }
+                """
+            ),
+            11
+          ),
+          version(
+            java(
+              //language=java
+              """
+                class Test3 {
+                }
+                """,
+              //language=java
+              """
+                /*~~(Java version: 17)~~>*/class Test3 {
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void upgradeAllThatNeedUpgradingNewestFirst() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaVersion(11).doNext(new AboutJavaVersion(null))),
+          version(
+            java(
+              //language=java
+              """
+                class Test {
+                }
+                """,
+              //language=java
+              """
+                /*~~(Java version: 17)~~>*/class Test {
+                }
+                """
+            ),
+            17
+          ),
+          version(
+            java(
+              //language=java
+              """
+                class Test2 {
+                }
+                """,
+              """
+                /*~~(Java version: 11)~~>*/class Test2 {
+                }
+                """
+            ),
+            11
+          ),
+          version(
+            java(
+              //language=java
+              """
+                class Test3 {
+                }
+                """,
+              //language=java
+              """
+                /*~~(Java version: 11)~~>*/class Test3 {
+                }
+                """
+            ),
+            8
           )
         );
     }
