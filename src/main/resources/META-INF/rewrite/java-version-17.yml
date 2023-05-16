@@ -39,6 +39,7 @@ description: >
 tags:
   - java17
   - lombok
+  - hidden
 recipeList:
   - org.openrewrite.java.migrate.JavaVersion17
   - org.openrewrite.java.migrate.lang.StringFormatted

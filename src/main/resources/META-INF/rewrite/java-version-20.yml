@@ -35,6 +35,7 @@ description: >
   Applies any migrations specific to Java 20, without any migrations from older versions.
 tags:
   - java20
+  - hidden
 recipeList:
   - org.openrewrite.java.migrate.JavaVersion20
   - org.openrewrite.java.migrate.util.UseLocaleOf
