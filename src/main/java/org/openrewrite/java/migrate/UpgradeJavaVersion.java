@@ -73,7 +73,7 @@ public class UpgradeJavaVersion extends Recipe {
             if (new IsBuildGradle<ExecutionContext>().visit(s, ctx) != s) {
                 s = (SourceFile) gradleUpdateJavaVersionVisitor.visitNonNull(s, ctx);
             }
-            s = s.withMarkers(s.getMarkers().setByType(updatedMarkers.computeIfAbsent(maybeJavaVersion.get(),
+            s = s.withMarkers(s.getMarkers().setByType(updatedMarkers.computeIfAbsent(javaVersion,
                     m -> m.withSourceCompatibility(newVersion).withTargetCompatibility(newVersion))));
             return s;
         });
