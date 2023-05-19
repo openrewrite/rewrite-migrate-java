@@ -210,7 +210,7 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
     }
 
     @Test
-    void assigmentToMap() {
+    void assignmentToMap() {
         //language=java
         rewriteRun(
           version(
