@@ -130,7 +130,7 @@ subsequent calls will not be logged and the warning looks similar to the followi
 WARNING: An illegal reflective access operation has occurred
 WARNING: Illegal reflective access by com.thoughtworks.xstream.core.util.Fields (file.....)
 WARNING: Please consider reporting this to the maintainers of com.thoughtworks.xstream.core.util.Fields
-WARNING: Use --illage-access=warn to enable warnings of further illegal reflective access operations
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
 WARNING: All illegal access operations will be denied in a future release
 ```
 
