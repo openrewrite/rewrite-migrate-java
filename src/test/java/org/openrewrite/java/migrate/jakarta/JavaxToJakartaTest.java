@@ -373,12 +373,12 @@ class JavaxToJakartaTest implements RewriteTest {
           java(
             """
               public class A {
-                  Class<?> clazz = javax.xml.bind.annotation.A.class;
+                  Class<?> class_ = javax.xml.bind.annotation.A.class;
               }
               """,
             """
               public class A {
-                  Class<?> clazz = jakarta.xml.bind.annotation.A.class;
+                  Class<?> class_ = jakarta.xml.bind.annotation.A.class;
               }
               """
           )
