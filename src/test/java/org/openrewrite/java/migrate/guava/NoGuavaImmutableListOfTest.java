@@ -214,7 +214,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
     }
 
     @Test
-    void assigmentToList() {
+    void assignmentToList() {
         rewriteRun(
           version(
             //language=java

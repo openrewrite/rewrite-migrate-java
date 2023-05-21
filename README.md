@@ -41,14 +41,14 @@ the Java EE specification, prior to being moved to the Jakarta project. It can b
 and Jakarta EE 8 provide exactly the same specification (they use the same javax.xml.bind namespace) and there are
 two different reference implementations for the specification. 
 
-| Jakarta EE Version | XML Binding Artifact                         | Package Namespace | Description                      |
-|-------------------|----------------------------------------------| ------------------| -------------------------------- |
-| Java EE 8         | javax.xml.bind:jaxb-api:2.3.x                | javax.xml.bind    | JAXB API                         |
-| Jakarta EE 8      | com.sun.xml.bind:jaxb-impl:2.3.x             | javax.xml.bind    | JAXB Reference Implementation    |
-| Jakarta EE 8      | jakarta.xml.bind:jakarata.xml.bind-api:2.3.x | javax.xml.bind    | JAXB API                         |
-| Jakarta EE 8      | org.glassfish.jaxb:jaxb-runtime:2.3.x        | javax.xml.bind    | JAXB Reference Implementation    |
-| Jakarta EE 9      | jakarta.xml.bind:jakarata.xml.bind-api:3.x   | jakarta.xml.bind  | JAXB API                         |
-| Jakarta EE 9      | org.glassfish.jaxb:jaxb-runtime:3.x          | jakarta.xml.bind  | JAXB Reference Implementation    |
+| Jakarta EE Version | XML Binding Artifact                        | Package Namespace | Description                      |
+|--------------------|---------------------------------------------| ------------------| -------------------------------- |
+| Java EE 8          | javax.xml.bind:jaxb-api:2.3.x               | javax.xml.bind    | JAXB API                         |
+| Jakarta EE 8       | com.sun.xml.bind:jaxb-impl:2.3.x            | javax.xml.bind    | JAXB Reference Implementation    |
+| Jakarta EE 8       | jakarta.xml.bind:jakarta.xml.bind-api:2.3.x | javax.xml.bind    | JAXB API                         |
+| Jakarta EE 8       | org.glassfish.jaxb:jaxb-runtime:2.3.x       | javax.xml.bind    | JAXB Reference Implementation    |
+| Jakarta EE 9       | jakarta.xml.bind:jakarta.xml.bind-api:3.x   | jakarta.xml.bind  | JAXB API                         |
+| Jakarta EE 9       | org.glassfish.jaxb:jaxb-runtime:3.x         | jakarta.xml.bind  | JAXB Reference Implementation    |
 
 
 ## Java API for XML Web Services (JAX-WS)
@@ -81,7 +81,7 @@ migrate applications that were previous running on Java 8 through 10. This recip
 
 - Applications that use any of the Java EE specifications will have those dependencies migrated to Jakarta EE 8. Additionally,
   the migration to Jakarta EE 8 will also add explicit runtime dependencies on those projects that have transitive
-  dependencies on the Jakrata EE APIs. **Currently, only Maven-based build files are supported.**
+  dependencies on the Jakarta EE APIs. **Currently, only Maven-based build files are supported.**
 - Application that use maven plugins for generating source code from XSDs and WSDLs will have their plugins
   updated to use a version of the plugin that is compatible with Java 11.
 - Any deprecated APIs in the earlier versions of Java that have a well-defined migration path will be automatically
@@ -130,7 +130,7 @@ subsequent calls will not be logged and the warning looks similar to the followi
 WARNING: An illegal reflective access operation has occurred
 WARNING: Illegal reflective access by com.thoughtworks.xstream.core.util.Fields (file.....)
 WARNING: Please consider reporting this to the maintainers of com.thoughtworks.xstream.core.util.Fields
-WARNING: Use --illage-access=warn to enable warnings of further illegal reflective access operations
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
 WARNING: All illegal access operations will be denied in a future release
 ```
 
