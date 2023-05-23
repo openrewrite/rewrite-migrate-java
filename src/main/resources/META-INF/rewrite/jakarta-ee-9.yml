@@ -70,18 +70,13 @@ tags:
   - jakarta
 
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.activation
       artifactId: jakarta.activation-api
       version: latest.release
       onlyIfUsing: javax.activation.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.activation
-      artifactId: jakarta.activation-api
-      version: latest.release
-      onlyIfUsing: javax.activation.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.activation
       artifactId: jakarta.activation-api
       newVersion: latest.release
@@ -89,10 +84,7 @@ recipeList:
       oldPackageName: javax.activation
       newPackageName: jakarta.activation
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.activation
-      artifactId: javax.activation-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.activation
       artifactId: javax.activation-api
 
@@ -106,26 +98,18 @@ tags:
   - javax
   - jakarta
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       version: latest.release
       onlyIfUsing: javax.annotation..*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.annotation
-      artifactId: jakarta.annotation-api
-      version: latest.release
-      onlyIfUsing: javax.annotation..*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       newVersion: latest.release
   - org.openrewrite.java.migrate.jakarta.ChangeJavaxAnnotationToJakarta
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.annotation
-      artifactId: javax.annotation-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.annotation
       artifactId: javax.annotation-api
 
@@ -230,18 +214,19 @@ tags:
   - javax
   - jakarta
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.authentication
       artifactId: jakarta.authentication-api
       version: latest.release
       onlyIfUsing: javax.security.auth.message..*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.authentication
       artifactId: jakarta.authentication-api
       version: latest.release
       onlyIfUsing: javax.authentication.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.authentication
       artifactId: jakarta.authentication-api
       newVersion: latest.release
@@ -249,10 +234,7 @@ recipeList:
       oldPackageName: javax.security.auth.message
       newPackageName: jakarta.security.auth.message
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.security.auth.message
-      artifactId: javax.security.auth.message-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.security.auth.message
       artifactId: javax.security.auth.message-api
 
@@ -268,18 +250,13 @@ tags:
   - jakarta
 
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.authorization
       artifactId: jakarta.authorization-api
       version: latest.release
       onlyIfUsing: javax.security.jacc..*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.authorization
-      artifactId: jakarta.authorization-api
-      version: latest.release
-      onlyIfUsing: javax.security.jacc..*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.authorization
       artifactId: jakarta.authorization-api
       newVersion: latest.release
@@ -287,10 +264,7 @@ recipeList:
       oldPackageName: javax.security.jacc
       newPackageName: jakarta.security.jacc
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.security.jacc
-      artifactId: javax.security.jacc-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.security.jacc
       artifactId: javax.security.jacc-api
 
@@ -305,18 +279,13 @@ tags:
   - jakarta
 
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.batch
       artifactId: jakarta.batch-api
       version: latest.release
       onlyIfUsing: javax.batch..*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.batch
-      artifactId: jakarta.batch-api
-      version: latest.release
-      onlyIfUsing: javax.batch.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.batch
       artifactId: jakarta.batch-api
       newVersion: latest.release
@@ -324,10 +293,7 @@ recipeList:
       oldPackageName: javax.batch
       newPackageName: jakarta.batch
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.batch
-      artifactId: javax.batch-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.batch
       artifactId: javax.batch-api
 ---
@@ -341,18 +307,13 @@ tags:
   - jakarta
 
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.validation
       artifactId: jakarta.validation-api
       version: latest.release
       onlyIfUsing: javax.validation..*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.validation
-      artifactId: jakarta.validation-api
-      version: latest.release
-      onlyIfUsing: javax.validation.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.validation
       artifactId: jakarta.validation-api
       newVersion: latest.release
@@ -360,10 +321,7 @@ recipeList:
       oldPackageName: javax.validation
       newPackageName: jakarta.validation
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.validation
-      artifactId: validation-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.validation
       artifactId: validation-api
 ---
@@ -372,18 +330,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxDecoratorToJakartaDecorator
 displayName: Migrate deprecated `javax.decorator` packages to `jakarta.decorator`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       version: latest.release
       onlyIfUsing: javax.decorator.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.enterprise
-      artifactId: jakarta.enterprise.cdi-api
-      version: latest.release
-      onlyIfUsing: javax.decorator.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       newVersion: latest.release
@@ -391,10 +344,7 @@ recipeList:
       oldPackageName: javax.decorator
       newPackageName: jakarta.decorator
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.enterprise
-      artifactId: cdi-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.enterprise
       artifactId: cdi-api
 ---
@@ -403,18 +353,18 @@ name: org.openrewrite.java.migrate.jakarta.JavaxEjbToJakartaEjb
 displayName: Migrate deprecated `javax.ejb` packages to `jakarta.ejb`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.ejb
       artifactId: jakarta.ejb-api
       version: latest.release
       onlyIfUsing: javax.ejb.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.inject
       artifactId: jakarta.ejb-api
       version: latest.release
       onlyIfUsing: javax.ejb.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.ejb
       artifactId: jakarta.ejb-api
       newVersion: latest.release
@@ -422,10 +372,7 @@ recipeList:
       oldPackageName: javax.ejb
       newPackageName: jakarta.ejb
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.ejb
-      artifactId: javax.ejb-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.ejb
       artifactId: javax.ejb-api
 ---
@@ -434,18 +381,18 @@ name: org.openrewrite.java.migrate.jakarta.JavaxElToJakartaEl
 displayName: Migrate deprecated `javax.el` packages to `jakarta.el`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.el
       artifactId: jakarta.el-api
       version: latest.release
       onlyIfUsing: javax.el.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.inject
       artifactId: jakarta.el-api
       version: latest.release
       onlyIfUsing: javax.el.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.el
       artifactId: jakarta.el-api
       newVersion: latest.release
@@ -453,10 +400,7 @@ recipeList:
       oldPackageName: javax.el
       newPackageName: jakarta.el
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.el
-      artifactId: javax.el-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.el
       artifactId: javax.el-api
 ---
@@ -465,18 +409,18 @@ name: org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
 displayName: Migrate deprecated `javax.enterprise` packages to `jakarta.enterprise`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       version: 3.0.1
       onlyIfUsing: javax.enterprise.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.inject
       artifactId: jakarta.enterprise.cdi-api
       version: 3.0.1
       onlyIfUsing: javax.enterprise.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       newVersion: 3.0.1
@@ -484,10 +428,7 @@ recipeList:
       oldPackageName: javax.enterprise
       newPackageName: jakarta.enterprise
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.enterprise
-      artifactId: cdi-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.enterprise
       artifactId: cdi-api
 ---
@@ -496,18 +437,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxFacesToJakartaFaces
 displayName: Migrate deprecated `javax.faces` packages to `jakarta.faces`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.faces
       artifactId: jakarta.faces-api
       version: latest.release
       onlyIfUsing: javax.faces.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.faces
-      artifactId: jakarta.faces-api
-      version: latest.release
-      onlyIfUsing: javax.faces.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.faces
       artifactId: jakarta.faces-api
       newVersion: latest.release
@@ -515,13 +451,10 @@ recipeList:
       oldPackageName: javax.faces
       newPackageName: jakarta.faces
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.faces
       artifactId: javax.faces-api
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: org.glassfish
-      artifactId: javax.faces
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: org.glassfish
       artifactId: javax.faces
 ---
@@ -535,18 +468,13 @@ tags:
   - jakarta
 
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.inject
       artifactId: jakarta.inject-api
       version: latest.release
       onlyIfUsing: javax.inject.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.inject
-      artifactId: jakarta.inject-api
-      version: latest.release
-      onlyIfUsing: javax.inject.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.inject
       artifactId: jakarta.inject-api
       newVersion: latest.release
@@ -554,10 +482,7 @@ recipeList:
       oldPackageName: javax.inject
       newPackageName: jakarta.inject
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.inject
-      artifactId: javax.inject-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.inject
       artifactId: javax.inject-api
 ---
@@ -566,18 +491,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxInterceptorToJakartaInterceptor
 displayName: Migrate deprecated `javax.interceptor` packages to `jakarta.interceptor`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.interceptor
       artifactId: jakarta.interceptor-api
       version: latest.release
       onlyIfUsing: javax.interceptor.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.interceptor
-      artifactId: jakarta.interceptor-api
-      version: latest.release
-      onlyIfUsing: javax.interceptor.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.interceptor
       artifactId: jakarta.interceptor-api
       newVersion: latest.release
@@ -585,10 +505,7 @@ recipeList:
       oldPackageName: javax.interceptor
       newPackageName: jakarta.interceptor
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.interceptor
-      artifactId: javax.interceptor-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.interceptor
       artifactId: javax.interceptor-api
 ---
@@ -597,18 +514,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxJmsToJakartaJms
 displayName: Migrate deprecated `javax.jms` packages to `jakarta.jms`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.jms
       artifactId: jakarta.jms-api
       version: latest.release
       onlyIfUsing: javax.jms.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.jms
-      artifactId: jakarta.jms-api
-      version: latest.release
-      onlyIfUsing: javax.jms.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.jms
       artifactId: jakarta.jms-api
       newVersion: latest.release
@@ -616,10 +528,7 @@ recipeList:
       oldPackageName: javax.jms
       newPackageName: jakarta.jms
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.jms
-      artifactId: javax.jms-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.jms
       artifactId: javax.jms-api
 ---
@@ -628,18 +537,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxJsonToJakartaJson
 displayName: Migrate deprecated `javax.json` packages to `jakarta.json`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.json
       artifactId: jakarta.json-api
       version: latest.release
       onlyIfUsing: javax.json.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.json
-      artifactId: jakarta.json-api
-      version: latest.release
-      onlyIfUsing: javax.json.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.json
       artifactId: jakarta.json-api
       newVersion: latest.release
@@ -647,10 +551,7 @@ recipeList:
       oldPackageName: javax.json
       newPackageName: jakarta.json
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.json
-      artifactId: javax.json-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.json
       artifactId: javax.json-api
 ---
@@ -659,18 +560,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxJwsToJakartaJws
 displayName: Migrate deprecated `javax.jws` packages to `jakarta.jws`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.jws
       artifactId: jakarta.jws-api
       version: latest.release
       onlyIfUsing: javax.jws.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.jws
-      artifactId: jakarta.jws-api
-      version: latest.release
-      onlyIfUsing: javax.jws.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.jws
       artifactId: jakarta.jws-api
       newVersion: latest.release
@@ -678,10 +574,7 @@ recipeList:
       oldPackageName: javax.jws
       newPackageName: jakarta.jws
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.jws
-      artifactId: javax.jws-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.jws
       artifactId: javax.jws-api
 ---
@@ -690,18 +583,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail
 displayName: Migrate deprecated `javax.mail` packages to `jakarta.mail`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.mail
       artifactId: jakarta.mail-api
       version: latest.release
       onlyIfUsing: javax.mail.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.mail
-      artifactId: jakarta.mail-api
-      version: latest.release
-      onlyIfUsing: javax.mail.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.mail
       artifactId: jakarta.mail-api
       newVersion: latest.release
@@ -709,10 +597,7 @@ recipeList:
       oldPackageName: javax.mail
       newPackageName: jakarta.mail
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.mail
-      artifactId: javax.mail-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.mail
       artifactId: javax.mail-api
 ---
@@ -721,18 +606,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxPersistenceToJakartaPersistence
 displayName: Migrate deprecated `javax.persistence` packages to `jakarta.persistence`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.persistence
       artifactId: jakarta.persistence-api
       version: latest.release
       onlyIfUsing: javax.persistence.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.persistence
-      artifactId: jakarta.persistence-api
-      version: latest.release
-      onlyIfUsing: javax.persistence.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.persistence
       artifactId: jakarta.persistence-api
       newVersion: latest.release
@@ -740,13 +620,10 @@ recipeList:
       oldPackageName: javax.persistence
       newPackageName: jakarta.persistence
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.persistence
       artifactId: javax.persistence-api
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: org.eclipse.persistence
-      artifactId: javax.persistence
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: org.eclipse.persistence
       artifactId: javax.persistence
 ---
@@ -755,18 +632,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxResourceToJakartaResource
 displayName: Migrate deprecated `javax.resource` packages to `jakarta.resource`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.resource
       artifactId: jakarta.resource-api
       version: latest.release
       onlyIfUsing: javax.resource.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.resource
-      artifactId: jakarta.resource-api
-      version: latest.release
-      onlyIfUsing: javax.resource.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.resource
       artifactId: jakarta.resource-api
       newVersion: latest.release
@@ -774,10 +646,7 @@ recipeList:
       oldPackageName: javax.resource
       newPackageName: jakarta.resource
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.resource
-      artifactId: javax.resource-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.resource
       artifactId: javax.resource-api
 ---
@@ -786,18 +655,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxSecurityToJakartaSecurity
 displayName: Migrate deprecated `javax.security.enterprise` packages to `jakarta.security.enterprise`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.security.enterprise
       artifactId: jakarta.security.enterprise-api
       version: latest.release
       onlyIfUsing: javax.security.enterprise..*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.security.enterprise
-      artifactId: jakarta.security.enterprise-api
-      version: latest.release
-      onlyIfUsing: javax.security.enterprise..*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.security.enterprise
       artifactId: jakarta.security.enterprise-api
       newVersion: latest.release
@@ -805,10 +669,7 @@ recipeList:
       oldPackageName: javax.security.enterprise
       newPackageName: jakarta.security.enterprise
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.security.enterprise
-      artifactId: javax.security.enterprise-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.security.enterprise
       artifactId: javax.security.enterprise-api
 ---
@@ -818,7 +679,7 @@ displayName: Migrate deprecated `javax.servlet` packages to `jakarta.servlet`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
   - org.openrewrite.java.migrate.jakarta.MaybeAddJakartaServletApi
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.servlet
       artifactId: jakarta.servlet-api
       newVersion: 6.x
@@ -826,7 +687,7 @@ recipeList:
       oldPackageName: javax.servlet
       newPackageName: jakarta.servlet
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.servlet
       artifactId: javax.servlet-api
 
@@ -841,18 +702,13 @@ applicability:
         groupId: org.springframework.boot
         artifactId: spring-boot-starter-web
 recipeList:
-  - org.openrewrite.maven.AddDependency:
-      groupId: jakarta.servlet
-      artifactId: jakarta.servlet-api
-      version: 6.x
-      onlyIfUsing: javax.servlet.*
-      acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.servlet
       artifactId: jakarta.servlet-api
       version: 6.x
       onlyIfUsing: javax.servlet.*
       configuration: implementation
+      acceptTransitive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxTransactionMigrationToJakartaTransaction
@@ -864,18 +720,13 @@ tags:
   - jakarta
 
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.transaction
       artifactId: jakarta.transaction-api
       version: latest.release
       onlyIfUsing: javax.transaction.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.transaction
-      artifactId: jakarta.transaction-api
-      version: latest.release
-      onlyIfUsing: javax.transaction.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.transaction
       artifactId: jakarta.transaction-api
       newVersion: latest.release
@@ -883,10 +734,7 @@ recipeList:
       oldPackageName: javax.transaction
       newPackageName: jakarta.transaction
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.transaction
-      artifactId: javax.transaction-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.transaction
       artifactId: javax.transaction-api
 ---
@@ -895,18 +743,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxWebsocketToJakartaWebsocket
 displayName: Migrate deprecated `javax.websocket` packages to `jakarta.websocket`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.websocket
       artifactId: jakarta.websocket-api
       version: latest.release
       onlyIfUsing: javax.websocket.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.websocket
-      artifactId: jakarta.websocket-api
-      version: latest.release
-      onlyIfUsing: javax.websocket.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.websocket
       artifactId: jakarta.websocket-api
       newVersion: latest.release
@@ -914,10 +757,7 @@ recipeList:
       oldPackageName: javax.websocket
       newPackageName: jakarta.websocket
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.websocket
-      artifactId: javax.websocket-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.websocket
       artifactId: javax.websocket-api
 ---
@@ -926,18 +766,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxWsToJakartaWs
 displayName: Migrate deprecated `javax.ws` packages to `jakarta.ws`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       version: latest.release
       onlyIfUsing: javax.ws.rs.*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.ws.rs
-      artifactId: jakarta.ws.rs-api
-      version: latest.release
-      onlyIfUsing: javax.ws.rs.*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       newVersion: latest.release
@@ -945,10 +780,7 @@ recipeList:
       oldPackageName: javax.ws
       newPackageName: jakarta.ws
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.ws.rs
-      artifactId: javax.ws.rs-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.ws.rs
       artifactId: javax.ws.rs-api
 ---
@@ -962,34 +794,24 @@ tags:
   - jakarta
 
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
       version: latest.release
       onlyIfUsing: javax.xml.bind..*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.xml.bind
-      artifactId: jakarta.xml.bind-api
-      version: latest.release
-      onlyIfUsing: javax.xml.bind..*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
       newVersion: latest.release
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: org.glassfish.jaxb
       artifactId: jaxb-runtime
       version: latest.release
       scope: runtime
       onlyIfUsing: javax.xml.bind..*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: org.glassfish.jaxb
-      artifactId: jaxb-runtime
-      version: latest.release
-      onlyIfUsing: javax.xml.bind..*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.glassfish.jaxb
       artifactId: jaxb-runtime
       newVersion: latest.release
@@ -997,16 +819,10 @@ recipeList:
       oldPackageName: javax.xml.bind
       newPackageName: jakarta.xml.bind
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.xml.bind
       artifactId: jaxb-api
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: com.sun.xml.bind
-      artifactId: jaxb-impl
-  - org.openrewrite.gradle.RemoveDependency:
-      groupId: javax.xml.bind
-      artifactId: jaxb-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: com.sun.xml.bind
       artifactId: jaxb-impl
 ---
@@ -1015,18 +831,13 @@ name: org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
 displayName: Migrate deprecated `javax.soap` packages to `jakarta.soap`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.xml.soap
       artifactId: jakarta.xml.soap-api
       version: latest.release
       onlyIfUsing: javax.xml.soap..*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.xml.soap
-      artifactId: jakarta.xml.soap-api
-      version: latest.release
-      onlyIfUsing: javax.xml.soap..*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.xml.soap
       artifactId: jakarta.xml.soap-api
       newVersion: latest.release
@@ -1034,13 +845,9 @@ recipeList:
       oldPackageName: javax.xml.soap
       newPackageName: jakarta.xml.soap
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.xml.soap
       artifactId: javax.xml.soap-api
-  - org.openrewrite.gradle.RemoveDependency:
-      groupId: javax.xml.soap
-      artifactId: javax.xml.soap-api
-
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlWsMigrationToJakartaXmlWs
@@ -1052,34 +859,24 @@ tags:
   - jakarta
 
 recipeList:
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       version: latest.release
       onlyIfUsing: javax.xml.ws..*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: jakarta.xml.ws
-      artifactId: jakarta.xml.ws-api
-      version: latest.release
-      onlyIfUsing: javax.xml.ws..*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       newVersion: latest.release
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
       version: latest.release
       scope: runtime
       onlyIfUsing: javax.xml.ws..*
       acceptTransitive: true
-  - org.openrewrite.gradle.AddDependency:
-      groupId: com.sun.xml.ws
-      artifactId: jaxws-rt
-      version: latest.release
-      onlyIfUsing: javax.xml.ws..*
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
       newVersion: latest.release
@@ -1087,10 +884,7 @@ recipeList:
       oldPackageName: javax.xml.ws
       newPackageName: jakarta.xml.ws
       recursive: true
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: javax.xml.ws
-      artifactId: jaxws-api
-  - org.openrewrite.gradle.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: javax.xml.ws
       artifactId: jaxws-api
 ---
@@ -1122,7 +916,6 @@ recipeList:
       elementName: persistence
       newValue: https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd
       fileMatcher: "**/persistence.xml"
-
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
@@ -1244,7 +1037,7 @@ description: >
   that are compatible with Jakarta EE 9.
 
 recipeList:
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.ehcache
       artifactId: "*"
       newVersion: 3.10.x
@@ -1267,7 +1060,7 @@ description: >
   that are compatible with Jakarta EE 9.
 
 recipeList:
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.johnzon
       artifactId: "*"
       newVersion: latest.release
@@ -1286,7 +1079,7 @@ description: >
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing RestAssured dependencies with their
   counterparts that are compatible with Jakarta EE 9.
 recipeList:
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: io.rest-assured
       artifactId: "*"
       newVersion: 5.1.x
