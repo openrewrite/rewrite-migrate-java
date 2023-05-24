@@ -97,14 +97,17 @@ public class UseVarKeyword extends Recipe {
 
                 Expression initializer = vd.getVariables().get(0).getInitializer();
                 boolean isDeclarationOnly = isNull(initializer);
+                if (isDeclarationOnly) return vd;
+
+                initializer = initializer.unwrap();
                 boolean isNullAssigment = initializer instanceof J.Literal && isNull(((J.Literal) initializer).getValue());
                 boolean alreadyUseVar = typeExpression instanceof J.Identifier && "var".equals(((J.Identifier) typeExpression).getSimpleName());
-                boolean isGeneric = typeExpression instanceof J.ParameterizedType; // todo implement generics!
+                boolean isGenericDefinition = typeExpression instanceof J.ParameterizedType ;
+                boolean isGenericInitializer = initializer instanceof J.NewClass && ((J.NewClass) initializer).getClazz() instanceof J.ParameterizedType;
                 boolean useTernary = initializer instanceof J.Ternary;
-                if (alreadyUseVar || isDeclarationOnly || isNullAssigment || isGeneric || useTernary) return vd;
+                if (alreadyUseVar || isNullAssigment|| isGenericDefinition || isGenericInitializer|| useTernary) return vd;
 
-                J.VariableDeclarations result = transformToVar(vd);
-                return result;
+                return transformToVar(vd);
             }
 
             private boolean determineIfOutsideInitializer(Cursor cursor, boolean childWasBlock) {
@@ -149,8 +152,11 @@ public class UseVarKeyword extends Recipe {
 
                 if (initializer instanceof J.Literal) {
                     initializer = expandWithPrimitivTypeHint(vd, initializer);
-                }
+                } else if(initializer instanceof J.MethodInvocation && nonNull(((J.MethodInvocation) initializer).getTypeParameters())) {
+                    initializer = initializer;
+                } else if(initializer instanceof J.NewClass && ((J.NewClass) initializer).getClazz() instanceof J.ParameterizedType) {
 
+                }
                 return vd.withTemplate(template, vd.getCoordinates().replace(), simpleName, initializer);
             }
 
