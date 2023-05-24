@@ -27,10 +27,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.HasJavaVersion;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.TypeTree;
+import org.openrewrite.java.tree.*;
 
 import java.time.Duration;
 
@@ -68,22 +65,13 @@ public class UseVarKeyword extends Recipe {
             private final JavaTemplate template = JavaTemplate.builder(this::getCursor, "var #{} = #{any()}")
                     .javaParser(JavaParser.fromJavaVersion()).build();
 
-
-            @Override
-            public J visitForEachControl(J.ForEachLoop.Control control, ExecutionContext executionContext) {
-                // für enhanced for-Loops wäre hier der korrekter punkt.
-                // es gelten dieselben Dinge für primitives, null und Generics
-                // ob wir am richtigen Ort sind muss nicht geprüft werden; ebenso single und pure
-                return super.visitForEachControl(control, executionContext);
-            }
-
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
                 J.VariableDeclarations vd = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, executionContext);
 
                 boolean isOutsideMethod = !determineIfIsInsideMethod(this.getCursor());
                 boolean isMethodParameter = determineIfMethodParameter(vd, this.getCursor());
-                boolean isOutsideInitializer = !determineIfOutsideInitializer(this.getCursor(), false);
+                boolean isOutsideInitializer = !determineInsideInitializer(this.getCursor(), 0);
                 if ((isOutsideMethod && isOutsideInitializer) || isMethodParameter) return vd;
 
                 TypeTree typeExpression = vd.getTypeExpression();
@@ -110,19 +98,24 @@ public class UseVarKeyword extends Recipe {
                 return transformToVar(vd);
             }
 
-            private boolean determineIfOutsideInitializer(Cursor cursor, boolean childWasBlock) {
+            private boolean determineInsideInitializer(@NotNull Cursor cursor, int nestedBlockLevel) {
+                if (Cursor.ROOT_VALUE.equals(cursor.getValue())) {
+                    return false;
+                }
                 Object currentStatement = cursor.getValue();
 
+                // initializer blocks are blocks inside the class definition block, therefor a nesting of 2 is mandatory
                 boolean isClassDeclaration = currentStatement instanceof J.ClassDeclaration;
-                boolean classFollowedByBlock = childWasBlock && isClassDeclaration;
-                if (classFollowedByBlock) return true;
+                boolean followedByTwoBlock = nestedBlockLevel >= 2;
+                if (isClassDeclaration && followedByTwoBlock) return true;
 
-                Cursor parentStatement = cursor.getParent();
-                boolean cannotClimbUpFurther = isNull(parentStatement);
-                if (cannotClimbUpFurther) return false;
-
+                // count direct block nesting (block containing a block), but ignore paddings
                 boolean isBlock = currentStatement instanceof J.Block;
-                return determineIfOutsideInitializer(parentStatement, isBlock);
+                boolean isNoPadding = !(currentStatement instanceof JRightPadded);
+                if (isBlock) nestedBlockLevel += 1;
+                else if (isNoPadding) nestedBlockLevel = 0;
+
+                return determineInsideInitializer(requireNonNull(cursor.getParent()), nestedBlockLevel);
             }
 
             private boolean determineIfMethodParameter(@NotNull J.VariableDeclarations vd, @NotNull Cursor cursor) {
@@ -137,12 +130,13 @@ public class UseVarKeyword extends Recipe {
             private boolean determineIfIsInsideMethod(@NotNull Cursor cursor) {
                 Object current = cursor.getValue();
 
-                if (Cursor.ROOT_VALUE.equals(current)) return false; // we are at the top, no further climbing needed
-                if (current instanceof J.ClassDeclaration)
-                    return false; // after a ClassDeclaration we left the scope of search
-                if (current instanceof J.MethodDeclaration) return true; // we found the MethodDeclaration
+                boolean atRoot = Cursor.ROOT_VALUE.equals(current);
+                boolean atClassDeclaration = current instanceof J.ClassDeclaration;
+                boolean atMethodDeclaration = current instanceof J.MethodDeclaration;
 
-                return determineIfIsInsideMethod(requireNonNull(cursor.getParent())); // climb up
+                if (atRoot || atClassDeclaration) return false;
+                if (atMethodDeclaration) return true;
+                return determineIfIsInsideMethod(requireNonNull(cursor.getParent()));
             }
 
             @NotNull
@@ -152,10 +146,6 @@ public class UseVarKeyword extends Recipe {
 
                 if (initializer instanceof J.Literal) {
                     initializer = expandWithPrimitivTypeHint(vd, initializer);
-                } else if(initializer instanceof J.MethodInvocation && nonNull(((J.MethodInvocation) initializer).getTypeParameters())) {
-                    initializer = initializer;
-                } else if(initializer instanceof J.NewClass && ((J.NewClass) initializer).getClazz() instanceof J.ParameterizedType) {
-
                 }
                 return vd.withTemplate(template, vd.getCoordinates().replace(), simpleName, initializer);
             }

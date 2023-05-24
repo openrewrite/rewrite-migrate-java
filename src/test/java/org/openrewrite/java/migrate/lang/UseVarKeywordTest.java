@@ -350,6 +350,35 @@ class UseVarKeywordTest implements RewriteTest {
             }
 
             @Test
+            void reassignment() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+                                        
+                      class A {
+                        Object o = new Object();
+                        void m() {
+                            Object innerO = o;
+                        }
+                      }
+                      """, """
+                      package com.example.app;
+                                        
+                      class A {
+                        Object o = new Object();
+                        void m() {
+                            var innerO = o;
+                        }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
+
+            @Test
             @Disabled("this should be possible, but it needs very hard type inference")
             void withTernary() {
                 //language=java
@@ -462,7 +491,7 @@ class UseVarKeywordTest implements RewriteTest {
                       package com.example.app;
                                         
                       class A {
-                        Object o;
+                        Object o = new Object();
                         Object m() {
                             return o;
                         }
