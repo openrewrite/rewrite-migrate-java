@@ -68,13 +68,23 @@ public class UseVarKeyword extends Recipe {
             private final JavaTemplate template = JavaTemplate.builder(this::getCursor, "var #{} = #{any()}")
                     .javaParser(JavaParser.fromJavaVersion()).build();
 
+
+            @Override
+            public J visitForEachControl(J.ForEachLoop.Control control, ExecutionContext executionContext) {
+                // für enhanced for-Loops wäre hier der korrekter punkt.
+                // es gelten dieselben Dinge für primitives, null und Generics
+                // ob wir am richtigen Ort sind muss nicht geprüft werden; ebenso single und pure
+                return super.visitForEachControl(control, executionContext);
+            }
+
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
                 J.VariableDeclarations vd = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, executionContext);
 
                 boolean isOutsideMethod = !determineIfIsInsideMethod(this.getCursor());
                 boolean isMethodParameter = determineIfMethodParameter(vd, this.getCursor());
-                if (isOutsideMethod || isMethodParameter) return vd;
+                boolean isOutsideInitializer = !determineIfOutsideInitializer(this.getCursor(), false);
+                if ((isOutsideMethod && isOutsideInitializer) || isMethodParameter) return vd;
 
                 TypeTree typeExpression = vd.getTypeExpression();
                 boolean isByteVariable = typeExpression instanceof J.Primitive && BYTE_TYPE.equals(typeExpression.getType());
@@ -90,10 +100,26 @@ public class UseVarKeyword extends Recipe {
                 boolean isNullAssigment = initializer instanceof J.Literal && isNull(((J.Literal) initializer).getValue());
                 boolean alreadyUseVar = typeExpression instanceof J.Identifier && "var".equals(((J.Identifier) typeExpression).getSimpleName());
                 boolean isGeneric = typeExpression instanceof J.ParameterizedType; // todo implement generics!
-                if (alreadyUseVar || isDeclarationOnly || isNullAssigment || isGeneric) return vd;
+                boolean useTernary = initializer instanceof J.Ternary;
+                if (alreadyUseVar || isDeclarationOnly || isNullAssigment || isGeneric || useTernary) return vd;
 
                 J.VariableDeclarations result = transformToVar(vd);
                 return result;
+            }
+
+            private boolean determineIfOutsideInitializer(Cursor cursor, boolean childWasBlock) {
+                Object currentStatement = cursor.getValue();
+
+                boolean isClassDeclaration = currentStatement instanceof J.ClassDeclaration;
+                boolean classFollowedByBlock = childWasBlock && isClassDeclaration;
+                if (classFollowedByBlock) return true;
+
+                Cursor parentStatement = cursor.getParent();
+                boolean cannotClimbUpFurther = isNull(parentStatement);
+                if (cannotClimbUpFurther) return false;
+
+                boolean isBlock = currentStatement instanceof J.Block;
+                return determineIfOutsideInitializer(parentStatement, isBlock);
             }
 
             private boolean determineIfMethodParameter(@NotNull J.VariableDeclarations vd, @NotNull Cursor cursor) {

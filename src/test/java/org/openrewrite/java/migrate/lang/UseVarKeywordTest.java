@@ -133,31 +133,117 @@ class UseVarKeywordTest implements RewriteTest {
 
     @Nested
     class Objects {
-        @Test
-        void inMethodBody() {
-            //language=java
-            rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-                                    
-                  class A {
-                    void m() {
-                        Object o = new Object();
-                    }
-                  }
-                  """, """
-                  package com.example.app;
-                                    
-                  class A {
-                    void m() {
-                        var o = new Object();
-                    }
-                  }
-                  """),
-                10
-              )
-            );
+
+        @Nested
+        class Applicable {
+            @Test
+            void inMethodBody() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+                                        
+                      class A {
+                        void m() {
+                            Object o = new Object();
+                        }
+                      }
+                      """, """
+                      package com.example.app;
+                                        
+                      class A {
+                        void m() {
+                            var o = new Object();
+                        }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
+
+            @Test
+            @Disabled("Not yet implemented")
+            void withTernary() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+                                        
+                      class A {
+                        void m() {
+                            String o = true ? "isTrue" : "Test";
+                        }
+                      }
+                      """, """
+                      package com.example.app;
+                                        
+                      class A {
+                        void m() {
+                            var o = true ? "isTrue" : "Test";
+                        }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
+
+            @Test
+            void inStaticInitializer() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+                                        
+                      class A {
+                        static {
+                            Object o = new Object();
+                        }
+                      }
+                      """, """
+                      package com.example.app;
+                                        
+                      class A {
+                        static {
+                            var o = new Object();
+                        }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
+
+            @Test
+            void inInstanceInitializer() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+                                        
+                      class A {
+                        {
+                            Object o = new Object();
+                        }
+                      }
+                      """, """
+                      package com.example.app;
+                                        
+                      class A {
+                        {
+                            var o = new Object();
+                        }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
         }
 
         @Nested
