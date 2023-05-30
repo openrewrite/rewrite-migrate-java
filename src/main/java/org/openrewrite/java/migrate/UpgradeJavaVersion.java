@@ -27,16 +27,13 @@ import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
 @Value
 @EqualsAndHashCode(callSuper = true)
-public class UpgradeJavaVersion extends ScanningRecipe<AtomicReference<JavaVersion>> {
+public class UpgradeJavaVersion extends Recipe {
     @Override
     public String getDisplayName() {
         return "Upgrade Java version";
@@ -56,32 +53,9 @@ public class UpgradeJavaVersion extends ScanningRecipe<AtomicReference<JavaVersi
     Integer version;
 
     @Override
-    public AtomicReference<JavaVersion> getInitialValue(ExecutionContext ctx) {
-        return new AtomicReference<>();
-    }
-
-    @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(AtomicReference<JavaVersion> acc) {
-        return new TreeVisitor<Tree, ExecutionContext>() {
-            @Override
-            public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
-                if (!(tree instanceof SourceFile)) {
-                    return tree;
-                }
-                SourceFile source = (SourceFile) tree;
-                if (acc.get() == null) {
-                    source.getMarkers().findFirst(JavaVersion.class).ifPresent(acc::set);
-                }
-                return source;
-            }
-        };
-    }
-
-    @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(AtomicReference<JavaVersion> acc) {
-        Optional<JavaVersion> updatedMarker = Optional.ofNullable(acc.get())
-                .map(jv -> jv.getMajorVersion() >= version ? null
-                        : jv.withSourceCompatibility(version.toString()).withTargetCompatibility(version.toString()));
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        String newVersion = version.toString();
+        Map<JavaVersion, JavaVersion> updatedMarkers = new HashMap<>();
 
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
@@ -96,9 +70,13 @@ public class UpgradeJavaVersion extends ScanningRecipe<AtomicReference<JavaVersi
                     source = (SourceFile) new MavenUpdateJavaVersionVisitor().visitNonNull(source, ctx);
                 }
 
-                if (updatedMarker.isPresent() && source.getMarkers().findFirst(JavaVersion.class).isPresent()) {
-                    source = source.withMarkers(source.getMarkers().computeByType(updatedMarker.get(),
-                            (existing, updated) -> updated));
+                Optional<JavaVersion> maybeJavaVersion = source.getMarkers().findFirst(JavaVersion.class);
+                if (maybeJavaVersion.isPresent()) {
+                    JavaVersion javaVersion = maybeJavaVersion.get();
+                    if (javaVersion.getMajorVersion() < version) {
+                        source = source.withMarkers(source.getMarkers().setByType(updatedMarkers.computeIfAbsent(javaVersion,
+                                m -> m.withSourceCompatibility(newVersion).withTargetCompatibility(newVersion))));
+                    }
                 }
                 return source;
             }

@@ -234,7 +234,7 @@ class UpgradeJavaVersionTest implements RewriteTest {
     @Test
     void upgradeAllThatNeedUpgrading() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeJavaVersion(11).doNext(new AboutJavaVersion(null))),
+          spec -> spec.recipes(new UpgradeJavaVersion(11), new AboutJavaVersion(null)),
           version(
             java(
               //language=java
@@ -285,7 +285,7 @@ class UpgradeJavaVersionTest implements RewriteTest {
     @Test
     void upgradeAllThatNeedUpgradingNewestFirst() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeJavaVersion(11).doNext(new AboutJavaVersion(null))),
+          spec -> spec.recipes(new UpgradeJavaVersion(11), new AboutJavaVersion(null)),
           version(
             java(
               //language=java
