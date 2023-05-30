@@ -60,7 +60,7 @@ public class UpgradeJavaVersion extends ScanningRecipe<AtomicReference<JavaVersi
     Integer version;
 
     @Override
-    public AtomicReference<JavaVersion> getInitialValue() {
+    public AtomicReference<JavaVersion> getInitialValue(ExecutionContext ctx) {
         return new AtomicReference<>();
     }
 

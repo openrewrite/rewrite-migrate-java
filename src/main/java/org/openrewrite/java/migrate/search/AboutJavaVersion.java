@@ -57,7 +57,7 @@ public class AboutJavaVersion extends ScanningRecipe<Map<AboutJavaVersion.Projec
     }
 
     @Override
-    public Map<ProjectSourceSet, JavaVersionRow> getInitialValue() {
+    public Map<ProjectSourceSet, JavaVersionRow> getInitialValue(ExecutionContext ctx) {
         return new HashMap<>();
     }
 
