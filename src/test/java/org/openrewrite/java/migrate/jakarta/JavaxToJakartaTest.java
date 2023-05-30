@@ -458,6 +458,10 @@ class JavaxToJakartaTest implements RewriteTest {
                   	</properties>
                   	<dependencies>
                   		<dependency>
+                   			<groupId>jakarta.servlet</groupId>
+                   		<artifactId>jakarta.servlet-api</artifactId>
+                   		</dependency>
+                  		<dependency>
                   			<groupId>org.springframework.boot</groupId>
                   			<artifactId>spring-boot-starter-web</artifactId>
                   		</dependency>
