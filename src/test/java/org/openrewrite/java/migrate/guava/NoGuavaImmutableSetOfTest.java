@@ -214,7 +214,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
     }
 
     @Test
-    void assigmentToSet() {
+    void assignmentToSet() {
         //language=java
         rewriteRun(
           version(

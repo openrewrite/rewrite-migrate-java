@@ -376,6 +376,6 @@ recipeList:
         newGroupId: org.hibernate.orm
         newArtifactId: hibernate-testing
         newVersion: 6.1.x
-  - org.openrewrite.maven.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
         groupId: org.hibernate
         artifactId: hibernate-entitymanager

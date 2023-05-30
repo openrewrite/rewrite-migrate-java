@@ -37,7 +37,7 @@ public class JavaVersionRow {
     String vmVendor;
 
     @Column(displayName = "Source compatibility",
-            description = "The source compatibity of the source file.")
+            description = "The source compatibility of the source file.")
     String sourceCompatibility;
 
     @Column(displayName = "Major version source compatibility",
@@ -45,6 +45,6 @@ public class JavaVersionRow {
     String majorVersionSourceCompatibility;
 
     @Column(displayName = "Target compatibility",
-            description = "The target compatibity or `--release` version of the source file.")
+            description = "The target compatibility or `--release` version of the source file.")
     String targetCompatibility;
 }

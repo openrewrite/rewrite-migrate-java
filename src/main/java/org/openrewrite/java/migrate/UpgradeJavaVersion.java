@@ -18,20 +18,16 @@ package org.openrewrite.java.migrate;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
-import org.openrewrite.groovy.GroovyIsoVisitor;
+import org.openrewrite.gradle.IsBuildGradle;
+import org.openrewrite.gradle.UpdateJavaCompatibility;
 import org.openrewrite.groovy.tree.G;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.marker.JavaVersion;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.tree.Xml;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -94,8 +90,8 @@ public class UpgradeJavaVersion extends ScanningRecipe<AtomicReference<JavaVersi
                     return tree;
                 }
                 SourceFile source = (SourceFile) tree;
-                if (source instanceof G.CompilationUnit) {
-                    source = (SourceFile) new GradleUpdateJavaVersionVisitor().visitNonNull(source, ctx);
+                if (source instanceof G.CompilationUnit && new IsBuildGradle<ExecutionContext>().visit(source, ctx) != source) {
+                    source = (SourceFile) new UpdateJavaCompatibility(version, null, null).getVisitor().visitNonNull(source, ctx);
                 } else if (source instanceof Xml.Document) {
                     source = (SourceFile) new MavenUpdateJavaVersionVisitor().visitNonNull(source, ctx);
                 }
@@ -107,36 +103,6 @@ public class UpgradeJavaVersion extends ScanningRecipe<AtomicReference<JavaVersi
                 return source;
             }
         };
-    }
-
-    private class GradleUpdateJavaVersionVisitor extends GroovyIsoVisitor<ExecutionContext> {
-        MethodMatcher javaLanguageVersionMatcher = new MethodMatcher("org.gradle.jvm.toolchain.JavaLanguageVersion of(int)");
-
-        @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-            method = super.visitMethodInvocation(method, ctx);
-            if (javaLanguageVersionMatcher.matches(method)) {
-                List<Expression> args = method.getArguments();
-
-                if (args.size() == 1 && args.get(0) instanceof J.Literal) {
-                    J.Literal versionArg = (J.Literal) args.get(0);
-                    if (versionArg.getValue() instanceof Integer) {
-                        Integer versionNumber = (Integer) versionArg.getValue();
-                        if (versionNumber < version) {
-                            return method.withArguments(
-                                    Collections.singletonList(versionArg.withValue(version)
-                                            .withValueSource(version.toString())));
-                        } else {
-                            return method;
-                        }
-                    }
-                }
-
-                return SearchResult.found(method, "Attempted to update to Java version to " + version
-                        + "  but was unsuccessful, please update manually");
-            }
-            return method;
-        }
     }
 
     private static final List<String> JAVA_VERSION_XPATHS = Arrays.asList(

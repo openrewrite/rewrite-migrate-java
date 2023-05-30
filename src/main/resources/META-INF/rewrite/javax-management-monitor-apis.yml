@@ -19,13 +19,13 @@ name: org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
 displayName: Use modernized `javax.management.monitor` APIs
 description: Certain `javax.management.monitor` APIs have become deprecated and their usages changed, necessitating usage changes.
 recipeList:
-  - org.openrewrite.java.migrate.javax.MigrateCounterMonitorSetThreshholdToSetInitThreshold
+  - org.openrewrite.java.migrate.javax.MigrateCounterMonitorSetThresholdToSetInitThreshold
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.javax.MigrateCounterMonitorSetThreshholdToSetInitThreshold
+name: org.openrewrite.java.migrate.javax.MigrateCounterMonitorSetThresholdToSetInitThreshold
 displayName: Use `javax.management.monitor.CounterMonitor#setInitThreshold`
-description: Use `javax.management.monitor.CounterMonitor#setInitThreshold` instead of the deprecated `javax.management.monitor.CounterMonitor#setThreshhold` in JMX 1.2 or higher.
+description: Use `javax.management.monitor.CounterMonitor#setInitThreshold` instead of the deprecated `javax.management.monitor.CounterMonitor#setThreshold` in JMX 1.2 or higher.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: javax.management.monitor.CounterMonitor setThreshold(java.lang.Number)

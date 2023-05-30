@@ -23,9 +23,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.srcMainJava;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class UpgradeToJava17Test implements RewriteTest {
@@ -42,171 +40,175 @@ class UpgradeToJava17Test implements RewriteTest {
     @Test
     void upgradeFromJava8ToJava17() {
         rewriteRun(
-          //language=xml
-          pomXml(
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                 
-                <properties>
-                  <java.version>1.8</java.version>
-                  <maven.compiler.source>1.8</maven.compiler.source>
-                  <maven.compiler.target>1.8</maven.compiler.target>
-                </properties>
-                
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-              </project>
-              """,
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                 
-                <properties>
-                  <java.version>17</java.version>
-                  <maven.compiler.source>17</maven.compiler.source>
-                  <maven.compiler.target>17</maven.compiler.target>
-                </properties>
-                
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-              </project>
-              """
-          ),
           version(
-            //language=java
-            srcMainJava(
-              java(
+            mavenProject("project",
+              //language=xml
+              pomXml(
                 """
-                  package com.abc;
-                          
-                  import java.util.Collections;
-                  import java.util.List;
-                  import java.util.Map;
-                  import java.util.Set;
-                                        
-                  class A {
-                     private static final List<String> staticList = Collections.singletonList("0");
-                     
-                     /* This is a comment */
-                     public void test() {
-                         // This is a comment
-                         Set<String> stringSet = Collections.singleton("aaa");
-                         List<String> stringList = Collections.singletonList("bbb");
-                         Map<String, Object> stringMap = Collections.singletonMap("a-key", "a-value");
-                     }
-                  }
+                  <project>
+                    <modelVersion>4.0.0</modelVersion>
+
+                    <properties>
+                      <java.version>1.8</java.version>
+                      <maven.compiler.source>1.8</maven.compiler.source>
+                      <maven.compiler.target>1.8</maven.compiler.target>
+                    </properties>
+
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                  </project>
                   """,
                 """
-                  package com.abc;
-                          
-                  import java.util.List;
-                  import java.util.Map;
-                  import java.util.Set;
-                          
-                  class A {
-                     private static final List<String> staticList = List.of("0");
+                  <project>
+                    <modelVersion>4.0.0</modelVersion>
 
-                     /* This is a comment */
-                     public void test() {
-                         // This is a comment
-                         Set<String> stringSet = Set.of("aaa");
-                         List<String> stringList = List.of("bbb");
-                         Map<String, Object> stringMap = Map.of("a-key", "a-value");
-                     }
-                  }
+                    <properties>
+                      <java.version>17</java.version>
+                      <maven.compiler.source>17</maven.compiler.source>
+                      <maven.compiler.target>17</maven.compiler.target>
+                    </properties>
+
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                  </project>
                   """
+              ),
+              //language=java
+              srcMainJava(
+                java(
+                  """
+                    package com.abc;
+
+                    import java.util.Collections;
+                    import java.util.List;
+                    import java.util.Map;
+                    import java.util.Set;
+
+                    class A {
+                       private static final List<String> staticList = Collections.singletonList("0");
+
+                       /* This is a comment */
+                       public void test() {
+                           // This is a comment
+                           Set<String> stringSet = Collections.singleton("aaa");
+                           List<String> stringList = Collections.singletonList("bbb");
+                           Map<String, Object> stringMap = Collections.singletonMap("a-key", "a-value");
+                       }
+                    }
+                    """,
+                  """
+                    package com.abc;
+
+                    import java.util.List;
+                    import java.util.Map;
+                    import java.util.Set;
+
+                    class A {
+                       private static final List<String> staticList = List.of("0");
+
+                       /* This is a comment */
+                       public void test() {
+                           // This is a comment
+                           Set<String> stringSet = Set.of("aaa");
+                           List<String> stringList = List.of("bbb");
+                           Map<String, Object> stringMap = Map.of("a-key", "a-value");
+                       }
+                    }
+                    """
+                )
               )
             ),
-            17)
+            8)
         );
     }
 
     @Test
     void referenceToJavaVersionProperty() {
         rewriteRun(
-          //language=xml
-          pomXml(
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                 
-                <properties>
-                  <java.version>1.8</java.version>
-                  <maven.compiler.source>${java.version}</maven.compiler.source>
-                  <maven.compiler.target>${java.version}</maven.compiler.target>
-                </properties>
-                
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-              </project>
-              """,
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                 
-                <properties>
-                  <java.version>17</java.version>
-                  <maven.compiler.source>${java.version}</maven.compiler.source>
-                  <maven.compiler.target>${java.version}</maven.compiler.target>
-                </properties>
-                
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-              </project>
-              """
-          ),
           version(
-            srcMainJava(
-              java(
-                //language=java
+            mavenProject("project",
+              //language=xml
+              pomXml(
                 """
-                  package com.abc;
-                          
-                  import java.util.Collections;
-                  import java.util.List;
-                  import java.util.Map;
-                  import java.util.Set;
-                                        
-                  class A {
-                     private static final List<String> staticList = Collections.singletonList("0");
-                     
-                     /* This is a comment */
-                     public void test() {
-                         // This is a comment
-                         Set<String> stringSet = Collections.singleton("aaa");
-                         List<String> stringList = Collections.singletonList("bbb");
-                         Map<String, Object> stringMap = Collections.singletonMap("a-key", "a-value");
-                     }
-                  }
-                  """,
-                //language=java
-                """
-                  package com.abc;
-                          
-                  import java.util.List;
-                  import java.util.Map;
-                  import java.util.Set;
-                          
-                  class A {
-                     private static final List<String> staticList = List.of("0");
+                  <project>
+                    <modelVersion>4.0.0</modelVersion>
 
-                     /* This is a comment */
-                     public void test() {
-                         // This is a comment
-                         Set<String> stringSet = Set.of("aaa");
-                         List<String> stringList = List.of("bbb");
-                         Map<String, Object> stringMap = Map.of("a-key", "a-value");
-                     }
-                  }
+                    <properties>
+                      <java.version>1.8</java.version>
+                      <maven.compiler.source>${java.version}</maven.compiler.source>
+                      <maven.compiler.target>${java.version}</maven.compiler.target>
+                    </properties>
+
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                  </project>
                   """,
-                spec -> spec.afterRecipe(cu ->
-                  assertThat(cu.getMarkers().findFirst(JavaVersion.class).map(JavaVersion::getSourceCompatibility).get())
-                    .isEqualTo("17"))
+                """
+                  <project>
+                    <modelVersion>4.0.0</modelVersion>
+
+                    <properties>
+                      <java.version>17</java.version>
+                      <maven.compiler.source>${java.version}</maven.compiler.source>
+                      <maven.compiler.target>${java.version}</maven.compiler.target>
+                    </properties>
+
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                  </project>
+                  """
+              ),
+              srcMainJava(
+                java(
+                  //language=java
+                  """
+                    package com.abc;
+
+                    import java.util.Collections;
+                    import java.util.List;
+                    import java.util.Map;
+                    import java.util.Set;
+
+                    class A {
+                       private static final List<String> staticList = Collections.singletonList("0");
+
+                       /* This is a comment */
+                       public void test() {
+                           // This is a comment
+                           Set<String> stringSet = Collections.singleton("aaa");
+                           List<String> stringList = Collections.singletonList("bbb");
+                           Map<String, Object> stringMap = Collections.singletonMap("a-key", "a-value");
+                       }
+                    }
+                    """,
+                  //language=java
+                  """
+                    package com.abc;
+
+                    import java.util.List;
+                    import java.util.Map;
+                    import java.util.Set;
+
+                    class A {
+                       private static final List<String> staticList = List.of("0");
+
+                       /* This is a comment */
+                       public void test() {
+                           // This is a comment
+                           Set<String> stringSet = Set.of("aaa");
+                           List<String> stringList = List.of("bbb");
+                           Map<String, Object> stringMap = Map.of("a-key", "a-value");
+                       }
+                    }
+                    """,
+                  spec -> spec.afterRecipe(cu ->
+                    assertThat(cu.getMarkers().findFirst(JavaVersion.class).map(JavaVersion::getSourceCompatibility).get())
+                      .isEqualTo("17"))
+                )
               )
             ),
             8)
