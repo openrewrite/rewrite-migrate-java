@@ -64,20 +64,25 @@ public class UpgradeJavaVersion extends Recipe {
                     return tree;
                 }
                 SourceFile source = (SourceFile) tree;
+
+                Optional<JavaVersion> maybeJavaVersion = source.getMarkers().findFirst(JavaVersion.class);
+                if (maybeJavaVersion.isPresent() && maybeJavaVersion.get().getMajorVersion() >= version) {
+                    // No change if try to downgrade java version, or on same java version.
+                    return source;
+                }
+
                 if (source instanceof G.CompilationUnit && new IsBuildGradle<ExecutionContext>().visit(source, ctx) != source) {
                     source = (SourceFile) new UpdateJavaCompatibility(version, null, null).getVisitor().visitNonNull(source, ctx);
                 } else if (source instanceof Xml.Document) {
                     source = (SourceFile) new MavenUpdateJavaVersionVisitor().visitNonNull(source, ctx);
                 }
 
-                Optional<JavaVersion> maybeJavaVersion = source.getMarkers().findFirst(JavaVersion.class);
                 if (maybeJavaVersion.isPresent()) {
-                    JavaVersion javaVersion = maybeJavaVersion.get();
-                    if (javaVersion.getMajorVersion() < version) {
-                        source = source.withMarkers(source.getMarkers().setByType(updatedMarkers.computeIfAbsent(javaVersion,
-                                m -> m.withSourceCompatibility(newVersion).withTargetCompatibility(newVersion))));
-                    }
+                    source =
+                        source.withMarkers(source.getMarkers().setByType(updatedMarkers.computeIfAbsent(maybeJavaVersion.get(),
+                        m -> m.withSourceCompatibility(newVersion).withTargetCompatibility(newVersion))));
                 }
+
                 return source;
             }
         };
