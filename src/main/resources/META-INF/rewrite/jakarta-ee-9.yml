@@ -926,7 +926,7 @@ description: >
 
 recipeList:
   # JAXB annotations support
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.module
       oldArtifactId: jackson-module-jaxb-annotations
       newGroupId: com.fasterxml.jackson.module
@@ -939,7 +939,7 @@ recipeList:
       newArtifactId: jackson-module-jakarta-xmlbind-annotations
       newVersion: 2.13.x
   # JAXRS providers
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-cbor-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
@@ -951,7 +951,7 @@ recipeList:
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-cbor-provider
       newVersion: 2.13.x
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-json-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
@@ -963,7 +963,7 @@ recipeList:
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-json-provider
       newVersion: 2.13.x
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-smile-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
@@ -975,7 +975,7 @@ recipeList:
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-smile-provider
       newVersion: 2.13.x
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-xml-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
@@ -987,7 +987,7 @@ recipeList:
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-xml-provider
       newVersion: 2.13.x
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-yaml-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
@@ -1000,7 +1000,7 @@ recipeList:
       newArtifactId: jackson-jakarta-rs-yaml-provider
       newVersion: 2.13.x
   # JSONP datatypes
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.datatype
       oldArtifactId: jackson-datatype-jsr353
       newGroupId: com.fasterxml.jackson.datatype
@@ -1012,7 +1012,7 @@ recipeList:
       newGroupId: com.fasterxml.jackson.datatype
       newArtifactId: jackson-datatype-jakarta-jsonp
       newVersion: 2.13.x
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.glassfish
       oldArtifactId: javax.json
       newGroupId: org.glassfish
