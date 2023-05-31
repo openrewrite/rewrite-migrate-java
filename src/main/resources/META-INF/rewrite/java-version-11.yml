@@ -91,7 +91,7 @@ recipeList:
       groupId: com.sun.xml.bind
       artifactId: jaxb-core
   # Change any existing places in the project poms that use the jaxb-api.
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.xml.bind
       oldArtifactId: jaxb-api
       newGroupId: jakarta.xml.bind
@@ -154,7 +154,7 @@ recipeList:
       groupId: com.sun.xml.ws
       artifactId: jaxws-ri
   # Change any existing places in the project poms that use the jaxb-api.
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.xml.ws
       oldArtifactId: jaxws-api
       newGroupId: jakarta.xml.ws

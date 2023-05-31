@@ -24,9 +24,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.gradle.Assertions.withToolingApi;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-public class AddJaxwsDependenciesTest implements RewriteTest {
+class AddJaxwsDependenciesTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -39,6 +41,48 @@ public class AddJaxwsDependenciesTest implements RewriteTest {
     @Test
     void addJaxwsRuntimeOnce() {
         rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+              
+              repositories {
+                  mavenCentral()
+              }
+              
+              dependencies {
+                  implementation "jakarta.xml.ws:jakarta.xml.ws-api:2.3.2"
+              }
+              """,
+            spec -> spec.after(buildGradle -> {
+                Matcher version = Pattern.compile("2\\.\\d+(\\.\\d+)?").matcher(buildGradle);
+                assertThat(version.find()).isTrue();
+                String rtVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String wsApiVersion = version.group(0);
+                //language=gradle
+                return """
+                  plugins {
+                      id "java-library"
+                  }
+                  
+                  repositories {
+                      mavenCentral()
+                  }
+                  
+                  dependencies {
+                      compileOnly "com.sun.xml.ws:jaxws-rt:%s"
+                  
+                      implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
+                  
+                      testImplementation "com.sun.xml.ws:jaxws-rt:%s"
+                  }
+                  """.formatted(rtVersion, wsApiVersion, rtVersion);
+            })
+          ),
           pomXml(
             //language=xml
             """
@@ -90,6 +134,52 @@ public class AddJaxwsDependenciesTest implements RewriteTest {
     @Test
     void removeReferenceImplementationRuntime() {
         rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+              
+              repositories {
+                  mavenCentral()
+              }
+              
+              dependencies {
+                  compileOnly "com.sun.xml.ws:jaxws-ri:2.3.2"
+              
+                  implementation "javax.xml.ws:jaxws-api:2.3.1"
+              
+                  testImplementation "com.sun.xml.ws:jaxws-ri:2.3.2"
+              }
+              """,
+            spec -> spec.after(buildGradle -> {
+                Matcher version = Pattern.compile("2\\.\\d+(\\.\\d+)?").matcher(buildGradle);
+                assertThat(version.find()).isTrue();
+                String rtVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String wsApiVersion = version.group(0);
+                //language=gradle
+                return """
+                  plugins {
+                      id "java-library"
+                  }
+                  
+                  repositories {
+                      mavenCentral()
+                  }
+                  
+                  dependencies {
+                      compileOnly "com.sun.xml.ws:jaxws-rt:%s"
+                  
+                      implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
+                  
+                      testImplementation "com.sun.xml.ws:jaxws-rt:%s"
+                  }
+                  """.formatted(rtVersion, wsApiVersion, rtVersion);
+            })
+          ),
           pomXml(
             //language=xml
             """
@@ -147,6 +237,52 @@ public class AddJaxwsDependenciesTest implements RewriteTest {
     @Test
     void renameAndUpdateApiAndRuntime() {
         rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+              
+              repositories {
+                  mavenCentral()
+              }
+              
+              dependencies {
+                  compileOnly "com.sun.xml.ws:jaxws-ri:2.3.2"
+              
+                  implementation "jakarta.xml.ws:jakarta.xml.ws-api:2.3.2"
+              
+                  testImplementation "com.sun.xml.ws:jaxws-ri:2.3.2"
+              }
+              """,
+            spec -> spec.after(buildGradle -> {
+                Matcher version = Pattern.compile("2\\.\\d+(\\.\\d+)?").matcher(buildGradle);
+                assertThat(version.find()).isTrue();
+                String rtVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String wsApiVersion = version.group(0);
+                //language=gradle
+                return """
+                  plugins {
+                      id "java-library"
+                  }
+                  
+                  repositories {
+                      mavenCentral()
+                  }
+                  
+                  dependencies {
+                      compileOnly "com.sun.xml.ws:jaxws-rt:%s"
+                  
+                      implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
+                  
+                      testImplementation "com.sun.xml.ws:jaxws-rt:%s"
+                  }
+                  """.formatted(rtVersion, wsApiVersion, rtVersion);
+            })
+          ),
           pomXml(
             //language=xml
             """
@@ -204,6 +340,48 @@ public class AddJaxwsDependenciesTest implements RewriteTest {
     @Test
     void renameAndUpdateApiAndAddRuntimeManagedDependencies() {
         rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+              
+              repositories {
+                  mavenCentral()
+              }
+              
+              dependencies {
+                  implementation "jakarta.xml.ws:jakarta.xml.ws-api:2.3.2"
+              }
+              """,
+            spec -> spec.after(buildGradle -> {
+                Matcher version = Pattern.compile("2\\.\\d+(\\.\\d+)?").matcher(buildGradle);
+                assertThat(version.find()).isTrue();
+                String rtVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String wsApiVersion = version.group(0);
+                //language=gradle
+                return """
+                  plugins {
+                      id "java-library"
+                  }
+                  
+                  repositories {
+                      mavenCentral()
+                  }
+                  
+                  dependencies {
+                      compileOnly "com.sun.xml.ws:jaxws-rt:%s"
+                  
+                      implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
+                  
+                      testImplementation "com.sun.xml.ws:jaxws-rt:%s"
+                  }
+                  """.formatted(rtVersion, wsApiVersion, rtVersion);
+            })
+          ),
           pomXml(
             //language=xml
             """
