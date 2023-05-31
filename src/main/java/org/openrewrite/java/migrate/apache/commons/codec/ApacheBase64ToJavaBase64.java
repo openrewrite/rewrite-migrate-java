@@ -16,7 +16,9 @@
 package org.openrewrite.java.migrate.apache.commons.codec;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
@@ -24,7 +26,6 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,23 +42,13 @@ public class ApacheBase64ToJavaBase64 extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public Set<String> getTags() {
         return new HashSet<>(Arrays.asList("apache", "commons"));
     }
 
     @Override
-    protected UsesType<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesType<>("org.apache.commons.codec.binary.Base64", false);
-    }
-
-    @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(new UsesType<>("org.apache.commons.codec.binary.Base64", false), new JavaIsoVisitor<ExecutionContext>() {
             private final MethodMatcher apacheEncodeToString = new MethodMatcher("org.apache.commons.codec.binary.Base64 encodeBase64String(byte[])");
             private final MethodMatcher apacheEncode64 = new MethodMatcher("org.apache.commons.codec.binary.Base64 encodeBase64(byte[])");
             private final MethodMatcher apacheDecode = new MethodMatcher("org.apache.commons.codec.binary.Base64 decodeBase64(..)");
@@ -81,13 +72,13 @@ public class ApacheBase64ToJavaBase64 extends Recipe {
                     templatePrefix = "Base64.getUrlEncoder().withoutPadding().encodeToString(#{anyArray()})";
                 }
                 if (templatePrefix != null) {
-                    JavaTemplate t = JavaTemplate.builder(this::getCursor, templatePrefix).imports("java.util.Base64").build();
+                    JavaTemplate t = JavaTemplate.builder(templatePrefix).imports("java.util.Base64").build();
                     maybeRemoveImport("org.apache.commons.codec.binary.Base64");
                     maybeAddImport("java.util.Base64");
-                    mi = mi.withTemplate(t, mi.getCoordinates().replace(), mi.getArguments().get(0));
+                    mi = mi.withTemplate(t, getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0));
                 }
                 return mi;
             }
-        };
+        });
     }
 }

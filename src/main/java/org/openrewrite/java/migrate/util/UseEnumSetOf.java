@@ -50,15 +50,9 @@ public class UseEnumSetOf extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(new UsesJavaVersion<>(9),
-                new UsesMethod<>(SET_OF));
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-
-        return new JavaIsoVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(9),
+                new UsesMethod<>(SET_OF)), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
@@ -77,8 +71,10 @@ public class UseEnumSetOf extends Recipe {
                             args.forEach(o -> setOf.add("#{any()}"));
                             return autoFormat(
                                     m.withTemplate(
-                                            JavaTemplate.builder(this::getCursor, "EnumSet.of(#{any()})")
+                                            JavaTemplate.builder("EnumSet.of(#{any()})")
+                                                    .context(getCursor())
                                                     .imports("java.util.EnumSet").build(),
+                                            getCursor(),
                                             m.getCoordinates().replace(),
                                             args.toArray()),
                                     ctx);
@@ -100,6 +96,6 @@ public class UseEnumSetOf extends Recipe {
                 }
                 return false;
             }
-        };
+        });
     }
 }

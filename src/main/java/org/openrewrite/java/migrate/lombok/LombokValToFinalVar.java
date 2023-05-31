@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
-import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
@@ -24,7 +24,8 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -50,15 +51,11 @@ public class LombokValToFinalVar extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
 //                new UsesJavaVersion<>(11),
                 new UsesType<>(LOMBOK_VAL, false));
-    }
-
-    @Override
-    protected LombokValToFinalVarVisitor getVisitor() {
-        return new LombokValToFinalVarVisitor();
+        return Preconditions.check(check, new LombokValToFinalVarVisitor());
     }
 
     private static class LombokValToFinalVarVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -81,13 +78,16 @@ public class LombokValToFinalVar extends Recipe {
                     args = new Object[]{nv.getSimpleName(), nv.getInitializer()};
                 }
                 varDecls = mv.withTemplate(
-                        JavaTemplate.builder(this::getCursor, finalVarVariableTemplateString)
+                        JavaTemplate.builder(finalVarVariableTemplateString)
+                                .context(getCursor())
                                 .javaParser(JavaParser.fromJavaVersion())
                                 .build(),
+                        getCursor(),
                         varDecls.getCoordinates().replace(), args);
 
                 if (nv.getInitializer() != null) {
-                    varDecls = varDecls.withVariables(ListUtils.map(varDecls.getVariables(), namedVar -> namedVar.withInitializer(namedVar.getInitializer().withPrefix(nv.getInitializer().getPrefix()))));
+                    varDecls = varDecls.withVariables(ListUtils.map(varDecls.getVariables(), namedVar -> namedVar
+                            .withInitializer(namedVar.getInitializer().withPrefix(nv.getInitializer().getPrefix()))));
                 }
 
 

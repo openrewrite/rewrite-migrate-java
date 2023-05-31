@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -24,10 +24,8 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -47,30 +45,16 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public Set<String> getTags() {
         return new HashSet<>(Arrays.asList("RSPEC-4738", "guava"));
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return Applicability.and(
-                new UsesJavaVersion<>(9),
-                new UsesType<>("com.google.common.base.Optional", false));
-    }
-
-    @Override
-    protected UsesMethod<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(METHOD_MATCHER);
-    }
-
-    @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
-        return new PreferJavaUtilOptionalOrSupplierVisitor();
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(
+                Preconditions.and(new UsesJavaVersion<>(9),
+                        new UsesMethod<>(METHOD_MATCHER)),
+                new PreferJavaUtilOptionalOrSupplierVisitor());
     }
 
     private static class PreferJavaUtilOptionalOrSupplierVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -87,9 +71,11 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
             J.MethodInvocation j = super.visitMethodInvocation(method, ctx);
             if (METHOD_MATCHER.matches(method)) {
                 j = j.withTemplate(
-                        JavaTemplate.builder(this::getCursor, "#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})")
+                        JavaTemplate.builder("#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})")
+                                .context(getCursor())
                                 .imports("java.util.Optional")
                                 .build(),
+                        getCursor(),
                         method.getCoordinates().replace(),
                         j.getSelect(),
                         j.getArguments().get(0)

@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.javax;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
@@ -103,13 +104,8 @@ public class AddJaxwsRuntime extends Recipe {
         }
 
         @Override
-        protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-            return new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor();
-        }
-
-        @Override
-        protected TreeVisitor<?, ExecutionContext> getVisitor() {
-            return new GroovyIsoVisitor<ExecutionContext>() {
+        public TreeVisitor<?, ExecutionContext> getVisitor() {
+            return Preconditions.check(new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(), new GroovyIsoVisitor<ExecutionContext>() {
                 @Override
                 public G.CompilationUnit visitCompilationUnit(G.CompilationUnit cu, ExecutionContext ctx) {
                     G.CompilationUnit g = cu;
@@ -175,7 +171,7 @@ public class AddJaxwsRuntime extends Recipe {
 
                     return configurations;
                 }
-            };
+            });
         }
     }
 
@@ -196,7 +192,7 @@ public class AddJaxwsRuntime extends Recipe {
         }
 
         @Override
-        protected TreeVisitor<?, ExecutionContext> getVisitor() {
+        public TreeVisitor<?, ExecutionContext> getVisitor() {
             return new MavenIsoVisitor<ExecutionContext>() {
                 @SuppressWarnings({"ReassignedVariable", "ConstantConditions"})
                 @Override

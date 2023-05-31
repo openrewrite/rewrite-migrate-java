@@ -17,13 +17,12 @@ package org.openrewrite.java.migrate.metrics;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -33,11 +32,6 @@ public class SimplifyMicrometerMeterTags extends Recipe {
     @Override
     public String getDisplayName() {
         return "Simplify [Micrometer](https://micrometer.io) meter tags";
-    }
-
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
     }
 
     @Override
@@ -51,7 +45,7 @@ public class SimplifyMicrometerMeterTags extends Recipe {
     }
 
     @Override
-    protected JavaVisitor<ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -60,12 +54,12 @@ public class SimplifyMicrometerMeterTags extends Recipe {
                     if (m.getArguments().get(0) instanceof J.NewArray) {
                         J.NewArray arr = (J.NewArray) m.getArguments().get(0);
                         if (arr.getInitializer() != null && arr.getInitializer().size() > 1) {
-                            m = m.withTemplate(JavaTemplate.builder(this::getCursor, "#{any(String)}, #{any(String)}").build(),
-                                    m.getCoordinates().replaceArguments(), arr.getInitializer().get(0), arr.getInitializer().get(1));
+                            m = m.withTemplate(JavaTemplate.builder("#{any(String)}, #{any(String)}").context(getCursor()).build(),
+                                    getCursor(), m.getCoordinates().replaceArguments(), arr.getInitializer().get(0), arr.getInitializer().get(1));
                         }
                     } else {
-                        m = m.withTemplate(JavaTemplate.builder(this::getCursor, "#{any()}[0], #{any()}[1]").build(),
-                                m.getCoordinates().replaceArguments(), m.getArguments().get(0), m.getArguments().get(0));
+                        m = m.withTemplate(JavaTemplate.builder("#{any()}[0], #{any()}[1]").context(getCursor()).build(),
+                                getCursor(), m.getCoordinates().replaceArguments(), m.getArguments().get(0), m.getArguments().get(0));
                     }
                     m = m.withName(m.getName().withSimpleName("tag"));
                 }

@@ -23,17 +23,11 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
 public class MigrateDriverManagerSetLogStream extends Recipe {
     private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.sql.DriverManager setLogStream(java.io.PrintStream)");
-
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
 
     @Override
     public String getDisplayName() {
@@ -51,9 +45,9 @@ public class MigrateDriverManagerSetLogStream extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
-            final JavaTemplate template = JavaTemplate.builder(this::getCursor, "new java.io.PrintWriter(#{any(java.io.PrintStream)})")
+            final JavaTemplate template = JavaTemplate.builder("new java.io.PrintWriter(#{any(java.io.PrintStream)})")
                     .build();
 
             @Override
@@ -63,6 +57,7 @@ public class MigrateDriverManagerSetLogStream extends Recipe {
                 if (METHOD_MATCHER.matches(m)) {
                     m = method.withName(m.getName().withSimpleName("setLogWriter"))
                             .withTemplate(template,
+                                    getCursor(),
                                     m.getCoordinates().replaceArguments(),
                                     m.getArguments().get(0));
                 }

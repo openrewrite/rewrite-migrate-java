@@ -15,18 +15,16 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.openrewrite.Cursor;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Recipe;
+import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,28 +41,13 @@ public class NoGuavaCreateTempDir extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public Set<String> getTags() {
         return new HashSet<>(Arrays.asList("RSPEC-4738", "guava"));
     }
 
     @Override
-    protected UsesType<ExecutionContext> getApplicableTest() {
-        return new UsesType<>("com.google.common.io.Files", false);
-    }
-
-    @Override
-    protected UsesMethod<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>("com.google.common.io.Files createTempDir()");
-    }
-
-    @Override
-    protected NoGuavaTempDirVisitor getVisitor() {
-        return new NoGuavaTempDirVisitor();
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(new UsesMethod<>("com.google.common.io.Files createTempDir()"),  new NoGuavaTempDirVisitor());
     }
 
     private static class NoGuavaTempDirVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -108,9 +91,10 @@ public class NoGuavaCreateTempDir extends Recipe {
         }
 
         private J.MethodInvocation toFilesCreateTempDir(J.MethodInvocation methodInvocation) {
-            JavaTemplate t = JavaTemplate.builder(this::getCursor, "Files.createTempDirectory(null).toFile()")
-                    .imports("java.nio.file.Files", "java.io.File").build();
-            return methodInvocation.withTemplate(t, methodInvocation.getCoordinates().replace());
+            JavaTemplate t = JavaTemplate.builder("Files.createTempDirectory(null).toFile()")
+                    .imports("java.nio.file.Files", "java.io.File")
+                    .build();
+            return methodInvocation.withTemplate(t, getCursor(), methodInvocation.getCoordinates().replace());
         }
     }
 }

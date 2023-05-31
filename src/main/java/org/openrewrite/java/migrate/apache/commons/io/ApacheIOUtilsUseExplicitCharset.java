@@ -17,10 +17,7 @@ package org.openrewrite.java.migrate.apache.commons.io;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Option;
-import org.openrewrite.Recipe;
-import org.openrewrite.Validated;
+import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
@@ -30,7 +27,6 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -88,14 +84,9 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
     }
 
     @Override
-    protected UsesType<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesType<>("org.apache.commons.io.IOUtils", false);
-    }
-
-    @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            private final Supplier<JavaParser> parserSupplier = () -> JavaParser.fromJavaVersion().classpath("commons-io").build();
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(new UsesType<>("org.apache.commons.io.IOUtils", false), new JavaIsoVisitor<ExecutionContext>() {
+            private final JavaParser.Builder<?, ?> javaParser = JavaParser.fromJavaVersion().classpath("commons-io");
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -104,18 +95,23 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
                     mi = mi.withSelect(method.getArguments().get(0));
                     //noinspection ConstantConditions
                     mi = mi.withMethodType(mi.getMethodType().withName("getBytes"));
-                    mi = mi.withTemplate(JavaTemplate.builder(this::getCursor, "#{any(String)}.getBytes(StandardCharsets.#{})}")
-                                    .javaParser(parserSupplier)
-                                    .imports("java.nio.charset.StandardCharsets").build(),
+                    mi = mi.withTemplate(JavaTemplate.builder("#{any(String)}.getBytes(StandardCharsets.#{})}")
+                                    .javaParser(javaParser)
+                                    .imports("java.nio.charset.StandardCharsets")
+                                    .build(),
+                            getCursor(),
                             mi.getCoordinates().replaceMethod(), mi.getArguments().get(0), encoding == null ? "UTF_8" : encoding);
                 } else {
                     for (Map.Entry<MethodMatcher, String> entry : MATCHER_TEMPLATES.entrySet()) {
                         if (entry.getKey().matches(mi)) {
                             List<Object> args = new ArrayList<>(mi.getArguments());
                             args.add(encoding == null ? "UTF_8" : encoding);
-                            mi = mi.withTemplate(JavaTemplate.builder(this::getCursor, entry.getValue())
-                                            .javaParser(parserSupplier)
-                                            .imports("java.nio.charset.StandardCharsets").build(),
+                            mi = mi.withTemplate(JavaTemplate.builder(entry.getValue())
+                                            .context(this::getCursor)
+                                            .javaParser(javaParser)
+                                            .imports("java.nio.charset.StandardCharsets")
+                                            .build(),
+                                    getCursor(),
                                     mi.getCoordinates().replaceMethod(), args.toArray());
                         }
                     }
@@ -125,6 +121,6 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
                 }
                 return mi;
             }
-        };
+        });
     }
 }

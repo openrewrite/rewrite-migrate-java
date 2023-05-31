@@ -16,9 +16,9 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -26,7 +26,6 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -46,40 +45,28 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public Set<String> getTags() {
         return Collections.singleton("guava");
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-                doAfterVisit(new UsesMethod<>(NEW_LINKED_HASH_SET));
-                doAfterVisit(new UsesMethod<>(NEW_LINKED_HASH_SET_ITERABLE));
-                doAfterVisit(new UsesMethod<>(NEW_LINKED_HASH_SET_CAPACITY));
-                return cu;
-            }
-        };
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newLinkedHashSet = JavaTemplate.builder(this::getCursor, "new LinkedHashSet<>()")
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(Preconditions.or(
+                new UsesMethod<>(NEW_LINKED_HASH_SET),
+                new UsesMethod<>(NEW_LINKED_HASH_SET_ITERABLE),
+                new UsesMethod<>(NEW_LINKED_HASH_SET_CAPACITY)), new JavaVisitor<ExecutionContext>() {
+            final JavaTemplate newLinkedHashSet = JavaTemplate.builder("new LinkedHashSet<>()")
+                    .context(this::getCursor)
                     .imports("java.util.LinkedHashSet")
                     .build();
 
-            private final JavaTemplate newLinkedHashSetCollection = JavaTemplate.builder(this::getCursor, "new LinkedHashSet<>(#{any(java.util.Collection)})")
+            final JavaTemplate newLinkedHashSetCollection = JavaTemplate.builder("new LinkedHashSet<>(#{any(java.util.Collection)})")
+                    .context(this::getCursor)
                     .imports("java.util.LinkedHashSet")
                     .build();
 
-            private final JavaTemplate newLinkedHashSetCapacity = JavaTemplate.builder(this::getCursor, "new LinkedHashSet<>(#{any(int)})")
+            final JavaTemplate newLinkedHashSetCapacity = JavaTemplate.builder("new LinkedHashSet<>(#{any(int)})")
+                    .context(this::getCursor)
                     .imports("java.util.LinkedHashSet")
                     .build();
 
@@ -88,21 +75,21 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
                 if (NEW_LINKED_HASH_SET.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
-                    return method.withTemplate(newLinkedHashSet, method.getCoordinates().replace());
+                    return method.withTemplate(newLinkedHashSet, getCursor(), method.getCoordinates().replace());
                 } else if (NEW_LINKED_HASH_SET_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
-                           TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
+                        TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
-                    return method.withTemplate(newLinkedHashSetCollection, method.getCoordinates().replace(),
+                    return method.withTemplate(newLinkedHashSetCollection, getCursor(), method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 } else if (NEW_LINKED_HASH_SET_CAPACITY.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
-                    return method.withTemplate(newLinkedHashSetCapacity, method.getCoordinates().replace(),
+                    return method.withTemplate(newLinkedHashSetCapacity, getCursor(), method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 }
                 return super.visitMethodInvocation(method, ctx);
             }
-        };
+        });
     }
 }

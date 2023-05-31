@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.logging;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -23,8 +24,6 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.time.Duration;
 
 public class MigrateLoggerGlobalToGetGlobal extends Recipe {
     @Override
@@ -38,33 +37,22 @@ public class MigrateLoggerGlobalToGetGlobal extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesType<>("java.util.logging.Logger", false);
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(new UsesType<>("java.util.logging.Logger", false), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitFieldAccess(J.FieldAccess fieldAccess, ExecutionContext ctx) {
                 J j = super.visitFieldAccess(fieldAccess, ctx);
                 J.FieldAccess asFieldAccess = (J.FieldAccess) j;
 
                 if (TypeUtils.isOfClassType(asFieldAccess.getTarget().getType(), "java.util.logging.Logger") && "global".equals(asFieldAccess.getSimpleName())) {
-                    j = j.withTemplate(JavaTemplate.builder(() -> getCursor().getParent(), "Logger.getGlobal();").build(),
+                    j = j.withTemplate(JavaTemplate.builder("Logger.getGlobal();").imports("java.util.logging.Logger").build(),
+                            getCursor(),
                             ((J.FieldAccess) j).getCoordinates().replace());
                 }
 
                 return j;
             }
-        };
-
-
+        });
     }
 
 }

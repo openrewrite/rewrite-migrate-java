@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -24,7 +25,6 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -34,11 +34,6 @@ public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
     @Override
     public String getDisplayName() {
         return "Prefer `new ConcurrentHashMap<>()`";
-    }
-
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
     }
 
     @Override
@@ -52,14 +47,10 @@ public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return new UsesMethod<>(NEW_HASH_SET);
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newConcurrentHashSet = JavaTemplate.builder(this::getCursor, "Collections.newSetFromMap(new ConcurrentHashMap<>())")
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(new UsesMethod<>(NEW_HASH_SET), new JavaVisitor<ExecutionContext>() {
+            private final JavaTemplate newConcurrentHashSet = JavaTemplate.builder("Collections.newSetFromMap(new ConcurrentHashMap<>())")
+                    .context(this::getCursor)
                     .imports("java.util.Collections")
                     .imports("java.util.concurrent.ConcurrentHashMap")
                     .build();
@@ -70,10 +61,10 @@ public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.Collections");
                     maybeAddImport("java.util.concurrent.ConcurrentHashMap");
-                    return method.withTemplate(newConcurrentHashSet, method.getCoordinates().replace());
+                    return method.withTemplate(newConcurrentHashSet, getCursor(), method.getCoordinates().replace());
                 }
                 return super.visitMethodInvocation(method, ctx);
             }
-        };
+        });
     }
 }

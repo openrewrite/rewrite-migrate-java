@@ -26,6 +26,7 @@ dependencies {
     implementation("org.openrewrite:rewrite-gradle")
     implementation("org.openrewrite.recipe:rewrite-github-actions:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-java-dependencies:$rewriteVersion")
+    implementation("org.openrewrite.recipe:rewrite-static-analysis:$rewriteVersion")
     implementation("org.openrewrite.gradle.tooling:model:$rewriteVersion")
 
     runtimeOnly("org.openrewrite:rewrite-java-8")

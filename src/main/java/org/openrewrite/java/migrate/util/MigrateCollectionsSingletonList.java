@@ -15,17 +15,18 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.*;
+import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.NoMissingTypes;
+import org.openrewrite.java.PartProvider;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
-
-import java.time.Duration;
 
 public class MigrateCollectionsSingletonList extends Recipe {
     private static final MethodMatcher SINGLETON_LIST = new MethodMatcher("java.util.Collections singletonList(..)", true);
@@ -38,24 +39,15 @@ public class MigrateCollectionsSingletonList extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public String getDescription() {
         return "Prefer `List.of(..)` instead of using `Collections.singletonList()` in Java 9 or higher.";
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(new UsesJavaVersion<>(9),
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
                 new UsesMethod<>(SINGLETON_LIST), new NoMissingTypes());
-    }
-
-    @Override
-    protected JavaVisitor<ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(check,  new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
@@ -67,7 +59,7 @@ public class MigrateCollectionsSingletonList extends Recipe {
 
                 return m;
             }
-        };
+        });
     }
 
     private static J.MethodInvocation getListOfTemplate() {

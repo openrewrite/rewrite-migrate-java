@@ -23,7 +23,6 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -40,19 +39,15 @@ public class MigrateClassLoaderDefineClass extends Recipe {
         return "Use `ClassLoader#defineClass(String, byte[], int, int)` instead of the deprecated `ClassLoader#defineClass(byte[], int, int)` in Java 1.1 or higher.";
     }
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
     public Set<String> getTags() {
         return Collections.singleton("deprecated");
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
-            final JavaTemplate template = JavaTemplate.builder(this::getCursor, "null, #{anyArray(byte)}, #{any(int)}, #{any(int)}")
+            final JavaTemplate template = JavaTemplate.builder("null, #{anyArray(byte)}, #{any(int)}, #{any(int)}")
+                    .context(this::getCursor)
                     .build();
 
             @Override
@@ -61,6 +56,7 @@ public class MigrateClassLoaderDefineClass extends Recipe {
 
                 if (DEFINE_CLASS_MATCHER.matches(m) && m.getArguments().size() == 3) {
                     m = method.withTemplate(template,
+                            getCursor(),
                             m.getCoordinates().replaceArguments(),
                             m.getArguments().get(0),
                             m.getArguments().get(1),

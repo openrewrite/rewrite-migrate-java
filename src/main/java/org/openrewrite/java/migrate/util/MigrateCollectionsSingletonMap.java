@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -27,7 +27,6 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -40,24 +39,16 @@ public class MigrateCollectionsSingletonMap extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-    
-    @Override
     public String getDescription() {
         return "Prefer `Map.Of(..)` instead of using `Collections.singletonMap()` in Java 9 or higher.";
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(new UsesJavaVersion<>(9),
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
                 new UsesMethod<>(SINGLETON_MAP));
-    }
 
-    @Override
-    protected JavaVisitor<ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
@@ -69,10 +60,11 @@ public class MigrateCollectionsSingletonMap extends Recipe {
                     args.forEach(o -> mapOf.add("#{any()}"));
 
                     return autoFormat(m.withTemplate(
-                            JavaTemplate
-                                    .builder(this::getCursor, mapOf.toString())
+                            JavaTemplate.builder(mapOf.toString())
+                                    .context(getCursor())
                                     .imports("java.util.Map")
                                     .build(),
+                            getCursor(),
                             m.getCoordinates().replace(),
                             m.getArguments().toArray()
                     ), ctx);
@@ -80,6 +72,6 @@ public class MigrateCollectionsSingletonMap extends Recipe {
 
                 return m;
             }
-        };
+        });
     }
 }

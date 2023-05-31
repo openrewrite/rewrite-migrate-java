@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.logging;
 
-import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -26,7 +26,6 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -43,33 +42,25 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
         return "Use `LogRecord#setInstant(Instant)` instead of the deprecated `LogRecord#setMillis(long)` in Java 9 or higher.";
     }
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
     public Set<String> getTags() {
         return Collections.singleton("deprecated");
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(9),
                 new UsesMethod<>(MATCHER));
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = method;
                 if (MATCHER.matches(m)) {
                     m = m.withName(m.getName().withSimpleName("setInstant")).withTemplate(
-                            JavaTemplate.builder(this::getCursor, "Instant.ofEpochMilli(#{any(long)})")
+                            JavaTemplate.builder("Instant.ofEpochMilli(#{any(long)})")
                                     .imports("java.time.Instant")
                                     .build(),
+                            getCursor(),
                             m.getCoordinates().replaceArguments(),
                             m.getArguments().get(0)
                     );
@@ -77,7 +68,6 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
                 }
                 return super.visitMethodInvocation(m, ctx);
             }
-        };
+        });
     }
-
 }

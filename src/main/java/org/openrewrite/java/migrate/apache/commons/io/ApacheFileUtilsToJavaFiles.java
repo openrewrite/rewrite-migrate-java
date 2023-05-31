@@ -16,15 +16,15 @@
 package org.openrewrite.java.migrate.apache.commons.io;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaSourceFile;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,56 +41,46 @@ public class ApacheFileUtilsToJavaFiles extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
-    protected UsesType<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesType<>("org.apache.commons.io.FileUtils", false);
-    }
-
-    @Override
     public Set<String> getTags() {
         return new HashSet<>(Arrays.asList("apache", "commons"));
     }
 
     @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(new UsesType<>("org.apache.commons.io.FileUtils", false), new JavaIsoVisitor<ExecutionContext>() {
             private final MethodMatcher readFileToByteArrayMatcher = new MethodMatcher("org.apache.commons.io.FileUtils readFileToByteArray(java.io.File)");
             private final MethodMatcher readLinesToByteArrayMatcher = new MethodMatcher("org.apache.commons.io.FileUtils readLines(java.io.File)");
             private final MethodMatcher readLinesWithCharsetToByteArrayMatcher = new MethodMatcher("org.apache.commons.io.FileUtils readLines(java.io.File, java.nio.charset.Charset)");
             private final MethodMatcher readLinesWithCharsetIdToByteArrayMatcher = new MethodMatcher("org.apache.commons.io.FileUtils readLines(java.io.File, String)");
 
             @Override
-            public JavaSourceFile visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
-                JavaSourceFile sf = super.visitJavaSourceFile(cu, ctx);
-                if (sf != cu) {
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                J.CompilationUnit c = super.visitCompilationUnit(cu, ctx);
+                if (c != cu) {
                     maybeAddImport("java.nio.file.Files");
                     maybeRemoveImport("org.apache.commons.io.FileUtils");
                 }
-                return sf;
+                return c;
             }
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
                 if (readFileToByteArrayMatcher.matches(mi)) {
-                    return mi.withTemplate(JavaTemplate.builder(this::getCursor, "Files.readAllBytes(#{any(java.io.File)}.toPath())")
-                            .imports("java.nio.file.Files").build(), mi.getCoordinates().replace(), mi.getArguments().get(0));
+                    return mi.withTemplate(JavaTemplate.builder("Files.readAllBytes(#{any(java.io.File)}.toPath())")
+                            .imports("java.nio.file.Files").build(), getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0));
                 } else if (readLinesToByteArrayMatcher.matches(mi)) {
-                    return mi.withTemplate(JavaTemplate.builder(this::getCursor, "Files.readAllLines(#{any(java.io.File)}.toPath())")
-                            .imports("java.nio.file.Files").build(), mi.getCoordinates().replace(), mi.getArguments().get(0));
+                    return mi.withTemplate(JavaTemplate.builder("Files.readAllLines(#{any(java.io.File)}.toPath())")
+                            .imports("java.nio.file.Files").build(), getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0));
                 } else if (readLinesWithCharsetToByteArrayMatcher.matches(mi)) {
-                    return mi.withTemplate(JavaTemplate.builder(this::getCursor, "Files.readAllLines(#{any(java.io.File)}.toPath(), #{any(java.nio.charset.Charset)})")
-                            .imports("java.nio.file.Files", "java.nio.charset.Charset").build(), mi.getCoordinates().replace(), mi.getArguments().get(0), mi.getArguments().get(1));
+                    return mi.withTemplate(JavaTemplate.builder("Files.readAllLines(#{any(java.io.File)}.toPath(), #{any(java.nio.charset.Charset)})")
+                            .imports("java.nio.file.Files", "java.nio.charset.Charset").build(), getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0), mi.getArguments().get(1));
                 } else if (readLinesWithCharsetIdToByteArrayMatcher.matches(mi)) {
-                    return mi.withTemplate(JavaTemplate.builder(this::getCursor, "Files.readAllLines(#{any(java.io.File)}.toPath(), Charset.forName(#{any(String)}))")
-                            .imports("java.nio.file.Files", "java.nio.charset.Charset").build(), mi.getCoordinates().replace(), mi.getArguments().get(0), mi.getArguments().get(1));
+                    return mi.withTemplate(JavaTemplate.builder("Files.readAllLines(#{any(java.io.File)}.toPath(), Charset.forName(#{any(String)}))")
+                            .imports("java.nio.file.Files", "java.nio.charset.Charset").build(), getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0), mi.getArguments().get(1));
                 }
                 return mi;
             }
-        };
+        });
     }
 }

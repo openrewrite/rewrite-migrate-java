@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -26,7 +26,6 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.StringJoiner;
 
 public class UseLocaleOf extends Recipe {
@@ -38,25 +37,16 @@ public class UseLocaleOf extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public String getDescription() {
         return "Prefer `Locale.of(..)` over `new Locale(..)` in Java 19 or higher.";
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(19),
                 new UsesMethod<>(NEW_LOCALE));
-    }
-
-    @Override
-    protected JavaVisitor<ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                 J.NewClass nc = (J.NewClass) super.visitNewClass(newClass, ctx);
@@ -64,16 +54,16 @@ public class UseLocaleOf extends Recipe {
                     StringJoiner localeOf = new StringJoiner(", ", "Locale.of(", ")");
                     nc.getArguments().forEach(a -> localeOf.add("#{any(String)}"));
                     return autoFormat(nc.withTemplate(
-                            JavaTemplate
-                                    .builder(this::getCursor, localeOf.toString())
+                            JavaTemplate.builder(localeOf.toString())
                                     .imports("java.util.Locale")
                                     .build(),
+                            getCursor(),
                             nc.getCoordinates().replace(),
                             nc.getArguments().toArray()
                     ), ctx);
                 }
                 return nc;
             }
-        };
+        });
     }
 }

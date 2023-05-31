@@ -17,10 +17,7 @@ package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Option;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.search.FindGradleProject;
@@ -117,20 +114,15 @@ public class AddJaxbRuntime extends Recipe {
         }
 
         @Override
-        protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-            return new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor();
-        }
-
-        @Override
-        protected TreeVisitor<?, ExecutionContext> getVisitor() {
-            return new GroovyIsoVisitor<ExecutionContext>() {
+        public TreeVisitor<?, ExecutionContext> getVisitor() {
+            return Preconditions.check(new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(), new GroovyIsoVisitor<ExecutionContext>() {
                 @Override
                 public G.CompilationUnit visitCompilationUnit(G.CompilationUnit cu, ExecutionContext ctx) {
                     G.CompilationUnit g = cu;
                     if ("sun".equals(runtime)) {
                         if (getAfterVisit().isEmpty()) {
                             // Upgrade any previous runtimes to the most current 2.3.x version
-                            doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null));
+                            doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
                         }
                         g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
                                 SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null
@@ -138,7 +130,7 @@ public class AddJaxbRuntime extends Recipe {
                     } else {
                         if (getAfterVisit().isEmpty()) {
                             // Upgrade any previous runtimes to the most current 2.3.x version
-                            doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null));
+                            doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
                         }
                         g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
                                 GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null
@@ -219,7 +211,7 @@ public class AddJaxbRuntime extends Recipe {
                             new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, configuration, null, null, null, null) :
                             new org.openrewrite.gradle.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, configuration, null, null, null, null);
                 }
-            };
+            });
         }
     }
 
@@ -242,7 +234,7 @@ public class AddJaxbRuntime extends Recipe {
         }
 
         @Override
-        protected TreeVisitor<?, ExecutionContext> getVisitor() {
+        public TreeVisitor<?, ExecutionContext> getVisitor() {
             return new MavenIsoVisitor<ExecutionContext>() {
                 @SuppressWarnings("ConstantConditions")
                 @Override
@@ -253,7 +245,7 @@ public class AddJaxbRuntime extends Recipe {
                     if ("sun".equals(runtime)) {
                         if (getAfterVisit().isEmpty()) {
                             //Upgrade any previous runtimes to the most current 2.3.x version
-                            doAfterVisit(new org.openrewrite.maven.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null));
+                            doAfterVisit(new org.openrewrite.maven.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null).getVisitor());
                         }
                         d = (Xml.Document) new org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId(
                                 GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
@@ -266,7 +258,7 @@ public class AddJaxbRuntime extends Recipe {
                     } else {
                         if (getAfterVisit().isEmpty()) {
                             //Upgrade any previous runtimes to the most current 2.3.x version
-                            doAfterVisit(new org.openrewrite.maven.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null));
+                            doAfterVisit(new org.openrewrite.maven.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null).getVisitor());
                         }
                         d = (Xml.Document) new org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId(
                                 SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
