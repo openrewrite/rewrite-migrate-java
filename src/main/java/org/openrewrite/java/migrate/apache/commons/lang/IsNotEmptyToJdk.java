@@ -90,7 +90,7 @@ public class IsNotEmptyToJdk extends Recipe {
                     maybeRemoveImport("org.codehaus.plexus.util.StringUtils");
 
                     // Remove excess parentheses
-                    doAfterVisit(new org.openrewrite.java.cleanup.UnnecessaryParentheses());
+                    doAfterVisit(new org.openrewrite.java.cleanup.UnnecessaryParentheses().getVisitor());
 
                     return mi.withTemplate(replacementTemplate, getCursor(), mi.getCoordinates().replace(), arg, arg);
                 }

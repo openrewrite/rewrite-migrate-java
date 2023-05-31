@@ -75,7 +75,7 @@ public class AddSuppressionForIllegalReflectionWarningsPlugin extends Recipe {
                                         "    </archive>\n" +
                                         "</configuration>";
 
-                        doAfterVisit(new AddPlugin(groupId, artifactId, version, configuration, null, null));
+                        doAfterVisit(new AddPlugin(groupId, artifactId, version, configuration, null, null).getVisitor());
                     }
                 }
                 return t;

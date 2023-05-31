@@ -74,6 +74,16 @@ public class AddJaxbRuntime extends Recipe {
     }
 
     @Override
+    public List<Recipe> getRecipeList() {
+        //Upgrade any previous runtimes to the most current 2.3.x version
+        if ("sun".equals(runtime)) {
+            return Collections.singletonList(new UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null));
+        } else {
+            return Collections.singletonList(new UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null));
+        }
+    }
+
+    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MavenIsoVisitor<ExecutionContext>() {
             @SuppressWarnings("ConstantConditions")
@@ -83,10 +93,6 @@ public class AddJaxbRuntime extends Recipe {
 
                 //Normalize any existing runtimes to the one selected in this recipe.
                 if ("sun".equals(runtime)) {
-                    if (getRecipeList().isEmpty()) {
-                        //Upgrade any previous runtimes to the most current 2.3.x version
-                        doAfterVisit(new UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null));
-                    }
                     d = (Xml.Document) new ChangeDependencyGroupIdAndArtifactId(
                             GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
                             SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.2", null
@@ -96,10 +102,6 @@ public class AddJaxbRuntime extends Recipe {
                             SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.2"
                     ).getVisitor().visit(d, ctx);
                 } else {
-                    if (getRecipeList().isEmpty()) {
-                        //Upgrade any previous runtimes to the most current 2.3.x version
-                        doAfterVisit(new UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null));
-                    }
                     d = (Xml.Document) new ChangeDependencyGroupIdAndArtifactId(
                             SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
                             GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.2", null
