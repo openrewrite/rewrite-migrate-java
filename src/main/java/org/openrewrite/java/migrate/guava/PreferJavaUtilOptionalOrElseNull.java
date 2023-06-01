@@ -66,7 +66,7 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
                 mi = mi.withName(mi.getName().withSimpleName("orElse"));
                 mi = JavaTemplate.builder("null")
                         .build()
-                        .apply(new Cursor(getCursor().getParent(), mi), mi.getCoordinates().replaceArguments());
+                        .apply(updateCursor(mi), mi.getCoordinates().replaceArguments());
             }
             return mi;
         }

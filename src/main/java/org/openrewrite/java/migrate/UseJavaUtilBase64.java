@@ -103,12 +103,12 @@ public class UseJavaUtilBase64 extends Recipe {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (base64EncodeMethod.matches(m) &&
                     ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
-                    m = encodeToString.apply(getCursor(), m.getCoordinates().replace(), method.getArguments().get(0));
+                    m = encodeToString.apply(updateCursor(m), m.getCoordinates().replace(), method.getArguments().get(0));
                     if (method.getSelect() instanceof J.Identifier) {
                         m = m.withSelect(method.getSelect());
                     }
                 } else if (base64DecodeBuffer.matches(method)) {
-                    m = decode.apply(getCursor(), m.getCoordinates().replace(), method.getArguments().get(0));
+                    m = decode.apply(updateCursor(m), m.getCoordinates().replace(), method.getArguments().get(0));
                     if (method.getSelect() instanceof J.Identifier) {
                         m = m.withSelect(method.getSelect());
                     }
@@ -127,9 +127,9 @@ public class UseJavaUtilBase64 extends Recipe {
                     // noinspection Convert2MethodRef
                     return JavaTemplate.compile(this, "getEncoder", () -> Base64.getEncoder())
                             .build()
-                            .apply(getCursor(), c.getCoordinates().replace());
+                            .apply(updateCursor(c), c.getCoordinates().replace());
                 } else if (newBase64Decoder.matches(c)) {
-                    return getDecoderTemplate.apply(getCursor(), c.getCoordinates().replace());
+                    return getDecoderTemplate.apply(updateCursor(c), c.getCoordinates().replace());
                 }
                 return c;
             }

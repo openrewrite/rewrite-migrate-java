@@ -75,7 +75,7 @@ public class ApacheBase64ToJavaBase64 extends Recipe {
                     JavaTemplate t = JavaTemplate.builder(templatePrefix).imports("java.util.Base64").build();
                     maybeRemoveImport("org.apache.commons.codec.binary.Base64");
                     maybeAddImport("java.util.Base64");
-                    mi = t.apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0));
+                    mi = t.apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getArguments().get(0));
                 }
                 return mi;
             }

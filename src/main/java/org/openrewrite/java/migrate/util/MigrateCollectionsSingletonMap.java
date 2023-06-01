@@ -45,10 +45,7 @@ public class MigrateCollectionsSingletonMap extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
-                new UsesMethod<>(SINGLETON_MAP));
-
-        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(9), new UsesMethod<>(SINGLETON_MAP)), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
@@ -64,7 +61,7 @@ public class MigrateCollectionsSingletonMap extends Recipe {
                             .imports("java.util.Map")
                             .build()
                             .apply(
-                                    getCursor(),
+                                    updateCursor(m),
                                     m.getCoordinates().replace(),
                                     m.getArguments().toArray());
                 }

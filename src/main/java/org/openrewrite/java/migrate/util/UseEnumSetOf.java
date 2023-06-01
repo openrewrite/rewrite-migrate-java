@@ -73,10 +73,7 @@ public class UseEnumSetOf extends Recipe {
                                     .contextSensitive()
                                     .imports("java.util.EnumSet")
                                     .build()
-                                    .apply(
-                                            getCursor(),
-                                            m.getCoordinates().replace(),
-                                            args.toArray());
+                                    .apply(updateCursor(m), m.getCoordinates().replace(), args.toArray());
                         }
                     }
                 }

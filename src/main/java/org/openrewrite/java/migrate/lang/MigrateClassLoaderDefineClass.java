@@ -55,7 +55,8 @@ public class MigrateClassLoaderDefineClass extends Recipe {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
                 if (DEFINE_CLASS_MATCHER.matches(m) && m.getArguments().size() == 3) {
-                    m = template.apply(getCursor(),
+                    m = template.apply(
+                            updateCursor(m),
                             m.getCoordinates().replaceArguments(),
                             m.getArguments().get(0),
                             m.getArguments().get(1),

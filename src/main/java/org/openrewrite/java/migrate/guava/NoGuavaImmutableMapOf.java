@@ -106,7 +106,7 @@ public class NoGuavaImmutableMapOf extends Recipe {
                             .imports("java.util.Map")
                             .build()
                             .apply(
-                                    getCursor(),
+                                    updateCursor(method),
                                     method.getCoordinates().replace(),
                                     method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                 }

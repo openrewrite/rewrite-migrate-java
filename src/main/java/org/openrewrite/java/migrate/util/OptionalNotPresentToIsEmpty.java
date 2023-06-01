@@ -70,9 +70,7 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
                                 return JavaTemplate.builder("#{any()}.isEmpty()")
                                         .contextSensitive()
                                         .build()
-                                        .apply(getCursor(),
-                                                statement.getCoordinates().replace(),
-                                                methodInvocation.getSelect());
+                                        .apply(getCursor(), statement.getCoordinates().replace(), methodInvocation.getSelect());
                             }
                         }
                     }

@@ -94,7 +94,7 @@ public class NoGuavaCreateTempDir extends Recipe {
             return JavaTemplate.builder("Files.createTempDirectory(null).toFile()")
                     .imports("java.nio.file.Files", "java.io.File")
                     .build()
-                    .apply(getCursor(), methodInvocation.getCoordinates().replace());
+                    .apply(updateCursor(methodInvocation), methodInvocation.getCoordinates().replace());
         }
     }
 }

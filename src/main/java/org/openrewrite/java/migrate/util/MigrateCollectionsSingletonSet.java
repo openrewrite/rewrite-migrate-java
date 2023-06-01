@@ -54,11 +54,8 @@ public class MigrateCollectionsSingletonSet extends Recipe {
                             .contextSensitive()
                             .imports("java.util.Set")
                             .build()
-                            .apply(getCursor(),
-                                    m.getCoordinates().replace(),
-                                    m.getArguments().get(0));
+                            .apply(updateCursor(m), m.getCoordinates().replace(), m.getArguments().get(0));
                 }
-
                 return m;
             }
         });

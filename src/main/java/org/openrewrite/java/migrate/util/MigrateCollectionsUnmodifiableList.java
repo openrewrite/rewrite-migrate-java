@@ -67,9 +67,7 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
                                     .contextSensitive()
                                     .imports("java.util.List")
                                     .build()
-                                    .apply(getCursor(),
-                                            m.getCoordinates().replace(),
-                                            args.toArray());
+                                    .apply(updateCursor(m), m.getCoordinates().replace(), args.toArray());
                         }
                     }
                 }

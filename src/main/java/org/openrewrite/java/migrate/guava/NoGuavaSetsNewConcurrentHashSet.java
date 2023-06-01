@@ -49,19 +49,18 @@ public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesMethod<>(NEW_HASH_SET), new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newConcurrentHashSet = JavaTemplate.builder("Collections.newSetFromMap(new ConcurrentHashMap<>())")
-                    .contextSensitive()
-                    .imports("java.util.Collections")
-                    .imports("java.util.concurrent.ConcurrentHashMap")
-                    .build();
-
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_HASH_SET.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.Collections");
                     maybeAddImport("java.util.concurrent.ConcurrentHashMap");
-                    return newConcurrentHashSet.apply(getCursor(), method.getCoordinates().replace());
+                    return JavaTemplate.builder("Collections.newSetFromMap(new ConcurrentHashMap<>())")
+                            .contextSensitive()
+                            .imports("java.util.Collections")
+                            .imports("java.util.concurrent.ConcurrentHashMap")
+                            .build()
+                            .apply(getCursor(), method.getCoordinates().replace());
                 }
                 return super.visitMethodInvocation(method, ctx);
             }

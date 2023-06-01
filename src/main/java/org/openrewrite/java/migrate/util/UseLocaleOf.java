@@ -55,9 +55,7 @@ public class UseLocaleOf extends Recipe {
                     nc.getArguments().forEach(a -> localeOf.add("#{any(String)}"));
                     return JavaTemplate.builder(localeOf.toString())
                             .imports("java.util.Locale")
-                            .build().apply(getCursor(),
-                                    nc.getCoordinates().replace(),
-                                    nc.getArguments().toArray());
+                            .build().apply(updateCursor(nc), nc.getCoordinates().replace(), nc.getArguments().toArray());
                 }
                 return nc;
             }

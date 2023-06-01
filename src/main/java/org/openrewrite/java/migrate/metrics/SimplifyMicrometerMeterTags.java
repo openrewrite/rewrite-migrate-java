@@ -57,13 +57,13 @@ public class SimplifyMicrometerMeterTags extends Recipe {
                             m = JavaTemplate.builder("#{any(String)}, #{any(String)}")
                                     .contextSensitive()
                                     .build()
-                                    .apply(getCursor(), m.getCoordinates().replaceArguments(), arr.getInitializer().get(0), arr.getInitializer().get(1));
+                                    .apply(updateCursor(m), m.getCoordinates().replaceArguments(), arr.getInitializer().get(0), arr.getInitializer().get(1));
                         }
                     } else {
                         m = JavaTemplate.builder("#{any()}[0], #{any()}[1]")
                                 .contextSensitive()
                                 .build()
-                                .apply(getCursor(), m.getCoordinates().replaceArguments(), m.getArguments().get(0), m.getArguments().get(0));
+                                .apply(updateCursor(m), m.getCoordinates().replaceArguments(), m.getArguments().get(0), m.getArguments().get(0));
                     }
                     m = m.withName(m.getName().withSimpleName("tag"));
                 }

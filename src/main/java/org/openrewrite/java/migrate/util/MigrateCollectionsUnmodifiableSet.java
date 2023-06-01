@@ -68,10 +68,7 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
                                         .contextSensitive()
                                         .imports("java.util.Set")
                                         .build()
-                                        .apply(
-                                                getCursor(),
-                                                m.getCoordinates().replace(),
-                                                args.toArray());
+                                        .apply(updateCursor(m), m.getCoordinates().replace(), args.toArray());
                             }
                         }
                     }

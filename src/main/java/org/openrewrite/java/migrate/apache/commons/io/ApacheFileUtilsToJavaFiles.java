@@ -70,22 +70,22 @@ public class ApacheFileUtilsToJavaFiles extends Recipe {
                     return JavaTemplate.builder("Files.readAllBytes(#{any(java.io.File)}.toPath())")
                             .imports("java.nio.file.Files")
                             .build()
-                            .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0));
+                            .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getArguments().get(0));
                 } else if (readLinesToByteArrayMatcher.matches(mi)) {
                     return JavaTemplate.builder("Files.readAllLines(#{any(java.io.File)}.toPath())")
                             .imports("java.nio.file.Files")
                             .build()
-                            .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0));
+                            .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getArguments().get(0));
                 } else if (readLinesWithCharsetToByteArrayMatcher.matches(mi)) {
                     return JavaTemplate.builder("Files.readAllLines(#{any(java.io.File)}.toPath(), #{any(java.nio.charset.Charset)})")
                             .imports("java.nio.file.Files", "java.nio.charset.Charset")
                             .build()
-                            .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0), mi.getArguments().get(1));
+                            .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getArguments().get(0), mi.getArguments().get(1));
                 } else if (readLinesWithCharsetIdToByteArrayMatcher.matches(mi)) {
                     return JavaTemplate.builder("Files.readAllLines(#{any(java.io.File)}.toPath(), Charset.forName(#{any(String)}))")
                             .imports("java.nio.file.Files", "java.nio.charset.Charset")
                             .build()
-                            .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0), mi.getArguments().get(1));
+                            .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getArguments().get(0), mi.getArguments().get(1));
                 }
                 return mi;
             }

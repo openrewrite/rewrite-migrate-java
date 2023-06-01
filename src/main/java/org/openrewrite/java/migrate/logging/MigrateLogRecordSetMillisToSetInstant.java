@@ -57,7 +57,7 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
                     m = JavaTemplate.builder("Instant.ofEpochMilli(#{any(long)})")
                             .imports("java.time.Instant")
                             .build()
-                            .apply(new Cursor(getCursor().getParent(), m),
+                            .apply(updateCursor(m),
                                     m.getCoordinates().replaceArguments(),
                                     m.getArguments().get(0));
                     maybeAddImport("java.time.Instant");

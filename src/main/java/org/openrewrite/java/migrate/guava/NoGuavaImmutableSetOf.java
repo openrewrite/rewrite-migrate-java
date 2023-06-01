@@ -66,11 +66,8 @@ public class NoGuavaImmutableSetOf extends Recipe {
     // Updates to either may apply to each of the recipes.
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
-                new UsesType<>("com.google.common.collect.ImmutableSet", false));
-
-        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
-
+        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(9),
+                new UsesType<>("com.google.common.collect.ImmutableSet", false)), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (IMMUTABLE_SET_MATCHER.matches(method) && isParentTypeDownCast()) {

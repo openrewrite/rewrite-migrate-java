@@ -99,7 +99,7 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
                             .javaParser(javaParser)
                             .imports("java.nio.charset.StandardCharsets")
                             .build()
-                            .apply(new Cursor(getCursor().getParent(), mi),
+                            .apply(updateCursor(mi),
                                     mi.getCoordinates().replaceMethod(),
                                     mi.getArguments().get(0), encoding == null ? "UTF_8" : encoding);
                 } else {
@@ -112,7 +112,7 @@ public class ApacheIOUtilsUseExplicitCharset extends Recipe {
                                     .javaParser(javaParser)
                                     .imports("java.nio.charset.StandardCharsets")
                                     .build()
-                                    .apply(new Cursor(getCursor().getParent(), mi),
+                                    .apply(updateCursor(mi),
                                             mi.getCoordinates().replaceMethod(), args.toArray());
                         }
                     }
