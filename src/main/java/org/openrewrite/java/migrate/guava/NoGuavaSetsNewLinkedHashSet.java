@@ -56,17 +56,17 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
                 new UsesMethod<>(NEW_LINKED_HASH_SET_ITERABLE),
                 new UsesMethod<>(NEW_LINKED_HASH_SET_CAPACITY)), new JavaVisitor<ExecutionContext>() {
             final JavaTemplate newLinkedHashSet = JavaTemplate.builder("new LinkedHashSet<>()")
-                    .context(this::getCursor)
+                    .contextSensitive()
                     .imports("java.util.LinkedHashSet")
                     .build();
 
             final JavaTemplate newLinkedHashSetCollection = JavaTemplate.builder("new LinkedHashSet<>(#{any(java.util.Collection)})")
-                    .context(this::getCursor)
+                    .contextSensitive()
                     .imports("java.util.LinkedHashSet")
                     .build();
 
             final JavaTemplate newLinkedHashSetCapacity = JavaTemplate.builder("new LinkedHashSet<>(#{any(int)})")
-                    .context(this::getCursor)
+                    .contextSensitive()
                     .imports("java.util.LinkedHashSet")
                     .build();
 
@@ -75,17 +75,17 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
                 if (NEW_LINKED_HASH_SET.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
-                    return method.withTemplate(newLinkedHashSet, getCursor(), method.getCoordinates().replace());
+                    return newLinkedHashSet.apply( getCursor(), method.getCoordinates().replace());
                 } else if (NEW_LINKED_HASH_SET_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
                         TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
-                    return method.withTemplate(newLinkedHashSetCollection, getCursor(), method.getCoordinates().replace(),
+                    return newLinkedHashSetCollection.apply( getCursor(), method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 } else if (NEW_LINKED_HASH_SET_CAPACITY.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
-                    return method.withTemplate(newLinkedHashSetCapacity, getCursor(), method.getCoordinates().replace(),
+                    return newLinkedHashSetCapacity.apply( getCursor(), method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 }
                 return super.visitMethodInvocation(method, ctx);

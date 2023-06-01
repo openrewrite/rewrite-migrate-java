@@ -118,11 +118,11 @@ public class AddJaxwsRuntime extends Recipe {
 
                     if (runtimeConfigurations.isEmpty()) {
                         if (gp.getConfiguration("compileOnly") != null) {
-                            g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, "compileOnly", null, null, null, null)
+                            g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, "compileOnly", null, null, null)
                                     .visitNonNull(g, ctx);
                         }
                         if (gp.getConfiguration("testImplementation") != null) {
-                            g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, "testImplementation", null, null, null, null)
+                            g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, "testImplementation", null, null, null)
                                     .visitNonNull(g, ctx);
                         }
                     } else {
@@ -133,7 +133,7 @@ public class AddJaxwsRuntime extends Recipe {
                                 GradleDependencyConfiguration runtimeGdc = gp.getConfiguration(runtimeConfiguration);
                                 List<GradleDependencyConfiguration> runtimeTransitives = gp.configurationsExtendingFrom(runtimeGdc, true);
                                 if (apiTransitives.stream().noneMatch(runtimeTransitives::contains)) {
-                                    g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, apiConfiguration, null, null, null, null)
+                                    g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, apiConfiguration, null, null, null)
                                             .visitNonNull(g, ctx);
                                 }
                             }

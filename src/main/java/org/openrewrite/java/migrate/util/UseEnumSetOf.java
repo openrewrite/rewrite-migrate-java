@@ -58,7 +58,7 @@ public class UseEnumSetOf extends Recipe {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
                 if (SET_OF.matches(method) && method.getType() instanceof JavaType.Parameterized
-                        && !TypeUtils.isOfClassType(method.getType(), "java.util.EnumSet")) {
+                    && !TypeUtils.isOfClassType(method.getType(), "java.util.EnumSet")) {
                     Cursor parent = getCursor().dropParentUntil(is -> is instanceof J.Assignment || is instanceof J.VariableDeclarations || is instanceof J.Block);
                     if (!(parent.getValue() instanceof J.Block)) {
                         JavaType type = parent.getValue() instanceof J.Assignment ?
@@ -69,15 +69,14 @@ public class UseEnumSetOf extends Recipe {
                             StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
                             List<Expression> args = m.getArguments();
                             args.forEach(o -> setOf.add("#{any()}"));
-                            return autoFormat(
-                                    m.withTemplate(
-                                            JavaTemplate.builder("EnumSet.of(#{any()})")
-                                                    .context(getCursor())
-                                                    .imports("java.util.EnumSet").build(),
+                            return JavaTemplate.builder("EnumSet.of(#{any()})")
+                                    .contextSensitive()
+                                    .imports("java.util.EnumSet")
+                                    .build()
+                                    .apply(
                                             getCursor(),
                                             m.getCoordinates().replace(),
-                                            args.toArray()),
-                                    ctx);
+                                            args.toArray());
                         }
                     }
                 }

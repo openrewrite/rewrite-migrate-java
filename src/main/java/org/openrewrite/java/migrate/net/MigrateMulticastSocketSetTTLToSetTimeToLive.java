@@ -56,13 +56,11 @@ public class MigrateMulticastSocketSetTTLToSetTimeToLive extends Recipe {
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation m = method;
             if (MATCHER.matches(m)) {
-                m = m.withName(m.getName().withSimpleName("setTimeToLive"))
-                        .withTemplate(
-                                JavaTemplate.builder("Byte.valueOf(#{any(byte)}).intValue()").build(),
-                                getCursor(),
-                                m.getCoordinates().replaceArguments(),
-                                m.getArguments().get(0)
-                        );
+                m = m.withName(m.getName().withSimpleName("setTimeToLive"));
+                m = JavaTemplate.builder("Byte.valueOf(#{any(byte)}).intValue()").build().apply(
+                        getCursor(),
+                        m.getCoordinates().replaceArguments(),
+                        m.getArguments().get(0));
             }
             return super.visitMethodInvocation(m, ctx);
         }

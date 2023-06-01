@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -30,6 +32,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+@Value
+@EqualsAndHashCode(callSuper = true)
 public class PreferJavaUtilOptionalOrSupplier extends Recipe {
 
     static final MethodMatcher METHOD_MATCHER = new MethodMatcher("com.google.common.base.Optional or(com.google.common.base.Optional)");
@@ -58,28 +62,22 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
     }
 
     private static class PreferJavaUtilOptionalOrSupplierVisitor extends JavaIsoVisitor<ExecutionContext> {
-        @Override
-        public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-            J.CompilationUnit c = super.visitCompilationUnit(cu, ctx);
-            maybeAddImport("java.util.Optional");
-            maybeRemoveImport("com.google.common.base.Optional");
-            return c;
-        }
 
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation j = super.visitMethodInvocation(method, ctx);
             if (METHOD_MATCHER.matches(method)) {
-                j = j.withTemplate(
-                        JavaTemplate.builder("#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})")
-                                .context(getCursor())
-                                .imports("java.util.Optional")
-                                .build(),
-                        getCursor(),
-                        method.getCoordinates().replace(),
-                        j.getSelect(),
-                        j.getArguments().get(0)
-                );
+                j = JavaTemplate.builder("#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})")
+                        .contextSensitive()
+                        .imports("java.util.Optional")
+                        .build()
+                        .apply(
+                                getCursor(),
+                                method.getCoordinates().replace(),
+                                j.getSelect(),
+                                j.getArguments().get(0));
+                maybeAddImport("java.util.Optional");
+                maybeRemoveImport("com.google.common.base.Optional");
             }
             return j;
         }

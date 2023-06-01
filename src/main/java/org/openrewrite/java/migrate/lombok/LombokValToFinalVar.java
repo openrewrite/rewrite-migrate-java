@@ -77,13 +77,13 @@ public class LombokValToFinalVar extends Recipe {
                     finalVarVariableTemplateString = "final var #{} = #{any()};";
                     args = new Object[]{nv.getSimpleName(), nv.getInitializer()};
                 }
-                varDecls = mv.withTemplate(
-                        JavaTemplate.builder(finalVarVariableTemplateString)
-                                .context(getCursor())
-                                .javaParser(JavaParser.fromJavaVersion())
-                                .build(),
-                        getCursor(),
-                        varDecls.getCoordinates().replace(), args);
+                varDecls = JavaTemplate.builder(finalVarVariableTemplateString)
+                        .contextSensitive()
+                        .javaParser(JavaParser.fromJavaVersion())
+                        .build()
+                        .apply(
+                                getCursor(),
+                                varDecls.getCoordinates().replace(), args);
 
                 if (nv.getInitializer() != null) {
                     varDecls = varDecls.withVariables(ListUtils.map(varDecls.getVariables(), namedVar -> namedVar

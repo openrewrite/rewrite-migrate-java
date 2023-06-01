@@ -99,14 +99,13 @@ public class NoGuavaImmutableListOf extends Recipe {
                             .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
                             .collect(Collectors.joining(",", "List.of(", ")"));
 
-                    return method.withTemplate(
-                            JavaTemplate.builder(template)
-                                    .context(getCursor())
-                                    .imports("java.util.List")
-                                    .build(),
-                            getCursor(),
-                            method.getCoordinates().replace(),
-                            method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
+                    return JavaTemplate.builder(template)
+                            .contextSensitive()
+                            .imports("java.util.List")
+                            .build()
+                            .apply(getCursor(),
+                                    method.getCoordinates().replace(),
+                                    method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                 }
                 return super.visitMethodInvocation(method, ctx);
             }

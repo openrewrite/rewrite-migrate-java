@@ -55,17 +55,17 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
                 new UsesMethod<>(NEW_LINKED_HASH_MAP_WITH_MAP),
                 new UsesMethod<>(NEW_LINKED_HASH_MAP_CAPACITY)), new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newLinkedHashMap = JavaTemplate.builder("new LinkedHashMap<>()")
-                    .context(this::getCursor)
+                    .contextSensitive()
                     .imports("java.util.LinkedHashMap")
                     .build();
 
             private final JavaTemplate newLinkedHashMapWithMap = JavaTemplate.builder("new LinkedHashMap<>(#{any(java.util.Map)})")
-                    .context(this::getCursor)
+                    .contextSensitive()
                     .imports("java.util.LinkedHashMap")
                     .build();
 
             private final JavaTemplate newLinkedHashMapCapacity = JavaTemplate.builder("new LinkedHashMap<>(#{any(int)})")
-                    .context(this::getCursor)
+                    .contextSensitive()
                     .imports("java.util.LinkedHashMap")
                     .build();
 
@@ -74,16 +74,16 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
                 if (NEW_LINKED_HASH_MAP.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.LinkedHashMap");
-                    return method.withTemplate(newLinkedHashMap, getCursor(), method.getCoordinates().replace());
+                    return newLinkedHashMap.apply(getCursor(), method.getCoordinates().replace());
                 } else if (NEW_LINKED_HASH_MAP_WITH_MAP.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.LinkedHashMap");
-                    return method.withTemplate(newLinkedHashMapWithMap, getCursor(), method.getCoordinates().replace(),
+                    return newLinkedHashMapWithMap.apply(getCursor(), method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 } else if (NEW_LINKED_HASH_MAP_CAPACITY.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.LinkedHashMap");
-                    return method.withTemplate(newLinkedHashMapCapacity, getCursor(), method.getCoordinates().replace(),
+                    return newLinkedHashMapCapacity.apply(getCursor(), method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 }
                 return super.visitMethodInvocation(method, ctx);
