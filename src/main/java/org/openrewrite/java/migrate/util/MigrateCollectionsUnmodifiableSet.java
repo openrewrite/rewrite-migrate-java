@@ -55,7 +55,7 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
                 if (UNMODIFIABLE_SET.matches(method)) {
                     if (m.getArguments().get(0) instanceof J.NewClass) {
                         J.NewClass newSet = (J.NewClass) m.getArguments().get(0);
-                        if (newSet.getArguments() != null && newSet.getArguments().get(0) instanceof J.MethodInvocation) {
+                        if (newSet.getArguments().get(0) instanceof J.MethodInvocation) {
                             if (ARRAYS_AS_LIST.matches(newSet.getArguments().get(0))) {
                                 maybeRemoveImport("java.util.Collections");
                                 maybeRemoveImport("java.util.Arrays");
@@ -64,15 +64,11 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
                                 List<Expression> args = ((J.MethodInvocation) newSet.getArguments().get(0)).getArguments();
                                 args.forEach(o -> setOf.add("#{any()}"));
 
-                                return autoFormat(m.withTemplate(
-                                        JavaTemplate.builder(setOf.toString())
-                                                .context(this::getCursor)
-                                                .imports("java.util.Set")
-                                                .build(),
-                                        getCursor(),
-                                        m.getCoordinates().replace(),
-                                        args.toArray()
-                                ), ctx);
+                                return JavaTemplate.builder(setOf.toString())
+                                        .contextSensitive()
+                                        .imports("java.util.Set")
+                                        .build()
+                                        .apply(updateCursor(m), m.getCoordinates().replace(), args.toArray());
                             }
                         }
                     }

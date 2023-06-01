@@ -101,14 +101,14 @@ public class NoGuavaImmutableMapOf extends Recipe {
                             .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
                             .collect(Collectors.joining(",", "Map.of(", ")"));
 
-                    return method.withTemplate(
-                            JavaTemplate.builder(template)
-                                    .context(getCursor())
-                                    .imports("java.util.Map")
-                                    .build(),
-                            getCursor(),
-                            method.getCoordinates().replace(),
-                            method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
+                    return JavaTemplate.builder(template)
+                            .contextSensitive()
+                            .imports("java.util.Map")
+                            .build()
+                            .apply(
+                                    updateCursor(method),
+                                    method.getCoordinates().replace(),
+                                    method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                 }
                 return method;
             }

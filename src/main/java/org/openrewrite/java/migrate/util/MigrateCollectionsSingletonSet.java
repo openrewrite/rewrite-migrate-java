@@ -50,17 +50,12 @@ public class MigrateCollectionsSingletonSet extends Recipe {
                 if (SINGLETON_SET.matches(method)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Set");
-                    return autoFormat(m.withTemplate(
-                            JavaTemplate.builder("Set.of(#{any()})")
-                                    .context(this::getCursor)
-                                    .imports("java.util.Set")
-                                    .build(),
-                            getCursor(),
-                            m.getCoordinates().replace(),
-                            m.getArguments().get(0)
-                    ), ctx);
+                    return JavaTemplate.builder("Set.of(#{any()})")
+                            .contextSensitive()
+                            .imports("java.util.Set")
+                            .build()
+                            .apply(updateCursor(m), m.getCoordinates().replace(), m.getArguments().get(0));
                 }
-
                 return m;
             }
         });

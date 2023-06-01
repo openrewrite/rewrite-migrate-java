@@ -50,31 +50,24 @@ public class MigrateURLEncoderEncode extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
-                new UsesJavaVersion<>(10),
-                new UsesMethod<>(MATCHER));
-        return Preconditions.check(check, new MigrateURLEncoderEncodeVisitor());
-    }
-
-    private static class MigrateURLEncoderEncodeVisitor extends JavaIsoVisitor<ExecutionContext> {
-        @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-            J.MethodInvocation m = method;
-            if (MATCHER.matches(m)) {
-                m = m.withTemplate(
-                        JavaTemplate.builder("#{any(String)}, StandardCharsets.UTF_8")
-                                .context(getCursor())
-                                .imports("java.nio.charset.StandardCharsets")
-                                .build(),
-                        getCursor(),
-                        m.getCoordinates().replaceArguments(),
-                        m.getArguments().toArray()
-                );
-                // forcing an import, otherwise maybeAddImport appears to be having trouble recognizing importing this
-                // believe it may have to do with this being a field, or possibly this is incorrect usage // todo
-                doAfterVisit(new AddImport<>("java.nio.charset.StandardCharsets", null, false));
+        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(10), new UsesMethod<>(MATCHER)), new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = method;
+                if (MATCHER.matches(m)) {
+                    m = JavaTemplate.builder("#{any(String)}, StandardCharsets.UTF_8")
+                            .contextSensitive()
+                            .imports("java.nio.charset.StandardCharsets")
+                            .build()
+                            .apply(getCursor(),
+                                    m.getCoordinates().replaceArguments(),
+                                    m.getArguments().toArray());
+                    // forcing an import, otherwise maybeAddImport appears to be having trouble recognizing importing this
+                    // believe it may have to do with this being a field, or possibly this is incorrect usage // todo
+                    doAfterVisit(new AddImport<>("java.nio.charset.StandardCharsets", null, false));
+                }
+                return super.visitMethodInvocation(m, ctx);
             }
-            return super.visitMethodInvocation(m, ctx);
-        }
+        });
     }
 }

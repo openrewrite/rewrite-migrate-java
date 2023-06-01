@@ -63,15 +63,11 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
                             List<Expression> args = arraysInvocation.getArguments();
                             args.forEach(o -> setOf.add("#{any()}"));
 
-                            return autoFormat(m.withTemplate(
-                                    JavaTemplate.builder(setOf.toString())
-                                            .context(getCursor())
-                                            .imports("java.util.List")
-                                            .build(),
-                                    getCursor(),
-                                    m.getCoordinates().replace(),
-                                    args.toArray()
-                            ), ctx);
+                            return JavaTemplate.builder(setOf.toString())
+                                    .contextSensitive()
+                                    .imports("java.util.List")
+                                    .build()
+                                    .apply(updateCursor(m), m.getCoordinates().replace(), args.toArray());
                         }
                     }
                 }

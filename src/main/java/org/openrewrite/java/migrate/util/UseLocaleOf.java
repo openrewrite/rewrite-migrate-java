@@ -53,14 +53,9 @@ public class UseLocaleOf extends Recipe {
                 if (NEW_LOCALE.matches(nc)) {
                     StringJoiner localeOf = new StringJoiner(", ", "Locale.of(", ")");
                     nc.getArguments().forEach(a -> localeOf.add("#{any(String)}"));
-                    return autoFormat(nc.withTemplate(
-                            JavaTemplate.builder(localeOf.toString())
-                                    .imports("java.util.Locale")
-                                    .build(),
-                            getCursor(),
-                            nc.getCoordinates().replace(),
-                            nc.getArguments().toArray()
-                    ), ctx);
+                    return JavaTemplate.builder(localeOf.toString())
+                            .imports("java.util.Locale")
+                            .build().apply(updateCursor(nc), nc.getCoordinates().replace(), nc.getArguments().toArray());
                 }
                 return nc;
             }

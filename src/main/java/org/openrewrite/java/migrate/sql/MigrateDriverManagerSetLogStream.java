@@ -16,11 +16,13 @@
 package org.openrewrite.java.migrate.sql;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 import java.util.Collections;
@@ -46,23 +48,18 @@ public class MigrateDriverManagerSetLogStream extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            final JavaTemplate template = JavaTemplate.builder("new java.io.PrintWriter(#{any(java.io.PrintStream)})")
-                    .build();
-
+        return Preconditions.check(new UsesMethod<>(METHOD_MATCHER), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
-
                 if (METHOD_MATCHER.matches(m)) {
-                    m = method.withName(m.getName().withSimpleName("setLogWriter"))
-                            .withTemplate(template,
-                                    getCursor(),
-                                    m.getCoordinates().replaceArguments(),
-                                    m.getArguments().get(0));
+                    m = m.withName(m.getName().withSimpleName("setLogWriter"));
+                    m = JavaTemplate.builder("new java.io.PrintWriter(#{any(java.io.PrintStream)})")
+                            .build()
+                            .apply(updateCursor(m), m.getCoordinates().replaceArguments(), m.getArguments().get(0));
                 }
                 return m;
             }
-        };
+        });
     }
 }

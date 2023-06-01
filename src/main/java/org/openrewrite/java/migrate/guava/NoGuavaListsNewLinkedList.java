@@ -53,28 +53,25 @@ public class NoGuavaListsNewLinkedList extends Recipe {
         return Preconditions.check(Preconditions.or(
                 new UsesMethod<>(NEW_LINKED_LIST),
                 new UsesMethod<>(NEW_LINKED_LIST_ITERABLE)), new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newLinkedList = JavaTemplate.builder("new LinkedList<>()")
-                    .context(this::getCursor)
-                    .imports("java.util.LinkedList")
-                    .build();
-
-            private final JavaTemplate newLinkedListCollection = JavaTemplate.builder("new LinkedList<>(#{any(java.util.Collection)})")
-                    .context(this::getCursor)
-                    .imports("java.util.LinkedList")
-                    .build();
-
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_LINKED_LIST.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.LinkedList");
-                    return method.withTemplate(newLinkedList, getCursor(), method.getCoordinates().replace());
+                    return JavaTemplate.builder("new LinkedList<>()")
+                            .contextSensitive()
+                            .imports("java.util.LinkedList")
+                            .build()
+                            .apply(getCursor(), method.getCoordinates().replace());
                 } else if (NEW_LINKED_LIST_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
-                        TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
+                           TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.LinkedList");
-                    return method.withTemplate(newLinkedListCollection, getCursor(), method.getCoordinates().replace(),
-                            method.getArguments().get(0));
+                    return JavaTemplate.builder("new LinkedList<>(#{any(java.util.Collection)})")
+                            .contextSensitive()
+                            .imports("java.util.LinkedList")
+                            .build()
+                            .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
                 }
                 return super.visitMethodInvocation(method, ctx);
             }

@@ -51,6 +51,11 @@ public class LombokValToFinalVar extends Recipe {
     }
 
     @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(1);
+    }
+
+    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(
 //                new UsesJavaVersion<>(11),
@@ -77,28 +82,17 @@ public class LombokValToFinalVar extends Recipe {
                     finalVarVariableTemplateString = "final var #{} = #{any()};";
                     args = new Object[]{nv.getSimpleName(), nv.getInitializer()};
                 }
-                varDecls = mv.withTemplate(
-                        JavaTemplate.builder(finalVarVariableTemplateString)
-                                .context(getCursor())
-                                .javaParser(JavaParser.fromJavaVersion())
-                                .build(),
-                        getCursor(),
-                        varDecls.getCoordinates().replace(), args);
+                varDecls = JavaTemplate.builder(finalVarVariableTemplateString)
+                        .contextSensitive()
+                        .build()
+                        .apply(updateCursor(varDecls), varDecls.getCoordinates().replace(), args);
 
                 if (nv.getInitializer() != null) {
                     varDecls = varDecls.withVariables(ListUtils.map(varDecls.getVariables(), namedVar -> namedVar
                             .withInitializer(namedVar.getInitializer().withPrefix(nv.getInitializer().getPrefix()))));
                 }
-
-
             }
             return varDecls;
         }
     }
-
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(1);
-    }
-
 }

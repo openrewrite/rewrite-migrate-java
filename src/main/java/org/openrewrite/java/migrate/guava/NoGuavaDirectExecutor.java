@@ -49,16 +49,15 @@ public class NoGuavaDirectExecutor extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesMethod<>(DIRECT_EXECUTOR), new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate template = JavaTemplate.builder("Runnable::run")
-                    .context(this::getCursor)
-                    .imports("java.lang.Runnable")
-                    .build();
-
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (DIRECT_EXECUTOR.matches(method)) {
                     maybeRemoveImport("com.google.common.util.concurrent.MoreExecutors");
-                    return method.withTemplate(template, getCursor(), method.getCoordinates().replace());
+                    return JavaTemplate.builder("Runnable::run")
+                            .contextSensitive()
+                            .imports("java.lang.Runnable")
+                            .build()
+                            .apply(getCursor(), method.getCoordinates().replace());
                 }
                 return super.visitMethodInvocation(method, ctx);
             }

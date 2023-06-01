@@ -67,11 +67,10 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
                         if (expression instanceof J.MethodInvocation) {
                             J.MethodInvocation methodInvocation = (J.MethodInvocation) expression;
                             if (optionalIsPresentMatcher.matches(methodInvocation)) {
-                                return statement.withTemplate(
-                                        JavaTemplate.builder("#{any()}.isEmpty()").context(getCursor()).build(),
-                                        getCursor(),
-                                        statement.getCoordinates().replace(),
-                                        methodInvocation.getSelect());
+                                return JavaTemplate.builder("#{any()}.isEmpty()")
+                                        .contextSensitive()
+                                        .build()
+                                        .apply(getCursor(), statement.getCoordinates().replace(), methodInvocation.getSelect());
                             }
                         }
                     }

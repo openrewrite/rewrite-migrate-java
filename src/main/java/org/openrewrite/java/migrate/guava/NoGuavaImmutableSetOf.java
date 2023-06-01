@@ -66,11 +66,8 @@ public class NoGuavaImmutableSetOf extends Recipe {
     // Updates to either may apply to each of the recipes.
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
-                new UsesType<>("com.google.common.collect.ImmutableSet", false));
-
-        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
-
+        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(9),
+                new UsesType<>("com.google.common.collect.ImmutableSet", false)), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (IMMUTABLE_SET_MATCHER.matches(method) && isParentTypeDownCast()) {
@@ -109,14 +106,13 @@ public class NoGuavaImmutableSetOf extends Recipe {
                             .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
                             .collect(Collectors.joining(",", "Set.of(", ")"));
 
-                    return method.withTemplate(
-                            JavaTemplate.builder(template)
-                                    .context(getCursor())
-                                    .imports("java.util.Set")
-                                    .build(),
-                            getCursor(),
-                            method.getCoordinates().replace(),
-                            method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
+                    return JavaTemplate.builder(template)
+                            .contextSensitive()
+                            .imports("java.util.Set")
+                            .build()
+                            .apply(getCursor(),
+                                    method.getCoordinates().replace(),
+                                    method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                 }
                 return super.visitMethodInvocation(method, ctx);
             }

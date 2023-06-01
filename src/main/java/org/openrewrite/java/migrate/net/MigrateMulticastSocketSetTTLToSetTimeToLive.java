@@ -15,10 +15,7 @@
  */
 package org.openrewrite.java.migrate.net;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
@@ -48,24 +45,18 @@ public class MigrateMulticastSocketSetTTLToSetTimeToLive extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesMethod<>(MATCHER), new MigrateMulticastSocketSetTTLToSetTimeToLiveVisitor());
-    }
-
-    private static class MigrateMulticastSocketSetTTLToSetTimeToLiveVisitor extends JavaIsoVisitor<ExecutionContext> {
-        @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-            J.MethodInvocation m = method;
-            if (MATCHER.matches(m)) {
-                m = m.withName(m.getName().withSimpleName("setTimeToLive"))
-                        .withTemplate(
-                                JavaTemplate.builder("Byte.valueOf(#{any(byte)}).intValue()").build(),
-                                getCursor(),
-                                m.getCoordinates().replaceArguments(),
-                                m.getArguments().get(0)
-                        );
+        return Preconditions.check(new UsesMethod<>(MATCHER), new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = method;
+                if (MATCHER.matches(m)) {
+                    m = m.withName(m.getName().withSimpleName("setTimeToLive"));
+                    m = JavaTemplate.builder("Byte.valueOf(#{any(byte)}).intValue()")
+                            .build()
+                            .apply(updateCursor(m), m.getCoordinates().replaceArguments(), m.getArguments().get(0));
+                }
+                return super.visitMethodInvocation(m, ctx);
             }
-            return super.visitMethodInvocation(m, ctx);
-        }
+        });
     }
-
 }

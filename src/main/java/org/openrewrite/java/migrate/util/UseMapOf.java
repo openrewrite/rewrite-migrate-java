@@ -48,10 +48,7 @@ public class UseMapOf extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
-                new UsesJavaVersion<>(10),
-                new UsesMethod<>(NEW_HASH_MAP));
-        return Preconditions.check(check,new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(10), new UsesMethod<>(NEW_HASH_MAP)), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                 J.NewClass n = (J.NewClass) super.visitNewClass(newClass, ctx);
@@ -75,15 +72,11 @@ public class UseMapOf extends Recipe {
 
                             maybeRemoveImport("java.util.HashMap");
                             maybeAddImport("java.util.Map");
-                            return autoFormat(n.withTemplate(
-                                    JavaTemplate.builder(mapOf.toString())
-                                            .context(getCursor())
-                                            .imports("java.util.Map")
-                                            .build(),
-                                    getCursor(),
-                                    n.getCoordinates().replace(),
-                                    args.toArray()
-                            ), ctx);
+                            return JavaTemplate.builder(mapOf.toString())
+                                    .contextSensitive()
+                                    .imports("java.util.Map")
+                                    .build()
+                                    .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
                         }
                     }
                 }

@@ -52,20 +52,18 @@ public class MigrateLoggerLogrbToUseResourceBundle extends Recipe {
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = method;
                 if (MATCHER.matches(m)) {
-                    m = m.withTemplate(
-                            JavaTemplate.builder("#{any(java.util.logging.Level)}, #{any(String)}, #{any(String)}, ResourceBundle.getBundle(#{any(String)}), #{any(String)}" + (m.getArguments().size() == 6 ? ", #{any()}" : ""))
-                                    .context(getCursor())
-                                    .imports("java.util.ResourceBundle")
-                                    .build(),
-                            getCursor(),
-                            m.getCoordinates().replaceArguments(),
-                            m.getArguments().toArray()
-                    );
+                    m = JavaTemplate.builder("#{any(java.util.logging.Level)}, #{any(String)}, #{any(String)}, ResourceBundle.getBundle(#{any(String)}), #{any(String)}" + (m.getArguments().size() == 6 ? ", #{any()}" : ""))
+                            .contextSensitive()
+                            .imports("java.util.ResourceBundle")
+                            .build().apply(
+                                    getCursor(),
+                                    m.getCoordinates().replaceArguments(),
+                                    m.getArguments().toArray()
+                            );
                     maybeAddImport("java.util.ResourceBundle");
                 }
                 return super.visitMethodInvocation(m, ctx);
             }
         });
     }
-
 }

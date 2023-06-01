@@ -53,28 +53,25 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
         return Preconditions.check(Preconditions.or(
                 new UsesMethod<>(NEW_ARRAY_LIST),
                 new UsesMethod<>(NEW_ARRAY_LIST_ITERABLE)), new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newArrayList = JavaTemplate.builder("new CopyOnWriteArrayList<>()")
-                    .context(this::getCursor)
-                    .imports("java.util.concurrent.CopyOnWriteArrayList")
-                    .build();
-
-            private final JavaTemplate newArrayListCollection = JavaTemplate.builder("new CopyOnWriteArrayList<>(#{any(java.util.Collection)})")
-                    .context(this::getCursor)
-                    .imports("java.util.concurrent.CopyOnWriteArrayList")
-                    .build();
-
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_ARRAY_LIST.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.concurrent.CopyOnWriteArrayList");
-                    return method.withTemplate(newArrayList, getCursor(), method.getCoordinates().replace());
+                    return JavaTemplate.builder("new CopyOnWriteArrayList<>()")
+                            .contextSensitive()
+                            .imports("java.util.concurrent.CopyOnWriteArrayList")
+                            .build()
+                            .apply(getCursor(), method.getCoordinates().replace());
                 } else if (NEW_ARRAY_LIST_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
-                        TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
+                           TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.concurrent.CopyOnWriteArrayList");
-                    return method.withTemplate(newArrayListCollection, getCursor(),method.getCoordinates().replace(),
-                            method.getArguments().get(0));
+                    return JavaTemplate.builder("new CopyOnWriteArrayList<>(#{any(java.util.Collection)})")
+                            .contextSensitive()
+                            .imports("java.util.concurrent.CopyOnWriteArrayList")
+                            .build()
+                            .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
                 }
                 return super.visitMethodInvocation(method, ctx);
             }
