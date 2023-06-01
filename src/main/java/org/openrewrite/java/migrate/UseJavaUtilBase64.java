@@ -45,7 +45,7 @@ public class UseJavaUtilBase64 extends Recipe {
     public String getDescription() {
         //language=markdown
         return "Prefer `java.util.Base64` instead of using `sun.misc` in Java 8 or higher. `sun.misc` is not exported " +
-                "by the Java module system and accessing this class will result in a warning in Java 11 and an error in Java 17.";
+               "by the Java module system and accessing this class will result in a warning in Java 11 and an error in Java 17.";
     }
 
     public UseJavaUtilBase64(String sunPackage) {
@@ -102,7 +102,7 @@ public class UseJavaUtilBase64 extends Recipe {
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (base64EncodeMethod.matches(m) &&
-                        ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
+                    ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
                     m = encodeToString.apply(getCursor(), m.getCoordinates().replace(), method.getArguments().get(0));
                     if (method.getSelect() instanceof J.Identifier) {
                         m = m.withSelect(method.getSelect());
@@ -125,12 +125,9 @@ public class UseJavaUtilBase64 extends Recipe {
                 J.NewClass c = (J.NewClass) super.visitNewClass(newClass, ctx);
                 if (newBase64Encoder.matches(c)) {
                     // noinspection Convert2MethodRef
-                    return c.withTemplate(
-                            JavaTemplate.compile(this, "getEncoder",
-                                    () -> Base64.getEncoder()).build(),
-                            getCursor(),
-                            c.getCoordinates().replace()
-                    );
+                    return JavaTemplate.compile(this, "getEncoder", () -> Base64.getEncoder())
+                            .build()
+                            .apply(getCursor(), c.getCoordinates().replace());
                 } else if (newBase64Decoder.matches(c)) {
                     return getDecoderTemplate.apply(getCursor(), c.getCoordinates().replace());
                 }
@@ -141,11 +138,11 @@ public class UseJavaUtilBase64 extends Recipe {
 
     private boolean alreadyUsingIncompatibleBase64(JavaSourceFile cu) {
         return cu.getClasses().stream().anyMatch(it -> "Base64".equals(it.getSimpleName())) ||
-                cu.getTypesInUse().getTypesInUse().stream()
-                        .filter(it -> it instanceof JavaType.FullyQualified)
-                        .map(JavaType.FullyQualified.class::cast)
-                        .map(JavaType.FullyQualified::getFullyQualifiedName)
-                        .filter(it -> !"java.util.Base64".equals(it))
-                        .anyMatch(it -> it.endsWith(".Base64"));
+               cu.getTypesInUse().getTypesInUse().stream()
+                       .filter(it -> it instanceof JavaType.FullyQualified)
+                       .map(JavaType.FullyQualified.class::cast)
+                       .map(JavaType.FullyQualified::getFullyQualifiedName)
+                       .filter(it -> !"java.util.Base64".equals(it))
+                       .anyMatch(it -> it.endsWith(".Base64"));
     }
 }

@@ -15,10 +15,7 @@
  */
 package org.openrewrite.java.migrate.net;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
@@ -58,7 +55,7 @@ public class MigrateMulticastSocketSetTTLToSetTimeToLive extends Recipe {
             if (MATCHER.matches(m)) {
                 m = m.withName(m.getName().withSimpleName("setTimeToLive"));
                 m = JavaTemplate.builder("Byte.valueOf(#{any(byte)}).intValue()").build().apply(
-                        getCursor(),
+                        new Cursor(getCursor().getParent(), m),
                         m.getCoordinates().replaceArguments(),
                         m.getArguments().get(0));
             }

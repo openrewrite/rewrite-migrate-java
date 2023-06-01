@@ -208,8 +208,8 @@ public class AddJaxbRuntime extends Recipe {
 
                 private org.openrewrite.gradle.AddDependencyVisitor addDependency(String configuration) {
                     return "sun".equals(runtime) ?
-                            new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, configuration, null, null, null) :
-                            new org.openrewrite.gradle.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, configuration, null, null, null);
+                            new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, configuration, null, null, null, null) :
+                            new org.openrewrite.gradle.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, configuration, null, null, null, null);
                 }
             });
         }

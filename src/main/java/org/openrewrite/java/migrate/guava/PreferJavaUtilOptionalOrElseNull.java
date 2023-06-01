@@ -15,10 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
@@ -69,7 +66,7 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
                 mi = mi.withName(mi.getName().withSimpleName("orElse"));
                 mi = JavaTemplate.builder("null")
                         .build()
-                        .apply(getCursor(), mi.getCoordinates().replaceArguments());
+                        .apply(new Cursor(getCursor().getParent(), mi), mi.getCoordinates().replaceArguments());
             }
             return mi;
         }

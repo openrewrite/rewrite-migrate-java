@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.sql;
 
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -56,7 +57,7 @@ public class MigrateDriverManagerSetLogStream extends Recipe {
 
                 if (METHOD_MATCHER.matches(m)) {
                     m = m.withName(m.getName().withSimpleName("setLogWriter"));
-                    m = template.apply(getCursor(),
+                    m = template.apply(new Cursor(getCursor().getParent(), m),
                             m.getCoordinates().replaceArguments(),
                             m.getArguments().get(0));
                 }

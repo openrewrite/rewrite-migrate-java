@@ -17,10 +17,7 @@ package org.openrewrite.java.migrate.guava;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
@@ -72,7 +69,7 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
                         .imports("java.util.Optional")
                         .build()
                         .apply(
-                                getCursor(),
+                                new Cursor(getCursor().getParent(), j),
                                 method.getCoordinates().replace(),
                                 j.getSelect(),
                                 j.getArguments().get(0));
