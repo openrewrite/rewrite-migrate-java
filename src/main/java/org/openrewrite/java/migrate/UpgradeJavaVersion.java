@@ -96,6 +96,7 @@ public class UpgradeJavaVersion extends Recipe {
             "/project/properties/maven.compiler.source",
             "/project/properties/maven.compiler.target",
             "/project/properties/maven.compiler.release",
+            "/project/properties/release.version",
             "/project/build/plugins/plugin[artifactId='maven-compiler-plugin']/configuration/source",
             "/project/build/plugins/plugin[artifactId='maven-compiler-plugin']/configuration/target",
             "/project/build/plugins/plugin[artifactId='maven-compiler-plugin']/configuration/release");
