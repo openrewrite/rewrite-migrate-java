@@ -32,12 +32,14 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet
+  - org.openrewrite.java.migrate.guava.PreferJavaNioCharsetStandardCharsets
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptional
   - org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
   - org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate
   - org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsEquals
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsHashCode
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNull
   - org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsUnmodifiableNavigableMap
   - org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsSynchronizedNavigableMap
   - org.openrewrite.java.migrate.guava.PreferCharCompare
@@ -58,6 +60,18 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferJavaNioCharsetStandardCharsets
+displayName: Prefer `java.nio.charset.StandardCharsets`
+description: Prefer `java.nio.charset.StandardCharsets` instead of using `com.google.common.base.Charsets`.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.google.common.base.Charsets
+      newFullyQualifiedTypeName: java.nio.charset.StandardCharsets
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -158,6 +172,27 @@ recipeList:
       newMethodName: hash
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.base.Objects hash(..)
+      fullyQualifiedTargetTypeName: java.util.Objects
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNull
+displayName: Prefer `java.util.Objects#requireNonNull`
+description: Prefer `java.util.Objects#requireNonNull` instead of using `com.google.common.base.Preconditions#checkNotNull`.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.Preconditions checkNotNull(Object)
+      newMethodName: requireNonNull
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.base.Preconditions checkNotNull(Object)
+      fullyQualifiedTargetTypeName: java.util.Objects
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.Preconditions checkNotNull(Object, String)
+      newMethodName: requireNonNull
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.base.Preconditions checkNotNull(Object, String)
       fullyQualifiedTargetTypeName: java.util.Objects
 
 ---
