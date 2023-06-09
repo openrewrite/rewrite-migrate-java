@@ -37,24 +37,24 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
           version(
             java(
               """
-               import java.util.zip.Inflater;
+                import java.util.zip.Inflater;
 
-               class FooBar extends Inflater{
-                  public void test(){
-                      FooBar obj = new FooBar();
-                      obj.finalize();
-                  }                    
-               }
-                """,
+                class FooBar extends Inflater {
+                    public void test() {
+                        FooBar obj = new FooBar();
+                        obj.finalize();
+                    }
+                }
+                 """,
               """
-               import java.util.zip.Inflater;
+                import java.util.zip.Inflater;
 
-               class FooBar extends Inflater{
-                  public void test(){
-                      FooBar obj = new FooBar();
-                  }
-               }
-                """
+                class FooBar extends Inflater {
+                    public void test() {
+                        FooBar obj = new FooBar();
+                    }
+                }
+                 """
             ),
             12
           )
@@ -68,14 +68,14 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
           version(
             java(
               """
-               import java.util.zip.Inflater;
+                import java.util.zip.Inflater;
 
-               class FooBar extends Inflater{
-                  public void test(){
-                      FooBar obj = new FooBar();
-                  }                    
-               }
-                """
+                class FooBar extends Inflater {
+                    public void test() {
+                        FooBar obj = new FooBar();
+                    }
+                }
+                 """
             ),
             12
           )
@@ -89,24 +89,24 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
           version(
             java(
               """
-               import java.util.zip.Deflater;
+                import java.util.zip.Deflater;
 
-               class FooBar extends Deflater{
-                  public void test(){
-                      FooBar obj = new FooBar();
-                      obj.finalize();
-                  }                    
-               }
-                """,
+                class FooBar extends Deflater {
+                    public void test() {
+                        FooBar obj = new FooBar();
+                        obj.finalize();
+                    }
+                }
+                 """,
               """
-               import java.util.zip.Deflater;
+                import java.util.zip.Deflater;
 
-               class FooBar extends Deflater{
-                  public void test(){
-                      FooBar obj = new FooBar();
-                  }
-               }
-                """
+                class FooBar extends Deflater {
+                    public void test() {
+                        FooBar obj = new FooBar();
+                    }
+                }
+                 """
             ),
             12
           )
@@ -120,14 +120,14 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
           version(
             java(
               """
-               import java.util.zip.Deflater;
+                import java.util.zip.Deflater;
 
-               class FooBar extends Deflater{
-                  public void test(){
-                      FooBar obj = new FooBar();
-                  }                    
-               }
-                """
+                class FooBar extends Deflater {
+                    public void test() {
+                        FooBar obj = new FooBar();
+                    }
+                }
+                 """
             ),
             12
           )
@@ -141,24 +141,30 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
           version(
             java(
               """
-               import java.util.zip.ZipFile;
+                import java.util.zip.ZipFile;
 
-               class FooBar extends ZipFile{
-                  public void test(){
-                      FooBar obj = new FooBar();
-                      obj.finalize();
-                  }                    
-               }
-                """,
+                class FooBar extends ZipFile {
+                    FooBar(){
+                        super("");
+                    }
+                    public void test() {
+                        FooBar obj = new FooBar();
+                        obj.finalize();
+                    }
+                }
+                 """,
               """
-               import java.util.zip.ZipFile;
+                import java.util.zip.ZipFile;
 
-               class FooBar extends ZipFile{
-                  public void test(){
-                      FooBar obj = new FooBar();
-                  }
-               }
-                """
+                class FooBar extends ZipFile {
+                    FooBar(){
+                        super("");
+                    }
+                    public void test() {
+                        FooBar obj = new FooBar();
+                    }
+                }
+                 """
             ),
             12
           )
@@ -172,14 +178,17 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
           version(
             java(
               """
-               import java.util.zip.ZipFile;
+                import java.util.zip.ZipFile;
 
-               class FooBar extends ZipFile{
-                  public void test(){
-                      FooBar obj = new FooBar();
-                  }                    
-               }
-                """
+                class FooBar extends ZipFile {
+                    FooBar(){
+                        super("");
+                    }
+                   public void test() {
+                       FooBar obj = new FooBar();
+                   }
+                }
+                 """
             ),
             12
           )
