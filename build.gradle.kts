@@ -16,7 +16,7 @@ dependencies {
     testImplementation("org.projectlombok:lombok:latest.release")
 
     annotationProcessor("org.openrewrite:rewrite-templating:latest.integration")
-    implementation("com.google.errorprone:error_prone_core:2.10.0:with-dependencies") {
+    implementation("com.google.errorprone:error_prone_core:2.19.1:with-dependencies") {
         exclude("com.google.auto.service", "auto-service-annotations")
     }
 
