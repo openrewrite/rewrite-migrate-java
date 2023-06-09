@@ -43,26 +43,23 @@ public class RemoveFinalizerFromZip extends Recipe {
 
     @Override
     public JavaIsoVisitor<ExecutionContext> getVisitor() {
-
         return new JavaIsoVisitor<ExecutionContext>() {
-
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
-
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, executionContext);
                 boolean extendExists = Objects.nonNull(cd.getExtends());
-                AtomicBoolean finalizeOverride = new AtomicBoolean(false);
-                if(extendExists && (cd.getExtends().toString().contains("Deflater") || cd.getExtends().toString().contains("Inflater") || cd.getExtends().toString().contains("ZipFile")) ){
+                if (extendExists && (cd.getExtends().toString().contains("Deflater") || cd.getExtends().toString().contains("Inflater") || cd.getExtends().toString().contains("ZipFile"))) {
                     cd = cd.withBody(cd.getBody().withStatements(ListUtils.map(cd.getBody().getStatements(), mdStmt -> {
                         if (mdStmt instanceof J.MethodDeclaration) {
                             J.MethodDeclaration md = (J.MethodDeclaration) mdStmt;
                             mdStmt = md.withBody(md.getBody().withStatements(ListUtils.map(md.getBody().getStatements(), miStmt ->
-                            {   if(miStmt instanceof  J.MethodInvocation){
-                                J.MethodInvocation mi = (J.MethodInvocation) miStmt;
-                                if (mi.getName().toString().contains("finalize")){
-                                    miStmt = null;
+                            {
+                                if (miStmt instanceof J.MethodInvocation) {
+                                    J.MethodInvocation mi = (J.MethodInvocation) miStmt;
+                                    if (mi.getName().toString().contains("finalize")) {
+                                        miStmt = null;
+                                    }
                                 }
-                            }
                                 return miStmt;
                             })));
                         }
