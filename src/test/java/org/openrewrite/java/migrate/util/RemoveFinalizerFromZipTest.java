@@ -62,6 +62,115 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     }
 
     @Test
+    void removeCallsToSelfFinalize() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.zip.Inflater;
+
+                class FooBar extends Inflater {
+                    public void test() {
+                        finalize();
+                    }
+                }
+                 """,
+              """
+                import java.util.zip.Inflater;
+
+                class FooBar extends Inflater {
+                    public void test() {
+                    }
+                }
+                 """
+            ),
+            12
+          )
+        );
+    }
+
+    @Test
+    void removeCallsToThisFinalize() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.zip.Inflater;
+
+                class FooBar extends Inflater {
+                    public void test() {
+                        this.finalize();
+                    }
+                }
+                 """,
+              """
+                import java.util.zip.Inflater;
+
+                class FooBar extends Inflater {
+                    public void test() {
+                    }
+                }
+                 """
+            ),
+            12
+          )
+        );
+    }
+
+    @Test
+    void removeWhileKeepingSideEffects() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.zip.Inflater;
+
+                class FooBar extends Inflater {
+                    public void test() {
+                        new FooBar().finalize();
+                    }
+                }
+                 """,
+              """
+                import java.util.zip.Inflater;
+
+                class FooBar extends Inflater {
+                    public void test() {
+                        new FooBar();
+                    }
+                }
+                 """
+            ),
+            12
+          )
+        );
+    }
+
+    @Test
+    void noChangeWithFinalizeOnObject() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.zip.Inflater;
+
+                class FooBar extends Inflater {
+                    public void test() {
+                        new Object().finalize();
+                    }
+                }
+                 """
+            ),
+            12
+          )
+        );
+    }
+
+    @Test
     void noChangeWithoutFinalizerForInflater() {
         //language=java
         rewriteRun(
