@@ -1,5 +1,7 @@
 package org.openrewrite.java.migrate.lang.var;
 
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -16,6 +18,8 @@ import org.openrewrite.java.tree.J;
 import java.util.ArrayList;
 import java.util.List;
 
+@Value
+@EqualsAndHashCode(callSuper = false)
 public class UseVarForObject extends Recipe {
     @Override
     public String getDisplayName() {

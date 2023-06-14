@@ -6,7 +6,7 @@ import org.openrewrite.java.tree.*;
 
 import static java.util.Objects.*;
 
-public final class DeclarationCheck {
+final class DeclarationCheck {
 
     private DeclarationCheck() {
 
