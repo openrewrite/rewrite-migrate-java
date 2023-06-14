@@ -7,9 +7,9 @@ import org.openrewrite.test.RecipeSpec;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
-class UseVarForPrimitivesTest extends VarBaseTest {
+class UseVarForPrimitiveTest extends VarBaseTest {
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new UseVarForPrimitives());
+        spec.recipe(new UseVarForPrimitive());
     }
 
     @Nested

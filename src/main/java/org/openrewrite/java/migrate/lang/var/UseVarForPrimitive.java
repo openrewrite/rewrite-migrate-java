@@ -21,7 +21,7 @@ import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-public class UseVarForPrimitives extends Recipe {
+public class UseVarForPrimitive extends Recipe {
     @Override
     public String getDisplayName() {
         return "UseVarForPrimitives";
