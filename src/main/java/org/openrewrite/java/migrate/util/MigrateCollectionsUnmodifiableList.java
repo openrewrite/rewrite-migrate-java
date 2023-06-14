@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -27,7 +27,6 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -41,24 +40,15 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public String getDescription() {
         return "Prefer `List.Of(..)` instead of using `unmodifiableList(java.util.Arrays asList(<args>))` in Java 9 or higher.";
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(new UsesJavaVersion<>(9),
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
                 new UsesMethod<>(UNMODIFIABLE_LIST));
-    }
-
-    @Override
-    protected JavaVisitor<ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
@@ -73,19 +63,16 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
                             List<Expression> args = arraysInvocation.getArguments();
                             args.forEach(o -> setOf.add("#{any()}"));
 
-                            return autoFormat(m.withTemplate(
-                                    JavaTemplate
-                                            .builder(this::getCursor, setOf.toString())
-                                            .imports("java.util.List")
-                                            .build(),
-                                    m.getCoordinates().replace(),
-                                    args.toArray()
-                            ), ctx);
+                            return JavaTemplate.builder(setOf.toString())
+                                    .contextSensitive()
+                                    .imports("java.util.List")
+                                    .build()
+                                    .apply(updateCursor(m), m.getCoordinates().replace(), args.toArray());
                         }
                     }
                 }
                 return m;
             }
-        };
+        });
     }
 }

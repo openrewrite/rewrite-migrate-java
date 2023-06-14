@@ -651,7 +651,6 @@ class UseTextBlocksTest implements RewriteTest {
      * <p>
      * On converting this to a text block, only one of the quotes needs to be escaped: \"\"\" -> ""\"
      */
-    @DocumentExample
     @Test
     void tripleQuotes() {
         rewriteRun(
@@ -691,7 +690,6 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void eightQuotes() {
         rewriteRun(

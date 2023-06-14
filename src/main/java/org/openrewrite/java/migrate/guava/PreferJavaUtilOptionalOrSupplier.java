@@ -15,23 +15,22 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.openrewrite.Applicability;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
+import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+@Value
+@EqualsAndHashCode(callSuper = true)
 public class PreferJavaUtilOptionalOrSupplier extends Recipe {
 
     static final MethodMatcher METHOD_MATCHER = new MethodMatcher("com.google.common.base.Optional or(com.google.common.base.Optional)");
@@ -47,55 +46,37 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public Set<String> getTags() {
         return new HashSet<>(Arrays.asList("RSPEC-4738", "guava"));
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return Applicability.and(
-                new UsesJavaVersion<>(9),
-                new UsesType<>("com.google.common.base.Optional", false));
-    }
-
-    @Override
-    protected UsesMethod<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(METHOD_MATCHER);
-    }
-
-    @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
-        return new PreferJavaUtilOptionalOrSupplierVisitor();
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(
+                Preconditions.and(new UsesJavaVersion<>(9),
+                        new UsesMethod<>(METHOD_MATCHER)),
+                new PreferJavaUtilOptionalOrSupplierVisitor());
     }
 
     private static class PreferJavaUtilOptionalOrSupplierVisitor extends JavaIsoVisitor<ExecutionContext> {
-        @Override
-        public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-            J.CompilationUnit c = super.visitCompilationUnit(cu, ctx);
-            maybeAddImport("java.util.Optional");
-            maybeRemoveImport("com.google.common.base.Optional");
-            return c;
-        }
 
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-            J.MethodInvocation j = super.visitMethodInvocation(method, ctx);
+            J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
             if (METHOD_MATCHER.matches(method)) {
-                j = j.withTemplate(
-                        JavaTemplate.builder(this::getCursor, "#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})")
-                                .imports("java.util.Optional")
-                                .build(),
-                        method.getCoordinates().replace(),
-                        j.getSelect(),
-                        j.getArguments().get(0)
-                );
+                mi = JavaTemplate.builder("#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})")
+                        .contextSensitive()
+                        .imports("java.util.Optional")
+                        .build()
+                        .apply(
+                                updateCursor(mi),
+                                method.getCoordinates().replace(),
+                                mi.getSelect(),
+                                mi.getArguments().get(0));
+                maybeAddImport("java.util.Optional");
+                maybeRemoveImport("com.google.common.base.Optional");
             }
-            return j;
+            return mi;
         }
     }
 }

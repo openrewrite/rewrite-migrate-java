@@ -24,16 +24,16 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.HasJavaVersion;
 import org.openrewrite.java.style.IntelliJ;
 import org.openrewrite.java.style.TabsAndIndentsStyle;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.openrewrite.Tree.randomId;
@@ -42,10 +42,10 @@ import static org.openrewrite.Tree.randomId;
 @EqualsAndHashCode(callSuper = false)
 public class UseTextBlocks extends Recipe {
     @Option(displayName = "Whether to convert strings without newlines (the default value is true).",
-        description = "Whether or not strings without newlines should be converted to text block when processing code. " +
-                      "The default value is true.",
-        example = "true",
-        required = false)
+            description = "Whether or not strings without newlines should be converted to text block when processing code. " +
+                    "The default value is true.",
+            example = "true",
+            required = false)
     @Nullable
     boolean convertStringsWithoutNewlines;
 
@@ -73,13 +73,8 @@ public class UseTextBlocks extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new HasJavaVersion("17", true).getVisitor();
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(new HasJavaVersion("17", true), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitBinary(J.Binary binary, ExecutionContext ctx) {
                 List<J.Literal> stringLiterals = new ArrayList<>();
@@ -125,7 +120,7 @@ public class UseTextBlocks extends Recipe {
                     if (i != stringLiterals.size() - 1) {
                         String nextLine = stringLiterals.get(i + 1).getValue().toString();
                         char nextChar = nextLine.charAt(0);
-                        if (!s.endsWith("\n") &&  nextChar != '\n') {
+                        if (!s.endsWith("\n") && nextChar != '\n') {
                             sb.append(passPhrase);
                         }
                     }
@@ -134,7 +129,7 @@ public class UseTextBlocks extends Recipe {
                 content = sb.toString();
 
                 TabsAndIndentsStyle tabsAndIndentsStyle = Optional.ofNullable(getCursor().firstEnclosingOrThrow(SourceFile.class)
-                    .getStyle(TabsAndIndentsStyle.class)).orElse(IntelliJ.tabsAndIndents());
+                        .getStyle(TabsAndIndentsStyle.class)).orElse(IntelliJ.tabsAndIndents());
                 boolean useTab = tabsAndIndentsStyle.getUseTabCharacter();
                 int tabSize = tabsAndIndentsStyle.getTabSize();
 
@@ -167,9 +162,9 @@ public class UseTextBlocks extends Recipe {
                 }
 
                 return new J.Literal(randomId(), binary.getPrefix(), Markers.EMPTY, originalContent.toString(),
-                    String.format("\"\"\"%s\"\"\"", content), null, JavaType.Primitive.String);
+                        String.format("\"\"\"%s\"\"\"", content), null, JavaType.Primitive.String);
             }
-        };
+        });
     }
 
     private static boolean flatAdditiveStringLiterals(Expression expression,
@@ -184,7 +179,7 @@ public class UseTextBlocks extends Recipe {
             concatenationSb.append(b.getPrefix().getWhitespace()).append("-");
             concatenationSb.append(b.getPadding().getOperator().getBefore().getWhitespace()).append("-");
             return flatAdditiveStringLiterals(b.getLeft(), stringLiterals, contentSb, concatenationSb)
-                   && flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
+                    && flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
         } else if (isRegularStringLiteral(expression)) {
             J.Literal l = (J.Literal) expression;
             stringLiterals.add(l);
@@ -197,11 +192,11 @@ public class UseTextBlocks extends Recipe {
     }
 
     private static boolean isRegularStringLiteral(Expression expr) {
-        if ( expr instanceof J.Literal) {
+        if (expr instanceof J.Literal) {
             J.Literal l = (J.Literal) expr;
 
             return TypeUtils.isString(l.getType()) &&
-                   l.getValueSource() != null &&
+                    l.getValueSource() != null &&
                     !l.getValueSource().startsWith("\"\"\"");
         }
         return false;
@@ -224,7 +219,7 @@ public class UseTextBlocks extends Recipe {
         int spaceCount = tabAndSpaceCounts[1];
         if (useTabCharacter) {
             return StringUtils.repeat("\t", tabCount) +
-                   StringUtils.repeat(" ", spaceCount);
+                    StringUtils.repeat(" ", spaceCount);
         } else {
             // replace tab with spaces if the style is using spaces
             return StringUtils.repeat(" ", tabCount * tabSize + spaceCount);
@@ -232,9 +227,8 @@ public class UseTextBlocks extends Recipe {
     }
 
     /**
-     *
      * @param concatenation a string to present concatenation context
-     * @param tabSize from autoDetect
+     * @param tabSize       from autoDetect
      * @return an int array of size 2, 1st value is tab count, 2nd value is space count
      */
     private static int[] shortestPrefixAfterNewline(String concatenation, int tabSize) {

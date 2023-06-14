@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.logging;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -24,7 +25,6 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -41,40 +41,29 @@ public class MigrateLoggerLogrbToUseResourceBundle extends Recipe {
         return "Use `Logger#logrb(.., ResourceBundle bundleName, ..)` instead of the deprecated `java.util.logging.Logger#logrb(.., String bundleName, ..)` in Java 8 or higher.";
     }
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
     public Set<String> getTags() {
         return Collections.singleton("deprecated");
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>(MATCHER);
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(new UsesMethod<>(MATCHER), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = method;
                 if (MATCHER.matches(m)) {
-                    m = m.withTemplate(
-                            JavaTemplate.builder(this::getCursor, "#{any(java.util.logging.Level)}, #{any(String)}, #{any(String)}, ResourceBundle.getBundle(#{any(String)}), #{any(String)}" + (m.getArguments().size() == 6 ? ", #{any()}" : ""))
-                                    .imports("java.util.ResourceBundle")
-                                    .build(),
-                            m.getCoordinates().replaceArguments(),
-                            m.getArguments().toArray()
-                    );
+                    m = JavaTemplate.builder("#{any(java.util.logging.Level)}, #{any(String)}, #{any(String)}, ResourceBundle.getBundle(#{any(String)}), #{any(String)}" + (m.getArguments().size() == 6 ? ", #{any()}" : ""))
+                            .contextSensitive()
+                            .imports("java.util.ResourceBundle")
+                            .build().apply(
+                                    getCursor(),
+                                    m.getCoordinates().replaceArguments(),
+                                    m.getArguments().toArray()
+                            );
                     maybeAddImport("java.util.ResourceBundle");
                 }
                 return super.visitMethodInvocation(m, ctx);
             }
-
-        };
+        });
     }
-
 }

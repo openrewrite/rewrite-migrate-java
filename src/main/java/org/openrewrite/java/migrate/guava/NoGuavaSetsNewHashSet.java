@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -25,7 +26,6 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,53 +44,43 @@ public class NoGuavaSetsNewHashSet extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public Set<String> getTags() {
         return Collections.singleton("guava");
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return new UsesMethod<>(NEW_HASH_SET);
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newHashSet = JavaTemplate.builder(this::getCursor, "new HashSet<>()")
-                    .imports("java.util.HashSet")
-                    .build();
-
-            private final JavaTemplate newHashSetCollection = JavaTemplate.builder(this::getCursor, "new HashSet<>(#{any(java.util.Collection)})")
-                    .imports("java.util.HashSet")
-                    .build();
-
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(new UsesMethod<>(NEW_HASH_SET), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_HASH_SET.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.HashSet");
                     if (method.getArguments().isEmpty() || (!method.getArguments().isEmpty() && method.getArguments().get(0) instanceof J.Empty)) {
-                        return method.withTemplate(newHashSet, method.getCoordinates().replace());
+                        return JavaTemplate.builder("new HashSet<>()")
+                                .contextSensitive()
+                                .imports("java.util.HashSet")
+                                .build()
+                                .apply(getCursor(), method.getCoordinates().replace());
                     } else if (method.getArguments().size() == 1 && TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
-                        return method.withTemplate(newHashSetCollection, method.getCoordinates().replace(),
-                                method.getArguments().get(0));
+                        return JavaTemplate.builder("new HashSet<>(#{any(java.util.Collection)})")
+                                .contextSensitive()
+                                .imports("java.util.HashSet")
+                                .build()
+                                .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
                     } else {
                         maybeAddImport("java.util.Arrays");
-                        JavaTemplate newHashSetVarargs = JavaTemplate.builder(this::getCursor, "new HashSet<>(Arrays.asList(" + method.getArguments().stream().map(a -> "#{any()}").collect(Collectors.joining(",")) + "))")
+                        JavaTemplate newHashSetVarargs = JavaTemplate.builder("new HashSet<>(Arrays.asList(" + method.getArguments().stream().map(a -> "#{any()}").collect(Collectors.joining(",")) + "))")
+                                .contextSensitive()
                                 .imports("java.util.Arrays")
                                 .imports("java.util.HashSet")
                                 .build();
-                        return method.withTemplate(newHashSetVarargs, method.getCoordinates().replace(),
+                        return newHashSetVarargs.apply(getCursor(), method.getCoordinates().replace(),
                                 method.getArguments().toArray());
                     }
                 }
                 return super.visitMethodInvocation(method, ctx);
             }
-        };
+        });
     }
 }

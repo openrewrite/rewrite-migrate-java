@@ -161,7 +161,6 @@ class JavaxToJakartaTest implements RewriteTest {
               .scanRuntimeClasspath("org.openrewrite.java.migrate")
               .build()
               .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
-              .doNext(new ChangeType("I1", "I2", false))
             )
             .parser(JavaParser.fromJavaVersion()
               //language=java
@@ -175,7 +174,7 @@ class JavaxToJakartaTest implements RewriteTest {
           //language=java
           java(
             "public class B extends javax.xml.bind.annotation.A implements I1 {}",
-            "public class B extends jakarta.xml.bind.annotation.A implements I2 {}"
+            "public class B extends jakarta.xml.bind.annotation.A implements I1 {}"
           )
         );
     }
@@ -189,7 +188,6 @@ class JavaxToJakartaTest implements RewriteTest {
               .scanRuntimeClasspath("org.openrewrite.java.migrate")
               .build()
               .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
-              .doNext(new ChangeType("I1", "I2", false))
             )
             .parser(
               //language=java
@@ -373,12 +371,12 @@ class JavaxToJakartaTest implements RewriteTest {
           java(
             """
               public class A {
-                  Class<?> clazz = javax.xml.bind.annotation.A.class;
+                  Class<?> class_ = javax.xml.bind.annotation.A.class;
               }
               """,
             """
               public class A {
-                  Class<?> clazz = jakarta.xml.bind.annotation.A.class;
+                  Class<?> class_ = jakarta.xml.bind.annotation.A.class;
               }
               """
           )
@@ -460,6 +458,10 @@ class JavaxToJakartaTest implements RewriteTest {
                   	</properties>
                   	<dependencies>
                   		<dependency>
+                   			<groupId>jakarta.servlet</groupId>
+                   		<artifactId>jakarta.servlet-api</artifactId>
+                   		</dependency>
+                  		<dependency>
                   			<groupId>org.springframework.boot</groupId>
                   			<artifactId>spring-boot-starter-web</artifactId>
                   		</dependency>
@@ -477,15 +479,18 @@ class JavaxToJakartaTest implements RewriteTest {
                   </project>
               """),
             srcMainJava(
-              java("""
-                import javax.servlet.A;
-                public class TestApplication {
-                }
-            """, """
-                import jakarta.servlet.A;
-                public class TestApplication {
-                }
-            """)
+              java(
+                """
+                  import javax.servlet.A;
+                  public class TestApplication {
+                  }
+                  """,
+                """
+                  import jakarta.servlet.A;
+                  public class TestApplication {
+                  }
+                  """
+              )
             )
           )
         );

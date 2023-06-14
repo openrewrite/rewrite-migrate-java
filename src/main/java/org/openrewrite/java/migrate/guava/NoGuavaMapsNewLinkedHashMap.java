@@ -16,16 +16,15 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -45,62 +44,45 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public Set<String> getTags() {
         return Collections.singleton("guava");
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-                doAfterVisit(new UsesMethod<>(NEW_LINKED_HASH_MAP));
-                doAfterVisit(new UsesMethod<>(NEW_LINKED_HASH_MAP_WITH_MAP));
-                doAfterVisit(new UsesMethod<>(NEW_LINKED_HASH_MAP_CAPACITY));
-                return cu;
-            }
-        };
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
-            private final JavaTemplate newLinkedHashMap = JavaTemplate.builder(this::getCursor, "new LinkedHashMap<>()")
-                    .imports("java.util.LinkedHashMap")
-                    .build();
-
-            private final JavaTemplate newLinkedHashMapWithMap = JavaTemplate.builder(this::getCursor, "new LinkedHashMap<>(#{any(java.util.Map)})")
-                    .imports("java.util.LinkedHashMap")
-                    .build();
-
-            private final JavaTemplate newLinkedHashMapCapacity = JavaTemplate.builder(this::getCursor, "new LinkedHashMap<>(#{any(int)})")
-                    .imports("java.util.LinkedHashMap")
-                    .build();
-
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(Preconditions.or(
+                new UsesMethod<>(NEW_LINKED_HASH_MAP),
+                new UsesMethod<>(NEW_LINKED_HASH_MAP_WITH_MAP),
+                new UsesMethod<>(NEW_LINKED_HASH_MAP_CAPACITY)), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_LINKED_HASH_MAP.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.LinkedHashMap");
-                    return method.withTemplate(newLinkedHashMap, method.getCoordinates().replace());
+                    return JavaTemplate.builder("new LinkedHashMap<>()")
+                            .contextSensitive()
+                            .imports("java.util.LinkedHashMap")
+                            .build()
+                            .apply(getCursor(), method.getCoordinates().replace());
                 } else if (NEW_LINKED_HASH_MAP_WITH_MAP.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.LinkedHashMap");
-                    return method.withTemplate(newLinkedHashMapWithMap, method.getCoordinates().replace(),
-                            method.getArguments().get(0));
+                    return JavaTemplate.builder("new LinkedHashMap<>(#{any(java.util.Map)})")
+                            .contextSensitive()
+                            .imports("java.util.LinkedHashMap")
+                            .build()
+                            .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
                 } else if (NEW_LINKED_HASH_MAP_CAPACITY.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.LinkedHashMap");
-                    return method.withTemplate(newLinkedHashMapCapacity, method.getCoordinates().replace(),
-                            method.getArguments().get(0));
+                    return JavaTemplate.builder("new LinkedHashMap<>(#{any(int)})")
+                            .contextSensitive()
+                            .imports("java.util.LinkedHashMap")
+                            .build()
+                            .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
                 }
                 return super.visitMethodInvocation(method, ctx);
             }
-        };
+        });
     }
 }

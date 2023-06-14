@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -51,16 +51,12 @@ public class OptionalNotEmptyToIsPresent extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return Applicability.and(
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(11),
                 new UsesMethod<>(JAVA_UTIL_OPTIONAL_IS_EMPTY));
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
         MethodMatcher optionalIsPresentMatcher = new MethodMatcher(JAVA_UTIL_OPTIONAL_IS_EMPTY);
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public Statement visitStatement(Statement s, ExecutionContext ctx) {
                 Statement statement = (Statement) super.visitStatement(s, ctx);
@@ -69,18 +65,20 @@ public class OptionalNotEmptyToIsPresent extends Recipe {
                     if (unary.getOperator() == Type.Not) {
                         Expression expression = unary.getExpression();
                         if (expression instanceof J.MethodInvocation) {
-                            J.MethodInvocation methodInvocation = (J.MethodInvocation) expression;
-                            if (optionalIsPresentMatcher.matches(methodInvocation)) {
-                                return statement.withTemplate(
-                                        JavaTemplate.builder(this::getCursor, "#{any()}.isPresent()").build(),
-                                        statement.getCoordinates().replace(),
-                                        methodInvocation.getSelect());
+                            J.MethodInvocation m = (J.MethodInvocation) expression;
+                            if (optionalIsPresentMatcher.matches(m)) {
+                                return JavaTemplate.builder("#{any()}.isPresent()")
+                                        .contextSensitive()
+                                        .build()
+                                        .apply(getCursor(),
+                                                statement.getCoordinates().replace(),
+                                                m.getSelect());
                             }
                         }
                     }
                 }
                 return statement;
             }
-        };
+        });
     }
 }

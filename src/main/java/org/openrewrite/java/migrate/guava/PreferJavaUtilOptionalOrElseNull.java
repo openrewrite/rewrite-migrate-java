@@ -15,21 +15,19 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Recipe;
+import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 public class PreferJavaUtilOptionalOrElseNull extends Recipe {
+
     @Override
     public String getDisplayName() {
         return "Prefer `java.util.Optional#orElse(null)` over `com.google.common.base.Optional#orNull()`";
@@ -41,28 +39,13 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
     public Set<String> getTags() {
         return new HashSet<>(Arrays.asList("RSPEC-4738", "guava"));
     }
 
     @Override
-    protected UsesType<ExecutionContext> getApplicableTest() {
-        return new UsesType<>("com.google.common.base.Optional", false);
-    }
-
-    @Override
-    protected UsesMethod<ExecutionContext> getSingleSourceApplicableTest() {
-        return new UsesMethod<>("com.google.common.base.Optional orNull()");
-    }
-
-    @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
-        return new PreferJavaUtilOptionalOrElseNullVisitor();
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(new UsesMethod<>("com.google.common.base.Optional orNull()"), new PreferJavaUtilOptionalOrElseNullVisitor());
     }
 
     private static class PreferJavaUtilOptionalOrElseNullVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -80,8 +63,10 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
             if (OPTIONAL_OR_NULL_MATCHER.matches(mi)) {
-                return mi.withName(mi.getName().withSimpleName("orElse"))
-                        .withTemplate(JavaTemplate.builder(this::getCursor, "null").build(), mi.getCoordinates().replaceArguments());
+                mi = mi.withName(mi.getName().withSimpleName("orElse"));
+                mi = JavaTemplate.builder("null")
+                        .build()
+                        .apply(updateCursor(mi), mi.getCoordinates().replaceArguments());
             }
             return mi;
         }
