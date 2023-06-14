@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
@@ -54,6 +55,32 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
           class A {
               Object foo(Object obj) {
                   return Objects.requireNonNull(obj);
+              }
+          }
+          """));
+    }
+
+    @Test
+    @ExpectedToFail("""
+        Preconditions has both `checkNotNull(Object, Object)` and `checkNotNull(Object, String, Object...)`,
+        meaning we can't exactly match only the `(Object, String)` case which Objects.requireNonNull supports.
+      """)
+    void preconditionsCheckNotNullToObjectsRequireNonNullTwoArguments() {
+        //language=java
+        rewriteRun(java("""
+          import com.google.common.base.Preconditions;
+
+          class A {
+              Object foo(Object obj) {
+                  return Preconditions.checkNotNull(obj, "foo");
+              }
+          }
+          """, """
+          import java.util.Objects;
+
+          class A {
+              Object foo(Object obj) {
+                  return Objects.requireNonNull(obj, "foo");
               }
           }
           """));
