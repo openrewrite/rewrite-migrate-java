@@ -186,10 +186,10 @@ recipeList:
       methodPattern: com.google.common.base.Preconditions checkNotNull(Object)
       newMethodName: requireNonNull
   - org.openrewrite.java.ChangeMethodTargetToStatic:
-      methodPattern: com.google.common.base.Preconditions checkNotNull(Object)
+      methodPattern: com.google.common.base.Preconditions requireNonNull(Object)
       fullyQualifiedTargetTypeName: java.util.Objects
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: com.google.common.base.Preconditions checkNotNull(Object, String)
+      methodPattern: com.google.common.base.Preconditions requireNonNull(Object, String)
       newMethodName: requireNonNull
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.base.Preconditions checkNotNull(Object, String)
