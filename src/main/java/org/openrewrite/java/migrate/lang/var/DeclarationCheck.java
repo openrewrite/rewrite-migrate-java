@@ -56,9 +56,9 @@ final class DeclarationCheck {
     private static boolean isSingleVariableDefinition(@NotNull J.VariableDeclarations vd) {
         TypeTree typeExpression = vd.getTypeExpression();
 
-        boolean definesSigleVariable = vd.getVariables().size() == 1;
+        boolean definesSingleVariable = vd.getVariables().size() == 1;
         boolean isPureAssigment = JavaType.Primitive.Null.equals(vd.getType());
-        if (!definesSigleVariable || isPureAssigment) return false;
+        if (!definesSingleVariable || isPureAssigment) return false;
 
         Expression initializer = vd.getVariables().get(0).getInitializer();
         boolean isDeclarationOnly = initializer == null;

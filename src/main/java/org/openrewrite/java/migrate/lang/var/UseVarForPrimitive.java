@@ -38,7 +38,8 @@ public class UseVarForPrimitive extends Recipe {
     @NotNull
     @Override
     public String getDisplayName() {
-        return "UseVarForPrimitives";
+        //language=markdown
+        return "Use `var` for primitive-typed variables";
     }
 
     @NotNull
@@ -67,8 +68,8 @@ public class UseVarForPrimitive extends Recipe {
 
         @NotNull
         @Override
-        public J.VariableDeclarations visitVariableDeclarations(@NotNull J.VariableDeclarations vd, @NotNull ExecutionContext executionContext) {
-            vd = super.visitVariableDeclarations(vd, executionContext);
+        public J.VariableDeclarations visitVariableDeclarations( J.VariableDeclarations vd,  ExecutionContext ctx) {
+            vd = super.visitVariableDeclarations(vd, ctx);
 
             boolean isGeneralApplicable = DeclarationCheck.isVarApplicable(this.getCursor(), vd);
             if (!isGeneralApplicable) return vd;

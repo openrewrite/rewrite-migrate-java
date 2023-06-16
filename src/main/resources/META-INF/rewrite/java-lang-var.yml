@@ -20,7 +20,7 @@ displayName: Use local variable type inference
 description: Apply local variable type inference (`var`) for primitives and objects.
 tags:
   - refactoring
-  - java 10
+  - java10
   - var
 recipeList:
   - org.openrewrite.java.migrate.lang.var.UseVarForObject
