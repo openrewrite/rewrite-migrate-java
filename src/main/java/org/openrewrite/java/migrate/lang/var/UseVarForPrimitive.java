@@ -22,7 +22,6 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.config.RecipeExample;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
@@ -30,9 +29,6 @@ import org.openrewrite.java.search.HasJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
@@ -51,59 +47,6 @@ public class UseVarForPrimitive extends Recipe {
         //language=markdown
         return "Try to apply local variable type inference `var` to primitiv variables where possible." +
                "This recipe will not touch variable declaration with initializer containing ternary operators.";
-    }
-
-    @Override
-    public List<RecipeExample> getExamples() {
-        RecipeExample recipeExample = new RecipeExample();
-        List<RecipeExample.Source> examples = new ArrayList<>();
-        //language=java
-        examples.add(new RecipeExample.Source(
-                "package com.example.app;\n" +
-                "                                \n" +
-                "class A {\n" +
-                "  void m() {\n" +
-                "    String str = \"I am a value\";\n" +
-                "    boolean b = true;\n" +
-                "    char ch = '\ufffd';\n" +
-                "    double d1 = 2.0;\n" +
-                "    double d2 = 2.0D;\n" +
-                "    float f1 = 2.0;\n" +
-                "    float f2 = 2.0F;\n" +
-                "    long l1 = 2;\n" +
-                "    long l2 = 2L;\n" +
-                "    // no change\n" +
-                "    byte flags = 0;\n" +
-                "    short mask = 0x7fff;\n" +
-                "  }\n" +
-                "}",
-                "package com.example.app;\n" +
-                "                                \n" +
-                "class A {\n" +
-                "  void m() {\n" +
-                "    var str = \"I am a value\";\n" +
-                "    var b = true;\n" +
-                "    var ch = '\ufffd';\n" +
-                "    var d1 = 2.0;\n" +
-                "    var d2 = 2.0D;\n" +
-                "    var f1 = 2.0;\n" +
-                "    var f2 = 2.0F;\n" +
-                "    var l1 = 2;\n" +
-                "    var l2 = 2L;\n" +
-                "    // no change\n" +
-                "    byte flags = 0;\n" +
-                "    short mask = 0x7fff;\n" +
-                "  }\n" +
-                "}",
-                null, "java"));
-
-        //language=markdown
-        recipeExample.setDescription("Applies `var` keyword to primitive variable definitions if the type is different from `short` or `byte`");
-        recipeExample.setSources(examples);
-
-        List<RecipeExample> exampleList = new ArrayList<>();
-        exampleList.add(recipeExample);
-        return exampleList;
     }
 
     @NotNull

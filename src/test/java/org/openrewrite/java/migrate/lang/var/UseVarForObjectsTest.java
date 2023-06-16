@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.lang.var;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.java.Assertions.java;
@@ -31,6 +32,7 @@ class UseVarForObjectsTest extends VarBaseTest {
 
     @Nested
     class Applicable {
+        @DocumentExample
         @Test
         void inMethodBody() {
             //language=java

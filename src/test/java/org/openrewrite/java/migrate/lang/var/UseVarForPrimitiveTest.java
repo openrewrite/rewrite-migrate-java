@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lang.var;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.java.Assertions.java;
@@ -99,6 +100,7 @@ class UseVarForPrimitiveTest extends VarBaseTest {
         }
 
         @Test
+        @DocumentExample
         void forChar() {
             //language=java
             rewriteRun(
