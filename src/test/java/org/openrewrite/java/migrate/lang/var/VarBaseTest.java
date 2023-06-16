@@ -15,16 +15,37 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
+
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
-
 abstract class VarBaseTest implements RewriteTest {
     @Nested
     class GeneralNotApplicable {
+
+        @Test
+        void fieldsInInnerClass() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                      class Inner {
+                        final String str = "test";
+                      }
+                    }
+                  }
+                  """),
+                10
+              )
+            );
+        }
 
         @Test
         void assignNull() {
@@ -139,8 +160,8 @@ abstract class VarBaseTest implements RewriteTest {
 
                   class A {
                     void m() {
-                        String o = true ? "isTrue" : "Test";
-                        var i = true ? 1 : 0;
+                        String o = "isTrue";
+                        var i = 1;
                     }
                   }
                   """),

@@ -127,16 +127,16 @@ final class DeclarationCheck {
      *
      * @param cursor value to determine
      */
-    private static boolean isInsideMethod(@NotNull Cursor cursor) {
-        Object current = cursor.getValue();
+    private static boolean isInsideMethod(Cursor cursor) {
+        Object value = cursor
+                .dropParentUntil(p -> p instanceof J.MethodDeclaration || p instanceof J.ClassDeclaration|| p.equals(Cursor.ROOT_VALUE))
+                .getValue();
 
-        boolean atRoot = Cursor.ROOT_VALUE.equals(current);
-        boolean atClassDeclaration = current instanceof J.ClassDeclaration;
-        boolean atMethodDeclaration = current instanceof J.MethodDeclaration;
+        boolean isNotRoot = !Cursor.ROOT_VALUE.equals(value);
+        boolean isNotClassDeclaration = !(value instanceof J.ClassDeclaration);
+        boolean isMethodDeclaration = value instanceof J.MethodDeclaration;
 
-        if (atRoot || atClassDeclaration) return false;
-        if (atMethodDeclaration) return true;
-        return isInsideMethod(requireNonNull(cursor.getParent()));
+        return isNotRoot && isNotClassDeclaration && isMethodDeclaration;
     }
 
     /**
