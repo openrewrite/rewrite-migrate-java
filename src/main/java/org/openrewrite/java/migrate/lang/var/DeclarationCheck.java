@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2023 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,8 @@ final class DeclarationCheck {
     public static boolean isVarApplicable(Cursor cursor, J.VariableDeclarations vd) {
         boolean isMethodParameter = DeclarationCheck.isMethodParameter(vd, cursor);
         boolean isMultiVarDefinition = !DeclarationCheck.isSingleVariableDefinition(vd);
-        if (isMethodParameter || isMultiVarDefinition) return false;
+        boolean useTernary = DeclarationCheck.initializedByTernary(vd);
+        if (isMethodParameter || isMultiVarDefinition || useTernary) return false;
 
         boolean isInsideMethod = DeclarationCheck.isInsideMethod(cursor);
         boolean isInsideInitializer = DeclarationCheck.isInsideInitializer(cursor, 0);

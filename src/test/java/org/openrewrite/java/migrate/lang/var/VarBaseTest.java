@@ -38,6 +38,7 @@ abstract class VarBaseTest implements RewriteTest {
                     void m() {
                       class Inner {
                         final String str = "test";
+                        final int i = 0;
                       }
                     }
                   }
@@ -160,8 +161,8 @@ abstract class VarBaseTest implements RewriteTest {
 
                   class A {
                     void m() {
-                        String o = "isTrue";
-                        var i = 1;
+                        String o = true ? "isTrue" : "isFalse";
+                        int i = true ? 1 : 0;
                     }
                   }
                   """),
