@@ -57,7 +57,6 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.RestAssuredJavaxToJakarta
-  - org.openrewrite.java.migrate.hibernate.MigrateToHibernateDependencies61
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
