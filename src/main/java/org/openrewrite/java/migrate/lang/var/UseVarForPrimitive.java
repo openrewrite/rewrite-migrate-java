@@ -31,17 +31,17 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
 import static java.lang.String.format;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UseVarForPrimitive extends Recipe {
+    @NotNull
     @Override
     public String getDisplayName() {
         return "UseVarForPrimitives";
     }
 
+    @NotNull
     @Override
     public String getDescription() {
         //language=markdown
@@ -65,8 +65,9 @@ public class UseVarForPrimitive extends Recipe {
         private final JavaTemplate template = JavaTemplate.builder("var #{} = #{any()}")
                 .javaParser(JavaParser.fromJavaVersion()).build();
 
+        @NotNull
         @Override
-        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, ExecutionContext executionContext) {
+        public J.VariableDeclarations visitVariableDeclarations(@NotNull J.VariableDeclarations vd, @NotNull ExecutionContext executionContext) {
             vd = super.visitVariableDeclarations(vd, executionContext);
 
             boolean isGeneralApplicable = DeclarationCheck.isVarApplicable(this.getCursor(), vd);
@@ -97,7 +98,7 @@ public class UseVarForPrimitive extends Recipe {
         private Expression expandWithPrimitivTypeHint(@NotNull J.VariableDeclarations vd, @NotNull Expression initializer) {
             String valueSource = ((J.Literal) initializer).getValueSource();
 
-            if (isNull(valueSource)) return initializer;
+            if (valueSource == null) return initializer;
 
             boolean isLongLiteral = JavaType.Primitive.Long.equals(vd.getType());
             boolean inferredAsLong = valueSource.endsWith("l") || valueSource.endsWith("L");
@@ -115,7 +116,7 @@ public class UseVarForPrimitive extends Recipe {
                 typNotation = "D";
             }
 
-            if (nonNull(typNotation)) {
+            if (typNotation != null) {
                 initializer = ((J.Literal) initializer).withValueSource(format("%s%s", valueSource, typNotation));
             }
 

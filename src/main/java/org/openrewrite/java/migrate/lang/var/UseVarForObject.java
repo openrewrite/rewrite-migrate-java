@@ -32,11 +32,13 @@ import org.openrewrite.java.tree.J;
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UseVarForObject extends Recipe {
+    @NotNull
     @Override
     public String getDisplayName() {
         return "UseVarForObjects";
     }
 
+    @NotNull
     @Override
     public String getDescription() {
         //language=markdown
@@ -57,8 +59,9 @@ public class UseVarForObject extends Recipe {
         private final JavaTemplate template = JavaTemplate.builder("var #{} = #{any()}")
                 .javaParser(JavaParser.fromJavaVersion()).build();
 
+        @NotNull
         @Override
-        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, ExecutionContext executionContext) {
+        public J.VariableDeclarations visitVariableDeclarations(@NotNull J.VariableDeclarations vd, @NotNull ExecutionContext executionContext) {
             vd = super.visitVariableDeclarations(vd, executionContext);
 
             boolean isGeneralApplicable = DeclarationCheck.isVarApplicable(this.getCursor(), vd);
