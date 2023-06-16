@@ -15,11 +15,10 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import org.jetbrains.annotations.NotNull;
+import static java.util.Objects.requireNonNull;
+
 import org.openrewrite.Cursor;
 import org.openrewrite.java.tree.*;
-
-import static java.util.Objects.requireNonNull;
 
 final class DeclarationCheck {
 
@@ -37,7 +36,7 @@ final class DeclarationCheck {
      * @param vd     variable definition at question
      * @return true if var is applicable in general
      */
-    public static boolean isVarApplicable(@NotNull Cursor cursor, @NotNull J.VariableDeclarations vd) {
+    public static boolean isVarApplicable(Cursor cursor, J.VariableDeclarations vd) {
         boolean isMethodParameter = DeclarationCheck.isMethodParameter(vd, cursor);
         boolean isMultiVarDefinition = !DeclarationCheck.isSingleVariableDefinition(vd);
         if (isMethodParameter || isMultiVarDefinition) return false;
@@ -53,7 +52,7 @@ final class DeclarationCheck {
      * @param vd variable definition at hand
      * @return true if single variable definition with initialization and without var
      */
-    private static boolean isSingleVariableDefinition(@NotNull J.VariableDeclarations vd) {
+    private static boolean isSingleVariableDefinition(J.VariableDeclarations vd) {
         TypeTree typeExpression = vd.getTypeExpression();
 
         boolean definesSingleVariable = vd.getVariables().size() == 1;
@@ -76,7 +75,7 @@ final class DeclarationCheck {
      * @param vd variable declaration at hand
      * @return true iff declares primitive type
      */
-    public static boolean isPrimitive(@NotNull J.VariableDeclarations vd) {
+    public static boolean isPrimitive(J.VariableDeclarations vd) {
         TypeTree typeExpression = vd.getTypeExpression();
         return typeExpression instanceof J.Primitive;
     }
@@ -88,7 +87,7 @@ final class DeclarationCheck {
      * @param type type in question
      * @return true iff the declaration has a matching type definition
      */
-    public static boolean declarationHasType(@NotNull J.VariableDeclarations vd, @NotNull JavaType type) {
+    public static boolean declarationHasType(J.VariableDeclarations vd, JavaType type) {
         TypeTree typeExpression = vd.getTypeExpression();
         return typeExpression != null && type.equals(typeExpression.getType());
     }
@@ -99,7 +98,7 @@ final class DeclarationCheck {
      * @param vd variable definition at hand
      * @return true if definition or initializer uses generic types
      */
-    public static boolean useGenerics(@NotNull J.VariableDeclarations vd) {
+    public static boolean useGenerics(J.VariableDeclarations vd) {
         TypeTree typeExpression = vd.getTypeExpression();
         boolean isGenericDefinition = typeExpression instanceof J.ParameterizedType;
         if (isGenericDefinition) return true;
@@ -118,7 +117,7 @@ final class DeclarationCheck {
      * @param vd variable declaration at hand
      * @return true iff the ternary operator is used in the initialization
      */
-    public static boolean initializedByTernary(@NotNull J.VariableDeclarations vd) {
+    public static boolean initializedByTernary(J.VariableDeclarations vd) {
         Expression initializer = vd.getVariables().get(0).getInitializer();
         return initializer != null && initializer.unwrap() instanceof J.Ternary;
     }
@@ -147,7 +146,7 @@ final class DeclarationCheck {
      * @param cursor current location
      * @return true iff vd is part of a method declaration
      */
-    private static boolean isMethodParameter(@NotNull J.VariableDeclarations vd, @NotNull Cursor cursor) {
+    private static boolean isMethodParameter(J.VariableDeclarations vd, Cursor cursor) {
         J.MethodDeclaration methodDeclaration = cursor.firstEnclosing(J.MethodDeclaration.class);
         return methodDeclaration != null && methodDeclaration.getParameters().contains(vd);
     }
@@ -159,10 +158,9 @@ final class DeclarationCheck {
      * @param nestedBlockLevel number of blocks, default for start 0
      * @return true iff the courser is inside an instance or static initializer block
      */
-    private static boolean isInsideInitializer(@NotNull Cursor cursor, int nestedBlockLevel) {
-        if (Cursor.ROOT_VALUE.equals(cursor.getValue())) {
-            return false;
-        }
+    private static boolean isInsideInitializer(Cursor cursor, int nestedBlockLevel) {
+        if (Cursor.ROOT_VALUE.equals(cursor.getValue())) return false;
+
         Object currentStatement = cursor.getValue();
 
         // initializer blocks are blocks inside the class definition block, therefor a nesting of 2 is mandatory

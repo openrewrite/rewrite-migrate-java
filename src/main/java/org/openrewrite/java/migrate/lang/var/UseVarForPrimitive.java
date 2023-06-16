@@ -15,9 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
-import org.jetbrains.annotations.NotNull;
+import static java.lang.String.format;
+
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -30,19 +29,20 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import static java.lang.String.format;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UseVarForPrimitive extends Recipe {
-    @NotNull
+
     @Override
     public String getDisplayName() {
         //language=markdown
         return "Use `var` for primitive-typed variables";
     }
 
-    @NotNull
+
     @Override
     public String getDescription() {
         //language=markdown
@@ -50,7 +50,7 @@ public class UseVarForPrimitive extends Recipe {
                "This recipe will not touch variable declaration with initializer containing ternary operators.";
     }
 
-    @NotNull
+
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
@@ -66,7 +66,7 @@ public class UseVarForPrimitive extends Recipe {
         private final JavaTemplate template = JavaTemplate.builder("var #{} = #{any()}")
                 .javaParser(JavaParser.fromJavaVersion()).build();
 
-        @NotNull
+
         @Override
         public J.VariableDeclarations visitVariableDeclarations( J.VariableDeclarations vd,  ExecutionContext ctx) {
             vd = super.visitVariableDeclarations(vd, ctx);
@@ -83,8 +83,8 @@ public class UseVarForPrimitive extends Recipe {
             return transformToVar(vd);
         }
 
-        @NotNull
-        private J.VariableDeclarations transformToVar(@NotNull J.VariableDeclarations vd) {
+
+        private J.VariableDeclarations transformToVar( J.VariableDeclarations vd) {
             Expression initializer = vd.getVariables().get(0).getInitializer();
             String simpleName = vd.getVariables().get(0).getSimpleName();
 
@@ -95,8 +95,8 @@ public class UseVarForPrimitive extends Recipe {
             return template.apply(this.getCursor(), vd.getCoordinates().replace(), simpleName, initializer);
         }
 
-        @NotNull
-        private Expression expandWithPrimitivTypeHint(@NotNull J.VariableDeclarations vd, @NotNull Expression initializer) {
+
+        private Expression expandWithPrimitivTypeHint( J.VariableDeclarations vd,  Expression initializer) {
             String valueSource = ((J.Literal) initializer).getValueSource();
 
             if (valueSource == null) return initializer;

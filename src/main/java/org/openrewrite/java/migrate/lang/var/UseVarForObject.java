@@ -15,9 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
-import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -29,17 +26,20 @@ import org.openrewrite.java.search.HasJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
+import lombok.EqualsAndHashCode;
+import lombok.Value;
+
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UseVarForObject extends Recipe {
-    @NotNull
+
     @Override
     public String getDisplayName() {
         //language=markdown
         return "Use `var` for reference-typed variables";
     }
 
-    @NotNull
+
     @Override
     public String getDescription() {
         //language=markdown
@@ -47,7 +47,7 @@ public class UseVarForObject extends Recipe {
                "This recipe will not touch variable declaration with genrics or initializer containing ternary operators.";
     }
 
-    @NotNull
+
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
@@ -60,7 +60,7 @@ public class UseVarForObject extends Recipe {
         private final JavaTemplate template = JavaTemplate.builder("var #{} = #{any()}")
                 .javaParser(JavaParser.fromJavaVersion()).build();
 
-        @NotNull
+
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, ExecutionContext ctx) {
             vd = super.visitVariableDeclarations(vd, ctx);
@@ -76,8 +76,8 @@ public class UseVarForObject extends Recipe {
             return transformToVar(vd);
         }
 
-        @NotNull
-        private J.VariableDeclarations transformToVar(@NotNull J.VariableDeclarations vd) {
+
+        private J.VariableDeclarations transformToVar(J.VariableDeclarations vd) {
             Expression initializer = vd.getVariables().get(0).getInitializer();
             String simpleName = vd.getVariables().get(0).getSimpleName();
 
