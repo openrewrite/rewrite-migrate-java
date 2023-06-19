@@ -15,35 +15,48 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
-
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
 
 abstract class VarBaseTest implements RewriteTest {
     @Nested
     class GeneralNotApplicable {
 
         @Test
-        void fieldsInInnerClass() {
+        void recordField() {
             //language=java
             rewriteRun(
               version(
                 java("""
                   package com.example.app;
 
-                  class A {
-                    void m() {
-                      class Inner {
-                        final String str = "test";
-                        final int i = 0;
-                      }
+                  record A(int i, Object o) {
+                  }
+                  """
+                ), 17)
+            );
+        }
+
+        @Test
+        void fieldsInInnerClass() {
+            //language=java
+            rewriteRun(
+              java("""
+                package com.example.app;
+
+                class A {
+                  void m() {
+                    class Inner {
+                      final String str = "test";
+                      final int i = 0;
                     }
                   }
-                  """),
-                10
+                }
+                """
               )
             );
         }
@@ -52,17 +65,15 @@ abstract class VarBaseTest implements RewriteTest {
         void assignNull() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
+              java("""
+                package com.example.app;
 
-                  class A {
-                    void m() {
-                      String str = null;
-                    }
+                class A {
+                  void m() {
+                    String str = null;
                   }
-                  """),
-                10
+                }
+                """
               )
             );
         }
@@ -71,18 +82,16 @@ abstract class VarBaseTest implements RewriteTest {
         void assignNothing() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
+              java("""
+                package com.example.app;
 
-                  class A {
-                    void m() {
-                        String str;
-                        int i;
-                    }
+                class A {
+                  void m() {
+                      String str;
+                      int i;
                   }
-                  """),
-                10
+                }
+                """
               )
             );
         }
@@ -91,18 +100,16 @@ abstract class VarBaseTest implements RewriteTest {
         void multipleVariables() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
+              java("""
+                package com.example.app;
 
-                  class A {
-                    void m() {
-                      String str1, str2 = "Hello World!";
-                      int i1, i2 = 1;
-                    }
+                class A {
+                  void m() {
+                    String str1, str2 = "Hello World!";
+                    int i1, i2 = 1;
                   }
-                  """),
-                10
+                }
+                """
               )
             );
         }
@@ -111,20 +118,18 @@ abstract class VarBaseTest implements RewriteTest {
         void simpleAssigment() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
+              java("""
+                package com.example.app;
 
-                  class A {
-                    void m() {
-                        String str1;
-                        str1 = "Hello World!";
-                        int i;
-                        i = 1;
-                    }
+                class A {
+                  void m() {
+                      String str1;
+                      str1 = "Hello World!";
+                      int i;
+                      i = 1;
                   }
-                  """),
-                10
+                }
+                """
               )
             );
         }
@@ -133,20 +138,18 @@ abstract class VarBaseTest implements RewriteTest {
         void varUsage() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
+              java("""
+                package com.example.app;
 
-                  import java.util.Date;
+                import java.util.Date;
 
-                  class A {
-                    void m() {
-                        var str1 = "Hello World!";
-                        var i = 1;
-                    }
+                class A {
+                  void m() {
+                      var str1 = "Hello World!";
+                      var i = 1;
                   }
-                  """),
-                10
+                }
+                """
               )
             );
         }
@@ -155,18 +158,16 @@ abstract class VarBaseTest implements RewriteTest {
         void withTernary() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
+              java("""
+                package com.example.app;
 
-                  class A {
-                    void m() {
-                        String o = true ? "isTrue" : "isFalse";
-                        int i = true ? 1 : 0;
-                    }
+                class A {
+                  void m() {
+                      String o = true ? "isTrue" : "isFalse";
+                      int i = true ? 1 : 0;
                   }
-                  """),
-                10
+                }
+                """
               )
             );
         }
@@ -177,17 +178,15 @@ abstract class VarBaseTest implements RewriteTest {
             void inDefinition() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
+                  java("""
+                    package com.example.app;
 
-                      class A {
-                        void m() {
-                            List<Object> os = new List();
-                        }
+                    class A {
+                      void m() {
+                          List<Object> os = new List();
                       }
-                      """),
-                    10
+                    }
+                    """
                   )
                 );
             }
@@ -196,17 +195,15 @@ abstract class VarBaseTest implements RewriteTest {
             void inInitializer() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
+                  java("""
+                    package com.example.app;
 
-                      class A {
-                        void m() {
-                            List os = new List<Object>();
-                        }
+                    class A {
+                      void m() {
+                          List os = new List<Object>();
                       }
-                      """),
-                    10
+                    }
+                    """
                   )
                 );
             }

@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -25,9 +27,6 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-
-import lombok.EqualsAndHashCode;
-import lombok.Value;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -81,7 +80,16 @@ public class UseVarForObject extends Recipe {
             Expression initializer = vd.getVariables().get(0).getInitializer();
             String simpleName = vd.getVariables().get(0).getSimpleName();
 
-            return template.apply(this.getCursor(), vd.getCoordinates().replace(), simpleName, initializer);
+            if (vd.getModifiers().isEmpty()) {
+                return template.apply(getCursor(), vd.getCoordinates().replace(), simpleName, initializer)
+                        .withPrefix(vd.getPrefix());
+            } else {
+                J.VariableDeclarations result = template.<J.VariableDeclarations>apply(getCursor(), vd.getCoordinates().replace(), simpleName, initializer)
+                        .withModifiers(vd.getModifiers())
+                        .withPrefix(vd.getPrefix());
+                //noinspection DataFlowIssue
+                return result.withTypeExpression(result.getTypeExpression().withPrefix(vd.getTypeExpression().getPrefix()));
+            }
         }
     }
 }

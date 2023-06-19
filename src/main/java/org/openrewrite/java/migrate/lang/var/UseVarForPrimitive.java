@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import static java.lang.String.format;
-
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -29,8 +29,7 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import static java.lang.String.format;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -92,7 +91,16 @@ public class UseVarForPrimitive extends Recipe {
                 initializer = expandWithPrimitivTypeHint(vd, initializer);
             }
 
-            return template.apply(this.getCursor(), vd.getCoordinates().replace(), simpleName, initializer);
+            if (vd.getModifiers().isEmpty()) {
+                return template.apply(getCursor(), vd.getCoordinates().replace(), simpleName, initializer)
+                        .withPrefix(vd.getPrefix());
+            } else {
+                J.VariableDeclarations result = template.<J.VariableDeclarations>apply(getCursor(), vd.getCoordinates().replace(), simpleName, initializer)
+                        .withModifiers(vd.getModifiers())
+                        .withPrefix(vd.getPrefix());
+                //noinspection DataFlowIssue
+                return result.withTypeExpression(result.getTypeExpression().withPrefix(vd.getTypeExpression().getPrefix()));
+            }
         }
 
 

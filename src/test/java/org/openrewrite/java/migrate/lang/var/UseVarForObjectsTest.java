@@ -21,13 +21,13 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.*;
 
 class UseVarForObjectsTest extends VarBaseTest {
 
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new UseVarForObject());
+        spec.recipe(new UseVarForObject())
+          .allSources(s -> s.markers(javaVersion(10)));
     }
 
     @Nested
@@ -37,26 +37,23 @@ class UseVarForObjectsTest extends VarBaseTest {
         void inMethodBody() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-                                    
-                  class A {
-                    void m() {
-                        Object o = new Object();
-                    }
+              java("""
+                package com.example.app;
+                                  
+                class A {
+                  void m() {
+                      Object o = new Object();
                   }
-                  """, """
-                  package com.example.app;
-                                    
-                  class A {
-                    void m() {
-                        var o = new Object();
-                    }
+                }
+                """, """
+                package com.example.app;
+                                  
+                class A {
+                  void m() {
+                      var o = new Object();
                   }
-                  """),
-                10
-              )
+                }
+                """)
             );
         }
 
@@ -64,27 +61,46 @@ class UseVarForObjectsTest extends VarBaseTest {
         void reassignment() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-                                    
-                  class A {
-                    Object o = new Object();
-                    void m() {
-                        Object innerO = o;
-                    }
+              java("""
+                package com.example.app;
+                                  
+                class A {
+                  Object o = new Object();
+                  void m() {
+                      Object innerO = o;
                   }
-                  """, """
-                  package com.example.app;
-                                    
-                  class A {
-                    Object o = new Object();
-                    void m() {
-                        var innerO = o;
-                    }
+                }
+                """, """
+                package com.example.app;
+                                  
+                class A {
+                  Object o = new Object();
+                  void m() {
+                      var innerO = o;
                   }
-                  """),
-                10
+                }
+                """
+              )
+            );
+        }
+
+        @Test
+        void withModifier() {
+            //language=java
+            rewriteRun(
+              java("""
+                class A {
+                  void m() {
+                      final Object o = new Object();
+                  }
+                }
+                """, """
+                class A {
+                  void m() {
+                      final var o = new Object();
+                  }
+                }
+                """
               )
             );
         }
@@ -94,25 +110,23 @@ class UseVarForObjectsTest extends VarBaseTest {
         void withTernary() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-                                    
-                  class A {
-                    void m() {
-                        String o = true ? "isTrue" : "Test";
-                    }
+              java("""
+                package com.example.app;
+                                  
+                class A {
+                  void m() {
+                      String o = true ? "isTrue" : "Test";
                   }
-                  """, """
-                  package com.example.app;
-                                    
-                  class A {
-                    void m() {
-                        var o = true ? "isTrue" : "Test";
-                    }
+                }
+                """, """
+                package com.example.app;
+                                  
+                class A {
+                  void m() {
+                      var o = true ? "isTrue" : "Test";
                   }
-                  """),
-                10
+                }
+                """
               )
             );
         }
@@ -121,25 +135,23 @@ class UseVarForObjectsTest extends VarBaseTest {
         void inStaticInitializer() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-                                    
-                  class A {
-                    static {
-                        Object o = new Object();
-                    }
+              java("""
+                package com.example.app;
+                                      
+                class A {
+                  static {
+                      Object o = new Object();
                   }
-                  """, """
-                  package com.example.app;
-                                    
-                  class A {
-                    static {
-                        var o = new Object();
-                    }
+                }
+                """, """
+                package com.example.app;
+                                      
+                class A {
+                  static {
+                      var o = new Object();
                   }
-                  """),
-                10
+                }
+                """
               )
             );
         }
@@ -148,25 +160,23 @@ class UseVarForObjectsTest extends VarBaseTest {
         void inInstanceInitializer() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-                                    
-                  class A {
-                    {
-                        Object o = new Object();
-                    }
+              java("""
+                package com.example.app;
+                                  
+                class A {
+                  {
+                      Object o = new Object();
                   }
-                  """, """
-                  package com.example.app;
-                                    
-                  class A {
-                    {
-                        var o = new Object();
-                    }
+                }
+                """, """
+                package com.example.app;
+                                  
+                class A {
+                  {
+                      var o = new Object();
                   }
-                  """),
-                10
+                }
+                """
               )
             );
         }
@@ -178,17 +188,15 @@ class UseVarForObjectsTest extends VarBaseTest {
         void asParameter() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-                                    
-                  class A {
-                    Object m(Object o) {
-                        return o;
-                    }
+              java("""
+                package com.example.app;
+                                  
+                class A {
+                  Object m(Object o) {
+                      return o;
                   }
-                  """),
-                10
+                }
+                """
               )
             );
         }
@@ -197,18 +205,16 @@ class UseVarForObjectsTest extends VarBaseTest {
         void asField() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-                                    
-                  class A {
-                    Object o = new Object();
-                    Object m() {
-                        return o;
-                    }
+              java("""
+                package com.example.app;
+                                  
+                class A {
+                  Object o = new Object();
+                  Object m() {
+                      return o;
                   }
-                  """),
-                10
+                }
+                """
               )
             );
         }
