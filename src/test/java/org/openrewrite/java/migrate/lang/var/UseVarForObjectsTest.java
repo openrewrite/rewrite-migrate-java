@@ -21,7 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 
-import static org.openrewrite.java.Assertions.*;
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class UseVarForObjectsTest extends VarBaseTest {
 
@@ -184,6 +185,23 @@ class UseVarForObjectsTest extends VarBaseTest {
 
     @Nested
     class NotApplicable {
+        @Test
+        void fieldInAnonymousSubclass() {
+            //language=java
+            rewriteRun(
+              java("""
+                class A {
+                    void m() {
+                        new Object() {
+                            private final Object o1 = new Object();
+                        };
+                    }
+                }
+                """
+              )
+            );
+        }
+
         @Test
         void asParameter() {
             //language=java

@@ -64,7 +64,7 @@ public class UseVarForObject extends Recipe {
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, ExecutionContext ctx) {
             vd = super.visitVariableDeclarations(vd, ctx);
 
-            boolean isGeneralApplicable = DeclarationCheck.isVarApplicable(this.getCursor(), vd);
+            boolean isGeneralApplicable = DeclarationCheck.isVarApplicable(getCursor(), vd);
             if (!isGeneralApplicable) return vd;
 
             boolean isPrimitive = DeclarationCheck.isPrimitive(vd);

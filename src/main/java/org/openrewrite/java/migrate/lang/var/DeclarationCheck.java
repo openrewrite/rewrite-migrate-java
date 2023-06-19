@@ -15,10 +15,10 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import static java.util.Objects.requireNonNull;
-
 import org.openrewrite.Cursor;
 import org.openrewrite.java.tree.*;
+
+import static java.util.Objects.requireNonNull;
 
 final class DeclarationCheck {
 
@@ -37,14 +37,11 @@ final class DeclarationCheck {
      * @return true if var is applicable in general
      */
     public static boolean isVarApplicable(Cursor cursor, J.VariableDeclarations vd) {
-        boolean isMethodParameter = DeclarationCheck.isMethodParameter(vd, cursor);
-        boolean isMultiVarDefinition = !DeclarationCheck.isSingleVariableDefinition(vd);
-        boolean useTernary = DeclarationCheck.initializedByTernary(vd);
-        if (isMethodParameter || isMultiVarDefinition || useTernary) return false;
+        if (isField(vd, cursor) || isMethodParameter(vd, cursor) || !isSingleVariableDefinition(vd) || initializedByTernary(vd)) {
+            return false;
+        }
 
-        boolean isInsideMethod = DeclarationCheck.isInsideMethod(cursor);
-        boolean isInsideInitializer = DeclarationCheck.isInsideInitializer(cursor, 0);
-        return isInsideMethod || isInsideInitializer;
+        return isInsideMethod(cursor) || isInsideInitializer(cursor, 0);
     }
 
     /**
@@ -138,6 +135,15 @@ final class DeclarationCheck {
         boolean isMethodDeclaration = value instanceof J.MethodDeclaration;
 
         return isNotRoot && isNotClassDeclaration && isMethodDeclaration;
+    }
+
+    private static boolean isField(J.VariableDeclarations vd, Cursor cursor) {
+        Cursor parent = cursor.getParentTreeCursor();
+        if (parent.getParent() == null) {
+            return false;
+        }
+        Cursor grandparent = parent.getParentTreeCursor();
+        return parent.getValue() instanceof J.Block && (grandparent.getValue() instanceof J.ClassDeclaration || grandparent.getValue() instanceof J.NewClass);
     }
 
     /**
