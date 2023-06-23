@@ -75,14 +75,6 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                         finalize();
                     }
                 }
-                 """,
-              """
-                import java.util.zip.Inflater;
-
-                class FooBar extends Inflater {
-                    public void test() {
-                    }
-                }
                  """
             ),
             12
@@ -296,6 +288,25 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                    public void test() {
                        FooBar obj = new FooBar();
                    }
+                }
+                 """
+            ),
+            12
+          )
+        );
+    }
+
+    @Test
+    void noChangeWithoutExtends() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                class FooBar{
+                    public void test() {
+                        new Object().finalize();
+                    }
                 }
                  """
             ),
