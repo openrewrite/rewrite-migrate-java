@@ -27,6 +27,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Statement;
 
 import java.util.Objects;
 
@@ -48,9 +49,9 @@ public class RemoveFinalizerFromZip extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 Preconditions.or(
-                                new UsesType<>("java.util.zip.Deflater", false),
-                                new UsesType<>("java.util.zip.Inflater", false),
-                                new UsesType<>("java.util.zip.ZipFile", false)),
+                        new UsesType<>("java.util.zip.Deflater", false),
+                        new UsesType<>("java.util.zip.Inflater", false),
+                        new UsesType<>("java.util.zip.ZipFile", false)),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
@@ -71,7 +72,7 @@ public class RemoveFinalizerFromZip extends Recipe {
                                             if (Objects.nonNull(mi.getSelect())
                                                     && String.valueOf(mi.getSelect().getType()).equals(currentClassName)
                                                     && String.valueOf(mi.getName()).contains("finalize")) {
-                                                miStmt = null;
+                                                miStmt = !mi.getSelect().getSideEffects().isEmpty() ? (J.NewClass) mi.getSelect().getSideEffects().get(0) : null;
                                             }
                                         }
                                         return miStmt;

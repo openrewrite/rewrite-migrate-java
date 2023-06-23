@@ -130,8 +130,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                 import java.util.zip.Inflater;
 
                 class FooBar extends Inflater {
-                    public void test() {
-                        new FooBar();
+                    public void test() {new FooBar();
                     }
                 }
                  """
