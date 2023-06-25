@@ -27,6 +27,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeTree;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -87,8 +88,9 @@ public class UseVarForObject extends Recipe {
                 J.VariableDeclarations result = template.<J.VariableDeclarations>apply(getCursor(), vd.getCoordinates().replace(), simpleName, initializer)
                         .withModifiers(vd.getModifiers())
                         .withPrefix(vd.getPrefix());
+                TypeTree typeExpression = result.getTypeExpression();
                 //noinspection DataFlowIssue
-                return result.withTypeExpression(result.getTypeExpression().withPrefix(vd.getTypeExpression().getPrefix()));
+                return typeExpression != null ? result.withTypeExpression(typeExpression.withPrefix(vd.getTypeExpression().getPrefix())) : vd;
             }
         }
     }
