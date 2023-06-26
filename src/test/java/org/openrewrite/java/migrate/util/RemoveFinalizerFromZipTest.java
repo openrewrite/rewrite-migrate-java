@@ -17,6 +17,7 @@
 package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -31,6 +32,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     }
 
     @Test
+    @DocumentExample
     void removeFinalizerForInflater() {
         //language=java
         rewriteRun(
@@ -39,9 +41,9 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
               """
                 import java.util.zip.Inflater;
 
-                class FooBar extends Inflater {
+                class FooInflater extends Inflater {
                     public void test() {
-                        FooBar obj = new FooBar();
+                        FooInflater obj = new FooInflater();
                         obj.finalize();
                     }
                 }
@@ -49,9 +51,9 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
               """
                 import java.util.zip.Inflater;
 
-                class FooBar extends Inflater {
+                class FooInflater extends Inflater {
                     public void test() {
-                        FooBar obj = new FooBar();
+                        FooInflater obj = new FooInflater();
                     }
                 }
                  """
@@ -306,6 +308,25 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                 class FooBar{
                     public void test() {
                         new Object().finalize();
+                    }
+                }
+                 """
+            ),
+            12
+          )
+        );
+    }
+
+    @Test
+    void noChangeWithoutExtendsOrSelect() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                class FooBar{
+                    public void test() {
+                        finalize();
                     }
                 }
                  """

@@ -22,16 +22,25 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.ListUtils;
-import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
-import java.util.Objects;
+import java.util.List;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
 public class RemoveFinalizerFromZip extends Recipe {
+
+    private static final String JAVA_UTIL_ZIP_DEFLATER = "java.util.zip.Deflater";
+    private static final String JAVA_UTIL_ZIP_INFLATER = "java.util.zip.Inflater";
+    private static final String JAVA_UTIL_ZIP_ZIP_FILE = "java.util.zip.ZipFile";
+
+    private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.lang.Object finalize()");
 
     @Override
     public String getDisplayName() {
@@ -45,44 +54,44 @@ public class RemoveFinalizerFromZip extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(
-                Preconditions.or(
-                        new UsesType<>("java.util.zip.Deflater", false),
-                        new UsesType<>("java.util.zip.Inflater", false),
-                        new UsesType<>("java.util.zip.ZipFile", false)),
-                new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(Preconditions.or(
+                        new UsesType<>(JAVA_UTIL_ZIP_DEFLATER, false),
+                        new UsesType<>(JAVA_UTIL_ZIP_INFLATER, false),
+                        new UsesType<>(JAVA_UTIL_ZIP_ZIP_FILE, false)),
+                new JavaVisitor<ExecutionContext>() {
                     @Override
-                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
-                        J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, executionContext);
-                        if (Objects.nonNull(cd.getExtends()) &&
-                            (String.valueOf(cd.getExtends().getType()).equals("java.util.zip.Deflater")
-                             || String.valueOf(cd.getExtends().getType()).equals("java.util.zip.Inflater")
-                             || String.valueOf(cd.getExtends().getType()).equals("java.util.zip.ZipFile"))
-                        ) {
-                            String currentClassName = cd.getSimpleName();
-                            cd = cd.withBody(cd.getBody().withStatements(ListUtils.map(cd.getBody().getStatements(), mdStmt -> {
-                                if (mdStmt instanceof J.MethodDeclaration) {
-                                    J.MethodDeclaration md = (J.MethodDeclaration) mdStmt;
-                                    mdStmt = md.withBody(md.getBody().withStatements(ListUtils.map(md.getBody().getStatements(), miStmt ->
-                                    {
-                                        if (miStmt instanceof J.MethodInvocation) {
-                                            J.MethodInvocation mi = (J.MethodInvocation) miStmt;
-                                            if (Objects.nonNull(mi.getSelect())
-                                                && String.valueOf(mi.getSelect().getType()).equals(currentClassName)
-                                                && String.valueOf(mi.getName()).contains("finalize")) {
-                                                miStmt = !mi.getSelect().getSideEffects().isEmpty() ? (J.NewClass) mi.getSelect().getSideEffects().get(0) : null;
-                                            }
-                                        }
-                                        return miStmt;
-                                    })));
+                    public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+                        J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
+
+                        if (METHOD_MATCHER.matches(mi)) {
+                            Expression select = mi.getSelect();
+                            if (select == null) {
+                                J.ClassDeclaration cd = getCursor().firstEnclosingOrThrow(J.ClassDeclaration.class);
+                                if (shouldRemoveFinalize(cd.getType())) {
+                                    return null;
                                 }
-                                return mdStmt;
-                            })));
-                            return cd;
+                            } else {
+                                if (shouldRemoveFinalize(select.getType())) {
+                                    // Retain any side effects preceding the finalize() call
+                                    List<J> sideEffects = select.getSideEffects();
+                                    if (sideEffects.isEmpty()) {
+                                        return null;
+                                    }
+                                    if (sideEffects.size() == 1) {
+                                        return sideEffects.get(0).withPrefix(mi.getPrefix());
+                                    }
+                                }
+                            }
                         }
-                        return cd;
+
+                        return mi;
                     }
 
+                    private boolean shouldRemoveFinalize(JavaType type) {
+                        return TypeUtils.isAssignableTo(JAVA_UTIL_ZIP_DEFLATER, type)
+                               || TypeUtils.isAssignableTo(JAVA_UTIL_ZIP_INFLATER, type)
+                               || TypeUtils.isAssignableTo(JAVA_UTIL_ZIP_ZIP_FILE, type);
+                    }
                 });
     }
 
