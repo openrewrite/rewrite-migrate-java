@@ -24,10 +24,8 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Statement;
 
 import java.util.Objects;
 
@@ -57,9 +55,9 @@ public class RemoveFinalizerFromZip extends Recipe {
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
                         J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, executionContext);
                         if (Objects.nonNull(cd.getExtends()) &&
-                                (String.valueOf(cd.getExtends().getType()).equals("java.util.zip.Deflater")
-                                        || String.valueOf(cd.getExtends().getType()).equals("java.util.zip.Inflater")
-                                        || String.valueOf(cd.getExtends().getType()).equals("java.util.zip.ZipFile"))
+                            (String.valueOf(cd.getExtends().getType()).equals("java.util.zip.Deflater")
+                             || String.valueOf(cd.getExtends().getType()).equals("java.util.zip.Inflater")
+                             || String.valueOf(cd.getExtends().getType()).equals("java.util.zip.ZipFile"))
                         ) {
                             String currentClassName = cd.getSimpleName();
                             cd = cd.withBody(cd.getBody().withStatements(ListUtils.map(cd.getBody().getStatements(), mdStmt -> {
@@ -70,8 +68,8 @@ public class RemoveFinalizerFromZip extends Recipe {
                                         if (miStmt instanceof J.MethodInvocation) {
                                             J.MethodInvocation mi = (J.MethodInvocation) miStmt;
                                             if (Objects.nonNull(mi.getSelect())
-                                                    && String.valueOf(mi.getSelect().getType()).equals(currentClassName)
-                                                    && String.valueOf(mi.getName()).contains("finalize")) {
+                                                && String.valueOf(mi.getSelect().getType()).equals(currentClassName)
+                                                && String.valueOf(mi.getName()).contains("finalize")) {
                                                 miStmt = !mi.getSelect().getSideEffects().isEmpty() ? (J.NewClass) mi.getSelect().getSideEffects().get(0) : null;
                                             }
                                         }
