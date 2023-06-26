@@ -24,6 +24,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
@@ -54,10 +55,12 @@ public class RemoveFinalizerFromZip extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(Preconditions.or(
-                        new UsesType<>(JAVA_UTIL_ZIP_DEFLATER, false),
-                        new UsesType<>(JAVA_UTIL_ZIP_INFLATER, false),
-                        new UsesType<>(JAVA_UTIL_ZIP_ZIP_FILE, false)),
+        return Preconditions.check(Preconditions.and(
+                        new UsesJavaVersion<>(12),
+                        Preconditions.or(
+                                new UsesType<>(JAVA_UTIL_ZIP_DEFLATER, false),
+                                new UsesType<>(JAVA_UTIL_ZIP_INFLATER, false),
+                                new UsesType<>(JAVA_UTIL_ZIP_ZIP_FILE, false))),
                 new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {

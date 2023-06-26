@@ -21,326 +21,252 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.*;
 
 class RemoveFinalizerFromZipTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new RemoveFinalizerFromZip());
+        spec.recipe(new RemoveFinalizerFromZip()).allSources(s -> s.markers(javaVersion(12)));
     }
 
     @Test
     @DocumentExample
     void removeFinalizerForInflater() {
         //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.zip.Inflater;
+        rewriteRun(java("""
+          import java.util.zip.Inflater;
 
-                class FooInflater extends Inflater {
-                    public void test() {
-                        FooInflater obj = new FooInflater();
-                        obj.finalize();
-                    }
-                }
-                 """,
-              """
-                import java.util.zip.Inflater;
+          class FooInflater extends Inflater {
+              public void test() {
+                  FooInflater obj = new FooInflater();
+                  obj.finalize();
+              }
+          }
+           """, """
+          import java.util.zip.Inflater;
 
-                class FooInflater extends Inflater {
-                    public void test() {
-                        FooInflater obj = new FooInflater();
-                    }
-                }
-                 """
-            ),
-            12
-          )
-        );
+          class FooInflater extends Inflater {
+              public void test() {
+                  FooInflater obj = new FooInflater();
+              }
+          }
+           """));
     }
 
     @Test
     void removeCallsToSelfFinalize() {
         //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.zip.Inflater;
+        rewriteRun(java("""
+          import java.util.zip.Inflater;
 
-                class FooBar extends Inflater {
-                    public void test() {
-                        finalize();
-                    }
-                }
-                 """,
-              """
-                import java.util.zip.Inflater;
+          class FooBar extends Inflater {
+              public void test() {
+                  finalize();
+              }
+          }
+           """, """
+          import java.util.zip.Inflater;
 
-                class FooBar extends Inflater {
-                    public void test() {
-                    }
-                }
-                 """
-            ),
-            12
-          )
-        );
+          class FooBar extends Inflater {
+              public void test() {
+              }
+          }
+           """));
     }
 
     @Test
     void removeCallsToThisFinalize() {
         //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.zip.Inflater;
+        rewriteRun(java("""
+          import java.util.zip.Inflater;
 
-                class FooBar extends Inflater {
-                    public void test() {
-                        this.finalize();
-                    }
-                }
-                 """,
-              """
-                import java.util.zip.Inflater;
+          class FooBar extends Inflater {
+              public void test() {
+                  this.finalize();
+              }
+          }
+           """, """
+          import java.util.zip.Inflater;
 
-                class FooBar extends Inflater {
-                    public void test() {
-                    }
-                }
-                 """
-            ),
-            12
-          )
-        );
+          class FooBar extends Inflater {
+              public void test() {
+              }
+          }
+           """));
     }
 
     @Test
     void removeWhileKeepingSideEffects() {
         //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.zip.Inflater;
+        rewriteRun(java("""
+          import java.util.zip.Inflater;
 
-                class FooBar extends Inflater {
-                    public void test() {
-                        new FooBar().finalize();
-                    }
-                }
-                 """,
-              """
-                import java.util.zip.Inflater;
+          class FooBar extends Inflater {
+              public void test() {
+                  new FooBar().finalize();
+              }
+          }
+           """, """
+          import java.util.zip.Inflater;
 
-                class FooBar extends Inflater {
-                    public void test() {
-                        new FooBar();
-                    }
-                }
-                 """
-            ),
-            12
-          )
-        );
+          class FooBar extends Inflater {
+              public void test() {
+                  new FooBar();
+              }
+          }
+           """));
     }
 
     @Test
     void noChangeWithFinalizeOnObject() {
         //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.zip.Inflater;
+        rewriteRun(java("""
+          import java.util.zip.Inflater;
 
-                class FooBar extends Inflater {
-                    public void test() {
-                        new Object().finalize();
-                    }
-                }
-                 """
-            ),
-            12
-          )
-        );
+          class FooBar extends Inflater {
+              public void test() {
+                  new Object().finalize();
+              }
+          }
+           """));
     }
 
     @Test
     void noChangeWithoutFinalizerForInflater() {
         //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.zip.Inflater;
+        rewriteRun(java("""
+          import java.util.zip.Inflater;
 
-                class FooBar extends Inflater {
-                    public void test() {
-                        FooBar obj = new FooBar();
-                    }
-                }
-                 """
-            ),
-            12
-          )
-        );
+          class FooBar extends Inflater {
+              public void test() {
+                  FooBar obj = new FooBar();
+              }
+          }
+           """));
     }
 
     @Test
     void removeFinalizerForDeflater() {
         //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.zip.Deflater;
+        rewriteRun(java("""
+          import java.util.zip.Deflater;
 
-                class FooBar extends Deflater {
-                    public void test() {
-                        FooBar obj = new FooBar();
-                        obj.finalize();
-                    }
-                }
-                 """,
-              """
-                import java.util.zip.Deflater;
+          class FooBar extends Deflater {
+              public void test() {
+                  FooBar obj = new FooBar();
+                  obj.finalize();
+              }
+          }
+           """, """
+          import java.util.zip.Deflater;
 
-                class FooBar extends Deflater {
-                    public void test() {
-                        FooBar obj = new FooBar();
-                    }
-                }
-                 """
-            ),
-            12
-          )
-        );
+          class FooBar extends Deflater {
+              public void test() {
+                  FooBar obj = new FooBar();
+              }
+          }
+           """));
     }
 
     @Test
     void noChangeWithoutFinalizerForDeflater() {
         //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.zip.Deflater;
+        rewriteRun(java("""
+          import java.util.zip.Deflater;
 
-                class FooBar extends Deflater {
-                    public void test() {
-                        FooBar obj = new FooBar();
-                    }
-                }
-                 """
-            ),
-            12
-          )
-        );
+          class FooBar extends Deflater {
+              public void test() {
+                  FooBar obj = new FooBar();
+              }
+          }
+           """));
     }
 
     @Test
     void removeFinalizerForZipFile() {
         //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.zip.ZipFile;
+        rewriteRun(java("""
+          import java.util.zip.ZipFile;
 
-                class FooBar extends ZipFile {
-                    FooBar(){
-                        super("");
-                    }
-                    public void test() {
-                        FooBar obj = new FooBar();
-                        obj.finalize();
-                    }
-                }
-                 """,
-              """
-                import java.util.zip.ZipFile;
+          class FooBar extends ZipFile {
+              FooBar(){
+                  super("");
+              }
+              public void test() {
+                  FooBar obj = new FooBar();
+                  obj.finalize();
+              }
+          }
+           """, """
+          import java.util.zip.ZipFile;
 
-                class FooBar extends ZipFile {
-                    FooBar(){
-                        super("");
-                    }
-                    public void test() {
-                        FooBar obj = new FooBar();
-                    }
-                }
-                 """
-            ),
-            12
-          )
-        );
+          class FooBar extends ZipFile {
+              FooBar(){
+                  super("");
+              }
+              public void test() {
+                  FooBar obj = new FooBar();
+              }
+          }
+           """));
     }
 
     @Test
     void noChangeWithoutFinalizerForZipFile() {
         //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.zip.ZipFile;
+        rewriteRun(java("""
+          import java.util.zip.ZipFile;
 
-                class FooBar extends ZipFile {
-                    FooBar(){
-                        super("");
-                    }
-                   public void test() {
-                       FooBar obj = new FooBar();
-                   }
-                }
-                 """
-            ),
-            12
-          )
-        );
+          class FooBar extends ZipFile {
+              FooBar(){
+                  super("");
+              }
+              public void test() {
+                  FooBar obj = new FooBar();
+              }
+          }
+           """));
     }
 
     @Test
     void noChangeWithoutExtends() {
         //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                class FooBar{
-                    public void test() {
-                        new Object().finalize();
-                    }
-                }
-                 """
-            ),
-            12
-          )
-        );
+        rewriteRun(java("""
+          class FooBar {
+              public void test() {
+                  new Object().finalize();
+              }
+          }
+           """));
     }
 
     @Test
     void noChangeWithoutExtendsOrSelect() {
         //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                class FooBar{
-                    public void test() {
-                        finalize();
-                    }
-                }
-                 """
-            ),
-            12
-          )
-        );
+        rewriteRun(java("""
+          class FooBar {
+              public void test() {
+                  finalize();
+              }
+          }
+           """));
+    }
+
+    @Test
+    void noChangeOnJava11() {
+        //language=java
+        rewriteRun(version(java("""
+          import java.util.zip.ZipFile;
+          
+          class FooBar extends ZipFile {
+              FooBar(){
+                  super("");
+              }
+              public void test() {
+                  finalize();
+              }
+          }
+           """), 11));
     }
 }
