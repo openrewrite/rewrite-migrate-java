@@ -77,6 +77,14 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                         finalize();
                     }
                 }
+                 """,
+              """
+                import java.util.zip.Inflater;
+
+                class FooBar extends Inflater {
+                    public void test() {
+                    }
+                }
                  """
             ),
             12
