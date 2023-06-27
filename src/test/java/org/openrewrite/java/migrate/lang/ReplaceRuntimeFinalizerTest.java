@@ -19,76 +19,73 @@ package org.openrewrite.java.migrate.lang;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+
+import static org.openrewrite.java.Assertions.*;
 
 class ReplaceRuntimeFinalizerTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new ReplaceRuntimeFinalizer());
+        spec.recipe(new ReplaceRuntimeFinalizer()).allSources(s -> s.markers(javaVersion(8)));
     }
 
     @Test
     void replaceRuntimeRunFinalizerOnExit() {
         //language=java
         rewriteRun(
-          version(
             java(
               """
-               class FooBar {
-                    public void test(){
-                        Runtime.runFinalizersOnExit(true);
-                    }
-                }
-              """,
+                 class FooBar {
+                      public void test(){
+                          Runtime.runFinalizersOnExit(true);
+                      }
+                  }
+                """,
               """
-               class FooBar {
-                    public void test(){
-                        Runtime.getRuntime().addShutdownHook(new Thread());
-                    }
-                }
-              """
-            ), 8));
+                 class FooBar {
+                      public void test(){
+                          Runtime.getRuntime().addShutdownHook(new Thread());
+                      }
+                  }
+                """
+            ));
     }
 
     @Test
     void noChange() {
         //language=java
         rewriteRun(
-          version(
             java(
               """
-               class FooBar {
-                    public void test(){
-                        Runtime.getRuntime().addShutdownHook(new Thread());
-                    }
-                }
-              """
-            ), 8));
+                 class FooBar {
+                      public void test(){
+                          Runtime.getRuntime().addShutdownHook(new Thread());
+                      }
+                  }
+                """
+            ));
     }
 
     @Test
     void replaceSystemRunFinalizerOnExit() {
         //language=java
         rewriteRun(
-          version(
             java(
               """
-               class FooBar {
-                    public void test(){
-                        System.runFinalizersOnExit(true);
-                    }
-                }
-              """,
+                 class FooBar {
+                      public void test(){
+                          System.runFinalizersOnExit(true);
+                      }
+                  }
+                """,
               """
-               class FooBar {
-                    public void test(){
-                        Runtime.getRuntime().addShutdownHook(new Thread());
-                    }
-                }
-              """
-            ), 8));
+                 class FooBar {
+                      public void test(){
+                          Runtime.getRuntime().addShutdownHook(new Thread());
+                      }
+                  }
+                """
+            ));
     }
 
 }
