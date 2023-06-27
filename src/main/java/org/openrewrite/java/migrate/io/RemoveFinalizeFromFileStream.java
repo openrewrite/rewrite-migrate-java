@@ -19,17 +19,27 @@ package org.openrewrite.java.migrate.io;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
-import org.openrewrite.internal.ListUtils;
-import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
-import java.util.Objects;
+import java.util.List;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
 public class RemoveFinalizeFromFileStream extends Recipe {
+
+    private static final String JAVA_IO_FILEINPUTSTREAM = "java.io.FileInputStream";
+    private static final String JAVA_IO_FILEOUTPUTSTREAM = "java.io.FileOutputStream";
+
+    private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.lang.Object finalize()");
 
     @Override
     public String getDisplayName() {
@@ -42,40 +52,46 @@ public class RemoveFinalizeFromFileStream extends Recipe {
     }
 
     @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
 
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(
+                Preconditions.or(
+                        new UsesType<>(JAVA_IO_FILEINPUTSTREAM, false),
+                        new UsesType<>(JAVA_IO_FILEOUTPUTSTREAM, false)),
+                new JavaVisitor<ExecutionContext>() {
 
-            @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
+                    @Override
+                    public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+                        J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
 
-                J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, executionContext);
-                boolean extendExists = Objects.nonNull(cd.getExtends());
-                if(extendExists && (cd.getExtends().toString().contains("FileInputStream") || cd.getExtends().toString().contains("FileOutputStream"))){
-                    cd = cd.withBody(cd.getBody().withStatements(ListUtils.map(cd.getBody().getStatements(), mdStmt -> {
-                        if (mdStmt instanceof J.MethodDeclaration) {
-                            J.MethodDeclaration md = (J.MethodDeclaration) mdStmt;
-                            mdStmt = md.withBody(md.getBody().withStatements(ListUtils.map(md.getBody().getStatements(), miStmt ->
-                            {   if(miStmt instanceof  J.MethodInvocation){
-                                J.MethodInvocation mi = (J.MethodInvocation) miStmt;
-                                if (mi.getName().toString().contains("finalize")){
-                                    miStmt = mi.withTemplate(JavaTemplate.builder(() -> getCursor().getParent(),  mi.getSelect().toString()+"."+"close()"+" #{any()}")
-                                                    .build(),
-                                            mi.getCoordinates().replace(), mi.getArguments().get(0));
+                        if (METHOD_MATCHER.matches(mi)) {
+                            Expression select = mi.getSelect();
+                            if (select == null) {
+                                J.ClassDeclaration cd = getCursor().firstEnclosingOrThrow(J.ClassDeclaration.class);
+                                if (shouldRemoveFinalize(cd.getType())) {
+                                    return mi.withName(mi.getName().withSimpleName("close"));
+                                }
+                            } else {
+                                if (shouldRemoveFinalize(select.getType())) {
+                                    List<J> sideEffects = select.getSideEffects();
+                                    if (sideEffects.isEmpty()) {
+                                        return mi.withName(mi.getName().withSimpleName("close"));
+                                    }
+                                    if (sideEffects.size() == 1) {
+                                        return sideEffects.get(0).withPrefix(mi.getPrefix());
+                                    }
                                 }
                             }
-                                return miStmt;
-                            })));
                         }
-                        return mdStmt;
-                    })));
-                    return cd;
-                }
 
-                return cd;
-            }
+                        return mi;
+                    }
 
-        };
+                    private boolean shouldRemoveFinalize(JavaType type) {
+                        return TypeUtils.isAssignableTo(JAVA_IO_FILEINPUTSTREAM, type)
+                                || TypeUtils.isAssignableTo(JAVA_IO_FILEOUTPUTSTREAM, type);
+                    }
+
+                });
     }
-
 }
