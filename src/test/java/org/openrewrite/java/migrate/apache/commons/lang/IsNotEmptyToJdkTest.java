@@ -15,8 +15,10 @@
  */
 package org.openrewrite.java.migrate.apache.commons.lang;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -29,6 +31,28 @@ class IsNotEmptyToJdkTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion().classpath("commons-lang3", "plexus-utils", "maven-shared-utils"))
           .recipe(new IsNotEmptyToJdk());
+    }
+
+    @Test
+    @DocumentExample
+    void exampleUse() {
+        rewriteRun(
+          // language=java
+          java("""
+            import org.apache.commons.lang3.StringUtils;
+
+            class A {
+                boolean test(String first) {
+                    return StringUtils.isEmpty(first);
+                }
+            }
+            """, """
+            class A {
+                boolean test(String first) {
+                    return first == null || first.isEmpty();
+                }
+            }
+            """));
     }
 
     @ParameterizedTest

@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
@@ -29,7 +29,6 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -46,25 +45,16 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
         return "Use `Class#getDeclaredConstructor().newInstance()` instead of the deprecated `Class#newInstance()` in Java 9 or higher.";
     }
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
     public Set<String> getTags() {
         return Collections.singleton("deprecated");
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(
-                new UsesJavaVersion<>(9),
-                new UsesMethod<>("java.lang.Class newInstance()"));
-    }
-
-    @Override
-    protected NewInstanceToDeclaredConstructorVisitor getVisitor() {
-        return new NewInstanceToDeclaredConstructorVisitor();
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(Preconditions.and(
+                        new UsesJavaVersion<>(9),
+                        new UsesMethod<>("java.lang.Class newInstance()")),
+                new NewInstanceToDeclaredConstructorVisitor());
     }
 
     private static class NewInstanceToDeclaredConstructorVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -77,10 +67,10 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
             J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
             if (NEW_INSTANCE_MATCHER.matches(mi)) {
                 J.Try tri = getCursor().firstEnclosing(J.Try.class);
-                J.Try.Catch ctch = getCursor().firstEnclosing(J.Try.Catch.class);
+                J.Try.Catch catch_ = getCursor().firstEnclosing(J.Try.Catch.class);
                 J.MethodDeclaration md = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                if ((ctch == null && tri != null && tri.getCatches().stream().anyMatch(c -> isExceptionType(c.getParameter().getType())))
-                        || (md != null && md.getThrows() != null && md.getThrows().stream().anyMatch(nt -> isExceptionType(nt.getType())))) {
+                if ((catch_ == null && tri != null && tri.getCatches().stream().anyMatch(c -> isExceptionType(c.getParameter().getType())))
+                    || (md != null && md.getThrows() != null && md.getThrows().stream().anyMatch(nt -> isExceptionType(nt.getType())))) {
                     mi = (J.MethodInvocation) TO_DECLARED_CONS_NEW_INSTANCE.getVisitor().visitNonNull(mi, ctx);
                 }
             }
@@ -89,7 +79,7 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
 
         private boolean isExceptionType(@Nullable JavaType type) {
             return TypeUtils.isOfType(type, exType)
-                    || TypeUtils.isOfType(type, thType);
+                   || TypeUtils.isOfType(type, thType);
         }
     }
 }

@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.net;
 
-import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.AddImport;
@@ -27,7 +27,6 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -50,39 +49,25 @@ public class MigrateURLEncoderEncode extends Recipe {
     }
 
     @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(
-                new UsesJavaVersion<>(10),
-                new UsesMethod<>(MATCHER));
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MigrateURLEncoderEncodeVisitor();
-    }
-
-    private static class MigrateURLEncoderEncodeVisitor extends JavaIsoVisitor<ExecutionContext> {
-        @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-            J.MethodInvocation m = method;
-            if (MATCHER.matches(m)) {
-                m = m.withTemplate(
-                        JavaTemplate.builder(this::getCursor, "#{any(String)}, StandardCharsets.UTF_8")
-                                .imports("java.nio.charset.StandardCharsets")
-                                .build(),
-                        m.getCoordinates().replaceArguments(),
-                        m.getArguments().toArray()
-                );
-                // forcing an import, otherwise maybeAddImport appears to be having trouble recognizing importing this
-                // believe it may have to do with this being a field, or possibly this is incorrect usage // todo
-                doAfterVisit(new AddImport<>("java.nio.charset.StandardCharsets", null, false));
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(10), new UsesMethod<>(MATCHER)), new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = method;
+                if (MATCHER.matches(m)) {
+                    m = JavaTemplate.builder("#{any(String)}, StandardCharsets.UTF_8")
+                            .contextSensitive()
+                            .imports("java.nio.charset.StandardCharsets")
+                            .build()
+                            .apply(getCursor(),
+                                    m.getCoordinates().replaceArguments(),
+                                    m.getArguments().toArray());
+                    // forcing an import, otherwise maybeAddImport appears to be having trouble recognizing importing this
+                    // believe it may have to do with this being a field, or possibly this is incorrect usage // todo
+                    doAfterVisit(new AddImport<>("java.nio.charset.StandardCharsets", null, false));
+                }
+                return super.visitMethodInvocation(m, ctx);
             }
-            return super.visitMethodInvocation(m, ctx);
-        }
+        });
     }
 }

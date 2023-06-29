@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.logging;
 
-import org.openrewrite.Applicability;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeType;
@@ -27,7 +27,6 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 
@@ -44,25 +43,16 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
         return "Use `ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)` instead of the deprecated `LogManager#getLoggingMXBean()` in Java 9 or higher.";
     }
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
-    }
-
     public Set<String> getTags() {
         return Collections.singleton("deprecated");
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(9),
                 new UsesMethod<>(MATCHER));
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
                 cu = (J.CompilationUnit) new ChangeType(
@@ -80,18 +70,15 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
                     maybeAddImport("java.lang.management.ManagementFactory");
                     maybeAddImport("java.lang.management.PlatformLoggingMXBean");
                     maybeRemoveImport("java.util.logging.LogManager");
-
-                    m = m.withTemplate(
-                            JavaTemplate.builder(this::getCursor, "ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class)")
-                                    .imports("java.lang.management.ManagementFactory")
-                                    .imports("java.lang.management.PlatformLoggingMXBean")
-                                    .build(),
-                            m.getCoordinates().replace()
-                    );
+                    m = JavaTemplate.builder("ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class)")
+                            .imports("java.lang.management.ManagementFactory")
+                            .imports("java.lang.management.PlatformLoggingMXBean")
+                            .build()
+                            .apply(updateCursor(m), m.getCoordinates().replace());
                 }
                 return m;
             }
-        };
+        });
     }
 
 }

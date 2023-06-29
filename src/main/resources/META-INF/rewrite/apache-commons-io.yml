@@ -23,7 +23,7 @@ tags:
   - commons
   - security
 recipeList:
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.apache.commons
       oldArtifactId: commons-io
       newGroupId: commons-io

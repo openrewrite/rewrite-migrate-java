@@ -45,7 +45,7 @@ recipeList:
   - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.java.migrate.lombok.UpdateLombokToJava17
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion
-  - org.openrewrite.java.cleanup.InstanceOfPatternMatch
+  - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.java.migrate.lang.UseTextBlocks
 
 ---

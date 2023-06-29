@@ -22,7 +22,7 @@ tags:
   - java17
   - lombok
 recipeList:
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.projectlombok
       artifactId: lombok
       newVersion: 1.18.*

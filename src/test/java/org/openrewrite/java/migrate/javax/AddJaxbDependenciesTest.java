@@ -23,10 +23,12 @@ import org.openrewrite.test.RewriteTest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.gradle.Assertions.withToolingApi;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AddJaxbDependenciesTest implements RewriteTest {
+class AddJaxbDependenciesTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -39,6 +41,47 @@ public class AddJaxbDependenciesTest implements RewriteTest {
     @Test
     void addJaxbRuntimeOnce() {
         rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+              
+              repositories {
+                  mavenCentral()
+              }
+              
+              dependencies {
+                  implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
+              }
+              """,
+            spec -> spec.after(buildGradle -> {
+                Matcher version = Pattern.compile("2\\.\\d+(\\.\\d+)?").matcher(buildGradle);
+                assertThat(version.find()).isTrue();
+                String runtimeVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String bindApiVersion = version.group(0);
+                return """
+                  plugins {
+                      id "java-library"
+                  }
+                  
+                  repositories {
+                      mavenCentral()
+                  }
+                  
+                  dependencies {
+                      compileOnly "org.glassfish.jaxb:jaxb-runtime:%s"
+                  
+                      implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
+                  
+                      testImplementation "org.glassfish.jaxb:jaxb-runtime:%s"
+                  }
+                  """.formatted(runtimeVersion, bindApiVersion, runtimeVersion);
+            })
+          ),
           pomXml(
             //language=xml
             """
@@ -90,6 +133,51 @@ public class AddJaxbDependenciesTest implements RewriteTest {
     @Test
     void renameRuntime() {
         rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+              
+              repositories {
+                  mavenCentral()
+              }
+              
+              dependencies {
+                  implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3"
+              
+                  compileOnly "com.sun.xml.bind:jaxb-impl:2.3.3"
+              
+                  testImplementation "com.sun.xml.bind:jaxb-impl:2.3.3"
+              }
+              """,
+            spec -> spec.after(buildGradle -> {
+                Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(buildGradle);
+                assertThat(version.find()).isTrue();
+                String bindApiVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String runtimeVersion = version.group(0);
+                return """
+                  plugins {
+                      id "java-library"
+                  }
+                  
+                  repositories {
+                      mavenCentral()
+                  }
+                  
+                  dependencies {
+                      implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
+                  
+                      compileOnly "org.glassfish.jaxb:jaxb-runtime:%s"
+                  
+                      testImplementation "org.glassfish.jaxb:jaxb-runtime:%s"
+                  }
+                  """.formatted(bindApiVersion, runtimeVersion, runtimeVersion);
+            })
+          ),
           pomXml(
             //language=xml
             """
@@ -147,6 +235,51 @@ public class AddJaxbDependenciesTest implements RewriteTest {
     @Test
     void renameAndUpdateApiAndRuntime() {
         rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+              
+              repositories {
+                  mavenCentral()
+              }
+              
+              dependencies {
+                  implementation "javax.xml.bind:jaxb-api:2.3.1"
+              
+                  compileOnly "org.glassfish.jaxb:jaxb-runtime:2.3.1"
+              
+                  testImplementation "org.glassfish.jaxb:jaxb-runtime:2.3.1"
+              }
+              """,
+            spec -> spec.after(buildGradle -> {
+                Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(buildGradle);
+                assertThat(version.find()).isTrue();
+                String bindApiVersion = version.group(0);
+                assertThat(version.find()).isTrue();
+                String runtimeVersion = version.group(0);
+                return """
+                  plugins {
+                      id "java-library"
+                  }
+                  
+                  repositories {
+                      mavenCentral()
+                  }
+                  
+                  dependencies {
+                      implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
+                  
+                      compileOnly "org.glassfish.jaxb:jaxb-runtime:%s"
+                  
+                      testImplementation "org.glassfish.jaxb:jaxb-runtime:%s"
+                  }
+                  """.formatted(bindApiVersion, runtimeVersion, runtimeVersion);
+            })
+          ),
           pomXml(
             //language=xml
             """

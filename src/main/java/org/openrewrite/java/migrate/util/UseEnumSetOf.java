@@ -50,21 +50,15 @@ public class UseEnumSetOf extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(new UsesJavaVersion<>(9),
-                new UsesMethod<>(SET_OF));
-    }
-
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-
-        return new JavaIsoVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(9),
+                new UsesMethod<>(SET_OF)), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
                 if (SET_OF.matches(method) && method.getType() instanceof JavaType.Parameterized
-                        && !TypeUtils.isOfClassType(method.getType(), "java.util.EnumSet")) {
+                    && !TypeUtils.isOfClassType(method.getType(), "java.util.EnumSet")) {
                     Cursor parent = getCursor().dropParentUntil(is -> is instanceof J.Assignment || is instanceof J.VariableDeclarations || is instanceof J.Block);
                     if (!(parent.getValue() instanceof J.Block)) {
                         JavaType type = parent.getValue() instanceof J.Assignment ?
@@ -75,13 +69,11 @@ public class UseEnumSetOf extends Recipe {
                             StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
                             List<Expression> args = m.getArguments();
                             args.forEach(o -> setOf.add("#{any()}"));
-                            return autoFormat(
-                                    m.withTemplate(
-                                            JavaTemplate.builder(this::getCursor, "EnumSet.of(#{any()})")
-                                                    .imports("java.util.EnumSet").build(),
-                                            m.getCoordinates().replace(),
-                                            args.toArray()),
-                                    ctx);
+                            return JavaTemplate.builder("EnumSet.of(#{any()})")
+                                    .contextSensitive()
+                                    .imports("java.util.EnumSet")
+                                    .build()
+                                    .apply(updateCursor(m), m.getCoordinates().replace(), args.toArray());
                         }
                     }
                 }
@@ -100,6 +92,6 @@ public class UseEnumSetOf extends Recipe {
                 }
                 return false;
             }
-        };
+        });
     }
 }

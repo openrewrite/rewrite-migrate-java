@@ -42,8 +42,8 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
 
               class A {
                  public void test() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-                     Class<?> clazz = Class.forName("org.openrewrite.Test");
-                     clazz.newInstance();
+                     Class<?> class_ = Class.forName("org.openrewrite.Test");
+                     class_.newInstance();
                  }
               }
               """
@@ -62,8 +62,8 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
 
               class A {
                  public void test() throws Throwable {
-                     Class<?> clazz = Class.forName("org.openrewrite.Test");
-                     clazz.newInstance();
+                     Class<?> class_ = Class.forName("org.openrewrite.Test");
+                     class_.newInstance();
                  }
               }
               """,
@@ -72,8 +72,8 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
 
               class A {
                  public void test() throws Throwable {
-                     Class<?> clazz = Class.forName("org.openrewrite.Test");
-                     clazz.getDeclaredConstructor().newInstance();
+                     Class<?> class_ = Class.forName("org.openrewrite.Test");
+                     class_.getDeclaredConstructor().newInstance();
                  }
               }
               """
@@ -92,8 +92,8 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
               class A {
                   public void test() {
                       try {
-                          Class<?> clazz = Class.forName("org.openrewrite.Test");
-                          clazz.newInstance();
+                          Class<?> class_ = Class.forName("org.openrewrite.Test");
+                          class_.newInstance();
                       } catch (Exception ex) {
                           System.out.println(ex.getMessage());
                       }
@@ -106,8 +106,8 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
               class A {
                   public void test() {
                       try {
-                          Class<?> clazz = Class.forName("org.openrewrite.Test");
-                          clazz.getDeclaredConstructor().newInstance();
+                          Class<?> class_ = Class.forName("org.openrewrite.Test");
+                          class_.getDeclaredConstructor().newInstance();
                       } catch (Exception ex) {
                           System.out.println(ex.getMessage());
                       }
@@ -131,8 +131,8 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
                       try {
                           System.out.println();
                       } catch (Exception ex) {
-                          Class<?> clazz = Class.forName("org.openrewrite.Test");
-                          clazz.newInstance();
+                          Class<?> class_ = Class.forName("org.openrewrite.Test");
+                          class_.newInstance();
                       }
                   }
               }
@@ -154,8 +154,8 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
                       try {
                           System.out.println();
                       } catch (Exception ex) {
-                          Class<?> clazz = Class.forName("org.openrewrite.Test");
-                          clazz.newInstance();
+                          Class<?> class_ = Class.forName("org.openrewrite.Test");
+                          class_.newInstance();
                       }
                   }
               }
@@ -168,8 +168,8 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
                       try {
                           System.out.println();
                       } catch (Exception ex) {
-                          Class<?> clazz = Class.forName("org.openrewrite.Test");
-                          clazz.getDeclaredConstructor().newInstance();
+                          Class<?> class_ = Class.forName("org.openrewrite.Test");
+                          class_.getDeclaredConstructor().newInstance();
                       }
                   }
               }

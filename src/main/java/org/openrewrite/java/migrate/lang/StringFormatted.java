@@ -42,13 +42,10 @@ public class StringFormatted extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(new UsesJavaVersion<>(17),new UsesMethod<>(STRING_FORMAT));
-    }
-
-    @Override
-    protected StringFormattedVisitor getVisitor() {
-        return new StringFormattedVisitor();
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return Preconditions.check(
+                Preconditions.and(new UsesJavaVersion<>(17),new UsesMethod<>(STRING_FORMAT)),
+                new StringFormattedVisitor());
     }
 
     private static class StringFormattedVisitor extends JavaVisitor<ExecutionContext> {

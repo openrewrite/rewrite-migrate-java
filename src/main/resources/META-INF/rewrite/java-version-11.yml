@@ -36,8 +36,8 @@ recipeList:
   - org.openrewrite.java.migrate.javax.AddJaxwsDependencies
   - org.openrewrite.java.migrate.javax.AddInjectDependencies
   # Remediate deprecations
-  - org.openrewrite.java.cleanup.BigDecimalRoundingConstantsToEnums
-  - org.openrewrite.java.cleanup.PrimitiveWrapperClassConstructorToValueOf
+  - org.openrewrite.staticanalysis.BigDecimalRoundingConstantsToEnums
+  - org.openrewrite.staticanalysis.PrimitiveWrapperClassConstructorToValueOf
   - org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
   - org.openrewrite.java.migrate.lang.JavaLangAPIs
   - org.openrewrite.java.migrate.logging.JavaLoggingAPIs
@@ -84,14 +84,14 @@ tags:
   - glassfish
 recipeList:
   # Remove the legacy jaxb-core artifact
-  - org.openrewrite.maven.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: com.sun.xml.bind
       artifactId: jaxb-core
   - org.openrewrite.maven.RemoveManagedDependency:
       groupId: com.sun.xml.bind
       artifactId: jaxb-core
   # Change any existing places in the project poms that use the jaxb-api.
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.xml.bind
       oldArtifactId: jaxb-api
       newGroupId: jakarta.xml.bind
@@ -104,14 +104,14 @@ recipeList:
       newArtifactId: jakarta.xml.bind-api
       newVersion: 2.3.x
   # Add the jakarta JAXB artifact if it is missing but a project uses types in java.xml.bind
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
       version: 2.3.x
       onlyIfUsing: javax.xml.bind..*
       acceptTransitive: true
   # If a project already had the jakarta api, make sure it is at the latest version.
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
       newVersion: 2.3.x
@@ -147,14 +147,14 @@ tags:
   - glassfish
 recipeList:
   # Remove the legacy jaxws-ri artifact
-  - org.openrewrite.maven.RemoveDependency:
+  - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: com.sun.xml.ws
       artifactId: jaxws-ri
   - org.openrewrite.maven.RemoveManagedDependency:
       groupId: com.sun.xml.ws
       artifactId: jaxws-ri
   # Change any existing places in the project poms that use the jaxb-api.
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.xml.ws
       oldArtifactId: jaxws-api
       newGroupId: jakarta.xml.ws
@@ -167,14 +167,14 @@ recipeList:
       newArtifactId: jakarta.xml.ws-api
       newVersion: 2.3.x
   # Add the jakarta JAXB artifact if it is missing but a project uses types in java.xml.bind
-  - org.openrewrite.maven.AddDependency:
+  - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       version: 2.3.x
       onlyIfUsing: javax.jws..*
       acceptTransitive: true
   # If a project already had the jakarta api, make sure it is at the latest version.
-  - org.openrewrite.maven.UpgradeDependencyVersion:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       newVersion: 2.3.x

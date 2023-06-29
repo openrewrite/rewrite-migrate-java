@@ -16,14 +16,20 @@
 package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import org.openrewrite.*;
-import org.openrewrite.java.*;
-import org.openrewrite.java.cleanup.UnnecessaryCatch;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.ChangeType;
+import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.marker.Markup;
+import org.openrewrite.staticanalysis.UnnecessaryCatch;
 
 import java.util.Base64;
 
@@ -42,14 +48,6 @@ public class UseJavaUtilBase64 extends Recipe {
                "by the Java module system and accessing this class will result in a warning in Java 11 and an error in Java 17.";
     }
 
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.or(
-                new UsesType<>(sunPackage + ".BASE64Encoder", false),
-                new UsesType<>(sunPackage + ".BASE64Decoder", false)
-        );
-    }
-
     public UseJavaUtilBase64(String sunPackage) {
         this.sunPackage = sunPackage;
     }
@@ -60,34 +58,38 @@ public class UseJavaUtilBase64 extends Recipe {
     }
 
     @Override
-    protected JavaVisitor<ExecutionContext> getVisitor() {
-
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.or(
+                new UsesType<>(sunPackage + ".BASE64Encoder", false),
+                new UsesType<>(sunPackage + ".BASE64Decoder", false)
+        );
         MethodMatcher base64EncodeMethod = new MethodMatcher(sunPackage + ".CharacterEncoder *(byte[])");
         MethodMatcher base64DecodeBuffer = new MethodMatcher(sunPackage + ".CharacterDecoder decodeBuffer(String)");
 
         MethodMatcher newBase64Encoder = new MethodMatcher(sunPackage + ".BASE64Encoder <constructor>()");
         MethodMatcher newBase64Decoder = new MethodMatcher(sunPackage + ".BASE64Decoder <constructor>()");
 
-        return new JavaVisitor<ExecutionContext>() {
-            final JavaTemplate getDecoderTemplate = JavaTemplate.builder(this::getCursor, "Base64.getDecoder()")
+        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
+            final JavaTemplate getDecoderTemplate = JavaTemplate.builder("Base64.getDecoder()")
+                    .contextSensitive()
                     .imports("java.util.Base64")
                     .build();
 
-            final JavaTemplate encodeToString = JavaTemplate.builder(this::getCursor, "Base64.getEncoder().encodeToString(#{anyArray(byte)})")
+            final JavaTemplate encodeToString = JavaTemplate.builder("Base64.getEncoder().encodeToString(#{anyArray(byte)})")
                     .imports("java.util.Base64")
                     .build();
 
-            final JavaTemplate decode = JavaTemplate.builder(this::getCursor, "Base64.getDecoder().decode(#{any(String)})")
+            final JavaTemplate decode = JavaTemplate.builder("Base64.getDecoder().decode(#{any(String)})")
                     .imports("java.util.Base64")
                     .build();
 
             @Override
-            public J visitJavaSourceFile(JavaSourceFile cu, ExecutionContext ctx) {
-                if(alreadyUsingIncompatibleBase64(cu)) {
+            public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                if (alreadyUsingIncompatibleBase64(cu)) {
                     return Markup.warn(cu, new IllegalStateException(
                             "Already using a class named Base64 other than java.util.Base64. Manual intervention required."));
                 }
-                JavaSourceFile c = (JavaSourceFile) super.visitJavaSourceFile(cu, ctx);
+                J.CompilationUnit c = (J.CompilationUnit) super.visitCompilationUnit(cu, ctx);
 
                 c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Encoder", "java.util.Base64$Encoder", true)
                         .getVisitor().visitNonNull(c, ctx);
@@ -101,19 +103,19 @@ public class UseJavaUtilBase64 extends Recipe {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (base64EncodeMethod.matches(m) &&
                     ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
-                    m = m.withTemplate(encodeToString, m.getCoordinates().replace(), method.getArguments().get(0));
+                    m = encodeToString.apply(updateCursor(m), m.getCoordinates().replace(), method.getArguments().get(0));
                     if (method.getSelect() instanceof J.Identifier) {
                         m = m.withSelect(method.getSelect());
                     }
                 } else if (base64DecodeBuffer.matches(method)) {
-                    m = m.withTemplate(decode, m.getCoordinates().replace(), method.getArguments().get(0));
+                    m = decode.apply(updateCursor(m), m.getCoordinates().replace(), method.getArguments().get(0));
                     if (method.getSelect() instanceof J.Identifier) {
                         m = m.withSelect(method.getSelect());
                     }
                     // Note: The sun.misc.CharacterDecoder#decodeBuffer throws an IOException, whereas the java
                     // Base64Decoder.decode does not throw a checked exception. If this recipe converts decode, we
                     // may need to remove the catch or completely unwrap a try/catch.
-                    doAfterVisit(new UnnecessaryCatch(false));
+                    doAfterVisit(new UnnecessaryCatch(false).getVisitor());
                 }
                 return m;
             }
@@ -123,26 +125,24 @@ public class UseJavaUtilBase64 extends Recipe {
                 J.NewClass c = (J.NewClass) super.visitNewClass(newClass, ctx);
                 if (newBase64Encoder.matches(c)) {
                     // noinspection Convert2MethodRef
-                    return c.withTemplate(
-                            JavaTemplate.compile(this, "getEncoder",
-                                    () -> Base64.getEncoder()).build(),
-                            c.getCoordinates().replace()
-                    );
+                    return JavaTemplate.compile(this, "getEncoder", () -> Base64.getEncoder())
+                            .build()
+                            .apply(updateCursor(c), c.getCoordinates().replace());
                 } else if (newBase64Decoder.matches(c)) {
-                    return c.withTemplate(getDecoderTemplate, c.getCoordinates().replace());
+                    return getDecoderTemplate.apply(updateCursor(c), c.getCoordinates().replace());
                 }
                 return c;
             }
-        };
+        });
     }
 
     private boolean alreadyUsingIncompatibleBase64(JavaSourceFile cu) {
         return cu.getClasses().stream().anyMatch(it -> "Base64".equals(it.getSimpleName())) ||
                cu.getTypesInUse().getTypesInUse().stream()
-                .filter(it -> it instanceof JavaType.FullyQualified)
-                .map(JavaType.FullyQualified.class::cast)
-                .map(JavaType.FullyQualified::getFullyQualifiedName)
-                .filter(it -> !"java.util.Base64".equals(it))
-                .anyMatch(it -> it.endsWith(".Base64"));
+                       .filter(it -> it instanceof JavaType.FullyQualified)
+                       .map(JavaType.FullyQualified.class::cast)
+                       .map(JavaType.FullyQualified::getFullyQualifiedName)
+                       .filter(it -> !"java.util.Base64".equals(it))
+                       .anyMatch(it -> it.endsWith(".Base64"));
     }
 }

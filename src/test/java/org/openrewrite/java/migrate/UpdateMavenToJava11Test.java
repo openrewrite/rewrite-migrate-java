@@ -22,9 +22,10 @@ import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-public class UpdateMavenToJava11Test implements RewriteTest {
+class UpdateMavenToJava11Test implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -38,33 +39,36 @@ public class UpdateMavenToJava11Test implements RewriteTest {
     void changeJavaVersion() {
         //language=xml
         rewriteRun(
-          pomXml(
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                 
-                <properties>
-                  <java.version>1.8</java.version>
-                </properties>
-                
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-              </project>
-              """,
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                 
-                <properties>
-                  <java.version>11</java.version>
-                </properties>
-                
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-              </project>
+          version(
+            pomXml(
               """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+
+                  <properties>
+                    <java.version>1.8</java.version>
+                  </properties>
+
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                </project>
+                """,
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+
+                  <properties>
+                    <java.version>11</java.version>
+                  </properties>
+
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                </project>
+                """
+            ),
+            8
           )
         );
     }
@@ -73,35 +77,38 @@ public class UpdateMavenToJava11Test implements RewriteTest {
     void changeMavenCompiler() {
         //language=xml
         rewriteRun(
-          pomXml(
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                 
-                <properties>
-                  <maven.compiler.source>1.8</maven.compiler.source>
-                  <maven.compiler.target>1.8</maven.compiler.target>
-                </properties>
-                
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-              </project>
-              """,
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                 
-                <properties>
-                  <maven.compiler.source>11</maven.compiler.source>
-                  <maven.compiler.target>11</maven.compiler.target>
-                </properties>
-                
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-              </project>
+          version(
+            pomXml(
               """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+
+                  <properties>
+                    <maven.compiler.source>1.8</maven.compiler.source>
+                    <maven.compiler.target>1.8</maven.compiler.target>
+                  </properties>
+
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                </project>
+                """,
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+
+                  <properties>
+                    <maven.compiler.source>11</maven.compiler.source>
+                    <maven.compiler.target>11</maven.compiler.target>
+                  </properties>
+
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                </project>
+                """
+            ),
+            8
           )
         );
     }
@@ -110,21 +117,24 @@ public class UpdateMavenToJava11Test implements RewriteTest {
     @Test
     void noDowngrade() {
         rewriteRun(
-          pomXml(
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                 
-                <properties>
-                  <maven.compiler.source>17</maven.compiler.source>
-                  <maven.compiler.target>17</maven.compiler.target>
-                </properties>
-                
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-              </project>
+          version(
+            pomXml(
               """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+
+                  <properties>
+                    <maven.compiler.source>17</maven.compiler.source>
+                    <maven.compiler.target>17</maven.compiler.target>
+                  </properties>
+
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                </project>
+                """
+            ),
+            17
           )
         );
     }

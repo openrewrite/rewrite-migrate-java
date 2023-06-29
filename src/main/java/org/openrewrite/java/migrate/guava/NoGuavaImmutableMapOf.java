@@ -15,14 +15,13 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
@@ -55,17 +54,13 @@ public class NoGuavaImmutableMapOf extends Recipe {
         return Duration.ofMinutes(10);
     }
 
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return  Applicability.and(new UsesJavaVersion<>(9),
-                new UsesType<>("com.google.common.collect.ImmutableMap", false));
-    }
-
     // Code is shared between `NoGuavaImmutableMapOf`, `NoGuavaImmutableListOf`, and `NoGuavaImmutableSetOf`.
     // Updates to either may apply to each of the recipes.
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
+                new UsesType<>("com.google.common.collect.ImmutableMap", false));
+        return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -106,12 +101,14 @@ public class NoGuavaImmutableMapOf extends Recipe {
                             .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
                             .collect(Collectors.joining(",", "Map.of(", ")"));
 
-                    return method.withTemplate(
-                            JavaTemplate.builder(this::getCursor, template)
-                                    .imports("java.util.Map")
-                                    .build(),
-                            method.getCoordinates().replace(),
-                            method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
+                    return JavaTemplate.builder(template)
+                            .contextSensitive()
+                            .imports("java.util.Map")
+                            .build()
+                            .apply(
+                                    updateCursor(method),
+                                    method.getCoordinates().replace(),
+                                    method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                 }
                 return method;
             }
@@ -181,7 +178,7 @@ public class NoGuavaImmutableMapOf extends Recipe {
                        || TypeUtils.isOfClassType(fq, "java.lang.Object")
                        || TypeUtils.isOfClassType(fq, "com.google.common.collect.ImmutableMap");
             }
-        };
+        });
     }
 }
 

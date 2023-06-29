@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.openrewrite.Applicability;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -54,18 +54,13 @@ public class NoGuavaImmutableListOf extends Recipe {
         return Duration.ofMinutes(10);
     }
 
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return Applicability.and(new UsesJavaVersion<>(9),
-                new UsesType<>("com.google.common.collect.ImmutableList", false));
-    }
-
     // Code is shared between `NoGuavaImmutableMapOf`, `NoGuavaImmutableListOf`, and `NoGuavaImmutableSetOf`.
     // Updates to either may apply to each of the recipes.
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
-
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
+                new UsesType<>("com.google.common.collect.ImmutableList", false));
+        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (IMMUTABLE_LIST_MATCHER.matches(method) && isParentTypeDownCast()) {
@@ -102,14 +97,15 @@ public class NoGuavaImmutableListOf extends Recipe {
                             })
                             .filter(Objects::nonNull)
                             .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
-                            .collect(Collectors.joining(",",  "List.of(", ")"));
+                            .collect(Collectors.joining(",", "List.of(", ")"));
 
-                    return method.withTemplate(
-                            JavaTemplate.builder(this::getCursor, template)
-                                    .imports("java.util.List")
-                                    .build(),
-                            method.getCoordinates().replace(),
-                            method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
+                    return JavaTemplate.builder(template)
+                            .contextSensitive()
+                            .imports("java.util.List")
+                            .build()
+                            .apply(getCursor(),
+                                    method.getCoordinates().replace(),
+                                    method.getArguments().get(0) instanceof J.Empty ? new Object[]{} : method.getArguments().toArray());
                 }
                 return super.visitMethodInvocation(method, ctx);
             }
@@ -177,7 +173,7 @@ public class NoGuavaImmutableListOf extends Recipe {
                 JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
                 return TypeUtils.isOfClassType(fq, "java.util.List") || TypeUtils.isOfType(fq, JavaType.ShallowClass.build("java.lang.Object"));
             }
-        };
+        });
     }
 }
 
