@@ -39,7 +39,7 @@ public class AddScopeToInjectedClass extends ScanningRecipe<AddScopeToInjectedCl
 
     @Override
     public String getDescription() {
-        return "Finds member variables annotated with `@Inject' and applies `@Dependent` scope annotation to the variable's Type";
+        return "Finds member variables annotated with `@Inject' and applies `@Dependent` scope annotation to the variable's Type.";
     }
 
     private static boolean variableTypeRequiresScope(@Nullable JavaType.Variable memberVariable) {
