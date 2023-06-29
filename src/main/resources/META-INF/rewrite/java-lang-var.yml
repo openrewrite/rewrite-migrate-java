@@ -25,3 +25,4 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.lang.var.UseVarForObject
   - org.openrewrite.java.migrate.lang.var.UseVarForPrimitive
+  - org.openrewrite.java.migrate.lang.var.UseVarForGenerics
