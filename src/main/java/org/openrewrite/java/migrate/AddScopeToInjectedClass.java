@@ -18,19 +18,21 @@ package org.openrewrite.java.migrate;
 import lombok.Data;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
-import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.AnnotationMatcher;
-import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
-public class AddScopeToInjectedClass extends ScanningRecipe<AddScopeToInjectedClass.Accumulator> {
-    private static final Collection<String> typesPromptingScopeAddition = Arrays.asList("javax.inject.Inject");
+public class AddScopeToInjectedClass extends ScanningRecipe<Set<JavaType.FullyQualified>> {
+    private static final String JAVAX_INJECT_INJECT = "javax.inject.Inject";
+    private static final String JAVAX_ENTERPRISE_CONTEXT_DEPENDENT = "javax.enterprise.context.Dependent";
+    private static final Collection<String> TYPES_PROMPTING_SCOPE_ADDITION = Arrays.asList(JAVAX_INJECT_INJECT);
 
     @Override
     public String getDisplayName() {
@@ -39,94 +41,57 @@ public class AddScopeToInjectedClass extends ScanningRecipe<AddScopeToInjectedCl
 
     @Override
     public String getDescription() {
-        return "Finds member variables annotated with `@Inject' and applies `@Dependent` scope annotation to the variable's Type.";
-    }
-
-    private static boolean variableTypeRequiresScope(@Nullable JavaType.Variable memberVariable) {
-        if (memberVariable == null) {
-            return false;
-        }
-
-        for (JavaType.FullyQualified annotation : memberVariable.getAnnotations()) {
-            if (typesPromptingScopeAddition.contains(annotation.getFullyQualifiedName())) {
-                return true;
-            }
-        }
-        return false;
+        return "Finds member variables annotated with `@Inject' and applies `@Dependent` scope annotation to the variable's type.";
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
-        return new Accumulator();
+    public Set<JavaType.FullyQualified> getInitialValue(ExecutionContext ctx) {
+        return new HashSet<>();
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new TreeVisitor<Tree, ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getScanner(Set<JavaType.FullyQualified> injectedTypes) {
+        return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public @Nullable
-            Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
-                // look for classes requiring scope definition
-                if (tree instanceof J.CompilationUnit) {
-                    J.CompilationUnit cu = (J.CompilationUnit) tree;
-                    for (J.ClassDeclaration classDeclaration : cu.getClasses()) {
-                        JavaType.FullyQualified type = (JavaType.FullyQualified) classDeclaration.getType();
-                        for (JavaType.Variable variable : type.getMembers())
-                            if (variableTypeRequiresScope(variable)) {
-                                acc.getScopeTypes().add((JavaType.FullyQualified) variable.getType());
-                            }
+            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
+                J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, executionContext);
+                for (JavaType.Variable variable : cd.getType().getMembers()) {
+                    if (variableTypeRequiresScope(variable)) {
+                        injectedTypes.add((JavaType.FullyQualified) variable.getType());
                     }
                 }
-                return tree;
+                return cd;
+            }
+
+            private boolean variableTypeRequiresScope(@Nullable JavaType.Variable memberVariable) {
+                if (memberVariable == null) {
+                    return false;
+                }
+
+                for (JavaType.FullyQualified annotation : memberVariable.getAnnotations()) {
+                    if (TYPES_PROMPTING_SCOPE_ADDITION.contains(annotation.getFullyQualifiedName())) {
+                        return true;
+                    }
+                }
+                return false;
             }
         };
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
-        return new TreeVisitor<Tree, ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor(Set<JavaType.FullyQualified> injectedTypes) {
+        return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public @Nullable
-            Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
-                if (tree instanceof J.CompilationUnit) {
-                    J.CompilationUnit cu = (J.CompilationUnit) tree;
-                    for (J.ClassDeclaration aClass : cu.getClasses()) {
-                        JavaType.FullyQualified type = (JavaType.FullyQualified) aClass.getType();
-                        if (acc.getScopeTypes().contains(type)) {
-                            return new AddScopeAnnotationVisitor().visit(cu, acc.getScopeTypes());
-                        }
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit compilationUnit, ExecutionContext executionContext) {
+                J.CompilationUnit cu = super.visitCompilationUnit(compilationUnit, executionContext);
+                for (J.ClassDeclaration aClass : cu.getClasses()) {
+                    if (injectedTypes.contains(aClass.getType())) {
+                        return new AnnotateTypesVisitor(JAVAX_ENTERPRISE_CONTEXT_DEPENDENT)
+                                .visitCompilationUnit(cu, injectedTypes);
                     }
                 }
-                return tree;
+                return cu;
             }
         };
-    }
-
-    private static class AddScopeAnnotationVisitor extends JavaIsoVisitor<Set<JavaType.FullyQualified>> {
-        final String scopeAnnotationFqn = "javax.enterprise.context.Dependent";
-        final AnnotationMatcher SCOPE_ANNOTATION_MATCHER = new AnnotationMatcher("@" + scopeAnnotationFqn);
-        final JavaTemplate templ = JavaTemplate.builder("@Dependent")
-                .imports(scopeAnnotationFqn)
-                .javaParser(JavaParser.fromJavaVersion().dependsOn("package javax.enterprise.context; public @interface Dependent {}"))
-                .build();
-
-        @Override
-        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, Set<JavaType.FullyQualified> scopeTypes) {
-            if (!scopeTypes.contains(TypeUtils.asFullyQualified(classDecl.getType()))) {
-                return classDecl;
-            }
-            J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, scopeTypes);
-            if (cd.getLeadingAnnotations().stream().noneMatch(SCOPE_ANNOTATION_MATCHER::matches)) {
-                cd = templ.apply(getCursor(), cd.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
-                maybeAddImport(scopeAnnotationFqn);
-            }
-            return cd;
-        }
-    }
-
-    @Data
-    static class Accumulator {
-        Set<JavaType.FullyQualified> scopeTypes = new HashSet<>();
     }
 }
-
