@@ -15,12 +15,12 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
+
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RewriteTest;
-
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
 
 abstract class VarBaseTest implements RewriteTest {
     @Nested
@@ -181,9 +181,12 @@ abstract class VarBaseTest implements RewriteTest {
                   java("""
                     package com.example.app;
 
+                    import java.util.List;
+                    import java.util.ArrayList;
+                    
                     class A {
                       void m() {
-                          List<Object> os = new List();
+                          List<Object> os = new ArrayList<>();
                       }
                     }
                     """
@@ -197,10 +200,13 @@ abstract class VarBaseTest implements RewriteTest {
                 rewriteRun(
                   java("""
                     package com.example.app;
+                    
+                    import java.util.ArrayList;
+                    import java.util.List;
 
                     class A {
                       void m() {
-                          List os = new List<Object>();
+                          List os = new ArrayList<String>();
                       }
                     }
                     """
