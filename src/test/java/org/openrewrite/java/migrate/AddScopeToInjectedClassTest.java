@@ -18,17 +18,37 @@ package org.openrewrite.java.migrate;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.RecipeSpec;
+import org.openrewrite.java.JavaParser;
 import org.junit.jupiter.api.Test;
 
 import static org.openrewrite.java.Assertions.java;
 
 class AddScopeToInjectedClassTest implements RewriteTest {
 
+    @Override
+    public void defaults(RecipeSpec spec) {
+
+        spec.recipe(new AddScopeToInjectedClass());
+        spec.parser(JavaParser.fromJavaVersion().dependsOn("""
+            package javax.enterprise.context;
+            @Target({ElementType.Type})
+            @Retention(RetentionPolicy.RUNTIME)
+            public @interface Dependent {
+            }
+            """,
+          """
+            package javax.inject;
+            @Target({ElementType.Type})
+            @Retention(RetentionPolicy.RUNTIME)
+            public @interface Inject {
+            }
+            """));
+    }
+
     @DocumentExample
     @Test
     void scopeRequired() {
-        rewriteRun(spec -> spec.recipe(new AddScopeToInjectedClass())
-            .cycles(1),
+        rewriteRun(spec ->
           java("""
               package com.sample.service;
 
@@ -56,28 +76,13 @@ class AddScopeToInjectedClassTest implements RewriteTest {
                 @javax.inject.Inject
                 Bar service;
             }
-            """),
-          java("""
-            package javax.enterprise.context;
-            @Target({ElementType.Type})
-            @Retention(RetentionPolicy.RUNTIME)
-            public @interface Dependent {
-            }
-            """),
-          java("""
-            package javax.inject;
-            @Target({ElementType.Type})
-            @Retention(RetentionPolicy.RUNTIME)
-            public @interface Inject {
-            }
             """));
     }
 
 
     @Test
     void noMemberVariableAnnotation() {
-        rewriteRun(spec -> spec.recipe(new AddScopeToInjectedClass())
-            .cycles(1),
+        rewriteRun(spec ->
           java("""
             package com.sample.service;
 
@@ -94,27 +99,12 @@ class AddScopeToInjectedClassTest implements RewriteTest {
 
                 Bar service;
             }
-            """),
-          java("""
-            package javax.enterprise.context;
-            @Target({ElementType.Type})
-            @Retention(RetentionPolicy.RUNTIME)
-            public @interface Dependent {
-            }
-            """),
-          java("""
-            package javax.inject;
-            @Target({ElementType.Type})
-            @Retention(RetentionPolicy.RUNTIME)
-            public @interface Inject {
-            }
             """));
     }
 
     @Test
     void nonInjectAnnotation() {
-        rewriteRun(spec -> spec.recipe(new AddScopeToInjectedClass())
-            .cycles(1),
+        rewriteRun(spec ->
           java("""
             package com.sample.service;
 
@@ -134,13 +124,6 @@ class AddScopeToInjectedClassTest implements RewriteTest {
             }
             """),
           java("""
-            package javax.enterprise.context;
-            @Target({ElementType.Type})
-            @Retention(RetentionPolicy.RUNTIME)
-            public @interface Dependent {
-            }
-            """),
-          java("""
             package javax.inject;
             @Target({ElementType.Type})
             @Retention(RetentionPolicy.RUNTIME)
@@ -152,8 +135,7 @@ class AddScopeToInjectedClassTest implements RewriteTest {
 
     @Test
     void scopeAnnotationAlreadyExists() {
-        rewriteRun(spec -> spec.recipe(new AddScopeToInjectedClass())
-            .cycles(1),
+        rewriteRun(spec ->
           java("""
             package com.sample.service;
 
@@ -174,20 +156,6 @@ class AddScopeToInjectedClassTest implements RewriteTest {
 
                 @javax.inject.Inject
                 Bar service;
-            }
-            """),
-          java("""
-            package javax.enterprise.context;
-            @Target({ElementType.Type})
-            @Retention(RetentionPolicy.RUNTIME)
-            public @interface Dependent {
-            }
-            """),
-          java("""
-            package javax.inject;
-            @Target({ElementType.Type})
-            @Retention(RetentionPolicy.RUNTIME)
-            public @interface Inject {
             }
             """));
     }
