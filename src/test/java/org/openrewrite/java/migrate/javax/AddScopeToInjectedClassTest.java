@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate;
+package org.openrewrite.java.migrate.javax;
 
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.migrate.javax.AddScopeToInjectedClass;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.java.JavaParser;
