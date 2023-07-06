@@ -43,8 +43,8 @@ public class UseVarForObject extends Recipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return "Try to apply local variable type inference `var` to variables containing Objects where possible." +
-               "This recipe will not touch variable declaration with genrics or initializer containing ternary operators.";
+        return "Try to apply local variable type inference `var` to variables containing Objects where possible. " +
+               "This recipe will not touch variable declarations with generics or initializers containing ternary operators.";
     }
 
 
