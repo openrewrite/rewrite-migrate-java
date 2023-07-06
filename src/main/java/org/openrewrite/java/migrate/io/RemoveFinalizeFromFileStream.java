@@ -24,13 +24,16 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
@@ -52,12 +55,19 @@ public class RemoveFinalizeFromFileStream extends Recipe {
     }
 
     @Override
+    public Set<String> getTags() {
+        return Collections.singleton("JDK-8212050");
+    }
+
+    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
 
         return Preconditions.check(
-                Preconditions.or(
+                Preconditions.and(
+                        new UsesJavaVersion<>(9),
+                    Preconditions.or(
                         new UsesType<>(JAVA_IO_FILEINPUTSTREAM, false),
-                        new UsesType<>(JAVA_IO_FILEOUTPUTSTREAM, false)),
+                        new UsesType<>(JAVA_IO_FILEOUTPUTSTREAM, false))),
                 new JavaVisitor<ExecutionContext>() {
 
                     @Override
