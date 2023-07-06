@@ -27,7 +27,7 @@ class RemoveThreadDestroyMethodTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new RemoveThreadDestroyMethod()).allSources(s -> s.markers(javaVersion(8)));
+        spec.recipe(new RemoveThreadDestroyMethod());//.allSources(s -> s.markers(javaVersion(8)));
     }
 
     @Test
@@ -36,8 +36,6 @@ class RemoveThreadDestroyMethodTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              import java.lang.*;
-                              
               class FooBar{
                   public void test() {
                       Thread thread = Thread.currentThread();
@@ -47,8 +45,6 @@ class RemoveThreadDestroyMethodTest implements RewriteTest {
               }
                """,
             """
-              import java.lang.*;
-                              
               class FooBar{
                   public void test() {
                       Thread thread = Thread.currentThread();
@@ -66,8 +62,6 @@ class RemoveThreadDestroyMethodTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              import java.lang.*;
-                              
               class FooBar{
                   public void test() {
                       Thread thread = Thread.currentThread();
@@ -85,8 +79,6 @@ class RemoveThreadDestroyMethodTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              import java.lang.*;
-                              
               class FooBar{
                   public void test() {
                       FooBar f = new FooBar();

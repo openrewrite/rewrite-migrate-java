@@ -27,7 +27,9 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
@@ -37,12 +39,17 @@ public class RemoveThreadDestroyMethod extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Remove deprecated Thread.destroy() statement";
+        return "Remove deprecated `Thread.destroy()`";
     }
 
     @Override
     public String getDescription() {
-        return "Remove deprecated invocations of Thread.destroy() which have no alternatives needed.";
+        return "Remove deprecated invocations of `Thread.destroy()` which have no alternatives needed.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("JDK-8204260");
     }
 
     @Override
@@ -53,7 +60,11 @@ public class RemoveThreadDestroyMethod extends Recipe {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
-                        return (Objects.nonNull(mi.getSelect()) && TypeUtils.isAssignableTo(JAVA_LANG_THREAD, mi.getSelect().getType()) && mi.getSimpleName().equals("destroy")) ? null : mi;
+                        if (Objects.nonNull(mi.getSelect())
+                                && TypeUtils.isAssignableTo(JAVA_LANG_THREAD, mi.getSelect().getType())
+                                && mi.getSimpleName().equals("destroy"))
+                            return null;
+                        return mi;
                     }
                 });
     }
