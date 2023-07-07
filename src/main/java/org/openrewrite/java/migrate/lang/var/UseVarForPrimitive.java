@@ -45,8 +45,8 @@ public class UseVarForPrimitive extends Recipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return "Try to apply local variable type inference `var` to primitiv variables where possible." +
-               "This recipe will not touch variable declaration with initializer containing ternary operators.";
+        return "Try to apply local variable type inference `var` to primitive variables where possible. " +
+               "This recipe will not touch variable declarations with initializers containing ternary operators.";
     }
 
 
