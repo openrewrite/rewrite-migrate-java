@@ -30,7 +30,9 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
@@ -44,12 +46,17 @@ public class ReplaceRuntimeFinalizer extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Replace Runtime.runFinalizersOnExit() and System.runFinalizersOnExit() with Runtime.addShutDownHook(Thread)";
+        return "Replace `Runtime.runFinalizersOnExit()` and `System.runFinalizersOnExit()` with `Runtime.addShutDownHook(Thread)`";
     }
 
     @Override
     public String getDescription() {
         return "Replace invocations of `java.lang.Runtime.runFinalizersOnExit()` or `java.lang.System.runFinalizersOnExit()` with `java.lang.Runtime.addShutDownHook(Thread)`.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("JDK-8198250");
     }
 
     @Override

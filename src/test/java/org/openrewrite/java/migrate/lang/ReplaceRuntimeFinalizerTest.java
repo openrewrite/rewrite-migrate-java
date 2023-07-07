@@ -26,7 +26,7 @@ class ReplaceRuntimeFinalizerTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new ReplaceRuntimeFinalizer()).allSources(s -> s.markers(javaVersion(8)));
+        spec.recipe(new ReplaceRuntimeFinalizer());//.allSources(s -> s.markers(javaVersion(8)));
     }
 
     @Test
