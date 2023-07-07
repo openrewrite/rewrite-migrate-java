@@ -25,12 +25,14 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 
 public class RemoveDeprecatedRuntime extends Recipe {
 
     public static final String TRACE_INSTRUCTIONS = "traceInstructions";
-    private static final String JAVA_LANG_RUNTIME = "java.lang.Runtime";
+    public static final String JAVA_LANG_RUNTIME = "java.lang.Runtime";
     public static final String TRACE_METHOD_CALLS = "traceMethodCalls";
 
     @Override
@@ -40,24 +42,29 @@ public class RemoveDeprecatedRuntime extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Remove deprecated invocations of Runtime.traceInstructions() and Runtime.traceMethodCalls() which have no alternatives needed.";
+        return "Remove deprecated invocations of `Runtime.traceInstructions()` and `Runtime.traceMethodCalls()` which have no alternatives needed.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("JDK-8225330");
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-
 
         return Preconditions.check(new UsesType<>(JAVA_LANG_RUNTIME, false),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
-                        return (Objects.nonNull(mi.getSelect()) && TypeUtils.isAssignableTo(JAVA_LANG_RUNTIME, mi.getSelect().getType())
-                                && (TRACE_INSTRUCTIONS.equals(mi.getSimpleName()) || TRACE_METHOD_CALLS.equals(mi.getSimpleName()))
-                                ? null : mi);
-
+                        if(Objects.nonNull(mi.getSelect())
+                                && TypeUtils.isAssignableTo(JAVA_LANG_RUNTIME, mi.getSelect().getType())
+                                && (TRACE_INSTRUCTIONS.equals(mi.getSimpleName()) || TRACE_METHOD_CALLS.equals(mi.getSimpleName())))
+                            return null;
+                        return mi;
                     }
-                });
+            });
     }
 
 }

@@ -37,8 +37,6 @@ class RemoveDeprecatedRuntimeTest implements RewriteTest {
           version(
             java(
               """
-                import java.lang.*;
-                                
                 class FooBar{
                     public void test() {
                         Runtime.traceInstructions();
@@ -46,8 +44,6 @@ class RemoveDeprecatedRuntimeTest implements RewriteTest {
                 }
                  """,
               """
-                import java.lang.*;
-                                
                 class FooBar{
                     public void test() {
                     }
@@ -67,8 +63,6 @@ class RemoveDeprecatedRuntimeTest implements RewriteTest {
           version(
             java(
               """
-                import java.lang.*;
-                                
                 class FooBar{
                     public void test() {
                         Runtime.traceMethodCalls();
@@ -76,8 +70,6 @@ class RemoveDeprecatedRuntimeTest implements RewriteTest {
                 }
                  """,
               """
-                import java.lang.*;
-                                
                 class FooBar{
                     public void test() {
                     }
@@ -96,11 +88,32 @@ class RemoveDeprecatedRuntimeTest implements RewriteTest {
           version(
             java(
               """
-                import java.lang.*;
-                                
                 class FooBar{
                     public void test() {
                         Runtime.getRuntime();
+                    }
+                }
+                 """
+            ),
+            8
+          )
+        );
+    }
+
+    @Test
+    void noChanges() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                class FooBar{
+                    public static void main(String[] args){
+                        Runtime r = Runtime.getRuntime();
+                        test(r);
+                    }              
+                    public void test(Runtime r) {
+                        r.gc();
                     }
                 }
                  """
