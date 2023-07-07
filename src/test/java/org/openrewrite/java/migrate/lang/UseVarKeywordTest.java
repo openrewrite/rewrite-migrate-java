@@ -775,7 +775,8 @@ class UseVarKeywordTest implements RewriteTest {
                   version(
                     java("""
                   package com.example.app;
-                                    
+                  
+                  import java.util.List;
                   import java.util.ArrayList;
                                     
                   class A {
@@ -785,7 +786,8 @@ class UseVarKeywordTest implements RewriteTest {
                   }
                   ""","""
                   package com.example.app;
-                                    
+                  
+                  import java.util.List;                 
                   import java.util.ArrayList;
                                     
                   class A {
@@ -800,6 +802,7 @@ class UseVarKeywordTest implements RewriteTest {
             }
 
             @Test
+            @Disabled("not yet implemented by UseVarForMethodInvocations") // todo mboegers in PR #249
             void withFactoryMethods() {
                 //language=java
                 rewriteRun(

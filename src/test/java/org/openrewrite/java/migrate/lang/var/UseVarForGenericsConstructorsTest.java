@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-public class UseVarForGenericsConstructorsConstructorsTest implements RewriteTest {
+public class UseVarForGenericsConstructorsTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec.recipe(new UseVarForGenericsConstructors())
           .allSources(s -> s.markers(javaVersion(10)));
