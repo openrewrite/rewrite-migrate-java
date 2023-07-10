@@ -193,7 +193,7 @@ public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
 
 
         @Test
-        void withOnwFactoryMethods() {
+        void withOwnFactoryMethods() {
             //language=java
             rewriteRun(
               version(

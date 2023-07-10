@@ -15,8 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.*;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
