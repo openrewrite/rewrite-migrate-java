@@ -17,6 +17,7 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -30,6 +31,7 @@ class RemoveThreadDestroyMethodTest implements RewriteTest {
         spec.recipe(new RemoveThreadDestroyMethod());//.allSources(s -> s.markers(javaVersion(8)));
     }
 
+    @DocumentExample
     @Test
     void removeDestroyCall() {
         //language=java
