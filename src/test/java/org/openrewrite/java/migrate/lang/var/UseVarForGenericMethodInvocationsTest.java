@@ -17,49 +17,104 @@ package org.openrewrite.java.migrate.lang.var;
 
 import static org.openrewrite.java.Assertions.*;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-@Disabled("Not yet implemented")
-public class UseVarForMethodInvocationsTest implements RewriteTest {
+public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new UseVarForMethodInvocations())
+        spec.recipe(new UseVarForGenericMethodInvocations())
           .allSources(s -> s.markers(javaVersion(10)));
     }
 
     @Nested
     class NotApplicable {
         @Test
-        void forEmptyJDKFactoryMethod() {
+        void forNonGenericMethod() {
+            // this one is handled/covered by UseVarForObjects/Test#staticMethods
             //language=java
             rewriteRun(
               version(
-                java(
-                  """
-                      package com.example.app;
-                      
-                      import java.util.List;
-                      
-                      class A {
-                        void m() {
-                            List<String> strs = List.of();
-                        }
-                      }
-                    """),
+                java("""
+                package com.example.app;
+                                    
+                import java.util.Arrays;
+                import java.util.List;
+                import java.util.stream.Collectors;
+                                    
+                class A {
+                  static String myString(String ... values) {
+                      return String.join("",values);
+                  }
+                  void m() {
+                      String strs = myString();
+                  }
+                }
+                """),
                 10
               )
             );
         }
 
-        @Test
-        void withEmptyOnwFactoryMethods() {
-            //language=java
-            rewriteRun(
-              version(
-                java("""
+        @Nested
+        class NotSupportedByOpenRewrite {
+            // this is possible because `myList()`s type is fixed to `List<String>` but it is not distinguishable from
+            // a generic method with generic var args like `List.of()`
+            @Test
+            void withStaticMethods() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                package com.example.app;
+                                    
+                import java.util.List;
+                                    
+                class A {
+                  static List<String> myList() {
+                      return List.of("one", "two");
+                  }
+                  void m() {
+                      List<String> strs = myList();
+                  }
+                }
+                """),
+                    10
+                  )
+                );
+            }
+            @Test
+            void withEmptyOnwNonStaticFactoryMethods() {
+                //if detectable this could be `var strs = this.<String>myList();`
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                package com.example.app;
+                                    
+                import java.util.List;
+                                    
+                class A {
+                  <T> List<T> myList(T ... values) {
+                      return List.of(values);
+                  }
+                  void m() {
+                      List<String> strs = myList();
+                  }
+                }
+                """),
+                    10
+                  )
+                );
+            }
+            @Test
+            void withEmptyOnwFactoryMethods() {
+                // if detectable this could be `var strs = A.<String>myList();`
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
                 package com.example.app;
                                     
                 import java.util.List;
@@ -73,9 +128,32 @@ public class UseVarForMethodInvocationsTest implements RewriteTest {
                   }
                 }
                 """),
-                10
-              )
-            );
+                    10
+                  )
+                );
+            }
+            @Test
+            void forEmptyJDKFactoryMethod() {
+                // if detectable this could be `var strs = List.<String>of();`
+                //language=java
+                rewriteRun(
+                  version(
+                    java(
+                      """
+                          package com.example.app;
+                          
+                          import java.util.List;
+                          
+                          class A {
+                            void m() {
+                                List<String> strs = List.of();
+                            }
+                          }
+                        """),
+                    10
+                  )
+                );
+            }
         }
     }
 
@@ -112,42 +190,7 @@ public class UseVarForMethodInvocationsTest implements RewriteTest {
             );
         }
 
-        @Test
-        void withStaticMethods() {
-            //language=java
-            rewriteRun(
-              version(
-                java("""
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  static List<String> myList() {
-                      return List.of("one", "two");
-                  }
-                  void m() {
-                      List<String> strs = myList();
-                  }
-                }
-                ""","""
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  static List<String> myList() {
-                      return List.of("one", "two");
-                  }
-                  void m() {
-                      var strs = myList();
-                  }
-                }
-                """),
-                10
-              )
-            );
-        }
+
 
         @Test
         void withOnwFactoryMethods() {

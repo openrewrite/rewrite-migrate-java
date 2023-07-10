@@ -26,6 +26,5 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.lang.var.UseVarForObject
   - org.openrewrite.java.migrate.lang.var.UseVarForPrimitive
-  - org.openrewrite.java.migrate.lang.var.UseVarForMethodInvocations
-  - org.openrewrite.java.migrate.lang.var.UseVarForMethodInvocations
   - org.openrewrite.java.migrate.lang.var.UseVarForGenericsConstructors
+  - org.openrewrite.java.migrate.lang.var.UseVarForGenericMethodInvocations
