@@ -20,6 +20,7 @@ import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
@@ -28,7 +29,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AddScopeToInjectedClass extends ScanningRecipe<Set<JavaType.FullyQualified>> {
+public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
     private static final String JAVAX_INJECT_INJECT = "javax.inject.Inject";
     private static final String JAVAX_ENTERPRISE_CONTEXT_DEPENDENT = "javax.enterprise.context.Dependent";
     private static final Collection<String> TYPES_PROMPTING_SCOPE_ADDITION = Arrays.asList(JAVAX_INJECT_INJECT);
@@ -44,19 +45,19 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<JavaType.FullyQu
     }
 
     @Override
-    public Set<JavaType.FullyQualified> getInitialValue(ExecutionContext ctx) {
+    public Set<String> getInitialValue(ExecutionContext ctx) {
         return new HashSet<>();
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Set<JavaType.FullyQualified> injectedTypes) {
+    public TreeVisitor<?, ExecutionContext> getScanner(Set<String> injectedTypes) {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, executionContext);
                 for (JavaType.Variable variable : cd.getType().getMembers()) {
                     if (variableTypeRequiresScope(variable)) {
-                        injectedTypes.add((JavaType.FullyQualified) variable.getType());
+                        injectedTypes.add(((JavaType.FullyQualified) variable.getType()).getFullyQualifiedName());
                     }
                 }
                 return cd;
@@ -66,9 +67,9 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<JavaType.FullyQu
                 if (memberVariable == null) {
                     return false;
                 }
-
-                for (JavaType.FullyQualified annotation : memberVariable.getAnnotations()) {
-                    if (TYPES_PROMPTING_SCOPE_ADDITION.contains(annotation.getFullyQualifiedName())) {
+                AnnotationMatcher matcher = new AnnotationMatcher(JAVAX_INJECT_INJECT);
+                for (JavaType.FullyQualified fullYQualifiedAnnotation : memberVariable.getAnnotations()) {
+                    if(memberVariable.getAnnotations().stream().anyMatch(matcher::matchesAnnotationOrMetaAnnotation)) {
                         return true;
                     }
                 }
@@ -78,13 +79,13 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<JavaType.FullyQu
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Set<JavaType.FullyQualified> injectedTypes) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(Set<String> injectedTypes) {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.CompilationUnit visitCompilationUnit(J.CompilationUnit compilationUnit, ExecutionContext executionContext) {
                 J.CompilationUnit cu = super.visitCompilationUnit(compilationUnit, executionContext);
                 for (J.ClassDeclaration aClass : cu.getClasses()) {
-                    if (injectedTypes.contains(aClass.getType())) {
+                    if (injectedTypes.contains(aClass.getType().getFullyQualifiedName())) {
                         return new AnnotateTypesVisitor(JAVAX_ENTERPRISE_CONTEXT_DEPENDENT)
                                 .visitCompilationUnit(cu, injectedTypes);
                     }
