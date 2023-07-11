@@ -25,6 +25,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
@@ -39,19 +40,19 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = true)
 public class RemoveFinalizeFromFileStream extends Recipe {
 
-    private static final String JAVA_IO_FILEINPUTSTREAM = "java.io.FileInputStream";
-    private static final String JAVA_IO_FILEOUTPUTSTREAM = "java.io.FileOutputStream";
+    private static final MethodMatcher JAVA_IO_FILEINPUTSTREAM = new MethodMatcher("java.io.FileInputStream finalize()", true);
+    private static final MethodMatcher JAVA_IO_FILEOUTPUTSTREAM = new MethodMatcher("java.io. FileOutputStream finalize()", true);
 
     private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.lang.Object finalize()");
 
     @Override
     public String getDisplayName() {
-        return "Replace invocations of deprecated invocations from FileInputStream, FileOutputStream";
+        return "Replace invocations of `finalize()` on `FileInputStream` and `FileOutputStream` with `close()`";
     }
 
     @Override
     public String getDescription() {
-        return "Remove invocations of finalize() deprecated invocations from FileInputStream, FileOutputStream.";
+        return "Replace invocations of the deprecated finalize() method on FileInputStream and FileOutputStream with close().";
     }
 
     @Override
@@ -64,17 +65,17 @@ public class RemoveFinalizeFromFileStream extends Recipe {
 
         return Preconditions.check(
                 Preconditions.and(
-                        new UsesJavaVersion<>(9),
+                        new UsesJavaVersion<>(9,11),
                     Preconditions.or(
-                        new UsesType<>(JAVA_IO_FILEINPUTSTREAM, false),
-                        new UsesType<>(JAVA_IO_FILEOUTPUTSTREAM, false))),
+                        new UsesMethod<>(JAVA_IO_FILEINPUTSTREAM),
+                        new UsesMethod<>(JAVA_IO_FILEOUTPUTSTREAM))),
                 new JavaVisitor<ExecutionContext>() {
 
                     @Override
                     public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
                         J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
 
-                        if (METHOD_MATCHER.matches(mi)) {
+                        if (JAVA_IO_FILEINPUTSTREAM.matches(mi) || JAVA_IO_FILEOUTPUTSTREAM.matches(mi)) {
                             Expression select = mi.getSelect();
                             if (select == null) {
                                 J.ClassDeclaration cd = getCursor().firstEnclosingOrThrow(J.ClassDeclaration.class);
@@ -98,8 +99,8 @@ public class RemoveFinalizeFromFileStream extends Recipe {
                     }
 
                     private boolean shouldRemoveFinalize(JavaType type) {
-                        return TypeUtils.isAssignableTo(JAVA_IO_FILEINPUTSTREAM, type)
-                                || TypeUtils.isAssignableTo(JAVA_IO_FILEOUTPUTSTREAM, type);
+                        return TypeUtils.isAssignableTo(JAVA_IO_FILEINPUTSTREAM.toString(), type)
+                                || TypeUtils.isAssignableTo(JAVA_IO_FILEOUTPUTSTREAM.toString(), type);
                     }
 
                 });

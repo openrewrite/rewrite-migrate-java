@@ -34,7 +34,6 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
     void removeFinalizerForFileInputStream() {
         //language=java
         rewriteRun(
-          version(
             java(
               """
                 import java.io.FileInputStream;
@@ -56,9 +55,7 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
                    }
                 }
                  """
-            ),
-            12
-          )
+            )
         );
     }
 
