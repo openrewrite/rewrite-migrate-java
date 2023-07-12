@@ -17,8 +17,11 @@ package org.openrewrite.java.migrate.lang.var;
 
 import static org.openrewrite.java.Assertions.*;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -143,6 +146,179 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
 
     @Nested
     class Applicable {
+
+        @Nested
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/257")
+        class AdvancedGenerics {
+            @Test
+            @Disabled("AST look wrong for OpenRewrite but its valid")
+            void genericMethod() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                  package com.example.app;
+                              
+                  import java.util.List;
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                      static <T> void generic() {
+                          List<T> lst = new ArrayList<>();
+                      }
+                  }
+                  ""","""
+                  package com.example.app;
+                              
+                  import java.util.List;
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                      static <T> void generic() {
+                          var lst = new ArrayList<T>();
+                      }
+                  }
+                  """),
+                10
+              )
+            );
+        }
+
+        @Test
+        @Disabled("AST look wrong for OpenRewrite but its valid")
+        void unboundedGenerics(){
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  package com.example.app;
+                              
+                  import java.util.List;
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                      void generic() {
+                          List<?> lst = new ArrayList<>();
+                      }
+                  }
+                  ""","""
+                  package com.example.app;
+                              
+                  import java.util.List;
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                      void generic() {
+                          var lst = new ArrayList<?>();
+                      }
+                  }
+                  """),
+                10
+              )
+            );
+        }
+
+            @Test
+            @ExpectedToFail("Fails with IllegalStateException because not yet implemented")
+            void boundedGenerics(){
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                  package com.example.app;
+                              
+                  import java.util.List;
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                      void generic() {
+                          List<? extends String> lst = new ArrayList<>();
+                      }
+                  }
+                  ""","""
+                  package com.example.app;
+                              
+                  import java.util.List;
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                      void generic() {
+                          var lst = new ArrayList<? extends String>();
+                      }
+                  }
+                  """),
+                    10
+                  )
+                );
+            }
+
+        @Test
+        void inceptionGenerics() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  package com.example.app;
+                              
+                  import java.util.List;
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                      void generic() {
+                          List<List<Object>> lst = new ArrayList<>();
+                      }
+                  }
+                  """, """
+                  package com.example.app;
+                              
+                  import java.util.List;
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                      void generic() {
+                          var lst = new ArrayList<List<Object>>();
+                      }
+                  }
+                  """),
+                10
+              )
+            );
+        }
+
+            @Test
+            void twoParams() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                  package com.example.app;
+                              
+                  import java.util.Map;
+                  import java.util.HashMap;
+                                    
+                  class A {
+                      void twoParams() {
+                          Map<String, Object> map = new HashMap<>();
+                      }
+                  }
+                  """, """
+                  package com.example.app;
+                              
+                  import java.util.Map;
+                  import java.util.HashMap;
+                                    
+                  class A {
+                      void twoParams() {
+                          var map = new HashMap<String, Object>();
+                      }
+                  }
+                  """),
+                    10
+                  )
+                );
+            }
+    }
+
         @Test
         void ifWelldefined() {
             //language=java
