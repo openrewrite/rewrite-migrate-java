@@ -33,23 +33,25 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
-    private transient final MethodMatcher IMMUTABLE_MATCHER = new MethodMatcher(getGuavaType()+" of(..)");
+    private transient final MethodMatcher IMMUTABLE_MATCHER = new MethodMatcher(getGuavaType() + " of(..)");
 
     abstract String getGuavaType();
+
     abstract String getJavaType();
+
     private String getShortType(String fullyQualifiedType) {
         return fullyQualifiedType.substring(getJavaType().lastIndexOf(".") + 1);
     }
 
     @Override
     public String getDisplayName() {
-        return "Prefer `"+getShortType(getJavaType())+".of(..)` in Java 9 or higher";
+        return "Prefer `" + getShortType(getJavaType()) + ".of(..)` in Java 9 or higher";
     }
 
     @Override
     public String getDescription() {
         String name = getGuavaType().substring(getGuavaType().lastIndexOf("."));
-        return "Replaces `"+getShortType(getGuavaType())+".of(..)` if the returned type is immediately down-cast.";
+        return "Replaces `" + getShortType(getGuavaType()) + ".of(..)` if the returned type is immediately down-cast.";
     }
 
     @Override
@@ -98,7 +100,7 @@ public abstract class AbstractNoGuavaImmutableOf extends Recipe {
                             })
                             .filter(Objects::nonNull)
                             .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
-                            .collect(Collectors.joining(",", getShortType(getJavaType())+".of(", ")"));
+                            .collect(Collectors.joining(",", getShortType(getJavaType()) + ".of(", ")"));
 
                     return JavaTemplate.builder(template)
                             .contextSensitive()

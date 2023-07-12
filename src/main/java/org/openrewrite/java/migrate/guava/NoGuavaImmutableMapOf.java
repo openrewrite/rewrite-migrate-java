@@ -15,23 +15,6 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import com.google.common.collect.ImmutableMap;
-import org.openrewrite.Preconditions;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.tree.*;
-
-import java.time.Duration;
-import java.util.*;
-import java.util.stream.Collectors;
-
 public class NoGuavaImmutableMapOf extends AbstractNoGuavaImmutableOf {
 
     @Override
