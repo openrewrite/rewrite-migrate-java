@@ -31,7 +31,7 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public abstract class AbstractNoGuavaImmutableOf extends Recipe {
+abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
     private final String guavaType;
     private final String javaType;
