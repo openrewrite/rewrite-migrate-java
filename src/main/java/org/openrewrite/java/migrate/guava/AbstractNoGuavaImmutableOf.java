@@ -33,25 +33,26 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
-    private transient final MethodMatcher IMMUTABLE_MATCHER = new MethodMatcher(getGuavaType() + " of(..)");
+    private final String guavaType;
+    private final String javaType;
 
-    abstract String getGuavaType();
-
-    abstract String getJavaType();
+    AbstractNoGuavaImmutableOf(String guavaType, String javaType) {
+        this.guavaType = guavaType;
+        this.javaType = javaType;
+    }
 
     private String getShortType(String fullyQualifiedType) {
-        return fullyQualifiedType.substring(getJavaType().lastIndexOf(".") + 1);
+        return fullyQualifiedType.substring(javaType.lastIndexOf(".") + 1);
     }
 
     @Override
     public String getDisplayName() {
-        return "Prefer `" + getShortType(getJavaType()) + ".of(..)` in Java 9 or higher";
+        return "Prefer `" + getShortType(javaType) + ".of(..)` in Java 9 or higher";
     }
 
     @Override
     public String getDescription() {
-        String name = getGuavaType().substring(getGuavaType().lastIndexOf("."));
-        return "Replaces `" + getShortType(getGuavaType()) + ".of(..)` if the returned type is immediately down-cast.";
+        return "Replaces `" + getShortType(guavaType) + ".of(..)` if the returned type is immediately down-cast.";
     }
 
     @Override
@@ -62,13 +63,14 @@ public abstract class AbstractNoGuavaImmutableOf extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
-                new UsesType<>(getGuavaType(), false));
+                new UsesType<>(guavaType, false));
+        final MethodMatcher IMMUTABLE_MATCHER = new MethodMatcher(guavaType + " of(..)");
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (IMMUTABLE_MATCHER.matches(method) && isParentTypeDownCast()) {
-                    maybeRemoveImport(getGuavaType());
-                    maybeAddImport(getJavaType());
+                    maybeRemoveImport(guavaType);
+                    maybeAddImport(javaType);
 
                     String template = method.getArguments().stream()
                             .map(arg -> {
@@ -100,11 +102,11 @@ public abstract class AbstractNoGuavaImmutableOf extends Recipe {
                             })
                             .filter(Objects::nonNull)
                             .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
-                            .collect(Collectors.joining(",", getShortType(getJavaType()) + ".of(", ")"));
+                            .collect(Collectors.joining(",", getShortType(javaType) + ".of(", ")"));
 
                     return JavaTemplate.builder(template)
                             .contextSensitive()
-                            .imports(getJavaType())
+                            .imports(javaType)
                             .build()
                             .apply(getCursor(),
                                     method.getCoordinates().replace(),
@@ -174,8 +176,8 @@ public abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
             private boolean isParentTypeMatched(@Nullable JavaType type) {
                 JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
-                return TypeUtils.isOfClassType(fq, getJavaType())
-                        || TypeUtils.isOfClassType(fq, "java.lang.Object");
+                return TypeUtils.isOfClassType(fq, javaType)
+                       || TypeUtils.isOfClassType(fq, "java.lang.Object");
             }
         });
     }
