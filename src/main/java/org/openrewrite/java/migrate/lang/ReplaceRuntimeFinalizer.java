@@ -40,7 +40,7 @@ import java.util.Set;
 public class ReplaceRuntimeFinalizer extends Recipe {
 
     private static final String METHOD_PATTERN = "runFinalizersOnExit";
-    public static final String NEW_METHOD_NAME = "Runtime.getRuntime().addShutdownHook(new Thread())";
+    public static final String NEW_METHOD_NAME = "Runtime.getRuntime().addShutdownHook(new Thread(() -> Runtime.getRuntime().exit(0)))";
     private static final String JAVA_LANG_RUNTIME = "java.lang.Runtime";
     private static final String JAVA_LANG_SYSTEM = "java.lang.System";
 

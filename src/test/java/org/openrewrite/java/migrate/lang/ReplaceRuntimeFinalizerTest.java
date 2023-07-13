@@ -44,7 +44,7 @@ class ReplaceRuntimeFinalizerTest implements RewriteTest {
               """
                  class FooBar {
                       public void test(){
-                          Runtime.getRuntime().addShutdownHook(new Thread());
+                          Runtime.getRuntime().addShutdownHook(new Thread(() -> Runtime.getRuntime().exit(0)));
                       }
                   }
                 """
@@ -59,7 +59,7 @@ class ReplaceRuntimeFinalizerTest implements RewriteTest {
               """
                  class FooBar {
                       public void test(){
-                          Runtime.getRuntime().addShutdownHook(new Thread());
+                          Runtime.getRuntime().addShutdownHook(new Thread(() -> Runtime.getRuntime().exit(0)));
                       }
                   }
                 """
@@ -81,7 +81,7 @@ class ReplaceRuntimeFinalizerTest implements RewriteTest {
               """
                  class FooBar {
                       public void test(){
-                          Runtime.getRuntime().addShutdownHook(new Thread());
+                          Runtime.getRuntime().addShutdownHook(new Thread(() -> Runtime.getRuntime().exit(0)));
                       }
                   }
                 """
