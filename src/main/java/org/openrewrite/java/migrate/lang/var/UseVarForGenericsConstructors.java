@@ -72,6 +72,14 @@ public class UseVarForGenericsConstructors extends Recipe {
             List<JavaType> rightTypes = extractParameters(variable.getInitializer());
             if (rightTypes == null || (leftTypes.isEmpty() && rightTypes.isEmpty())) return vd;
 
+            // skip generics with type bounds, it's not yet implemented
+            boolean genericHasBounds = leftTypes.stream()
+                    .filter(t -> t instanceof JavaType.GenericTypeVariable)
+                    .map(t -> (JavaType.GenericTypeVariable) t)
+                    .map(t -> !t.getBounds().isEmpty())
+                    .reduce(false, Boolean::logicalOr);
+            if (genericHasBounds) return vd;
+
             return transformToVar(vd, leftTypes, rightTypes);
         }
 
@@ -164,7 +172,7 @@ public class UseVarForGenericsConstructors extends Recipe {
             }
             if (type instanceof JavaType.GenericTypeVariable) {
                 String variableName = ((JavaType.GenericTypeVariable) type).getName();
-                J.Identifier identifier = new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, variableName, null, null);
+                J.Identifier identifier = new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, variableName, type, null);
 
                 List<JavaType> bounds1 = ((JavaType.GenericTypeVariable) type).getBounds();
                 if (bounds1.isEmpty()) {

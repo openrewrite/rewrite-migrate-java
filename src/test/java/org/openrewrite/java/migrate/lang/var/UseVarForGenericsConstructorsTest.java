@@ -17,10 +17,8 @@ package org.openrewrite.java.migrate.lang.var;
 
 import static org.openrewrite.java.Assertions.*;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -33,6 +31,29 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
 
     @Nested
     class NotApplicable {
+
+        @Test
+        void boundedGenerics(){
+            // could be var lst = new ArrayList<? extends String>();
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                      package com.example.app;
+                                  
+                      import java.util.List;
+                      import java.util.ArrayList;
+                                        
+                      class A {
+                          void generic() {
+                              List<? extends String> lst = new ArrayList<>();
+                          }
+                      }
+                      """),
+                10
+              )
+            );
+        }
         @Test
         void forEmptyFactoryMethod() {
             //language=java
@@ -151,7 +172,6 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/257")
         class AdvancedGenerics {
             @Test
-            @Disabled("AST look wrong for OpenRewrite but its valid")
             void genericMethod() {
                 //language=java
                 rewriteRun(
@@ -185,7 +205,6 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
         }
 
         @Test
-        @Disabled("AST look wrong for OpenRewrite but its valid")
         void unboundedGenerics(){
             //language=java
             rewriteRun(
@@ -219,8 +238,8 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
         }
 
             @Test
-            @ExpectedToFail("Fails with IllegalStateException because not yet implemented")
             void boundedGenerics(){
+                // could be var lst = new ArrayList<? extends String>();
                 //language=java
                 rewriteRun(
                   version(
@@ -235,55 +254,44 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                           List<? extends String> lst = new ArrayList<>();
                       }
                   }
-                  ""","""
-                  package com.example.app;
-                              
-                  import java.util.List;
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                      void generic() {
-                          var lst = new ArrayList<? extends String>();
-                      }
-                  }
                   """),
                     10
                   )
                 );
             }
 
-        @Test
-        void inceptionGenerics() {
-            //language=java
-            rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-                              
-                  import java.util.List;
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                      void generic() {
-                          List<List<Object>> lst = new ArrayList<>();
+            @Test
+            void inceptionGenerics() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+                                  
+                      import java.util.List;
+                      import java.util.ArrayList;
+                                        
+                      class A {
+                          void generic() {
+                              List<List<Object>> lst = new ArrayList<>();
+                          }
                       }
-                  }
-                  """, """
-                  package com.example.app;
-                              
-                  import java.util.List;
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                      void generic() {
-                          var lst = new ArrayList<List<Object>>();
+                      """, """
+                      package com.example.app;
+                                  
+                      import java.util.List;
+                      import java.util.ArrayList;
+                                        
+                      class A {
+                          void generic() {
+                              var lst = new ArrayList<List<Object>>();
+                          }
                       }
-                  }
-                  """),
-                10
-              )
-            );
-        }
+                      """),
+                    10
+                  )
+                );
+            }
 
             @Test
             void twoParams() {
