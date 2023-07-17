@@ -21,41 +21,51 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class RemoveFinalizeFromFileStreamTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new RemoveFinalizeFromFileStream());
+        spec
+          .recipe(new RemoveFinalizeFromFileStream())
+          .allSources(s -> s.markers(javaVersion(11)));
     }
 
     @Test
     void removeFinalizerForFileInputStream() {
         //language=java
         rewriteRun(
-            java(
-              """
-                import java.io.FileInputStream;
+          java(
+            """
+              import java.io.FileInputStream;
+              import java.io.IOException;
 
-                class FooBar extends FileInputStream{
-                   public void test(){
-                       FooBar obj = new FooBar();
-                       obj.finalize();
-                   }                    
-                }
-                 """,
-              """
-                import java.io.FileInputStream;
+              class FooBar extends FileInputStream {
+                 FooBar() throws IOException {
+                     super("foo");
+                 }
+                 public void test() throws IOException {
+                     FooBar obj = new FooBar();
+                     obj.finalize();
+                 }
+              }
+               """,
+            """
+              import java.io.FileInputStream;
+              import java.io.IOException;
 
-                class FooBar extends FileInputStream{
-                   public void test(){
-                       FooBar obj = new FooBar();
-                       obj.close();
-                   }
-                }
-                 """
-            )
+              class FooBar extends FileInputStream {
+                 FooBar() throws IOException {
+                     super("foo");
+                 }
+                 public void test() throws IOException {
+                     FooBar obj = new FooBar();
+                     obj.close();
+                 }
+              }
+               """
+          )
         );
     }
 
@@ -63,20 +73,21 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
     void noChangeWithCloseForFileInputStream() {
         //language=java
         rewriteRun(
-          version(
-            java(
-              """
-                import java.io.FileInputStream;
+          java(
+            """
+              import java.io.FileInputStream;
+              import java.io.IOException;
 
-                class FooBar extends FileInputStream{
-                   public void test(){
-                       FooBar obj = new FooBar();
-                       obj.close();
-                   }
-                }
-                 """
-            ),
-            12
+              class FooBar extends FileInputStream {
+                 FooBar() throws IOException {
+                     super("foo");
+                 }
+                 public void test() throws IOException {
+                     FooBar obj = new FooBar();
+                     obj.close();
+                 }
+              }
+               """
           )
         );
     }
@@ -85,19 +96,20 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
     void noFinalizerUsedForFileInputStream() {
         //language=java
         rewriteRun(
-          version(
-            java(
-              """
-                import java.io.FileInputStream;
+          java(
+            """
+              import java.io.FileInputStream;
+              import java.io.IOException;
 
-                class FooBar extends FileInputStream{
-                   public void test(){
-                       FooBar obj = new FooBar();
-                   }
-                }
-                 """
-            ),
-            12
+              class FooBar extends FileInputStream {
+                 FooBar() throws IOException {
+                     super("foo");
+                 }
+                 public void test() throws IOException {
+                     FooBar obj = new FooBar();
+                 }
+              }
+               """
           )
         );
     }
@@ -106,30 +118,35 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
     void removeFinalizerForFileOutputStream() {
         //language=java
         rewriteRun(
-          version(
-            java(
-              """
-                import java.io.FileOutputStream;
+          java(
+            """
+              import java.io.FileOutputStream;
+              import java.io.IOException;
 
-                class FooBar extends FileOutputStream{
-                   public void test(){
-                       FooBar obj = new FooBar();
-                       obj.finalize();
-                   }                    
-                }
-                 """,
-              """
-                import java.io.FileOutputStream;
+              class FooBar extends FileOutputStream {
+                 FooBar() throws IOException {
+                     super("foo");
+                 }
+                 public void test() throws IOException {
+                     FooBar obj = new FooBar();
+                     obj.finalize();
+                 }                    
+              }
+               """,
+            """
+              import java.io.FileOutputStream;
+              import java.io.IOException;
 
-                class FooBar extends FileOutputStream{
-                   public void test(){
-                       FooBar obj = new FooBar();
-                       obj.close();
-                   }
-                }
-                 """
-            ),
-            12
+              class FooBar extends FileOutputStream {
+                 FooBar() throws IOException {
+                     super("foo");
+                 }
+                 public void test() throws IOException {
+                     FooBar obj = new FooBar();
+                     obj.close();
+                 }
+              }
+               """
           )
         );
     }
@@ -138,20 +155,22 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
     void noChangeWithCloseForFileOutputStream() {
         //language=java
         rewriteRun(
-          version(
-            java(
-              """
-                import java.io.FileOutputStream;
+          java(
+            """
+              import java.io.FileOutputStream;
+              import java.io.IOException;
 
-                class FooBar extends FileOutputStream{
-                   public void test(){
-                       FooBar obj = new FooBar();
-                       obj.close();
-                   }
-                }
-                 """
-            ),
-            12
+              class FooBar extends FileOutputStream {
+                 FooBar() throws IOException {
+                     super("foo");
+                 }
+                 public void test() throws IOException {
+                     FooBar obj = new FooBar();
+                     obj.close();
+                 }
+              }
+               """
+
           )
         );
     }
@@ -160,20 +179,22 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
     void noFinalizerUsedForFileOutputStream() {
         //language=java
         rewriteRun(
-          version(
-            java(
-              """
-                import java.io.FileOutputStream;
+          java(
+            """
+              import java.io.FileOutputStream;
+              import java.io.IOException;
 
-                class FooBar extends FileOutputStream{
-                   public void test(){
-                       FooBar obj = new FooBar();
-                   }
-                }
-                 """
-            ),
-            12
+              class FooBar extends FileOutputStream {
+                 FooBar() throws IOException {
+                     super("foo");
+                 }
+                 public void test() throws IOException {
+                     FooBar obj = new FooBar();
+                 }
+              }
+               """
           )
+
         );
     }
 }
