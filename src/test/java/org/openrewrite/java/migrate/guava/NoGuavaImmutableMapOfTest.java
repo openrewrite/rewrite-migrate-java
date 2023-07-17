@@ -478,29 +478,44 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
         );
     }
 
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/205")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
     @Test
-    void nestedMaps() {
+    void doNotChangeNestedMaps() {
         //language=java
         rewriteRun(
           version(
             java(
               """
                 import com.google.common.collect.ImmutableMap;
-                                
-                class A {
-                    Object o = ImmutableMap.of(1, ImmutableMap.of(2, 3));
-                }
-                """,
-              """
                 import java.util.Map;
                                 
                 class A {
-                    Object o = Map.of(1, Map.of(2, 3));
+                    Object o = Map.of(1, ImmutableMap.of(2, 3));
                 }
                 """
             ),
             11
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
+    @Test
+    void doNotchangeAssignToImmutableMap() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.Map;
+                import com.google.common.collect.ImmutableMap;
+                                
+                class Test {
+                    ImmutableMap<String, String> m = ImmutableMap.of();
+                }
+                """
+            ),
+            9
           )
         );
     }

@@ -444,4 +444,45 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
           )
         );
     }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
+    @Test
+    void doNotChangeNestedLists() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+                import java.util.List;
+                                
+                class A {
+                    Object o = List.of(ImmutableList.of(1, 2), ImmutableList.of(2, 3));
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
+    @Test
+    void doNotchangeAssignToImmutableList() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+                                
+                class Test {
+                    ImmutableList<String> l = ImmutableList.of();
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
 }
