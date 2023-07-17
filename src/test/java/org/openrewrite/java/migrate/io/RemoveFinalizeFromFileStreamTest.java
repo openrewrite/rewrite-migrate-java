@@ -17,6 +17,7 @@
 package org.openrewrite.java.migrate.io;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -33,6 +34,7 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
     }
 
     @Test
+    @DocumentExample
     void removeFinalizerForFileInputStream() {
         //language=java
         rewriteRun(
@@ -50,7 +52,7 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
                      obj.finalize();
                  }
               }
-               """,
+              """,
             """
               import java.io.FileInputStream;
               import java.io.IOException;
@@ -64,7 +66,64 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
                      obj.close();
                  }
               }
-               """
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceDirectCall() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.io.FileInputStream;
+              import java.io.IOException;
+
+              class FooBar extends FileInputStream {
+                 FooBar() throws IOException {
+                     super("foo");
+                 }
+                 public void test() throws IOException {
+                     new FooBar().finalize();
+                 }
+              }
+              """,
+            """
+              import java.io.FileInputStream;
+              import java.io.IOException;
+
+              class FooBar extends FileInputStream {
+                 FooBar() throws IOException {
+                     super("foo");
+                 }
+                 public void test() throws IOException {
+                     new FooBar().close();
+                 }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void noChangeOnAnyOtherFinalize() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.io.FileInputStream;
+              import java.io.IOException;
+
+              class FooBar extends FileInputStream {
+                 FooBar() throws IOException {
+                     super("foo");
+                 }
+                 public void test() {
+                     new Object().finalize();
+                 }
+              }
+              """
           )
         );
     }
@@ -87,7 +146,7 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
                      obj.close();
                  }
               }
-               """
+              """
           )
         );
     }
@@ -109,7 +168,7 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
                      FooBar obj = new FooBar();
                  }
               }
-               """
+              """
           )
         );
     }
@@ -132,7 +191,7 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
                      obj.finalize();
                  }                    
               }
-               """,
+              """,
             """
               import java.io.FileOutputStream;
               import java.io.IOException;
@@ -146,7 +205,7 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
                      obj.close();
                  }
               }
-               """
+              """
           )
         );
     }
@@ -169,8 +228,7 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
                      obj.close();
                  }
               }
-               """
-
+              """
           )
         );
     }
@@ -192,9 +250,8 @@ class RemoveFinalizeFromFileStreamTest implements RewriteTest {
                      FooBar obj = new FooBar();
                  }
               }
-               """
+              """
           )
-
         );
     }
 }
