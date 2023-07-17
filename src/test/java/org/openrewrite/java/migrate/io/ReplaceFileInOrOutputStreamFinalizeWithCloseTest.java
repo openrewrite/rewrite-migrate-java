@@ -24,12 +24,12 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
-class RemoveFinalizeFromFileStreamTest implements RewriteTest {
+class ReplaceFileInOrOutputStreamFinalizeWithCloseTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new RemoveFinalizeFromFileStream())
+          .recipe(new ReplaceFileInOrOutputStreamFinalizeWithClose())
           .allSources(s -> s.markers(javaVersion(11)));
     }
 

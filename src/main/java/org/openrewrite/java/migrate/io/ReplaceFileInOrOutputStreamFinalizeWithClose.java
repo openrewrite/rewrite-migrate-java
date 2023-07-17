@@ -36,7 +36,7 @@ import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
-public class RemoveFinalizeFromFileStream extends Recipe {
+public class ReplaceFileInOrOutputStreamFinalizeWithClose extends Recipe {
 
     private static final String JAVA_IO_FILE_INPUT_STREAM = "java.io.FileInputStream";
     private static final String JAVA_IO_FILE_OUTPUT_STREAM = "java.io.FileOutputStream";
