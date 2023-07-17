@@ -41,7 +41,7 @@ import java.util.Set;
 public class RemoveFinalizeFromFileStream extends Recipe {
 
     private static final MethodMatcher JAVA_IO_FILEINPUTSTREAM = new MethodMatcher("java.io.FileInputStream finalize()", true);
-    private static final MethodMatcher JAVA_IO_FILEOUTPUTSTREAM = new MethodMatcher("java.io. FileOutputStream finalize()", true);
+    private static final MethodMatcher JAVA_IO_FILEOUTPUTSTREAM = new MethodMatcher("java.io.FileOutputStream finalize()", true);
 
     private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.lang.Object finalize()");
 
