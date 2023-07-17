@@ -75,6 +75,9 @@ public class UseVarForGenericMethodInvocations extends Recipe {
             boolean argumentsEmpty = ((J.MethodInvocation) initializer).getArguments().stream().allMatch(p -> p instanceof J.Empty);
             if (hasNoTypeParams && argumentsEmpty) return vd;
 
+            // mark imports for removal if unused
+            if (vd.getType() instanceof JavaType.FullyQualified) maybeRemoveImport((JavaType.FullyQualified) vd.getType());
+
             return transformToVar(vd, new ArrayList<>(), new ArrayList<>());
         }
 

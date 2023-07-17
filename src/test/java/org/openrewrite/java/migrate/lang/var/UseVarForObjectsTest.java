@@ -85,6 +85,7 @@ class UseVarForObjectsTest extends VarBaseTest {
         }
 
         @Test
+        @DocumentExample
         void withModifier() {
             //language=java
             rewriteRun(

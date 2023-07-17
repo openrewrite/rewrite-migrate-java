@@ -21,6 +21,7 @@ import static org.openrewrite.java.Assertions.version;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Example;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -123,8 +124,6 @@ class UseVarKeywordTest implements RewriteTest {
               version(
                 java("""
                   package com.example.app;
-                        
-                  import java.util.Date;
                         
                   class A {
                     void m() {
@@ -390,6 +389,7 @@ class UseVarKeywordTest implements RewriteTest {
         @Nested
         class Applicable {
             @Test
+            @Example
             void forString() {
                 //language=java
                 rewriteRun(
@@ -713,6 +713,7 @@ class UseVarKeywordTest implements RewriteTest {
                     java("""
                   package com.example.app;
                                     
+                  import java.util.List;
                   import java.util.ArrayList;
                                     
                   class A {
@@ -756,7 +757,6 @@ class UseVarKeywordTest implements RewriteTest {
                           package com.example.app;
                           
                           import java.util.ArrayList;
-                          import java.util.List;
                           
                           class A {
                             void m() {
@@ -769,6 +769,7 @@ class UseVarKeywordTest implements RewriteTest {
                 );
             }
             @Test
+            @Example
             void withDiamondOperator() {
                 //language=java
                 rewriteRun(
@@ -785,9 +786,8 @@ class UseVarKeywordTest implements RewriteTest {
                     }
                   }
                   ""","""
-                  package com.example.app;
+                  package com.example.app;         
                   
-                  import java.util.List;                 
                   import java.util.ArrayList;
                                     
                   class A {
