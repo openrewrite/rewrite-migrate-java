@@ -80,6 +80,9 @@ public class UseVarForGenericsConstructors extends Recipe {
                     .reduce(false, Boolean::logicalOr);
             if (genericHasBounds) return vd;
 
+            // mark imports for removal if unused
+            if (vd.getType() instanceof JavaType.FullyQualified) maybeRemoveImport((JavaType.FullyQualified) vd.getType());
+
             return transformToVar(vd, leftTypes, rightTypes);
         }
 

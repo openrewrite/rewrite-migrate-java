@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import static java.lang.String.format;
+
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -29,7 +29,8 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import static java.lang.String.format;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -78,6 +79,8 @@ public class UseVarForPrimitive extends Recipe {
             boolean isByteVariable = DeclarationCheck.declarationHasType(vd, BYTE_TYPE);
             boolean isShortVariable = DeclarationCheck.declarationHasType(vd, SHORT_TYPE);
             if (isNoPrimitive || isByteVariable || isShortVariable) return vd;
+
+            // no need to remove imports, because primitives are never imported
 
             return transformToVar(vd);
         }

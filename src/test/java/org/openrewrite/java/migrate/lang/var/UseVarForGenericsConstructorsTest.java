@@ -19,6 +19,7 @@ import static org.openrewrite.java.Assertions.*;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Example;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -189,8 +190,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                   }
                   ""","""
                   package com.example.app;
-                              
-                  import java.util.List;
+
                   import java.util.ArrayList;
                                     
                   class A {
@@ -222,8 +222,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                   }
                   ""","""
                   package com.example.app;
-                              
-                  import java.util.List;
+                                                
                   import java.util.ArrayList;
                                     
                   class A {
@@ -278,7 +277,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                       }
                       """, """
                       package com.example.app;
-                                  
+
                       import java.util.List;
                       import java.util.ArrayList;
                                         
@@ -311,8 +310,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                   }
                   """, """
                   package com.example.app;
-                              
-                  import java.util.Map;
+
                   import java.util.HashMap;
                                     
                   class A {
@@ -345,8 +343,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                   }
                   ""","""
                   package com.example.app;
-                  
-                  import java.util.List;
+
                   import java.util.ArrayList;
                                     
                   class A {
@@ -361,6 +358,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
         }
 
         @Test
+        @Example
         void withTypeParameterInDefinitionOnly() {
             //language=java
             rewriteRun(
@@ -378,8 +376,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                   }
                   ""","""
                   package com.example.app;
-                                    
-                  import java.util.List;
+
                   import java.util.ArrayList;
                                     
                   class A {

@@ -19,6 +19,7 @@ import static org.openrewrite.java.Assertions.*;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -38,10 +39,6 @@ public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
               version(
                 java("""
                 package com.example.app;
-                                    
-                import java.util.Arrays;
-                import java.util.List;
-                import java.util.stream.Collectors;
                                     
                 class A {
                   static String myString(String ... values) {
@@ -160,6 +157,7 @@ public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
     @Nested
     class Applicable {
         @Test
+        @DocumentExample
         void withJDKFactoryMethods() {
             //language=java
             rewriteRun(
