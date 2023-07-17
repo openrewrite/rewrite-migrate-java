@@ -43,12 +43,9 @@ class ReplaceFileInOrOutputStreamFinalizeWithCloseTest implements RewriteTest {
               import java.io.FileInputStream;
               import java.io.IOException;
 
-              class FooBar extends FileInputStream {
-                 FooBar() throws IOException {
-                     super("foo");
-                 }
+              class FooBar {
                  public void test() throws IOException {
-                     FooBar obj = new FooBar();
+                     FileInputStream obj = new FileInputStream("foo");
                      obj.finalize();
                  }
               }
@@ -57,12 +54,9 @@ class ReplaceFileInOrOutputStreamFinalizeWithCloseTest implements RewriteTest {
               import java.io.FileInputStream;
               import java.io.IOException;
 
-              class FooBar extends FileInputStream {
-                 FooBar() throws IOException {
-                     super("foo");
-                 }
+              class FooBar {
                  public void test() throws IOException {
-                     FooBar obj = new FooBar();
+                     FileInputStream obj = new FileInputStream("foo");
                      obj.close();
                  }
               }
@@ -73,6 +67,35 @@ class ReplaceFileInOrOutputStreamFinalizeWithCloseTest implements RewriteTest {
 
     @Test
     void replaceDirectCall() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.io.FileInputStream;
+              import java.io.IOException;
+
+              class FooBar {
+                 public void test() throws IOException {
+                     new FileInputStream("foo").finalize();
+                 }
+              }
+              """,
+            """
+              import java.io.FileInputStream;
+              import java.io.IOException;
+
+              class FooBar {
+                 public void test() throws IOException {
+                     new FileInputStream("foo").close();
+                 }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceOnExtends() {
         //language=java
         rewriteRun(
           java(
@@ -142,7 +165,7 @@ class ReplaceFileInOrOutputStreamFinalizeWithCloseTest implements RewriteTest {
                      super("foo");
                  }
                  public void test() throws IOException {
-                     FooBar obj = new FooBar();
+                     FileInputStream obj = new FileInputStream("foo");
                      obj.close();
                  }
               }
@@ -160,12 +183,10 @@ class ReplaceFileInOrOutputStreamFinalizeWithCloseTest implements RewriteTest {
               import java.io.FileInputStream;
               import java.io.IOException;
 
-              class FooBar extends FileInputStream {
-                 FooBar() throws IOException {
-                     super("foo");
-                 }
+              class FooBar {
                  public void test() throws IOException {
-                     FooBar obj = new FooBar();
+                     FileInputStream obj = new FileInputStream("foo");
+                     obj.read();
                  }
               }
               """
@@ -182,12 +203,9 @@ class ReplaceFileInOrOutputStreamFinalizeWithCloseTest implements RewriteTest {
               import java.io.FileOutputStream;
               import java.io.IOException;
 
-              class FooBar extends FileOutputStream {
-                 FooBar() throws IOException {
-                     super("foo");
-                 }
+              class FooBar {
                  public void test() throws IOException {
-                     FooBar obj = new FooBar();
+                     FileOutputStream obj = new FileOutputStream("foo");
                      obj.finalize();
                  }                    
               }
@@ -196,58 +214,10 @@ class ReplaceFileInOrOutputStreamFinalizeWithCloseTest implements RewriteTest {
               import java.io.FileOutputStream;
               import java.io.IOException;
 
-              class FooBar extends FileOutputStream {
-                 FooBar() throws IOException {
-                     super("foo");
-                 }
+              class FooBar {
                  public void test() throws IOException {
-                     FooBar obj = new FooBar();
+                     FileOutputStream obj = new FileOutputStream("foo");
                      obj.close();
-                 }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void noChangeWithCloseForFileOutputStream() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import java.io.FileOutputStream;
-              import java.io.IOException;
-
-              class FooBar extends FileOutputStream {
-                 FooBar() throws IOException {
-                     super("foo");
-                 }
-                 public void test() throws IOException {
-                     FooBar obj = new FooBar();
-                     obj.close();
-                 }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void noFinalizerUsedForFileOutputStream() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import java.io.FileOutputStream;
-              import java.io.IOException;
-
-              class FooBar extends FileOutputStream {
-                 FooBar() throws IOException {
-                     super("foo");
-                 }
-                 public void test() throws IOException {
-                     FooBar obj = new FooBar();
                  }
               }
               """
