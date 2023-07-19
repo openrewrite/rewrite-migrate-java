@@ -323,7 +323,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                   )
                 );
             }
-    }
+        }
 
         @Test
         void ifWelldefined() {
@@ -350,6 +350,63 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                     void m() {
                         var strs = new ArrayList<String>();
                     }
+                  }
+                  """),
+                10
+              )
+            );
+        }
+
+        //see https://app.moderne.io/results/CuzcK/details/eyJfX3R5cGVuYW1lIjoiR2l0SHViUmVwb3NpdG9yeSIsIm9yaWdpbiI6ImdpdGh1Yi5jb20iLCJwYXRoIjoic3ByaW5nLXByb2plY3RzL3NwcmluZy12YXVsdCIsImJyYW5jaCI6Im1haW4ifQ==?referrer=%2Fresults%2FCuzcK%3Ffilter%3DeyJpdGVtcyI6W3siZmllbGQiOiJzdGF0dXMiLCJvcGVyYXRvciI6Im5vdCIsImlkIjo0Nzc3MiwidmFsdWUiOiJGSU5JU0hFRCJ9XSwibG9naWNPcGVyYXRvciI6ImFuZCIsInF1aWNrRmlsdGVyVmFsdWVzIjpbXSwicXVpY2tGaWx0ZXJMb2dpY09wZXJhdG9yIjoiYW5kIn0%25253D
+        @Test
+        void arrayAsType() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  package com.example.app;
+                              
+                  import java.util.List;
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                    void m() {
+                        List<char[]> strs = new ArrayList<>();
+                    }
+                  }
+                  ""","""
+                  package com.example.app;
+
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                    void m() {
+                        var strs = new ArrayList<char[]>();
+                    }
+                  }
+                  """),
+                10
+              )
+            );
+        }
+
+        @Test
+        void twoParamsWithBounds() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  package com.example.app;
+                              
+                  import java.util.Map;
+                  import java.util.LinkedHashMap;
+                                    
+                  class AbstractOAuth2Configurer {}
+                                    
+                  class A {
+                      void twoParams() {
+                          Map<Class<? extends AbstractOAuth2Configurer>, AbstractOAuth2Configurer> configurers = new LinkedHashMap<>();
+                      }
                   }
                   """),
                 10
