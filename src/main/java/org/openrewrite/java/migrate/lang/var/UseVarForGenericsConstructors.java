@@ -16,11 +16,10 @@
 package org.openrewrite.java.migrate.lang.var;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
+import org.jetbrains.annotations.NotNull;
 import org.openrewrite.*;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.internal.lang.Nullable;
@@ -75,9 +74,11 @@ public class UseVarForGenericsConstructors extends Recipe {
             if (rightTypes == null || (leftTypes.isEmpty() && rightTypes.isEmpty())) return vd;
 
             // skip generics with type bounds, it's not yet implemented
-            boolean genericHasBounds = leftTypes.stream()
-                    .map(UseVarForGenericsConstructorsVisitor::hasBounds)
-                    .reduce(false, Boolean::logicalOr);
+            for (JavaType type : leftTypes) {
+                if (hasBounds(type))
+                    return vd;
+            }
+            boolean genericHasBounds = anyTypeHasBounds(leftTypes);
             if (genericHasBounds) return vd;
 
             // mark imports for removal if unused
@@ -86,11 +87,18 @@ public class UseVarForGenericsConstructors extends Recipe {
             return transformToVar(vd, leftTypes, rightTypes);
         }
 
+        @NotNull
+        private static Boolean anyTypeHasBounds(List<JavaType> leftTypes) {
+            for (JavaType type : leftTypes) {
+                if (hasBounds(type))
+                    return true;
+            }
+            return false;
+        }
+
         private static boolean hasBounds(JavaType type) {
             if (type instanceof JavaType.Parameterized) {
-                return ((JavaType.Parameterized) type).getTypeParameters().stream()
-                        .map(UseVarForGenericsConstructorsVisitor::hasBounds)
-                        .reduce(false, Boolean::logicalOr);
+                return anyTypeHasBounds(((JavaType.Parameterized) type).getTypeParameters());
             }
             if (type instanceof JavaType.GenericTypeVariable) {
                 return !((JavaType.GenericTypeVariable) type).getBounds().isEmpty();
@@ -110,15 +118,16 @@ public class UseVarForGenericsConstructors extends Recipe {
                 TypeTree clazz = ((J.NewClass) initializer).getClazz();
                 if (clazz instanceof J.ParameterizedType) {
                     List<Expression> typeParameters = ((J.ParameterizedType) clazz).getTypeParameters();
+                    List<JavaType> params = new ArrayList<>();
                     if (typeParameters != null) {
-                        return typeParameters
-                                .stream()
-                                .map(Expression::getType)
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toList());
-                    } else {
-                        return new ArrayList<>();
+                        for (Expression curType : typeParameters) {
+                            JavaType type = curType.getType();
+                            if (type != null) {
+                                params.add(type);
+                            }
+                        }
                     }
+                    return params;
                 }
             }
             return null;
@@ -145,13 +154,14 @@ public class UseVarForGenericsConstructors extends Recipe {
             // if left is defined but not right, copy types to initializer
             if(rightTypes.isEmpty() && !leftTypes.isEmpty()) {
                 // we need to switch type infos from left to right here
-                List<Expression> typeArgument = leftTypes.stream()
-                        .map(UseVarForGenericsConstructorsVisitor::typeToExpression)
-                        .collect(Collectors.toList());
+                List<Expression> typeExpressions = new ArrayList<>();
+                for (JavaType curType : leftTypes) {
+                    typeExpressions.add(typeToExpression(curType));
+                }
 
                 J.ParameterizedType typedInitializerClazz = ((J.ParameterizedType) ((J.NewClass) initializer)
                         .getClazz())
-                        .withTypeParameters(typeArgument);
+                        .withTypeParameters(typeExpressions);
                 initializer = ((J.NewClass) initializer).withClazz(typedInitializerClazz);
             }
 
@@ -190,12 +200,10 @@ public class UseVarForGenericsConstructors extends Recipe {
                 return new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, className, type, null);
             }
             if (type instanceof JavaType.Array){
-                List<JRightPadded<Space>> dimensions = IntStream.of(StringUtils.countOccurrences(type.toString(), "[]"))
-                        .mapToObj(i -> Space.EMPTY)
-                        .map(JRightPadded::build)
-                        .collect(Collectors.toList());
+                int dimensions = StringUtils.countOccurrences(type.toString(), "[]");
+                List<JRightPadded<Space>> dimensionsDefinition = Collections.nCopies(dimensions, JRightPadded.build(Space.EMPTY));
                 TypeTree elemType = (TypeTree) typeToExpression(((JavaType.Array) type).getElemType());
-                return new J.ArrayType(Tree.randomId(), Space.EMPTY, Markers.EMPTY, elemType, dimensions);
+                return new J.ArrayType(Tree.randomId(), Space.EMPTY, Markers.EMPTY, elemType, dimensionsDefinition);
             }
             if (type instanceof JavaType.GenericTypeVariable) {
                 String variableName = ((JavaType.GenericTypeVariable) type).getName();
@@ -217,13 +225,15 @@ public class UseVarForGenericsConstructors extends Recipe {
                 }
             }
             if (type instanceof JavaType.Parameterized) { // recursively parse
-                List<JRightPadded<Expression>> typeParams = ((JavaType.Parameterized) type).getTypeParameters().stream()
-                        .map(UseVarForGenericsConstructorsVisitor::typeToExpression)
-                        .map(JRightPadded::build)
-                        .collect(Collectors.toList());
+                List<JavaType> typeParameters = ((JavaType.Parameterized) type).getTypeParameters();
+
+                List<JRightPadded<Expression>> typeParamsExpression = new ArrayList<>(typeParameters.size());
+                for (JavaType curType : typeParameters) {
+                    typeParamsExpression.add(JRightPadded.build(typeToExpression(curType)));
+                }
 
                 NameTree clazz = new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, ((JavaType.Parameterized) type).getClassName(),null, null);
-                return new J.ParameterizedType(Tree.randomId(), Space.EMPTY, Markers.EMPTY, clazz, JContainer.build(typeParams), type);
+                return new J.ParameterizedType(Tree.randomId(), Space.EMPTY, Markers.EMPTY, clazz, JContainer.build(typeParamsExpression), type);
             }
 
             throw new IllegalArgumentException(String.format("Unable to parse expression from JavaType %s", type));
