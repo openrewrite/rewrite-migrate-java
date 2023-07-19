@@ -19,8 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.openrewrite.*;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
@@ -169,9 +171,21 @@ public class UseVarForGenericsConstructors extends Recipe {
          * @return semantically equal Expression
          */
         private static Expression typeToExpression(JavaType type) {
-            if (type instanceof JavaType.Class) { // easy just parse to identifier
+            if (type instanceof JavaType.Primitive) {
+                JavaType.Primitive primitiveType = JavaType.Primitive.fromKeyword(((JavaType.Primitive) type).getKeyword());
+                return new J.Primitive(Tree.randomId(), Space.EMPTY, Markers.EMPTY, primitiveType);
+            }
+            if (type instanceof JavaType.Class) {
                 String className = ((JavaType.Class) type).getClassName();
                 return new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, className, type, null);
+            }
+            if (type instanceof JavaType.Array){
+                List<JRightPadded<Space>> dimensions = IntStream.of(StringUtils.countOccurrences(type.toString(), "[]"))
+                        .mapToObj(i -> Space.EMPTY)
+                        .map(JRightPadded::build)
+                        .collect(Collectors.toList());
+                TypeTree elemType = (TypeTree) typeToExpression(((JavaType.Array) type).getElemType());
+                return new J.ArrayType(Tree.randomId(), Space.EMPTY, Markers.EMPTY, elemType, dimensions);
             }
             if (type instanceof JavaType.GenericTypeVariable) {
                 String variableName = ((JavaType.GenericTypeVariable) type).getName();
