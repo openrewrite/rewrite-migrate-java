@@ -76,9 +76,7 @@ public class UseVarForGenericsConstructors extends Recipe {
 
             // skip generics with type bounds, it's not yet implemented
             boolean genericHasBounds = leftTypes.stream()
-                    .filter(t -> t instanceof JavaType.GenericTypeVariable)
-                    .map(t -> (JavaType.GenericTypeVariable) t)
-                    .map(t -> !t.getBounds().isEmpty())
+                    .map(UseVarForGenericsConstructorsVisitor::hasBounds)
                     .reduce(false, Boolean::logicalOr);
             if (genericHasBounds) return vd;
 
@@ -86,6 +84,18 @@ public class UseVarForGenericsConstructors extends Recipe {
             if (vd.getType() instanceof JavaType.FullyQualified) maybeRemoveImport((JavaType.FullyQualified) vd.getType());
 
             return transformToVar(vd, leftTypes, rightTypes);
+        }
+
+        private static boolean hasBounds(JavaType type) {
+            if (type instanceof JavaType.Parameterized) {
+                return ((JavaType.Parameterized) type).getTypeParameters().stream()
+                        .map(UseVarForGenericsConstructorsVisitor::hasBounds)
+                        .reduce(false, Boolean::logicalOr);
+            }
+            if (type instanceof JavaType.GenericTypeVariable) {
+                return !((JavaType.GenericTypeVariable) type).getBounds().isEmpty();
+            }
+            return false;
         }
 
         /**
