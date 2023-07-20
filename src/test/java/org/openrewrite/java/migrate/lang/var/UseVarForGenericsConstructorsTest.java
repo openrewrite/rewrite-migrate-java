@@ -323,7 +323,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                   )
                 );
             }
-    }
+        }
 
         @Test
         void ifWelldefined() {
@@ -350,6 +350,62 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                     void m() {
                         var strs = new ArrayList<String>();
                     }
+                  }
+                  """),
+                10
+              )
+            );
+        }
+
+        @Test
+        void arrayAsType() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  package com.example.app;
+                              
+                  import java.util.List;
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                    void m() {
+                        List<char[]> strs = new ArrayList<>();
+                    }
+                  }
+                  ""","""
+                  package com.example.app;
+
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                    void m() {
+                        var strs = new ArrayList<char[]>();
+                    }
+                  }
+                  """),
+                10
+              )
+            );
+        }
+
+        @Test
+        void twoParamsWithBounds() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  package com.example.app;
+                              
+                  import java.util.Map;
+                  import java.util.LinkedHashMap;
+                                    
+                  class AbstractOAuth2Configurer {}
+                                    
+                  class A {
+                      void twoParams() {
+                          Map<Class<? extends AbstractOAuth2Configurer>, AbstractOAuth2Configurer> configurers = new LinkedHashMap<>();
+                      }
                   }
                   """),
                 10

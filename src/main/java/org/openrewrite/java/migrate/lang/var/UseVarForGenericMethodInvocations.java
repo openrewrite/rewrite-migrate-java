@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.lang.var;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -72,13 +71,22 @@ public class UseVarForGenericMethodInvocations extends Recipe {
 
             //if no type paramters are present and no arguments we assume the type is hard to determine a needs manual action
             boolean hasNoTypeParams = ((J.MethodInvocation) initializer).getTypeParameters() == null;
-            boolean argumentsEmpty = ((J.MethodInvocation) initializer).getArguments().stream().allMatch(p -> p instanceof J.Empty);
+            boolean argumentsEmpty = allArgumentsEmpty((J.MethodInvocation) initializer);
             if (hasNoTypeParams && argumentsEmpty) return vd;
 
             // mark imports for removal if unused
             if (vd.getType() instanceof JavaType.FullyQualified) maybeRemoveImport((JavaType.FullyQualified) vd.getType());
 
             return transformToVar(vd, new ArrayList<>(), new ArrayList<>());
+        }
+
+        private static boolean allArgumentsEmpty(J.MethodInvocation invocation){
+            for (Expression argument : invocation.getArguments()) {
+                if (!(argument instanceof J.Empty)) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private J.VariableDeclarations transformToVar(J.VariableDeclarations vd, List<JavaType> leftTypes, List<JavaType> rightTypes) {
@@ -88,10 +96,10 @@ public class UseVarForGenericMethodInvocations extends Recipe {
             // if left is defined but not right, copy types to initializer
             if(rightTypes.isEmpty() && !leftTypes.isEmpty()) {
                 // we need to switch type infos from left to right here
-                List<Expression> typeArgument = leftTypes.stream()
-                        .map(t ->
-                                new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, ((JavaType.Class)t).getClassName(), t, null))
-                        .collect(Collectors.toList());
+                List<Expression> typeArgument = new ArrayList<>();
+                for (JavaType t : leftTypes) {
+                    typeArgument.add(new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, ((JavaType.Class) t).getClassName(), t, null));
+                }
                 J.ParameterizedType typedInitializerClazz = ((J.ParameterizedType) ((J.NewClass) initializer).getClazz()).withTypeParameters(typeArgument);
                 initializer = ((J.NewClass) initializer).withClazz(typedInitializerClazz);
             }

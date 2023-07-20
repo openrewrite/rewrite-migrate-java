@@ -188,7 +188,36 @@ public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
             );
         }
 
-
+        @Test
+        void withJDKFactoryMethodsAndBounds() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                package com.example.app;
+                                    
+                import java.util.List;
+                                    
+                class A {
+                  void m() {
+                      List<? extends String> lst = List.of("Test");
+                  }
+                }
+                ""","""
+                package com.example.app;
+                                    
+                import java.util.List;
+                                    
+                class A {
+                  void m() {
+                      var lst = List.of("Test");
+                  }
+                }
+                """),
+                10
+              )
+            );
+        }
 
         @Test
         void withOwnFactoryMethods() {
