@@ -26,6 +26,8 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
+import static java.util.Collections.emptyList;
+
 public class UseVarForGenericMethodInvocations extends Recipe {
     @Override
     public String getDisplayName() {
@@ -98,7 +100,7 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 // we need to switch type infos from left to right here
                 List<Expression> typeArgument = new ArrayList<>();
                 for (JavaType t : leftTypes) {
-                    typeArgument.add(new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, ((JavaType.Class) t).getClassName(), t, null));
+                    typeArgument.add(new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY,  emptyList(), ((JavaType.Class) t).getClassName(), t, null));
                 }
                 J.ParameterizedType typedInitializerClazz = ((J.ParameterizedType) ((J.NewClass) initializer).getClazz()).withTypeParameters(typeArgument);
                 initializer = ((J.NewClass) initializer).withClazz(typedInitializerClazz);

@@ -30,6 +30,8 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
+import static java.util.Collections.emptyList;
+
 public class UseVarForGenericsConstructors extends Recipe {
     @Override
     public String getDisplayName() {
@@ -197,7 +199,7 @@ public class UseVarForGenericsConstructors extends Recipe {
             }
             if (type instanceof JavaType.Class) {
                 String className = ((JavaType.Class) type).getClassName();
-                return new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, className, type, null);
+                return new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY,  emptyList(), className, type, null);
             }
             if (type instanceof JavaType.Array){
                 int dimensions = StringUtils.countOccurrences(type.toString(), "[]");
@@ -207,7 +209,7 @@ public class UseVarForGenericsConstructors extends Recipe {
             }
             if (type instanceof JavaType.GenericTypeVariable) {
                 String variableName = ((JavaType.GenericTypeVariable) type).getName();
-                J.Identifier identifier = new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, variableName, type, null);
+                J.Identifier identifier = new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), variableName, type, null);
 
                 List<JavaType> bounds1 = ((JavaType.GenericTypeVariable) type).getBounds();
                 if (bounds1.isEmpty()) {
@@ -232,7 +234,7 @@ public class UseVarForGenericsConstructors extends Recipe {
                     typeParamsExpression.add(JRightPadded.build(typeToExpression(curType)));
                 }
 
-                NameTree clazz = new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, ((JavaType.Parameterized) type).getClassName(),null, null);
+                NameTree clazz = new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), ((JavaType.Parameterized) type).getClassName(),null, null);
                 return new J.ParameterizedType(Tree.randomId(), Space.EMPTY, Markers.EMPTY, clazz, JContainer.build(typeParamsExpression), type);
             }
 
