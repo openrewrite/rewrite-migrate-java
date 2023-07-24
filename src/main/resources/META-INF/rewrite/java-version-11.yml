@@ -41,6 +41,7 @@ recipeList:
   - org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
   - org.openrewrite.java.migrate.lang.JavaLangAPIs
   - org.openrewrite.java.migrate.logging.JavaLoggingAPIs
+  - org.openrewrite.java.migrate.lombok.UpdateLombokToJava11
   - org.openrewrite.java.migrate.net.JavaNetAPIs
   - org.openrewrite.java.migrate.sql.JavaSqlAPIs
   - org.openrewrite.java.migrate.javax.JavaxLangModelUtil

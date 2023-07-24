@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.java.Assertions.java;
 
-public class UpdateLombokToJava17Test implements RewriteTest {
+class UpdateLombokToJava11Test implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -37,7 +37,7 @@ public class UpdateLombokToJava17Test implements RewriteTest {
             Environment.builder()
               .scanRuntimeClasspath("org.openrewrite.java.migrate.lombok")
               .build()
-              .activateRecipes("org.openrewrite.java.migrate.lombok.UpdateLombokToJava17")
+              .activateRecipes("org.openrewrite.java.migrate.lombok.UpdateLombokToJava11")
           )
           .parser(
             //language=java
@@ -71,7 +71,7 @@ public class UpdateLombokToJava17Test implements RewriteTest {
 
     @SuppressWarnings({"DeprecatedLombok", "deprecation", "Lombok", "RedundantModifiersValueLombok"})
     @Test
-    void upgradeLombokToJava17() {
+    void updateLombokToJava11() {
         rewriteRun(
           pomXml(
             //language=xml
