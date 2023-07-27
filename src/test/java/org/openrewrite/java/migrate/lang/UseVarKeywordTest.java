@@ -15,15 +15,16 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Example;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
 
 class UseVarKeywordTest implements RewriteTest {
 
@@ -124,8 +125,6 @@ class UseVarKeywordTest implements RewriteTest {
                 java("""
                   package com.example.app;
                         
-                  import java.util.Date;
-                        
                   class A {
                     void m() {
                         var str1 = "Hello World!";
@@ -154,173 +153,6 @@ class UseVarKeywordTest implements RewriteTest {
                 10
               )
             );
-        }
-
-        @Nested
-        class Generics {
-            @Test
-            void ifWelldefined() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java("""
-                  package com.example.app;
-                                    
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                    void m() {
-                        List<String> strs = new ArrayList<String>();
-                    }
-                  }
-                  """),
-                    10
-                  )
-                );
-            }
-
-            @Test
-            void forNoDiamondOperators() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java(
-                      """
-                          package com.example.app;
-                          
-                          import java.util.ArrayList;
-                          import java.util.List;
-                          
-                          class A {
-                            void m() {
-                                List strs = new ArrayList();
-                            }
-                          }
-                        ""","""
-                          package com.example.app;
-                          
-                          import java.util.ArrayList;
-                          import java.util.List;
-                          
-                          class A {
-                            void m() {
-                                var strs = new ArrayList();
-                            }
-                          }
-                        """),
-                    10
-                  )
-                );
-            }
-
-            @Test
-            void withFactoryMethods() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java(
-                      """
-                        package com.example.app;
-                                            
-                        import java.util.List;
-                                            
-                        class A {
-                          void m() {
-                              List<String> strs = List.of("one", "two");
-                          }
-                        }
-                        """),
-                    10
-                  )
-                );
-            }
-
-            @Test
-            void forEmptyFactoryMethod() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java(
-                      """
-                          package com.example.app;
-                          
-                          import java.util.List;
-                          
-                          class A {
-                            void m() {
-                                List<String> strs = List.of();
-                            }
-                          }
-                        """),
-                    10
-                  )
-                );
-            }
-
-            @Test
-            void withDiamondOperatorOnRaw() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java("""
-                  package com.example.app;
-                                    
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                    void m() {
-                        List<String> strs = new ArrayList();
-                    }
-                  }
-                  """),
-                    10
-                  )
-                );
-            }
-
-            @Test
-            void withDiamondOperator() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java("""
-                  package com.example.app;
-                                    
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                    void m() {
-                        List<String> strs = new ArrayList<>();
-                    }
-                  }
-                  """),
-                    10
-                  )
-                );
-            }
-
-            @Test
-            void forEmptyDiamondOperators() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java(
-                      """
-                          package com.example.app;
-                          
-                          import java.util.ArrayList;
-                          import java.util.List;
-                          
-                          class A {
-                            void m() {
-                                List strs = new ArrayList<>();
-                            }
-                          }
-                        """),
-                    10
-                  )
-                );
-            }
         }
     }
 
@@ -557,6 +389,7 @@ class UseVarKeywordTest implements RewriteTest {
         @Nested
         class Applicable {
             @Test
+            @Example
             void forString() {
                 //language=java
                 rewriteRun(
@@ -794,6 +627,207 @@ class UseVarKeywordTest implements RewriteTest {
                         }
                       }
                       """),
+                    10
+                  )
+                );
+            }
+        }
+    }
+
+    @Nested
+    class Generics {
+        @Nested
+        class NotApplicable {
+            @Test
+            void forEmptyFactoryMethod() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java(
+                      """
+                          package com.example.app;
+                          
+                          import java.util.List;
+                          
+                          class A {
+                            void m() {
+                                List<String> strs = List.of();
+                            }
+                          }
+                        """),
+                    10
+                  )
+                );
+            }
+            @Test
+            void forEmptyDiamondOperators() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java(
+                      """
+                          package com.example.app;
+                          
+                          import java.util.ArrayList;
+                          import java.util.List;
+                          
+                          class A {
+                            void m() {
+                                List strs = new ArrayList<>();
+                            }
+                          }
+                        """),
+                    10
+                  )
+                );
+            }
+            @Test
+            void withDiamondOperatorOnRaw() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                  package com.example.app;
+                                    
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                    void m() {
+                        List<String> strs = new ArrayList();
+                    }
+                  }
+                  """),
+                    10
+                  )
+                );
+            }
+        }
+
+        @Nested
+        class Applicable {
+            @Test
+            void ifWelldefined() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                  package com.example.app;
+                                    
+                  import java.util.List;
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                    void m() {
+                        List<String> strs = new ArrayList<String>();
+                    }
+                  }
+                  ""","""
+                  package com.example.app;
+                                    
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                    void m() {
+                        var strs = new ArrayList<String>();
+                    }
+                  }
+                  """),
+                    10
+                  )
+                );
+            }
+            @Test
+            void forNoDiamondOperators() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java(
+                      """
+                          package com.example.app;
+                          
+                          import java.util.ArrayList;
+                          import java.util.List;
+                          
+                          class A {
+                            void m() {
+                                List strs = new ArrayList();
+                            }
+                          }
+                        ""","""
+                          package com.example.app;
+                          
+                          import java.util.ArrayList;
+                          
+                          class A {
+                            void m() {
+                                var strs = new ArrayList();
+                            }
+                          }
+                        """),
+                    10
+                  )
+                );
+            }
+            @Test
+            @Example
+            void withDiamondOperator() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                  package com.example.app;
+                  
+                  import java.util.List;
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                    void m() {
+                        List<String> strs = new ArrayList<>();
+                    }
+                  }
+                  ""","""
+                  package com.example.app;         
+                  
+                  import java.util.ArrayList;
+                                    
+                  class A {
+                    void m() {
+                        var strs = new ArrayList<String>();
+                    }
+                  }
+                  """),
+                    10
+                  )
+                );
+            }
+
+            @Test
+            @Disabled("not yet implemented by UseVarForMethodInvocations") // todo mboegers in PR #249
+            void withFactoryMethods() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                package com.example.app;
+                                    
+                import java.util.List;
+                                    
+                class A {
+                  void m() {
+                      List<String> strs = List.of("one", "two");
+                  }
+                }
+                ""","""
+                package com.example.app;
+                                    
+                import java.util.List;
+                                    
+                class A {
+                  void m() {
+                      List<String> strs = List.of("one", "two");
+                  }
+                }
+                """),
                     10
                   )
                 );

@@ -443,4 +443,45 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
           )
         );
     }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
+    @Test
+    void doNotChangeNestedSets() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableSet;
+                import java.util.Set;
+                                
+                class A {
+                    Object o = Set.of(ImmutableSet.of(1, 2));
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
+    @Test
+    void doNotchangeAssignToImmutableSet() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableSet;
+                                
+                class Test {
+                    ImmutableSetp<String> m = ImmutableSet.of();
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
 }

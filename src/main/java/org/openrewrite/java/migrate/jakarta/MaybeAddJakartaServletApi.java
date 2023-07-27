@@ -15,17 +15,12 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.openrewrite.*;
 import org.openrewrite.maven.AddDependency;
 import org.openrewrite.maven.search.DoesNotIncludeDependency;
 
-import java.util.Collections;
-import java.util.List;
-
-public class MaybeAddJakartaServletApi extends Recipe {
+public class MaybeAddJakartaServletApi extends ScanningRecipe<AddDependency.Scanned> {
 
     @Override
     public String getDisplayName() {
@@ -37,26 +32,38 @@ public class MaybeAddJakartaServletApi extends Recipe {
         return "Adds the `jakarta.servlet-api` dependency, unless the project already uses `spring-boot-starter-web`, which transitively includes a compatible implementation under a different GAV.";
     }
 
+    @JsonIgnore
+    private final AddDependency addDependency = new AddDependency(
+            "jakarta.servlet",
+            "jakarta.servlet-api",
+            "6.x",
+            null,
+            null,
+            null,
+            "javax.servlet.*",
+            null,
+            null,
+            null,
+            null,
+            true
+    );
+
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new DoesNotIncludeDependency("org.springframework.boot", "spring-boot-starter-web", null, null), TreeVisitor.noop());
+    public AddDependency.Scanned getInitialValue(ExecutionContext ctx) {
+        return addDependency.getInitialValue(ctx);
     }
 
     @Override
-    public List<Recipe> getRecipeList() {
-        return Collections.singletonList(new AddDependency(
-                "jakarta.servlet",
-                "jakarta.servlet-api",
-                "6.x",
-                null,
-                null,
-                null,
-                "javax.servlet.*",
-                null,
-                null,
-                null,
-                null,
-                true
-        ));
+    public TreeVisitor<?, ExecutionContext> getScanner(AddDependency.Scanned acc) {
+        return addDependency.getScanner(acc);
     }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getVisitor(AddDependency.Scanned acc) {
+        return Preconditions.check(
+                new DoesNotIncludeDependency("org.springframework.boot", "spring-boot-starter-web", null, null),
+                addDependency.getVisitor(acc)
+        );
+    }
+
 }
