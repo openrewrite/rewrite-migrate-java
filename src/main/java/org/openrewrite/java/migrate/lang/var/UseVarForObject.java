@@ -15,8 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -27,7 +25,11 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeTree;
+
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -43,8 +45,8 @@ public class UseVarForObject extends Recipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return "Try to apply local variable type inference `var` to variables containing Objects where possible." +
-               "This recipe will not touch variable declaration with genrics or initializer containing ternary operators.";
+        return "Try to apply local variable type inference `var` to variables containing Objects where possible. " +
+               "This recipe will not touch variable declarations with generics or initializers containing ternary operators.";
     }
 
 
@@ -72,6 +74,9 @@ public class UseVarForObject extends Recipe {
             boolean usesGenerics = DeclarationCheck.useGenerics(vd);
             boolean usesTernary = DeclarationCheck.initializedByTernary(vd);
             if (isPrimitive || usesGenerics || usesTernary) return vd;
+
+            // mark imports for removal if unused
+            if (vd.getType() instanceof JavaType.FullyQualified) maybeRemoveImport((JavaType.FullyQualified) vd.getType());
 
             return transformToVar(vd);
         }

@@ -15,14 +15,13 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import static org.openrewrite.java.Assertions.*;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
-
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.javaVersion;
 
 class UseVarForObjectsTest extends VarBaseTest {
 
@@ -86,6 +85,7 @@ class UseVarForObjectsTest extends VarBaseTest {
         }
 
         @Test
+        @DocumentExample
         void withModifier() {
             //language=java
             rewriteRun(
@@ -180,6 +180,124 @@ class UseVarForObjectsTest extends VarBaseTest {
                 """
               )
             );
+        }
+
+        @Nested
+        class InitilizedByMethod {
+            @Test
+            void sameType() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+                                        
+                      class A {
+                        String getHello() {
+                            return "Hello";
+                        }
+                        void m() {
+                            String phrase = getHello();
+                        }
+                      }
+                      """, """
+                      package com.example.app;
+                                        
+                      class A {
+                        String getHello() {
+                            return "Hello";
+                        }
+                        void m() {
+                            var phrase = getHello();
+                        }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
+
+            @Test
+            void subType() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+                                        
+                      class A {
+                        class CustomTokenizer extends java.util.StringTokenizer {
+                            CustomTokenizer() {
+                                super("");
+                            }
+                        }
+                        CustomTokenizer getHello() {
+                            return new CustomTokenizer();
+                        }
+                        void m() {
+                            CustomTokenizer phrase = getHello();
+                        }
+                      }
+                      """, """
+                      package com.example.app;
+                                        
+                      class A {
+                        class CustomTokenizer extends java.util.StringTokenizer {
+                            CustomTokenizer() {
+                                super("");
+                            }
+                        }
+                        CustomTokenizer getHello() {
+                            return new CustomTokenizer();
+                        }
+                        void m() {
+                            var phrase = getHello();
+                        }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
+
+            @Test
+            void staticMethods() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                  package com.example.app;
+                                    
+                  class A {
+                    static class B {
+                        private B() {}
+                        static B newInstance() {
+                            return new B();
+                        }
+                    }
+                    void m() {
+                        B b = B.newInstance();
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+                                    
+                  class A {
+                    static class B {
+                        private B() {}
+                        static B newInstance() {
+                            return new B();
+                        }
+                    }
+                    void m() {
+                        var b = B.newInstance();
+                    }
+                  }
+                  """),
+                    10
+                  )
+                );
+            }
         }
     }
 
