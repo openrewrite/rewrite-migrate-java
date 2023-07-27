@@ -38,14 +38,14 @@ class RemoveDeprecatedRuntimeTest implements RewriteTest {
             java(
               """
                 class FooBar{
-                    public void test() {
-                        Runtime.traceInstructions();
+                    void test(Runtime r) {
+                        r.traceInstructions();
                     }
                 }
                  """,
               """
                 class FooBar{
-                    public void test() {
+                    void test(Runtime r) {
                     }
                 }
                  """
@@ -64,14 +64,14 @@ class RemoveDeprecatedRuntimeTest implements RewriteTest {
             java(
               """
                 class FooBar{
-                    public void test() {
-                        Runtime.traceMethodCalls();
+                    void test(Runtime r) {
+                        r.traceMethodCalls();
                     }
                 }
                  """,
               """
                 class FooBar{
-                    public void test() {
+                    void test(Runtime r) {
                     }
                 }
                  """
@@ -89,8 +89,8 @@ class RemoveDeprecatedRuntimeTest implements RewriteTest {
             java(
               """
                 class FooBar{
-                    public void test() {
-                        Runtime.getRuntime();
+                    void test(Runtime r) {
+                        r.gc();
                     }
                 }
                  """
