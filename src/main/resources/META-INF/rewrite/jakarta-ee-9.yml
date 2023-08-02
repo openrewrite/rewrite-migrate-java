@@ -144,6 +144,12 @@ recipeList:
       oldFullyQualifiedTypeName: javax.annotation.ManagedBean
       newFullyQualifiedTypeName: jakarta.annotation.ManagedBean
   - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Nonnull
+      newFullyQualifiedTypeName: jakarta.annotation.Nonnull
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Nullable
+      newFullyQualifiedTypeName: jakarta.annotation.Nullable
+  - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.PostConstruct
       newFullyQualifiedTypeName: jakarta.annotation.PostConstruct
   - org.openrewrite.java.ChangeType:
