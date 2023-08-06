@@ -19,8 +19,8 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.AnnotationMatcher;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
@@ -63,13 +63,14 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
                 return cd;
             }
 
+            private final AnnotationMatcher matcher = new AnnotationMatcher(JAVAX_INJECT_INJECT);
+
             private boolean variableTypeRequiresScope(@Nullable JavaType.Variable memberVariable) {
                 if (memberVariable == null) {
                     return false;
                 }
-                AnnotationMatcher matcher = new AnnotationMatcher(JAVAX_INJECT_INJECT);
                 for (JavaType.FullyQualified fullYQualifiedAnnotation : memberVariable.getAnnotations()) {
-                    if(memberVariable.getAnnotations().stream().anyMatch(matcher::matchesAnnotationOrMetaAnnotation)) {
+                    if (matcher.matchesAnnotationOrMetaAnnotation(fullYQualifiedAnnotation)) {
                         return true;
                     }
                 }
