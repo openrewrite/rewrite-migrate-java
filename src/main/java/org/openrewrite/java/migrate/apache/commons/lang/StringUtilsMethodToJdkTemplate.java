@@ -23,7 +23,10 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+
+import java.util.ArrayList;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -45,6 +48,12 @@ public class StringUtilsMethodToJdkTemplate extends Recipe {
             required = false)
     String[] imports;
 
+    @Option(displayName = "Argument Order",
+            description = "The order the arguments will be in when transformed.",
+            example = "1, 3, 2, 3",
+            required = false)
+    Integer[] argumentOrder;
+
     @Override
     public String getDisplayName() {
         return "Convert Apache Commons Lang `StringUtils` method to JDK equivalent";
@@ -62,20 +71,36 @@ public class StringUtilsMethodToJdkTemplate extends Recipe {
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
                 J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
                 if (new MethodMatcher(methodPattern).matches(method)) {
+                    // handle imports
                     String[] imports = StringUtilsMethodToJdkTemplate.this.imports == null ?
                             new String[0] : StringUtilsMethodToJdkTemplate.this.imports;
                     for (String imp : imports) {
                         maybeAddImport(imp);
                     }
                     maybeRemoveImport(methodPattern.split(" ")[0]);
+
                     return JavaTemplate.builder(jdkTemplate)
                             .imports(imports)
                             .build()
                             .apply(updateCursor(mi),
                                     mi.getCoordinates().replace(),
-                                    ListUtils.map(mi.getArguments(), a -> a instanceof J.Empty ? null : a).toArray());
+                                    buildOrder(mi));
                 }
                 return mi;
+            }
+
+            private Object[] buildOrder(J.MethodInvocation mi) {
+                Object[] filterArgs = ListUtils.map(mi.getArguments(), a -> a instanceof J.Empty ? null : a).toArray();
+                if (argumentOrder == null) {
+                    return filterArgs;
+                }
+
+                ArrayList<Object> newList = new ArrayList<>();
+                for (Integer idx : argumentOrder) {
+                    newList.add(filterArgs[idx]);
+                }
+
+                return newList.toArray();
             }
         });
     }
