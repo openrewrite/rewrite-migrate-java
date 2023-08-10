@@ -16,11 +16,18 @@
 package org.openrewrite.java.migrate.apache.commons.lang;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
 public class ApacheCommonsStringUtils implements RewriteTest {
+
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.parser(JavaParser.fromJavaVersion().classpath("commons-lang3"));
+    }
 
     @Test
     void defaultString() {
@@ -31,13 +38,15 @@ public class ApacheCommonsStringUtils implements RewriteTest {
             import org.apache.commons.lang3.StringUtils;
                           
             class Foo {
-                String s = StringUtils.defaultString("foo");
+                String in = "foo";
+                String out = StringUtils.defaultString(in);
             }
             """, """
             import java.util.Objects;
                           
             class Foo {
-                String s = Objects.toString("foo");
+                String in = "foo";
+                String out = Objects.toString(in);
             }
             """)
         );
