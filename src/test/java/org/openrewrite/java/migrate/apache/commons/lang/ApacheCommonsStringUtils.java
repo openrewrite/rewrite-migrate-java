@@ -18,6 +18,8 @@ package org.openrewrite.java.migrate.apache.commons.lang;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.java.Assertions.java;
+
 public class ApacheCommonsStringUtils implements RewriteTest {
 
     @Test
