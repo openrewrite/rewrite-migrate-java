@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.apache.commons.lang;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -30,6 +31,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
     }
 
     @Test
+    @DocumentExample
     void defaultString() {
         rewriteRun(
           spec -> spec.recipe(new DefaultStringRecipe()),
@@ -50,7 +52,28 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
             }
             """)
         );
-
+    }
+    @Test
+    void defaultStringStatic() {
+        rewriteRun(
+          spec -> spec.recipe(new DefaultStringRecipe()),
+          //language=java
+          java("""
+            import static org.apache.commons.lang3.StringUtils.defaultString;
+                          
+            class Foo {
+                String in = "foo";
+                String out = defaultString(in);
+            }
+            """, """
+            import java.util.Objects;
+                          
+            class Foo {
+                String in = "foo";
+                String out = Objects.toString(in);
+            }
+            """)
+        );
     }
 
 }
