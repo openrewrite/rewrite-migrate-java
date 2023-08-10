@@ -22,7 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class ApacheCommonsStringUtils implements RewriteTest {
+class ApacheCommonsStringUtilsTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -32,7 +32,7 @@ public class ApacheCommonsStringUtils implements RewriteTest {
     @Test
     void defaultString() {
         rewriteRun(
-          spec -> spec.recipe(new ApacheCommonsStringUtilsDefaultStringRecipe()),
+          spec -> spec.recipe(new DefaultStringRecipe()),
           //language=java
           java("""
             import org.apache.commons.lang3.StringUtils;

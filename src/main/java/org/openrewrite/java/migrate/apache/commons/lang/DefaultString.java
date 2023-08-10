@@ -21,7 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 
-public class ApacheCommonsStringUtilsDefaultString {
+public class DefaultString {
     @BeforeTemplate
     String before(String s) {
         return StringUtils.defaultString(s);
