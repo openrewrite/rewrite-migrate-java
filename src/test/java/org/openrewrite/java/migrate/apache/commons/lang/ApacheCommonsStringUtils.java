@@ -28,10 +28,10 @@ public class ApacheCommonsStringUtils implements RewriteTest {
           spec -> spec.recipe(new ApacheCommonsStringUtilsDefaultStringRecipe()),
           //language=java
           java("""
-            import org.apache.commons.lang.StringUtils;
+            import org.apache.commons.lang3.StringUtils;
                           
             class Foo {
-                String s = org.apache.commons.lang.StringUtils.defaultString("foo");
+                String s = StringUtils.defaultString("foo");
             }
             """, """
             import java.util.Objects;
