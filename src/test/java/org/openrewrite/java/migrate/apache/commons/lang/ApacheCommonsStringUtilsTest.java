@@ -53,6 +53,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
             """)
         );
     }
+
     @Test
     void defaultStringStatic() {
         rewriteRun(
