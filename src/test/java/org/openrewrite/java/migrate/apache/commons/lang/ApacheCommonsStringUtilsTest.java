@@ -77,4 +77,19 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
         );
     }
 
+    @Test
+    void isBlank() {
+        rewriteRun(
+          spec -> spec.recipe(new IsBlankRecipe()),
+          //language=java
+          java("""
+            import org.apache.commons.lang3.StringUtils;
+            
+            class Foo {
+                String in = "foo";
+                boolean out = StringUtils.isBlank(in);
+            }
+            """)
+        );
+    }
 }

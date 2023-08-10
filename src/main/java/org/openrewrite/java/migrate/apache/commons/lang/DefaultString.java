@@ -32,3 +32,4 @@ public class DefaultString {
         return Objects.toString(s);
     }
 }
+
