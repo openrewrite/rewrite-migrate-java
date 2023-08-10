@@ -22,6 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@SuppressWarnings("ConstantValue")
 class StringUtilsMethodToJdkTemplateTest implements RewriteTest {
 
     @Override
@@ -50,6 +51,186 @@ class StringUtilsMethodToJdkTemplateTest implements RewriteTest {
                String s = Objects.toString("foo");
             }
             """)
+        );
+    }
+
+    @Test
+    void isBlankToStringIsBlank() {
+        rewriteRun(
+          spec -> spec.recipe(new StringUtilsMethodToJdkTemplate(
+            "org.apache.commons.lang3.StringUtils isBlank(java.lang.CharSequence)",
+            "#{any()}.isBlank()",
+            null
+          )),
+          //language=java
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+              
+              class Test {
+                  void method() {
+                      boolean b = StringUtils.isBlank("hello world");
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void method() {
+                      boolean b = "hello world".isBlank();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void methodHasTwoArguments() {
+        rewriteRun(
+          spec -> spec.recipe(new StringUtilsMethodToJdkTemplate(
+            "org.apache.commons.lang3.StringUtils split(java.lang.String, java.lang.String)",
+            "#{any()}.split(#{any()})",
+            null
+          )),
+          //language=java
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+              
+              class Test {
+                  void method() {
+                      String[] split = StringUtils.split("hello, world", ", ");
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void method() {
+                      String[] split = "hello, world".split(", ");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void methodHasThreeArguments() {
+        rewriteRun(
+          spec -> spec.recipe(new StringUtilsMethodToJdkTemplate(
+            "org.apache.commons.lang3.StringUtils replace(java.lang.String, java.lang.String, java.lang.String)",
+            "#{any()}.replaceAll(#{any()}, #{any()})",
+            null
+          )),
+          //language=java
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+              
+              class Test {
+                  void method() {
+                      String rep = StringUtils.replace("hello world", "world", "rewrite");
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void method() {
+                      String rep = "hello world".replaceAll("world", "rewrite");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void oneArgAndTemplateHasTwoParameters() {
+        rewriteRun(
+          spec -> spec.recipe(new StringUtilsMethodToJdkTemplate(
+            "org.apache.commons.lang3.StringUtils chop(java.lang.String)",
+            "#{any()}.substring(0, #{any()}.length() - 1)",
+            null
+          )),
+          //language=java
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+              
+              class Test {
+                  void method() {
+                      String chop = StringUtils.chop("hello world");
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void method() {
+                      String chop = "hello world".substring(0, "hello world".length() - 1);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void parametersNotInSameOrderAsArgs() {
+        rewriteRun(
+          spec -> spec.recipe(new StringUtilsMethodToJdkTemplate(
+            "org.apache.commons.lang3.StringUtils repeat(java.lang.String, int)",
+            "new String(new char[#{any(int)}]).replace(\"\0\", #{any(java.lang.String)})",
+            null
+          )),
+          //language=java
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+              
+              class Test {
+                  void method() {
+                      String repeat = StringUtils.repeat("string", 5);
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void method() {
+                      String repeat = new String(new char[5]).replace("\0", "string");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void templateHasALotOfParametersOutOfOrder() {
+        rewriteRun(
+          spec -> spec.recipe(new StringUtilsMethodToJdkTemplate(
+            "org.apache.commons.lang3.StringUtils stripEnd(java.lang.String, java.lang.String)",
+            "(#{any()}.endsWith(#{any()}) ? #{any()}.substring(0, #{any()}.lastIndexOf(#{any()}) : #{any()})",
+            null
+          )),
+          //language=java
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+              
+              class Test {
+                  void method() {
+                      String x = StringUtils.stripEnd("hello world", "ld");
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void method() {
+                      String x = ("hello world".endsWith("ld") ? "hello world".substring(0, "hello world".lastIndexOf("ld")) : "hello world");
+                  }
+              }
+              """
+          )
         );
     }
 
