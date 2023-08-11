@@ -89,6 +89,76 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                 String in = "foo";
                 boolean out = StringUtils.isBlank(in);
             }
+            """, """
+            class Foo {
+                String in  = "foo";
+                boolean out = in.isBlank();
+            }
+            """)
+        );
+    }
+
+    @Test
+    void oneArgTwoTemplateParameters() {
+        rewriteRun(
+          spec -> spec.recipe(new IsBlankRecipe()), // TODO: fix these recipes
+          //language=java
+          java("""
+            import org.apache.commons.lang3.StringUtils;
+            
+            class Foo {
+                String in = "foo";
+                String out = StringUtils.chop(in);
+            }
+            """, """
+            class Foo {
+                String in = "foo";
+                String out = in.substring(0, in.length() - 1);
+            }
+            """)
+        );
+    }
+
+    @Test
+    void outOfOrderTemplateParameters() {
+        rewriteRun(
+          spec -> spec.recipe(new IsBlankRecipe()),
+          //language=java
+          java("""
+            import org.apache.commons.lang3.StringUtils;
+            
+            class Foo {
+                String in = "foo";
+                String suffix = "oo";
+                String out = StringUtils.stripEnd(in, suffix);
+            }
+            """, """
+            class Foo {
+                String in = "foo";
+                String suffix = "oo";
+                String out = in.endsWith(suffix) ? in.substring(0, in.lastIndexOf(suffix)) : in;
+            }
+            """)
+        );
+    }
+
+    @Test
+    void threeArguments() {
+        rewriteRun(
+          spec -> spec.recipe(new IsBlankRecipe()),
+          //language=java
+          java("""
+            import org.apache.commons.lang3.StringUtils;
+            
+            class Foo {
+                String in = "foo";
+                String out = StringUtils.replace(in, "o", "z");
+            }
+            """, """
+            class Foo {
+                String in = "foo";
+                String out = in.replaceAll("o", "z");
+            }
             """)
         );
     }
