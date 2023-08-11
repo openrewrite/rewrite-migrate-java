@@ -194,7 +194,11 @@ public class ApacheCommonsStringUtils {
     public static class IsAlphanumericSpace {
         @BeforeTemplate
         boolean before(String s) {
-            return StringUtils.isAlphanumericSpace("^[a-zA-Z0-9\\s]*$");
+            return StringUtils.isAlphanumericSpace(s);
+        }
+
+        boolean after(String s) {
+            return s.matches("^[a-zA-Z0-9\\s]*$");
         }
     }
 
