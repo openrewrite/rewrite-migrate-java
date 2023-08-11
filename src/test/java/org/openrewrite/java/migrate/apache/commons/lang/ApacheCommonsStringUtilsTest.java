@@ -91,7 +91,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
             }
             """, """
             class Foo {
-                String in  = "foo";
+                String in = "foo";
                 boolean out = in.isEmpty();
             }
             """)
@@ -135,6 +135,27 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
             class Foo {
                 String in = "foo";
                 String[] out = in.split("|");
+            }
+            """)
+        );
+    }
+
+    @Test
+    void equalsTest() {
+        rewriteRun(
+          spec -> spec.recipe(new EqualsRecipe()),
+          //language=java
+          java("""
+            import org.apache.commons.lang3.StringUtils;
+            
+            class Foo {
+                String in = "foo";
+                boolean out = StringUtils.equals(in, "string");
+            }
+            """, """
+            class Foo {
+                String in = "foo";
+                boolean out = in.equals("string");
             }
             """)
         );
