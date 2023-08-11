@@ -4,14 +4,14 @@ import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.apache.commons.lang3.StringUtils;
 
-public class IsBlank {
+public class Split {
     @BeforeTemplate
-    boolean before(String s) {
-        return StringUtils.isBlank(s);
+    String[] before(String s) {
+        return StringUtils.split(s);
     }
 
     @AfterTemplate
-    boolean after(String s) {
-        return s.isBlank();
+    String[] after(String s) {
+        return s.split(" ");
     }
 }
