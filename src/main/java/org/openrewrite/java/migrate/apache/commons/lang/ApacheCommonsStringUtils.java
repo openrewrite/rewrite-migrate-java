@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("unused")
 public class ApacheCommonsStringUtils {
     public static class Chop {
         @BeforeTemplate
@@ -59,6 +60,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    @SuppressWarnings("ConstantValue")
     public static class IsEmpty {
         @BeforeTemplate
         boolean before(String s) {
@@ -119,27 +121,28 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    // TODO: These two methods don't generate the recipe templates right
     //public static class LeftPad {
     //    @BeforeTemplate
-    //    String before(String s) {
-    //        return StringUtils.leftPad(s, 5);
+    //    String before(String s, int l) {
+    //        return StringUtils.leftPad(s, l);
     //    }
 
     //    @AfterTemplate
-    //    String after(String s) {
-    //        return String.format("%" + 5 + "s", s);
+    //    String after(String s, int l) {
+    //        return String.format("%" + l + "s", s);
     //    }
     //}
 
     //public static class RightPad {
     //    @BeforeTemplate
-    //    String before(String s) {
-    //        return StringUtils.rightPad(s, 5);
+    //    String before(String s, int l) {
+    //        return StringUtils.rightPad(s, l);
     //    }
 
     //    @AfterTemplate
-    //    String after(String s) {
-    //        return String.format("%" + (-5) + "s", s);
+    //    String after(String s, int l) {
+    //        return String.format("%" + (-l) + "s", s);
     //    }
     //}
 
@@ -175,7 +178,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s, String suffix) {
-            return s.toUpperCase().endsWith(suffix.toUpperCase());
+            return s.regionMatches(true, 0, suffix, 0, suffix.length());
         }
     }
 
@@ -202,6 +205,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    @SuppressWarnings("ConstantValue")
     public static class Left {
         @BeforeTemplate
         String before(String s, int l) {
