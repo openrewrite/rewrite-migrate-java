@@ -46,10 +46,13 @@ class PlexusFileUtilsTest implements RewriteTest {
               import org.codehaus.plexus.util.FileUtils;
               class Test {
                   void test() throws IOException {
-                      File file = new File("test");
                       FileUtils.deleteDirectory("test");
                       org.codehaus.plexus.util.FileUtils.deleteDirectory("test");
+
+                      File file = new File("test");
+                      FileUtils.deleteDirectory(file);
                       org.codehaus.plexus.util.FileUtils.deleteDirectory(file);
+
                       FileUtils.dirname("/foo/bar"); // Unused
                   }
               }
@@ -60,10 +63,13 @@ class PlexusFileUtilsTest implements RewriteTest {
               import org.apache.commons.io.FileUtils;
               class Test {
                   void test() throws IOException {
-                      File file = new File("test");
-                      FileUtils.deleteDirectory("test");
+                      FileUtils.deleteDirectory(new File("test"));
                       org.apache.commons.io.FileUtils.deleteDirectory(new File("test"));
+
+                      File file = new File("test");
+                      FileUtils.deleteDirectory(file);
                       org.apache.commons.io.FileUtils.deleteDirectory(file);
+
                       FileUtils.dirname("/foo/bar"); // Unused
                   }
               }
@@ -94,7 +100,7 @@ class PlexusFileUtilsTest implements RewriteTest {
               import java.io.IOException;
               class Test {
                   void test() throws IOException {
-                      org.apache.commons.io.FileUtils.deleteDirectory("test");
+                      org.apache.commons.io.FileUtils.deleteDirectory(new File("test"));
                   }
               }
               """
