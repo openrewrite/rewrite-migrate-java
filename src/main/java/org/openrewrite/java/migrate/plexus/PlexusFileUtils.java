@@ -47,4 +47,16 @@ class PlexusFileUtils {
         }
     }
 
+    static class FileExistsString {
+        @BeforeTemplate
+        boolean before(String fileName) throws IOException {
+            return org.codehaus.plexus.util.FileUtils.fileExists(fileName);
+        }
+
+        @AfterTemplate
+        boolean after(String fileName) throws IOException {
+            return new File(fileName).exists();
+        }
+    }
+
 }
