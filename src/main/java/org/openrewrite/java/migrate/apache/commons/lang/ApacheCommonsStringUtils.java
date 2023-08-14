@@ -67,7 +67,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s) {
-            return s.isEmpty();
+            return s == null || s.isEmpty();
         }
     }
 
