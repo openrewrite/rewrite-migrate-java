@@ -35,7 +35,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
 
     @Test
     @DocumentExample
-    void defaultString() {
+    void ubertest() {
         rewriteRun(
           //language=java
           java(
@@ -45,6 +45,20 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
               class Foo {
                   String in = "foo";
                   String out = StringUtils.defaultString(in);
+                  boolean out = StringUtils.isEmpty(in);
+                  String[] out = StringUtils.split(in);
+                  String[] out = StringUtils.split(in, ", ");
+                  boolean out = StringUtils.equals(in, "string");
+                  String out = StringUtils.chop(in);
+                  String out = StringUtils.replace(in, "o", "z");
+                  String out = StringUtils.strip(in);
+                  String out = StringUtils.join(in);
+                  String out = StringUtils.deleteWhitespace(in);
+                  String out = StringUtils.abbreviate(in, 5);
+                  String out = StringUtils.trimToEmpty(in);
+                  String out = StringUtils.substringAfter(in, ",");
+                  String out = StringUtils.right(in, 5);
+                  String out = StringUtils.mid(in, 2, 4);
               }
               """,
             """
@@ -53,6 +67,20 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
               class Foo {
                   String in = "foo";
                   String out = Objects.toString(in);
+                  boolean out = in == null || in.isEmpty();
+                  String[] out = in.split(" ");
+                  String[] out = in == null ? null : in.split(", ");
+                  boolean out = Objects.equals(in, "string");
+                  String out = in.substring(0, in.length() - 1);
+                  String out = in.replaceAll("o", "z");
+                  String out = in.trim();
+                  String out = String.join(in);
+                  String out = in.replaceAll("\\s+", "");
+                  String out = in.substring(0, Math.min(in.length(), 5));
+                  String out = in != null ? in.trim() : "";
+                  String out = in.substring(in.indexOf(",") + 1, in.length());
+                  String out = in.substring(in.length() - 5, in.length() - 1);
+                  String out = 2 + 4 < in.length() ? in.substring(2, 2 + 4) : in.substring(2, in.length() - 1);
               }
               """
           )
@@ -85,209 +113,23 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
     }
 
     @Test
-    void isEmpty() {
+    @Disabled
+    void leftPad() {
         rewriteRun(
           //language=java
           java(
             """
               import org.apache.commons.lang3.StringUtils;
-                  
+              
               class Foo {
                   String in = "foo";
-                  boolean out = StringUtils.isEmpty(in);
+                  String out = StringUtils.leftPad(in, 4);
               }
               """,
             """
               class Foo {
                   String in = "foo";
-                  boolean out = in == null || in.isEmpty();
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void splitTest() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import org.apache.commons.lang3.StringUtils;
-                          
-              class Foo {
-                  String in = "foo";
-                  String[] out = StringUtils.split(in);
-              }
-              """,
-            """
-              class Foo {
-                  String in = "foo";
-                  String[] out = in.split(" ");
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    @Disabled("Argument variant not covered yet")
-    void splitWithArg() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import org.apache.commons.lang3.StringUtils;
-                          
-              class Foo {
-                  String in = "foo";
-                  String[] out = StringUtils.split(in, ", ");
-              }
-              """,
-            """
-              class Foo {
-                  String in = "foo";
-                  String[] out = in == null ? null : in.split(", ");
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void equalsTest() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import org.apache.commons.lang3.StringUtils;
-                          
-              class Foo {
-                  String in = "foo";
-                  boolean out = StringUtils.equals(in, "string");
-              }
-              """,
-            """
-              import java.util.Objects;
-                          
-              class Foo {
-                  String in = "foo";
-                  boolean out = Objects.equals(in, "string");
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void chopTest() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import org.apache.commons.lang3.StringUtils;
-                  
-              class Foo {
-                  String in = "foo";
-                  String out = StringUtils.chop(in);
-              }
-              """,
-            """
-              class Foo {
-                  String in = "foo";
-                  String out = in.substring(0, in.length() - 1);
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void replaceTest() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import org.apache.commons.lang3.StringUtils;
-                  
-              class Foo {
-                  String in = "foo";
-                  String out = StringUtils.replace(in, "o", "z");
-              }
-              """,
-            """
-              class Foo {
-                  String in = "foo";
-                  String out = in.replaceAll("o", "z");
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void stripTest() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import org.apache.commons.lang3.StringUtils;
-                            
-              class Foo {
-                  String in = "foo";
-                  String out = StringUtils.strip(in);
-              }
-              """,
-            """
-              class Foo {
-                  String in = "foo";
-                  String out = in.trim();
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void joinTest() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import org.apache.commons.lang3.StringUtils;
-                            
-              class Foo {
-                  String in = "foo";
-                  String out = StringUtils.join(in);
-              }
-              """,
-            """
-              class Foo {
-                  String in = "foo";
-                  String out = String.join(in);
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void deleteWhitespaceTest() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import org.apache.commons.lang3.StringUtils;
-                            
-              class Foo {
-                  String in = "foo";
-                  String out = StringUtils.deleteWhitespace(in);
-              }
-              """,
-            """
-              class Foo {
-                  String in = "foo";
-                  String out = in.replaceAll("\\s+", "");
+                  String out = String.format("%" + 4 + "s", in);
               }
               """
           )

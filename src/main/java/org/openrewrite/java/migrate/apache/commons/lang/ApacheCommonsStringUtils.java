@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
 public class ApacheCommonsStringUtils {
-    public static class Chop {
+    private static class Chop {
         @BeforeTemplate
         String before(String s) {
             return StringUtils.chop(s);
@@ -36,7 +36,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class DefaultString {
+    private static class DefaultString {
         @BeforeTemplate
         String before(String s) {
             return StringUtils.defaultString(s);
@@ -48,7 +48,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class Equals {
+    private static class Equals {
         @BeforeTemplate
         boolean before(String s, String other) {
             return StringUtils.equals(s, other);
@@ -61,7 +61,7 @@ public class ApacheCommonsStringUtils {
     }
 
     @SuppressWarnings("ConstantValue")
-    public static class IsEmpty {
+    private static class IsEmpty {
         @BeforeTemplate
         boolean before(String s) {
             return StringUtils.isEmpty(s);
@@ -73,7 +73,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class Replace {
+    private static class Replace {
         @BeforeTemplate
         String before(String s, String target, String replacement) {
             return StringUtils.replace(s, target, replacement);
@@ -85,7 +85,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class Split {
+    private static class Split {
         @BeforeTemplate
         String[] before(String s) {
             return StringUtils.split(s);
@@ -97,7 +97,19 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class StripEnd {
+    private static class SplitWithArg {
+        @BeforeTemplate
+        String[] before(String s, String arg) {
+            return StringUtils.split(s, arg);
+        }
+
+        @AfterTemplate
+        String[] after(String s, String arg) {
+            return s == null ? null : s.split(arg);
+        }
+    }
+
+    private static class StripEnd {
         @BeforeTemplate
         String before(String s, String suffix) {
             return StringUtils.stripEnd(s, suffix);
@@ -109,7 +121,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class Strip {
+    private static class Strip {
         @BeforeTemplate
         String before(String s) {
             return StringUtils.strip(s);
@@ -146,7 +158,7 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    public static class Join {
+    private static class Join {
         @BeforeTemplate
         String before(String s) {
             return StringUtils.join(s);
@@ -158,7 +170,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class DeleteWhitespace {
+    private static class DeleteWhitespace {
         @BeforeTemplate
         String before(String s) {
             return StringUtils.deleteWhitespace(s);
@@ -170,7 +182,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class EndsWithIgnoreCase {
+    private static class EndsWithIgnoreCase {
         @BeforeTemplate
         boolean before(String s, String suffix) {
             return StringUtils.endsWithIgnoreCase(s, suffix);
@@ -182,7 +194,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class IsAlphanumeric {
+    private static class IsAlphanumeric {
         @BeforeTemplate
         boolean before(String s) {
             return StringUtils.isAlphanumeric(s);
@@ -194,7 +206,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class IsAlphanumericSpace {
+    private static class IsAlphanumericSpace {
         @BeforeTemplate
         boolean before(String s) {
             return StringUtils.isAlphanumericSpace(s);
@@ -206,7 +218,7 @@ public class ApacheCommonsStringUtils {
     }
 
     @SuppressWarnings("ConstantValue")
-    public static class Left {
+    private static class Left {
         @BeforeTemplate
         String before(String s, int l) {
             return StringUtils.left(s, l);
@@ -218,7 +230,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class Lowercase {
+    private static class Lowercase {
         @BeforeTemplate
         String before(String s) {
             return StringUtils.lowerCase(s);
@@ -230,7 +242,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class Uppercase {
+    private static class Uppercase {
         @BeforeTemplate
         String before(String s) {
             return StringUtils.upperCase(s);
@@ -242,7 +254,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class ReplaceOnce {
+    private static class ReplaceOnce {
         @BeforeTemplate
         String before(String s, String search, String replacement) {
             return StringUtils.replaceOnce(s, search, replacement);
@@ -254,7 +266,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class Reverse {
+    private static class Reverse {
         @BeforeTemplate
         String before(String s) {
             return StringUtils.reverse(s);
@@ -266,7 +278,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class Contains {
+    private static class Contains {
         @BeforeTemplate
         boolean before(String s, String search) {
             return StringUtils.contains(s, search);
@@ -278,7 +290,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class Substring {
+    private static class Substring {
         @BeforeTemplate
         String before(String s, int l, int w) {
             return StringUtils.substring(s, l, w);
@@ -290,7 +302,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class StartsWith {
+    private static class StartsWith {
         @BeforeTemplate
         boolean before(String s, String prefix) {
             return StringUtils.startsWith(s, prefix);
@@ -302,7 +314,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class Trim {
+    private static class Trim {
         @BeforeTemplate
         String before(String s) {
             return StringUtils.trim(s);
@@ -314,7 +326,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class EqualsIgnoreCase {
+    private static class EqualsIgnoreCase {
         @BeforeTemplate
         boolean before(String s, String other) {
             return StringUtils.equalsIgnoreCase(s, other);
@@ -326,7 +338,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class ReplaceTest {
+    private static class ReplaceTest {
         @BeforeTemplate
         String before(String s, String target, String replacement) {
             return StringUtils.replace(s, target, replacement);
@@ -338,7 +350,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class Repeat {
+    private static class Repeat {
         @BeforeTemplate
         String before(String s, int l) {
             return StringUtils.repeat(s, l);
@@ -350,7 +362,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    public static class Overlay {
+    private static class Overlay {
         @BeforeTemplate
         String before(String s, int w, int l, String overlay) {
             return StringUtils.overlay(s, overlay, w, l);
@@ -362,4 +374,63 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    private static class Abbreviate {
+        @BeforeTemplate
+        String before(String s1, int width) {
+            return StringUtils.abbreviate(s1, width);
+        }
+
+        @AfterTemplate
+        String after(String s, int width) {
+            return s.substring(0, Math.min(s.length(), width));
+        }
+    }
+
+    private static class TrimToEmpty {
+        @BeforeTemplate
+        String before(String s) {
+            return StringUtils.trimToEmpty(s);
+        }
+
+        @AfterTemplate
+        String after(String s) {
+            return s != null ? s.trim() : "";
+        }
+    }
+
+    private static class SubstringAfter {
+        @BeforeTemplate
+        String before(String s, String sep) {
+            return StringUtils.substringAfter(s, sep);
+        }
+
+        @AfterTemplate
+        String after(String s, String sep) {
+            return s.substring(s.indexOf(sep) + 1, s.length());
+        }
+    }
+
+    private static class Right {
+        @BeforeTemplate
+        String before(String s, int l) {
+            return StringUtils.right(s, l);
+        }
+
+        @AfterTemplate
+        String after(String s, int l) {
+            return s.substring(s.length() - l, s.length() - 1);
+        }
+    }
+
+    private static class Mid {
+        @BeforeTemplate
+        String before(String s, int p, int l) {
+            return StringUtils.mid(s, p, l);
+        }
+
+        @AfterTemplate
+        String after(String s, int p, int l) {
+            return p + l < s.length() ? s.substring(p, p + l) : s.substring(p, s.length() - 1);
+        }
+    }
 }
