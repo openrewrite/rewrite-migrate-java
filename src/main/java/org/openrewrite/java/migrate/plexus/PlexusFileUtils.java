@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.plexus;
 
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
+import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +27,7 @@ class PlexusFileUtils {
     static class DeleteDirectoryString {
         @BeforeTemplate
         void before(String dir) throws IOException {
-            org.codehaus.plexus.util.FileUtils.deleteDirectory(dir);
+            FileUtils.deleteDirectory(dir);
         }
 
         @AfterTemplate
@@ -38,7 +39,7 @@ class PlexusFileUtils {
     static class DeleteDirectoryFile {
         @BeforeTemplate
         void before(File dir) throws IOException {
-            org.codehaus.plexus.util.FileUtils.deleteDirectory(dir);
+            FileUtils.deleteDirectory(dir);
         }
 
         @AfterTemplate
@@ -50,7 +51,7 @@ class PlexusFileUtils {
     static class FileExistsString {
         @BeforeTemplate
         boolean before(String fileName) throws IOException {
-            return org.codehaus.plexus.util.FileUtils.fileExists(fileName);
+            return FileUtils.fileExists(fileName);
         }
 
         @AfterTemplate

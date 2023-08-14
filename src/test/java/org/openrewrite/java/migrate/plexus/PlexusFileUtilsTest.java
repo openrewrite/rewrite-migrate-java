@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.plexus;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.java.JavaParser;
@@ -70,8 +69,6 @@ class PlexusFileUtilsTest implements RewriteTest {
         }
 
         @Test
-        @Disabled("Fails to clear out imports")
-            // FIXME clear out imports
         void deleteDirectorySimpleImport() {
             rewriteRun(
               //language=java
