@@ -71,4 +71,34 @@ class PlexusFileUtilsTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void deleteDirectoryMinimal() {
+        rewriteRun(
+          spec -> spec.recipes(
+            new PlexusFileUtilsRecipes.DeleteDirectoryStringRecipe()
+          ),
+          //language=java
+          java(
+            """
+              import java.io.File;
+              import java.io.IOException;
+              class Test {
+                  void test() throws IOException {
+                      org.codehaus.plexus.util.FileUtils.deleteDirectory("test");
+                  }
+              }
+              """,
+            """
+              import java.io.File;
+              import java.io.IOException;
+              class Test {
+                  void test() throws IOException {
+                      org.apache.commons.io.FileUtils.deleteDirectory("test");
+                  }
+              }
+              """
+          )
+        );
+    }
 }
