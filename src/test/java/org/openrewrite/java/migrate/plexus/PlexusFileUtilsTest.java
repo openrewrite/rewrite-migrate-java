@@ -58,7 +58,7 @@ class PlexusFileUtilsTest implements RewriteTest {
                       File file = new File("test");
                       FileUtils.deleteDirectory("test");
                       org.apache.commons.io.FileUtils.deleteDirectory(new File("test"));
-                      org.apache.commons.io.FileUtils.deleteDirectory(test);
+                      org.apache.commons.io.FileUtils.deleteDirectory(file);
                   }
               }
               """
