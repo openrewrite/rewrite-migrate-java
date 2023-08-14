@@ -49,13 +49,13 @@ public class ApacheCommonsStringUtils {
 
     public static class Equals {
         @BeforeTemplate
-        boolean before(String s) {
-            return StringUtils.equals(s, "string");
+        boolean before(String s, String other) {
+            return StringUtils.equals(s, other);
         }
 
         @AfterTemplate
-        boolean after(String s) {
-            return s.equals("string");
+        boolean after(String s, String other) {
+            return Objects.equals(s, other);
         }
     }
 
@@ -73,13 +73,13 @@ public class ApacheCommonsStringUtils {
 
     public static class Replace {
         @BeforeTemplate
-        String before(String s) {
-            return StringUtils.replace(s, "o", "z");
+        String before(String s, String target, String replacement) {
+            return StringUtils.replace(s, target, replacement);
         }
 
         @AfterTemplate
-        String after(String s) {
-            return s.replaceAll("o", "z");
+        String after(String s, String target, String replacement) {
+            return s.replaceAll(target, replacement);
         }
     }
 
@@ -97,13 +97,13 @@ public class ApacheCommonsStringUtils {
 
     public static class StripEnd {
         @BeforeTemplate
-        String before(String s) {
-            return StringUtils.stripEnd(s, "suffix");
+        String before(String s, String suffix) {
+            return StringUtils.stripEnd(s, suffix);
         }
 
         @AfterTemplate
-        String after(String s) {
-            return s.endsWith("suffix") ? s.substring(0, s.lastIndexOf("suffix")) : s;
+        String after(String s, String suffix) {
+            return s.endsWith(suffix) ? s.substring(0, s.lastIndexOf(suffix)) : s;
         }
     }
 
@@ -169,13 +169,13 @@ public class ApacheCommonsStringUtils {
 
     public static class EndsWithIgnoreCase {
         @BeforeTemplate
-        boolean before(String s) {
-            return StringUtils.endsWithIgnoreCase(s, "suffix");
+        boolean before(String s, String suffix) {
+            return StringUtils.endsWithIgnoreCase(s, suffix);
         }
 
         @AfterTemplate
-        boolean after(String s) {
-            return s.toUpperCase().endsWith("suffix".toUpperCase());
+        boolean after(String s, String suffix) {
+            return s.toUpperCase().endsWith(suffix.toUpperCase());
         }
     }
 
@@ -204,13 +204,13 @@ public class ApacheCommonsStringUtils {
 
     public static class Left {
         @BeforeTemplate
-        String before(String s) {
-            return StringUtils.left(s, 5);
+        String before(String s, int l) {
+            return StringUtils.left(s, l);
         }
 
         @AfterTemplate
-        String after(String s) {
-            return s.substring(0, 5);
+        String after(String s, int l) {
+            return s == null ? null : s.substring(0, l);
         }
     }
 
@@ -240,13 +240,13 @@ public class ApacheCommonsStringUtils {
 
     public static class ReplaceOnce {
         @BeforeTemplate
-        String before(String s) {
-            return StringUtils.replaceOnce(s, "search", "replacement");
+        String before(String s, String search, String replacement) {
+            return StringUtils.replaceOnce(s, search, replacement);
         }
 
         @AfterTemplate
-        String after(String s) {
-            return s.replaceFirst(Pattern.quote("search"), "replacement");
+        String after(String s, String search, String replacement) {
+            return s.replaceFirst(Pattern.quote(search), replacement);
         }
     }
 
@@ -264,37 +264,37 @@ public class ApacheCommonsStringUtils {
 
     public static class Contains {
         @BeforeTemplate
-        boolean before(String s) {
-            return StringUtils.contains(s, "search");
+        boolean before(String s, String search) {
+            return StringUtils.contains(s, search);
         }
 
         @AfterTemplate
-        boolean after(String s) {
-            return s.contains("search");
+        boolean after(String s, String search) {
+            return s.contains(search);
         }
     }
 
     public static class Substring {
         @BeforeTemplate
-        String before(String s) {
-            return StringUtils.substring(s, 1, 4);
+        String before(String s, int l, int w) {
+            return StringUtils.substring(s, l, w);
         }
 
         @AfterTemplate
-        String after(String s) {
-            return s.substring(1, 4);
+        String after(String s, int l, int w) {
+            return s.substring(l, w);
         }
     }
 
     public static class StartsWith {
         @BeforeTemplate
-        boolean before(String s) {
-            return StringUtils.startsWith(s, "prefix");
+        boolean before(String s, String prefix) {
+            return StringUtils.startsWith(s, prefix);
         }
 
         @AfterTemplate
-        boolean after(String s) {
-            return s.startsWith("prefix");
+        boolean after(String s, String prefix) {
+            return s.startsWith(prefix);
         }
     }
 
@@ -312,49 +312,49 @@ public class ApacheCommonsStringUtils {
 
     public static class EqualsIgnoreCase {
         @BeforeTemplate
-        boolean before(String s) {
-            return StringUtils.equalsIgnoreCase(s, "other");
+        boolean before(String s, String other) {
+            return StringUtils.equalsIgnoreCase(s, other);
         }
 
         @AfterTemplate
-        boolean after(String s) {
-            return s.equalsIgnoreCase("other");
+        boolean after(String s, String other) {
+            return s.equalsIgnoreCase(other);
         }
     }
 
     public static class ReplaceTest {
         @BeforeTemplate
-        String before(String s) {
-            return StringUtils.replace(s, "target", "replacement");
+        String before(String s, String target, String replacement) {
+            return StringUtils.replace(s, target, replacement);
         }
 
         @AfterTemplate
-        String after(String s) {
-            return s.replaceAll("target", "replacement");
+        String after(String s, String target, String replacement) {
+            return s.replaceAll(target, replacement);
         }
     }
 
     public static class Repeat {
         @BeforeTemplate
-        String before(String s) {
-            return StringUtils.repeat(s, 5);
+        String before(String s, int l) {
+            return StringUtils.repeat(s, l);
         }
 
         @AfterTemplate
-        String after(String s) {
-            return new String(new char[5]).replace("\0", s);
+        String after(String s, int l) {
+            return new String(new char[l]).replace("\0", s);
         }
     }
 
     public static class Overlay {
         @BeforeTemplate
-        String before(String s) {
-            return StringUtils.overlay(s, "overlay", 2, 5);
+        String before(String s, int w, int l, String overlay) {
+            return StringUtils.overlay(s, overlay, w, l);
         }
 
         @AfterTemplate
-        String after(String s) {
-            return s.substring(0, 2) + "overlay" + s.substring(5);
+        String after(String s, int w, int l, String overlay) {
+            return s.substring(0, w) + overlay + s.substring(l);
         }
     }
 

@@ -171,9 +171,11 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
             }
             """,
           """
+            import java.util.Objects;
+            
             class Foo {
                 String in = "foo";
-                boolean out = in.equals("string");
+                boolean out = Objects.equals(in, "string");
             }
             """
           )
