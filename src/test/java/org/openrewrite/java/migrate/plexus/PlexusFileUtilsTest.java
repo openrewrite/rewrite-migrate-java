@@ -32,8 +32,12 @@ class PlexusFileUtilsTest implements RewriteTest {
     }
 
     @Test
-    void uberTest() {
+    void deleteDirectory() {
         rewriteRun(
+          spec -> spec.recipes(
+            new PlexusFileUtilsRecipes.DeleteDirectoryFileRecipe(),
+            new PlexusFileUtilsRecipes.DeleteDirectoryStringRecipe()
+          ),
           //language=java
           java(
             """
@@ -46,6 +50,7 @@ class PlexusFileUtilsTest implements RewriteTest {
                       FileUtils.deleteDirectory("test");
                       org.codehaus.plexus.util.FileUtils.deleteDirectory("test");
                       org.codehaus.plexus.util.FileUtils.deleteDirectory(file);
+                      FileUtils.dirname("/foo/bar"); // Unused
                   }
               }
               """,
@@ -59,6 +64,7 @@ class PlexusFileUtilsTest implements RewriteTest {
                       FileUtils.deleteDirectory("test");
                       org.apache.commons.io.FileUtils.deleteDirectory(new File("test"));
                       org.apache.commons.io.FileUtils.deleteDirectory(file);
+                      FileUtils.dirname("/foo/bar"); // Unused
                   }
               }
               """
