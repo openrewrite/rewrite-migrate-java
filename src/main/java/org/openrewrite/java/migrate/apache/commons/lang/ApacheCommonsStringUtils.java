@@ -19,8 +19,10 @@ import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 @SuppressWarnings("unused")
 public class ApacheCommonsStringUtils {
@@ -386,6 +388,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    @SuppressWarnings("ConstantValue")
     private static class TrimToEmpty {
         @BeforeTemplate
         String before(String s) {
@@ -398,6 +401,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    @SuppressWarnings("StringOperationCanBeSimplified")
     private static class SubstringAfter {
         @BeforeTemplate
         String before(String s, String sep) {
@@ -431,6 +435,173 @@ public class ApacheCommonsStringUtils {
         @AfterTemplate
         String after(String s, int p, int l) {
             return p + l < s.length() ? s.substring(p, p + l) : s.substring(p, s.length() - 1);
+        }
+    }
+
+    private static class StripStart {
+        @BeforeTemplate
+        String before(String s, String chars) {
+            return StringUtils.stripStart(s, chars);
+        }
+
+        @AfterTemplate
+        String after(String s, String chars) {
+            return s.startsWith(chars) ? s.substring(chars.length()) : s;
+        }
+    }
+
+    private static class Uncapitalize {
+        @BeforeTemplate
+        String before(String s) {
+            return StringUtils.uncapitalize(s);
+        }
+
+        @AfterTemplate
+        String after(String s) {
+            return Character.toLowerCase(s.charAt(0)) + s.substring(1);
+        }
+    }
+
+    private static class Capitalize {
+        @BeforeTemplate
+        String before(String s) {
+            return StringUtils.capitalize(s);
+        }
+
+        @AfterTemplate
+        String after(String s) {
+            return s.substring(0, 1).toUpperCase() + s.substring(1);
+        }
+    }
+
+    //TODO: The test for this recipe fails, think it could be due to a `rewrite-templating` bug
+    private static class Chomp {
+        @BeforeTemplate
+        String before(String s) {
+            return StringUtils.chomp(s);
+        }
+
+        @AfterTemplate
+        String after(String s) {
+            return s.endsWith("\n") ? s.substring(0, s.length() - 1) : s;
+        }
+    }
+
+    // TODO: Similar issues to what LeftPad and RightPad have
+    //private static class Center {
+    //    @BeforeTemplate
+    //    String before(String s, int size) {
+    //        return StringUtils.center(s, size);
+    //    }
+
+    //    @AfterTemplate
+    //    String after(String s, int size) {
+    //        return String.format("%" + size + "s" + s + "%" + size + "s", "", "");
+    //    }
+    //}
+
+    private static class RemoveEnd {
+        @BeforeTemplate
+        String before(String s, String remove) {
+            return StringUtils.removeEnd(s, remove);
+        }
+
+        @AfterTemplate
+        String after(String s, String remove) {
+            return s.endsWith(remove) ? s.substring(0, s.length() - remove.length()) : s;
+        }
+    }
+
+    private static class CountMatches {
+        @BeforeTemplate
+        int before(String s, String pattern) {
+            return StringUtils.countMatches(s, pattern);
+        }
+
+        @AfterTemplate
+        int after(String s, String pattern) {
+            return s.length() - s.replace(pattern, "").length();
+        }
+    }
+
+    @SuppressWarnings("ConstantValue")
+    private static class TrimToNull {
+        @BeforeTemplate
+        String before(String s) {
+            return StringUtils.trimToNull(s);
+        }
+
+        @AfterTemplate
+        String after(String s) {
+            return s == null || s.trim() == null ? null : s.trim();
+        }
+    }
+
+    private static class IndexOfAny {
+        @BeforeTemplate
+        int before(String s, String search) {
+            return StringUtils.indexOfAny(s, search);
+        }
+
+        @AfterTemplate
+        int after(String s, String search) {
+            return IntStream.range(0, s.length())
+                    .filter(i -> search.indexOf(s.charAt(i)) >= 0)
+                    .findFirst()
+                    .orElse(-1);
+        }
+    }
+
+    private static class SwapCase {
+        @BeforeTemplate
+        String before(String s, char sep) {
+            return StringUtils.swapCase(s);
+        }
+
+        @AfterTemplate
+        String after(String s) {
+            return s.chars()
+                    .map(c -> Character.isUpperCase(c) ? Character.toLowerCase(c) : Character.toUpperCase(c))
+                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                    .toString();
+        }
+    }
+
+    //private static class StripAll {
+    //    @BeforeTemplate
+    //    String[] before(String[] s) {
+    //        return StringUtils.stripAll(s);
+    //    }
+
+    //    @AfterTemplate
+    //    String[] after(String[] s) {
+    //        return Arrays.stream(s)
+    //                .map(String::trim)
+    //                .toArray(String[]::new);
+    //    }
+    //}
+
+    private static class IsAlpha {
+        @BeforeTemplate
+        boolean before(String s) {
+            return StringUtils.isAlpha(s);
+        }
+
+        @AfterTemplate
+        boolean after(String s) {
+            return s.chars().allMatch(Character::isLetter);
+        }
+    }
+
+    private static class IsAlphaSpace {
+        @BeforeTemplate
+        boolean before(String s) {
+            return StringUtils.isAlphaSpace(s);
+        }
+
+        @AfterTemplate
+        boolean after(String s) {
+            return s.matches("[a-zA-Z\\s]+");
         }
     }
 }
