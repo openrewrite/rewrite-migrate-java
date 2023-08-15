@@ -162,4 +162,36 @@ class PlexusFileUtilsTest implements RewriteTest {
             );
         }
     }
+
+    @Nested
+    class GetFile {
+        @Test
+        void getFile() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import org.codehaus.plexus.util.FileUtils;
+                                    
+                  import java.io.File;
+                      
+                  class Test {
+                      File test(String fileName) throws Exception {
+                          return FileUtils.getFile(fileName);
+                      }
+                  }
+                  """,
+                """
+                  import java.io.File;
+                      
+                  class Test {
+                      File test(String fileName) throws Exception {
+                          return new File(fileName);
+                      }
+                  }
+                  """
+              )
+            );
+        }
+    }
 }

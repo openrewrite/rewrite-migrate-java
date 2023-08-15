@@ -24,17 +24,7 @@ import java.io.IOException;
 
 class PlexusFileUtils {
 
-    static class DeleteDirectoryString {
-        @BeforeTemplate
-        void before(String dir) throws IOException {
-            FileUtils.deleteDirectory(dir);
-        }
-
-        @AfterTemplate
-        void after(String dir) throws IOException {
-            org.apache.commons.io.FileUtils.deleteDirectory(new File(dir));
-        }
-    }
+    // https://github.com/codehaus-plexus/plexus-utils/blob/master/src/main/java/org/codehaus/plexus/util/StringUtils.java
 
     static class DeleteDirectoryFile {
         @BeforeTemplate
@@ -48,6 +38,18 @@ class PlexusFileUtils {
         }
     }
 
+    static class DeleteDirectoryString {
+        @BeforeTemplate
+        void before(String dir) throws IOException {
+            FileUtils.deleteDirectory(dir);
+        }
+
+        @AfterTemplate
+        void after(String dir) throws IOException {
+            org.apache.commons.io.FileUtils.deleteDirectory(new File(dir));
+        }
+    }
+
     static class FileExistsString {
         @BeforeTemplate
         boolean before(String fileName) throws IOException {
@@ -57,6 +59,18 @@ class PlexusFileUtils {
         @AfterTemplate
         boolean after(String fileName) throws IOException {
             return new File(fileName).exists();
+        }
+    }
+
+    static class GetFile {
+        @BeforeTemplate
+        File before(String fileName) throws IOException {
+            return FileUtils.getFile(fileName);
+        }
+
+        @AfterTemplate
+        File after(String fileName) throws IOException {
+            return new File(fileName);
         }
     }
 
