@@ -35,7 +35,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         String after(String s, int width) {
-            return s.substring(0, Math.min(s.length(), width));
+            return s == null || s.length() <= width ? s : s.substring(0, width - 3) + "...";
         }
     }
 
