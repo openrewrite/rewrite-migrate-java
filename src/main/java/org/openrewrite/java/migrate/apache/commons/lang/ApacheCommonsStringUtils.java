@@ -169,7 +169,7 @@ public class ApacheCommonsStringUtils {
         int after(String s, String search) {
             return IntStream.range(0, s.length())
                     .filter(i -> search.indexOf(s.charAt(i)) >= 0)
-                    .findFirst()
+                    .min()
                     .orElse(-1);
         }
     }
