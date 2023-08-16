@@ -75,12 +75,6 @@ public class UseTextBlocks extends Recipe {
         return Duration.ofMinutes(3);
     }
 
-    private static boolean allLiterals(Expression exp) {
-        return isRegularStringLiteral(exp) || exp instanceof J.Binary
-                && ((J.Binary) exp).getOperator() == J.Binary.Type.Addition
-                && allLiterals(((J.Binary) exp).getLeft()) && allLiterals(((J.Binary) exp).getRight());
-    }
-
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new HasJavaVersion("17", true), new JavaVisitor<ExecutionContext>() {
@@ -179,6 +173,12 @@ public class UseTextBlocks extends Recipe {
                         String.format("\"\"\"%s\"\"\"", content), null, JavaType.Primitive.String);
             }
         });
+    }
+
+    private static boolean allLiterals(Expression exp) {
+        return isRegularStringLiteral(exp) || exp instanceof J.Binary
+                && ((J.Binary) exp).getOperator() == J.Binary.Type.Addition
+                && allLiterals(((J.Binary) exp).getLeft()) && allLiterals(((J.Binary) exp).getRight());
     }
 
     private static boolean flatAdditiveStringLiterals(Expression expression,
