@@ -131,7 +131,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s, String suffix) {
-            return s.regionMatches(true, 0, suffix, 0, suffix.length());
+            return s.regionMatches(true, s.length() - suffix.length(), suffix, 0, suffix.length());
         }
     }
 
