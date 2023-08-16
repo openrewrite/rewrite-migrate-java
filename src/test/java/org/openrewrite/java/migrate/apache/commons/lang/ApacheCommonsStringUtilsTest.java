@@ -33,6 +33,8 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
           .recipe(new ApacheCommonsStringUtilsRecipes());
     }
 
+    // TODO: Test for putting parentheses around replacements
+
     @Test
     @DocumentExample
     void ubertest() {
@@ -97,9 +99,9 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       outString = 2 + 4 < in.length() ? in.substring(2, 2 + 4) : in.substring(2, in.length() - 1);                 
                       outString = in.startsWith("chars") ? in.substring("chars".length()) : in;
                       outString = Character.toLowerCase(in.charAt(0)) + in.substring(1);
-                      outString = in.substring(0, 1).toUpperCase() + in.substring(1);
+                      outString = in == null ? null : in.substring(0, 1).toUpperCase() + in.substring(1);
                       outString = in.endsWith("remove") ? in.substring(0, in.length() - "remove".length()) : in;
-                      int outInt = in.length() - in.replace("pattern", "").length();
+                      int outInt = in.chars().filter(c -> c == "pattern").count();
                       outString = in == null || in.trim() == null ? null : in.trim();
                       outInt = IntStream.range(0, in.length()).filter((i) -> "search".indexOf(in.charAt(i)) >= 0).findFirst().orElse(-1);
                       outString = in.chars().map((c) -> Character.isUpperCase(c) ? Character.toLowerCase(c) : Character.toUpperCase(c)).collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
