@@ -70,6 +70,56 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
+    void preserveTrailingWhiteSpaces() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                      String query = "SELECT * FROM    \\n" +
+                          "my_table    \\n" +
+                          "WHERE something = 1; ";
+              }
+              """,
+            """
+              class Test {
+                      String query = \"""
+                          SELECT * FROM   \\s
+                          my_table   \\s
+                          WHERE something = 1; \\
+                          \""";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void preserveTrailingWhiteSpaces2() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  String color = "red   \\n" +
+                                 "green \\n" +
+                                 "blue  \\n";
+              }
+              """,
+            """
+              class Test {
+                  String color = \"""
+                                 red  \\s
+                                 green\\s
+                                 blue \\s
+                                 ""\";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void indentsAlignment() {
         rewriteRun(
           //language=java
@@ -330,56 +380,6 @@ class UseTextBlocksTest implements RewriteTest {
             singletonList(with.apply(buildTabsAndIndents(tabSize)))
           )
         )));
-    }
-
-    @Test
-    void preserveTrailingWhiteSpaces2() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Test {
-                  String color = "red   \\n" +
-                                 "green \\n" +
-                                 "blue  \\n";
-              }
-              """,
-            """
-              class Test {
-                  String color = \"""
-                                 red  \\s
-                                 green\\s
-                                 blue \\s
-                                 ""\";
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void preserveTrailingWhiteSpaces() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Test {
-                      String query = "SELECT * FROM    \\n" +
-                          "my_table    \\n" +
-                          "WHERE something = 1; ";
-              }
-              """,
-            """
-              class Test {
-                      String query = \"""
-                          SELECT * FROM   \\s
-                          my_table   \\s
-                          WHERE something = 1; \\
-                          \""";
-              }
-              """
-          )
-        );
     }
 
     private static TabsAndIndentsStyle buildTabsAndIndents(int tabSize) {
