@@ -75,16 +75,10 @@ public class UseTextBlocks extends Recipe {
         return Duration.ofMinutes(3);
     }
 
-    private static boolean allLiterals(Expression left, Expression right) {
-        boolean leftAll = isRegularStringLiteral(left) || left instanceof J.Binary
-                && ((J.Binary) left).getOperator() == J.Binary.Type.Addition
-                && allLiterals(((J.Binary) left).getLeft(), ((J.Binary) left).getRight());
-        if (!leftAll) {
-            return false;
-        }
-        return isRegularStringLiteral(right) || right instanceof J.Binary
-                && ((J.Binary) right).getOperator() == J.Binary.Type.Addition
-                && allLiterals(((J.Binary) right).getLeft(), ((J.Binary) right).getRight());
+    private static boolean allLiterals(Expression exp) {
+        return isRegularStringLiteral(exp) || exp instanceof J.Binary
+                && ((J.Binary) exp).getOperator() == J.Binary.Type.Addition
+                && allLiterals(((J.Binary) exp).getLeft()) && allLiterals(((J.Binary) exp).getRight());
     }
 
     @Override
@@ -97,7 +91,7 @@ public class UseTextBlocks extends Recipe {
                 StringBuilder contentSb = new StringBuilder();
                 StringBuilder concatenationSb = new StringBuilder();
 
-                boolean allLiterals = allLiterals(binary.getLeft(), binary.getRight());
+                boolean allLiterals = allLiterals(binary);
                 if (!allLiterals) {
                     return binary; // Not super.visitBinary(binary, ctx) because we don't want to visit the children
                 }
