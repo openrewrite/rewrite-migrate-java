@@ -70,40 +70,6 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
-    void preserveTrailingWhiteSpaces() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Test {
-                      String query = "SELECT * FROM    \\n" +
-                          "my_table    \\n" +
-                          "WHERE something = 1; ";
-              }
-              """,
-            """
-              class Test {
-                      String query = \"""
-                          SELECT * FROM   \\s
-                          my_table   \\s
-                          WHERE something = 1; \\
-                          \""";
-              }
-              """
-          )
-        );
-    }
-
-    private static Consumer<RecipeSpec> tabsAndIndents(UnaryOperator<TabsAndIndentsStyle> with, int tabSize) {
-        return spec -> spec.parser(JavaParser.fromJavaVersion().styles(singletonList(
-          new NamedStyles(
-            randomId(), "TabsOnlyFile", "TabsOnlyFile", "tabSize is x", emptySet(),
-            singletonList(with.apply(buildTabsAndIndents(tabSize)))
-          )
-        )));
-    }
-
-    @Test
     void indentsAlignment() {
         rewriteRun(
           //language=java
@@ -357,6 +323,15 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
+    private static Consumer<RecipeSpec> tabsAndIndents(UnaryOperator<TabsAndIndentsStyle> with, int tabSize) {
+        return spec -> spec.parser(JavaParser.fromJavaVersion().styles(singletonList(
+          new NamedStyles(
+            randomId(), "TabsOnlyFile", "TabsOnlyFile", "tabSize is x", emptySet(),
+            singletonList(with.apply(buildTabsAndIndents(tabSize)))
+          )
+        )));
+    }
+
     @Test
     void preserveTrailingWhiteSpaces2() {
         rewriteRun(
@@ -376,6 +351,31 @@ class UseTextBlocksTest implements RewriteTest {
                                  green\\s
                                  blue \\s
                                  ""\";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void preserveTrailingWhiteSpaces() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                      String query = "SELECT * FROM    \\n" +
+                          "my_table    \\n" +
+                          "WHERE something = 1; ";
+              }
+              """,
+            """
+              class Test {
+                      String query = \"""
+                          SELECT * FROM   \\s
+                          my_table   \\s
+                          WHERE something = 1; \\
+                          \""";
               }
               """
           )
