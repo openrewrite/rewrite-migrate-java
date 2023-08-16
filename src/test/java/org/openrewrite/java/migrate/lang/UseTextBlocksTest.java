@@ -24,6 +24,7 @@ import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.style.NamedStyles;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
@@ -31,7 +32,8 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.Tree.randomId;
-import static org.openrewrite.java.Assertions.*;
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class UseTextBlocksTest implements RewriteTest {
 
@@ -95,6 +97,7 @@ class UseTextBlocksTest implements RewriteTest {
     @Test
     void preserveTrailingWhiteSpaces2() {
         rewriteRun(
+          //language=java
           java(
             """
               class Test {
@@ -372,11 +375,11 @@ class UseTextBlocksTest implements RewriteTest {
 
     private static Consumer<RecipeSpec> tabsAndIndents(UnaryOperator<TabsAndIndentsStyle> with, int tabSize) {
         return spec -> spec.parser(JavaParser.fromJavaVersion().styles(singletonList(
-            new NamedStyles(
-              randomId(), "TabsOnlyFile", "TabsOnlyFile", "tabSize is x", emptySet(),
-              singletonList(with.apply(buildTabsAndIndents(tabSize)))
-            )
-          )));
+          new NamedStyles(
+            randomId(), "TabsOnlyFile", "TabsOnlyFile", "tabSize is x", emptySet(),
+            singletonList(with.apply(buildTabsAndIndents(tabSize)))
+          )
+        )));
     }
 
     private static TabsAndIndentsStyle buildTabsAndIndents(int tabSize) {
@@ -500,6 +503,7 @@ class UseTextBlocksTest implements RewriteTest {
     @Test
     void newlineAtBeginningOfLines() {
         rewriteRun(
+          //language=java
           java(
             """
               class A {
@@ -541,6 +545,7 @@ class UseTextBlocksTest implements RewriteTest {
     @Test
     void consecutiveNewLines() {
         rewriteRun(
+          //language=java
           java(
             """
               class Test {
@@ -693,6 +698,7 @@ class UseTextBlocksTest implements RewriteTest {
     @Test
     void eightQuotes() {
         rewriteRun(
+          //language=java
           java(
             """
               class Test {
@@ -758,10 +764,12 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @Disabled
     @Test
-    void grouping() {
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/260")
+        //@Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/261")
+    void doNotPartiallyReplaceWithTextBlocks() {
         rewriteRun(
+          //language=java
           java(
             """
               public class Test {
@@ -779,23 +787,30 @@ class UseTextBlocksTest implements RewriteTest {
                           "AFTER the variable. ";
                   }
               }
-              """,
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/261")
+    void doNotPartiallyReplaceWithTextBlocksWithIntLiteral() {
+        rewriteRun(
+          //language=java
+          java(
             """
               public class Test {
                   public void method() {
-                      int variable = 1;
                       String stringWithVariableInIt =
-                          \"""
-                          This \\
-                          is  \\
-                          text \\
-                          BEFORE the variable \\
-                          \"""
-                          This \\
-                          is \\
-                          text \\
-                          AFTER the variable. \\
-                          \""";
+                          "This " +
+                          "is  " +
+                          "text " +
+                          "BEFORE the variable " +
+                          1 +
+                          "This " +
+                          "is  " +
+                          "text " +
+                          "AFTER the variable. ";
                   }
               }
               """
