@@ -33,7 +33,10 @@ import org.openrewrite.marker.Markers;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.openrewrite.Tree.randomId;
@@ -72,6 +75,18 @@ public class UseTextBlocks extends Recipe {
         return Duration.ofMinutes(3);
     }
 
+    private static boolean allLiterals(Expression left, Expression right) {
+        boolean leftAll = isRegularStringLiteral(left) || left instanceof J.Binary
+                && ((J.Binary) left).getOperator() == J.Binary.Type.Addition
+                && allLiterals(((J.Binary) left).getLeft(), ((J.Binary) left).getRight());
+        if (!leftAll) {
+            return false;
+        }
+        return isRegularStringLiteral(right) || right instanceof J.Binary
+                && ((J.Binary) right).getOperator() == J.Binary.Type.Addition
+                && allLiterals(((J.Binary) right).getLeft(), ((J.Binary) right).getRight());
+    }
+
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new HasJavaVersion("17", true), new JavaVisitor<ExecutionContext>() {
@@ -81,6 +96,11 @@ public class UseTextBlocks extends Recipe {
 
                 StringBuilder contentSb = new StringBuilder();
                 StringBuilder concatenationSb = new StringBuilder();
+
+                boolean allLiterals = allLiterals(binary.getLeft(), binary.getRight());
+                if (!allLiterals) {
+                    return binary; // Not super.visitBinary(binary, ctx) because we don't want to visit the children
+                }
 
                 boolean flattenable = flatAdditiveStringLiterals(binary, stringLiterals, contentSb, concatenationSb);
                 if (!flattenable) {
@@ -133,7 +153,7 @@ public class UseTextBlocks extends Recipe {
                 boolean useTab = tabsAndIndentsStyle.getUseTabCharacter();
                 int tabSize = tabsAndIndentsStyle.getTabSize();
 
-                String indentation = getIndents(concatenation.toString(), useTab, tabSize);
+                String indentation = getIndents(concatenation, useTab, tabSize);
 
                 boolean isEndsWithNewLine = content.endsWith("\n");
 
@@ -194,7 +214,6 @@ public class UseTextBlocks extends Recipe {
     private static boolean isRegularStringLiteral(Expression expr) {
         if (expr instanceof J.Literal) {
             J.Literal l = (J.Literal) expr;
-
             return TypeUtils.isString(l.getType()) &&
                     l.getValueSource() != null &&
                     !l.getValueSource().startsWith("\"\"\"");
