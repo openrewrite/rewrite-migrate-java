@@ -531,10 +531,10 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         String after(String s) {
-            return s == null ? null : s.chars()
+            return (s == null ? null : s.chars()
                     .map(c -> Character.isUpperCase(c) ? Character.toLowerCase(c) : Character.toUpperCase(c))
                     .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                    .toString();
+                    .toString());
         }
     }
 
