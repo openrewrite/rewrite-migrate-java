@@ -256,7 +256,28 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
             """
               class Foo {
                   void test(String s) {
-                      String test = !(s != null && !s.equalsIgnoreCase("other"));
+                      String test = !(s != null && s.equalsIgnoreCase("other"));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void inputMethodsNotCalledTwice() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+                            
+              class Foo {
+                  void test(String s) {
+                      String test = StringUtils.strip(bar()).toString();
+                  }
+                  String bar() {
+                      return "bar";
                   }
               }
               """
