@@ -43,100 +43,141 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
           java(
             """
               import org.apache.commons.lang3.StringUtils;
-                            
+
               class Foo {
-                  void test() {
+                  void bar() {
                       String in = "foo";
-                      
-                      String str = StringUtils.abbreviate(in, 10);
-                      str = StringUtils.capitalize(in);
-                      str = StringUtils.chop(in);
-                      str = StringUtils.contains(in, "search");
-                      str = StringUtils.countMatches(in, "|");
-                      str = StringUtils.defaultString(in);
-                      str = StringUtils.deleteWhitespace(in);
-                      boolean bool = StringUtils.endsWithIgnoreCase(in, "suffix");
-                      bool = StringUtils.equalsIgnoreCase(in);
+
+                      // Reuse output variables for readability
+                      String[] array;
+                      boolean bool;
+                      int integer;
+                      String string;
+
+                      // Test all methods in alphabetical order to only execute the slow recipes once
+                      string = StringUtils.abbreviate(in, 10);
+                      string = StringUtils.capitalize(in);
+                      string = StringUtils.chop(in);
+
+                      bool = StringUtils.contains(in, "search");
+
+                      integer = StringUtils.countMatches(in, "|");
+
+                      string = StringUtils.defaultString(in);
+                      string = StringUtils.deleteWhitespace(in);
+
+                      bool = StringUtils.endsWithIgnoreCase(in, "suffix");
+                      bool = StringUtils.equalsIgnoreCase(in, "other");
                       bool = StringUtils.equals(in, "other");
-                      str = StringUtils.indexOfAny(in, "search"); // 
+
+                      integer = StringUtils.indexOfAny(in, "search");
+
                       bool = StringUtils.isAlphanumericSpace(in);
                       bool = StringUtils.isAlphanumeric(in);
                       bool = StringUtils.isAlphaSpace(in);
                       bool = StringUtils.isAlpha(in);
                       bool = StringUtils.isEmpty(in);
-                      str = StringUtils.join(in);
-                      str = StringUtils.left(in, 4);
-                      str = StringUtils.lowerCase(in);
-                      str = StringUtils.mid(in, 3, 4);
-                      str = StringUtils.overlay(in, "overlay", 3, 5);
-                      str = StringUtils.remove(in, "r");
-                      str = StringUtils.repeat(in, 4);
-                      str = StringUtils.replaceOnce(in, "search", "replacement");
-                      str = StringUtils.reverse(in);
-                      str = StringUtils.right(in, 5);
-                      str = StringUtils.split(in, ", ");
-                      str = StringUtils.stripEnd(in, "suffix");
-                      str = StringUtils.stripStart(in, "chars");
-                      str = StringUtils.startsWith(in, "prefix");
-                      str = StringUtils.split(in);
-                      str = StringUtils.strip(in);
-                      str = StringUtils.substringAfter(in, "|");
-                      str = StringUtils.substring(in, 2, 4);
-                      str = StringUtils.swapCase(in); //
-                      str = StringUtils.trimToEmpty(in);
-                      str = StringUtils.trimToNull(in);
-                      str = StringUtils.trim(in);
-                      str = StringUtils.upperCase(in);
+
+                      string = StringUtils.join(in);
+                      string = StringUtils.left(in, 4);
+                      string = StringUtils.lowerCase(in);
+                      string = StringUtils.mid(in, 3, 4);
+                      string = StringUtils.overlay(in, "overlay", 3, 5);
+                      string = StringUtils.remove(in, "r");
+                      string = StringUtils.repeat(in, 4);
+                      string = StringUtils.replaceOnce(in, "search", "replacement");
+                      string = StringUtils.reverse(in);
+                      string = StringUtils.right(in, 5);
+
+                      array = StringUtils.split(in, ", ");
+
+                      string = StringUtils.stripEnd(in, "suffix");
+                      string = StringUtils.stripStart(in, "chars");
+
+                      bool = StringUtils.startsWith(in, "prefix");
+
+                      array = StringUtils.split(in);
+
+                      string = StringUtils.strip(in);
+                      string = StringUtils.substringAfter(in, "|");
+                      string = StringUtils.substring(in, 2, 4);
+                      string = StringUtils.swapCase(in);
+                      string = StringUtils.trimToEmpty(in);
+                      string = StringUtils.trimToNull(in);
+                      string = StringUtils.trim(in);
+                      string = StringUtils.upperCase(in);
                   }
               }
               """,
             """
+              import org.apache.commons.lang3.StringUtils;
+
               import java.util.Objects;
+              import java.util.regex.Pattern;
               import java.util.stream.IntStream;
-                            
+
               class Foo {
-                  void test() {
+                  void bar() {
                       String in = "foo";
-                      
-                      String str = in == null || in.length() <= 10 ? in : in.substring(0, 10 - 3) + "...";
-                      str = in == null ? null : in.substring(0, 1).toUpperCase() + in.substring(1);
-                      str = in == null ? null : in.substring(0, in.length() - 1);
-                      str = in == null || "search" == null ? null : in.contains("search");
-                      str = (int) (in == null ? 0 : in.chars().filter(c -> c == "pattern").count());
-                      str = in == null ? null : in.replaceAll("\\s+", "");
-                      boolean bool = in == null ? null : in.replaceAll("\\s+", "");
-                      bool = in.equalsIgnoreCase("other");
+
+                      // Reuse output variables for readability
+                      String[] array;
+                      boolean bool;
+                      int integer;
+                      String string;
+
+                      // Test all methods in alphabetical order to only execute the slow recipes once
+                      string = in == null || in.length() <= 10 ? in : in.substring(0, 10 - 3) + "...";
+                      string = in == null ? null : in.substring(0, 1).toUpperCase() + in.substring(1);
+                      string = in == null ? null : in.substring(0, in.length() - 1);
+
+                      bool = StringUtils.contains(in, "search");
+
+                      integer = StringUtils.countMatches(in, "|");
+
+                      string = in == null ? "" : in;
+                      string = in == null ? null : in.replaceAll("\\s+", "");
+
+                      bool = in != null ? in.regionMatches(true, in.length() - "suffix".length(), "suffix", 0, "suffix".length()) : false;
+                      bool = in == null ? false : in.equalsIgnoreCase("other");
                       bool = Objects.equals(in, "other");
-                      str = Objects.equals(in, "other");
-                      bool = in == null ? false : in.matches("^[a-zA-Z0-9\\s]*$");
-                      bool = in == null ? false : in.chars().allMatch(Character::isAlphabetic);
-                      bool = in == null ? false : in.matches("[a-zA-Z\\s]+");
+
+                      integer = IntStream.range(0, in.length()).filter((i) -> "search".indexOf(in.charAt(i)) >= 0).min().orElse(-1);
+
+                      bool = StringUtils.isAlphanumericSpace(in);
+                      bool = in != null && in.chars().allMatch(Character::isAlphabetic);
+                      bool = StringUtils.isAlphaSpace(in);
                       bool = in == null ? false : in.chars().allMatch(Character::isLetter);
                       bool = in == null || in.isEmpty();
-                      str = in == null ? null : String.join("", in);
-                      str = in == null ? null : in.substring(0, 4);
-                      str = in == null ? null : in.toLowerCase();
-                      str = in == null ? null : (3 + 3 < in.length() ? in.substring(3, 3 + 3) : in.substring(3, in.length() - 1));
-                      str = in == null ? null : in.substring(0, 3) + "overlay" + in.substring(3);
-                      str = in == null ? null : (in.endsWith("remove") ? in.substring(0, in.length() - "remove".length()) : in);
-                      str = in == null ? null : new String(new char[3]).replace("\\0", in);
-                      str = in == null ? null : in.replaceFirst(Pattern.quote("search"), "replacement");
-                      str = in == null ? null : in.replaceAll("target", "replacement");
-                      str = in == null ? null : new StringBuilder(in).reverse().toString();
-                      str = in == null ? null : in.substring(in.length() - l, in.length() - 1);
-                      str = in == null ? null : in.split(", ");
-                      str = in == null ? null : (in.endsWith("suffix") ? in.substring(0, in.lastIndexOf("suffix")) : in);
-                      str = in == null ? null : (in.startsWith("chars") ? in.substring("chars".length()) : in);
-                      str = in == null || "prefix" == null ? null : in.startsWith("prefix");
-                      str = in == null ? null : in.split(" ");
-                      str = in == null ? null : in.trim();
-                      str = in == null ? null : in.substring(in.indexOf("|") + 1, in.length());
-                      str = in == null ? null : in.substring(3, 3);
-                      str = in != null ? in.trim() : "";
-                      str = in == null ? null : (in.trim() == null ? null : in.trim());
-                      str = in == null ? null : in.trim();
-                      str = in == null ? null : in.toUpperCase();
-                      str = in == null ? null : Character.toLowerCase(in.charAt(0)) + in.substring(1);
+
+                      string = StringUtils.join(in);
+                      string = StringUtils.left(in, 4);
+                      string = in == null ? null : in.toLowerCase();
+                      string = StringUtils.mid(in, 3, 4);
+                      string = StringUtils.overlay(in, "overlay", 3, 5);
+                      string = StringUtils.remove(in, "r");
+                      string = StringUtils.repeat(in, 4);
+                      string = in == null ? null : in.replaceFirst(Pattern.quote("search"), "replacement");
+                      string = in == null ? null : new StringBuilder(in).reverse().toString();
+                      string = StringUtils.right(in, 5);
+
+                      array = in == null ? null : in.split(", ");
+
+                      string = in == null ? null : (in.endsWith("suffix") ? in.substring(0, in.lastIndexOf("suffix")) : in);
+                      string = in == null ? null : (in.startsWith("chars") ? in.substring("chars".length()) : in);
+
+                      bool = StringUtils.startsWith(in, "prefix");
+
+                      array = in == null ? null : in.split(" ");
+
+                      string = in == null ? null : in.trim();
+                      string = in == null ? null : in.substring(in.indexOf("|") + 1, in.length());
+                      string = in == null ? null : in.substring(2, 4);
+                      string = in == null ? null : in.chars().map((c) -> Character.isUpperCase(c) ? Character.toLowerCase(c) : Character.toUpperCase(c)).collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
+                      string = in != null ? in.trim() : "";
+                      string = in == null ? null : (in.trim() == null ? null : in.trim());
+                      string = in == null ? null : in.trim();
+                      string = in == null ? null : in.toUpperCase();
                   }
               }
               """
@@ -177,7 +218,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
           java(
             """
               import org.apache.commons.lang3.StringUtils;
-              
+                            
               class Foo {
                   String in = "foo";
                   String out = StringUtils.leftPad(in, 4);
@@ -200,7 +241,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
           java(
             """
               import org.apache.commons.lang3.StringUtils;
-              
+                            
               class Foo {
                   void test(String s) {
                       String test = StringUtils.chomp(s);
@@ -226,7 +267,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
           java(
             """
               import org.apache.commons.lang3.StringUtils;
-              
+                            
               class Foo {
                   void test(String s) {
                       String test = StringUtils.strip(s).toString();

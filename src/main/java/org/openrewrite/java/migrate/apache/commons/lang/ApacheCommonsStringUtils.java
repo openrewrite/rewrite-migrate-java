@@ -19,7 +19,6 @@ import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -186,7 +185,7 @@ public class ApacheCommonsStringUtils {
     //    }
 
     //    boolean after(String s) {
-    //        return s == null ? false : s.matches("^[a-zA-Z0-9\\s]*$");
+    //        return s != null && s.matches("^[a-zA-Z0-9\\s]*$");
     //    }
     //}
 
@@ -198,7 +197,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s) {
-            return s == null ? false : s.chars().allMatch(Character::isAlphabetic);
+            return s != null && s.chars().allMatch(Character::isAlphabetic);
         }
     }
 
@@ -211,7 +210,7 @@ public class ApacheCommonsStringUtils {
 
     //    @AfterTemplate
     //    boolean after(String s) {
-    //        return s == null ? false : s.matches("[a-zA-Z\\s]+");
+    //        return s != null && s.matches("[a-zA-Z\\s]+");
     //    }
     //}
 
@@ -260,7 +259,6 @@ public class ApacheCommonsStringUtils {
     //    String before(String s, int l) {
     //        return StringUtils.leftPad(s, l);
     //    }
-
     //    @AfterTemplate
     //    String after(String s, int l) {
     //        return String.format("%" + l + "s", s);
@@ -272,24 +270,23 @@ public class ApacheCommonsStringUtils {
     //    String before(String s, int l) {
     //        return StringUtils.rightPad(s, l);
     //    }
-
     //    @AfterTemplate
     //    String after(String s, int l) {
     //        return String.format("%" + (-l) + "s", s);
     //    }
     //}
 
-    private static class Join {
-        @BeforeTemplate
-        String before(String s) {
-            return StringUtils.join(s);
-        }
-
-        @AfterTemplate
-        String after(String s) {
-            return s == null ? null : String.join("", s);
-        }
-    }
+    //private static class Join {
+    //    @BeforeTemplate
+    //    String before(String s) {
+    //        return StringUtils.join(s);
+    //    }
+    //
+    //    @AfterTemplate
+    //    String after(String s) {
+    //        return s == null ? null : String.join("", s);
+    //    }
+    //}
 
     // NOTE: not sure if accurate replacement
     @SuppressWarnings("ConstantValue")
@@ -368,17 +365,17 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    private static class Repeat {
-        @BeforeTemplate
-        String before(String s, int l) {
-            return StringUtils.repeat(s, l);
-        }
-
-        @AfterTemplate
-        String after(String s, int l) {
-            return s == null ? null : new String(new char[l]).replace("\0", s);
-        }
-    }
+    //private static class Repeat {
+    //    @BeforeTemplate
+    //    String before(String s, int l) {
+    //        return StringUtils.repeat(s, l);
+    //    }
+    //
+    //    @AfterTemplate
+    //    String after(String s, int l) {
+    //        return s == null ? null : new String(new char[l]).replace("\0", s);
+    //    }
+    //}
 
     private static class ReplaceOnce {
         @BeforeTemplate
