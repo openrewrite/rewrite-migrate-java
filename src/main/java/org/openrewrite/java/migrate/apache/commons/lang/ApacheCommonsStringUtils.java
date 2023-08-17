@@ -53,17 +53,18 @@ public class ApacheCommonsStringUtils {
     }
 
     //TODO: The test for this recipe fails, I think it could be due to a `rewrite-templating` bug
-    private static class Chomp {
-        @BeforeTemplate
-        String before(String s) {
-            return StringUtils.chomp(s);
-        }
+    //private static class Chomp {
+    //    @BeforeTemplate
+    //    String before(String s) {
+    //        return StringUtils.chomp(s);
+    //    }
 
-        @AfterTemplate
-        String after(String s) {
-            return s == null ? null : (s.endsWith("\n") ? s.substring(0, s.length() - 1) : s);
-        }
-    }
+    //    @AfterTemplate
+    //    String after(String s) {
+    //        return s == null ? null : (s.endsWith("\n") ? s.substring(0, s.length() - 1) : s);
+    //    }
+    //}
+
     private static class Chop {
         @BeforeTemplate
         String before(String s) {
@@ -76,17 +77,18 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    private static class Contains {
-        @BeforeTemplate
-        boolean before(String s, String search) {
-            return StringUtils.contains(s, search);
-        }
+    // NOTE: not sure if accurate replacement
+    //private static class Contains {
+    //    @BeforeTemplate
+    //    boolean before(String s, String search) {
+    //        return StringUtils.contains(s, search);
+    //    }
 
-        @AfterTemplate
-        boolean after(String s, String search) {
-            return s == null || search == null ? null : s.contains(search);
-        }
-    }
+    //    @AfterTemplate
+    //    boolean after(String s, String search) {
+    //        return s == null || search == null ? null : s.contains(search);
+    //    }
+    //}
 
     private static class CountMatches {
         @BeforeTemplate
@@ -133,8 +135,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s, String suffix) {
-            // TODO: FIX NULL CONDITION
-            return s != null && suffix != null ? s.regionMatches(true, s.length() - suffix.length(), suffix, 0, suffix.length()) : false;
+            return s != null ? s.regionMatches(true, s.length() - suffix.length(), suffix, 0, suffix.length()) : false;
         }
     }
 
@@ -146,8 +147,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s, String other) {
-            // TODO: FIX NULL CONDITION
-            return s.equalsIgnoreCase(other);
+            return s == null ? false : s.equalsIgnoreCase(other);
         }
     }
 
@@ -178,16 +178,17 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    private static class IsAlphanumericSpace {
-        @BeforeTemplate
-        boolean before(String s) {
-            return StringUtils.isAlphanumericSpace(s);
-        }
+    // NOTE: not sure if accurate replacement
+    //private static class IsAlphanumericSpace {
+    //    @BeforeTemplate
+    //    boolean before(String s) {
+    //        return StringUtils.isAlphanumericSpace(s);
+    //    }
 
-        boolean after(String s) {
-            return s == null ? false : s.matches("^[a-zA-Z0-9\\s]*$");
-        }
-    }
+    //    boolean after(String s) {
+    //        return s == null ? false : s.matches("^[a-zA-Z0-9\\s]*$");
+    //    }
+    //}
 
     private static class IsAlphanumeric {
         @BeforeTemplate
@@ -201,17 +202,18 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    private static class IsAlphaSpace {
-        @BeforeTemplate
-        boolean before(String s) {
-            return StringUtils.isAlphaSpace(s);
-        }
+    // NOTE: not sure if accurate replacement
+    //private static class IsAlphaSpace {
+    //    @BeforeTemplate
+    //    boolean before(String s) {
+    //        return StringUtils.isAlphaSpace(s);
+    //    }
 
-        @AfterTemplate
-        boolean after(String s) {
-            return s == null ? false : s.matches("[a-zA-Z\\s]+");
-        }
-    }
+    //    @AfterTemplate
+    //    boolean after(String s) {
+    //        return s == null ? false : s.matches("[a-zA-Z\\s]+");
+    //    }
+    //}
 
     //private static class StripAll {
     //    @BeforeTemplate
@@ -289,18 +291,19 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    // NOTE: not sure if accurate replacement
     @SuppressWarnings("ConstantValue")
-    private static class Left {
-        @BeforeTemplate
-        String before(String s, int l) {
-            return StringUtils.left(s, l);
-        }
+    //private static class Left {
+    //    @BeforeTemplate
+    //    String before(String s, int l) {
+    //        return StringUtils.left(s, l);
+    //    }
 
-        @AfterTemplate
-        String after(String s, int l) {
-            return s == null ? null : s.substring(0, l);
-        }
-    }
+    //    @AfterTemplate
+    //    String after(String s, int l) {
+    //        return s == null ? null : s.substring(s.length() - l, s.length() - 1);
+    //    }
+    //}
 
     private static class Lowercase {
         @BeforeTemplate
@@ -314,29 +317,31 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    private static class Mid {
-        @BeforeTemplate
-        String before(String s, int p, int l) {
-            return StringUtils.mid(s, p, l);
-        }
+    // NOTE: not sure if accurate replacement
+    //private static class Mid {
+    //    @BeforeTemplate
+    //    String before(String s, int p, int l) {
+    //        return StringUtils.mid(s, p, l);
+    //    }
 
-        @AfterTemplate
-        String after(String s, int p, int l) {
-            return s == null ? null : (p + l < s.length() ? s.substring(p, p + l) : s.substring(p, s.length() - 1));
-        }
-    }
+    //    @AfterTemplate
+    //    String after(String s, int p, int l) {
+    //        return s == null ? null : (p + l < s.length() ? s.substring(p, p + l) : s.substring(p, s.length() - 1));
+    //    }
+    //}
 
-    private static class Overlay {
-        @BeforeTemplate
-        String before(String s, int w, int l, String overlay) {
-            return StringUtils.overlay(s, overlay, w, l);
-        }
+    // NOTE: not sure if accurate replacement
+    //private static class Overlay {
+    //    @BeforeTemplate
+    //    String before(String s, int w, int l, String overlay) {
+    //        return StringUtils.overlay(s, overlay, w, l);
+    //    }
 
-        @AfterTemplate
-        String after(String s, int w, int l, String overlay) {
-            return s == null ? null : s.substring(0, w) + overlay + s.substring(l);
-        }
-    }
+    //    @AfterTemplate
+    //    String after(String s, int w, int l, String overlay) {
+    //        return s == null ? null : s.substring(0, w) + overlay + s.substring(l);
+    //    }
+    //}
 
     // TODO: Similar issues to what LeftPad and RightPad have
     //private static class Center {
@@ -387,18 +392,6 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    private static class ReplaceTest {
-        @BeforeTemplate
-        String before(String s, String target, String replacement) {
-            return StringUtils.replace(s, target, replacement);
-        }
-
-        @AfterTemplate
-        String after(String s, String target, String replacement) {
-            return s == null ? null : s.replaceAll(target, replacement);
-        }
-    }
-
     private static class Replace {
         @BeforeTemplate
         String before(String s, String target, String replacement) {
@@ -423,17 +416,18 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    private static class Right {
-        @BeforeTemplate
-        String before(String s, int l) {
-            return StringUtils.right(s, l);
-        }
+    // NOTE: not sure if accurate replacement
+    //private static class Right {
+    //    @BeforeTemplate
+    //    String before(String s, int l) {
+    //        return StringUtils.right(s, l);
+    //    }
 
-        @AfterTemplate
-        String after(String s, int l) {
-            return s == null ? null : s.substring(s.length() - l, s.length() - 1);
-        }
-    }
+    //    @AfterTemplate
+    //    String after(String s, int l) {
+    //        return s == null ? null : s.substring(s.length() - l, s.length() - 1);
+    //    }
+    //}
 
     private static class SplitWithArg {
         @BeforeTemplate
@@ -471,17 +465,18 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    private static class StartsWith {
-        @BeforeTemplate
-        boolean before(String s, String prefix) {
-            return StringUtils.startsWith(s, prefix);
-        }
+    // NOTE: not sure if accurate replacement
+    //private static class StartsWith {
+    //    @BeforeTemplate
+    //    boolean before(String s, String prefix) {
+    //        return StringUtils.startsWith(s, prefix);
+    //    }
 
-        @AfterTemplate
-        boolean after(String s, String prefix) {
-            return s == null || prefix == null ? null : s.startsWith(prefix);
-        }
-    }
+    //    @AfterTemplate
+    //    boolean after(String s, String prefix) {
+    //        return s == null || prefix == null ? null : s.startsWith(prefix);
+    //    }
+    //}
 
     private static class Split {
         @BeforeTemplate

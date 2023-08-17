@@ -47,31 +47,46 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
               class Foo {
                   void test() {
                       String in = "foo";
-                      String outString = StringUtils.defaultString(in);
-                      boolean outBool = StringUtils.isEmpty(in);
-                      String[] outArray = StringUtils.split(in);
-                      outArray = StringUtils.split(in, ", ");
-                      outBool = StringUtils.equals(in, "string");
-                      outString = StringUtils.chop(in);
-                      outString = StringUtils.replace(in, "o", "z");
-                      outString = StringUtils.strip(in);
-                      outString = StringUtils.join(in);
-                      outString = StringUtils.deleteWhitespace(in);
-                      outString = StringUtils.abbreviate(in, 5);
-                      outString = StringUtils.trimToEmpty(in);
-                      outString = StringUtils.substringAfter(in, ",");
-                      outString = StringUtils.right(in, 5);
-                      outString = StringUtils.mid(in, 2, 4);
-                      outString = StringUtils.stripStart(in, "chars");
-                      outString = StringUtils.uncapitalize(in);
-                      outString = StringUtils.capitalize(in);
-                      outString = StringUtils.removeEnd(in, "remove");
-                      int outInt = StringUtils.countMatches(in, "pattern");
-                      outString = StringUtils.trimToNull(in);
-                      outInt = StringUtils.indexOfAny(in, "search");
-                      outString = StringUtils.swapCase(in);
-                      outBool = StringUtils.isAlpha(in);
-                      outBool = StringUtils.isAlphaSpace(in);
+                      
+                      String str = StringUtils.abbreviate(in, 10);
+                      str = StringUtils.capitalize(in);
+                      str = StringUtils.chop(in);
+                      str = StringUtils.contains(in, "search");
+                      str = StringUtils.countMatches(in, "|");
+                      str = StringUtils.defaultString(in);
+                      str = StringUtils.deleteWhitespace(in);
+                      boolean bool = StringUtils.endsWithIgnoreCase(in, "suffix");
+                      bool = StringUtils.equalsIgnoreCase(in);
+                      bool = StringUtils.equals(in, "other");
+                      str = StringUtils.indexOfAny(in, "search"); // 
+                      bool = StringUtils.isAlphanumericSpace(in);
+                      bool = StringUtils.isAlphanumeric(in);
+                      bool = StringUtils.isAlphaSpace(in);
+                      bool = StringUtils.isAlpha(in);
+                      bool = StringUtils.isEmpty(in);
+                      str = StringUtils.join(in);
+                      str = StringUtils.left(in, 4);
+                      str = StringUtils.lowerCase(in);
+                      str = StringUtils.mid(in, 3, 4);
+                      str = StringUtils.overlay(in, "overlay", 3, 5);
+                      str = StringUtils.remove(in, "r");
+                      str = StringUtils.repeat(in, 4);
+                      str = StringUtils.replaceOnce(in, "search", "replacement");
+                      str = StringUtils.reverse(in);
+                      str = StringUtils.right(in, 5);
+                      str = StringUtils.split(in, ", ");
+                      str = StringUtils.stripEnd(in, "suffix");
+                      str = StringUtils.stripStart(in, "chars");
+                      str = StringUtils.startsWith(in, "prefix");
+                      str = StringUtils.split(in);
+                      str = StringUtils.strip(in);
+                      str = StringUtils.substringAfter(in, "|");
+                      str = StringUtils.substring(in, 2, 4);
+                      str = StringUtils.swapCase(in); //
+                      str = StringUtils.trimToEmpty(in);
+                      str = StringUtils.trimToNull(in);
+                      str = StringUtils.trim(in);
+                      str = StringUtils.upperCase(in);
                   }
               }
               """,
@@ -82,31 +97,46 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
               class Foo {
                   void test() {
                       String in = "foo";
-                      String outString = Objects.toString(in);
-                      boolean outBool = in == null || in.isEmpty();
-                      String[] outArray = in.split(" ");
-                      outArray = in == null ? null : in.split(", ");
-                      outBool = Objects.equals(in, "string");
-                      outString = in.substring(0, in.length() - 1);
-                      outString = in.replaceAll("o", "z");
-                      outString = in.trim();
-                      outString = String.join(in);
-                      outString = in.replaceAll("\\s+", "");
-                      outString = in.substring(0, Math.min(in.length(), 5));
-                      outString = in != null ? in.trim() : "";
-                      outString = in.substring(in.indexOf(",") + 1, in.length());
-                      outString = in.substring(in.length() - 5, in.length() - 1);
-                      outString = 2 + 4 < in.length() ? in.substring(2, 2 + 4) : in.substring(2, in.length() - 1);                 
-                      outString = in.startsWith("chars") ? in.substring("chars".length()) : in;
-                      outString = Character.toLowerCase(in.charAt(0)) + in.substring(1);
-                      outString = in == null ? null : in.substring(0, 1).toUpperCase() + in.substring(1);
-                      outString = in.endsWith("remove") ? in.substring(0, in.length() - "remove".length()) : in;
-                      int outInt = in.chars().filter(c -> c == "pattern").count();
-                      outString = in == null || in.trim() == null ? null : in.trim();
-                      outInt = IntStream.range(0, in.length()).filter((i) -> "search".indexOf(in.charAt(i)) >= 0).findFirst().orElse(-1);
-                      outString = in.chars().map((c) -> Character.isUpperCase(c) ? Character.toLowerCase(c) : Character.toUpperCase(c)).collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
-                      outBool = in.chars().allMatch(Character::isLetter);
-                      outBool = in.matches("[a-zA-Z\\s]+");
+                      
+                      String str = in == null || in.length() <= 10 ? in : in.substring(0, 10 - 3) + "...";
+                      str = in == null ? null : in.substring(0, 1).toUpperCase() + in.substring(1);
+                      str = in == null ? null : in.substring(0, in.length() - 1);
+                      str = in == null || "search" == null ? null : in.contains("search");
+                      str = (int) (in == null ? 0 : in.chars().filter(c -> c == "pattern").count());
+                      str = in == null ? null : in.replaceAll("\\s+", "");
+                      boolean bool = in == null ? null : in.replaceAll("\\s+", "");
+                      bool = in.equalsIgnoreCase("other");
+                      bool = Objects.equals(in, "other");
+                      str = Objects.equals(in, "other");
+                      bool = in == null ? false : in.matches("^[a-zA-Z0-9\\s]*$");
+                      bool = in == null ? false : in.chars().allMatch(Character::isAlphabetic);
+                      bool = in == null ? false : in.matches("[a-zA-Z\\s]+");
+                      bool = in == null ? false : in.chars().allMatch(Character::isLetter);
+                      bool = in == null || in.isEmpty();
+                      str = in == null ? null : String.join("", in);
+                      str = in == null ? null : in.substring(0, 4);
+                      str = in == null ? null : in.toLowerCase();
+                      str = in == null ? null : (3 + 3 < in.length() ? in.substring(3, 3 + 3) : in.substring(3, in.length() - 1));
+                      str = in == null ? null : in.substring(0, 3) + "overlay" + in.substring(3);
+                      str = in == null ? null : (in.endsWith("remove") ? in.substring(0, in.length() - "remove".length()) : in);
+                      str = in == null ? null : new String(new char[3]).replace("\\0", in);
+                      str = in == null ? null : in.replaceFirst(Pattern.quote("search"), "replacement");
+                      str = in == null ? null : in.replaceAll("target", "replacement");
+                      str = in == null ? null : new StringBuilder(in).reverse().toString();
+                      str = in == null ? null : in.substring(in.length() - l, in.length() - 1);
+                      str = in == null ? null : in.split(", ");
+                      str = in == null ? null : (in.endsWith("suffix") ? in.substring(0, in.lastIndexOf("suffix")) : in);
+                      str = in == null ? null : (in.startsWith("chars") ? in.substring("chars".length()) : in);
+                      str = in == null || "prefix" == null ? null : in.startsWith("prefix");
+                      str = in == null ? null : in.split(" ");
+                      str = in == null ? null : in.trim();
+                      str = in == null ? null : in.substring(in.indexOf("|") + 1, in.length());
+                      str = in == null ? null : in.substring(3, 3);
+                      str = in != null ? in.trim() : "";
+                      str = in == null ? null : (in.trim() == null ? null : in.trim());
+                      str = in == null ? null : in.trim();
+                      str = in == null ? null : in.toUpperCase();
+                      str = in == null ? null : Character.toLowerCase(in.charAt(0)) + in.substring(1);
                   }
               }
               """
@@ -181,6 +211,32 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
               class Foo {
                   void test(String s) {
                       String test = s.endsWith("\\n") ? s.substring(0, s.length() - 1) : s;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    //TODO
+    @Test
+    void replacementWorksWithDotNotation() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+              
+              class Foo {
+                  void test(String s) {
+                      String test = StringUtils.strip(s).toString();
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void test(String s) {
+                      String test = (s == null ? null : in.trim()).toString();
                   }
               }
               """
