@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.apache.commons.lang;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
@@ -32,8 +31,6 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
         spec.parser(JavaParser.fromJavaVersion().classpath("commons-lang3"))
           .recipe(new ApacheCommonsStringUtilsRecipes());
     }
-
-    // TODO: Test for putting parentheses around replacements
 
     @Test
     @DocumentExample
@@ -58,6 +55,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.abbreviate(in, 10);
                       string = StringUtils.capitalize(in);
                       string = StringUtils.chop(in);
+                      string = StringUtils.chomp(in);
 
                       bool = StringUtils.contains(in, "search");
 
@@ -80,6 +78,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
 
                       string = StringUtils.join(in);
                       string = StringUtils.left(in, 4);
+                      string = StringUtils.leftPad(in, 4);
                       string = StringUtils.lowerCase(in);
                       string = StringUtils.mid(in, 3, 4);
                       string = StringUtils.overlay(in, "overlay", 3, 5);
@@ -130,16 +129,17 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = in == null || in.length() <= 10 ? in : in.substring(0, 10 - 3) + "...";
                       string = in == null ? null : in.substring(0, 1).toUpperCase() + in.substring(1);
                       string = in == null ? null : in.substring(0, in.length() - 1);
+                      string = StringUtils.chomp(in);
 
                       bool = StringUtils.contains(in, "search");
 
                       integer = StringUtils.countMatches(in, "|");
 
-                      string = in == null ? "" : in;
+                      string = Objects.toString(in, "");
                       string = in == null ? null : in.replaceAll("\\s+", "");
 
-                      bool = in != null ? in.regionMatches(true, in.length() - "suffix".length(), "suffix", 0, "suffix".length()) : false;
-                      bool = in == null ? false : in.equalsIgnoreCase("other");
+                      bool = in != null && in.regionMatches(true, in.length() - "suffix".length(), "suffix", 0, "suffix".length());
+                      bool = in != null && in.equalsIgnoreCase("other");
                       bool = Objects.equals(in, "other");
 
                       integer = IntStream.range(0, in.length()).filter((i) -> "search".indexOf(in.charAt(i)) >= 0).min().orElse(-1);
@@ -147,11 +147,12 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       bool = StringUtils.isAlphanumericSpace(in);
                       bool = in != null && in.chars().allMatch(Character::isAlphabetic);
                       bool = StringUtils.isAlphaSpace(in);
-                      bool = in == null ? false : in.chars().allMatch(Character::isLetter);
+                      bool = in != null && !in.isEmpty() && in.chars().allMatch(Character::isLetter);
                       bool = in == null || in.isEmpty();
 
                       string = StringUtils.join(in);
                       string = StringUtils.left(in, 4);
+                      string = StringUtils.leftPad(in, 4);
                       string = in == null ? null : in.toLowerCase();
                       string = StringUtils.mid(in, 3, 4);
                       string = StringUtils.overlay(in, "overlay", 3, 5);
@@ -186,82 +187,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
     }
 
     @Test
-    void defaultStringStatic() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import static org.apache.commons.lang3.StringUtils.defaultString;
-                            
-              class Foo {
-                  String in = "foo";
-                  String out = defaultString(in);
-              }
-              """,
-            """
-              import java.util.Objects;
-                            
-              class Foo {
-                  String in = "foo";
-                  String out = Objects.toString(in);
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    @Disabled
-    void leftPad() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import org.apache.commons.lang3.StringUtils;
-                            
-              class Foo {
-                  String in = "foo";
-                  String out = StringUtils.leftPad(in, 4);
-              }
-              """,
-            """
-              class Foo {
-                  String in = "foo";
-                  String out = String.format("%" + 4 + "s", in);
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void chompTest() { // TODO: Fix this test
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import org.apache.commons.lang3.StringUtils;
-                            
-              class Foo {
-                  void test(String s) {
-                      String test = StringUtils.chomp(s);
-                  }
-              }
-              """,
-            """
-              class Foo {
-                  void test(String s) {
-                      String test = s.endsWith("\\n") ? s.substring(0, s.length() - 1) : s;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    //TODO
-    @Test
-    void replacementWorksWithDotNotation() {
+    void canCallMethodOnResult() {
         rewriteRun(
           //language=java
           java(
@@ -278,6 +204,31 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
               class Foo {
                   void test(String s) {
                       String test = (s == null ? null : in.trim()).toString();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void invertedBooleanHandled() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+                            
+              class Foo {
+                  void test(String s) {
+                      String test = !StringUtils.equalsIgnoreCase(s, "other");
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void test(String s) {
+                      String test = !(s != null && !s.equalsIgnoreCase("other"));
                   }
               }
               """

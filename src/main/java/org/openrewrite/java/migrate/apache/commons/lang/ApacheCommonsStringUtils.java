@@ -109,8 +109,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         String after(String s) {
-            // Objects.toString() does have null handling but it returns null when `s` is null whereas `defaultString` returns ""
-            return s == null ? "" : Objects.toString(s);
+            return Objects.toString(s, "");
         }
     }
 
@@ -134,7 +133,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s, String suffix) {
-            return s != null ? s.regionMatches(true, s.length() - suffix.length(), suffix, 0, suffix.length()) : false;
+            return s != null && s.regionMatches(true, s.length() - suffix.length(), suffix, 0, suffix.length());
         }
     }
 
@@ -146,7 +145,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s, String other) {
-            return s == null ? false : s.equalsIgnoreCase(other);
+            return s != null && s.equalsIgnoreCase(other);
         }
     }
 
@@ -236,7 +235,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s) {
-            return s == null ? false : s.chars().allMatch(Character::isLetter);
+            return s != null && !s.isEmpty() && s.chars().allMatch(Character::isLetter);
         }
     }
 
