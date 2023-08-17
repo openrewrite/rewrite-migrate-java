@@ -159,7 +159,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       bool = in != null && in.equalsIgnoreCase("other");
                       bool = Objects.equals(in, "other");
 
-                      integer = IntStream.range(0, in.length()).filter((i) -> "search".indexOf(in.charAt(i)) >= 0).min().orElse(-1);
+                      integer = IntStream.range(0, in.length()).filter(i -> "search".indexOf(in.charAt(i)) >= 0).min().orElse(-1);
 
                       bool = StringUtils.isAlphanumericSpace(in);
                       bool = in != null && in.chars().allMatch(Character::isAlphabetic);
@@ -202,7 +202,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = in == null ? null : in.trim();
                       string = in == null ? null : in.substring(in.indexOf("|") + 1, in.length());
                       string = in == null ? null : in.substring(2, 4);
-                      string = in == null ? null : in.chars().map((c) -> Character.isUpperCase(c) ? Character.toLowerCase(c) : Character.toUpperCase(c)).collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
+                      string = in == null ? null : in.chars().map(c -> Character.isUpperCase(c) ? Character.toLowerCase(c) : Character.toUpperCase(c)).collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
                       string = in != null ? in.trim() : "";
                       string = in == null ? null : (in.trim() == null ? null : in.trim());
                       string = in == null ? null : in.trim();
@@ -231,7 +231,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
             """
               class Foo {
                   void test(String s) {
-                      String test = (s == null ? null : in.trim()).toString();
+                      String test = (s == null ? null : s.trim()).toString();
                   }
               }
               """
