@@ -82,10 +82,10 @@ public class ApacheCommonsStringUtils {
     //    boolean before(String s, String search) {
     //        return StringUtils.contains(s, search);
     //    }
-
+    //
     //    @AfterTemplate
     //    boolean after(String s, String search) {
-    //        return s == null || search == null ? null : s.contains(search);
+    //        return s != null && search != null && s.contains(search);
     //    }
     //}
 

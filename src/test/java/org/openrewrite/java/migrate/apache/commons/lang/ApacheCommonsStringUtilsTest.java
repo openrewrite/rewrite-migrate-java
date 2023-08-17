@@ -54,8 +54,11 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       // Test all methods in alphabetical order to only execute the slow recipes once
                       string = StringUtils.abbreviate(in, 10);
                       string = StringUtils.capitalize(in);
-                      string = StringUtils.chop(in);
+                      string = StringUtils.center(in, 10);
+                      string = StringUtils.center(in, 10, ' ');
+                      string = StringUtils.center(in, 10, " ");
                       string = StringUtils.chomp(in);
+                      string = StringUtils.chop(in);
 
                       bool = StringUtils.contains(in, "search");
 
@@ -77,18 +80,29 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       bool = StringUtils.isEmpty(in);
 
                       string = StringUtils.join(in);
+                      string = StringUtils.joinWith(",", in);
                       string = StringUtils.left(in, 4);
                       string = StringUtils.leftPad(in, 4);
+                      string = StringUtils.leftPad(in, 4, ' ');
+                      string = StringUtils.leftPad(in, 4, " ");
                       string = StringUtils.lowerCase(in);
                       string = StringUtils.mid(in, 3, 4);
                       string = StringUtils.overlay(in, "overlay", 3, 5);
                       string = StringUtils.remove(in, "r");
                       string = StringUtils.repeat(in, 4);
+                      string = StringUtils.repeat(in, ",", 4);
                       string = StringUtils.replaceOnce(in, "search", "replacement");
                       string = StringUtils.reverse(in);
                       string = StringUtils.right(in, 5);
+                      string = StringUtils.rightPad(in, 5);
+                      string = StringUtils.rightPad(in, 5, ' ');
+                      string = StringUtils.rightPad(in, 5, " ");
 
                       array = StringUtils.split(in, ", ");
+                      bool = StringUtils.startsWith(in, "prefix");
+                      bool = StringUtils.startsWithAny(in, "prefix");
+                      bool = StringUtils.startsWithIgnoreCase(in, "prefix");
+                      array = StringUtils.stripAll(in);
 
                       string = StringUtils.stripEnd(in, "suffix");
                       string = StringUtils.stripStart(in, "chars");
@@ -128,8 +142,11 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       // Test all methods in alphabetical order to only execute the slow recipes once
                       string = in == null || in.length() <= 10 ? in : in.substring(0, 10 - 3) + "...";
                       string = in == null ? null : in.substring(0, 1).toUpperCase() + in.substring(1);
-                      string = in == null ? null : in.substring(0, in.length() - 1);
+                      string = StringUtils.center(in, 10);
+                      string = StringUtils.center(in, 10, ' ');
+                      string = StringUtils.center(in, 10, " ");
                       string = StringUtils.chomp(in);
+                      string = in == null ? null : in.substring(0, in.length() - 1);
 
                       bool = StringUtils.contains(in, "search");
 
@@ -151,18 +168,29 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       bool = in == null || in.isEmpty();
 
                       string = StringUtils.join(in);
+                      string = StringUtils.joinWith(",", in);
                       string = StringUtils.left(in, 4);
                       string = StringUtils.leftPad(in, 4);
+                      string = StringUtils.leftPad(in, 4, ' ');
+                      string = StringUtils.leftPad(in, 4, " ");
                       string = in == null ? null : in.toLowerCase();
                       string = StringUtils.mid(in, 3, 4);
                       string = StringUtils.overlay(in, "overlay", 3, 5);
                       string = StringUtils.remove(in, "r");
                       string = StringUtils.repeat(in, 4);
+                      string = StringUtils.repeat(in, ",", 4);
                       string = in == null ? null : in.replaceFirst(Pattern.quote("search"), "replacement");
                       string = in == null ? null : new StringBuilder(in).reverse().toString();
                       string = StringUtils.right(in, 5);
+                      string = StringUtils.rightPad(in, 5);
+                      string = StringUtils.rightPad(in, 5, ' ');
+                      string = StringUtils.rightPad(in, 5, " ");
 
                       array = in == null ? null : in.split(", ");
+                      bool = StringUtils.startsWith(in, "prefix");
+                      bool = StringUtils.startsWithAny(in, "prefix");
+                      bool = StringUtils.startsWithIgnoreCase(in, "prefix");
+                      array = StringUtils.stripAll(in);
 
                       string = in == null ? null : (in.endsWith("suffix") ? in.substring(0, in.lastIndexOf("suffix")) : in);
                       string = in == null ? null : (in.startsWith("chars") ? in.substring("chars".length()) : in);
