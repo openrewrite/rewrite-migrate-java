@@ -371,13 +371,14 @@ public class ApacheCommonsStringUtils {
 
     private static class RemoveEnd {
         @BeforeTemplate
-        String before(String s, String remove) {
-            return StringUtils.removeEnd(s, remove);
+        String before(String s, String end) {
+            return StringUtils.removeEnd(s, end);
         }
 
         @AfterTemplate
-        String after(String s, String remove) {
-            return (s == null ? null : (s.endsWith(remove) ? s.substring(0, s.length() - remove.length()) : s));
+        String after(String s, String end) {
+            return (s == null || s.isEmpty() || end == null || end.isEmpty() || !s.endsWith(end) ?
+                    s : s.substring(0, s.length() - end.length()));
         }
     }
 

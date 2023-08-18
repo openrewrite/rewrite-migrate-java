@@ -92,7 +92,9 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.lowerCase(in);
                       string = StringUtils.mid(in, 3, 4);
                       string = StringUtils.overlay(in, "overlay", 3, 5);
+
                       string = StringUtils.remove(in, "r");
+                      string = StringUtils.removeEnd(in, "suffix");
                       string = StringUtils.repeat(in, 4);
                       string = StringUtils.repeat(in, ",", 4);
                       string = StringUtils.replaceOnce(in, "search", "replacement");
@@ -182,7 +184,9 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = in == null ? null : in.toLowerCase();
                       string = StringUtils.mid(in, 3, 4);
                       string = StringUtils.overlay(in, "overlay", 3, 5);
+
                       string = StringUtils.remove(in, "r");
+                      string = in == null || in.isEmpty() || "suffix" == null || "suffix".isEmpty() || !in.endsWith("suffix") ? in : in.substring(0, in.length() - "suffix".length());
                       string = StringUtils.repeat(in, 4);
                       string = StringUtils.repeat(in, ",", 4);
                       string = in == null ? null : in.replaceFirst(Pattern.quote("search"), "replacement");
