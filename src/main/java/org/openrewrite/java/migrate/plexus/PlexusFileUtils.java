@@ -20,7 +20,6 @@ import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
-import java.io.IOException;
 
 class PlexusFileUtils {
 
@@ -28,48 +27,48 @@ class PlexusFileUtils {
 
     static class DeleteDirectoryFile {
         @BeforeTemplate
-        void before(File dir) throws IOException {
+        void before(File dir) throws Exception {
             FileUtils.deleteDirectory(dir);
         }
 
         @AfterTemplate
-        void after(File dir) throws IOException {
+        void after(File dir) throws Exception {
             org.apache.commons.io.FileUtils.deleteDirectory(dir);
         }
     }
 
     static class DeleteDirectoryString {
         @BeforeTemplate
-        void before(String dir) throws IOException {
+        void before(String dir) throws Exception {
             FileUtils.deleteDirectory(dir);
         }
 
         @AfterTemplate
-        void after(String dir) throws IOException {
+        void after(String dir) throws Exception {
             org.apache.commons.io.FileUtils.deleteDirectory(new File(dir));
         }
     }
 
     static class FileExistsString {
         @BeforeTemplate
-        boolean before(String fileName) throws IOException {
+        boolean before(String fileName) throws Exception {
             return FileUtils.fileExists(fileName);
         }
 
         @AfterTemplate
-        boolean after(String fileName) throws IOException {
+        boolean after(String fileName) throws Exception {
             return new File(fileName).exists();
         }
     }
 
     static class GetFile {
         @BeforeTemplate
-        File before(String fileName) throws IOException {
+        File before(String fileName) throws Exception {
             return FileUtils.getFile(fileName);
         }
 
         @AfterTemplate
-        File after(String fileName) throws IOException {
+        File after(String fileName) throws Exception {
             return new File(fileName);
         }
     }
