@@ -402,19 +402,19 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         String after(String s, String search, String replacement) {
-            return (s == null ? null : s.replaceFirst(Pattern.quote(search), replacement));
+            return (s == null || s.isEmpty() || search == null || search.isEmpty() || replacement == null ? s : s.replaceFirst(Pattern.quote(search), replacement));
         }
     }
 
     private static class Replace {
         @BeforeTemplate
-        String before(String s, String target, String replacement) {
-            return StringUtils.replace(s, target, replacement);
+        String before(String s, String search, String replacement) {
+            return StringUtils.replace(s, search, replacement);
         }
 
         @AfterTemplate
-        String after(String s, String target, String replacement) {
-            return (s == null ? null : s.replaceAll(target, replacement));
+        String after(String s, String search, String replacement) {
+            return (s == null || s.isEmpty() || search == null || search.isEmpty() || replacement == null ? s : s.replace(search, replacement));
         }
     }
 
@@ -443,7 +443,19 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    private static class SplitWithArg {
+    private static class Split {
+        @BeforeTemplate
+        String[] before(String s) {
+            return StringUtils.split(s);
+        }
+
+        @AfterTemplate
+        String[] after(String s) {
+            return (s == null ? null : s.split("\\s+"));
+        }
+    }
+
+    private static class SplitSeparator {
         @BeforeTemplate
         String[] before(String s, String arg) {
             return StringUtils.split(s, arg);
@@ -451,9 +463,22 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         String[] after(String s, String arg) {
-            return (s == null ? null : s.split(arg));
+            return (s == null ? null : s.split(Pattern.quote(arg)));
         }
     }
+
+    // NOTE: different semantics in handling max=0 to discard trailing empty strings
+    //private static class SplitSeparatorMax {
+    //    @BeforeTemplate
+    //    String[] before(String s, String arg, int max) {
+    //        return StringUtils.split(s, arg, max);
+    //    }
+    //
+    //    @AfterTemplate
+    //    String[] after(String s, String arg, int max) {
+    //        return (s == null ? null : s.split(Pattern.quote(arg), max));
+    //    }
+    //}
 
     private static class StripEnd {
         @BeforeTemplate
@@ -491,18 +516,6 @@ public class ApacheCommonsStringUtils {
     //        return (s == null || prefix == null ? null : s.startsWith(prefix));
     //    }
     //}
-
-    private static class Split {
-        @BeforeTemplate
-        String[] before(String s) {
-            return StringUtils.split(s);
-        }
-
-        @AfterTemplate
-        String[] after(String s) {
-            return (s == null ? null : s.split(" "));
-        }
-    }
 
     private static class Strip {
         @BeforeTemplate

@@ -97,6 +97,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.removeEnd(in, "suffix");
                       string = StringUtils.repeat(in, 4);
                       string = StringUtils.repeat(in, ",", 4);
+                      string = StringUtils.replace(in, "search", "replacement");
                       string = StringUtils.replaceOnce(in, "search", "replacement");
                       string = StringUtils.reverse(in);
                       string = StringUtils.right(in, 5);
@@ -104,7 +105,8 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.rightPad(in, 5, ' ');
                       string = StringUtils.rightPad(in, 5, " ");
 
-                      array = StringUtils.split(in, ", ");
+                      array = StringUtils.split(in);
+                      array = StringUtils.split(in, "*");
                       bool = StringUtils.startsWith(in, "prefix");
                       bool = StringUtils.startsWithAny(in, "prefix");
                       bool = StringUtils.startsWithIgnoreCase(in, "prefix");
@@ -114,8 +116,6 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.stripStart(in, "chars");
 
                       bool = StringUtils.startsWith(in, "prefix");
-
-                      array = StringUtils.split(in);
 
                       string = StringUtils.strip(in);
                       string = StringUtils.substringAfter(in, "|");
@@ -189,14 +189,16 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = in == null || in.isEmpty() || "suffix" == null || "suffix".isEmpty() || !in.endsWith("suffix") ? in : in.substring(0, in.length() - "suffix".length());
                       string = StringUtils.repeat(in, 4);
                       string = StringUtils.repeat(in, ",", 4);
-                      string = in == null ? null : in.replaceFirst(Pattern.quote("search"), "replacement");
+                      string = in == null || in.isEmpty() || "search" == null || "search".isEmpty() || "replacement" == null ? in : in.replace("search", "replacement");
+                      string = in == null || in.isEmpty() || "search" == null || "search".isEmpty() || "replacement" == null ? in : in.replaceFirst(Pattern.quote("search"), "replacement");
                       string = in == null ? null : new StringBuilder(in).reverse().toString();
                       string = StringUtils.right(in, 5);
                       string = StringUtils.rightPad(in, 5);
                       string = StringUtils.rightPad(in, 5, ' ');
                       string = StringUtils.rightPad(in, 5, " ");
 
-                      array = in == null ? null : in.split(", ");
+                      array = in == null ? null : in.split("\\s+");
+                      array = in == null ? null : in.split(Pattern.quote("*"));
                       bool = StringUtils.startsWith(in, "prefix");
                       bool = StringUtils.startsWithAny(in, "prefix");
                       bool = StringUtils.startsWithIgnoreCase(in, "prefix");
@@ -206,8 +208,6 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = in == null ? null : (in.startsWith("chars") ? in.substring("chars".length()) : in);
 
                       bool = StringUtils.startsWith(in, "prefix");
-
-                      array = in == null ? null : in.split(" ");
 
                       string = in == null ? null : in.trim();
                       string = in == null ? null : in.substring(in.indexOf("|") + 1, in.length());
