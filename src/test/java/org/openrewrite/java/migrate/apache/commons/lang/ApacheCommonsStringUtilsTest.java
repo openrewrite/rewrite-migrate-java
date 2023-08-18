@@ -125,6 +125,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.trimToNull(in);
                       string = StringUtils.trim(in);
                       string = StringUtils.upperCase(in);
+                      string = StringUtils.uncapitalize(in);
                   }
               }
               """,
@@ -217,6 +218,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = in == null || in.trim().isEmpty() ? null : in.trim();
                       string = in == null ? null : in.trim();
                       string = in == null ? null : in.toUpperCase();
+                      string = StringUtils.uncapitalize(in);
                   }
               }
               """

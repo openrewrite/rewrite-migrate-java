@@ -623,15 +623,16 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    private static class Uncapitalize {
-        @BeforeTemplate
-        String before(String s) {
-            return StringUtils.uncapitalize(s);
-        }
-
-        @AfterTemplate
-        String after(String s) {
-            return (s == null ? null : Character.toLowerCase(s.charAt(0)) + s.substring(1));
-        }
-    }
+    // NOTE: breaks on empty strings
+    //private static class Uncapitalize {
+    //    @BeforeTemplate
+    //    String before(String s) {
+    //        return StringUtils.uncapitalize(s);
+    //    }
+    //
+    //    @AfterTemplate
+    //    String after(String s) {
+    //        return (s == null ? null : Character.toLowerCase(s.charAt(0)) + s.substring(1));
+    //    }
+    //}
 }
