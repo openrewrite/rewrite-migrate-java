@@ -480,29 +480,43 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    private static class StripEnd {
+    private static class Strip {
         @BeforeTemplate
-        String before(String s, String suffix) {
-            return StringUtils.stripEnd(s, suffix);
+        String before(String s) {
+            return StringUtils.strip(s);
         }
 
         @AfterTemplate
-        String after(String s, String suffix) {
-            return (s == null ? null : (s.endsWith(suffix) ? s.substring(0, s.lastIndexOf(suffix)) : s));
+        String after(String s) {
+            return (s == null ? null : s.trim());
         }
     }
 
-    private static class StripStart {
-        @BeforeTemplate
-        String before(String s, String chars) {
-            return StringUtils.stripStart(s, chars);
-        }
+    // NOTE: suffix is a set of characters, not a complete literal string
+    //private static class StripEnd {
+    //    @BeforeTemplate
+    //    String before(String s, String suffix) {
+    //        return StringUtils.stripEnd(s, suffix);
+    //    }
+    //
+    //    @AfterTemplate
+    //    String after(String s, String suffix) {
+    //        return (s == null ? null : (s.endsWith(suffix) ? s.substring(0, s.lastIndexOf(suffix)) : s));
+    //    }
+    //}
 
-        @AfterTemplate
-        String after(String s, String chars) {
-            return (s == null ? null : (s.startsWith(chars) ? s.substring(chars.length()) : s));
-        }
-    }
+    // NOTE: suffix is a set of characters, not a complete literal string
+    //private static class StripStart {
+    //    @BeforeTemplate
+    //    String before(String s, String chars) {
+    //        return StringUtils.stripStart(s, chars);
+    //    }
+    //
+    //    @AfterTemplate
+    //    String after(String s, String chars) {
+    //        return (s == null ? null : (s.startsWith(chars) ? s.substring(chars.length()) : s));
+    //    }
+    //}
 
     // NOTE: not sure if accurate replacement
     //private static class StartsWith {
@@ -517,57 +531,47 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    private static class Strip {
-        @BeforeTemplate
-        String before(String s) {
-            return StringUtils.strip(s);
-        }
+    // NOTE: Incorrect handling of before null/empty and separator null/empty
+    //private static class SubstringAfter {
+    //    @BeforeTemplate
+    //    String before(String s, String sep) {
+    //        return StringUtils.substringAfter(s, sep);
+    //    }
+    //
+    //    @AfterTemplate
+    //    String after(String s, String sep) {
+    //        return (s == null ? null : s.substring(s.indexOf(sep) + 1, s.length()));
+    //    }
+    //}
 
-        @AfterTemplate
-        String after(String s) {
-            return (s == null ? null : s.trim());
-        }
-    }
+    // NOTE: Incorrect handling of negative values
+    //private static class Substring {
+    //    @BeforeTemplate
+    //    String before(String s, int l, int w) {
+    //        return StringUtils.substring(s, l, w);
+    //    }
+    //
+    //    @AfterTemplate
+    //    String after(String s, int l, int w) {
+    //        return (s == null ? null : s.substring(l, w));
+    //    }
+    //}
 
-    @SuppressWarnings("StringOperationCanBeSimplified")
-    private static class SubstringAfter {
-        @BeforeTemplate
-        String before(String s, String sep) {
-            return StringUtils.substringAfter(s, sep);
-        }
-
-        @AfterTemplate
-        String after(String s, String sep) {
-            return (s == null ? null : s.substring(s.indexOf(sep) + 1, s.length()));
-        }
-    }
-
-    private static class Substring {
-        @BeforeTemplate
-        String before(String s, int l, int w) {
-            return StringUtils.substring(s, l, w);
-        }
-
-        @AfterTemplate
-        String after(String s, int l, int w) {
-            return (s == null ? null : s.substring(l, w));
-        }
-    }
-
-    private static class SwapCase {
-        @BeforeTemplate
-        String before(String s, char sep) {
-            return StringUtils.swapCase(s);
-        }
-
-        @AfterTemplate
-        String after(String s) {
-            return (s == null ? null : s.chars()
-                    .map(c -> Character.isUpperCase(c) ? Character.toLowerCase(c) : Character.toUpperCase(c))
-                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                    .toString());
-        }
-    }
+    // NOTE: fails to account for isTitleCase
+    //private static class SwapCase {
+    //    @BeforeTemplate
+    //    String before(String s, char sep) {
+    //        return StringUtils.swapCase(s);
+    //    }
+    //
+    //    @AfterTemplate
+    //    String after(String s) {
+    //        return (s == null ? null : s.chars()
+    //                .map(c -> Character.isUpperCase(c) ? Character.toLowerCase(c) : Character.toUpperCase(c))
+    //                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+    //                .toString());
+    //    }
+    //}
 
     @SuppressWarnings("ConstantValue")
     private static class TrimToEmpty {
@@ -578,7 +582,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         String after(String s) {
-            return (s != null ? s.trim() : "");
+            return (s == null ? "" : s.trim());
         }
     }
 
@@ -591,7 +595,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         String after(String s) {
-            return (s == null ? null : (s.trim() == null ? null : s.trim()));
+            return (s == null || s.trim().isEmpty() ? null : s.trim());
         }
     }
 

@@ -112,12 +112,12 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       bool = StringUtils.startsWithIgnoreCase(in, "prefix");
                       array = StringUtils.stripAll(in);
 
+                      string = StringUtils.strip(in);
                       string = StringUtils.stripEnd(in, "suffix");
                       string = StringUtils.stripStart(in, "chars");
 
                       bool = StringUtils.startsWith(in, "prefix");
 
-                      string = StringUtils.strip(in);
                       string = StringUtils.substringAfter(in, "|");
                       string = StringUtils.substring(in, 2, 4);
                       string = StringUtils.swapCase(in);
@@ -204,17 +204,17 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       bool = StringUtils.startsWithIgnoreCase(in, "prefix");
                       array = StringUtils.stripAll(in);
 
-                      string = in == null ? null : (in.endsWith("suffix") ? in.substring(0, in.lastIndexOf("suffix")) : in);
-                      string = in == null ? null : (in.startsWith("chars") ? in.substring("chars".length()) : in);
+                      string = in == null ? null : in.trim();
+                      string = StringUtils.stripEnd(in, "suffix");
+                      string = StringUtils.stripStart(in, "chars");
 
                       bool = StringUtils.startsWith(in, "prefix");
 
-                      string = in == null ? null : in.trim();
-                      string = in == null ? null : in.substring(in.indexOf("|") + 1, in.length());
-                      string = in == null ? null : in.substring(2, 4);
-                      string = in == null ? null : in.chars().map(c -> Character.isUpperCase(c) ? Character.toLowerCase(c) : Character.toUpperCase(c)).collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
-                      string = in != null ? in.trim() : "";
-                      string = in == null ? null : (in.trim() == null ? null : in.trim());
+                      string = StringUtils.substringAfter(in, "|");
+                      string = StringUtils.substring(in, 2, 4);
+                      string = StringUtils.swapCase(in);
+                      string = in == null ? "" : in;
+                      string = in == null || in.trim().isEmpty() ? null : in.trim();
                       string = in == null ? null : in.trim();
                       string = in == null ? null : in.toUpperCase();
                   }
