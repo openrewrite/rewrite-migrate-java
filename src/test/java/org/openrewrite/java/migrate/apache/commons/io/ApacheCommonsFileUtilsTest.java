@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.apache.commons.lang;
+package org.openrewrite.java.migrate.apache.commons.io;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
@@ -23,10 +23,10 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class ApacheCommonsFileUtilsTest implements RewriteTest {
+class ApacheCommonsFileUtilsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().classpath("commons-lang3"))
+        spec.parser(JavaParser.fromJavaVersion().classpath("commons-io"))
           .recipe(new ApacheCommonsFileUtilsRecipes());
     }
 
@@ -38,14 +38,17 @@ public class ApacheCommonsFileUtilsTest implements RewriteTest {
           java(
             """
               import org.apache.commons.io.FileUtils;
-              import org.apache.commons.io.filefilter.IOFileFilter;
-              import java.util.Collections;
-              import java.util.File;
-              import java.nio.charset.Charset;
+
+              import java.io.File;
+              import java.io.FileFilter;
               import java.net.URL;
-              
+              import java.nio.charset.Charset;
+              import java.util.Collection;
+              import java.util.Collections;
+              import java.util.List;
+
               class Foo {
-                  void bar(File fileA, File fileB, URL url, Charset cs, IOFileFilter filter, CharSequence charSeq) throws Exception {
+                  void bar(File fileA, File fileB, URL url, Charset cs, FileFilter filter, CharSequence charSeq) throws Exception {
                       long l = 10L;
                       String s = "hello world";
                       String[] stringArray = new String[4];
@@ -56,49 +59,46 @@ public class ApacheCommonsFileUtilsTest implements RewriteTest {
                       List<String> strList;
                       List<File> fileList;
                       File f;
-                      
-                      Path p = FileUtils.write(file, s, cs);
+
+                      FileUtils.write(fileA, s, cs);
                       f = FileUtils.getFile(s);
-                  
+                      f = FileUtils.getFile(s, s);
+                      f = FileUtils.toFile(url);
+
+                      str = FileUtils.byteCountToDisplaySize(l);
+                      FileUtils.cleanDirectory(fileA);
+                      bool = FileUtils.contentEquals(fileA, fileB);
+                      FileUtils.copyDirectory(fileA, fileB);
+                      FileUtils.copyFile(fileA, fileB);
+                      FileUtils.copyURLToFile(url, fileA);
                       FileUtils.deleteDirectory(fileA);
+                      bool = FileUtils.deleteQuietly(fileA);
                       FileUtils.forceDeleteOnExit(fileA);
                       FileUtils.forceDelete(fileA);
-                      bool = FileUtils.deleteQuietly(fileA);
-                      FileUtils.copyFile(fileA, fileB);
-                      str = FileUtils.byteCountToDisplaySize(l);
-                      FileUtils.copyURLToFile(URL, fileA);
-                      FileUtils.writeStringToFile(fileA, s);
-                      strList = FileUtils.readLines(fileA, cs);
+                      FileUtils.forceMkdirParent(fileA);
+                      f = FileUtils.getTempDirectory();
                       str = FileUtils.readFileToString(fileA, cs);
                       str = FileUtils.readFileToString(fileA, s);
-                      f = FileUtils.getTempDirectory();
-                      str = FileUtils.readFileToString(fileA, s);
-                      FileUtils.forceDelete(fileA);
-                      FileUtils.copyDirectory(fileA, fileB);
+                      strList = FileUtils.readLines(fileA, cs);
                       FileUtils.writeByteArrayToFile(fileA, bytes);
-                      FileUtils.cleanDirectory(fileA);
-                      f = FileUtils.toFile(url);
-                      fileList = FileUtils.listFiles(fileA, filter);
-                      FileUtils.forceMkdirParent(fileA);
-                      bool = FileUtils.contentEquals(fileA, fileB);
-                      fileList = FileUtils.listFiles(fileA, stringArray);
-                      str = FileUtils.readFileToString(fileA, s);
                       FileUtils.writeLines(fileA, collection);
+                      FileUtils.writeStringToFile(fileA, s);
                   }
               }
               """,
             """
               import org.apache.commons.io.FileUtils;
-              import org.apache.commons.io.filefilter.IOFileFilter;
-              import java.util.Collections;
-              import java.nil.file.Files;
-              import java.util.Arrays;
+
               import java.io.File;
-              import java.nio.charset.Charset;
+              import java.io.FileFilter;
               import java.net.URL;
-              
+              import java.nio.charset.Charset;
+              import java.util.Collection;
+              import java.util.Collections;
+              import java.util.List;
+
               class Foo {
-                  void bar(File fileA, File fileB, URL url, Charset cs, IOFileFilter filter, CharSequence charSeq) {
+                  void bar(File fileA, File fileB, URL url, Charset cs, FileFilter filter, CharSequence charSeq) throws Exception {
                       long l = 10L;
                       String s = "hello world";
                       String[] stringArray = new String[4];
@@ -109,34 +109,30 @@ public class ApacheCommonsFileUtilsTest implements RewriteTest {
                       List<String> strList;
                       List<File> fileList;
                       File f;
-                      
-                      Files.write(fileA.toPath(), Arrays.asList(charSeq), cs);
-                      f = new Files(s);
-                  
+
+                      FileUtils.write(fileA, s, cs);
+                      f = new File(s);
+                      f = FileUtils.getFile(s, s);
+                      f = FileUtils.toFile(url);
+
+                      str = FileUtils.byteCountToDisplaySize(l);
+                      FileUtils.cleanDirectory(fileA);
+                      bool = FileUtils.contentEquals(fileA, fileB);
+                      FileUtils.copyDirectory(fileA, fileB);
+                      FileUtils.copyFile(fileA, fileB);
+                      FileUtils.copyURLToFile(url, fileA);
                       FileUtils.deleteDirectory(fileA);
+                      bool = FileUtils.deleteQuietly(fileA);
                       FileUtils.forceDeleteOnExit(fileA);
                       FileUtils.forceDelete(fileA);
-                      bool = FileUtils.deleteQuietly(fileA);
-                      FileUtils.copyFile(fileA, fileB);
-                      str = FileUtils.byteCountToDisplaySize(l);
-                      FileUtils.copyURLToFile(URL, fileA);
-                      FileUtils.writeStringToFile(fileA, s);
-                      strList = FileUtils.readLines(fileA, cs);
+                      FileUtils.forceMkdirParent(fileA);
+                      f = FileUtils.getTempDirectory();
                       str = FileUtils.readFileToString(fileA, cs);
                       str = FileUtils.readFileToString(fileA, s);
-                      f = FileUtils.getTempDirectory();
-                      str = FileUtils.readFileToString(fileA, s);
-                      FileUtils.forceDelete(fileA);
-                      FileUtils.copyDirectory(fileA, fileB);
+                      strList = FileUtils.readLines(fileA, cs);
                       FileUtils.writeByteArrayToFile(fileA, bytes);
-                      FileUtils.cleanDirectory(fileA);
-                      f = FileUtils.toFile(url);
-                      fileList = FileUtils.listFiles(fileA, filter);
-                      FileUtils.forceMkdirParent(fileA);
-                      bool = FileUtils.contentEquals(fileA, fileB);
-                      fileList = FileUtils.listFiles(fileA, stringArray);
-                      str = FileUtils.readFileToString(fileA, s);
                       FileUtils.writeLines(fileA, collection);
+                      FileUtils.writeStringToFile(fileA, s);
                   }
               }
               """

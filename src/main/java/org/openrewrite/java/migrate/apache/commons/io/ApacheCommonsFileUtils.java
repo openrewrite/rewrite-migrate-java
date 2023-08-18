@@ -13,42 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.apache.commons.lang;
+package org.openrewrite.java.migrate.apache.commons.io;
 
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
-
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.util.Arrays;
 
 public class ApacheCommonsFileUtils {
-    private static class Write {
-        @BeforeTemplate
-        void before(File file, CharSequence data, Charset cs) throws Exception {
-            FileUtils.write(file, data, cs);
-        }
-
-        @AfterTemplate
-        void after(File file, CharSequence data, Charset cs) throws Exception {
-            Files.write(file.toPath(), Arrays.asList(data), cs);
-        }
-    }
-
     private static class GetFile {
         @BeforeTemplate
-        File before(String name) throws Exception {
+        File before(String name) {
             return FileUtils.getFile(name);
         }
 
         @AfterTemplate
-        File after(String name) throws Exception {
+        File after(String name) {
             return new File(name);
         }
     }
+
+// NOTE: java: reference to compile is ambiguous; methods P3 & F3 match
+//    private static class Write {
+//        @BeforeTemplate
+//        void before(File file, CharSequence data, Charset cs) throws Exception {
+//            FileUtils.write(file, data, cs);
+//        }
+//
+//        @AfterTemplate
+//        void after(File file, CharSequence data, Charset cs) throws Exception {
+//            Files.write(file.toPath(), Arrays.asList(data), cs);
+//        }
+//    }
+
 
 }
