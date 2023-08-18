@@ -51,7 +51,6 @@ dependencies {
 
     testImplementation("commons-codec:commons-codec:1.+")
     testImplementation("org.apache.maven.shared:maven-shared-utils:3.+")
-    testImplementation("org.codehaus.plexus:plexus-utils:3.+")
 
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
