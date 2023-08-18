@@ -42,9 +42,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
               import org.apache.commons.lang3.StringUtils;
 
               class Foo {
-                  void bar() {
-                      String in = "foo";
-
+                  void bar(String in) {
                       // Reuse output variables for readability
                       String[] array;
                       boolean bool;
@@ -62,9 +60,11 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
 
                       bool = StringUtils.contains(in, "search");
 
+                      integer = StringUtils.countMatches(in, '|');
                       integer = StringUtils.countMatches(in, "|");
 
                       string = StringUtils.defaultString(in);
+                      string = StringUtils.defaultString(in, "nil");
                       string = StringUtils.deleteWhitespace(in);
 
                       bool = StringUtils.endsWithIgnoreCase(in, "suffix");
@@ -130,9 +130,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
               import java.util.stream.IntStream;
 
               class Foo {
-                  void bar() {
-                      String in = "foo";
-
+                  void bar(String in) {
                       // Reuse output variables for readability
                       String[] array;
                       boolean bool;
@@ -141,22 +139,24 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
 
                       // Test all methods in alphabetical order to only execute the slow recipes once
                       string = in == null || in.length() <= 10 ? in : in.substring(0, 10 - 3) + "...";
-                      string = in == null ? null : in.substring(0, 1).toUpperCase() + in.substring(1);
+                      string = in == null || in.isEmpty() || Character.isTitleCase(in.charAt(0)) ? in : Character.toTitleCase(in.charAt(0)) + in.substring(1);
                       string = StringUtils.center(in, 10);
                       string = StringUtils.center(in, 10, ' ');
                       string = StringUtils.center(in, 10, " ");
                       string = StringUtils.chomp(in);
-                      string = in == null ? null : in.substring(0, in.length() - 1);
+                      string = StringUtils.chop(in);
 
                       bool = StringUtils.contains(in, "search");
 
+                      integer = StringUtils.countMatches(in, '|');
                       integer = StringUtils.countMatches(in, "|");
 
                       string = Objects.toString(in, "");
+                      string = Objects.toString(in, "nil");
                       string = in == null ? null : in.replaceAll("\\s+", "");
 
-                      bool = in != null && in.regionMatches(true, in.length() - "suffix".length(), "suffix", 0, "suffix".length());
-                      bool = in != null && in.equalsIgnoreCase("other");
+                      bool = in == null && "suffix" == null || in != null && "suffix" != null && in.regionMatches(true, in.length() - "suffix".length(), "suffix", 0, "suffix".length());
+                      bool = in == null && "other" == null || in != null && in.equalsIgnoreCase("other");
                       bool = Objects.equals(in, "other");
 
                       integer = IntStream.range(0, in.length()).filter(i -> "search".indexOf(in.charAt(i)) >= 0).min().orElse(-1);

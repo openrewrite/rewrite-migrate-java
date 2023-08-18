@@ -47,11 +47,11 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         String after(String s) {
-            return (s == null ? null : s.substring(0, 1).toUpperCase() + s.substring(1));
+            return (s == null || s.isEmpty() || Character.isTitleCase(s.charAt(0)) ? s : Character.toTitleCase(s.charAt(0)) + s.substring(1));
         }
     }
 
-    //TODO: The test for this recipe fails, I think it could be due to a `rewrite-templating` bug
+    //NOTE: The test for this recipe fails, I think it could be due to a `rewrite-templating` bug
     //private static class Chomp {
     //    @BeforeTemplate
     //    String before(String s) {
@@ -64,17 +64,21 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    private static class Chop {
-        @BeforeTemplate
-        String before(String s) {
-            return StringUtils.chop(s);
-        }
-
-        @AfterTemplate
-        String after(String s) {
-            return (s == null ? null : s.substring(0, s.length() - 1));
-        }
-    }
+    // NOTE: fails with __P__. inserted
+    //private static class Chop {
+    //    @BeforeTemplate
+    //    String before(String s) {
+    //        return StringUtils.chop(s);
+    //    }
+    //
+    //    @AfterTemplate
+    //    String after(String s) {
+    //        return (s == null ?
+    //                null : s.length() < 2 ?
+    //                "" : s.endsWith("\r\n") ?
+    //                s.substring(0, s.length() - 2) : s.substring(0, s.length() - 1));
+    //    }
+    //}
 
     // NOTE: not sure if accurate replacement
     //private static class Contains {
@@ -89,17 +93,18 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    private static class CountMatches {
-        @BeforeTemplate
-        int before(String s, char pattern) {
-            return StringUtils.countMatches(s, pattern);
-        }
-
-        @AfterTemplate
-        int after(String s, char pattern) {
-            return (int) (s == null ? 0 : s.chars().filter(c -> c == pattern).count());
-        }
-    }
+    // NOTE: Requires Java 9+ for s.chars()
+    //private static class CountMatchesChar {
+    //    @BeforeTemplate
+    //    int before(String s, char pattern) {
+    //        return StringUtils.countMatches(s, pattern);
+    //    }
+    //
+    //    @AfterTemplate
+    //    int after(String s, char pattern) {
+    //        return (s == null || s.isEmpty() ? 0 : (int) s.chars().filter(c -> c == pattern).count());
+    //    }
+    //}
 
     private static class DefaultString {
         @BeforeTemplate
@@ -110,6 +115,18 @@ public class ApacheCommonsStringUtils {
         @AfterTemplate
         String after(String s) {
             return Objects.toString(s, "");
+        }
+    }
+
+    private static class DefaultStringFallback {
+        @BeforeTemplate
+        String before(String s, String nullDefault) {
+            return StringUtils.defaultString(s, nullDefault);
+        }
+
+        @AfterTemplate
+        String after(String s, String nullDefault) {
+            return Objects.toString(s, nullDefault);
         }
     }
 
@@ -133,7 +150,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s, String suffix) {
-            return (s != null && s.regionMatches(true, s.length() - suffix.length(), suffix, 0, suffix.length()));
+            return (s == null && suffix == null || s != null && suffix != null && s.regionMatches(true, s.length() - suffix.length(), suffix, 0, suffix.length()));
         }
     }
 
@@ -145,7 +162,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s, String other) {
-            return (s != null && s.equalsIgnoreCase(other));
+            return (s == null && other == null || s != null && s.equalsIgnoreCase(other));
         }
     }
 
@@ -252,7 +269,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    // TODO: These two methods don't generate the recipe templates right
+    // NOTE: These two methods don't generate the recipe templates right
     //public static class LeftPad {
     //    @BeforeTemplate
     //    String before(String s, int l) {
@@ -339,7 +356,7 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    // TODO: Similar issues to what LeftPad and RightPad have
+    // NOTE: Similar issues to what LeftPad and RightPad have
     //private static class Center {
     //    @BeforeTemplate
     //    String before(String s, int size) {
