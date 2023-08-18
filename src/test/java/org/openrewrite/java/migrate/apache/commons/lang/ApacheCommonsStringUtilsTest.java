@@ -44,7 +44,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
               import org.apache.commons.lang3.StringUtils;
 
               class Foo {
-                  void bar(String in) {
+                  void bar(String in, CharSequence cs) {
                       // Reuse output variables for readability
                       String[] array;
                       boolean bool;
@@ -72,6 +72,8 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       bool = StringUtils.endsWithIgnoreCase(in, "suffix");
                       bool = StringUtils.equalsIgnoreCase(in, "other");
                       bool = StringUtils.equals(in, "other");
+                      bool = StringUtils.equals(cs, "other");
+                      bool = StringUtils.equals(cs, cs);
 
                       integer = StringUtils.indexOfAny(in, "search");
 
@@ -132,7 +134,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
               import java.util.stream.IntStream;
 
               class Foo {
-                  void bar(String in) {
+                  void bar(String in, CharSequence cs) {
                       // Reuse output variables for readability
                       String[] array;
                       boolean bool;
@@ -160,11 +162,13 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       bool = in == null && "suffix" == null || in != null && "suffix" != null && in.regionMatches(true, in.length() - "suffix".length(), "suffix", 0, "suffix".length());
                       bool = in == null && "other" == null || in != null && in.equalsIgnoreCase("other");
                       bool = Objects.equals(in, "other");
+                      bool = StringUtils.equals(cs, "other");
+                      bool = StringUtils.equals(cs, cs);
 
-                      integer = IntStream.range(0, in.length()).filter(i -> "search".indexOf(in.charAt(i)) >= 0).min().orElse(-1);
+                      integer = IntStream.range(0, "search".length()).filter(i -> in.indexOf("search".charAt(i)) >= 0).min().orElse(-1);
 
                       bool = StringUtils.isAlphanumericSpace(in);
-                      bool = in != null && in.chars().allMatch(Character::isAlphabetic);
+                      bool = in != null && !in.isEmpty() && in.chars().allMatch(Character::isLetterOrDigit);
                       bool = StringUtils.isAlphaSpace(in);
                       bool = in != null && !in.isEmpty() && in.chars().allMatch(Character::isLetter);
                       bool = in == null || in.isEmpty();

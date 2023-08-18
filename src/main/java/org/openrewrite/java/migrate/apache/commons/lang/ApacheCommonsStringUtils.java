@@ -180,14 +180,14 @@ public class ApacheCommonsStringUtils {
 
     private static class IndexOfAny {
         @BeforeTemplate
-        int before(String s, String search) {
-            return StringUtils.indexOfAny(s, search);
+        int before(String s, String searchChars) {
+            return StringUtils.indexOfAny(s, searchChars);
         }
 
         @AfterTemplate
-        int after(String s, String search) {
-            return IntStream.range(0, s.length())
-                    .filter(i -> search.indexOf(s.charAt(i)) >= 0)
+        int after(String s, String searchChars) {
+            return IntStream.range(0, searchChars.length())
+                    .filter(i -> s.indexOf(searchChars.charAt(i)) >= 0)
                     .min()
                     .orElse(-1);
         }
@@ -213,7 +213,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s) {
-            return (s != null && s.chars().allMatch(Character::isAlphabetic));
+            return (s != null && !s.isEmpty() && s.chars().allMatch(Character::isLetterOrDigit));
         }
     }
 
