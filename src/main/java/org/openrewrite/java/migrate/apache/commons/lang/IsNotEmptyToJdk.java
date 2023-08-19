@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.apache.commons.lang;
 
-import org.jetbrains.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -23,7 +22,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
@@ -57,54 +56,55 @@ public class IsNotEmptyToJdk extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> precondition = Preconditions.or(
-                new UsesType<>("org.apache.commons.lang3.StringUtils", false),
-                new UsesType<>("org.apache.maven.shared.utils.StringUtils", false),
-                new UsesType<>("org.codehaus.plexus.util.StringUtils", false));
+                new UsesMethod<>("org.apache.commons.lang3.StringUtils isEmpty(..)"),
+                new UsesMethod<>("org.apache.commons.lang3.StringUtils isNotEmpty(..)"),
+                new UsesMethod<>("org.apache.maven.shared.utils.StringUtils isEmpty(..)"),
+                new UsesMethod<>("org.apache.maven.shared.utils.StringUtils isNotEmpty(..)"),
+                new UsesMethod<>("org.codehaus.plexus.util.StringUtils isEmpty(..)"),
+                new UsesMethod<>("org.codehaus.plexus.util.StringUtils isNotEmpty(..)"));
 
         return Preconditions.check(precondition, new JavaVisitor<ExecutionContext>() {
             private final MethodMatcher isEmptyMatcher = new MethodMatcher("*..StringUtils isEmpty(..)");
             private final MethodMatcher isNotEmptyMatcher = new MethodMatcher("*..StringUtils isNotEmpty(..)");
+            private final MethodMatcher trimMatcher = new MethodMatcher("java.lang.String trim()");
 
-            @SuppressWarnings("ConstantValue")
             private final JavaTemplate isEmptyReplacement = JavaTemplate.compile(this, "IsEmpty", (String s) -> (s == null || s.isEmpty())).build();
-            @SuppressWarnings("ConstantValue")
             private final JavaTemplate isNotEmptyReplacement = JavaTemplate.compile(this, "IsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
+            private final JavaTemplate isEmptyTrimmed = JavaTemplate.compile(this, "IsEmptyTrimmed", (JavaTemplate.F1<?, ?>) (String s) -> s.trim().isEmpty()).build();
+            private final JavaTemplate isNotEmptyTrimmed = JavaTemplate.compile(this, "IsNotEmptyTrimmed", (String s) -> !s.trim().isEmpty()).build();
 
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                J j = super.visitMethodInvocation(method, ctx);
-                if (!(j instanceof J.MethodInvocation)) {
-                    return j;
-                }
-                J.MethodInvocation mi = (J.MethodInvocation) j;
-                Expression arg = mi.getArguments().get(0);
-                if (!(arg instanceof J.Identifier) && !(arg instanceof J.FieldAccess)) {
-                    return j;
+            public J visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx) {
+                boolean isEmptyCall = isEmptyMatcher.matches(mi);
+                if (!isEmptyCall && !isNotEmptyMatcher.matches(mi)) {
+                    return mi;
                 }
 
-                JavaTemplate replacementTemplate = getReplacementTemplate(mi);
-                if (replacementTemplate != null) {
+                Expression arg = mi.getArguments().get(0);
+
+                // Replace StringUtils.isEmpty(var) with var == null || var.isEmpty()
+                if (arg instanceof J.Identifier || arg instanceof J.FieldAccess) {
+                    JavaTemplate replacementTemplate = isEmptyCall ? isEmptyReplacement : isNotEmptyReplacement;
                     // Maybe remove imports
                     maybeRemoveImport("org.apache.commons.lang3.StringUtils");
                     maybeRemoveImport("org.apache.maven.shared.utils.StringUtils");
                     maybeRemoveImport("org.codehaus.plexus.util.StringUtils");
-
-                    // Remove excess parentheses
+                    // Remove excess parentheses inserted in lambda that may be required depending on the context
                     doAfterVisit(new org.openrewrite.staticanalysis.UnnecessaryParentheses().getVisitor());
-
                     return replacementTemplate.apply(updateCursor(mi), mi.getCoordinates().replace(), arg, arg);
                 }
-                return mi;
-            }
 
-            @Nullable
-            private JavaTemplate getReplacementTemplate(J.MethodInvocation mi) {
-                if (isEmptyMatcher.matches(mi)) {
-                    return isEmptyReplacement;
-                } else if (isNotEmptyMatcher.matches(mi)) {
-                    return isNotEmptyReplacement;
+                // Replace StringUtils.isEmpty(var.trim()) with var.trim().isEmpty()
+                if (trimMatcher.matches(arg)) {
+                    JavaTemplate replacementTemplate = isEmptyCall ? isEmptyTrimmed : isNotEmptyTrimmed;
+                    // Maybe remove imports
+                    maybeRemoveImport("org.apache.commons.lang3.StringUtils");
+                    maybeRemoveImport("org.apache.maven.shared.utils.StringUtils");
+                    maybeRemoveImport("org.codehaus.plexus.util.StringUtils");
+                    return replacementTemplate.apply(updateCursor(mi), mi.getCoordinates().replace(), ((J.MethodInvocation) arg).getSelect());
                 }
-                return null;
+
+                return super.visitMethodInvocation(mi, ctx);
             }
         });
     }

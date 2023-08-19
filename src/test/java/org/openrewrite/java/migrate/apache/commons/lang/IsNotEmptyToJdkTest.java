@@ -55,6 +55,31 @@ class IsNotEmptyToJdkTest implements RewriteTest {
             """));
     }
 
+    @Test
+    void trim() {
+        // language=java
+        rewriteRun(
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+
+              class A {
+                  boolean test(String first) {
+                      boolean a = StringUtils.isEmpty(first.trim());
+                      boolean b = !StringUtils.isEmpty(first.trim());
+                  }
+              }
+              """,
+            """
+              class A {
+                  boolean test(String first) {
+                      boolean a = first.trim().isEmpty();
+                      boolean b = !first.trim().isEmpty();
+                  }
+              }
+              """));
+    }
+
     @ParameterizedTest
     @CsvSource(delimiter = '#', textBlock = """
       org.apache.commons.lang3.StringUtils # StringUtils.isEmpty(first) # first == null || first.isEmpty()
