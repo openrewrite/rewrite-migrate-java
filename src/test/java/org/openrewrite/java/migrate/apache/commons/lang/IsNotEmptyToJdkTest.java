@@ -67,6 +67,12 @@ class IsNotEmptyToJdkTest implements RewriteTest {
                   boolean test(String first) {
                       boolean a = StringUtils.isEmpty(first.trim());
                       boolean b = !StringUtils.isEmpty(first.trim());
+                      boolean c = StringUtils.isNotEmpty(first.trim());
+                      boolean d = !StringUtils.isNotEmpty(first.trim()); // yeah, this is weird, but not worth cleaning up
+                      boolean e = StringUtils.isEmpty(foo().trim());
+                  }
+                  String foo() {
+                      return "foo";
                   }
               }
               """,
@@ -75,6 +81,12 @@ class IsNotEmptyToJdkTest implements RewriteTest {
                   boolean test(String first) {
                       boolean a = first.trim().isEmpty();
                       boolean b = !first.trim().isEmpty();
+                      boolean c = !first.trim().isEmpty();
+                      boolean d = !!first.trim().isEmpty(); // yeah, this is weird, but not worth cleaning up
+                      boolean e = foo().trim().isEmpty();
+                  }
+                  String foo() {
+                      return "foo";
                   }
               }
               """));
