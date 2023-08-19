@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.apache.commons.lang;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -55,13 +56,18 @@ class IsNotEmptyToJdkTest implements RewriteTest {
             """));
     }
 
-    @Test
-    void trim() {
+    @ParameterizedTest
+    @ValueSource(strings = {
+      "org.apache.commons.lang3.StringUtils",
+      "org.apache.maven.shared.utils.StringUtils",
+      "org.codehaus.plexus.util.StringUtils"
+    })
+    void trim(String import_) {
         // language=java
         rewriteRun(
           java(
             """
-              import org.apache.commons.lang3.StringUtils;
+              import %s;
 
               class A {
                   boolean test(String first) {
@@ -75,7 +81,7 @@ class IsNotEmptyToJdkTest implements RewriteTest {
                       return "foo";
                   }
               }
-              """,
+              """.formatted(import_),
             """
               class A {
                   boolean test(String first) {
