@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.apache.commons.lang;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -53,6 +54,48 @@ class IsNotEmptyToJdkTest implements RewriteTest {
                 }
             }
             """));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+      "org.apache.commons.lang3.StringUtils",
+      "org.apache.maven.shared.utils.StringUtils",
+      "org.codehaus.plexus.util.StringUtils"
+    })
+    void trim(String import_) {
+        // language=java
+        rewriteRun(
+          java(
+            """
+              import %s;
+
+              class A {
+                  boolean test(String first) {
+                      boolean a = StringUtils.isEmpty(first.trim());
+                      boolean b = !StringUtils.isEmpty(first.trim());
+                      boolean c = StringUtils.isNotEmpty(first.trim());
+                      boolean d = !StringUtils.isNotEmpty(first.trim()); // yeah, this is weird, but not worth cleaning up
+                      boolean e = StringUtils.isEmpty(foo().trim());
+                  }
+                  String foo() {
+                      return "foo";
+                  }
+              }
+              """.formatted(import_),
+            """
+              class A {
+                  boolean test(String first) {
+                      boolean a = first.trim().isEmpty();
+                      boolean b = !first.trim().isEmpty();
+                      boolean c = !first.trim().isEmpty();
+                      boolean d = !!first.trim().isEmpty(); // yeah, this is weird, but not worth cleaning up
+                      boolean e = foo().trim().isEmpty();
+                  }
+                  String foo() {
+                      return "foo";
+                  }
+              }
+              """));
     }
 
     @ParameterizedTest
