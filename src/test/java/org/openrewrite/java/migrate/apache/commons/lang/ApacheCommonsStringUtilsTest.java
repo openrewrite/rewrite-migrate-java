@@ -162,8 +162,8 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = Objects.toString(in, "nil");
                       string = in == null ? null : in.replaceAll("\\s+", "");
 
-                      bool = in == null && "suffix" == null || in != null && "suffix" != null && in.regionMatches(true, in.length() - "suffix".length(), "suffix", 0, "suffix".length());
-                      bool = in == null && "other" == null || in != null && in.equalsIgnoreCase("other");
+                      bool = in != null && in.regionMatches(true, in.length() - "suffix".length(), "suffix", 0, "suffix".length());
+                      bool = in != null && in.equalsIgnoreCase("other");
                       bool = Objects.equals(in, "other");
                       bool = StringUtils.equals(cs, "other");
                       bool = StringUtils.equals(cs, cs);
@@ -187,11 +187,11 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.overlay(in, "overlay", 3, 5);
 
                       string = StringUtils.remove(in, "r");
-                      string = in == null || in.isEmpty() || "suffix" == null || "suffix".isEmpty() || !in.endsWith("suffix") ? in : in.substring(0, in.length() - "suffix".length());
+                      string = in == null || in.isEmpty() || !in.endsWith("suffix") ? in : in.substring(0, in.length() - "suffix".length());
                       string = StringUtils.repeat(in, 4);
                       string = StringUtils.repeat(in, ",", 4);
-                      string = in == null || in.isEmpty() || "search" == null || "search".isEmpty() || "replacement" == null ? in : in.replace("search", "replacement");
-                      string = in == null || in.isEmpty() || "search" == null || "search".isEmpty() || "replacement" == null ? in : in.replaceFirst(Pattern.quote("search"), "replacement");
+                      string = in == null || in.isEmpty() ? in : in.replace("search", "replacement");
+                      string = in == null || in.isEmpty() ? in : in.replaceFirst(Pattern.quote("search"), "replacement");
                       string = in == null ? null : new StringBuilder(in).reverse().toString();
                       string = StringUtils.right(in, 5);
                       string = StringUtils.rightPad(in, 5);
