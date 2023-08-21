@@ -27,9 +27,9 @@ ecosystem.
 # Java EE/Jakarta EE
 
 The Java Platform, Enterprise Edition (Java EE) consists of a set of specifications that extend Java Standard Edition to
-enable development of distributed applications and web services. Examples of the most commonly used parts of Java EE
+enable the development of distributed applications and web services. Examples of the most commonly used parts of Java EE
 include JAXB, JAX-WS, and the activation framework. These APIs and their associated reference implementations were
-bundled with the Java standard library in JDK 6 through JDK 8, and deprecated in JDK 9. Starting with JDK 11, the
+bundled with the Java standard library in JDK 6 through JDK 8 and deprecated in JDK 9. Starting with JDK 11, the
 libraries were removed from the standard library to reduce the footprint of the Java standard
 library ([See JEP 320 for details](https://openjdk.org/jeps/320)).
 
@@ -37,16 +37,16 @@ library ([See JEP 320 for details](https://openjdk.org/jeps/320)).
 implementation to their builds.**
 
 To muddy the waters further, the governance of the Java Platform, Enterprise Edition, was transferred to the Eclipse
-foundation and was renamed to Jakarta EE. The Jakarta EE 8 release (the first under the Jakarta name) maintains
+Foundation and was renamed to Jakarta EE. The Jakarta EE 8 release (the first under the Jakarta name) maintains
 the `javax.xml.bind` package namespace whereas Jakarta EE 9 is the first release where the package namespace was changed
 to `jakarta.xml.bind`:
 
 ## Java Architecture for XML Binding (JAXB)
 
 Java Architecture for XML Binding (JAXB) provides a framework for mapping XML documents to/from a Java representation of
-those documents. The specification/implementation of this library that is bundled with older versions of the JDK are
-part of the Java EE specification, prior to being moved to the Jakarta project. It can be confusing because Java EE 8
-and Jakarta EE 8 provide exactly the same specification (they use the same javax.xml.bind namespace), and there are
+those documents. The specification/implementation of this library that is bundled with older versions of the JDK was
+part of the Java EE specification before it was moved to the Jakarta project. It can be confusing because Java EE 8
+and Jakarta EE 8 provide exactly the same specification (they use the same `javax.xml.bind` namespace), and there are
 two different reference implementations for the specification.
 
 | Jakarta EE Version | XML Binding Artifact                        | Package Namespace | Description                   |
@@ -116,7 +116,7 @@ following themes:
 ## Illegal Reflective Access<a name="IllegalReflectiveAccess"></a>
 
 The Java module system was introduced in Java 9 and provides a higher-level abstraction for grouping a set of Java
-packages and resources along with additional meta-data. The meta-data is used to identify what services the module
+packages and resources along with additional metadata. The metadata is used to identify what services the module
 offers, what dependencies the module requires, and provides a mechanism for explicitly defining which module classes are
 “visible” to Java classes that are external to the module.
 
@@ -152,8 +152,8 @@ top-level JAR's manifest:
 
 ```xml
 
-<Add-Opens>java.base/java.lang java.base/java.util java.base/java.lang.reflect java.base/java.text
-    java.desktop/java.awt.font
+<Add-Opens>
+    java.base/java.lang java.base/java.util java.base/java.lang.reflect java.base/java.text java.desktop/java.awt.font
 </Add-Opens>
 ```
 
