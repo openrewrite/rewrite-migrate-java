@@ -60,9 +60,11 @@ public class StringFormatted extends Recipe {
             boolean wrapperNotNeeded = wrapperNotNeeded(arguments.get(0));
             maybeRemoveImport("java.lang.String.format");
             J.MethodInvocation mi = method.withName(method.getName().withSimpleName("formatted"));
-            Optional<JavaType.Method> formatted = method.getMethodType().getDeclaringType().getMethods().stream().filter(m -> m.getName().equals("formatted")).findAny();
+            Optional<JavaType.Method> formatted = method.getMethodType().getDeclaringType().getMethods().stream()
+                .filter(m -> m.getName().equals("formatted")).findAny();
             mi = mi.withMethodType(formatted.orElse(null));
-            Expression select = wrapperNotNeeded ? arguments.get(0) : new J.Parentheses<>(Tree.randomId(), Space.EMPTY, Markers.EMPTY, JRightPadded.build(arguments.get(0)));
+            Expression select = wrapperNotNeeded ? arguments.get(0) :
+                new J.Parentheses<>(Tree.randomId(), Space.EMPTY, Markers.EMPTY, JRightPadded.build(arguments.get(0)));
             mi = mi.withSelect(select);
             mi = mi.withArguments(arguments.subList(1, arguments.size()));
             return maybeAutoFormat(method, mi, ctx);
