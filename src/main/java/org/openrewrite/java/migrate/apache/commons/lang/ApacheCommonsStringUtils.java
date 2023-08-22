@@ -20,8 +20,6 @@ import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
-import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 
 @SuppressWarnings("ALL")
 public class ApacheCommonsStringUtils {
@@ -142,17 +140,18 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    private static class EndsWithIgnoreCase {
-        @BeforeTemplate
-        boolean before(String s, String suffix) {
-            return StringUtils.endsWithIgnoreCase(s, suffix);
-        }
-
-        @AfterTemplate
-        boolean after(String s, String suffix) {
-            return (s == null && suffix == null || s != null && suffix != null && s.regionMatches(true, s.length() - suffix.length(), suffix, 0, suffix.length()));
-        }
-    }
+    // NOTE: unlikely to go over well due to added complexity
+    //private static class EndsWithIgnoreCase {
+    //    @BeforeTemplate
+    //    boolean before(String s, String suffix) {
+    //        return StringUtils.endsWithIgnoreCase(s, suffix);
+    //    }
+    //
+    //    @AfterTemplate
+    //    boolean after(String s, String suffix) {
+    //        return (s == null && suffix == null || s != null && suffix != null && s.regionMatches(true, s.length() - suffix.length(), suffix, 0, suffix.length()));
+    //    }
+    //}
 
     private static class EqualsIgnoreCase {
         @BeforeTemplate
@@ -178,20 +177,23 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    private static class IndexOfAny {
-        @BeforeTemplate
-        int before(String s, String searchChars) {
-            return StringUtils.indexOfAny(s, searchChars);
-        }
-
-        @AfterTemplate
-        int after(String s, String searchChars) {
-            return IntStream.range(0, searchChars.length())
-                    .filter(i -> s.indexOf(searchChars.charAt(i)) >= 0)
-                    .min()
-                    .orElse(-1);
-        }
-    }
+    // NOTE: unlikely to go over well due to added complexity
+    //private static class IndexOfAny {
+    //    @BeforeTemplate
+    //    int before(String s, String searchChars) {
+    //        return StringUtils.indexOfAny(s, searchChars);
+    //    }
+    //
+    //    @AfterTemplate
+    //    int after(String s, String searchChars) {
+    //        return searchChars == null || searchChars.isEmpty() ? -1 :
+    //                IntStream.range(0, searchChars.length())
+    //                        .map(searchChars::charAt)
+    //                        .map(s::indexOf)
+    //                        .min()
+    //                        .orElse(-1);
+    //    }
+    //}
 
     // NOTE: not sure if accurate replacement
     //private static class IsAlphanumericSpace {
@@ -394,17 +396,18 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    private static class ReplaceOnce {
-        @BeforeTemplate
-        String before(String s, String search, String replacement) {
-            return StringUtils.replaceOnce(s, search, replacement);
-        }
-
-        @AfterTemplate
-        String after(String s, String search, String replacement) {
-            return (s == null || s.isEmpty() || search == null || search.isEmpty() || replacement == null ? s : s.replaceFirst(Pattern.quote(search), replacement));
-        }
-    }
+    // NOTE: requires dedicated recipe to clean up `Pattern.quote(",")`
+    //private static class ReplaceOnce {
+    //    @BeforeTemplate
+    //    String before(String s, String search, String replacement) {
+    //        return StringUtils.replaceOnce(s, search, replacement);
+    //    }
+    //
+    //    @AfterTemplate
+    //    String after(String s, String search, String replacement) {
+    //        return (s == null || s.isEmpty() || search == null || search.isEmpty() || replacement == null ? s : s.replaceFirst(Pattern.quote(search), replacement));
+    //    }
+    //}
 
     private static class Replace {
         @BeforeTemplate
@@ -455,17 +458,18 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    private static class SplitSeparator {
-        @BeforeTemplate
-        String[] before(String s, String arg) {
-            return StringUtils.split(s, arg);
-        }
-
-        @AfterTemplate
-        String[] after(String s, String arg) {
-            return (s == null ? null : s.split(Pattern.quote(arg)));
-        }
-    }
+    // NOTE: requires dedicated recipe to clean up `Pattern.quote(",")`
+    //private static class SplitSeparator {
+    //    @BeforeTemplate
+    //    String[] before(String s, String arg) {
+    //        return StringUtils.split(s, arg);
+    //    }
+    //
+    //    @AfterTemplate
+    //    String[] after(String s, String arg) {
+    //        return (s == null ? null : s.split(Pattern.quote(arg)));
+    //    }
+    //}
 
     // NOTE: different semantics in handling max=0 to discard trailing empty strings
     //private static class SplitSeparatorMax {
