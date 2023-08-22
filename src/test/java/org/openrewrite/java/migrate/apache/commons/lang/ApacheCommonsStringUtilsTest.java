@@ -25,7 +25,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-@SuppressWarnings({"UnnecessaryCallToStringValueOf", "ConstantValue", "UnusedAssignment", "DataFlowIssue", "StringOperationCanBeSimplified"})
+@SuppressWarnings({"Deprecation", "UnusedAssignment", "DataFlowIssue", "StringOperationCanBeSimplified"})
 class ApacheCommonsStringUtilsTest implements RewriteTest {
 
     @Override
@@ -133,8 +133,6 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
               import org.apache.commons.lang3.StringUtils;
 
               import java.util.Objects;
-              import java.util.regex.Pattern;
-              import java.util.stream.IntStream;
 
               class Foo {
                   void bar(String in, CharSequence cs) {
