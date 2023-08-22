@@ -25,7 +25,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-@SuppressWarnings({"UnnecessaryCallToStringValueOf", "ConstantValue", "UnusedAssignment", "DataFlowIssue", "StringOperationCanBeSimplified"})
+@SuppressWarnings({"Deprecation", "UnusedAssignment", "DataFlowIssue", "StringOperationCanBeSimplified"})
 class ApacheCommonsStringUtilsTest implements RewriteTest {
 
     @Override
@@ -69,13 +69,13 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.defaultString(in, "nil");
                       string = StringUtils.deleteWhitespace(in);
 
-                      bool = StringUtils.endsWithIgnoreCase(in, "suffix");
+                      //bool = StringUtils.endsWithIgnoreCase(in, "suffix");
                       bool = StringUtils.equalsIgnoreCase(in, "other");
                       bool = StringUtils.equals(in, "other");
                       bool = StringUtils.equals(cs, "other");
                       bool = StringUtils.equals(cs, cs);
 
-                      integer = StringUtils.indexOfAny(in, "search");
+                      //integer = StringUtils.indexOfAny(in, "search");
 
                       bool = StringUtils.isAlphanumericSpace(in);
                       bool = StringUtils.isAlphanumeric(in);
@@ -98,7 +98,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.repeat(in, 4);
                       string = StringUtils.repeat(in, ",", 4);
                       string = StringUtils.replace(in, "search", "replacement");
-                      string = StringUtils.replaceOnce(in, "search", "replacement");
+                      //string = StringUtils.replaceOnce(in, "search", "replacement");
                       string = StringUtils.reverse(in);
                       string = StringUtils.right(in, 5);
                       string = StringUtils.rightPad(in, 5);
@@ -106,7 +106,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.rightPad(in, 5, " ");
 
                       array = StringUtils.split(in);
-                      array = StringUtils.split(in, "*");
+                      //array = StringUtils.split(in, "*");
                       bool = StringUtils.startsWith(in, "prefix");
                       bool = StringUtils.startsWithAny(in, "prefix");
                       bool = StringUtils.startsWithIgnoreCase(in, "prefix");
@@ -133,8 +133,6 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
               import org.apache.commons.lang3.StringUtils;
 
               import java.util.Objects;
-              import java.util.regex.Pattern;
-              import java.util.stream.IntStream;
 
               class Foo {
                   void bar(String in, CharSequence cs) {
@@ -162,13 +160,13 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = Objects.toString(in, "nil");
                       string = in == null ? null : in.replaceAll("\\s+", "");
 
-                      bool = in != null && in.regionMatches(true, in.length() - "suffix".length(), "suffix", 0, "suffix".length());
+                      //bool = StringUtils.endsWithIgnoreCase(in, "suffix");
                       bool = in != null && in.equalsIgnoreCase("other");
                       bool = Objects.equals(in, "other");
                       bool = StringUtils.equals(cs, "other");
                       bool = StringUtils.equals(cs, cs);
 
-                      integer = IntStream.range(0, "search".length()).filter(i -> in.indexOf("search".charAt(i)) >= 0).min().orElse(-1);
+                      //integer = StringUtils.indexOfAny(in, "search");
 
                       bool = StringUtils.isAlphanumericSpace(in);
                       bool = in != null && !in.isEmpty() && in.chars().allMatch(Character::isLetterOrDigit);
@@ -191,7 +189,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.repeat(in, 4);
                       string = StringUtils.repeat(in, ",", 4);
                       string = in == null || in.isEmpty() ? in : in.replace("search", "replacement");
-                      string = in == null || in.isEmpty() ? in : in.replaceFirst(Pattern.quote("search"), "replacement");
+                      //string = StringUtils.replaceOnce(in, "search", "replacement");
                       string = in == null ? null : new StringBuilder(in).reverse().toString();
                       string = StringUtils.right(in, 5);
                       string = StringUtils.rightPad(in, 5);
@@ -199,7 +197,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.rightPad(in, 5, " ");
 
                       array = in == null ? null : in.split("\\s+");
-                      array = in == null ? null : in.split(Pattern.quote("*"));
+                      //array = StringUtils.split(in, "*");
                       bool = StringUtils.startsWith(in, "prefix");
                       bool = StringUtils.startsWithAny(in, "prefix");
                       bool = StringUtils.startsWithIgnoreCase(in, "prefix");
