@@ -67,15 +67,20 @@ class ApacheCommonsFileUtilsTest implements RewriteTest {
 
                       str = FileUtils.byteCountToDisplaySize(l);
                       FileUtils.cleanDirectory(fileA);
+                      bool = FileUtils.contentEqualsIgnoreEOL(fileA, fileB, s);
                       bool = FileUtils.contentEquals(fileA, fileB);
                       FileUtils.copyDirectory(fileA, fileB);
+                      FileUtils.copyFileToDirectory(fileA, fileB);
                       FileUtils.copyFile(fileA, fileB);
                       FileUtils.copyURLToFile(url, fileA);
+                      FileUtils.current();
                       FileUtils.deleteDirectory(fileA);
                       bool = FileUtils.deleteQuietly(fileA);
+                      f = FileUtils.delete(fileA);
                       FileUtils.forceDeleteOnExit(fileA);
                       FileUtils.forceDelete(fileA);
                       FileUtils.forceMkdirParent(fileA);
+                      FileUtils.forceMkdir(fileA);
                       f = FileUtils.getTempDirectory();
                       str = FileUtils.readFileToString(fileA, cs);
                       str = FileUtils.readFileToString(fileA, s);
