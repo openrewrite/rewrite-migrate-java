@@ -20,6 +20,7 @@ import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.nio.file.Files;
 
 public class ApacheCommonsFileUtils {
     private static class GetFile {
@@ -46,6 +47,31 @@ public class ApacheCommonsFileUtils {
 //            Files.write(file.toPath(), Arrays.asList(data), cs);
 //        }
 //    }
+
+    private static class CopyDirectory {
+        @BeforeTemplate
+        void before(File a, File b) throws Exception {
+            FileUtils.copyDirectory(a, b);
+        }
+
+        @AfterTemplate
+        void after(File a, File b) throws Exception {
+            Files.copy(a.toPath(), b.toPath());
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static class WriteStringToFile {
+        @BeforeTemplate
+        void before(File a, String s) throws Exception {
+            FileUtils.writeStringToFile(a, s);
+        }
+
+        @AfterTemplate
+        void after(File a, String s) throws Exception {
+            Files.write(a.toPath(), s.getBytes());
+        }
+    }
 
 
 }
