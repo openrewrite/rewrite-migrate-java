@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.lang;
 
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
-import org.openrewrite.java.template.Matches;
 
 public class StringRules {
 
@@ -73,28 +72,18 @@ public class StringRules {
     @SuppressWarnings("StringOperationCanBeSimplified")
     static class UseRegionMatches {
         @BeforeTemplate
-        public boolean bothLowerCase(String string, @Matches(LiteralOrVariable.class) String test) {
+        public boolean bothLowerCase(String string, String test) {
             return string.toLowerCase().equals(test.toLowerCase());
         }
 
         @BeforeTemplate
-        public boolean bothUpperCase(String string, @Matches(LiteralOrVariable.class) String test) {
+        public boolean bothUpperCase(String string, String test) {
             return string.toUpperCase().equals(test.toUpperCase());
         }
 
-        @BeforeTemplate
-        public boolean lowerCase(String string, @Matches(LiteralOrVariable.class) String test) {
-            return string.toLowerCase().equals(test);
-        }
-
-        @BeforeTemplate
-        public boolean upperCase(String string, @Matches(LiteralOrVariable.class) String test) {
-            return string.toUpperCase().equals(test);
-        }
-
         @AfterTemplate
-        public boolean regionMatches(String string, String test) {
-            return string.regionMatches(true, 0, test, 0, test.length());
+        public boolean compareToIgnoreCase(String string, String test) {
+            return string.compareToIgnoreCase(test) == 0;
         }
     }
 }

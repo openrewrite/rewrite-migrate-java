@@ -75,36 +75,24 @@ class StringRulesTest implements RewriteTest {
     }
 
     @Test
-    @SuppressWarnings({"StringOperationCanBeSimplified", "ConstantValue", "MismatchedStringCase"})
+    @SuppressWarnings({"StringOperationCanBeSimplified", "ConstantValue"})
     void equalsCase() {
         rewriteRun(
           java(
             """
               class Test {
-                  String s1 = "hi";
                   boolean b1 = "hello".equals("hi");
                   boolean b2 = "hello".toLowerCase().equals("hi".toLowerCase());
                   boolean b3 = "hello".toUpperCase().equals("hi".toUpperCase());
-                  boolean b4 = "hello".equals("hi");
-                  boolean b5 = "hello".toLowerCase().equals("hi");
-                  boolean b6 = "hello".toLowerCase().equals(s1);
-                  boolean b7 = "hello".toLowerCase().equals(System.getProperty("user.dir"));
-                  boolean b8 = "hello".toUpperCase().equals("hi");
-                  boolean b9 = "hello".toUpperCase().equals(System.getProperty("user.dir"));
+                  boolean b4 = "hello".toUpperCase().equals(System.getProperty("user.dir").toUpperCase());
               }
               """,
             """
               class Test {
-                  String s1 = "hi";
                   boolean b1 = "hello".equals("hi");
-                  boolean b2 = "hello".regionMatches(true, 0, "hi", 0, "hi".length());
-                  boolean b3 = "hello".regionMatches(true, 0, "hi", 0, "hi".length());
-                  boolean b4 = "hello".equals("hi");
-                  boolean b5 = "hello".regionMatches(true, 0, "hi", 0, "hi".length());
-                  boolean b6 = "hello".regionMatches(true, 0, s1, 0, s1.length());
-                  boolean b7 = "hello".toLowerCase().equals(System.getProperty("user.dir"));
-                  boolean b8 = "hello".regionMatches(true, 0, "hi", 0, "hi".length());
-                  boolean b9 = "hello".toUpperCase().equals(System.getProperty("user.dir"));
+                  boolean b2 = "hello".compareToIgnoreCase("hi") == 0;
+                  boolean b3 = "hello".compareToIgnoreCase("hi") == 0;
+                  boolean b4 = "hello".compareToIgnoreCase(System.getProperty("user.dir")) == 0;
               }
               """
           )
