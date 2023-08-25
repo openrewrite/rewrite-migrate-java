@@ -17,23 +17,29 @@ package org.openrewrite.java.migrate.lang;
 
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
+import org.openrewrite.java.template.Matches;
 
 public class StringRules {
 
     @SuppressWarnings("StringOperationCanBeSimplified")
-    static class RedundantSubstring {
+    static class RedundantCall {
         @BeforeTemplate
-        public java.lang.String start(java.lang.String string) {
+        public String start(String string) {
             return string.substring(0, string.length());
         }
 
         @BeforeTemplate
-        public java.lang.String startAndEnd(java.lang.String string) {
+        public String startAndEnd(String string) {
             return string.substring(0);
         }
 
+        @BeforeTemplate
+        public String toString(String string) {
+            return string.toString();
+        }
+
         @AfterTemplate
-        public java.lang.String self(java.lang.String string) {
+        public String self(String string) {
             return string;
         }
     }
@@ -61,6 +67,41 @@ public class StringRules {
         @AfterTemplate
         public int indexOf(String string, char test) {
             return string.indexOf(test);
+        }
+    }
+
+    @SuppressWarnings("StringOperationCanBeSimplified")
+    static class RedundantCaseConversion {
+        @BeforeTemplate
+        public boolean lowerCase(String string, String test) {
+            return string.toLowerCase().equals(test.toLowerCase());
+        }
+
+        @BeforeTemplate
+        public boolean upperCase(String string, String test) {
+            return string.toUpperCase().equals(test.toUpperCase());
+        }
+
+        @AfterTemplate
+        public boolean indexOf(String string, String test) {
+            return string.equals(test);
+        }
+    }
+
+    static class UseRegionMatches {
+        @BeforeTemplate
+        public boolean lowerCase(String string, @Matches(LiteralOrVariable.class) String test) {
+            return string.toLowerCase().equals(test);
+        }
+
+        @BeforeTemplate
+        public boolean upperCase(String string, @Matches(LiteralOrVariable.class) String test) {
+            return string.toUpperCase().equals(test);
+        }
+
+        @AfterTemplate
+        public boolean regionMatches(String string, String test) {
+            return string.regionMatches(true, 0, test, 0, test.length());
         }
     }
 }

@@ -74,4 +74,41 @@ class StringRulesTest implements RewriteTest {
         );
     }
 
+    @Test
+    @SuppressWarnings({"StringOperationCanBeSimplified", "ConstantValue", "MismatchedStringCase"})
+    void equalsCase() {
+        rewriteRun(
+          java(
+            """
+              class Test {
+                  String s1 = "hi";
+                  boolean b1 = "hello".equals("hi");
+                  boolean b2 = "hello".toLowerCase().equals("hi".toLowerCase());
+                  boolean b3 = "hello".toUpperCase().equals("hi".toUpperCase());
+                  boolean b4 = "hello".equals("hi");
+                  boolean b5 = "hello".toLowerCase().equals("hi");
+                  boolean b6 = "hello".toLowerCase().equals(s1);
+                  boolean b7 = "hello".toLowerCase().equals(System.getProperty("user.dir"));
+                  boolean b8 = "hello".toUpperCase().equals("hi");
+                  boolean b9 = "hello".toUpperCase().equals(System.getProperty("user.dir"));
+              }
+              """,
+            """
+              class Test {
+                  String s1 = "hi";
+                  boolean b1 = "hello".equals("hi");
+                  boolean b2 = "hello".equals("hi");
+                  boolean b3 = "hello".equals("hi");
+                  boolean b4 = "hello".equals("hi");
+                  boolean b5 = "hello".regionMatches(true, 0, "hi", 0, "hi".length());
+                  boolean b6 = "hello".regionMatches(true, 0, s1, 0, s1.length());
+                  boolean b7 = "hello".toLowerCase().equals(System.getProperty("user.dir"));
+                  boolean b8 = "hello".regionMatches(true, 0, "hi", 0, "hi".length());
+                  boolean b9 = "hello".toUpperCase().equals(System.getProperty("user.dir"));
+              }
+              """
+          )
+        );
+    }
+
 }
