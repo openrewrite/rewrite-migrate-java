@@ -97,8 +97,8 @@ class StringRulesTest implements RewriteTest {
               class Test {
                   String s1 = "hi";
                   boolean b1 = "hello".equals("hi");
-                  boolean b2 = "hello".equals("hi");
-                  boolean b3 = "hello".equals("hi");
+                  boolean b2 = "hello".regionMatches(true, 0, "hi", 0, "hi".length());
+                  boolean b3 = "hello".regionMatches(true, 0, "hi", 0, "hi".length());
                   boolean b4 = "hello".equals("hi");
                   boolean b5 = "hello".regionMatches(true, 0, "hi", 0, "hi".length());
                   boolean b6 = "hello".regionMatches(true, 0, s1, 0, s1.length());

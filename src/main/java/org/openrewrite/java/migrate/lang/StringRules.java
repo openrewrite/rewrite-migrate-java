@@ -71,24 +71,17 @@ public class StringRules {
     }
 
     @SuppressWarnings("StringOperationCanBeSimplified")
-    static class RedundantCaseConversion {
+    static class UseRegionMatches {
         @BeforeTemplate
-        public boolean lowerCase(String string, String test) {
+        public boolean bothLowerCase(String string, @Matches(LiteralOrVariable.class) String test) {
             return string.toLowerCase().equals(test.toLowerCase());
         }
 
         @BeforeTemplate
-        public boolean upperCase(String string, String test) {
+        public boolean bothUpperCase(String string, @Matches(LiteralOrVariable.class) String test) {
             return string.toUpperCase().equals(test.toUpperCase());
         }
 
-        @AfterTemplate
-        public boolean indexOf(String string, String test) {
-            return string.equals(test);
-        }
-    }
-
-    static class UseRegionMatches {
         @BeforeTemplate
         public boolean lowerCase(String string, @Matches(LiteralOrVariable.class) String test) {
             return string.toLowerCase().equals(test);
