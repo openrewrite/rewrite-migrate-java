@@ -81,7 +81,7 @@ class StringRulesTest implements RewriteTest {
           java(
             """
               class Test {
-                  boolean b1 = "hello".equals("hi");
+                  boolean b1 = "hello".toLowerCase().equals("hi");
                   boolean b2 = "hello".toLowerCase().equals("hi".toLowerCase());
                   boolean b3 = "hello".toUpperCase().equals("hi".toUpperCase());
                   boolean b4 = "hello".toUpperCase().equals(System.getProperty("user.dir").toUpperCase());
@@ -89,10 +89,10 @@ class StringRulesTest implements RewriteTest {
               """,
             """
               class Test {
-                  boolean b1 = "hello".equals("hi");
-                  boolean b2 = "hello".compareToIgnoreCase("hi") == 0;
-                  boolean b3 = "hello".compareToIgnoreCase("hi") == 0;
-                  boolean b4 = "hello".compareToIgnoreCase(System.getProperty("user.dir")) == 0;
+                  boolean b1 = "hello".toLowerCase().equals("hi");
+                  boolean b2 = "hello".equalsIgnoreCase("hi");
+                  boolean b3 = "hello".equalsIgnoreCase("hi");
+                  boolean b4 = "hello".equalsIgnoreCase(System.getProperty("user.dir"));
               }
               """
           )

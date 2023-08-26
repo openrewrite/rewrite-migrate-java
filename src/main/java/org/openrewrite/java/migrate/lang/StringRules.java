@@ -70,7 +70,7 @@ public class StringRules {
     }
 
     @SuppressWarnings("StringOperationCanBeSimplified")
-    static class UseRegionMatches {
+    static class UseEqualsIgnoreCase {
         @BeforeTemplate
         public boolean bothLowerCase(String string, String test) {
             return string.toLowerCase().equals(test.toLowerCase());
@@ -82,8 +82,8 @@ public class StringRules {
         }
 
         @AfterTemplate
-        public boolean compareToIgnoreCase(String string, String test) {
-            return string.compareToIgnoreCase(test) == 0;
+        public boolean equalsIgnoreCase(String string, String test) {
+            return string.equalsIgnoreCase(test);
         }
     }
 }
