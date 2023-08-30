@@ -31,6 +31,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.openrewrite.java.migrate.apache.commons.lang.RepeatableArgumentMatcher.isRepeatableArgument;
+
 public class IsNotEmptyToJdk extends Recipe {
 
     @Override
@@ -83,7 +85,7 @@ public class IsNotEmptyToJdk extends Recipe {
                 Expression arg = mi.getArguments().get(0);
 
                 // Replace StringUtils.isEmpty(var) with var == null || var.isEmpty()
-                if (arg instanceof J.Identifier || arg instanceof J.FieldAccess) {
+                if (isRepeatableArgument(arg)) {
                     JavaTemplate replacementTemplate = isEmptyCall ? isEmptyReplacement : isNotEmptyReplacement;
                     // Maybe remove imports
                     maybeRemoveImport("org.apache.commons.lang3.StringUtils");
@@ -95,7 +97,8 @@ public class IsNotEmptyToJdk extends Recipe {
                 }
 
                 // Replace StringUtils.isEmpty(var.trim()) with var.trim().isEmpty()
-                if (trimMatcher.matches(arg)) {
+                if (trimMatcher.matches(arg)
+                        && (((J.MethodInvocation) arg).getSelect() instanceof J.Identifier || ((J.MethodInvocation) arg).getSelect() instanceof J.FieldAccess)) {
                     JavaTemplate replacementTemplate = isEmptyCall ? isEmptyTrimmed : isNotEmptyTrimmed;
                     // Maybe remove imports
                     maybeRemoveImport("org.apache.commons.lang3.StringUtils");
