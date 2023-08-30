@@ -25,12 +25,13 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.openrewrite.java.migrate.apache.commons.lang.RepeatableArgumentMatcher.isRepeatableArgument;
 
 public class IsNotEmptyToJdk extends Recipe {
 
@@ -84,7 +85,7 @@ public class IsNotEmptyToJdk extends Recipe {
                 Expression arg = mi.getArguments().get(0);
 
                 // Replace StringUtils.isEmpty(var) with var == null || var.isEmpty()
-                if (isArgumentSafeToRepeat(arg)) {
+                if (isRepeatableArgument(arg)) {
                     JavaTemplate replacementTemplate = isEmptyCall ? isEmptyReplacement : isNotEmptyReplacement;
                     // Maybe remove imports
                     maybeRemoveImport("org.apache.commons.lang3.StringUtils");
@@ -107,18 +108,6 @@ public class IsNotEmptyToJdk extends Recipe {
                 }
 
                 return super.visitMethodInvocation(mi, ctx);
-            }
-
-            private boolean isArgumentSafeToRepeat(Expression arg) {
-                // Allow simple getters that return a String
-                if (arg instanceof J.MethodInvocation
-                        && ((J.MethodInvocation) arg).getSelect() instanceof J.Identifier
-                        && ((J.MethodInvocation) arg).getSimpleName().startsWith("get")
-                        && (((J.MethodInvocation) arg).getArguments().isEmpty() || ((J.MethodInvocation) arg).getArguments().get(0) instanceof J.Empty)
-                        && TypeUtils.isAssignableTo("java.lang.String", ((J.MethodInvocation) arg).getMethodType())) {
-                    return true;
-                }
-                return arg instanceof J.Identifier || arg instanceof J.FieldAccess;
             }
         });
     }

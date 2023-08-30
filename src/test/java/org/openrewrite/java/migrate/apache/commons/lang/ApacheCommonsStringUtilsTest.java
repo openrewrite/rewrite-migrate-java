@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.apache.commons.lang;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
@@ -172,7 +171,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       bool = in != null && !in.isEmpty() && in.chars().allMatch(Character::isLetterOrDigit);
                       bool = StringUtils.isAlphaSpace(in);
                       bool = in != null && !in.isEmpty() && in.chars().allMatch(Character::isLetter);
-                      bool = in == null || in.isEmpty();
+                      bool = StringUtils.isEmpty(in);
 
                       string = StringUtils.join(in);
                       string = StringUtils.joinWith(",", in);
@@ -276,20 +275,58 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-templating/issues/27")
-    @Disabled("Known limitation for now; templates should either use Optional or be applied selectively")
     void inputMethodsNotCalledTwice() {
         rewriteRun(
+          //language=java
+          java("""
+            class Bar {
+                String baz() {
+                    return "baz";
+                }
+            }
+            """),
           //language=java
           java(
             """
               import org.apache.commons.lang3.StringUtils;
                             
               class Foo {
-                  void test(String s) {
-                      String test = StringUtils.strip(bar()).toString();
+                  void test(Bar bar) {
+                      String test = StringUtils.strip(bar.baz());
                   }
-                  String bar() {
-                      return "bar";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-templating/issues/27")
+    void getterIsCalledTwice() {
+        rewriteRun(
+          //language=java
+          java("""
+            class Bar {
+                String getBaz() {
+                    return "baz";
+                }
+            }
+            """),
+          //language=java
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+                            
+              class Foo {
+                  void test(Bar bar) {
+                      String test = StringUtils.strip(bar.getBaz());
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void test(Bar bar) {
+                      String test = bar.getBaz() == null ? null : bar.getBaz().trim();
                   }
               }
               """
