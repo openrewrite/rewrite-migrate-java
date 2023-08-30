@@ -278,16 +278,55 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
     void inputMethodsNotCalledTwice() {
         rewriteRun(
           //language=java
+          java("""
+            class Bar {
+                String baz() {
+                    return "baz";
+                }
+            }
+            """),
+          //language=java
           java(
             """
               import org.apache.commons.lang3.StringUtils;
                             
               class Foo {
-                  void test(String s) {
-                      String test = StringUtils.strip(bar).toString();
+                  void test(Bar bar) {
+                      String test = StringUtils.strip(bar.baz());
                   }
-                  String bar() {
-                      return "bar";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-templating/issues/27")
+    void getterIsCalledTwice() {
+        rewriteRun(
+          //language=java
+          java("""
+            class Bar {
+                String getBaz() {
+                    return "baz";
+                }
+            }
+            """),
+          //language=java
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+                            
+              class Foo {
+                  void test(Bar bar) {
+                      String test = StringUtils.strip(bar.getBaz());
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void test(Bar bar) {
+                      String test = bar.getBaz() == null ? null : bar.getBaz().trim();
                   }
               }
               """
