@@ -34,7 +34,7 @@ class RepeatableArgumentMatcher implements Matcher<Expression> {
                 && TypeUtils.isAssignableTo("java.lang.String", ((J.MethodInvocation) arg).getMethodType())) {
             return true;
         }
-        return arg instanceof J.Identifier || arg instanceof J.FieldAccess;
+        return arg instanceof J.Identifier || arg instanceof J.FieldAccess || arg instanceof J.Literal;
     }
 
     @Override
