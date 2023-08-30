@@ -18,7 +18,7 @@ package org.openrewrite.java.migrate.apache.commons.lang;
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.apache.commons.lang3.StringUtils;
-import org.openrewrite.java.template.NotMatches;
+import org.openrewrite.java.template.Matches;
 
 import java.util.Objects;
 
@@ -27,8 +27,8 @@ public class ApacheCommonsStringUtils {
 
     private static class Abbreviate {
         @BeforeTemplate
-        String before(@NotMatches(MethodInvocationMatcher.class) String s1,
-                      @NotMatches(MethodInvocationMatcher.class) int width) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s1,
+                      @Matches(RepeatableArgumentMatcher.class) int width) {
             return StringUtils.abbreviate(s1, width);
         }
 
@@ -41,7 +41,7 @@ public class ApacheCommonsStringUtils {
     @SuppressWarnings("ConstantValue")
     private static class Capitalize {
         @BeforeTemplate
-        String before(@NotMatches(MethodInvocationMatcher.class) String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.capitalize(s);
         }
 
@@ -132,7 +132,7 @@ public class ApacheCommonsStringUtils {
 
     private static class DeleteWhitespace {
         @BeforeTemplate
-        String before(@NotMatches(MethodInvocationMatcher.class) String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.deleteWhitespace(s);
         }
 
@@ -157,8 +157,8 @@ public class ApacheCommonsStringUtils {
 
     private static class EqualsIgnoreCase {
         @BeforeTemplate
-        boolean before(@NotMatches(MethodInvocationMatcher.class) String s,
-                       @NotMatches(MethodInvocationMatcher.class) String other) {
+        boolean before(@Matches(RepeatableArgumentMatcher.class) String s,
+                       @Matches(RepeatableArgumentMatcher.class) String other) {
             return StringUtils.equalsIgnoreCase(s, other);
         }
 
@@ -212,7 +212,7 @@ public class ApacheCommonsStringUtils {
 
     private static class IsAlphanumeric {
         @BeforeTemplate
-        boolean before(@NotMatches(MethodInvocationMatcher.class) String s) {
+        boolean before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.isAlphanumeric(s);
         }
 
@@ -251,7 +251,7 @@ public class ApacheCommonsStringUtils {
 
     private static class IsAlpha {
         @BeforeTemplate
-        boolean before(@NotMatches(MethodInvocationMatcher.class) String s) {
+        boolean before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.isAlpha(s);
         }
 
@@ -325,7 +325,7 @@ public class ApacheCommonsStringUtils {
 
     private static class Lowercase {
         @BeforeTemplate
-        String before(@NotMatches(MethodInvocationMatcher.class) String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.lowerCase(s);
         }
 
@@ -376,8 +376,8 @@ public class ApacheCommonsStringUtils {
 
     private static class RemoveEnd {
         @BeforeTemplate
-        String before(@NotMatches(MethodInvocationMatcher.class) String s,
-                      @NotMatches(MethodInvocationMatcher.class) String end) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s,
+                      @Matches(RepeatableArgumentMatcher.class) String end) {
             return StringUtils.removeEnd(s, end);
         }
 
@@ -415,9 +415,9 @@ public class ApacheCommonsStringUtils {
 
     private static class Replace {
         @BeforeTemplate
-        String before(@NotMatches(MethodInvocationMatcher.class) String s,
-                      @NotMatches(MethodInvocationMatcher.class) String search,
-                      @NotMatches(MethodInvocationMatcher.class) String replacement) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s,
+                      @Matches(RepeatableArgumentMatcher.class) String search,
+                      @Matches(RepeatableArgumentMatcher.class) String replacement) {
             return StringUtils.replace(s, search, replacement);
         }
 
@@ -429,7 +429,7 @@ public class ApacheCommonsStringUtils {
 
     private static class Reverse {
         @BeforeTemplate
-        String before(@NotMatches(MethodInvocationMatcher.class) String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.reverse(s);
         }
 
@@ -454,7 +454,7 @@ public class ApacheCommonsStringUtils {
 
     private static class Split {
         @BeforeTemplate
-        String[] before(@NotMatches(MethodInvocationMatcher.class) String s) {
+        String[] before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.split(s);
         }
 
@@ -492,7 +492,7 @@ public class ApacheCommonsStringUtils {
 
     private static class Strip {
         @BeforeTemplate
-        String before(@NotMatches(MethodInvocationMatcher.class) String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.strip(s);
         }
 
@@ -586,7 +586,7 @@ public class ApacheCommonsStringUtils {
     @SuppressWarnings("ConstantValue")
     private static class TrimToEmpty {
         @BeforeTemplate
-        String before(@NotMatches(MethodInvocationMatcher.class) String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.trimToEmpty(s);
         }
 
@@ -599,7 +599,7 @@ public class ApacheCommonsStringUtils {
     @SuppressWarnings("ConstantValue")
     private static class TrimToNull {
         @BeforeTemplate
-        String before(@NotMatches(MethodInvocationMatcher.class) String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.trimToNull(s);
         }
 
@@ -611,7 +611,7 @@ public class ApacheCommonsStringUtils {
 
     private static class Trim {
         @BeforeTemplate
-        String before(@NotMatches(MethodInvocationMatcher.class) String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.trim(s);
         }
 
@@ -623,7 +623,7 @@ public class ApacheCommonsStringUtils {
 
     private static class Uppercase {
         @BeforeTemplate
-        String before(@NotMatches(MethodInvocationMatcher.class) String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.upperCase(s);
         }
 
