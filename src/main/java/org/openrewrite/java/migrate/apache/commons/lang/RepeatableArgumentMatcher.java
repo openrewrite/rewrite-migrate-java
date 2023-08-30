@@ -26,15 +26,15 @@ class RepeatableArgumentMatcher implements Matcher<Expression> {
      * @return true if the argument is a simple getter that returns a String, or an identifier or field access
      */
     static boolean isRepeatableArgument(Expression arg) {
+        if (arg instanceof J.Literal || arg instanceof J.Identifier || arg instanceof J.FieldAccess) {
+            return true;
+        }
         // Allow simple getters that return a String
-        if (arg instanceof J.MethodInvocation
+        return arg instanceof J.MethodInvocation
                 && ((J.MethodInvocation) arg).getSelect() instanceof J.Identifier
                 && ((J.MethodInvocation) arg).getSimpleName().startsWith("get")
                 && (((J.MethodInvocation) arg).getArguments().isEmpty() || ((J.MethodInvocation) arg).getArguments().get(0) instanceof J.Empty)
-                && TypeUtils.isAssignableTo("java.lang.String", ((J.MethodInvocation) arg).getMethodType())) {
-            return true;
-        }
-        return arg instanceof J.Identifier || arg instanceof J.FieldAccess || arg instanceof J.Literal;
+                && TypeUtils.isAssignableTo("java.lang.String", ((J.MethodInvocation) arg).getMethodType());
     }
 
     @Override
