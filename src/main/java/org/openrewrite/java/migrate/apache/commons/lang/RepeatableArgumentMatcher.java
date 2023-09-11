@@ -20,7 +20,7 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
-class RepeatableArgumentMatcher implements Matcher<Expression> {
+public class RepeatableArgumentMatcher implements Matcher<Expression> {
     /**
      * @param arg an argument to a method invocation
      * @return true if the argument is a simple getter that returns a String, or an identifier or field access
