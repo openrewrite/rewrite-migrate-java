@@ -164,7 +164,7 @@ public class ApacheCommonsStringUtils {
 
         @AfterTemplate
         boolean after(String s, String other) {
-            return (s == null && other == null || s != null && s.equalsIgnoreCase(other));
+            return (s == null ? other == null : s.equalsIgnoreCase(other));
         }
     }
 
@@ -210,17 +210,19 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    private static class IsAlphanumeric {
-        @BeforeTemplate
-        boolean before(@Matches(RepeatableArgumentMatcher.class) String s) {
-            return StringUtils.isAlphanumeric(s);
-        }
 
-        @AfterTemplate
-        boolean after(String s) {
-            return (s != null && !s.isEmpty() && s.chars().allMatch(Character::isLetterOrDigit));
-        }
-    }
+    // `chars()` is only in Java 9+
+    //private static class IsAlphanumeric {
+    //    @BeforeTemplate
+    //    boolean before(@Matches(RepeatableArgumentMatcher.class) String s) {
+    //        return StringUtils.isAlphanumeric(s);
+    //    }
+    //
+    //    @AfterTemplate
+    //    boolean after(String s) {
+    //        return (s != null && !s.isEmpty() && s.chars().allMatch(Character::isLetterOrDigit));
+    //    }
+    //}
 
     // NOTE: not sure if accurate replacement
     //private static class IsAlphaSpace {
@@ -249,17 +251,18 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    private static class IsAlpha {
-        @BeforeTemplate
-        boolean before(@Matches(RepeatableArgumentMatcher.class) String s) {
-            return StringUtils.isAlpha(s);
-        }
-
-        @AfterTemplate
-        boolean after(String s) {
-            return (s != null && !s.isEmpty() && s.chars().allMatch(Character::isLetter));
-        }
-    }
+    // `chars()` is only in Java 9+
+    //private static class IsAlpha {
+    //    @BeforeTemplate
+    //    boolean before(@Matches(RepeatableArgumentMatcher.class) String s) {
+    //        return StringUtils.isAlpha(s);
+    //    }
+    //
+    //    @AfterTemplate
+    //    boolean after(String s) {
+    //        return (s != null && !s.isEmpty() && s.chars().allMatch(Character::isLetter));
+    //    }
+    //}
 
     // NOTE: better handled by `org.openrewrite.java.migrate.apache.commons.lang.IsNotEmptyToJdk`
     //private static class IsEmpty {
