@@ -35,7 +35,7 @@ public class PlexusStringUtils {
 
         @AfterTemplate
         String after(String s, int width) {
-            return (s == null || s.length() <= width ? s : s.substring(0, width - 3) + "...");
+            return (s.length() <= width ? s : s.substring(0, width - 3) + "...");
         }
     }
 
@@ -48,7 +48,7 @@ public class PlexusStringUtils {
 
         @AfterTemplate
         String after(String s) {
-            return (s == null || s.isEmpty() || Character.isTitleCase(s.charAt(0)) ? s : Character.toTitleCase(s.charAt(0)) + s.substring(1));
+            return (s == null || s.isEmpty() ? s : Character.toTitleCase(s.charAt(0)) + s.substring(1));
         }
     }
 
@@ -84,7 +84,7 @@ public class PlexusStringUtils {
 
         @AfterTemplate
         String after(String s) {
-            return (s == null ? null : s.replaceAll("\\s+", ""));
+            return s.replaceAll("\\s+", "");
         }
     }
 
@@ -97,7 +97,7 @@ public class PlexusStringUtils {
 
         @AfterTemplate
         boolean after(String s, String other) {
-            return (s == null && other == null || s != null && s.equalsIgnoreCase(other));
+            return (s == null ? other == null : s.equalsIgnoreCase(other));
         }
     }
 
@@ -110,30 +110,6 @@ public class PlexusStringUtils {
         @AfterTemplate
         boolean after(String s, String other) {
             return Objects.equals(s, other);
-        }
-    }
-
-    private static class IsAlphanumeric {
-        @BeforeTemplate
-        boolean before(@Matches(RepeatableArgumentMatcher.class) String s) {
-            return StringUtils.isAlphanumeric(s);
-        }
-
-        @AfterTemplate
-        boolean after(String s) {
-            return (s != null && !s.isEmpty() && s.chars().allMatch(Character::isLetterOrDigit));
-        }
-    }
-
-    private static class IsAlpha {
-        @BeforeTemplate
-        boolean before(@Matches(RepeatableArgumentMatcher.class) String s) {
-            return StringUtils.isAlpha(s);
-        }
-
-        @AfterTemplate
-        boolean after(String s) {
-            return (s != null && !s.isEmpty() && s.chars().allMatch(Character::isLetter));
         }
     }
 
@@ -183,7 +159,7 @@ public class PlexusStringUtils {
 
         @AfterTemplate
         String[] after(String s) {
-            return (s == null ? null : s.split("\\s+"));
+            return s.split("\\s+");
         }
     }
 
