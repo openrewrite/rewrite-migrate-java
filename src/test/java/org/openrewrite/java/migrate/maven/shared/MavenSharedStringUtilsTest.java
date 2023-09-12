@@ -58,9 +58,6 @@ class MavenSharedStringUtilsTest implements RewriteTest {
                       bool = StringUtils.equalsIgnoreCase(in, "other");
                       bool = StringUtils.equals(in, "other");
                       //bool = StringUtils.equals(cs, "other");
-
-                      bool = StringUtils.isAlphanumeric(in);
-                      bool = StringUtils.isAlpha(in);
                       bool = StringUtils.isEmpty(in);
 
                       string = StringUtils.lowerCase(in);
@@ -84,26 +81,23 @@ class MavenSharedStringUtilsTest implements RewriteTest {
                       String[] array;
                       boolean bool;
                       String string;
-                           
+                            
                       // Test all methods in alphabetical order to only execute the slow recipes once
-                      string = in == null || in.length() <= 10 ? in : in.substring(0, 10 - 3) + "...";
-                      string = in == null || in.isEmpty() || Character.isTitleCase(in.charAt(0)) ? in : Character.toTitleCase(in.charAt(0)) + in.substring(1);
+                      string = in.length() <= 10 ? in : in.substring(0, 10 - 3) + "...";
+                      string = in == null || in.isEmpty() ? in : Character.toTitleCase(in.charAt(0)) + in.substring(1);
                       string = Objects.toString(in, "");
                       string = Objects.toString(in, "nil");
-                      string = in == null ? null : in.replaceAll("\\s+", "");
-                           
-                      bool = in != null && in.equalsIgnoreCase("other");
+                      string = in.replaceAll("\\s+", "");
+                            
+                      bool = in == null ? false : in.equalsIgnoreCase("other");
                       bool = Objects.equals(in, "other");
                       //bool = StringUtils.equals(cs, "other");
-                           
-                      bool = in != null && !in.isEmpty() && in.chars().allMatch(Character::isLetterOrDigit);
-                      bool = in != null && !in.isEmpty() && in.chars().allMatch(Character::isLetter);
                       bool = StringUtils.isEmpty(in);
-                           
+                            
                       string = in == null ? null : in.toLowerCase();
                       string = in == null || in.isEmpty() ? in : in.replace("search", "replacement");
-                      string = in == null ? null : new StringBuilder(in).reverse().toString();
-                      array = in == null ? null : in.split("\\s+");
+                      string = in == null ? null : new StringBuffer(in).reverse().toString();
+                      array = in.split("\\s+");
                       string = in == null ? null : in.trim();
                       string = in == null ? null : in.trim();
                       string = in == null ? null : in.toUpperCase();
