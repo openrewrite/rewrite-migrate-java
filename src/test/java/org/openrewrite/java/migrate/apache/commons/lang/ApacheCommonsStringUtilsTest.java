@@ -160,7 +160,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = in == null ? null : in.replaceAll("\\s+", "");
 
                       //bool = StringUtils.endsWithIgnoreCase(in, "suffix");
-                      bool = in != null && in.equalsIgnoreCase("other");
+                      bool = in == null ? false : in.equalsIgnoreCase("other");
                       bool = Objects.equals(in, "other");
                       bool = StringUtils.equals(cs, "other");
                       bool = StringUtils.equals(cs, cs);
@@ -168,9 +168,9 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       //integer = StringUtils.indexOfAny(in, "search");
 
                       bool = StringUtils.isAlphanumericSpace(in);
-                      bool = in != null && !in.isEmpty() && in.chars().allMatch(Character::isLetterOrDigit);
+                      bool = StringUtils.isAlphanumeric(in);
                       bool = StringUtils.isAlphaSpace(in);
-                      bool = in != null && !in.isEmpty() && in.chars().allMatch(Character::isLetter);
+                      bool = StringUtils.isAlpha(in);
                       bool = StringUtils.isEmpty(in);
 
                       string = StringUtils.join(in);
@@ -265,7 +265,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
             """
               class Foo {
                   void test(String s, String other) {
-                      String test = !(s == null && other == null || s != null && s.equalsIgnoreCase(other));
+                      String test = !(s == null ? other == null : s.equalsIgnoreCase(other));
                   }
               }
               """
