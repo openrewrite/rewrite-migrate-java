@@ -103,7 +103,76 @@ class UpgradeToJava17Test implements RewriteTest {
         );
     }
 
-    @DocumentExample
+    @Test
+    void referenceToJavaVersionProperty() {
+        rewriteRun(
+          version(
+            mavenProject("project",
+              //language=xml
+              pomXml(
+                """
+                  <project>
+                    <modelVersion>4.0.0</modelVersion>
+
+                    <properties>
+                      <java.version>1.8</java.version>
+                      <maven.compiler.source>${java.version}</maven.compiler.source>
+                      <maven.compiler.target>${java.version}</maven.compiler.target>
+                    </properties>
+
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                  </project>
+                  """,
+                """
+                  <project>
+                    <modelVersion>4.0.0</modelVersion>
+
+                    <properties>
+                      <java.version>17</java.version>
+                      <maven.compiler.source>${java.version}</maven.compiler.source>
+                      <maven.compiler.target>${java.version}</maven.compiler.target>
+                    </properties>
+
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                  </project>
+                  """
+              ),
+              srcMainJava(
+                java(
+                  //language=java
+                  """
+                    package com.abc;
+
+                    class A {
+                       public String test() {
+                           return String.format("Hello %s", "world");
+                       }
+                    }
+                    """,
+                  //language=java
+                  """
+                    package com.abc;
+
+                    class A {
+                       public String test() {
+                           return "Hello %s".formatted("world");
+                       }
+                    }
+                    """,
+                  spec -> spec.afterRecipe(cu ->
+                    assertThat(cu.getMarkers().findFirst(JavaVersion.class).map(JavaVersion::getSourceCompatibility).get())
+                      .isEqualTo("17"))
+                )
+              )
+            ),
+            8)
+        );
+    }
+
     @Test
     void testDeprecatedJavaxSecurityCert() {
         rewriteRun(
@@ -147,7 +216,6 @@ class UpgradeToJava17Test implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void testDeprecatedLogRecordMethods() {
         rewriteRun(
