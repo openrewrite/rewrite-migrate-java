@@ -103,73 +103,85 @@ class UpgradeToJava17Test implements RewriteTest {
         );
     }
 
+    @DocumentExample
     @Test
-    void referenceToJavaVersionProperty() {
+    void testDeprecatedJavaxSecurityCert() {
         rewriteRun(
-          version(
-            mavenProject("project",
-              //language=xml
-              pomXml(
-                """
-                  <project>
-                    <modelVersion>4.0.0</modelVersion>
+          //language=java
+          java(
+            """                  
+              import java.io.FileInputStream;
+               import java.io.FileNotFoundException;
+               import java.io.InputStream;
+               
+               import javax.security.cert.*;
+               
+               public class Test {
+               	public static void main(String args[]) throws CertificateException, FileNotFoundException {
+               		InputStream inStream = new FileInputStream("cert");
+               		Certificate cert = X509Certificate.getInstance(inStream);
+               		Certificate cert2 = X509Certificate.getInstance(inStream);
+               		cert.hashCode();
+               		cert2.hashCode();
+               	}
+               }
+              """,
+            """
+              import java.io.FileInputStream;
+               import java.io.FileNotFoundException;
+               import java.io.InputStream;
+               
+               import java.security.cert.*;
+               
+               public class Test {
+               	public static void main(String args[]) throws CertificateException, FileNotFoundException {
+               		InputStream inStream = new FileInputStream("cert");
+               		Certificate cert = X509Certificate.getInstance(inStream);
+               		Certificate cert2 = X509Certificate.getInstance(inStream);
+               		cert.hashCode();
+               		cert2.hashCode();
+               	}
+               }
+              """
+          )
+        );
+    }
 
-                    <properties>
-                      <java.version>1.8</java.version>
-                      <maven.compiler.source>${java.version}</maven.compiler.source>
-                      <maven.compiler.target>${java.version}</maven.compiler.target>
-                    </properties>
-
-                    <groupId>com.mycompany.app</groupId>
-                    <artifactId>my-app</artifactId>
-                    <version>1</version>
-                  </project>
-                  """,
-                """
-                  <project>
-                    <modelVersion>4.0.0</modelVersion>
-
-                    <properties>
-                      <java.version>17</java.version>
-                      <maven.compiler.source>${java.version}</maven.compiler.source>
-                      <maven.compiler.target>${java.version}</maven.compiler.target>
-                    </properties>
-
-                    <groupId>com.mycompany.app</groupId>
-                    <artifactId>my-app</artifactId>
-                    <version>1</version>
-                  </project>
-                  """
-              ),
-              srcMainJava(
-                java(
-                  //language=java
-                  """
-                    package com.abc;
-
-                    class A {
-                       public String test() {
-                           return String.format("Hello %s", "world");
-                       }
-                    }
-                    """,
-                  //language=java
-                  """
-                    package com.abc;
-
-                    class A {
-                       public String test() {
-                           return "Hello %s".formatted("world");
-                       }
-                    }
-                    """,
-                  spec -> spec.afterRecipe(cu ->
-                    assertThat(cu.getMarkers().findFirst(JavaVersion.class).map(JavaVersion::getSourceCompatibility).get())
-                      .isEqualTo("17"))
-                )
-              )
-            ),
-            8)
+    @DocumentExample
+    @Test
+    void testDeprecatedLogRecordMethods() {
+        rewriteRun(
+          //language=java
+          java(
+            """                  
+              package testing.stuff;
+                  
+                  import java.util.logging.LogRecord;
+                  
+                  public class TestLogRecordMethods {
+                  	public void testMethod() {
+                  		LogRecord record = new LogRecord();
+                  		int threadID = record.getThreadID();
+                  		record.setThreadID(1);
+                  	}
+                  }
+                  
+              """,
+            """
+              package testing.stuff;
+                
+                import java.util.logging.LogRecord;
+                
+                public class TestLogRecordMethods {
+                	public void testMethod() {
+                		LogRecord record = new LogRecord();
+                		int threadID = record.getLongThreadID();
+                		record.setLongThreadID(1);
+                	}
+                }
+                
+              """
+          )
         );
     }
 }

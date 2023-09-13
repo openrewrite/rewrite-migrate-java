@@ -33,6 +33,8 @@ recipeList:
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.java.migrate.lang.UseTextBlocks
+  - org.openrewrite.java.migrate.DeprecatedLogRecordMethods
+  - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -47,3 +49,41 @@ recipeList:
       version: 17
   - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
       releaseVersion: 17
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
+displayName: Use javax.security.cert
+description: The javax.security.cert package has been deprecated for removal
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.security.cert
+      newFullyQualifiedTypeName: java.security.cert
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
+displayName: Use "SunJSSE"
+description: The com.sun.net.ssl.internal.ssl.Provider provider name was removed
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangeStringLiteral:
+      oldFullyQualifiedTypeName: com\.sun\.net\.ssl\.internal\.ssl\.Provider
+      newFullyQualifiedTypeName: SunJSSE
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.DeprecatedLogRecordMethods
+displayName: Use getLongThreadID and setLongThreadID
+description: Avoid using the deprecated methods in java.util.logging.LogRecord
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.logging.LogRecord getThreadID()
+      newMethodName: getLongThreadID
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.logging.LogRecord setThreadID()
+      newMethodName: setLongThreadID
+      ignoreDefinition: true
