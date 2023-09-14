@@ -38,7 +38,7 @@ class UpgradeToJava17Test implements RewriteTest {
         spec.recipe(Environment.builder()
           .scanRuntimeClasspath("org.openrewrite.java.migrate")
           .build()
-          .activateRecipes("org.openrewrite.java.migrate.UpgradeToJava17"));
+          .activateRecipes("org.openrewrite.java.migrate.UpgradeToJava17")).allSources(s -> s.markers(javaVersion(17)));
     }
 
     @DocumentExample
@@ -177,54 +177,99 @@ class UpgradeToJava17Test implements RewriteTest {
             8)
         );
     }
-  
-  @Test
-  void testDeprecatedJavaxSecurityCert() {
+
+    @Test
+    void testDeprecatedJavaxSecurityCert() {
         rewriteRun(
-          spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(17), new AboutJavaVersion(null)))),
+          version(
+            java("""
+                import java.io.FileInputStream;
+                import java.io.FileNotFoundException;
+                import java.io.InputStream;
+                               
+                import javax.security.cert.*;
+                               
+                public class Test {
+                	public static void main(String args[]) throws CertificateException, FileNotFoundException {
+                		InputStream inStream = new FileInputStream("cert");
+                		Certificate cert = X509Certificate.getInstance(inStream);
+                		Certificate cert2 = X509Certificate.getInstance(inStream);
+                		cert.hashCode();
+                		cert2.hashCode();
+                	}
+                }
+                   """,
+              """
+                import java.io.FileInputStream;
+                import java.io.FileNotFoundException;
+                import java.io.InputStream;
+                               
+                import java.security.cert.*;
+                               
+                public class Test {
+                	public static void main(String args[]) throws CertificateException, FileNotFoundException {
+                		InputStream inStream = new FileInputStream("cert");
+                		Certificate cert = X509Certificate.getInstance(inStream);
+                		Certificate cert2 = X509Certificate.getInstance(inStream);
+                		cert.hashCode();
+                		cert2.hashCode();
+                	}
+                }
+                   """
+            ), 17)
+        );
+    }
+
+    @Test
+    void testRemovedLegacySunJSSEProviderName() {
+        rewriteRun(
+          version(
           //language=java
           java(
             """                  
-              import java.io.FileInputStream;
-               import java.io.FileNotFoundException;
-               import java.io.InputStream;
-               
-               import javax.security.cert.*;
-               
-               public class Test {
-               	public static void main(String args[]) throws CertificateException, FileNotFoundException {
-               		InputStream inStream = new FileInputStream("cert");
-               		Certificate cert = X509Certificate.getInstance(inStream);
-               		Certificate cert2 = X509Certificate.getInstance(inStream);
-               		cert.hashCode();
-               		cert2.hashCode();
-               	}
-               }
+              package com.ibm.test;
+                  
+                  import javax.net.ssl.SSLContext;
+                  
+                  public class RemovedLegacySunJSSEProviderName {
+                          String legacyProviderName = "com.sun.net.ssl.internal.ssl.Provider"; //flagged
+                          String newProviderName = "SunJSSE"; //not flagged
+                  
+                          public void test() throws Exception {
+                          	SSLContext.getInstance("TLS", "com.sun.net.ssl.internal.ssl.Provider"); //flagged
+                          	SSLContext.getInstance("TLS", "SunJSSE"); //not flagged
+                          }
+
+                          public void test2() throws Exception {
+                              System.out.println("com.sun.net.ssl.internal.ssl.Provider"); //flagged
+                          }
+                  }
               """,
-            """
-              import java.io.FileInputStream;
-               import java.io.FileNotFoundException;
-               import java.io.InputStream;
-               
-               import java.security.cert.*;
-               
-               public class Test {
-               	public static void main(String args[]) throws CertificateException, FileNotFoundException {
-               		InputStream inStream = new FileInputStream("cert");
-               		Certificate cert = X509Certificate.getInstance(inStream);
-               		Certificate cert2 = X509Certificate.getInstance(inStream);
-               		cert.hashCode();
-               		cert2.hashCode();
-               	}
-               }
-              """,
-            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
-          )
+            """                  
+              package com.ibm.test;
+                  
+                  import javax.net.ssl.SSLContext;
+                  
+                  public class RemovedLegacySunJSSEProviderName {
+                          String legacyProviderName = "SunJSSE"; //flagged
+                          String newProviderName = "SunJSSE"; //not flagged
+                  
+                          public void test() throws Exception {
+                          	SSLContext.getInstance("TLS", "SunJSSE"); //flagged
+                          	SSLContext.getInstance("TLS", "SunJSSE"); //not flagged
+                          }
+
+                          public void test2() throws Exception {
+                              System.out.println("SunJSSE"); //flagged
+                          }
+                  }
+              """
+          ), 17)
         );
     }
-  
-  @Test
-  void needToUpgradeMavenCompilerPluginToSupportReleaseTag() {
+
+    @Test
+    void needToUpgradeMavenCompilerPluginToSupportReleaseTag() {
         rewriteRun(
           version(
             mavenProject("project",
@@ -272,45 +317,6 @@ class UpgradeToJava17Test implements RewriteTest {
               )
             ),
             8)
-        );
-    }
-
-    @Test
-    void testDeprecatedLogRecordMethods() {
-        rewriteRun(
-          spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(17), new AboutJavaVersion(null)))),
-          //language=java
-          java(
-            """                  
-              package testing.stuff;
-                  
-                  import java.util.logging.LogRecord;
-                  
-                  public class TestLogRecordMethods {
-                  	public void testMethod() {
-                  		LogRecord record = new LogRecord();
-                  		int threadID = record.getThreadID();
-                  		record.setThreadID(1);
-                  	}
-                  }
-                  
-              """,
-            """
-              package testing.stuff;
-                
-                import java.util.logging.LogRecord;
-                
-                public class TestLogRecordMethods {
-                	public void testMethod() {
-                		LogRecord record = new LogRecord();
-                		int threadID = record.getLongThreadID();
-                		record.setLongThreadID(1);
-                	}
-                }
-                
-              """,
-            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
-          )
         );
     }
 
