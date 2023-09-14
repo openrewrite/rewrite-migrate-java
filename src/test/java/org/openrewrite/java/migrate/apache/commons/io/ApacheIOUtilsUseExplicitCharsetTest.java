@@ -26,6 +26,7 @@ import static org.openrewrite.java.Assertions.srcMainJava;
 
 class ApacheIOUtilsUseExplicitCharsetTest implements RewriteTest {
 
+    @Override
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new ApacheIOUtilsUseExplicitCharset(null))

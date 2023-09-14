@@ -24,6 +24,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
+    @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new UseVarForGenericMethodInvocations())
           .allSources(s -> s.markers(javaVersion(10)));

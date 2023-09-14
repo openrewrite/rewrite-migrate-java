@@ -28,6 +28,7 @@ import static org.openrewrite.maven.Assertions.pomXml;
 
 public class JohnzonJavaxtoJakartaTest implements RewriteTest {
 
+    @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(
           Environment.builder()
