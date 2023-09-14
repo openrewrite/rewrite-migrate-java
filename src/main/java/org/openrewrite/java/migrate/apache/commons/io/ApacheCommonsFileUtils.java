@@ -48,18 +48,6 @@ public class ApacheCommonsFileUtils {
 //        }
 //    }
 
-    private static class CopyDirectory {
-        @BeforeTemplate
-        void before(File a, File b) throws Exception {
-            FileUtils.copyDirectory(a, b);
-        }
-
-        @AfterTemplate
-        void after(File a, File b) throws Exception {
-            Files.copy(a.toPath(), b.toPath());
-        }
-    }
-
     @SuppressWarnings("deprecation")
     private static class WriteStringToFile {
         @BeforeTemplate
