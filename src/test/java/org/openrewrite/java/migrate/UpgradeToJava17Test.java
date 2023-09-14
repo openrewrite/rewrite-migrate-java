@@ -17,10 +17,15 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.config.CompositeRecipe;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.marker.JavaVersion;
+import org.openrewrite.java.migrate.search.AboutJavaVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
@@ -176,6 +181,7 @@ class UpgradeToJava17Test implements RewriteTest {
     @Test
     void testDeprecatedJavaxSecurityCert() {
         rewriteRun(
+          spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(17), new AboutJavaVersion(null)))),
           //language=java
           java(
             """                  
@@ -211,7 +217,8 @@ class UpgradeToJava17Test implements RewriteTest {
                		cert2.hashCode();
                	}
                }
-              """
+              """,
+            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
           )
         );
     }
@@ -219,6 +226,7 @@ class UpgradeToJava17Test implements RewriteTest {
     @Test
     void testDeprecatedLogRecordMethods() {
         rewriteRun(
+          spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(17), new AboutJavaVersion(null)))),
           //language=java
           java(
             """                  
@@ -248,7 +256,8 @@ class UpgradeToJava17Test implements RewriteTest {
                 	}
                 }
                 
-              """
+              """,
+            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
           )
         );
     }
