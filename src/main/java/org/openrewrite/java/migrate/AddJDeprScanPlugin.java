@@ -69,6 +69,7 @@ public class AddJDeprScanPlugin extends Recipe {
                     String.format("<configuration>%n   <release>%s</release>%n</configuration>",
                             StringUtils.isNullOrEmpty(getRelease()) ? "11" : getRelease()),
                     null,
+                    null,
                     null).getVisitor());
             return document;
         }
