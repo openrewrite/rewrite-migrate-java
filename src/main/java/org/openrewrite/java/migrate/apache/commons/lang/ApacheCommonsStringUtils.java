@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.apache.commons.lang;
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.apache.commons.lang3.StringUtils;
+import org.openrewrite.java.template.Matches;
 
 import java.util.Objects;
 
@@ -26,7 +27,8 @@ public class ApacheCommonsStringUtils {
 
     private static class Abbreviate {
         @BeforeTemplate
-        String before(String s1, int width) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s1,
+                      @Matches(RepeatableArgumentMatcher.class) int width) {
             return StringUtils.abbreviate(s1, width);
         }
 
@@ -39,7 +41,7 @@ public class ApacheCommonsStringUtils {
     @SuppressWarnings("ConstantValue")
     private static class Capitalize {
         @BeforeTemplate
-        String before(String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.capitalize(s);
         }
 
@@ -130,7 +132,7 @@ public class ApacheCommonsStringUtils {
 
     private static class DeleteWhitespace {
         @BeforeTemplate
-        String before(String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.deleteWhitespace(s);
         }
 
@@ -155,13 +157,14 @@ public class ApacheCommonsStringUtils {
 
     private static class EqualsIgnoreCase {
         @BeforeTemplate
-        boolean before(String s, String other) {
+        boolean before(@Matches(RepeatableArgumentMatcher.class) String s,
+                       @Matches(RepeatableArgumentMatcher.class) String other) {
             return StringUtils.equalsIgnoreCase(s, other);
         }
 
         @AfterTemplate
         boolean after(String s, String other) {
-            return (s == null && other == null || s != null && s.equalsIgnoreCase(other));
+            return (s == null ? other == null : s.equalsIgnoreCase(other));
         }
     }
 
@@ -207,17 +210,19 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    private static class IsAlphanumeric {
-        @BeforeTemplate
-        boolean before(String s) {
-            return StringUtils.isAlphanumeric(s);
-        }
 
-        @AfterTemplate
-        boolean after(String s) {
-            return (s != null && !s.isEmpty() && s.chars().allMatch(Character::isLetterOrDigit));
-        }
-    }
+    // `chars()` is only in Java 9+
+    //private static class IsAlphanumeric {
+    //    @BeforeTemplate
+    //    boolean before(@Matches(RepeatableArgumentMatcher.class) String s) {
+    //        return StringUtils.isAlphanumeric(s);
+    //    }
+    //
+    //    @AfterTemplate
+    //    boolean after(String s) {
+    //        return (s != null && !s.isEmpty() && s.chars().allMatch(Character::isLetterOrDigit));
+    //    }
+    //}
 
     // NOTE: not sure if accurate replacement
     //private static class IsAlphaSpace {
@@ -246,30 +251,31 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    private static class IsAlpha {
-        @BeforeTemplate
-        boolean before(String s) {
-            return StringUtils.isAlpha(s);
-        }
+    // `chars()` is only in Java 9+
+    //private static class IsAlpha {
+    //    @BeforeTemplate
+    //    boolean before(@Matches(RepeatableArgumentMatcher.class) String s) {
+    //        return StringUtils.isAlpha(s);
+    //    }
+    //
+    //    @AfterTemplate
+    //    boolean after(String s) {
+    //        return (s != null && !s.isEmpty() && s.chars().allMatch(Character::isLetter));
+    //    }
+    //}
 
-        @AfterTemplate
-        boolean after(String s) {
-            return (s != null && !s.isEmpty() && s.chars().allMatch(Character::isLetter));
-        }
-    }
-
-    @SuppressWarnings("ConstantValue")
-    private static class IsEmpty {
-        @BeforeTemplate
-        boolean before(String s) {
-            return StringUtils.isEmpty(s);
-        }
-
-        @AfterTemplate
-        boolean after(String s) {
-            return (s == null || s.isEmpty());
-        }
-    }
+    // NOTE: better handled by `org.openrewrite.java.migrate.apache.commons.lang.IsNotEmptyToJdk`
+    //private static class IsEmpty {
+    //    @BeforeTemplate
+    //    boolean before(String s) {
+    //        return StringUtils.isEmpty(s);
+    //    }
+    //
+    //    @AfterTemplate
+    //    boolean after(String s) {
+    //        return (s == null || s.isEmpty());
+    //    }
+    //}
 
     // NOTE: These two methods don't generate the recipe templates right
     //public static class LeftPad {
@@ -322,7 +328,7 @@ public class ApacheCommonsStringUtils {
 
     private static class Lowercase {
         @BeforeTemplate
-        String before(String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.lowerCase(s);
         }
 
@@ -373,7 +379,8 @@ public class ApacheCommonsStringUtils {
 
     private static class RemoveEnd {
         @BeforeTemplate
-        String before(String s, String end) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s,
+                      @Matches(RepeatableArgumentMatcher.class) String end) {
             return StringUtils.removeEnd(s, end);
         }
 
@@ -411,7 +418,9 @@ public class ApacheCommonsStringUtils {
 
     private static class Replace {
         @BeforeTemplate
-        String before(String s, String search, String replacement) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s,
+                      @Matches(RepeatableArgumentMatcher.class) String search,
+                      @Matches(RepeatableArgumentMatcher.class) String replacement) {
             return StringUtils.replace(s, search, replacement);
         }
 
@@ -423,7 +432,7 @@ public class ApacheCommonsStringUtils {
 
     private static class Reverse {
         @BeforeTemplate
-        String before(String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.reverse(s);
         }
 
@@ -448,7 +457,7 @@ public class ApacheCommonsStringUtils {
 
     private static class Split {
         @BeforeTemplate
-        String[] before(String s) {
+        String[] before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.split(s);
         }
 
@@ -486,7 +495,7 @@ public class ApacheCommonsStringUtils {
 
     private static class Strip {
         @BeforeTemplate
-        String before(String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.strip(s);
         }
 
@@ -580,7 +589,7 @@ public class ApacheCommonsStringUtils {
     @SuppressWarnings("ConstantValue")
     private static class TrimToEmpty {
         @BeforeTemplate
-        String before(String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.trimToEmpty(s);
         }
 
@@ -593,7 +602,7 @@ public class ApacheCommonsStringUtils {
     @SuppressWarnings("ConstantValue")
     private static class TrimToNull {
         @BeforeTemplate
-        String before(String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.trimToNull(s);
         }
 
@@ -605,7 +614,7 @@ public class ApacheCommonsStringUtils {
 
     private static class Trim {
         @BeforeTemplate
-        String before(String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.trim(s);
         }
 
@@ -617,7 +626,7 @@ public class ApacheCommonsStringUtils {
 
     private static class Uppercase {
         @BeforeTemplate
-        String before(String s) {
+        String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.upperCase(s);
         }
 

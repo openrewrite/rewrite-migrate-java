@@ -177,9 +177,9 @@ class UpgradeToJava17Test implements RewriteTest {
             8)
         );
     }
-
-    @Test
-    void testDeprecatedJavaxSecurityCert() {
+  
+  @Test
+  void testDeprecatedJavaxSecurityCert() {
         rewriteRun(
           spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(17), new AboutJavaVersion(null)))),
           //language=java
@@ -222,6 +222,58 @@ class UpgradeToJava17Test implements RewriteTest {
           )
         );
     }
+  
+  @Test
+  void needToUpgradeMavenCompilerPluginToSupportReleaseTag() {
+        rewriteRun(
+          version(
+            mavenProject("project",
+              //language=xml
+              pomXml(
+                """
+                  <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                      <plugins>
+                        <plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-compiler-plugin</artifactId>
+                          <version>3.3.0</version>
+                          <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                          </configuration>
+                        </plugin>
+                      </plugins>
+                    </build>
+                  </project>
+                  """,
+                """
+                  <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                      <plugins>
+                        <plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-compiler-plugin</artifactId>
+                          <version>3.6.2</version>
+                          <configuration>
+                            <release>17</release>
+                          </configuration>
+                        </plugin>
+                      </plugins>
+                    </build>
+                  </project>
+                  """
+              )
+            ),
+            8)
+        );
+    }
 
     @Test
     void testDeprecatedLogRecordMethods() {
@@ -259,6 +311,58 @@ class UpgradeToJava17Test implements RewriteTest {
               """,
             spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
           )
+        );
+    }
+
+    @Test
+    void notNeedToUpgradeMavenCompilerPluginToSupportReleaseTag() {
+        rewriteRun(
+          version(
+            mavenProject("project",
+              //language=xml
+              pomXml(
+                """
+                  <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                      <plugins>
+                        <plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-compiler-plugin</artifactId>
+                          <version>3.8.0</version>
+                          <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                          </configuration>
+                        </plugin>
+                      </plugins>
+                    </build>
+                  </project>
+                  """,
+                """
+                  <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                      <plugins>
+                        <plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-compiler-plugin</artifactId>
+                          <version>3.8.0</version>
+                          <configuration>
+                            <release>17</release>
+                          </configuration>
+                        </plugin>
+                      </plugins>
+                    </build>
+                  </project>
+                  """
+              )
+            ),
+            8)
         );
     }
 }
