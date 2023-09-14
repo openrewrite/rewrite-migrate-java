@@ -43,6 +43,7 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
         return "Use `ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)` instead of the deprecated `LogManager#getLoggingMXBean()` in Java 9 or higher.";
     }
 
+    @Override
     public Set<String> getTags() {
         return Collections.singleton("deprecated");
     }

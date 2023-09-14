@@ -24,6 +24,7 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
 class UseVarForPrimitiveTest extends VarBaseTest {
+    @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new UseVarForPrimitive())
           .allSources(s -> s.markers(javaVersion(10)));

@@ -25,6 +25,7 @@ import org.openrewrite.test.RecipeSpec;
 
 class UseVarForObjectsTest extends VarBaseTest {
 
+    @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new UseVarForObject())
           .allSources(s -> s.markers(javaVersion(10)));

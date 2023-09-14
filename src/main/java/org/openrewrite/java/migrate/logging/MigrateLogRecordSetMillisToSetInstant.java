@@ -39,6 +39,7 @@ public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
         return "Use `LogRecord#setInstant(Instant)` instead of the deprecated `LogRecord#setMillis(long)` in Java 9 or higher.";
     }
 
+    @Override
     public Set<String> getTags() {
         return Collections.singleton("deprecated");
     }

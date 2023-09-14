@@ -25,6 +25,7 @@ import static org.openrewrite.maven.Assertions.pomXml;
 
 
 class UpgradeJaCoCoMavenPluginVersionTest implements RewriteTest {
+    @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(Environment.builder()
           .scanRuntimeClasspath("org.openrewrite.java.migrate.jacoco")
