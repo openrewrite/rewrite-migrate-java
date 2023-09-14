@@ -192,7 +192,6 @@ class UseVarKeywordTest implements RewriteTest {
                                 assertThat(HtmlInputType.from(type)).isEqualTo(expected);
                             }
                                     
-                                    
                             @Override
                             public String toString() {
                                 return String.format("Derives %s from %s.", expected, type);
@@ -247,10 +246,17 @@ class UseVarKeywordTest implements RewriteTest {
                             public String toString() {
                                 return String.format("Derives %s from %s.", expected, type);
                             }
+                            //mocking
+                            private <SELF extends AbstractBigDecimalAssert<SELF>> AbstractBigDecimalAssert assertThat(HtmlInputType from) {
+                                return null;
+                            }
                         }
                   }
                   // replacement
                   class DynamicTest {}
+                  class AbstractBigDecimalAssert<T> {
+                      public void isEqualTo(Object expected) {}
+                  }
                   """),
                 10
               )
