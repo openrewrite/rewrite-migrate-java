@@ -31,6 +31,7 @@ class StringRulesTest implements RewriteTest {
     @Test
     @SuppressWarnings("StringOperationCanBeSimplified")
     void substring() {
+        //language=java
         rewriteRun(
           java(
             """
@@ -52,6 +53,7 @@ class StringRulesTest implements RewriteTest {
     @Test
     @SuppressWarnings("StringOperationCanBeSimplified")
     void indexOf() {
+        //language=java
         rewriteRun(
           java(
             """
@@ -75,8 +77,9 @@ class StringRulesTest implements RewriteTest {
     }
 
     @Test
-    @SuppressWarnings({"StringOperationCanBeSimplified", "ConstantValue"})
+    @SuppressWarnings({"StringOperationCanBeSimplified", "ConstantValue", "ConstantConditions"})
     void equalsCase() {
+        //language=java
         rewriteRun(
           java(
             """
@@ -98,5 +101,4 @@ class StringRulesTest implements RewriteTest {
           )
         );
     }
-
 }
