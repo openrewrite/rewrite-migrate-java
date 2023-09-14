@@ -15,9 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,6 +22,9 @@ import org.openrewrite.Example;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
 
 class UseVarKeywordTest implements RewriteTest {
 
@@ -363,14 +363,14 @@ class UseVarKeywordTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-                      package com.example.app;
-                                   \s
-                      class A {
-                        void m() {
-                        String o = "isTrue";
-                        }
-                      }
-                      """),
+                  package com.example.app;
+                                    
+                  class A {
+                    void m() {
+                        String o = true ? "isTrue" : "Test";
+                    }
+                  }
+                  """),
                 10
               )
             );
@@ -446,18 +446,18 @@ class UseVarKeywordTest implements RewriteTest {
                   version(
                     java("""
                       package com.example.app;
-                                       \s
+                                        
                       class A {
                         void m() {
-                            String o = "isTrue";
+                            String o = true ? "isTrue" : "Test";
                         }
                       }
                       """, """
                       package com.example.app;
-                                       \s
+                                        
                       class A {
                         void m() {
-                            var o = "isTrue";
+                            var o = true ? "isTrue" : "Test";
                         }
                       }
                       """),
