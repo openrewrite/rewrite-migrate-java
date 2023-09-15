@@ -74,8 +74,8 @@ public class ApacheCommonsFileUtils {
         }
 
         @AfterTemplate
-        void after(File a, String data) throws Exception {
-            Files.write(a.toPath(), data.getBytes(), StandardOpenOption.APPEND);
+        void after(File a, String data, boolean append) throws Exception {
+            Files.write(a.toPath(), data.getBytes(), append ? StandardOpenOption.APPEND : null);
         }
     }
 

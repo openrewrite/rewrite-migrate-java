@@ -88,6 +88,12 @@ class ApacheCommonsFileUtilsTest implements RewriteTest {
                       FileUtils.writeByteArrayToFile(fileA, bytes);
                       FileUtils.writeLines(fileA, collection);
                       FileUtils.writeStringToFile(fileA, s);
+                      
+                      FileUtils.writeStringToFile(fileA, s, bool);
+                      FileUtils.writeStringToFile(fileA, s, cs);
+                      FileUtils.writeStringToFile(fileA, s, cs, bool);
+                      FileUtils.writeStringToFile(fileA, s, str);
+                      FileUtils.writeStringToFile(fileA, s, str, bool);
                   }
               }
               """,
@@ -99,6 +105,7 @@ class ApacheCommonsFileUtilsTest implements RewriteTest {
               import java.net.URL;
               import java.nio.charset.Charset;
               import java.nio.file.Files;
+              import java.nio.file.StandardOpenOption;
               import java.util.Collection;
               import java.util.Collections;
               import java.util.List;
@@ -144,6 +151,12 @@ class ApacheCommonsFileUtilsTest implements RewriteTest {
                       FileUtils.writeByteArrayToFile(fileA, bytes);
                       FileUtils.writeLines(fileA, collection);
                       Files.write(fileA.toPath(), s.getBytes());
+                      
+                      Files.write(fileA.toPath(), s.getBytes(), bool ? StandardOpenOption.APPEND : null);
+                      Files.write(fileA.toPath(), Collections.singletonList(s), cs);
+                      Files.write(fileA.toPath(), Collections.singletonList(s), cs, bool ? StandardOpenOption.APPEND : null);
+                      Files.write(fileA.toPath(), Collections.singletonList(s), Charset.forName(str));
+                      Files.write(fileA.toPath(), Collections.singletonList(s), Charset.forName(str), bool ? StandardOpenOption.APPEND : null);
                   }
               }
               """
