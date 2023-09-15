@@ -147,7 +147,7 @@ class ReplaceStreamCollectWithToListTest implements RewriteTest {
     }
 
     @Test
-    void reatinComment() {
+    void retainComment() {
         rewriteRun(
           //language=java
           java(
