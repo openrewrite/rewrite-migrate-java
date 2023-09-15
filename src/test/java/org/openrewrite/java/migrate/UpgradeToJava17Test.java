@@ -265,6 +265,34 @@ class UpgradeToJava17Test implements RewriteTest {
     }
 
     @Test
+    void replaceLogRecordSetThreadID() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import java.util.logging.LogRecord;
+                                
+                class Foo {
+                	void bar(LogRecord record) {
+                		record.setThreadID(1);
+                	}
+                }
+                """,
+              """
+                import java.util.logging.LogRecord;
+                                
+                class Foo {
+                	void bar(LogRecord record) {
+                		record.setLongThreadID(1);
+                	}
+                }
+                """
+            ), 17)
+        );
+    }
+
+    @Test
     void needToUpgradeMavenCompilerPluginToSupportReleaseTag() {
         rewriteRun(
           version(

@@ -34,6 +34,7 @@ recipeList:
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.java.migrate.lang.UseTextBlocks
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
+  - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
   - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
 
 ---
@@ -71,3 +72,18 @@ recipeList:
   - org.openrewrite.java.migrate.ReplaceStringLiteralValue:
       oldLiteralValue: com.sun.net.ssl.internal.ssl.Provider
       newLiteralValue: SunJSSE
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
+displayName: Adopt `setLongThreadID` in `java.util.logging.LogRecord`
+description: Avoid using the deprecated methods in `java.util.logging.LogRecord`
+tags:
+  - java17
+recipeList:
+  # Disabled for now, as the new methods returns a long instead of an int, which causes compilation errors
+  #- org.openrewrite.java.ChangeMethodName:
+  #    methodPattern: java.util.logging.LogRecord getThreadID()
+  #    newMethodName: getLongThreadID
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.logging.LogRecord setThreadID(int)
+      newMethodName: setLongThreadID
