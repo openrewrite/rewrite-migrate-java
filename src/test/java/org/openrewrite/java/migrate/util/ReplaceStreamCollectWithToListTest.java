@@ -15,174 +15,169 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
-
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-class ReplaceCollectWithStreamToListTest implements RewriteTest {
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
+
+class ReplaceStreamCollectWithToListTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new ReplaceCollectWithStreamToList(false));
+        spec
+          .recipe(new ReplaceStreamCollectWithToList(false))
+          .allSources(s -> s.markers(javaVersion(17)));
     }
 
     @Test
     @DocumentExample
     void replacesToUnmodifiableList() {
         rewriteRun(
-          version(
-            //language=java
-            java(
-              """
+          //language=java
+          java(
+            """
               import java.util.stream.Collectors;
               import java.util.stream.Stream;
               import java.util.List;
 
               class Example {
-                  public List<String> test(Stream<String> stream) {
+                  List<String> test(Stream<String> stream) {
                       return stream.collect(Collectors.toUnmodifiableList());
                   }
               }
               """,
-              """
+            """
               import java.util.stream.Stream;
               import java.util.List;
 
               class Example {
-                  public List<String> test(Stream<String> stream) {
+                  List<String> test(Stream<String> stream) {
                       return stream.toList();
                   }
               }
-              """),
-            16));
+              """
+          )
+        );
     }
 
     @Test
-    void doesNotReplaceToList() {
+    void doesNotReplaceToListByDefault() {
         rewriteRun(
-          version(
-            //language=java
-            java(
-              """
-              package com.example;
-
+          //language=java
+          java(
+            """
               import java.util.stream.Collectors;
               import java.util.stream.Stream;
+              import java.util.List;
 
               class Example {
-                  public void test() {
-                      Stream.of().collect(Collectors.toList());
+                  List<String> test(Stream<String> stream) {
+                      return stream.collect(Collectors.toList());
                   }
               }
-              """),
-            16));
+              """
+          )
+        );
     }
 
     @Test
-    void doesReplaceToList() {
+    void doesReplaceToListWhenFlagSetToTrue() {
         rewriteRun(
-          recipeSpec -> recipeSpec.recipe(new ReplaceCollectWithStreamToList(true)),
-          version(
-            //language=java
-            java(
-              """
-              package com.example;
-
+          recipeSpec -> recipeSpec.recipe(new ReplaceStreamCollectWithToList(true)),
+          //language=java
+          java(
+            """
               import java.util.stream.Collectors;
               import java.util.stream.Stream;
+              import java.util.List;
 
               class Example {
-                  public void test() {
-                      Stream.of().collect(Collectors.toList());
+                  List<String> test(Stream<String> stream) {
+                      return stream.collect(Collectors.toList());
                   }
               }
               """,
-              """
-              package com.example;
-
+            """
               import java.util.stream.Stream;
+              import java.util.List;
 
               class Example {
-                  public void test() {
-                      Stream.of().toList();
+                  List<String> test(Stream<String> stream) {
+                      return stream.toList();
                   }
               }
-              """),
-            16));
+              """
+          )
+        );
     }
 
     @Test
-    void formatting() {
+    void retainWhitespace() {
         rewriteRun(
-          version(
-            //language=java
-            java(
-              """
-              package com.example;
-
+          //language=java
+          java(
+            """
               import java.util.stream.Collectors;
               import java.util.stream.Stream;
+              import java.util.List;
 
               class Example {
-                  public void test() {
-                      Stream.of()
+                  List<String> test(Stream<String> stream) {
+                      return stream
                           .collect(Collectors.toUnmodifiableList());
                   }
               }
               """,
-              """
-              package com.example;
-
+            """
               import java.util.stream.Stream;
+              import java.util.List;
 
               class Example {
-                  public void test() {
-                      Stream.of()
+                  List<String> test(Stream<String> stream) {
+                      return stream
                           .toList();
                   }
               }
-              """),
-            16));
+              """
+          )
+        );
     }
 
     @Test
-    void comment() {
+    void reatinComment() {
         rewriteRun(
-          version(
-            //language=java
-            java(
-              """
-              package com.example;
-
+          //language=java
+          java(
+            """
               import java.util.stream.Collectors;
               import java.util.stream.Stream;
+              import java.util.List;
 
               class Example {
-                  public void test() {
-                      Stream.of()
+                  List<String> test(Stream<String> stream) {
+                      return stream
                           // Convert to list
                           .collect(Collectors.toUnmodifiableList());
                   }
               }
               """,
-              """
-              package com.example;
-
+            """
               import java.util.stream.Stream;
+              import java.util.List;
 
               class Example {
-                  public void test() {
-                      Stream.of()
+                  List<String> test(Stream<String> stream) {
+                      return stream
                           // Convert to list
                           .toList();
                   }
               }
-              """),
-            16));
+              """
+          )
+        );
     }
 
 }
