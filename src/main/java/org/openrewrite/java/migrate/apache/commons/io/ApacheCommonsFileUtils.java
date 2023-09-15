@@ -20,8 +20,13 @@ import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.Collections;
 
+@SuppressWarnings("deprecation")
 public class ApacheCommonsFileUtils {
     private static class GetFile {
         @BeforeTemplate
@@ -61,5 +66,70 @@ public class ApacheCommonsFileUtils {
         }
     }
 
+    // file, string, boolean
+    private static class WriteStringToFileOverloadOne {
+        @BeforeTemplate
+        void before(File a, String data, boolean append) throws Exception {
+            FileUtils.writeStringToFile(a, data, append);
+        }
+
+        @AfterTemplate
+        void after(File a, String data) throws Exception {
+            Files.write(a.toPath(), data.getBytes(), StandardOpenOption.APPEND);
+        }
+    }
+
+    // file, string, charset
+    @SuppressWarnings("depcr")
+    private static class WriteStringToFileOverloadTwo {
+        @BeforeTemplate
+        void before(File a, String data, Charset cs) throws Exception {
+            FileUtils.writeStringToFile(a, data, cs);
+        }
+
+        @AfterTemplate
+        void after(File a, String data, Charset cs) throws Exception {
+            Files.write(a.toPath(), Collections.singletonList(data), cs);
+        }
+    }
+
+    // file, string, charset, boolean
+    private static class WriteStringToFileOverloadThree {
+        @BeforeTemplate
+        void before(File a, String data, Charset cs, boolean append) throws Exception {
+            FileUtils.writeStringToFile(a, data, cs, append);
+        }
+
+        @AfterTemplate
+        void after(File a, String data, Charset cs, boolean append) throws Exception {
+            Files.write(a.toPath(), Collections.singletonList(data), cs, append ? StandardOpenOption.APPEND : null);
+        }
+    }
+
+    // file, string, string
+    private static class WriteStringToFileOverloadFour {
+        @BeforeTemplate
+        void before(File a, String data, String charsetName) throws Exception {
+            FileUtils.writeStringToFile(a, data, charsetName);
+        }
+
+        @AfterTemplate
+        void after(File a, String data, String charsetName) throws Exception {
+            Files.write(a.toPath(), Collections.singletonList(data), Charset.forName(charsetName));
+        }
+    }
+
+    // file, string, string, boolean
+    private static class WriteStringToFileOverloadFive {
+        @BeforeTemplate
+        void before(File a, String data, String charsetName, boolean append) throws Exception {
+            FileUtils.writeStringToFile(a, data, charsetName, append);
+        }
+
+        @AfterTemplate
+        void after(File a, String data, String charsetName, boolean append) throws Exception {
+            Files.write(a.toPath(), Collections.singletonList(data), Charset.forName(charsetName), append ? StandardOpenOption.APPEND : null);
+        }
+    }
 
 }
