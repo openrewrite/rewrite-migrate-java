@@ -174,6 +174,121 @@ class UpgradeToJava17Test implements RewriteTest {
     }
 
     @Test
+    void changeJavaxSecurityCertPackage() {
+        rewriteRun(
+          version(
+            //language=java
+            java("""
+                import java.io.FileInputStream;
+                import java.io.FileNotFoundException;
+                import java.io.InputStream;
+                               
+                import javax.security.cert.*;
+                               
+                class Test {
+                    void foo() throws CertificateException, FileNotFoundException {
+                        InputStream inStream = new FileInputStream("cert");
+                        Certificate cert = X509Certificate.getInstance(inStream);
+                        Certificate cert2 = X509Certificate.getInstance(inStream);
+                        cert.hashCode();
+                        cert2.hashCode();
+                    }
+                }
+                   """,
+              """
+                import java.io.FileInputStream;
+                import java.io.FileNotFoundException;
+                import java.io.InputStream;
+                               
+                import java.security.cert.*;
+                               
+                class Test {
+                    void foo() throws CertificateException, FileNotFoundException {
+                        InputStream inStream = new FileInputStream("cert");
+                        Certificate cert = X509Certificate.getInstance(inStream);
+                        Certificate cert2 = X509Certificate.getInstance(inStream);
+                        cert.hashCode();
+                        cert2.hashCode();
+                    }
+                }
+                   """
+            ), 17)
+        );
+    }
+
+    @Test
+    void removedLegacySunJSSEProviderName() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import javax.net.ssl.SSLContext;
+                                    
+                class RemovedLegacySunJSSEProviderName {
+                    String legacyProviderName = "com.sun.net.ssl.internal.ssl.Provider"; //flagged
+                    String newProviderName = "SunJSSE"; //not flagged
+                                
+                    void test() throws Exception {
+                        SSLContext.getInstance("TLS", "com.sun.net.ssl.internal.ssl.Provider"); //flagged
+                        SSLContext.getInstance("TLS", "SunJSSE"); //not flagged
+                    }
+
+                    void test2() throws Exception {
+                        System.out.println("com.sun.net.ssl.internal.ssl.Provider"); //flagged
+                    }
+                }
+                """,
+              """
+                import javax.net.ssl.SSLContext;
+                                    
+                class RemovedLegacySunJSSEProviderName {
+                    String legacyProviderName = "SunJSSE"; //flagged
+                    String newProviderName = "SunJSSE"; //not flagged
+                                
+                    void test() throws Exception {
+                        SSLContext.getInstance("TLS", "SunJSSE"); //flagged
+                        SSLContext.getInstance("TLS", "SunJSSE"); //not flagged
+                    }
+
+                    void test2() throws Exception {
+                        System.out.println("SunJSSE"); //flagged
+                    }
+                }
+                """
+            ), 17)
+        );
+    }
+
+    @Test
+    void replaceLogRecordSetThreadID() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import java.util.logging.LogRecord;
+                                
+                class Foo {
+                    void bar(LogRecord record) {
+                        record.setThreadID(1);
+                    }
+                }
+                """,
+              """
+                import java.util.logging.LogRecord;
+                                
+                class Foo {
+                    void bar(LogRecord record) {
+                        record.setLongThreadID(1);
+                    }
+                }
+                """
+            ), 17)
+        );
+    }
+
+    @Test
     void needToUpgradeMavenCompilerPluginToSupportReleaseTag() {
         rewriteRun(
           version(
