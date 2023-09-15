@@ -17,15 +17,10 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.CompositeRecipe;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.marker.JavaVersion;
-import org.openrewrite.java.migrate.search.AboutJavaVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
-import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
@@ -179,9 +174,10 @@ class UpgradeToJava17Test implements RewriteTest {
     }
 
     @Test
-    void testDeprecatedJavaxSecurityCert() {
+    void changeJavaxSecurityCertPackage() {
         rewriteRun(
           version(
+            //language=java
             java("""
                 import java.io.FileInputStream;
                 import java.io.FileNotFoundException;
@@ -221,50 +217,50 @@ class UpgradeToJava17Test implements RewriteTest {
     }
 
     @Test
-    void testRemovedLegacySunJSSEProviderName() {
+    void removedLegacySunJSSEProviderName() {
         rewriteRun(
           version(
-          //language=java
-          java(
-            """                  
-              package com.ibm.test;
-                  
-                  import javax.net.ssl.SSLContext;
-                  
-                  public class RemovedLegacySunJSSEProviderName {
-                          String legacyProviderName = "com.sun.net.ssl.internal.ssl.Provider"; //flagged
-                          String newProviderName = "SunJSSE"; //not flagged
-                  
-                          public void test() throws Exception {
-                          	SSLContext.getInstance("TLS", "com.sun.net.ssl.internal.ssl.Provider"); //flagged
-                          	SSLContext.getInstance("TLS", "SunJSSE"); //not flagged
-                          }
+            //language=java
+            java(
+              """                  
+                package com.ibm.test;
+                    
+                    import javax.net.ssl.SSLContext;
+                    
+                    public class RemovedLegacySunJSSEProviderName {
+                            String legacyProviderName = "com.sun.net.ssl.internal.ssl.Provider"; //flagged
+                            String newProviderName = "SunJSSE"; //not flagged
+                    
+                            public void test() throws Exception {
+                            	SSLContext.getInstance("TLS", "com.sun.net.ssl.internal.ssl.Provider"); //flagged
+                            	SSLContext.getInstance("TLS", "SunJSSE"); //not flagged
+                            }
 
-                          public void test2() throws Exception {
-                              System.out.println("com.sun.net.ssl.internal.ssl.Provider"); //flagged
-                          }
-                  }
-              """,
-            """                  
-              package com.ibm.test;
-                  
-                  import javax.net.ssl.SSLContext;
-                  
-                  public class RemovedLegacySunJSSEProviderName {
-                          String legacyProviderName = "SunJSSE"; //flagged
-                          String newProviderName = "SunJSSE"; //not flagged
-                  
-                          public void test() throws Exception {
-                          	SSLContext.getInstance("TLS", "SunJSSE"); //flagged
-                          	SSLContext.getInstance("TLS", "SunJSSE"); //not flagged
-                          }
+                            public void test2() throws Exception {
+                                System.out.println("com.sun.net.ssl.internal.ssl.Provider"); //flagged
+                            }
+                    }
+                """,
+              """                  
+                package com.ibm.test;
+                    
+                    import javax.net.ssl.SSLContext;
+                    
+                    public class RemovedLegacySunJSSEProviderName {
+                            String legacyProviderName = "SunJSSE"; //flagged
+                            String newProviderName = "SunJSSE"; //not flagged
+                    
+                            public void test() throws Exception {
+                            	SSLContext.getInstance("TLS", "SunJSSE"); //flagged
+                            	SSLContext.getInstance("TLS", "SunJSSE"); //not flagged
+                            }
 
-                          public void test2() throws Exception {
-                              System.out.println("SunJSSE"); //flagged
-                          }
-                  }
-              """
-          ), 17)
+                            public void test2() throws Exception {
+                                System.out.println("SunJSSE"); //flagged
+                            }
+                    }
+                """
+            ), 17)
         );
     }
 

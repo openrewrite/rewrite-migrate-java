@@ -19,58 +19,58 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.NonNull;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.tree.*;
-import org.openrewrite.Preconditions;
-import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
-public class ChangeStringLiteralValue extends Recipe {
+public class ReplaceStringLiteralValue extends Recipe {
 
-    @Option(displayName = "Old string value",
-            description = "The string value to replace.",
+    @Option(displayName = "Old literal `String` value",
+            description = "The `String` value to replace.",
             example = "apple")
     @NonNull
-    String oldStringValue;
+    String oldLiteralValue;
 
-    @Option(displayName = "New stringvalue",
-            description = "New string to replace the old string value with.",
+    @Option(displayName = "New literal `String` value",
+            description = "The `String` value to replace with.",
             example = "orange")
     @NonNull
-    String newStringValue;
+    String newLiteralValue;
 
     @JsonCreator
-    public ChangeStringLiteralValue(@NonNull @JsonProperty("oldStringValue") String oldStringValue, @NonNull @JsonProperty("newStringValue") String newStringValue) {
-        this.oldStringValue = oldStringValue;
-        this.newStringValue = newStringValue;
+    public ReplaceStringLiteralValue(@NonNull @JsonProperty("oldStringValue") String oldStringValue, @NonNull @JsonProperty("newStringValue") String newStringValue) {
+        this.oldLiteralValue = oldStringValue;
+        this.newLiteralValue = newStringValue;
     }
 
     @Override
     public String getDisplayName() {
-        return "Change string literal";
+        return "Replace `String` literal";
     }
 
     @Override
     public String getDescription() {
-        return "Changes the value of a string literal.";
+        return "Replace the value of a complete `String` literal.";
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             public J.Literal visitLiteral(J.Literal literal, ExecutionContext ctx) {
-                String literalValue = (String) literal.getValue();
-                if (literalValue != null && literalValue.equals(oldStringValue)) {
-                    literal = literal.withValue(newStringValue).withValueSource("\"" + newStringValue + "\"");
+                J.Literal l = super.visitLiteral(literal, ctx);
+                if (l.getType() != JavaType.Primitive.String || !oldLiteralValue.equals(literal.getValue())) {
+                    return l;
                 }
-                return literal;
+                return literal
+                        .withValue(newLiteralValue)
+                        .withValueSource("\"" + newLiteralValue + "\"");
             }
         };
     }

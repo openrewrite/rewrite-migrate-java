@@ -33,8 +33,8 @@ recipeList:
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.java.migrate.lang.UseTextBlocks
-  - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
+  - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -52,8 +52,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
-displayName: Use javax.security.cert
-description: The `javax.security.cert` package has been deprecated for removal
+displayName: Use `java.security.cert` instead of `javax.security.cert`
+description: The `javax.security.cert` package has been deprecated for removal.
 tags:
   - java17
 recipeList:
@@ -63,11 +63,11 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
-displayName: Use "SunJSSE"
-description: The `com.sun.net.ssl.internal.ssl.Provider` provider name was removed
+displayName: Use `SunJSSE` instead of `com.sun.net.ssl.internal.ssl.Provider`
+description: The `com.sun.net.ssl.internal.ssl.Provider` provider name was removed.
 tags:
   - java17
 recipeList:
-  - org.openrewrite.java.migrate.ChangeStringLiteralValue:
-      oldStringValue: com.sun.net.ssl.internal.ssl.Provider
-      newStringValue: SunJSSE
+  - org.openrewrite.java.migrate.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.net.ssl.internal.ssl.Provider
+      newLiteralValue: SunJSSE
