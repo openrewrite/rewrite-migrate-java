@@ -899,6 +899,12 @@ recipeList:
       newValue: https://jakarta.ee
       fileMatcher: "**/persistence.xml"
   - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xmlns
+      elementName: persistence
+      oldValue: http://java.sun.com/xml/ns/persistence
+      newValue: https://jakarta.ee/xml/ns/persistence
+      fileMatcher: "**/persistence.xml"
+  - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: persistence
       newValue: https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd
