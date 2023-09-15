@@ -70,7 +70,7 @@ public class ReplaceStringLiteralValue extends Recipe {
                 }
                 return literal
                         .withValue(newLiteralValue)
-                        .withValueSource("\"" + newLiteralValue + "\"");
+                        .withValueSource('"' + newLiteralValue + '"');
             }
         };
     }
