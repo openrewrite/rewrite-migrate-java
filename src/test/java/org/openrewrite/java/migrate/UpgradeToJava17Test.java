@@ -33,7 +33,7 @@ class UpgradeToJava17Test implements RewriteTest {
         spec.recipe(Environment.builder()
           .scanRuntimeClasspath("org.openrewrite.java.migrate")
           .build()
-          .activateRecipes("org.openrewrite.java.migrate.UpgradeToJava17")).allSources(s -> s.markers(javaVersion(17)));
+          .activateRecipes("org.openrewrite.java.migrate.UpgradeToJava17"));
     }
 
     @DocumentExample
