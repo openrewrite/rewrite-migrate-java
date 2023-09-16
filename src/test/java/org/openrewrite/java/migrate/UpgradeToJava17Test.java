@@ -21,6 +21,7 @@ import org.openrewrite.config.Environment;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.java.ChangeMethodName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
@@ -271,6 +272,7 @@ class UpgradeToJava17Test implements RewriteTest {
                                 
                 class Foo {
                     void bar(LogRecord record) {
+                        int threadID = record.getThreadID();
                         record.setThreadID(1);
                     }
                 }
@@ -280,6 +282,7 @@ class UpgradeToJava17Test implements RewriteTest {
                                 
                 class Foo {
                     void bar(LogRecord record) {
+                        long threadID = record.getLongThreadID();
                         record.setLongThreadID(1);
                     }
                 }

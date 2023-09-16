@@ -80,10 +80,12 @@ description: Avoid using the deprecated methods in `java.util.logging.LogRecord`
 tags:
   - java17
 recipeList:
-  # Disabled for now, as the new methods returns a long instead of an int, which causes compilation errors
-  #- org.openrewrite.java.ChangeMethodName:
-  #    methodPattern: java.util.logging.LogRecord getThreadID()
-  #    newMethodName: getLongThreadID
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.logging.LogRecord getThreadID()
+      newMethodName: getLongThreadID
+  - org.openrewrite.java.migrate.ChangeMethodInvocationReturnType:
+      methodPattern: java.util.logging.LogRecord getLongThreadID()
+      newReturnType: long
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.logging.LogRecord setThreadID(int)
       newMethodName: setLongThreadID
