@@ -17,13 +17,16 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.*;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Option;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
-import org.openrewrite.internal.lang.Nullable;
-
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.tree.*;
-import org.openrewrite.java.*;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
 
 import static java.util.Collections.emptyList;
@@ -54,14 +57,6 @@ public class ChangeMethodInvocationReturnType extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-
-        JavaIsoVisitor<ExecutionContext> condition = new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J visit(@Nullable Tree tree, ExecutionContext ctx) {
-                return super.visit(tree, ctx);
-            }
-        };
-
         return new JavaIsoVisitor<ExecutionContext>() {
             private final MethodMatcher methodMatcher = new MethodMatcher(methodPattern, false);
 
@@ -71,7 +66,7 @@ public class ChangeMethodInvocationReturnType extends Recipe {
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
                 JavaType.Method type = m.getMethodType();
-                if (methodMatcher.matches(method) && type != null && !type.getReturnType().toString().equals(newReturnType)) {
+                if (methodMatcher.matches(method) && type != null && !newReturnType.equals(type.getReturnType().toString())) {
                     type = type.withReturnType(JavaType.buildType(newReturnType));
                     m = m.withMethodType(type);
                     methodUpdated = true;
@@ -79,10 +74,10 @@ public class ChangeMethodInvocationReturnType extends Recipe {
                 return m;
             }
 
-           @Override
+            @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-               methodUpdated = false;
-                JavaType.FullyQualified typeAsClass = multiVariable.getTypeAsFullyQualified();
+                methodUpdated = false;
+                JavaType.FullyQualified originalType = multiVariable.getTypeAsFullyQualified();
                 J.VariableDeclarations mv = super.visitVariableDeclarations(multiVariable, ctx);
 
                 if (methodUpdated) {
@@ -90,7 +85,7 @@ public class ChangeMethodInvocationReturnType extends Recipe {
                     JavaType.FullyQualified newFieldType = TypeUtils.asFullyQualified(newType);
 
                     maybeAddImport(newFieldType);
-                    maybeRemoveImport(typeAsClass);
+                    maybeRemoveImport(originalType);
 
                     mv = mv.withTypeExpression(mv.getTypeExpression() == null ?
                             null :
