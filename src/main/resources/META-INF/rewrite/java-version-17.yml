@@ -36,7 +36,7 @@ recipeList:
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
   - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
   - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
-  - org.openrewrite.java.migrate.jre17AgentMainPreMainPublic
+  - org.openrewrite.java.migrate.Jre17AgentMainPreMainPublic
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -92,9 +92,9 @@ recipeList:
       newMethodName: setLongThreadID
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jre17AgentMainPreMainPublic
+name: org.openrewrite.java.migrate.Jre17AgentMainPreMainPublic
 displayName: Set visibility of `premain` and `agentmain` methods to `public`
-description: Check for a behavior change in Java agents
+description: Check for a behavior change in Java agents.
 tags:
   - java17
 recipeList:
