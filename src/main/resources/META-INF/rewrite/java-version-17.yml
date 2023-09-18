@@ -36,6 +36,7 @@ recipeList:
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
   - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
   - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
+  - org.openrewrite.java.migrate.jre17AgentMainPreMainPublic
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -89,3 +90,23 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.logging.LogRecord setThreadID(int)
       newMethodName: setLongThreadID
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jre17AgentMainPreMainPublic
+displayName: Ser visibility of `premain` and `agentmain` methods to `public`
+description: Check for a behavior change in Java agents
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangeMethodAccessLevel:
+      methodPattern: "*..* agentmain(java.lang.String)"
+      newAccessLevel: public
+  - org.openrewrite.java.ChangeMethodAccessLevel:
+      methodPattern: "*..* agentmain(java.lang.String, java.lang.instrument.Instrumentation)"
+      newAccessLevel: public
+  - org.openrewrite.java.ChangeMethodAccessLevel:
+      methodPattern: "*..* premain(java.lang.String)"
+      newAccessLevel: public
+  - org.openrewrite.java.ChangeMethodAccessLevel:
+      methodPattern: "*..* premain(java.lang.String, java.lang.instrument.Instrumentation)"
+      newAccessLevel: public

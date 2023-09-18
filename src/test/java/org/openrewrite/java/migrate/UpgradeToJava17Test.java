@@ -393,4 +393,94 @@ class UpgradeToJava17Test implements RewriteTest {
             8)
         );
     }
+
+    @Test
+    void testAgentMainPreMainPublicApp() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                 package com.test;
+                 
+                 import java.lang.instrument.Instrumentation;
+                 
+                 public class AgentMainPreMainPublicApp {
+                 
+                 	private static void premain(String agentArgs) {
+                 		//This should flag
+                 	}
+                 
+                 	public static void premain(String agentArgs, Instrumentation inst) {
+                 		//This shouldn't flag
+                 	}
+                 
+                 	public static void premain(String agentArgs, Instrumentation inst, String foo) {
+                 		//This shouldn't flag
+                 	}
+                 	
+                 	private static void premain1(String agentArgs) {
+                 		//This shouldn't flag
+                 	}
+                 	
+                 	protected void agentmain(String agentArgs) {
+                 		//This should flag
+                 	}
+                 	
+                     static void agentmain(String agentArgs, Instrumentation inst) {
+                 		//This should flag
+                 	}
+                 	
+                 	private static void agentmain(String agentArgs, Instrumentation inst, String foo) {
+                 		//This shouldn't flag
+                 	}
+                 	
+                     private static void agentmain(String agentArgs, String inst) {
+                 		//This shouldn't flag
+                 	}
+                 }
+                """,
+              """
+                 package com.test;
+                 
+                 import java.lang.instrument.Instrumentation;
+                 
+                 public class AgentMainPreMainPublicApp {
+                 
+                 	public static void premain(String agentArgs) {
+                 		//This should flag
+                 	}
+                 
+                 	public static void premain(String agentArgs, Instrumentation inst) {
+                 		//This shouldn't flag
+                 	}
+                 
+                 	public static void premain(String agentArgs, Instrumentation inst, String foo) {
+                 		//This shouldn't flag
+                 	}
+                 	
+                 	private static void premain1(String agentArgs) {
+                 		//This shouldn't flag
+                 	}
+                 	
+                 	public void agentmain(String agentArgs) {
+                 		//This should flag
+                 	}
+                 	
+                     public static void agentmain(String agentArgs, Instrumentation inst) {
+                 		//This should flag
+                 	}
+                 	
+                 	private static void agentmain(String agentArgs, Instrumentation inst, String foo) {
+                 		//This shouldn't flag
+                 	}
+                 	
+                     private static void agentmain(String agentArgs, String inst) {
+                 		//This shouldn't flag
+                 	}
+                 }
+                """
+            ), 17)
+        );
+    }
 }
