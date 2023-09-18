@@ -271,6 +271,7 @@ class UpgradeToJava17Test implements RewriteTest {
                                 
                 class Foo {
                     void bar(LogRecord record) {
+                        int threadID = record.getThreadID();
                         record.setThreadID(1);
                     }
                 }
@@ -280,6 +281,7 @@ class UpgradeToJava17Test implements RewriteTest {
                                 
                 class Foo {
                     void bar(LogRecord record) {
+                        long threadID = record.getLongThreadID();
                         record.setLongThreadID(1);
                     }
                 }
