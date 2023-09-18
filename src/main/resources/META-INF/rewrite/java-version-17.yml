@@ -93,7 +93,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jre17AgentMainPreMainPublic
-displayName: Ser visibility of `premain` and `agentmain` methods to `public`
+displayName: Set visibility of `premain` and `agentmain` methods to `public`
 description: Check for a behavior change in Java agents
 tags:
   - java17
