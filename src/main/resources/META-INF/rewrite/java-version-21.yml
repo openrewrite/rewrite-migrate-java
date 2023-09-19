@@ -15,30 +15,30 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpgradeToJava20
-displayName: Migrate to Java 20
+name: org.openrewrite.java.migrate.UpgradeToJava21
+displayName: Migrate to Java 21
 description: >
-  This recipe will apply changes commonly needed when migrating to Java 20. This recipe will also replace deprecated API
-  with equivalents when there is a clear migration strategy. Build files will also be updated to use Java 20 as the
-  target/source and plugins will be also be upgraded to versions that are compatible with Java 20.
+  This recipe will apply changes commonly needed when migrating to Java 21. This recipe will also replace deprecated API
+  with equivalents when there is a clear migration strategy. Build files will also be updated to use Java 21 as the
+  target/source and plugins will be also be upgraded to versions that are compatible with Java 21.
 tags:
-  - java20
+  - java21
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
-  - org.openrewrite.java.migrate.JavaVersion20
+  - org.openrewrite.java.migrate.JavaVersion21
   - org.openrewrite.java.migrate.util.UseLocaleOf
   - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaVersion20
-displayName: Change Maven Java version property values to 20
-description: Change maven.compiler.source and maven.compiler.target values to 20.
+name: org.openrewrite.java.migrate.JavaVersion21
+displayName: Change Maven Java version property values to 21
+description: Change maven.compiler.source and maven.compiler.target values to 21.
 tags:
-  - java20
+  - java21
   - compiler
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 20
+      version: 21
   - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
-      releaseVersion: 20
+      releaseVersion: 21
