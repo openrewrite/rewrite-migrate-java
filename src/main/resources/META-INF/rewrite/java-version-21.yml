@@ -28,6 +28,7 @@ recipeList:
   - org.openrewrite.java.migrate.JavaVersion21
   - org.openrewrite.java.migrate.util.UseLocaleOf
   - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
+  - org.openrewrite.java.migrate.util.SequencedCollection
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -42,3 +43,16 @@ recipeList:
       version: 21
   - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
       releaseVersion: 21
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.util.SequencedCollection
+displayName: Adopt `SequencedCollection` methods
+description: Replace older code patterns with `SequencedCollection` methods.
+tags:
+  - java21
+  - collections
+recipeList:
+  - org.openrewrite.java.SimplifyMethodChain:
+      methodPatternChain: [ 'java.util.SequencedCollection iterator()', 'java.util.Iterator next()' ]
+      newMethodName: getFirst
