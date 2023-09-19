@@ -17,7 +17,7 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta
 displayName: Migrate to Jakarta EE 10
-description: Jakarta EE 10 TBD -add description
+description: These recipes help with the Migration to Jakarta EE 10, flagging and updating deprecated methods.
 tags:
   - jakarta
 recipeList:
