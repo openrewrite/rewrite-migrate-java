@@ -16,6 +16,8 @@
 package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
@@ -24,28 +26,6 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 class SequencedCollectionTest implements RewriteTest {
-
-
-    /**
-     * This is a copy of the java.util.SequencedCollection interface from JDK 21, to make it available on Java 17.
-     */
-    //language=java
-    private static final String SEQUENCED_COLLECTION = """
-      package java.util;
-      import java.util.Collection;
-      // As per https://openjdk.org/jeps/431
-      public interface SequencedCollection<E> extends Collection<E> {
-          // new method
-          SequencedCollection<E> reversed();
-          // methods promoted from Deque
-          void addFirst(E e);
-          void addLast(E e);
-          E getFirst();
-          E getLast();
-          E removeFirst();
-          E removeLast();
-      }
-      """;
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -56,11 +36,11 @@ class SequencedCollectionTest implements RewriteTest {
             .activateRecipes("org.openrewrite.java.migrate.util.SequencedCollection"));
     }
 
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
     @Test
+    @EnabledForJreRange(min = JRE.JAVA_21)
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
     void iteratorNextToGetFirst() {
         rewriteRun(
-          java(SEQUENCED_COLLECTION),
           //language=java
           java(
             """
