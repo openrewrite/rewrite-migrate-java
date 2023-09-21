@@ -28,7 +28,12 @@ class WsWsocServerContainerDeprecationTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "WsWsocServerContainer_test")).recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta.").build().activateRecipes("org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation"));
+        spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "WsWsocServerContainer_test"))
+          .recipe(Environment.builder()
+            .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
+            .build()
+            .activateRecipes("org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation"));
     }
 
     @Test
@@ -39,10 +44,10 @@ class WsWsocServerContainerDeprecationTest implements RewriteTest {
             """
               import javax.servlet.http.HttpServletRequest;
               import javax.servlet.http.HttpServletResponse;
-                          
+                            
               import com.ibm.websphere.wsoc.ServerEndpointConfig;
               import com.ibm.websphere.wsoc.WsWsocServerContainer;
-                          
+                            
               class Test {
                   void doX(HttpServletRequest req, HttpServletResponse res, ServerEndpointConfig sConfig, java.util.Map<String,String> map){
                       WsWsocServerContainer.doUpgrade(req, res, sConfig, map);
@@ -54,7 +59,7 @@ class WsWsocServerContainerDeprecationTest implements RewriteTest {
                             
               import com.ibm.websphere.wsoc.ServerEndpointConfig;
               import jakarta.websocket.server.ServerContainer;
-
+                            
               class Test {
                   void doX(HttpServletRequest req, HttpServletResponse res, ServerEndpointConfig sConfig, java.util.Map<String,String> map){
                       ServerContainer.upgradeHttpToWebSocket(req, res, sConfig, map);
