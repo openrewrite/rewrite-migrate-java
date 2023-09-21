@@ -53,7 +53,8 @@ class WsWsocServerContainerDeprecationTest implements RewriteTest {
                       WsWsocServerContainer.doUpgrade(req, res, sConfig, map);
                   }
                }
-              """, """
+              """,
+            """
               import javax.servlet.http.HttpServletRequest;
               import javax.servlet.http.HttpServletResponse;
                             
