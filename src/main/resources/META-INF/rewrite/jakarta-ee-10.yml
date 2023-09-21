@@ -25,9 +25,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
-displayName: Use `upgradeHttpToWebSocket`
-description: >
-  This method `doUpgrade()` is deprecated. It is replaced by the new Jakarta WebSocket 2.1 specification upgradeHttpToWebSocket()
+displayName: Replace `doUpgrade(..)` with `ServerContainer.upgradeHttpToWebSocket(..)`
+description: `WsWsocServerContainer.doUpgrade(..)` is deprecated. It is replaced by the new Jakarta WebSocket 2.1 specification `ServerContainer.upgradeHttpToWebSocket(..)`.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.ibm.websphere.wsoc.WsWsocServerContainer doUpgrade(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, com.ibm.websphere.wsoc.ServerEndpointConfig, java.util.Map)

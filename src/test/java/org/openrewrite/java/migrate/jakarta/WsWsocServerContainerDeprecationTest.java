@@ -35,45 +35,34 @@ class WsWsocServerContainerDeprecationTest implements RewriteTest {
     void deprecateWsWsocServerContainer() {
         rewriteRun(
           //language=java
-          java("""             
-            package com.ibm;
-             
-            import javax.servlet.http.HttpServletRequest;
-            import javax.servlet.http.HttpServletResponse;
-             
-            import com.ibm.websphere.wsoc.ServerEndpointConfig;
-            import com.ibm.websphere.wsoc.WsWsocServerContainer;
-                        
-            public class Test {
-             
-              void doX(HttpServletRequest req, HttpServletResponse res, ServerEndpointConfig sConfig, java.util.Map<String,String> map){
-                     WsWsocServerContainer.doUpgrade(req,res,sConfig,map);
-                   } 
-              void doY(){
-                   String x = "test";
-                   x.toUpperCase();
-              }
-             }
-            """, """
-            package com.ibm;
+          java(
+            """
+              import javax.servlet.http.HttpServletRequest;
+              import javax.servlet.http.HttpServletResponse;
                           
-            import javax.servlet.http.HttpServletRequest;
-            import javax.servlet.http.HttpServletResponse;
+              import com.ibm.websphere.wsoc.ServerEndpointConfig;
+              import com.ibm.websphere.wsoc.WsWsocServerContainer;
                           
-            import com.ibm.websphere.wsoc.ServerEndpointConfig;
-            import jakarta.websocket.server.ServerContainer;
+              class Test {
+                  void doX(HttpServletRequest req, HttpServletResponse res, ServerEndpointConfig sConfig, java.util.Map<String,String> map){
+                      WsWsocServerContainer.doUpgrade(req, res, sConfig, map);
+                  }
+               }
+              """, """
+              import javax.servlet.http.HttpServletRequest;
+              import javax.servlet.http.HttpServletResponse;
+                            
+              import com.ibm.websphere.wsoc.ServerEndpointConfig;
+              import jakarta.websocket.server.ServerContainer;
 
-            public class Test {
-             
-              void doX(HttpServletRequest req, HttpServletResponse res, ServerEndpointConfig sConfig, java.util.Map<String,String> map){
-                     ServerContainer.upgradeHttpToWebSocket(req,res,sConfig,map);
-                   }  
-              void doY(){
-                   String x = "test";
-                   x.toUpperCase();
-              }
-             }
-            """));
+              class Test {
+                  void doX(HttpServletRequest req, HttpServletResponse res, ServerEndpointConfig sConfig, java.util.Map<String,String> map){
+                      ServerContainer.upgradeHttpToWebSocket(req, res, sConfig, map);
+                  }
+               }
+              """
+          )
+        );
     }
 
 }
