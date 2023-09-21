@@ -15,25 +15,49 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.JakartaEE10
+name: org.openrewrite.java.migrate.jakarta
 displayName: Migrate to Jakarta EE 10
 description: These recipes help with the Migration to Jakarta EE 10, flagging and updating deprecated methods.
 tags:
   - jakarta
 recipeList:
-  - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
-  - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
+  - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
+  - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
-displayName: Replace `doUpgrade(..)` with `ServerContainer.upgradeHttpToWebSocket(..)`
-description: Deprecated `WsWsocServerContainer.doUpgrade(..)` is replaced by the Jakarta WebSocket 2.1 specification `ServerContainer.upgradeHttpToWebSocket(..)`.
+name: org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
+displayName: Use `isParametersProvided()`
+description: >
+  Expression Language prior to 5.0 provides the deprecated MethodExpression.isParmetersProvided() method, with the word 'parameter' misspelled in the method name. 
+  This method is unavailable in Jakarta Expression Language 5.0. Use the correctly spelled MethodExpression.isParametersProvided() method instead.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: com.ibm.websphere.wsoc.WsWsocServerContainer doUpgrade(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, com.ibm.websphere.wsoc.ServerEndpointConfig, java.util.Map)
-      newMethodName: upgradeHttpToWebSocket
+      methodPattern: jakarta.el.MethodExpression isParmetersProvided()
+      newMethodName: isParametersProvided
+      ignoreDefinition: false
+---
+  type: specs.openrewrite.org/v1beta/recipe
+  name: org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
+  displayName: Use `jakarta.xml.soap.SOAPFactory to create SOAPElements`
+  description: >
+    XML Web Services prior to 4.0 provides the deprecated SOAPElementFactory class, 
+    which is removed in XML Web Services 4.0. The recommended replacement is to use jakarta.xml.soap.SOAPFactory to create SOAPElements.
+  recipeList:
+    - org.openrewrite.java.migrate.jakarta.RemoveNewInstance
+    - org.openrewrite.java.migrate.jakarta.UpdateCreateElement
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateCreateElement
+displayName: Use `jakarta.xml.soap.SOAPFactory to create SOAPElements`
+description: >
+  XML Web Services prior to 4.0 provides the deprecated SOAPElementFactory class, 
+  which is removed in XML Web Services 4.0. The recommended replacement is to use jakarta.xml.soap.SOAPFactory to create SOAPElements.
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: jakarta.xml.soap.SOAPElementFactory create(..)
+      newMethodName: createElement
       ignoreDefinition: false
   - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: com.ibm.websphere.wsoc.WsWsocServerContainer
-      newFullyQualifiedTypeName: jakarta.websocket.server.ServerContainer
+      oldFullyQualifiedTypeName: jakarta.xml.soap.SOAPElementFactory
+      newFullyQualifiedTypeName: jakarta.xml.soap.SOAPFactory
       ignoreDefinition: true
