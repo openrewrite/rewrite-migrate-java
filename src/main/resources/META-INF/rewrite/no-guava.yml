@@ -191,6 +191,22 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNullElse
+displayName: Prefer `java.util.Objects#requireNonNullElse`
+description: Prefer `java.util.Objects#requireNonNullElse` instead of using `com.google.common.base.MoreObjects#firstNonNull`.
+tags:
+  - guava
+  - java11
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.MoreObjects firstNonNull(..)
+      newMethodName: requireNonNullElse
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.base.MoreObjects requireNonNullElse(..)
+      fullyQualifiedTargetTypeName: java.util.Objects
+
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsUnmodifiableNavigableMap
 displayName: Prefer `java.util.Collections#unmodifiableNavigableMap`
 description: Prefer `java.util.Collections#unmodifiableNavigableMap` instead of using `com.google.common.collect.Maps#unmodifiableNavigableMap`.
