@@ -32,7 +32,7 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
           .parser(JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(), "sun.internal"))
           .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate").build()
-            .activateRecipes("org.openrewrite.java.migrate.Java8toJava11"));
+            .activateRecipes("org.openrewrite.java.migrate.Java8toJava11", "org.openrewrite.java.migrate.IBMSemeru"));
     }
 
     @Test
