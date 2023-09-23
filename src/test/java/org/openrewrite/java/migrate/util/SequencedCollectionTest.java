@@ -15,53 +15,142 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 import org.openrewrite.Issue;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+
+@Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
 class SequencedCollectionTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(
-          Environment.builder()
-            .scanRuntimeClasspath("org.openrewrite.java.migrate.util")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.util.SequencedCollection"));
+        spec.recipeFromResource("/META-INF/rewrite/java-version-21.yml", "org.openrewrite.java.migrate.util.SequencedCollection");
     }
 
-    @Test
-    @EnabledForJreRange(min = JRE.JAVA_21)
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
-    void iteratorNextToGetFirst() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.SequencedCollection;
+    @Nested
+    class IteratorNext {
+        @Test
+        void dequeIteratorNextToGetFirst() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                      
+                  class Foo {
+                      void bar(Deque<String> collection) {
+                          String first = collection.iterator().next();
+                      }
+                  }
+                  """,
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      void bar(Deque<String> collection) {
+                          String first = collection.getFirst();
+                      }
+                  }
+                  """
+              )
+            );
+        }
 
-              class Foo {
-                  void bar(SequencedCollection<String> collection) {
-                      String first = collection.iterator().next();
+        @Test
+        @EnabledForJreRange(min = JRE.JAVA_21)
+        void sequencedCollectionIteratorNextToGetFirst() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                      
+                  class Foo {
+                      void bar(SequencedCollection<String> collection) {
+                          String first = collection.iterator().next();
+                      }
                   }
-              }
-              """,
-            """
-              import java.util.SequencedCollection;
-                            
-              class Foo {
-                  void bar(SequencedCollection<String> collection) {
-                      String first = collection.getFirst();
+                  """,
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      void bar(SequencedCollection<String> collection) {
+                          String first = collection.getFirst();
+                      }
                   }
-              }
-              """
-          )
-        );
+                  """
+              )
+            );
+        }
+    }
+
+    @Nested
+    class SortedSetFirstLast {
+        @Test
+        void firstToGetFirst() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                      
+                  class Foo {
+                      void bar(SortedSet<String> collection) {
+                          String first = collection.first();
+                          String last = collection.last();
+                      }
+                  }
+                  """,
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      void bar(SortedSet<String> collection) {
+                          String first = collection.getFirst();
+                          String last = collection.getLast();
+                      }
+                  }
+                  """
+              )
+            );
+        }
+    }
+
+    @Nested
+    class NavigableSetDescendingSet {
+        @Test
+        void descendingSetToReversed() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                      
+                  class Foo {
+                      void bar(NavigableSet<String> collection) {
+                          NavigableSet<String> reversed = collection.descendingSet();
+                      }
+                  }
+                  """,
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      void bar(NavigableSet<String> collection) {
+                          NavigableSet<String> reversed = collection.reversed();
+                      }
+                  }
+                  """
+              )
+            );
+        }
     }
 }
