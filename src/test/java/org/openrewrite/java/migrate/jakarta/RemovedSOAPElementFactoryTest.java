@@ -28,7 +28,7 @@ import static org.openrewrite.java.Assertions.java;
 public class RemovedSOAPElementFactoryTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jakarta.xml.soap-api-3.0.0","jakarta.xml.soap-api-2.0.0-RC3")).recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build().activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory"));
+        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jakarta.xml.soap-api-3.0.0", "jakarta.xml.soap-api-2.0.0-RC3")).recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build().activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory"));
     }
 
     @Test
@@ -37,14 +37,14 @@ public class RemovedSOAPElementFactoryTest implements RewriteTest {
           //language=java
           java("""             
             package com.test;
-            
+                        
             import jakarta.xml.soap.Name;
             import jakarta.xml.soap.SOAPElementFactory;
             import jakarta.xml.soap.SOAPEnvelope;
             import jakarta.xml.soap.SOAPException;
-            
+                        
             public class Test {
-            
+                        
                 void doX() throws SOAPException {
                     String str1 = "test";
                     String str2 = "t2";
@@ -63,14 +63,14 @@ public class RemovedSOAPElementFactoryTest implements RewriteTest {
                 }}    
             """, """
             package com.test;
- 
+             
             import jakarta.xml.soap.Name;
             import jakarta.xml.soap.SOAPEnvelope;
             import jakarta.xml.soap.SOAPException;
             import jakarta.xml.soap.SOAPFactory;
- 
+             
             public class Test {
-           
+                       
                 void doX() throws SOAPException {
                     String str1 = "test";
                     String str2 = "t2";
