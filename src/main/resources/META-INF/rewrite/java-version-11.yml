@@ -201,23 +201,11 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.InternalBindContextFactory
 displayName: Use `com.sun.xml.bind.v2.ContextFactory` instead of `com.sun.xml.internal.bind.v2.ContextFactory`
-description: Do not use the com.sun.xml.internal.bind.v2.ContextFactory class.
+description: Do not use the `com.sun.xml.internal.bind.v2.ContextFactory` class.
 tags:
   - java11
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.sun.xml.internal.bind.v2.ContextFactory
       newFullyQualifiedTypeName: com.sun.xml.bind.v2.ContextFactory
-      ignoreDefinition: true
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocolHttpsHandler
-displayName: Use `com.ibm.net.ssl.www2.protocol.https.Handler` instead of `com.sun.net.ssl.internal.www.protocol.https.Handler`
-description: Do not use the com.sun.net.ssl.internal.www.protocol.https.Handler class.
-tags:
-  - java11
-recipeList:
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: com.sun.net.ssl.internal.www.protocol.https.Handler
-      newFullyQualifiedTypeName: com.ibm.net.ssl.www2.protocol.https.Handler
       ignoreDefinition: true

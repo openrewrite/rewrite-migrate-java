@@ -31,7 +31,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocolHttpsHandler
 displayName: Use `com.ibm.net.ssl.www2.protocol.https.Handler` instead of `com.sun.net.ssl.internal.www.protocol.https.Handler`
-description: Do not use the com.sun.net.ssl.internal.www.protocol.https.Handler class.
+description: Do not use the `com.sun.net.ssl.internal.www.protocol.https.Handler` class.
 tags:
   - java11
 recipeList:
@@ -43,7 +43,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocol
 displayName: Use `com.ibm.net.ssl.www2.protocol` instead of `com.sun.net.ssl.internal.www.protocol`
-description: Do not use the com.sun.net.ssl.internal.www.protocol package.
+description: Do not use the `com.sun.net.ssl.internal.www.protocol` package.
 tags:
   - java11
 recipeList:
@@ -54,7 +54,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalSslProvider
 displayName: Use `com.ibm.jsse2` instead of `com.sun.net.ssl.internal.ssl`
-description: Do not use the com.sun.net.ssl.internal.ssl.Provider class.
+description: Do not use the `com.sun.net.ssl.internal.ssl.Provider` class.
 tags:
   - java11
 recipeList:
