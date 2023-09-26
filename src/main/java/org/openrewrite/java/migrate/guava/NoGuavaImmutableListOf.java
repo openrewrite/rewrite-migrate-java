@@ -16,7 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 public class NoGuavaImmutableListOf extends AbstractNoGuavaImmutableOf {
-    public NoGuavaImmutableListOf(){
+    public NoGuavaImmutableListOf() {
         super("com.google.common.collect.ImmutableList", "java.util.List");
     }
 }

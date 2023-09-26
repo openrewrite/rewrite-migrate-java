@@ -63,6 +63,20 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaJava11
+displayName: Prefer the Java 11 standard library instead of Guava
+description: >
+  Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface
+  area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they
+  migrate to standard library for these functions.
+tags:
+  - guava
+  - java11
+recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuava
+  - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNullElse
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaNioCharsetStandardCharsets
 displayName: Prefer `java.nio.charset.StandardCharsets`
 description: Prefer `java.nio.charset.StandardCharsets` instead of using `com.google.common.base.Charsets`.
@@ -187,6 +201,22 @@ recipeList:
       newMethodName: requireNonNull
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.base.Preconditions requireNonNull(Object)
+      fullyQualifiedTargetTypeName: java.util.Objects
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNullElse
+displayName: Prefer `java.util.Objects#requireNonNullElse`
+description: Prefer `java.util.Objects#requireNonNullElse` instead of using `com.google.common.base.MoreObjects#firstNonNull`.
+tags:
+  - guava
+  - java11
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.MoreObjects firstNonNull(..)
+      newMethodName: requireNonNullElse
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.base.MoreObjects requireNonNullElse(..)
       fullyQualifiedTargetTypeName: java.util.Objects
 
 ---

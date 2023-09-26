@@ -82,7 +82,7 @@ public class UseVarForGenericMethodInvocations extends Recipe {
             return transformToVar(vd, new ArrayList<>(), new ArrayList<>());
         }
 
-        private static boolean allArgumentsEmpty(J.MethodInvocation invocation){
+        private static boolean allArgumentsEmpty(J.MethodInvocation invocation) {
             for (Expression argument : invocation.getArguments()) {
                 if (!(argument instanceof J.Empty)) {
                     return false;
@@ -96,11 +96,11 @@ public class UseVarForGenericMethodInvocations extends Recipe {
             String simpleName = vd.getVariables().get(0).getSimpleName();
 
             // if left is defined but not right, copy types to initializer
-            if(rightTypes.isEmpty() && !leftTypes.isEmpty()) {
+            if (rightTypes.isEmpty() && !leftTypes.isEmpty()) {
                 // we need to switch type infos from left to right here
                 List<Expression> typeArgument = new ArrayList<>();
                 for (JavaType t : leftTypes) {
-                    typeArgument.add(new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY,  emptyList(), ((JavaType.Class) t).getClassName(), t, null));
+                    typeArgument.add(new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), ((JavaType.Class) t).getClassName(), t, null));
                 }
                 J.ParameterizedType typedInitializerClazz = ((J.ParameterizedType) ((J.NewClass) initializer).getClazz()).withTypeParameters(typeArgument);
                 initializer = ((J.NewClass) initializer).withClazz(typedInitializerClazz);
