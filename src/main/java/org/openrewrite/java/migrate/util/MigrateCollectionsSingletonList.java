@@ -47,7 +47,7 @@ public class MigrateCollectionsSingletonList extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
                 new UsesMethod<>(SINGLETON_LIST), new NoMissingTypes());
-        return Preconditions.check(check,  new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);

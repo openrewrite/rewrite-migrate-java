@@ -154,7 +154,7 @@ public class UseVarForGenericsConstructors extends Recipe {
 
 
             // if left is defined but not right, copy types to initializer
-            if(rightTypes.isEmpty() && !leftTypes.isEmpty()) {
+            if (rightTypes.isEmpty() && !leftTypes.isEmpty()) {
                 // we need to switch type infos from left to right here
                 List<Expression> typeExpressions = new ArrayList<>();
                 for (JavaType curType : leftTypes) {
@@ -199,9 +199,9 @@ public class UseVarForGenericsConstructors extends Recipe {
             }
             if (type instanceof JavaType.Class) {
                 String className = ((JavaType.Class) type).getClassName();
-                return new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY,  emptyList(), className, type, null);
+                return new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), className, type, null);
             }
-            if (type instanceof JavaType.Array){
+            if (type instanceof JavaType.Array) {
                 int dimensions = StringUtils.countOccurrences(type.toString(), "[]");
                 List<JRightPadded<Space>> dimensionsDefinition = Collections.nCopies(dimensions, JRightPadded.build(Space.EMPTY));
                 TypeTree elemType = (TypeTree) typeToExpression(((JavaType.Array) type).getElemType());
@@ -234,7 +234,7 @@ public class UseVarForGenericsConstructors extends Recipe {
                     typeParamsExpression.add(JRightPadded.build(typeToExpression(curType)));
                 }
 
-                NameTree clazz = new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), ((JavaType.Parameterized) type).getClassName(),null, null);
+                NameTree clazz = new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), ((JavaType.Parameterized) type).getClassName(), null, null);
                 return new J.ParameterizedType(Tree.randomId(), Space.EMPTY, Markers.EMPTY, clazz, JContainer.build(typeParamsExpression), type);
             }
 
