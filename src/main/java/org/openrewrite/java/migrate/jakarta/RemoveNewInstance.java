@@ -37,8 +37,7 @@ public class RemoveNewInstance extends Recipe {
 
     @Override
     public String getDescription() {
-        return "The static method SOAPElementFactory.newInstance() is removed without replacement. " +
-                "See the Jakarta EE 9.1 documentation for more information about the replacement for this removed class.";
+        return "The static method SOAPElementFactory.newInstance() is removed without replacement. " + "See the Jakarta EE 9.1 documentation for more information about the replacement for this removed class.";
     }
 
     @Override
@@ -57,12 +56,10 @@ public class RemoveNewInstance extends Recipe {
 
         @Nullable
         private <M extends MethodCall> M visitMethodCall(M methodCall) {
-            //return method call if they dont match
             if (!METHOD_PATTERN.matches(methodCall)) {
                 return methodCall;
             }
             J.Block parentBlock = getCursor().firstEnclosing(J.Block.class);
-            //if the block doesn't contain method return it
             if (parentBlock != null && !parentBlock.getStatements().contains(methodCall)) {
                 return methodCall;
             }
