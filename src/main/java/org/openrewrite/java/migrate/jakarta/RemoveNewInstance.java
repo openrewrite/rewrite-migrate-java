@@ -27,7 +27,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.MethodCall;
 
 public class RemoveNewInstance extends Recipe {
-    //TDDO te matchmaker should find a way to check for an interface implementation
+
     private static final MethodMatcher METHOD_PATTERN = new MethodMatcher("jakarta.xml.soap.SOAPElementFactory newInstance()", false);
 
     @Override
@@ -47,7 +47,6 @@ public class RemoveNewInstance extends Recipe {
 
     private static class MethodInvocationVisitor extends JavaVisitor<ExecutionContext> {
 
-        @SuppressWarnings("NullableProblems")
         @Nullable
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
@@ -68,3 +67,4 @@ public class RemoveNewInstance extends Recipe {
     }
 
 }
+
