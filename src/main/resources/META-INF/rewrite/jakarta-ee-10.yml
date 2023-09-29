@@ -22,6 +22,8 @@ tags:
   - jakarta
 recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
+  - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
+  - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -37,3 +39,35 @@ recipeList:
       oldFullyQualifiedTypeName: com.ibm.websphere.wsoc.WsWsocServerContainer
       newFullyQualifiedTypeName: jakarta.websocket.server.ServerContainer
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
+displayName: Use `isParametersProvided()`
+description: >
+  Expression Language prior to 5.0 provides the deprecated MethodExpression.isParmetersProvided() method, with the word 'parameter' misspelled in the method name. 
+  This method is unavailable in Jakarta Expression Language 5.0. Use the correctly spelled MethodExpression.isParametersProvided() method instead.
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: jakarta.el.MethodExpression isParmetersProvided()
+      newMethodName: isParametersProvided
+      ignoreDefinition: false
+---
+  type: specs.openrewrite.org/v1beta/recipe
+  name: org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
+  displayName: Use `jakarta.xml.soap.SOAPFactory to create SOAPElements`
+  description: >
+    XML Web Services prior to 4.0 provides the deprecated SOAPElementFactory class, 
+    which is removed in XML Web Services 4.0. The recommended replacement is to use jakarta.xml.soap.SOAPFactory to create SOAPElements.
+  recipeList:
+    - org.openrewrite.java.ChangeMethodName:
+        methodPattern: jakarta.xml.soap.SOAPElementFactory create(String,..)
+        newMethodName: createElement
+        ignoreDefinition: false
+    - org.openrewrite.java.ChangeMethodName:
+        methodPattern: jakarta.xml.soap.SOAPElementFactory create(jakarta.xml.soap.Name)
+        newMethodName: createElement
+        ignoreDefinition: false
+    - org.openrewrite.java.ChangeType:
+        oldFullyQualifiedTypeName: jakarta.xml.soap.SOAPElementFactory
+        newFullyQualifiedTypeName: jakarta.xml.soap.SOAPFactory
+        ignoreDefinition: true
