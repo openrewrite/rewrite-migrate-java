@@ -59,25 +59,15 @@ recipeList:
     XML Web Services prior to 4.0 provides the deprecated SOAPElementFactory class, 
     which is removed in XML Web Services 4.0. The recommended replacement is to use jakarta.xml.soap.SOAPFactory to create SOAPElements.
   recipeList:
-    - org.openrewrite.java.migrate.jakarta.RemoveNewInstance
-    - org.openrewrite.java.migrate.jakarta.UpdateCreateElement
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.UpdateCreateElement
-displayName: Use `jakarta.xml.soap.SOAPFactory to create SOAPElements`
-description: >
-  XML Web Services prior to 4.0 provides the deprecated SOAPElementFactory class, 
-  which is removed in XML Web Services 4.0. The recommended replacement is to use jakarta.xml.soap.SOAPFactory to create SOAPElements.
-recipeList:
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: jakarta.xml.soap.SOAPElementFactory create(String,..)
-      newMethodName: createElement
-      ignoreDefinition: false
-  - org.openrewrite.java.ChangeMethodName:
+    - org.openrewrite.java.ChangeMethodName:
+        methodPattern: jakarta.xml.soap.SOAPElementFactory create(String,..)
+        newMethodName: createElement
+        ignoreDefinition: false
+    - org.openrewrite.java.ChangeMethodName:
         methodPattern: jakarta.xml.soap.SOAPElementFactory create(jakarta.xml.soap.Name)
         newMethodName: createElement
         ignoreDefinition: false
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.xml.soap.SOAPElementFactory
-      newFullyQualifiedTypeName: jakarta.xml.soap.SOAPFactory
-      ignoreDefinition: true
+    - org.openrewrite.java.ChangeType:
+        oldFullyQualifiedTypeName: jakarta.xml.soap.SOAPElementFactory
+        newFullyQualifiedTypeName: jakarta.xml.soap.SOAPFactory
+        ignoreDefinition: true

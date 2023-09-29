@@ -28,7 +28,12 @@ import static org.openrewrite.java.Assertions.java;
 public class RemovedSOAPElementFactoryTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jakarta.xml.soap-api-3.0.0", "jakarta.xml.soap-api-2.0.0-RC3")).recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build().activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory"));
+        spec
+          .parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.xml.soap-api-2.0.1"))
+          .recipe(Environment.builder()
+            .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
+            .activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory"));
     }
 
     @Test
@@ -41,52 +46,39 @@ public class RemovedSOAPElementFactoryTest implements RewriteTest {
             import jakarta.xml.soap.Name;
             import jakarta.xml.soap.SOAPElementFactory;
             import jakarta.xml.soap.SOAPEnvelope;
-            import jakarta.xml.soap.SOAPException;
                         
             public class Test {
-                        
-                void doX() throws SOAPException {
+                void test(SOAPEnvelope envelope) {
                     String str1 = "test";
                     String str2 = "t2";
                     String str3 = "t3";
-                    SOAPEnvelope envelope = null;
                     Name n = envelope.createName("GetLastTradePrice", "WOMBAT", "http://www.abc.org/trader");
-                    SOAPElementFactory sfe = null;
+                    SOAPElementFactory sfe = SOAPElementFactory.newInstance();
                     sfe.create(str1);
                     sfe.create(str1, str2, str3);
                     sfe.create(n);
-                    sfe.newInstance();
                 }
-                void doY() {
-                    String x = "test";
-                    x.toUpperCase();
-                }}    
+            }
             """, """
             package com.test;
              
             import jakarta.xml.soap.Name;
             import jakarta.xml.soap.SOAPEnvelope;
-            import jakarta.xml.soap.SOAPException;
             import jakarta.xml.soap.SOAPFactory;
-             
+
             public class Test {
-                       
-                void doX() throws SOAPException {
+                void test(SOAPEnvelope envelope) {
                     String str1 = "test";
                     String str2 = "t2";
                     String str3 = "t3";
-                    SOAPEnvelope envelope = null;
                     Name n = envelope.createName("GetLastTradePrice", "WOMBAT", "http://www.abc.org/trader");
-                    SOAPFactory sfe = null;
+                    SOAPFactory sfe = SOAPFactory.newInstance();
                     sfe.createElement(str1);
                     sfe.createElement(str1, str2, str3);
-                    sfe.createElement(n);       
+                    sfe.createElement(n);
                 }
-                void doY() {
-                    String x = "test";
-                    x.toUpperCase();
-                }}
-                """));
+            }
+            """));
     }
 
 

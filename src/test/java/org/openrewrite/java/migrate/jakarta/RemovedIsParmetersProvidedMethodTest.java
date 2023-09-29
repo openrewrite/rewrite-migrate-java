@@ -28,51 +28,42 @@ import static org.openrewrite.java.Assertions.java;
 public class RemovedIsParmetersProvidedMethodTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "method_expression_test")).recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build().activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod"));
+        spec
+          .parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.el-api-4.0.0"))
+          .recipe(Environment.builder()
+            .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
+            .activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod"));
     }
 
     @Test
     void removedIsParametersProvidedMethod() {
         rewriteRun(
           //language=java
-          java("""             
+          java("""
             package com.test;
              
-            import  jakarta.el.MethodExpression;
+            import jakarta.el.MethodExpression;
                         
             public class Test {
-             
-              void doX(){
-                     MethodExpression methodExpression =  new MethodExpression();
-                     if(methodExpression.isParmetersProvided()){
+                void test(MethodExpression methodExpression){
+                    if(methodExpression.isParmetersProvided()){
                         System.out.println("test");
-                     }
-               }
-              void doY(){
-                   String x = "test";
-                   x.toUpperCase();
-              }
-             }
+                    }
+                }
+            }
             """, """
             package com.test;
              
-            import  jakarta.el.MethodExpression;
+            import jakarta.el.MethodExpression;
                         
             public class Test {
-             
-              void doX(){
-                     MethodExpression methodExpression =  new MethodExpression();     
-                     if(methodExpression.isParametersProvided()){
+                void test(MethodExpression methodExpression){
+                    if(methodExpression.isParametersProvided()){
                         System.out.println("test");
-                     }
-               }
-              void doY(){
-                   String x = "test";
-                   x.toUpperCase();
-              }
-             }
+                    }
+                }
+            }
             """));
     }
-
-
 }
