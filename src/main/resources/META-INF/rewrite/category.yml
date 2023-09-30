@@ -24,6 +24,10 @@ name: '`java.lang` APIs'
 packageName: org.openrewrite.java.migrate.lang
 ---
 type: specs.openrewrite.org/v1beta/category
+name: '`java.io` APIs'
+packageName: org.openrewrite.java.migrate.io
+---
+type: specs.openrewrite.org/v1beta/category
 name: '`java.util` APIs'
 packageName: org.openrewrite.java.migrate.util
 ---
