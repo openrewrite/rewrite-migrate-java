@@ -54,10 +54,6 @@ tags:
   - collections
 recipeList:
   # Iterator
-  # TODO Remove Deque once we test on Java 21
-  - org.openrewrite.java.SimplifyMethodChain:
-      methodPatternChain: [ 'java.util.Deque iterator()', 'java.util.Iterator next()' ]
-      newMethodName: getFirst
   - org.openrewrite.java.SimplifyMethodChain:
       methodPatternChain: [ 'java.util.SequencedCollection iterator()', 'java.util.Iterator next()' ]
       newMethodName: getFirst

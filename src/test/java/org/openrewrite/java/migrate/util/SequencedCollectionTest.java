@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2023 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,33 +36,6 @@ class SequencedCollectionTest implements RewriteTest {
 
     @Nested
     class IteratorNext {
-        @Test
-        void dequeIteratorNextToGetFirst() {
-            rewriteRun(
-              //language=java
-              java(
-                """
-                  import java.util.*;
-                      
-                  class Foo {
-                      void bar(Deque<String> collection) {
-                          String first = collection.iterator().next();
-                      }
-                  }
-                  """,
-                """
-                  import java.util.*;
-                                
-                  class Foo {
-                      void bar(Deque<String> collection) {
-                          String first = collection.getFirst();
-                      }
-                  }
-                  """
-              )
-            );
-        }
-
         @Test
         @EnabledForJreRange(min = JRE.JAVA_21)
         void sequencedCollectionIteratorNextToGetFirst() {
