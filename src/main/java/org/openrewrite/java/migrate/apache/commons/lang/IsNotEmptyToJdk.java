@@ -94,7 +94,7 @@ public class IsNotEmptyToJdk extends Recipe {
                     maybeRemoveImport("org.codehaus.plexus.util.StringUtils");
                     // Remove excess parentheses inserted in lambda that may be required depending on the context
                     doAfterVisit(new org.openrewrite.staticanalysis.UnnecessaryParentheses().getVisitor());
-                    return replacementTemplate.apply(updateCursor(mi), mi.getCoordinates().replace(), arg, arg);
+                    return replacementTemplate.apply(updateCursor(mi), mi.getCoordinates().replace(), arg);
                 }
 
                 // Replace StringUtils.isEmpty(var.trim()) with var.trim().isEmpty()
