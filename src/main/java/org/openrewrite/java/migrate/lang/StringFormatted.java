@@ -44,7 +44,7 @@ public class StringFormatted extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                Preconditions.and(new UsesJavaVersion<>(17),new UsesMethod<>(STRING_FORMAT)),
+                Preconditions.and(new UsesJavaVersion<>(17), new UsesMethod<>(STRING_FORMAT)),
                 new StringFormattedVisitor());
     }
 

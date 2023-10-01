@@ -102,7 +102,7 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
     }
 
     private boolean currentNewerThanProposed(@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<String> maybeRelease) {
-        if(!maybeRelease.isPresent()) {
+        if (!maybeRelease.isPresent()) {
             return false;
         }
         try {

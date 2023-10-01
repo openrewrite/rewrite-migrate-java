@@ -1,0 +1,76 @@
+#
+# Copyright 2023 the original author or authors.
+# <p>
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://www.apache.org/licenses/LICENSE-2.0
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.IBMSemeru
+displayName: Migrate to IBM Semeru Runtimes
+description: >
+  This recipe will apply changes commonly needed when upgrading Java versions. The solutions provided in this list are
+  solutions only availible in IBM Semeru Runtimes.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocolHttpsHandler
+  - org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocol
+  - org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalSslProvider
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocolHttpsHandler
+displayName: Use `com.ibm.net.ssl.www2.protocol.https.Handler` instead of `com.sun.net.ssl.internal.www.protocol.https.Handler`
+description: Do not use the `com.sun.net.ssl.internal.www.protocol.https.Handler` class.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.net.ssl.internal.www.protocol.https.Handler
+      newFullyQualifiedTypeName: com.ibm.net.ssl.www2.protocol.https.Handler
+      ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocol
+displayName: Use `com.ibm.net.ssl.www2.protocol` instead of `com.sun.net.ssl.internal.www.protocol`
+description: Do not use the `com.sun.net.ssl.internal.www.protocol` package.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.migrate.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.net.ssl.internal.www.protocol
+      newLiteralValue: com.ibm.net.ssl.www2.protocol
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalSslProvider
+displayName: Use `com.ibm.jsse2` instead of `com.sun.net.ssl.internal.ssl`
+description: Do not use the `com.sun.net.ssl.internal.ssl.Provider` class.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.net.ssl.internal.ssl.Provider
+      newFullyQualifiedTypeName: com.ibm.jsse2.IBMJSSEProvider2
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.net.ssl.internal.ssl.Debug
+      newFullyQualifiedTypeName: com.ibm.jsse2.Debug
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.net.ssl.internal.ssl.SSLServerSocketFactoryImpl
+      newFullyQualifiedTypeName: com.ibm.jsse2.SSLServerSocketFactoryImpl
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.net.ssl.internal.ssl.SSLSocketFactoryImpl
+      newFullyQualifiedTypeName: com.ibm.jsse2.SSLSocketFactoryImpl
+      ignoreDefinition: true

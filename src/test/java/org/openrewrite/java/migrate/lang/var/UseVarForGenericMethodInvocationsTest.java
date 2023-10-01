@@ -173,7 +173,7 @@ public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                       List<String> strs = List.of("one", "two");
                   }
                 }
-                ""","""
+                """, """
                 package com.example.app;
                                     
                 import java.util.List;
@@ -204,7 +204,7 @@ public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                       List<? extends String> lst = List.of("Test");
                   }
                 }
-                ""","""
+                """, """
                 package com.example.app;
                                     
                 import java.util.List;
@@ -238,7 +238,7 @@ public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                       List<String> strs = myList("one", "two");
                   }
                 }
-                ""","""
+                """, """
                 package com.example.app;
                                     
                 import java.util.List;

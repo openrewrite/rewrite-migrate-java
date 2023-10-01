@@ -25,6 +25,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.template.Semantics;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
@@ -125,7 +126,7 @@ public class UseJavaUtilBase64 extends Recipe {
                 J.NewClass c = (J.NewClass) super.visitNewClass(newClass, ctx);
                 if (newBase64Encoder.matches(c)) {
                     // noinspection Convert2MethodRef
-                    return JavaTemplate.compile(this, "getEncoder", () -> Base64.getEncoder())
+                    return Semantics.expression(this, "getEncoder", () -> Base64.getEncoder())
                             .build()
                             .apply(updateCursor(c), c.getCoordinates().replace());
                 } else if (newBase64Decoder.matches(c)) {
