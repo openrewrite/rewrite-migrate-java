@@ -15,7 +15,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:latest.release")
     testImplementation("org.projectlombok:lombok:latest.release")
 
-    annotationProcessor("org.openrewrite:rewrite-templating:latest.integration")
+    annotationProcessor("org.openrewrite:rewrite-templating:$rewriteVersion")
     compileOnly("com.google.errorprone:error_prone_core:2.19.1:with-dependencies") {
         exclude("com.google.auto.service", "auto-service-annotations")
     }
@@ -28,6 +28,7 @@ dependencies {
     implementation("org.openrewrite.recipe:rewrite-java-dependencies:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-static-analysis:$rewriteVersion")
     implementation("org.openrewrite.gradle.tooling:model:$rewriteVersion")
+    implementation("org.openrewrite:rewrite-templating:$rewriteVersion")
 
     implementation("commons-io:commons-io:2.+")
     implementation("org.apache.commons:commons-lang3:3.+")
