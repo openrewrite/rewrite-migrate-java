@@ -28,6 +28,7 @@ recipeList:
   - org.openrewrite.java.migrate.JavaVersion21
   - org.openrewrite.java.migrate.util.UseLocaleOf
   - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
+  - org.openrewrite.java.migrate.util.SequencedCollection
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -42,3 +43,35 @@ recipeList:
       version: 21
   - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
       releaseVersion: 21
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.util.SequencedCollection
+displayName: Adopt `SequencedCollection`
+description: Replace older code patterns with `SequencedCollection` methods, as per https://openjdk.org/jeps/431.
+tags:
+  - java21
+  - collections
+recipeList:
+  # Iterator
+  - org.openrewrite.java.SimplifyMethodChain:
+      methodPatternChain: [ 'java.util.SequencedCollection iterator()', 'java.util.Iterator next()' ]
+      newMethodName: getFirst
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.SortedSet first()
+      newMethodName: getFirst
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.SortedSet last()
+      newMethodName: getLast
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.NavigableSet descendingSet()
+      newMethodName: reversed
+  # TODO convert additional patterns to sequenced collections
+  # SequencedCollection.get(0) -> SequencedCollection.getFirst()
+  # SequencedCollection.get(SequencedCollection.size() - 1) -> SequencedCollection.getLast()
+  # list.add(0, E) -> SequencedCollection.addFirst(E)
+  # list.addLast(list.size(), E) -> SequencedCollection.addLast(E)
+  # list.remove(0) -> SequencedCollection.removeFirst()
+  # list.remove(list.size() - 1) -> SequencedCollection.removeLast()
+  # list.listIterator() -> ???
+  # list.listIterator(int) -> ???
