@@ -18,11 +18,15 @@ package org.openrewrite.java.migrate.apache.commons.io;
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.apache.commons.io.FileUtils;
+import org.openrewrite.java.template.RecipeDescriptor;
 
 import java.io.File;
 import java.nio.file.Files;
 
 public class ApacheCommonsFileUtils {
+    @RecipeDescriptor(
+            name = "Replace `FileUtils.getFile(String...)` with JDK internals",
+            description = "Replace Apache Commons `FileUtils.getFile(String... name)` with JDK internals.")
     private static class GetFile {
         @BeforeTemplate
         File before(String name) {
@@ -48,6 +52,9 @@ public class ApacheCommonsFileUtils {
 //        }
 //    }
 
+    @RecipeDescriptor(
+            name = "Replace `FileUtils.writeStringToFile(File, String)` with JDK internals",
+            description = "Replace Apache Commons `FileUtils.writeStringToFile(File file, String data)` with JDK internals.")
     @SuppressWarnings("deprecation")
     private static class WriteStringToFile {
         @BeforeTemplate
@@ -60,6 +67,4 @@ public class ApacheCommonsFileUtils {
             Files.write(a.toPath(), s.getBytes());
         }
     }
-
-
 }
