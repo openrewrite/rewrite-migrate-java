@@ -19,12 +19,16 @@ import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.apache.commons.lang3.StringUtils;
 import org.openrewrite.java.template.Matches;
+import org.openrewrite.java.template.RecipeDescriptor;
 
 import java.util.Objects;
 
 @SuppressWarnings("ALL")
 public class ApacheCommonsStringUtils {
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.abbreviate(String, int)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.abbreviate(String str, int maxWidth)` with JDK internals.")
     private static class Abbreviate {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s1,
@@ -38,6 +42,9 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.capitalize(String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.capitalize(String str)` with JDK internals.")
     @SuppressWarnings("ConstantValue")
     private static class Capitalize {
         @BeforeTemplate
@@ -106,6 +113,9 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.defaultString(String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.defaultString(String str)` with JDK internals.")
     private static class DefaultString {
         @BeforeTemplate
         String before(String s) {
@@ -118,6 +128,9 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.defaultString(String, String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.defaultString(String str, String nullDefault)` with JDK internals.")
     private static class DefaultStringFallback {
         @BeforeTemplate
         String before(String s, String nullDefault) {
@@ -130,6 +143,9 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.deleteWhitespace(String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.deleteWhitespace(String str)` with JDK internals.")
     private static class DeleteWhitespace {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -155,6 +171,9 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.equalsIgnoreCase(CharSequence, CharSequence)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.equalsIgnoreCase(CharSequence cs1, CharSequence cs2)` with JDK internals.")
     private static class EqualsIgnoreCase {
         @BeforeTemplate
         boolean before(@Matches(RepeatableArgumentMatcher.class) String s,
@@ -168,6 +187,9 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.equals(CharSequence, CharSequence)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.equals(CharSequence cs1, CharSequence cs2)` with JDK internals.")
     private static class Equals {
         @BeforeTemplate
         boolean before(String s, String other) {
@@ -326,6 +348,9 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.lowerCase(String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.lowerCase(String str)` with JDK internals.")
     private static class Lowercase {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -377,6 +402,9 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.removeEnd(String, String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.removeEnd(String str, String remove)` with JDK internals.")
     private static class RemoveEnd {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s,
@@ -416,6 +444,9 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.replace(String, String, String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.replace(String text, String searchString, String replacement)` with JDK internals.")
     private static class Replace {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s,
@@ -430,6 +461,9 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.reverse(String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.reverse(String str)` with JDK internals.")
     private static class Reverse {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -455,6 +489,9 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.split(String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.split(String str)` with JDK internals.")
     private static class Split {
         @BeforeTemplate
         String[] before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -493,6 +530,9 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.strip(String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.strip(String str)` with JDK internals.")
     private static class Strip {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -586,6 +626,9 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.trimToEmpty(String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.trimToEmpty(String str)` with JDK internals.")
     @SuppressWarnings("ConstantValue")
     private static class TrimToEmpty {
         @BeforeTemplate
@@ -599,6 +642,9 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.trimToNull(String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.trimToNull(String str)` with JDK internals.")
     @SuppressWarnings("ConstantValue")
     private static class TrimToNull {
         @BeforeTemplate
@@ -612,6 +658,9 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.trim(String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.trim(String str)` with JDK internals.")
     private static class Trim {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -624,6 +673,9 @@ public class ApacheCommonsStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.upperCase(String)` with JDK internals",
+            description = "Replace Apache Commons `StringUtils.upperCase(String str)` with JDK internals.")
     private static class Uppercase {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
