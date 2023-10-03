@@ -26,7 +26,6 @@ import java.util.Objects;
 
 @SuppressWarnings("ALL")
 public class PlexusStringUtils {
-
     @RecipeDescriptor(
             name = "Replace `StringUtils.abbreviate(String, int)` with JDK internals",
             description = "Replace Plexus `StringUtils.abbreviate(String str, int maxWidth)` with JDK internals.")

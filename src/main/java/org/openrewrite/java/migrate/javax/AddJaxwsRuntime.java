@@ -88,7 +88,7 @@ public class AddJaxwsRuntime extends Recipe {
 
     @Value
     @EqualsAndHashCode(callSuper = true)
-    private static class AddJaxwsRuntimeGradle extends Recipe {
+    public static class AddJaxwsRuntimeGradle extends Recipe {
         @Override
         public String getDisplayName() {
             return "Use the latest JAX-WS API and runtime for Jakarta EE 8";
@@ -177,7 +177,7 @@ public class AddJaxwsRuntime extends Recipe {
 
     @Value
     @EqualsAndHashCode(callSuper = true)
-    private static class AddJaxwsRuntimeMaven extends Recipe {
+    public static class AddJaxwsRuntimeMaven extends Recipe {
         @Override
         public String getDisplayName() {
             return "Use the latest JAX-WS API and runtime for Jakarta EE 8";

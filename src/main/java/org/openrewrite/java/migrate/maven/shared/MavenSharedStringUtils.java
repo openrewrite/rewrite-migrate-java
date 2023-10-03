@@ -26,7 +26,6 @@ import java.util.Objects;
 
 @SuppressWarnings("ALL")
 public class MavenSharedStringUtils {
-
     @RecipeDescriptor(
             name = "Replace `StringUtils.abbreviate(String, int)` with JDK internals",
             description = "Replace Maven Shared `StringUtils.abbreviate(String str, int maxWidth)` with JDK internals.")
@@ -241,5 +240,4 @@ public class MavenSharedStringUtils {
             return (s == null ? null : s.toUpperCase());
         }
     }
-
 }
