@@ -29,7 +29,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.abbreviate(String, int)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.abbreviate(String str, int maxWidth)` with JDK internals.")
-    private static class Abbreviate {
+    public static class Abbreviate {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s1,
                       @Matches(RepeatableArgumentMatcher.class) int width) {
@@ -46,7 +46,7 @@ public class ApacheCommonsStringUtils {
             name = "Replace `StringUtils.capitalize(String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.capitalize(String str)` with JDK internals.")
     @SuppressWarnings("ConstantValue")
-    private static class Capitalize {
+    public static class Capitalize {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.capitalize(s);
@@ -59,7 +59,7 @@ public class ApacheCommonsStringUtils {
     }
 
     //NOTE: The test for this recipe fails, I think it could be due to a `rewrite-templating` bug
-    //private static class Chomp {
+    //public static class Chomp {
     //    @BeforeTemplate
     //    String before(String s) {
     //        return StringUtils.chomp(s);
@@ -72,7 +72,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: fails with __P__. inserted
-    //private static class Chop {
+    //public static class Chop {
     //    @BeforeTemplate
     //    String before(String s) {
     //        return StringUtils.chop(s);
@@ -88,7 +88,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: not sure if accurate replacement
-    //private static class Contains {
+    //public static class Contains {
     //    @BeforeTemplate
     //    boolean before(String s, String search) {
     //        return StringUtils.contains(s, search);
@@ -101,7 +101,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: Requires Java 9+ for s.chars()
-    //private static class CountMatchesChar {
+    //public static class CountMatchesChar {
     //    @BeforeTemplate
     //    int before(String s, char pattern) {
     //        return StringUtils.countMatches(s, pattern);
@@ -116,7 +116,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.defaultString(String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.defaultString(String str)` with JDK internals.")
-    private static class DefaultString {
+    public static class DefaultString {
         @BeforeTemplate
         String before(String s) {
             return StringUtils.defaultString(s);
@@ -131,7 +131,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.defaultString(String, String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.defaultString(String str, String nullDefault)` with JDK internals.")
-    private static class DefaultStringFallback {
+    public static class DefaultStringFallback {
         @BeforeTemplate
         String before(String s, String nullDefault) {
             return StringUtils.defaultString(s, nullDefault);
@@ -146,7 +146,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.deleteWhitespace(String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.deleteWhitespace(String str)` with JDK internals.")
-    private static class DeleteWhitespace {
+    public static class DeleteWhitespace {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.deleteWhitespace(s);
@@ -159,7 +159,7 @@ public class ApacheCommonsStringUtils {
     }
 
     // NOTE: unlikely to go over well due to added complexity
-    //private static class EndsWithIgnoreCase {
+    //public static class EndsWithIgnoreCase {
     //    @BeforeTemplate
     //    boolean before(String s, String suffix) {
     //        return StringUtils.endsWithIgnoreCase(s, suffix);
@@ -174,7 +174,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.equalsIgnoreCase(CharSequence, CharSequence)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.equalsIgnoreCase(CharSequence cs1, CharSequence cs2)` with JDK internals.")
-    private static class EqualsIgnoreCase {
+    public static class EqualsIgnoreCase {
         @BeforeTemplate
         boolean before(@Matches(RepeatableArgumentMatcher.class) String s,
                        @Matches(RepeatableArgumentMatcher.class) String other) {
@@ -190,7 +190,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.equals(CharSequence, CharSequence)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.equals(CharSequence cs1, CharSequence cs2)` with JDK internals.")
-    private static class Equals {
+    public static class Equals {
         @BeforeTemplate
         boolean before(String s, String other) {
             return StringUtils.equals(s, other);
@@ -203,7 +203,7 @@ public class ApacheCommonsStringUtils {
     }
 
     // NOTE: unlikely to go over well due to added complexity
-    //private static class IndexOfAny {
+    //public static class IndexOfAny {
     //    @BeforeTemplate
     //    int before(String s, String searchChars) {
     //        return StringUtils.indexOfAny(s, searchChars);
@@ -221,7 +221,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: not sure if accurate replacement
-    //private static class IsAlphanumericSpace {
+    //public static class IsAlphanumericSpace {
     //    @BeforeTemplate
     //    boolean before(String s) {
     //        return StringUtils.isAlphanumericSpace(s);
@@ -234,7 +234,7 @@ public class ApacheCommonsStringUtils {
 
 
     // `chars()` is only in Java 9+
-    //private static class IsAlphanumeric {
+    //public static class IsAlphanumeric {
     //    @BeforeTemplate
     //    boolean before(@Matches(RepeatableArgumentMatcher.class) String s) {
     //        return StringUtils.isAlphanumeric(s);
@@ -247,7 +247,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: not sure if accurate replacement
-    //private static class IsAlphaSpace {
+    //public static class IsAlphaSpace {
     //    @BeforeTemplate
     //    boolean before(String s) {
     //        return StringUtils.isAlphaSpace(s);
@@ -259,7 +259,7 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    //private static class StripAll {
+    //public static class StripAll {
     //    @BeforeTemplate
     //    String[] before(String[] s) {
     //        return StringUtils.stripAll(s);
@@ -274,7 +274,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // `chars()` is only in Java 9+
-    //private static class IsAlpha {
+    //public static class IsAlpha {
     //    @BeforeTemplate
     //    boolean before(@Matches(RepeatableArgumentMatcher.class) String s) {
     //        return StringUtils.isAlpha(s);
@@ -287,7 +287,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: better handled by `org.openrewrite.java.migrate.apache.commons.lang.IsNotEmptyToJdk`
-    //private static class IsEmpty {
+    //public static class IsEmpty {
     //    @BeforeTemplate
     //    boolean before(String s) {
     //        return StringUtils.isEmpty(s);
@@ -322,7 +322,7 @@ public class ApacheCommonsStringUtils {
     //    }
     //}
 
-    //private static class Join {
+    //public static class Join {
     //    @BeforeTemplate
     //    String before(String s) {
     //        return StringUtils.join(s);
@@ -336,7 +336,7 @@ public class ApacheCommonsStringUtils {
 
     // NOTE: not sure if accurate replacement
     @SuppressWarnings("ConstantValue")
-    //private static class Left {
+    //public static class Left {
     //    @BeforeTemplate
     //    String before(String s, int l) {
     //        return StringUtils.left(s, l);
@@ -351,7 +351,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.lowerCase(String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.lowerCase(String str)` with JDK internals.")
-    private static class Lowercase {
+    public static class Lowercase {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.lowerCase(s);
@@ -364,7 +364,7 @@ public class ApacheCommonsStringUtils {
     }
 
     // NOTE: not sure if accurate replacement
-    //private static class Mid {
+    //public static class Mid {
     //    @BeforeTemplate
     //    String before(String s, int p, int l) {
     //        return StringUtils.mid(s, p, l);
@@ -377,7 +377,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: not sure if accurate replacement
-    //private static class Overlay {
+    //public static class Overlay {
     //    @BeforeTemplate
     //    String before(String s, int w, int l, String overlay) {
     //        return StringUtils.overlay(s, overlay, w, l);
@@ -390,7 +390,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: Similar issues to what LeftPad and RightPad have
-    //private static class Center {
+    //public static class Center {
     //    @BeforeTemplate
     //    String before(String s, int size) {
     //        return StringUtils.center(s, size);
@@ -405,7 +405,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.removeEnd(String, String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.removeEnd(String str, String remove)` with JDK internals.")
-    private static class RemoveEnd {
+    public static class RemoveEnd {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s,
                       @Matches(RepeatableArgumentMatcher.class) String end) {
@@ -419,7 +419,7 @@ public class ApacheCommonsStringUtils {
         }
     }
 
-    //private static class Repeat {
+    //public static class Repeat {
     //    @BeforeTemplate
     //    String before(String s, int l) {
     //        return StringUtils.repeat(s, l);
@@ -432,7 +432,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: requires dedicated recipe to clean up `Pattern.quote(",")`
-    //private static class ReplaceOnce {
+    //public static class ReplaceOnce {
     //    @BeforeTemplate
     //    String before(String s, String search, String replacement) {
     //        return StringUtils.replaceOnce(s, search, replacement);
@@ -447,7 +447,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.replace(String, String, String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.replace(String text, String searchString, String replacement)` with JDK internals.")
-    private static class Replace {
+    public static class Replace {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s,
                       @Matches(RepeatableArgumentMatcher.class) String search,
@@ -464,7 +464,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.reverse(String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.reverse(String str)` with JDK internals.")
-    private static class Reverse {
+    public static class Reverse {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.reverse(s);
@@ -477,7 +477,7 @@ public class ApacheCommonsStringUtils {
     }
 
     // NOTE: not sure if accurate replacement
-    //private static class Right {
+    //public static class Right {
     //    @BeforeTemplate
     //    String before(String s, int l) {
     //        return StringUtils.right(s, l);
@@ -492,7 +492,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.split(String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.split(String str)` with JDK internals.")
-    private static class Split {
+    public static class Split {
         @BeforeTemplate
         String[] before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.split(s);
@@ -505,7 +505,7 @@ public class ApacheCommonsStringUtils {
     }
 
     // NOTE: requires dedicated recipe to clean up `Pattern.quote(",")`
-    //private static class SplitSeparator {
+    //public static class SplitSeparator {
     //    @BeforeTemplate
     //    String[] before(String s, String arg) {
     //        return StringUtils.split(s, arg);
@@ -518,7 +518,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: different semantics in handling max=0 to discard trailing empty strings
-    //private static class SplitSeparatorMax {
+    //public static class SplitSeparatorMax {
     //    @BeforeTemplate
     //    String[] before(String s, String arg, int max) {
     //        return StringUtils.split(s, arg, max);
@@ -533,7 +533,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.strip(String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.strip(String str)` with JDK internals.")
-    private static class Strip {
+    public static class Strip {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.strip(s);
@@ -546,7 +546,7 @@ public class ApacheCommonsStringUtils {
     }
 
     // NOTE: suffix is a set of characters, not a complete literal string
-    //private static class StripEnd {
+    //public static class StripEnd {
     //    @BeforeTemplate
     //    String before(String s, String suffix) {
     //        return StringUtils.stripEnd(s, suffix);
@@ -559,7 +559,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: suffix is a set of characters, not a complete literal string
-    //private static class StripStart {
+    //public static class StripStart {
     //    @BeforeTemplate
     //    String before(String s, String chars) {
     //        return StringUtils.stripStart(s, chars);
@@ -572,7 +572,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: not sure if accurate replacement
-    //private static class StartsWith {
+    //public static class StartsWith {
     //    @BeforeTemplate
     //    boolean before(String s, String prefix) {
     //        return StringUtils.startsWith(s, prefix);
@@ -585,7 +585,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: Incorrect handling of before null/empty and separator null/empty
-    //private static class SubstringAfter {
+    //public static class SubstringAfter {
     //    @BeforeTemplate
     //    String before(String s, String sep) {
     //        return StringUtils.substringAfter(s, sep);
@@ -598,7 +598,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: Incorrect handling of negative values
-    //private static class Substring {
+    //public static class Substring {
     //    @BeforeTemplate
     //    String before(String s, int l, int w) {
     //        return StringUtils.substring(s, l, w);
@@ -611,7 +611,7 @@ public class ApacheCommonsStringUtils {
     //}
 
     // NOTE: fails to account for isTitleCase
-    //private static class SwapCase {
+    //public static class SwapCase {
     //    @BeforeTemplate
     //    String before(String s, char sep) {
     //        return StringUtils.swapCase(s);
@@ -630,7 +630,7 @@ public class ApacheCommonsStringUtils {
             name = "Replace `StringUtils.trimToEmpty(String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.trimToEmpty(String str)` with JDK internals.")
     @SuppressWarnings("ConstantValue")
-    private static class TrimToEmpty {
+    public static class TrimToEmpty {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.trimToEmpty(s);
@@ -646,7 +646,7 @@ public class ApacheCommonsStringUtils {
             name = "Replace `StringUtils.trimToNull(String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.trimToNull(String str)` with JDK internals.")
     @SuppressWarnings("ConstantValue")
-    private static class TrimToNull {
+    public static class TrimToNull {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.trimToNull(s);
@@ -661,7 +661,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.trim(String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.trim(String str)` with JDK internals.")
-    private static class Trim {
+    public static class Trim {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.trim(s);
@@ -676,7 +676,7 @@ public class ApacheCommonsStringUtils {
     @RecipeDescriptor(
             name = "Replace `StringUtils.upperCase(String)` with JDK internals",
             description = "Replace Apache Commons `StringUtils.upperCase(String str)` with JDK internals.")
-    private static class Uppercase {
+    public static class Uppercase {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.upperCase(s);
@@ -689,7 +689,7 @@ public class ApacheCommonsStringUtils {
     }
 
     // NOTE: breaks on empty strings
-    //private static class Uncapitalize {
+    //public static class Uncapitalize {
     //    @BeforeTemplate
     //    String before(String s) {
     //        return StringUtils.uncapitalize(s);
