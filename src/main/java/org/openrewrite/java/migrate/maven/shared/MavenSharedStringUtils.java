@@ -20,12 +20,15 @@ import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.apache.maven.shared.utils.StringUtils;
 import org.openrewrite.java.migrate.apache.commons.lang.RepeatableArgumentMatcher;
 import org.openrewrite.java.template.Matches;
+import org.openrewrite.java.template.RecipeDescriptor;
 
 import java.util.Objects;
 
 @SuppressWarnings("ALL")
 public class MavenSharedStringUtils {
-
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.abbreviate(String, int)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.abbreviate(String str, int maxWidth)` with JDK internals.")
     public static class Abbreviate {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s1,
@@ -39,8 +42,11 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.capitalise(String)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.capitalise(String str)` with JDK internals.")
     @SuppressWarnings("ConstantValue")
-    public static class Capitalize {
+    public static class Capitalise {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.capitalise(s);
@@ -52,6 +58,9 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.defaultString(Object)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.defaultString(Object obj)` with JDK internals.")
     public static class DefaultString {
         @BeforeTemplate
         String before(String s) {
@@ -64,6 +73,9 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.defaultString(Object, String)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.defaultString(Object obj, String nullDefault)` with JDK internals.")
     public static class DefaultStringFallback {
         @BeforeTemplate
         String before(String s, String nullDefault) {
@@ -76,6 +88,9 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.deleteWhitespace(String)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.deleteWhitespace(String str)` with JDK internals.")
     public static class DeleteWhitespace {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -88,6 +103,9 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.equalsIgnoreCase(String, String)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.equalsIgnoreCase(String str1, String str2)` with JDK internals.")
     public static class EqualsIgnoreCase {
         @BeforeTemplate
         boolean before(@Matches(RepeatableArgumentMatcher.class) String s,
@@ -101,6 +119,9 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.equals(String, String)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.equals(String str1, String str2)` with JDK internals.")
     public static class Equals {
         @BeforeTemplate
         boolean before(String s, String other) {
@@ -113,6 +134,9 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.lowerCase(String)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.lowerCase(String str)` with JDK internals.")
     public static class Lowercase {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -125,6 +149,9 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.replace(String, String, String)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.replace(String text, String searchString, String replacement)` with JDK internals.")
     public static class Replace {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s,
@@ -139,6 +166,9 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.reverse(String)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.reverse(String str)` with JDK internals.")
     public static class Reverse {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -151,6 +181,9 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.split(String)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.split(String str)` with JDK internals.")
     public static class Split {
         @BeforeTemplate
         String[] before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -163,6 +196,9 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.strip(String)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.strip(String str)` with JDK internals.")
     public static class Strip {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -175,6 +211,9 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.trim(String)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.trim(String str)` with JDK internals.")
     public static class Trim {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -187,6 +226,9 @@ public class MavenSharedStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.upperCase(String)` with JDK internals",
+            description = "Replace Maven Shared `StringUtils.upperCase(String str)` with JDK internals.")
     public static class Uppercase {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -198,5 +240,4 @@ public class MavenSharedStringUtils {
             return (s == null ? null : s.toUpperCase());
         }
     }
-
 }

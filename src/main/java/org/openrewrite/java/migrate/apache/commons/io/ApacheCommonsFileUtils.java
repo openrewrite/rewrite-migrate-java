@@ -40,7 +40,7 @@ public class ApacheCommonsFileUtils {
     }
 
 // NOTE: java: reference to compile is ambiguous; methods P3 & F3 match
-//    private static class Write {
+//    public static class Write {
 //        @BeforeTemplate
 //        void before(File file, CharSequence data, Charset cs) throws Exception {
 //            FileUtils.write(file, data, cs);
