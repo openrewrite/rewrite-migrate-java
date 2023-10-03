@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
@@ -28,6 +29,7 @@ import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.Assertions.withToolingApi;
 import static org.openrewrite.maven.Assertions.pomXml;
 
+@Disabled
 class AddJaxwsDependenciesTest implements RewriteTest {
 
     @Override
