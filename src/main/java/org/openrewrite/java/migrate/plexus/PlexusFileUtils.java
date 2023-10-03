@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.plexus;
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.codehaus.plexus.util.FileUtils;
+import org.openrewrite.java.template.RecipeDescriptor;
 
 import java.io.File;
 
@@ -25,6 +26,9 @@ class PlexusFileUtils {
 
     // https://github.com/codehaus-plexus/plexus-utils/blob/master/src/main/java/org/codehaus/plexus/util/StringUtils.java
 
+    @RecipeDescriptor(
+            name = "Replace `FileUtils.deleteDirectory(File)` with JDK internals",
+            description = "Replace Plexus `FileUtils.deleteDirectory(File directory)` with JDK internals.")
     static class DeleteDirectoryFile {
         @BeforeTemplate
         void before(File dir) throws Exception {
@@ -37,6 +41,9 @@ class PlexusFileUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `FileUtils.deleteDirectory(String)` with JDK internals",
+            description = "Replace Plexus `FileUtils.deleteDirectory(String directory)` with JDK internals.")
     static class DeleteDirectoryString {
         @BeforeTemplate
         void before(String dir) throws Exception {
@@ -49,6 +56,9 @@ class PlexusFileUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `FileUtils.fileExists(String)` with JDK internals",
+            description = "Replace Plexus `FileUtils.fileExists(String fileName)` with JDK internals.")
     static class FileExistsString {
         @BeforeTemplate
         boolean before(String fileName) throws Exception {
@@ -61,6 +71,9 @@ class PlexusFileUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `FileUtils.getFile(String)` with JDK internals",
+            description = "Replace Plexus `FileUtils.getFile(String fileName)` with JDK internals.")
     static class GetFile {
         @BeforeTemplate
         File before(String fileName) throws Exception {
@@ -72,5 +85,4 @@ class PlexusFileUtils {
             return new File(fileName);
         }
     }
-
 }

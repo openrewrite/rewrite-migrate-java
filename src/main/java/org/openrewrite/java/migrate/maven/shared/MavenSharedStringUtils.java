@@ -47,7 +47,7 @@ public class MavenSharedStringUtils {
             name = "Replace `StringUtils.capitalise(String)` with JDK internals",
             description = "Replace Maven Shared `StringUtils.capitalise(String str)` with JDK internals.")
     @SuppressWarnings("ConstantValue")
-    private static class Capitalize {
+    private static class Capitalise {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.capitalise(s);
