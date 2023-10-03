@@ -75,11 +75,10 @@ recipeList:
 ---
   type: specs.openrewrite.org/v1beta/recipe
   name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
-  displayName: Use `jakarta.el instead of jakarta.faces.el and javax.faces.el`
+  displayName: Use `jakarta.el instead of jakarta.faces.el`
   description: >
-    The several classes were removed and replaced in Jakarta Faces 4.0.
-    The only Object definition not removed in the jakarta.faces.el package is the CompositeComponentExpressionHolder interface. 
-    SeePackage jakarta.faces.el for more information on the replacements for these removed classes.
+    Several classes were removed and replaced in Jakarta Faces 4.0.
+    The only Object definition not removed in the jakarta.faces.el package is the CompositeComponentExpressionHolder interface.
   recipeList:
     - org.openrewrite.java.ChangeType:
         oldFullyQualifiedTypeName: jakarta.faces.el.MethodBinding
