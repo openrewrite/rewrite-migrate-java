@@ -27,7 +27,7 @@ public class ApacheCommonsFileUtils {
     @RecipeDescriptor(
             name = "Replace `FileUtils.getFile(String...)` with JDK internals",
             description = "Replace Apache Commons `FileUtils.getFile(String... name)` with JDK internals.")
-    private static class GetFile {
+    public static class GetFile {
         @BeforeTemplate
         File before(String name) {
             return FileUtils.getFile(name);
@@ -56,7 +56,7 @@ public class ApacheCommonsFileUtils {
             name = "Replace `FileUtils.writeStringToFile(File, String)` with JDK internals",
             description = "Replace Apache Commons `FileUtils.writeStringToFile(File file, String data)` with JDK internals.")
     @SuppressWarnings("deprecation")
-    private static class WriteStringToFile {
+    public static class WriteStringToFile {
         @BeforeTemplate
         void before(File a, String s) throws Exception {
             FileUtils.writeStringToFile(a, s);

@@ -26,7 +26,7 @@ import java.util.Objects;
 @SuppressWarnings("ALL")
 public class MavenSharedStringUtils {
 
-    private static class Abbreviate {
+    public static class Abbreviate {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s1,
                       @Matches(RepeatableArgumentMatcher.class) int width) {
@@ -40,7 +40,7 @@ public class MavenSharedStringUtils {
     }
 
     @SuppressWarnings("ConstantValue")
-    private static class Capitalize {
+    public static class Capitalize {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.capitalise(s);
@@ -52,7 +52,7 @@ public class MavenSharedStringUtils {
         }
     }
 
-    private static class DefaultString {
+    public static class DefaultString {
         @BeforeTemplate
         String before(String s) {
             return StringUtils.defaultString(s);
@@ -64,7 +64,7 @@ public class MavenSharedStringUtils {
         }
     }
 
-    private static class DefaultStringFallback {
+    public static class DefaultStringFallback {
         @BeforeTemplate
         String before(String s, String nullDefault) {
             return StringUtils.defaultString(s, nullDefault);
@@ -76,7 +76,7 @@ public class MavenSharedStringUtils {
         }
     }
 
-    private static class DeleteWhitespace {
+    public static class DeleteWhitespace {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.deleteWhitespace(s);
@@ -88,7 +88,7 @@ public class MavenSharedStringUtils {
         }
     }
 
-    private static class EqualsIgnoreCase {
+    public static class EqualsIgnoreCase {
         @BeforeTemplate
         boolean before(@Matches(RepeatableArgumentMatcher.class) String s,
                        @Matches(RepeatableArgumentMatcher.class) String other) {
@@ -101,7 +101,7 @@ public class MavenSharedStringUtils {
         }
     }
 
-    private static class Equals {
+    public static class Equals {
         @BeforeTemplate
         boolean before(String s, String other) {
             return StringUtils.equals(s, other);
@@ -113,7 +113,7 @@ public class MavenSharedStringUtils {
         }
     }
 
-    private static class Lowercase {
+    public static class Lowercase {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.lowerCase(s);
@@ -125,7 +125,7 @@ public class MavenSharedStringUtils {
         }
     }
 
-    private static class Replace {
+    public static class Replace {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s,
                       @Matches(RepeatableArgumentMatcher.class) String search,
@@ -139,7 +139,7 @@ public class MavenSharedStringUtils {
         }
     }
 
-    private static class Reverse {
+    public static class Reverse {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.reverse(s);
@@ -151,7 +151,7 @@ public class MavenSharedStringUtils {
         }
     }
 
-    private static class Split {
+    public static class Split {
         @BeforeTemplate
         String[] before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.split(s);
@@ -163,7 +163,7 @@ public class MavenSharedStringUtils {
         }
     }
 
-    private static class Strip {
+    public static class Strip {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.strip(s);
@@ -175,7 +175,7 @@ public class MavenSharedStringUtils {
         }
     }
 
-    private static class Trim {
+    public static class Trim {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.trim(s);
@@ -187,7 +187,7 @@ public class MavenSharedStringUtils {
         }
     }
 
-    private static class Uppercase {
+    public static class Uppercase {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.upperCase(s);
