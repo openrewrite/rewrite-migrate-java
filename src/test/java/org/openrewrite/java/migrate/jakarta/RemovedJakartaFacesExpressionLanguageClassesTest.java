@@ -28,11 +28,11 @@ public class RemovedJakartaFacesExpressionLanguageClassesTest implements Rewrite
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jakarta.el-api-4.0.0", "jakarta.faces-3.0.3")).recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build().activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses"));
+        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jakarta.el-api-4.0.0","jakarta.faces-2.3.19", "jakarta.faces-3.0.3")).recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build().activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses"));
     }
 
     @Test
-    void removedExpressionLanguageTest_1() {
+    void removedExpressionLanguageTestJakarta_1() {
         rewriteRun(
           //language=java
           java("""
@@ -69,7 +69,7 @@ public class RemovedJakartaFacesExpressionLanguageClassesTest implements Rewrite
     }
 
     @Test
-    void removedExpressionLanguageTest_2() {
+    void removedExpressionLanguageTestJakarta_2() {
         rewriteRun(
           //language=java
           java("""
@@ -102,6 +102,86 @@ public class RemovedJakartaFacesExpressionLanguageClassesTest implements Rewrite
             public class Test {
                       
                 public void testJakarta_1() {
+                    ELResolver variableResolver = null;
+                    ELException evaluationException = null;
+                    MethodNotFoundException methodNotFoundException = null;
+                    PropertyNotFoundException propertyNotFoundException = null;
+                    ELException referenceSyntaxException = null;
+                }
+            }
+            """));
+    }
+    @Test
+    void removedExpressionLanguageTestJavax_1() {
+        rewriteRun(
+          //language=java
+          java("""
+            package com.test;
+             
+            import javax.faces.el.MethodBinding;
+            import javax.faces.el.PropertyResolver;
+            import javax.faces.el.ValueBinding;
+                        
+            public class Test {
+             
+                 public void testJavax() {
+                      MethodBinding methodBinding = null;
+                      PropertyResolver propertyResolver = null;
+                      ValueBinding valueBinding = null;           
+                 }
+            }        
+            """, """
+            package com.test;
+                        
+            import jakarta.el.ELResolver;
+            import jakarta.el.MethodExpression;
+            import jakarta.el.ValueExpression;
+                 
+            public class Test {
+             
+                 public void testJavax() {
+                      MethodExpression methodBinding = null;
+                      ELResolver propertyResolver = null;
+                      ValueExpression valueBinding = null;
+                 }
+            }   
+            """));
+    }
+
+    @Test
+    void removedExpressionLanguageTestJavax_2() {
+        rewriteRun(
+          //language=java
+          java("""
+            package com.test;
+              
+            import javax.faces.el.VariableResolver;
+            import javax.faces.el.EvaluationException;
+            import javax.faces.el.MethodNotFoundException;
+            import javax.faces.el.PropertyNotFoundException;
+            import javax.faces.el.ReferenceSyntaxException;
+              
+            public class Test {
+              
+                public void testJavax_1() {            
+                    VariableResolver variableResolver = null;
+                    EvaluationException evaluationException = null;
+                    MethodNotFoundException methodNotFoundException = null;
+                    PropertyNotFoundException propertyNotFoundException = null;
+                    ReferenceSyntaxException referenceSyntaxException = null; 
+                }
+            }         
+             """, """
+            package com.test;
+              
+            import jakarta.el.ELException;
+            import jakarta.el.ELResolver;
+            import jakarta.el.MethodNotFoundException;
+            import jakarta.el.PropertyNotFoundException;
+              
+            public class Test {
+                      
+                public void testJavax_1() {
                     ELResolver variableResolver = null;
                     ELException evaluationException = null;
                     MethodNotFoundException methodNotFoundException = null;
