@@ -25,6 +25,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
   - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
+  - org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
@@ -71,3 +72,45 @@ recipeList:
         oldFullyQualifiedTypeName: jakarta.xml.soap.SOAPElementFactory
         newFullyQualifiedTypeName: jakarta.xml.soap.SOAPFactory
         ignoreDefinition: true
+---
+  type: specs.openrewrite.org/v1beta/recipe
+  name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
+  displayName: Use `jakarta.el instead of jakarta.faces.el and javax.faces.el`
+  description: >
+    The several classes were removed and replaced in Jakarta Faces 4.0.
+    The only Object definition not removed in the jakarta.faces.el package is the CompositeComponentExpressionHolder interface. 
+    SeePackage jakarta.faces.el for more information on the replacements for these removed classes.
+  recipeList:
+    - org.openrewrite.java.ChangeType:
+        oldFullyQualifiedTypeName: jakarta.faces.el.MethodBinding
+        newFullyQualifiedTypeName: jakarta.el.MethodExpression
+        ignoreDefinition: true
+    - org.openrewrite.java.ChangeType:
+        oldFullyQualifiedTypeName: jakarta.faces.el.PropertyResolver
+        newFullyQualifiedTypeName: jakarta.el.ELResolver
+        ignoreDefinition: true
+    - org.openrewrite.java.ChangeType:
+        oldFullyQualifiedTypeName: jakarta.faces.el.ValueBinding
+        newFullyQualifiedTypeName: jakarta.el.ValueExpression
+        ignoreDefinition: true
+    - org.openrewrite.java.ChangeType:
+        oldFullyQualifiedTypeName: jakarta.faces.el.VariableResolver
+        newFullyQualifiedTypeName: jakarta.el.ELResolver
+        ignoreDefinition: true
+    - org.openrewrite.java.ChangeType:
+        oldFullyQualifiedTypeName: jakarta.faces.el.EvaluationException
+        newFullyQualifiedTypeName: jakarta.el.ELException
+        ignoreDefinition: true
+    - org.openrewrite.java.ChangeType:
+        oldFullyQualifiedTypeName: jakarta.faces.el.MethodNotFoundException
+        newFullyQualifiedTypeName: jakarta.el.MethodNotFoundException
+        ignoreDefinition: true
+    - org.openrewrite.java.ChangeType:
+        oldFullyQualifiedTypeName: jakarta.faces.el.PropertyNotFoundException
+        newFullyQualifiedTypeName: jakarta.el.PropertyNotFoundException
+        ignoreDefinition: true
+    - org.openrewrite.java.ChangeType:
+        oldFullyQualifiedTypeName: jakarta.faces.el.ReferenceSyntaxException
+        newFullyQualifiedTypeName: jakarta.el.ELException
+        ignoreDefinition: true
+
