@@ -20,13 +20,16 @@ import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.codehaus.plexus.util.StringUtils;
 import org.openrewrite.java.migrate.apache.commons.lang.RepeatableArgumentMatcher;
 import org.openrewrite.java.template.Matches;
+import org.openrewrite.java.template.RecipeDescriptor;
 
 import java.util.Objects;
 
 @SuppressWarnings("ALL")
 public class PlexusStringUtils {
-
-    private static class Abbreviate {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.abbreviate(String, int)` with JDK internals",
+            description = "Replace Plexus `StringUtils.abbreviate(String str, int maxWidth)` with JDK internals.")
+    public static class Abbreviate {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s1,
                       @Matches(RepeatableArgumentMatcher.class) int width) {
@@ -39,8 +42,11 @@ public class PlexusStringUtils {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.capitalise(String)` with JDK internals",
+            description = "Replace Plexus `StringUtils.capitalise(String str)` with JDK internals.")
     @SuppressWarnings("ConstantValue")
-    private static class Capitalize {
+    public static class Capitalise {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.capitalise(s);
@@ -52,7 +58,10 @@ public class PlexusStringUtils {
         }
     }
 
-    private static class DefaultString {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.defaultString(Object)` with JDK internals",
+            description = "Replace Plexus `StringUtils.defaultString(Object obj)` with JDK internals.")
+    public static class DefaultString {
         @BeforeTemplate
         String before(String s) {
             return StringUtils.defaultString(s);
@@ -64,7 +73,10 @@ public class PlexusStringUtils {
         }
     }
 
-    private static class DefaultStringFallback {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.defaultString(Object, String)` with JDK internals",
+            description = "Replace Plexus `StringUtils.defaultString(Object obj, String nullDefault)` with JDK internals.")
+    public static class DefaultStringFallback {
         @BeforeTemplate
         String before(String s, String nullDefault) {
             return StringUtils.defaultString(s, nullDefault);
@@ -76,7 +88,10 @@ public class PlexusStringUtils {
         }
     }
 
-    private static class DeleteWhitespace {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.deleteWhitespace(String)` with JDK internals",
+            description = "Replace Plexus `StringUtils.deleteWhitespace(String str)` with JDK internals.")
+    public static class DeleteWhitespace {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.deleteWhitespace(s);
@@ -88,7 +103,10 @@ public class PlexusStringUtils {
         }
     }
 
-    private static class EqualsIgnoreCase {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.equalsIgnoreCase(String, String)` with JDK internals",
+            description = "Replace Plexus `StringUtils.equalsIgnoreCase(String str1, String str2)` with JDK internals.")
+    public static class EqualsIgnoreCase {
         @BeforeTemplate
         boolean before(@Matches(RepeatableArgumentMatcher.class) String s,
                        @Matches(RepeatableArgumentMatcher.class) String other) {
@@ -101,7 +119,10 @@ public class PlexusStringUtils {
         }
     }
 
-    private static class Equals {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.equals(String, String)` with JDK internals",
+            description = "Replace Plexus `StringUtils.equals(String str1, String str2)` with JDK internals.")
+    public static class Equals {
         @BeforeTemplate
         boolean before(String s, String other) {
             return StringUtils.equals(s, other);
@@ -113,7 +134,10 @@ public class PlexusStringUtils {
         }
     }
 
-    private static class Lowercase {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.lowerCase(String)` with JDK internals",
+            description = "Replace Plexus `StringUtils.lowerCase(String str)` with JDK internals.")
+    public static class Lowercase {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.lowerCase(s);
@@ -125,7 +149,10 @@ public class PlexusStringUtils {
         }
     }
 
-    private static class Replace {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.replace(String, String, String)` with JDK internals",
+            description = "Replace Plexus `StringUtils.replace(String text, String searchString, String replacement)` with JDK internals.")
+    public static class Replace {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s,
                       @Matches(RepeatableArgumentMatcher.class) String search,
@@ -139,7 +166,10 @@ public class PlexusStringUtils {
         }
     }
 
-    private static class Reverse {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.reverse(String)` with JDK internals",
+            description = "Replace Plexus `StringUtils.reverse(String str)` with JDK internals.")
+    public static class Reverse {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.reverse(s);
@@ -151,7 +181,10 @@ public class PlexusStringUtils {
         }
     }
 
-    private static class Split {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.split(String)` with JDK internals",
+            description = "Replace Plexus `StringUtils.split(String str)` with JDK internals.")
+    public static class Split {
         @BeforeTemplate
         String[] before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.split(s);
@@ -163,7 +196,10 @@ public class PlexusStringUtils {
         }
     }
 
-    private static class Strip {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.strip(String)` with JDK internals",
+            description = "Replace Plexus `StringUtils.strip(String str)` with JDK internals.")
+    public static class Strip {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.strip(s);
@@ -175,7 +211,10 @@ public class PlexusStringUtils {
         }
     }
 
-    private static class Trim {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.trim(String)` with JDK internals",
+            description = "Replace Plexus `StringUtils.trim(String str)` with JDK internals.")
+    public static class Trim {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.trim(s);
@@ -187,7 +226,10 @@ public class PlexusStringUtils {
         }
     }
 
-    private static class Uppercase {
+    @RecipeDescriptor(
+            name = "Replace `StringUtils.upperCase(String)` with JDK internals",
+            description = "Replace Plexus `StringUtils.upperCase(String str)` with JDK internals.")
+    public static class Uppercase {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
             return StringUtils.upperCase(s);

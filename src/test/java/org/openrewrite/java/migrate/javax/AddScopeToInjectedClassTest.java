@@ -15,12 +15,11 @@
  */
 package org.openrewrite.java.migrate.javax;
 
-import org.openrewrite.DocumentExample;
-import org.openrewrite.java.migrate.javax.AddScopeToInjectedClass;
-import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.RecipeSpec;
-import org.openrewrite.java.JavaParser;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.test.RecipeSpec;
+import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
@@ -28,33 +27,38 @@ class AddScopeToInjectedClassTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-
         spec.recipe(new AddScopeToInjectedClass());
-        spec.parser(JavaParser.fromJavaVersion().dependsOn("""
-            package javax.enterprise.context;
-            @Target({ElementType.Type})
-            @Retention(RetentionPolicy.RUNTIME)
-            public @interface Dependent {
-            }
-            """,
-          """
-            package javax.inject;
-            @Target({ElementType.Type})
-            @Retention(RetentionPolicy.RUNTIME)
-            public @interface Inject {
-            }
-            """));
+        spec.parser(JavaParser.fromJavaVersion()
+          .dependsOn(
+            //language=java
+            """
+              package javax.enterprise.context;
+              @Target({ElementType.Type})
+              @Retention(RetentionPolicy.RUNTIME)
+              public @interface Dependent {
+              }
+              """,
+            //language=java
+            """
+              package javax.inject;
+              @Target({ElementType.Type})
+              @Retention(RetentionPolicy.RUNTIME)
+              public @interface Inject {
+              }
+              """
+          )
+        );
     }
 
     @DocumentExample
     @Test
     void scopeRequired() {
-        rewriteRun(spec ->
-          java("""
+        rewriteRun(
+          java(
+            """
               package com.sample.service;
 
               public class Bar {}
-
               """,
             """
               package com.sample.service;
@@ -63,102 +67,118 @@ class AddScopeToInjectedClassTest implements RewriteTest {
 
               @Dependent
               public class Bar {}
+              """
+          ),
+          java(
+            """
+              package com.sample;
 
-              """),
+              import javax.inject.Inject;
+              import com.sample.service.Bar;
 
-          java("""
-            package com.sample;
+              public class Foo {
 
-            import javax.inject.Inject;
-            import com.sample.service.Bar;
-
-            public class Foo{
-
-                @javax.inject.Inject
-                Bar service;
-            }
-            """));
+                  @Inject
+                  Bar service;
+              }
+              """
+          )
+        );
     }
 
 
     @Test
     void noMemberVariableAnnotation() {
-        rewriteRun(spec ->
-          java("""
-            package com.sample.service;
+        rewriteRun(
+          java(
+            """
+              package com.sample.service;
 
-            public class Bar {}
+              public class Bar {}
+              """
+          ),
+          java(
+            """
+              package com.sample;
 
-            """),
+              import com.sample.service.Bar;
 
-          java("""
-            package com.sample;
+              public class Foo{
 
-            import com.sample.service.Bar;
-
-            public class Foo{
-
-                Bar service;
-            }
-            """));
+                  Bar service;
+              }
+              """
+          )
+        );
     }
 
     @Test
     void nonInjectAnnotation() {
-        rewriteRun(spec ->
-          java("""
-            package com.sample.service;
+        rewriteRun(
+          java(
+            """
+              package com.sample.service;
 
-            public class Bar {}
+              public class Bar {}
+              """
+          ),
+          java(
+            """
+              package com.sample;
 
-            """),
+              import com.sample.service.Bar;
+              import javax.inject.NotInject;
 
-          java("""
-            package com.sample;
+              public class Foo{
+                  @NotInject
+                  Bar service;
+              }
+              """
+          ),
+          java(
+            """
+              package javax.inject;
 
-            import com.sample.service.Bar;
-            import javax.inject.NotInject;
+              import java.lang.annotation.*;
 
-            public class Foo{
-                @NotInject
-                Bar service;
-            }
-            """),
-          java("""
-            package javax.inject;
-            @Target({ElementType.Type})
-            @Retention(RetentionPolicy.RUNTIME)
-            public @interface NotInject {
-            }
-            """));
+              @Target({ElementType.Type})
+              @Retention(RetentionPolicy.RUNTIME)
+              public @interface NotInject {
+              }
+              """
+          )
+        );
     }
 
 
     @Test
     void scopeAnnotationAlreadyExists() {
-        rewriteRun(spec ->
-          java("""
-            package com.sample.service;
+        rewriteRun(
+          java(
+            """
+              package com.sample.service;
 
-            import javax.enterprise.context.Dependent;
+              import javax.enterprise.context.Dependent;
 
-            @Dependent
-            public class Bar {}
+              @Dependent
+              public class Bar {}
+              """
+          ),
+          java(
+            """
+              package com.sample;
 
-            """),
+              import com.sample.service.Bar;
+              import javax.inject.Inject;
 
-          java("""
-            package com.sample;
+              public class Foo {
 
-            import javax.inject.Inject;
-            import com.sample.service.Bar;
-
-            public class Foo{
-
-                @javax.inject.Inject
-                Bar service;
-            }
-            """));
+                  @javax.inject.Inject
+                  Bar service;
+              }
+              """
+          )
+        );
     }
 
 }

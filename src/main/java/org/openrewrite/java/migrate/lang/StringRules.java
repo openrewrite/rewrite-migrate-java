@@ -17,11 +17,15 @@ package org.openrewrite.java.migrate.lang;
 
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
+import org.openrewrite.java.template.RecipeDescriptor;
 
 public class StringRules {
-
+    @RecipeDescriptor(
+            name = "Replace redundant `String` method calls with self",
+            description = "Replace redundant `substring(..)` and `toString()` method calls with the `String` self."
+    )
     @SuppressWarnings("StringOperationCanBeSimplified")
-    static class RedundantCall {
+    public static class RedundantCall {
         @BeforeTemplate
         public String start(String string) {
             return string.substring(0, string.length());
@@ -43,8 +47,11 @@ public class StringRules {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `String.indexOf(String, 0)` with `String.indexOf(String)`",
+            description = "Replace `String.indexOf(String str, int fromIndex)` with `String.indexOf(String)`.")
     @SuppressWarnings("StringOperationCanBeSimplified")
-    static class IndexOfString {
+    public static class IndexOfString {
         @BeforeTemplate
         public int indexOfZero(String string, String test) {
             return string.indexOf(test, 0);
@@ -56,8 +63,11 @@ public class StringRules {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace `String.indexOf(char, 0)` with `String.indexOf(char)`",
+            description = "Replace `String.indexOf(char ch, int fromIndex)` with `String.indexOf(char)`.")
     @SuppressWarnings("StringOperationCanBeSimplified")
-    static class IndexOfChar {
+    public static class IndexOfChar {
         @BeforeTemplate
         public int indexOfZero(String string, char test) {
             return string.indexOf(test, 0);
@@ -69,8 +79,11 @@ public class StringRules {
         }
     }
 
+    @RecipeDescriptor(
+            name = "Replace lower and upper case `String` comparisons with `String.equalsIgnoreCase(String)`",
+            description = "Replace `String` equality comparisons involving `.toLowerCase()` or `.toUpperCase()` with `String.equalsIgnoreCase(String anotherString)`.")
     @SuppressWarnings("StringOperationCanBeSimplified")
-    static class UseEqualsIgnoreCase {
+    public static class UseEqualsIgnoreCase {
         @BeforeTemplate
         public boolean bothLowerCase(String string, String test) {
             return string.toLowerCase().equals(test.toLowerCase());

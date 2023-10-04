@@ -18,11 +18,16 @@ package org.openrewrite.java.migrate.apache.commons.io;
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.apache.commons.io.FileUtils;
+import org.openrewrite.java.template.RecipeDescriptor;
 
 import java.io.File;
+import java.nio.file.Files;
 
 public class ApacheCommonsFileUtils {
-    private static class GetFile {
+    @RecipeDescriptor(
+            name = "Replace `FileUtils.getFile(String...)` with JDK internals",
+            description = "Replace Apache Commons `FileUtils.getFile(String... name)` with JDK internals.")
+    public static class GetFile {
         @BeforeTemplate
         File before(String name) {
             return FileUtils.getFile(name);
@@ -35,7 +40,7 @@ public class ApacheCommonsFileUtils {
     }
 
 // NOTE: java: reference to compile is ambiguous; methods P3 & F3 match
-//    private static class Write {
+//    public static class Write {
 //        @BeforeTemplate
 //        void before(File file, CharSequence data, Charset cs) throws Exception {
 //            FileUtils.write(file, data, cs);
@@ -47,5 +52,19 @@ public class ApacheCommonsFileUtils {
 //        }
 //    }
 
+    @RecipeDescriptor(
+            name = "Replace `FileUtils.writeStringToFile(File, String)` with JDK internals",
+            description = "Replace Apache Commons `FileUtils.writeStringToFile(File file, String data)` with JDK internals.")
+    @SuppressWarnings("deprecation")
+    public static class WriteStringToFile {
+        @BeforeTemplate
+        void before(File a, String s) throws Exception {
+            FileUtils.writeStringToFile(a, s);
+        }
 
+        @AfterTemplate
+        void after(File a, String s) throws Exception {
+            Files.write(a.toPath(), s.getBytes());
+        }
+    }
 }

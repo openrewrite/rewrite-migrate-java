@@ -948,7 +948,7 @@ class UseVarKeywordTest implements RewriteTest {
                         List<String> strs = new ArrayList<String>();
                     }
                   }
-                  ""","""
+                  """, """
                   package com.example.app;
                                     
                   import java.util.ArrayList;
@@ -980,7 +980,7 @@ class UseVarKeywordTest implements RewriteTest {
                                 List strs = new ArrayList();
                             }
                           }
-                        ""","""
+                        """, """
                           package com.example.app;
                           
                           import java.util.ArrayList;
@@ -1012,7 +1012,7 @@ class UseVarKeywordTest implements RewriteTest {
                         List<String> strs = new ArrayList<>();
                     }
                   }
-                  ""","""
+                  """, """
                   package com.example.app;         
                   
                   import java.util.ArrayList;
@@ -1044,7 +1044,7 @@ class UseVarKeywordTest implements RewriteTest {
                       List<String> strs = List.of("one", "two");
                   }
                 }
-                ""","""
+                """, """
                 package com.example.app;
                                     
                 import java.util.List;
