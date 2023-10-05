@@ -24,7 +24,9 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
   - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
   - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
+  - org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
@@ -71,3 +73,39 @@ recipeList:
         oldFullyQualifiedTypeName: jakarta.xml.soap.SOAPElementFactory
         newFullyQualifiedTypeName: jakarta.xml.soap.SOAPFactory
         ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
+displayName: Use `StateManagementStrategy`
+description: >
+      Methods that were removed from the jakarta.faces.application.StateManager and javax.faces.application.StateManager classes in Jakarta Faces 4.0 are replaced
+      by jakarta.faces.view.StateManagementStrategy or javax.faces.view.StateManagementStrategy based on Jakarta10 migration in Faces 4.0
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
+      newMethodName: saveView
+      ignoreDefinition: false
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "*.faces.application.StateManager getTreeStructureToSave(*.faces.context.FacesContext)"
+      newMethodName: saveView
+      ignoreDefinition: false
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "*.faces.application.StateManager restoreComponentState(*.faces.context.FacesContext,*.faces.component.UIViewRoot,String)"
+      newMethodName: restoreView
+      ignoreDefinition: false
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "*.faces.application.StateManager restoreTreeStructure(*.faces.context.FacesContext,String,String)"
+      newMethodName: restoreView
+      ignoreDefinition: false
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "*.faces.application.StateManager saveSerializedView(*.faces.context.FacesContext)"
+      newMethodName: saveView
+      ignoreDefinition: false
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.faces.application.StateManager
+      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.faces.application.StateManager
+      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
+      ignoreDefinition: true
