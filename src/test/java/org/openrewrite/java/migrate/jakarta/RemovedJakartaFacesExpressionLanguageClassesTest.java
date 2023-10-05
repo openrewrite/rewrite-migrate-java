@@ -28,7 +28,10 @@ public class RemovedJakartaFacesExpressionLanguageClassesTest implements Rewrite
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jakarta.el-api-4.0.0","jakarta.faces-2.3.19", "jakarta.faces-3.0.3")).recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build().activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses"));
+        spec.parser(JavaParser.fromJavaVersion()
+          .classpathFromResources(new InMemoryExecutionContext(), "jakarta.el-api-4.0.0","jakarta.faces-2.3.19", "jakarta.faces-3.0.3"))
+          .recipe(Environment.builder()
+            .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build().activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses"));
     }
 
     @Test
