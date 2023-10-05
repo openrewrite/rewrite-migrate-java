@@ -263,33 +263,100 @@ public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-                      package com.example.app;
+                  import java.math.BigDecimal;
+                  import java.util.Arrays;
+                  import java.util.Collection;
+                  import java.util.stream.Stream;
                                     
-                      import java.util.Collections;
-                      import java.util.List;
-                      import java.util.function.Supplier;
+                  class HtmlInputTypeUnitTests {
+                        Stream<DynamicTest> derivesInputTypesFromType() {
+                            Stream<$> numbers = HtmlInputType.NUMERIC_TYPES.stream().map(it -> $.of(it, HtmlInputType.NUMBER));
+                            return null;
+                        }
+                     
+                        static class HtmlInputType {
+                            static final Collection<Class<?>> NUMERIC_TYPES = Arrays.asList(int.class, long.class, float.class,
+                                    double.class, short.class, Integer.class, Long.class, Float.class, Double.class, Short.class, BigDecimal.class);
                                     
-                      class StreamUser {
-                          private List<String> theWords = List.of("foxtrott", "charlie", "uniform", "charlie", "kilo");
-                          
-                          void countLenght() {
-                             Integer sum = theWords.stream().mapToInt(String::length).sum();
-                          }
-                      }
+                            public static final HtmlInputType NUMBER = new HtmlInputType();
+                         
+                            public static HtmlInputType from(Class<?> type) { return null; }
+                        }
+                     
+                        static class $ {
+                                    
+                            Class<?> type;
+                            HtmlInputType expected;
+                                    
+                            static $ of(Class<?> it, HtmlInputType number){ return null; }
+                         
+                            public void verify() {
+                                assertThat(HtmlInputType.from(type)).isEqualTo(expected);
+                            }
+                                    
+                            @Override
+                            public String toString() {
+                                return String.format("Derives %s from %s.", expected, type);
+                            }
+                            //mocking
+                            private <SELF extends AbstractBigDecimalAssert<SELF>> AbstractBigDecimalAssert assertThat(HtmlInputType from) {
+                                return null;
+                            }
+                        }
+                  }
+                  // replacement
+                  class DynamicTest {}
+                  class AbstractBigDecimalAssert<T> {
+                      public void isEqualTo(Object expected) {}
+                  }
                   """, """
-                      package com.example.app;
+                  import java.math.BigDecimal;
+                  import java.util.Arrays;
+                  import java.util.Collection;
+                  import java.util.stream.Stream;
                                     
-                      import java.util.Collections;
-                      import java.util.List;
-                      import java.util.function.Supplier;
+                  class HtmlInputTypeUnitTests {
+                        Stream<DynamicTest> derivesInputTypesFromType() {
+                            var numbers = HtmlInputType.NUMERIC_TYPES.stream()
+                                        .map(it -> $.of(it, HtmlInputType.NUMBER));
+                            return null;
+                        }
+                      
+                        static class HtmlInputType {
+                            static final Collection<Class<?>> NUMERIC_TYPES = Arrays.asList(int.class, long.class, float.class,
+                                    double.class, short.class, Integer.class, Long.class, Float.class, Double.class, Short.class, BigDecimal.class);
                                     
-                      class StreamUser {
-                          private List<String> theWords = List.of("foxtrott", "charlie", "uniform", "charlie", "kilo");
+                            public static final HtmlInputType NUMBER = new HtmlInputType();
                           
-                          void countLenght() {
-                             var sum = theWords.stream().mapToInt(String::length).sum();
-                          }
-                      }
+                            public static HtmlInputType from(Class<?> type) { return null; }
+                        }
+                      
+                        static class $ {
+                                    
+                            Class<?> type;
+                            HtmlInputType expected;
+                                    
+                            static $ of(Class<?> it, HtmlInputType number){ return null; }
+                          
+                            public void verify() {
+                                assertThat(HtmlInputType.from(type)).isEqualTo(expected);
+                            }
+                                    
+                            @Override
+                            public String toString() {
+                                return String.format("Derives %s from %s.", expected, type);
+                            }
+                            //mocking
+                            private <SELF extends AbstractBigDecimalAssert<SELF>> AbstractBigDecimalAssert assertThat(HtmlInputType from) {
+                                return null;
+                            }
+                        }
+                  }
+                  // replacement
+                  class DynamicTest {}
+                  class AbstractBigDecimalAssert<T> {
+                      public void isEqualTo(Object expected) {}
+                  }
                   """),
                 10
               )
