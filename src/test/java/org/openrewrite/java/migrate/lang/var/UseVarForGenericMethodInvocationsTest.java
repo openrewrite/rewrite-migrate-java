@@ -15,13 +15,13 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import static org.openrewrite.java.Assertions.*;
-
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.java.Assertions.*;
 
 public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
     @Override
@@ -252,6 +252,45 @@ public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                   }
                 }
                 """),
+                10
+              )
+            );
+        }
+
+        @Test
+        void streamUsage() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                      package com.example.app;
+                                    
+                      import java.util.Collections;
+                      import java.util.List;
+                      import java.util.function.Supplier;
+                                    
+                      class StreamUser {
+                          private List<String> theWords = List.of("foxtrott", "charlie", "uniform", "charlie", "kilo");
+                          
+                          void countLenght() {
+                             Integer sum = theWords.stream().mapToInt(String::length).sum();
+                          }
+                      }
+                  """, """
+                      package com.example.app;
+                                    
+                      import java.util.Collections;
+                      import java.util.List;
+                      import java.util.function.Supplier;
+                                    
+                      class StreamUser {
+                          private List<String> theWords = List.of("foxtrott", "charlie", "uniform", "charlie", "kilo");
+                          
+                          void countLenght() {
+                             var sum = theWords.stream().mapToInt(String::length).sum();
+                          }
+                      }
+                  """),
                 10
               )
             );
