@@ -109,7 +109,7 @@ recipeList:
       oldFullyQualifiedTypeName: javax.faces.application.StateManager
       newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
       ignoreDefinition: true
-=======
+---
   type: specs.openrewrite.org/v1beta/recipe
   name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
   displayName: Use `jakarta.el instead of jakarta.faces.el and javax.faces.el`
