@@ -67,7 +67,7 @@ public class OptionalStreamRecipe extends Recipe {
       return getInvocation(invocation, mapMatcher)
           .flatMap(mapInvocation -> getInvocation(mapInvocation.getSelect(), filterMatcher)
           .flatMap(filterInvocation -> getReference(mapInvocation.getArguments().get(0), optionalGetMatcher)
-          .flatMap(optionalGetReference -> getReference(filterInvocation.getArguments().get(0), optionalIsPresentMatcher))
+          .flatMap(optionalGetReference -> getReference(filterInvocation.getArguments().get(0), optionalIsPresentMatcher)
           .flatMap(optionalIsPresentReference -> {
             final JRightPadded<Expression> filterSelect = filterInvocation.getPadding().getSelect();
             final JRightPadded<Expression> mapSelect = mapInvocation.getPadding().getSelect();
@@ -82,12 +82,12 @@ public class OptionalStreamRecipe extends Recipe {
               return Optional.of(super.visitMethodInvocation(flatMapInvocation, ctx));
             }
             return Optional.empty();
-          })))
+          }))))
           .orElse(super.visitMethodInvocation(invocation, ctx));
     }
 
     private Optional<J.MemberReference> getReference(@Nullable Expression expr, MethodMatcher matcher) {
-      if (expr instanceof  J.MemberReference) {
+      if (expr instanceof J.MemberReference) {
         J.MemberReference reference = (J.MemberReference) expr;
         if (matcher.matches(reference)) {
           return Optional.of(reference);
@@ -97,7 +97,7 @@ public class OptionalStreamRecipe extends Recipe {
     }
 
     private Optional<J.MethodInvocation> getInvocation(@Nullable Expression expr, MethodMatcher matcher) {
-      if (expr instanceof  J.MethodInvocation) {
+      if (expr instanceof J.MethodInvocation) {
         J.MethodInvocation invocation = (J.MethodInvocation) expr;
         if (matcher.matches(invocation)) {
           return Optional.of(invocation);
