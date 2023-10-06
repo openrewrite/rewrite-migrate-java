@@ -34,7 +34,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
 
     @Test
     public void test_basic_case() {
-        rewriteRun(java( getTestClass("""
+        rewriteRun(java(getTestClass("""
                      var x = Stream.of(Optional.empty())
                          .filter(Optional::isPresent)
                          .map(Optional::get);
@@ -48,7 +48,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
 
     @Test
     public void test_twice() {
-        rewriteRun(java( getTestClass("""
+        rewriteRun(java(getTestClass("""
                     var x = Stream.of(Optional.empty())
                     .filter(Optional::isPresent)
                     .map(Optional::get)
@@ -82,7 +82,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
     }
 
     @Test
-    public void test_oneliner()  {
+    public void test_oneliner() {
         rewriteRun(java("""
                  import java.util.Optional;
                  import java.util.stream.Stream;
@@ -92,13 +92,13 @@ class OptionalStreamRecipeTest implements RewriteTest {
                  }
             """,
           """
-                   import java.util.Optional;
-                   import java.util.stream.Stream;
-                   
-                   class Scratch {
-                     public void foo() {Stream.of(Optional.empty()).flatMap(Optional::stream);}
-                   }
-              """
+                 import java.util.Optional;
+                 import java.util.stream.Stream;
+                 
+                 class Scratch {
+                   public void foo() {Stream.of(Optional.empty()).flatMap(Optional::stream);}
+                 }
+            """
         ));
     }
 
@@ -226,38 +226,38 @@ class OptionalStreamRecipeTest implements RewriteTest {
     @Test
     public void test_dont_match_different_optional() {
         rewriteRun(java("""
-         import java.util.stream.Stream;
-         
-         class Scratch {
-           public void foo() {
-             var x = Stream.of(Optional.empty())
-                 .filter(Optional::isPresent)
-                 .map(Optional::get);
+           import java.util.stream.Stream;
+           
+           class Scratch {
+             public void foo() {
+               var x = Stream.of(Optional.empty())
+                   .filter(Optional::isPresent)
+                   .map(Optional::get);
+             }
+             private static class Optional {
+               public static Optional empty() {}
+               public boolean isPresent() {return false;}
+               public Object get() {return null;}
+             }
            }
-           private static class Optional {
-             public static Optional empty() {}
-             public boolean isPresent() {return false;}
-             public Object get() {return null;}
-           }
-         }
-        """
+          """
         ));
     }
 
 
-    private String getTestClass(String methodBody, String ...imports) {
+    private String getTestClass(String methodBody, String... imports) {
         final String importsBlock = Arrays.stream(imports)
           .map(clazz -> "import " + clazz + ";\n")
           .collect(Collectors.joining());
         final String template = """
           %s
-          
+                    
           class Scratch {
             public void foo() {
               %s
             }
           }
-          
+                    
           """;
         return String.format(template, importsBlock, methodBody);
     }
