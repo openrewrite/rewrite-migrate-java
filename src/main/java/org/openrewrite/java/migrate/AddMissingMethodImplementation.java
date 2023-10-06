@@ -23,6 +23,7 @@ import org.openrewrite.*;
 import org.openrewrite.internal.lang.NonNull;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeTree;
@@ -38,11 +39,11 @@ public class AddMissingMethodImplementation extends Recipe {
     @NonNull
     String fullyQualifiedClassName;
 
-    @Option(displayName = "Method Name",
-            description = "Name of required method.",
-            example = "hello")
+    @Option(displayName = "Method Pattern",
+            description = "A method pattern for matching required method definition.",
+            example = "*..* hello(..)")
     @NonNull
-    String methodName;
+    String methodPattern;
 
     @Option(displayName = "Method Template",
             description = "Template of method to add",
@@ -53,10 +54,10 @@ public class AddMissingMethodImplementation extends Recipe {
     // All recipes must be serializable. This is verified by RewriteTest.rewriteRun() in your tests.
     @JsonCreator
     public AddMissingMethodImplementation(@NonNull @JsonProperty("fullyQualifiedClassName") String fullyQualifiedClassName,
-                                          @NonNull @JsonProperty("methodName") String methodName,
+                                          @NonNull @JsonProperty("methodPattern") String methodPattern,
                                           @NonNull @JsonProperty("methodTemplateString") String methodTemplateString) {
         this.fullyQualifiedClassName = fullyQualifiedClassName;
-        this.methodName = methodName;
+        this.methodPattern = methodPattern;
         this.methodTemplateString = methodTemplateString;
     }
 
@@ -78,6 +79,7 @@ public class AddMissingMethodImplementation extends Recipe {
 
     public class ClassImplementationVisitor extends JavaIsoVisitor<ExecutionContext> {
         private final JavaTemplate methodTemplate = JavaTemplate.builder( methodTemplateString).build();
+        private final MethodMatcher methodMatcher = new MethodMatcher(methodPattern, true);
 
         public boolean matchesInterface(JavaType.Class type) {
             if(type != null) {
@@ -120,10 +122,11 @@ public class AddMissingMethodImplementation extends Recipe {
             }
 
             // Check if the class already has a method".
+            J.ClassDeclaration finalClassDecl = classDecl;
             boolean methodExists = classDecl.getBody().getStatements().stream()
                     .filter(statement -> statement instanceof J.MethodDeclaration)
                     .map(J.MethodDeclaration.class::cast)
-                    .anyMatch(methodDeclaration -> methodDeclaration.getName().getSimpleName().equals(methodName));
+                    .anyMatch(methodDeclaration -> methodMatcher.matches(methodDeclaration, finalClassDecl));
 
             // If the class already has method, don't make any changes to it.
             if (methodExists) {

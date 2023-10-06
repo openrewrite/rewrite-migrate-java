@@ -32,9 +32,9 @@ description: Check for new methods on Java SQL interfaces.
 recipeList:
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Wrapper
-      methodName: isWrapperFor
+      methodPattern: "*..* isWrapperFor(..)"
       methodTemplateString: "public boolean isWrapperFor(Class<?> iface) throws java.sql.SQLException { return false; }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Wrapper
-      methodName: unwrap
+      methodPattern: "*..* unwrap(..)"
       methodTemplateString: "public <T> T unwrap(Class<T> iface) throws java.sql.SQLException { return null; }"

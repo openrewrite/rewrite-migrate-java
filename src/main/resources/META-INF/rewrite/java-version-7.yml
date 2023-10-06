@@ -33,37 +33,37 @@ description: Check for new methods on JDBC interfaces.
 recipeList:
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
-      methodName: abort
+      methodPattern: "*..* abort(java.util.concurrent.Executor)"
       methodTemplateString: "public void abort(java.util.concurrent.Executor executor) { }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
-      methodName: getNetworkTimeout
+      methodPattern: "*..* getNetworkTimeout()"
       methodTemplateString: "public int getNetworkTimeout() { return 0; }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
-      methodName: getSchema
+      methodPattern: "*..* getSchema()"
       methodTemplateString: "public java.lang.String getSchema() { return null; }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
-      methodName: setNetworkTimeout
+      methodPattern: "*..* setNetworkTimeout(java.util.concurrent.Executor)"
       methodTemplateString: "public void isWrapperFor(java.util.concurrent.Executor executor, int milliseconds) { }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
-      methodName: setSchema
+      methodPattern: "*..* setSchema(java.lang.String)"
       methodTemplateString: "public void setSchema(java.lang.String schema) throws java.sql.SQLException { }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Driver
-      methodName: getParentLogger
+      methodPattern: "*..* getParentLogger()"
       methodTemplateString: "public java.util.logging.Logger getParentLogger() { return null; }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Statement
-      methodName: closeOnCompletion
+      methodPattern: "*..* closeOnCompletion()"
       methodTemplateString: "public void closeOnCompletion() { }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Statement
-      methodName: isCloseOnCompletion
+      methodPattern: "*..* isCloseOnCompletion()"
       methodTemplateString: "public boolean isCloseOnCompletion() { return false; }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: javax.sql.CommonDataSource
-      methodName: getParentLogger
+      methodPattern: "*..* getParentLogger()"
       methodTemplateString: "public java.util.logging.Logger getParentLogger() { return null; }"
