@@ -1,6 +1,22 @@
+/*
+ * Copyright 2022 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * https://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.openrewrite.java.migrate.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -17,6 +33,7 @@ import org.openrewrite.java.tree.TextComment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class OptionalStreamRecipe extends Recipe {
@@ -46,17 +63,12 @@ public class OptionalStreamRecipe extends Recipe {
             .build();
 
     @Override
-    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mapInvocation, ExecutionContext ctx) {
-      if (mapMatcher.matches(mapInvocation)
-          && mapInvocation.getSelect() instanceof J.MethodInvocation
-          && mapInvocation.getArguments().get(0) instanceof J.MemberReference) {
-        J.MethodInvocation filterInvocation = (J.MethodInvocation) mapInvocation.getSelect();
-        J.MemberReference optionalGetReference = (J.MemberReference) mapInvocation.getArguments().get(0);
-        if (filterInvocation != null && filterMatcher.matches(filterInvocation)
-            && optionalGetMatcher.matches(optionalGetReference)
-            && filterInvocation.getArguments().get(0) instanceof J.MemberReference) {
-          J.MemberReference optionalIsPresentMatcherReference = (J.MemberReference) filterInvocation.getArguments().get(0);
-          if (optionalIsPresentMatcher.matches(optionalIsPresentMatcherReference)) {
+    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation invocation, ExecutionContext ctx) {
+      return getInvocation(invocation, mapMatcher)
+          .flatMap(mapInvocation -> getInvocation(mapInvocation.getSelect(), filterMatcher)
+          .flatMap(filterInvocation -> getReference(mapInvocation.getArguments().get(0), optionalGetMatcher)
+          .flatMap(optionalGetReference -> getReference(filterInvocation.getArguments().get(0), optionalIsPresentMatcher))
+          .flatMap(optionalIsPresentReference -> {
             final JRightPadded<Expression> filterSelect = filterInvocation.getPadding().getSelect();
             final JRightPadded<Expression> mapSelect = mapInvocation.getPadding().getSelect();
             final JavaType.Method mapInvocationType = mapInvocation.getMethodType();
@@ -67,12 +79,31 @@ public class OptionalStreamRecipe extends Recipe {
               flatMapInvocation = flatMapInvocation.getPadding().withSelect(filterSelect.withAfter(flatMapComments))
                   .withMethodType(mapInvocationType.withName("flatMap"))
                   .withPrefix(mapInvocation.getPrefix());
-              return super.visitMethodInvocation(flatMapInvocation, ctx);
+              return Optional.of(super.visitMethodInvocation(flatMapInvocation, ctx));
             }
-          }
+            return Optional.empty();
+          })))
+          .orElse(super.visitMethodInvocation(invocation, ctx));
+    }
+
+    private Optional<J.MemberReference> getReference(@Nullable Expression expr, MethodMatcher matcher) {
+      if (expr instanceof  J.MemberReference) {
+        J.MemberReference reference = (J.MemberReference) expr;
+        if (matcher.matches(reference)) {
+          return Optional.of(reference);
         }
       }
-      return super.visitMethodInvocation(mapInvocation, ctx);
+      return Optional.empty();
+    }
+
+    private Optional<J.MethodInvocation> getInvocation(@Nullable Expression expr, MethodMatcher matcher) {
+      if (expr instanceof  J.MethodInvocation) {
+        J.MethodInvocation invocation = (J.MethodInvocation) expr;
+        if (matcher.matches(invocation)) {
+          return Optional.of(invocation);
+        }
+      }
+      return Optional.empty();
     }
 
     @NotNull
