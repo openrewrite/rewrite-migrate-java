@@ -28,7 +28,11 @@ import static org.openrewrite.java.Assertions.java;
 public class RemovedStateManagerMethodsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jakarta.faces-2.3.19", "jakarta.faces-3.0.3", "jakarta.faces-api-4.0.1")).recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build().activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods"));
+        spec.parser(JavaParser.fromJavaVersion()
+          .classpathFromResources(new InMemoryExecutionContext(), "jakarta.faces-2.3.19", "jakarta.faces-3.0.3", "jakarta.faces-api-4.0.1"))
+          .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
+            .build()
+            .activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods"));
     }
 
     @Test
