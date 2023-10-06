@@ -73,10 +73,10 @@ public class AddMissingMethodImplementation extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         // getVisitor() should always return a new instance of the visitor to avoid any state leaking between cycles
-        return new SayHelloVisitor();
+        return new ClassImplementationVisitor();
     }
 
-    public class SayHelloVisitor extends JavaIsoVisitor<ExecutionContext> {
+    public class ClassImplementationVisitor extends JavaIsoVisitor<ExecutionContext> {
         private final JavaTemplate methodTemplate = JavaTemplate.builder( methodTemplateString).build();
 
         public boolean matchesInterface(JavaType.Class type) {
