@@ -20,7 +20,7 @@ import lombok.Value;
 import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.format.TabsAndIndentsVisitor;
+import org.openrewrite.java.format.NormalizeTabsOrSpacesVisitor;
 import org.openrewrite.java.style.IntelliJ;
 import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.java.tree.J;
@@ -37,7 +37,7 @@ public class UseTabsOrSpaces extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Consistently use either tabs or spaces for indentation.";
+        return "Force indentation to either tabs or spaces";
     }
 
     @Override
@@ -58,7 +58,7 @@ public class UseTabsOrSpaces extends Recipe {
                         style = IntelliJ.tabsAndIndents();
                     }
                     style = style.withUseTabCharacter(useTabs);
-                    return new TabsAndIndentsVisitor<>(style).visit(tree, ctx);
+                    return new NormalizeTabsOrSpacesVisitor<>(style).visit(tree, ctx);
                 }
                 return (J) tree;
             }
