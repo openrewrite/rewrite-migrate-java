@@ -21,6 +21,8 @@ description: These recipes help with the Migration to Jakarta EE 10, flagging an
 tags:
   - jakarta
 recipeList:
+  - org.openrewrite.java.migrate.jakarta.BeansXmlNoVersionNowImplicit
+  - org.openrewrite.java.migrate.jakarta.EmptyBeansXmlNowImplicit
   - org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
   - org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
@@ -28,6 +30,20 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
   - org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.BeansXmlNoVersionNowImplicit
+displayName: TBD
+description: TBD
+recipeList:
+  - org.openrewrite.xml.ChangeNamespaceValue:
+        elementName: beans
+        newValue: https://jakarta.ee/xml/ns/jakartaee
+        searchAllNamespaces: false
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //xsi:schemaLocation
+      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd
+      fileMatcher: "**/beans.xml"
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
