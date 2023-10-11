@@ -79,7 +79,7 @@ name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
 displayName: Use `StateManagementStrategy`
 description: >
       Methods that were removed from the jakarta.faces.application.StateManager and javax.faces.application.StateManager classes in Jakarta Faces 4.0 are replaced
-      by jakarta.faces.view.StateManagementStrategy or javax.faces.view.StateManagementStrategy based on Jakarta10 migration in Faces 4.0
+      by `jakarta.faces.view.StateManagementStrategy` or `javax.faces.view.StateManagementStrategy` based on Jakarta10 migration in Faces 4.0
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
