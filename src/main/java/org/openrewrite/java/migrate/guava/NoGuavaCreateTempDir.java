@@ -47,7 +47,7 @@ public class NoGuavaCreateTempDir extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesMethod<>("com.google.common.io.Files createTempDir()"),  new NoGuavaTempDirVisitor());
+        return Preconditions.check(new UsesMethod<>("com.google.common.io.Files createTempDir()"), new NoGuavaTempDirVisitor());
     }
 
     private static class NoGuavaTempDirVisitor extends JavaIsoVisitor<ExecutionContext> {

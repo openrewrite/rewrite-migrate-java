@@ -26,6 +26,7 @@ import static org.openrewrite.java.Assertions.version;
 
 @SuppressWarnings("RedundantStringFormatCall")
 class StringFormattedTest implements RewriteTest {
+    @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new StringFormatted())
           .typeValidationOptions(new TypeValidation().methodInvocations(false));

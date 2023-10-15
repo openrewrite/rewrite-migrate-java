@@ -39,6 +39,7 @@ public class MigrateClassLoaderDefineClass extends Recipe {
         return "Use `ClassLoader#defineClass(String, byte[], int, int)` instead of the deprecated `ClassLoader#defineClass(byte[], int, int)` in Java 1.1 or higher.";
     }
 
+    @Override
     public Set<String> getTags() {
         return Collections.singleton("deprecated");
     }

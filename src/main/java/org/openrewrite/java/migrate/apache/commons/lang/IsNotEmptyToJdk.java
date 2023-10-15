@@ -23,6 +23,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.template.Semantics;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
@@ -30,6 +31,8 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.openrewrite.java.migrate.apache.commons.lang.RepeatableArgumentMatcher.isRepeatableArgument;
 
 public class IsNotEmptyToJdk extends Recipe {
 
@@ -68,10 +71,10 @@ public class IsNotEmptyToJdk extends Recipe {
             private final MethodMatcher isNotEmptyMatcher = new MethodMatcher("*..StringUtils isNotEmpty(..)");
             private final MethodMatcher trimMatcher = new MethodMatcher("java.lang.String trim()");
 
-            private final JavaTemplate isEmptyReplacement = JavaTemplate.compile(this, "IsEmpty", (String s) -> (s == null || s.isEmpty())).build();
-            private final JavaTemplate isNotEmptyReplacement = JavaTemplate.compile(this, "IsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
-            private final JavaTemplate isEmptyTrimmed = JavaTemplate.compile(this, "IsEmptyTrimmed", (JavaTemplate.F1<?, ?>) (String s) -> s.trim().isEmpty()).build();
-            private final JavaTemplate isNotEmptyTrimmed = JavaTemplate.compile(this, "IsNotEmptyTrimmed", (String s) -> !s.trim().isEmpty()).build();
+            private final JavaTemplate isEmptyReplacement = Semantics.expression(this, "IsEmpty", (String s) -> (s == null || s.isEmpty())).build();
+            private final JavaTemplate isNotEmptyReplacement = Semantics.expression(this, "IsNotEmpty", (String s) -> (s != null && !s.isEmpty())).build();
+            private final JavaTemplate isEmptyTrimmed = Semantics.expression(this, "IsEmptyTrimmed", (String s) -> s.trim().isEmpty()).build();
+            private final JavaTemplate isNotEmptyTrimmed = Semantics.expression(this, "IsNotEmptyTrimmed", (String s) -> !s.trim().isEmpty()).build();
 
             @Override
             public J visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx) {
@@ -83,7 +86,7 @@ public class IsNotEmptyToJdk extends Recipe {
                 Expression arg = mi.getArguments().get(0);
 
                 // Replace StringUtils.isEmpty(var) with var == null || var.isEmpty()
-                if (arg instanceof J.Identifier || arg instanceof J.FieldAccess) {
+                if (isRepeatableArgument(arg)) {
                     JavaTemplate replacementTemplate = isEmptyCall ? isEmptyReplacement : isNotEmptyReplacement;
                     // Maybe remove imports
                     maybeRemoveImport("org.apache.commons.lang3.StringUtils");
@@ -91,11 +94,12 @@ public class IsNotEmptyToJdk extends Recipe {
                     maybeRemoveImport("org.codehaus.plexus.util.StringUtils");
                     // Remove excess parentheses inserted in lambda that may be required depending on the context
                     doAfterVisit(new org.openrewrite.staticanalysis.UnnecessaryParentheses().getVisitor());
-                    return replacementTemplate.apply(updateCursor(mi), mi.getCoordinates().replace(), arg, arg);
+                    return replacementTemplate.apply(updateCursor(mi), mi.getCoordinates().replace(), arg);
                 }
 
                 // Replace StringUtils.isEmpty(var.trim()) with var.trim().isEmpty()
-                if (trimMatcher.matches(arg)) {
+                if (trimMatcher.matches(arg)
+                        && (((J.MethodInvocation) arg).getSelect() instanceof J.Identifier || ((J.MethodInvocation) arg).getSelect() instanceof J.FieldAccess)) {
                     JavaTemplate replacementTemplate = isEmptyCall ? isEmptyTrimmed : isNotEmptyTrimmed;
                     // Maybe remove imports
                     maybeRemoveImport("org.apache.commons.lang3.StringUtils");

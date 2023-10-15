@@ -98,6 +98,7 @@ class ApacheCommonsFileUtilsTest implements RewriteTest {
               import java.io.FileFilter;
               import java.net.URL;
               import java.nio.charset.Charset;
+              import java.nio.file.Files;
               import java.util.Collection;
               import java.util.Collections;
               import java.util.List;
@@ -142,7 +143,7 @@ class ApacheCommonsFileUtilsTest implements RewriteTest {
                       strList = FileUtils.readLines(fileA, cs);
                       FileUtils.writeByteArrayToFile(fileA, bytes);
                       FileUtils.writeLines(fileA, collection);
-                      FileUtils.writeStringToFile(fileA, s);
+                      Files.write(fileA.toPath(), s.getBytes());
                   }
               }
               """
