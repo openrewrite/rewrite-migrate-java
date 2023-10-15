@@ -15,14 +15,18 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.RemoveAnnotationVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
@@ -31,7 +35,9 @@ import org.openrewrite.java.tree.TypeUtils;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -39,6 +45,8 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
+@Value
+@EqualsAndHashCode(callSuper = false)
 public class LombokValueToRecord extends Recipe {
     @Override
     public String getDisplayName() {
@@ -47,7 +55,7 @@ public class LombokValueToRecord extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Convert Lombok Value annotated classes to standard java record classes in java 11 or higher.";
+        return "Convert Lombok Value annotated classes to standard Java Record classes in Java 17 or higher.";
     }
 
     @Override
@@ -61,6 +69,16 @@ public class LombokValueToRecord extends Recipe {
     }
 
     @Override
+    public boolean causesAnotherCycle() {
+        return true;
+    }
+
+    @Override
+    public int maxCycles() {
+        return 2;
+    }
+
+    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         final TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(17)
@@ -71,13 +89,74 @@ public class LombokValueToRecord extends Recipe {
 
     private static class LombokValueToRecordVisitor extends JavaIsoVisitor<ExecutionContext> {
 
+        private static final Map<String, Set<String>> RECORD_TYPE_TO_MEMBERS = new HashMap<>();
+
+        private static final String STANDARD_GETTER_START = "get";
+
+        @Override
+        public J.MethodInvocation visitMethodInvocation(
+                final J.MethodInvocation method,
+                final ExecutionContext executionContext
+        ) {
+            final J.MethodInvocation methodInvocation = super.visitMethodInvocation(method, executionContext);
+
+            if (executionContext.getCycle() <= 1 || !isMethodInvocationOnRecordTypeClassMember(methodInvocation)) {
+                return methodInvocation;
+            }
+
+            final J.Identifier methodName = methodInvocation.getName();
+            return methodInvocation
+                    .withName(methodName
+                            .withSimpleName(getterMethodNameToFluentMethodName(methodName.getSimpleName()))
+                    );
+        }
+
+        private static boolean isMethodInvocationOnRecordTypeClassMember(final J.MethodInvocation methodInvocation) {
+            final Expression expression = methodInvocation.getSelect();
+            if (!isClassExpression(expression)) {
+                return false;
+            }
+
+            final JavaType.Class classType = requireNonNull((JavaType.Class) expression.getType(),
+                    "Class type must not be null");
+
+            final String methodName = methodInvocation.getName().getSimpleName();
+
+            return RECORD_TYPE_TO_MEMBERS.containsKey(classType.getFullyQualifiedName())
+                    && methodName.startsWith(STANDARD_GETTER_START)
+                    && RECORD_TYPE_TO_MEMBERS
+                    .get(classType.getFullyQualifiedName())
+                    .contains(getterMethodNameToFluentMethodName(methodName));
+        }
+
+        private static boolean isClassExpression(final @Nullable Expression expression) {
+            return expression != null && (expression.getType() instanceof JavaType.Class);
+        }
+
+        private static String getterMethodNameToFluentMethodName(final String methodName) {
+            final StringBuilder fluentMethodName = new StringBuilder(
+                    methodName.replace(STANDARD_GETTER_START, ""));
+
+            if (fluentMethodName.length() == 0) {
+                return "";
+            }
+
+            final char firstMemberChar = fluentMethodName.charAt(0);
+            fluentMethodName.setCharAt(0, Character.toLowerCase(firstMemberChar));
+
+            return fluentMethodName.toString();
+        }
+
         @Override
         public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration cd, final ExecutionContext ctx) {
             J.ClassDeclaration classDeclaration = super.visitClassDeclaration(cd, ctx);
 
+
             if (isRecord(classDeclaration)
-                    || hasExplicitConstructor(classDeclaration)
                     || !hasOnlyLombokValueAnnotation(classDeclaration)
+                    || hasGenericTypeParameter(classDeclaration)
+                    || hasExplicitMethods(classDeclaration)
+                    || hasExplicitConstructor(classDeclaration)
             ) {
                 return classDeclaration;
             }
@@ -99,7 +178,43 @@ public class LombokValueToRecord extends Recipe {
                     )
                     .withPrimaryConstructor(mapToConstructorArguments(memberVariables));
 
+            addToRecordTypeState(classDeclaration, memberVariables);
+
             return maybeAutoFormat(cd, classDeclaration, ctx);
+        }
+
+        private static void addToRecordTypeState(final J.ClassDeclaration classDeclaration,
+                                                 final List<J.VariableDeclarations> memberVariables
+        ) {
+            final JavaType.FullyQualified classType = requireNonNull(classDeclaration.getType(),
+                    "Class type must not be null");
+
+            RECORD_TYPE_TO_MEMBERS.putIfAbsent(
+                    classType.getFullyQualifiedName(),
+                    getMemberVariableNames(memberVariables));
+        }
+
+        private static boolean hasExplicitMethods(final J.ClassDeclaration classDeclaration) {
+            return classDeclaration
+                    .getBody()
+                    .getStatements()
+                    .stream()
+                    .anyMatch(J.MethodDeclaration.class::isInstance);
+        }
+
+        private static Set<String> getMemberVariableNames(final List<J.VariableDeclarations> memberVariables) {
+            return memberVariables
+                    .stream()
+                    .map(J.VariableDeclarations::getVariables)
+                    .flatMap(List::stream)
+                    .map(J.VariableDeclarations.NamedVariable::getSimpleName)
+                    .collect(Collectors.toSet());
+        }
+
+        private static boolean hasGenericTypeParameter(final J.ClassDeclaration classDeclaration) {
+            final List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
+
+            return typeParameters != null && !typeParameters.isEmpty();
         }
 
         private static JavaType.Class buildRecordType(final J.ClassDeclaration cd) {

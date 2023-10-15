@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -35,19 +36,62 @@ public class LombokValueToRecordTest implements RewriteTest {
     void convertOnlyValueAnnotatedClassWithoutDefaultValuesToRecord() {
         //language=java
         rewriteRun(
+          // TODO: find a way to please type validation so this workaround is not required anymore
+          s -> s.typeValidationOptions(TypeValidation.none()),
           version(
             java(
               """
+                package example;
+                                
                 import lombok.Value;
-                
+                                
                 @Value
                 public class A {
                    String test;
                 }
                 """,
               """
+                package example;
+                                
                 public record A(
                    String test) {
+                }
+                """
+            ),
+            17
+          ),
+          version(
+            java(
+              """
+                package example;
+                                
+                public class UserOfA {
+                    
+                    private final A record;
+                    
+                    public UserOfA() {
+                        this.record = new A("some value");
+                    }
+                    
+                    public String getRecordValue() {
+                        return record.getTest();
+                    }
+                }
+                """,
+              """
+                package example;
+                                
+                public class UserOfA {
+                    
+                    private final A record;
+                    
+                    public UserOfA() {
+                        this.record = new A("some value");
+                    }
+                    
+                    public String getRecordValue() {
+                        return record.test();
+                    }
                 }
                 """
             ),
@@ -64,7 +108,7 @@ public class LombokValueToRecordTest implements RewriteTest {
             java(
               """
                 import lombok.Value;
-                
+                                
                 @Value
                 public class A {
                    String test;
@@ -81,6 +125,50 @@ public class LombokValueToRecordTest implements RewriteTest {
     }
 
     @Test
+    void classWithExplicitMethodsIsUnchanged() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import lombok.Value;
+                                
+                @Value
+                public class A {
+                   String test;
+                   
+                   public String getTest() {
+                       return test;
+                   }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void genericClassIsUnchanged() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import lombok.Value;
+                                
+                @Value
+                public class A<T extends Object> {
+                   T test;
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
     void nonJava17ClassIsUnchanged() {
         //language=java
         rewriteRun(
@@ -88,7 +176,7 @@ public class LombokValueToRecordTest implements RewriteTest {
             java(
               """
                 import lombok.Value;
-                
+                                
                 @Value
                 public class A {
                    String test;
@@ -109,7 +197,7 @@ public class LombokValueToRecordTest implements RewriteTest {
               """
                 import lombok.Value;
                 import lombok.experimental.Accessors;
-                
+                                
                 @Value
                 @Accessors(fluent = true)
                 public class A {
