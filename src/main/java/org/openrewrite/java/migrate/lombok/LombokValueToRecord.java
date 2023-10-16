@@ -105,6 +105,8 @@ public class LombokValueToRecord extends Recipe {
 
     private static class LombokValueToRecordVisitor extends JavaIsoVisitor<ExecutionContext> {
 
+        private static final Pattern LOMBOK_ANNOTATION_PATTERN = Pattern.compile("^lombok.*");
+
         private static final JavaTemplate TO_STRING_TEMPLATE = JavaTemplate
                 .builder("@Override public String toString() { return \"#{}(\" +\n#{}\n\")\"; }")
                 .contextSensitive()
@@ -214,15 +216,6 @@ public class LombokValueToRecord extends Recipe {
             return maybeAutoFormat(cd, classDeclaration, ctx);
         }
 
-        private static boolean isRelevantClass(final J.ClassDeclaration classDeclaration) {
-            return !isRecord(classDeclaration)
-                    && hasOnlyLombokValueAnnotation(classDeclaration)
-                    && !hasGenericTypeParameter(classDeclaration)
-                    && !hasExplicitMethods(classDeclaration)
-                    && !hasExplicitConstructor(classDeclaration)
-                    && classDeclaration.getType() != null;
-        }
-
         private J.ClassDeclaration addExactToStringMethod(final J.ClassDeclaration classDeclaration,
                                                           final List<J.VariableDeclarations> memberVariables) {
             return classDeclaration.withBody(TO_STRING_TEMPLATE
@@ -230,6 +223,15 @@ public class LombokValueToRecord extends Recipe {
                             classDeclaration.getBody().getCoordinates().lastStatement(),
                             classDeclaration.getSimpleName(),
                             memberVariablesToString(getMemberVariableNames(memberVariables))));
+        }
+
+        private static boolean isRelevantClass(final J.ClassDeclaration classDeclaration) {
+            return !isRecord(classDeclaration)
+                    && hasOnlyLombokValueAnnotation(classDeclaration)
+                    && !hasGenericTypeParameter(classDeclaration)
+                    && !hasExplicitMethods(classDeclaration)
+                    && !hasExplicitConstructor(classDeclaration)
+                    && classDeclaration.getType() != null;
         }
 
         private static String memberVariablesToString(final Set<String> memberVariables) {
@@ -335,8 +337,6 @@ public class LombokValueToRecord extends Recipe {
                     .map(J.VariableDeclarations.NamedVariable::getInitializer)
                     .anyMatch(J.Literal.class::isInstance);
         }
-
-        private static final Pattern LOMBOK_ANNOTATION_PATTERN = Pattern.compile("^lombok.*");
 
         private static boolean hasOnlyLombokValueAnnotation(final J.ClassDeclaration cd) {
             return cd.getAllAnnotations()
