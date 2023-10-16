@@ -15,15 +15,20 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Option;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.RemoveAnnotationVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
@@ -36,6 +41,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,6 +54,16 @@ import static java.util.Objects.requireNonNull;
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class LombokValueToRecord extends Recipe {
+
+    @Option(displayName = "useExactToString",
+            description = "When set the toString format from Lombok is used in the migrated record.")
+    boolean useExactToString;
+
+    @JsonCreator
+    public LombokValueToRecord(final @JsonProperty("useExactToString") boolean useExactToString) {
+        this.useExactToString = useExactToString;
+    }
+
     @Override
     public String getDisplayName() {
         return "Convert Value class to Record";
@@ -84,14 +100,29 @@ public class LombokValueToRecord extends Recipe {
                 new UsesJavaVersion<>(17)
         );
 
-        return Preconditions.check(check, new LombokValueToRecord.LombokValueToRecordVisitor());
+        return Preconditions.check(check, new LombokValueToRecord.LombokValueToRecordVisitor(useExactToString));
     }
 
     private static class LombokValueToRecordVisitor extends JavaIsoVisitor<ExecutionContext> {
 
+        private static final JavaTemplate TO_STRING_TEMPLATE = JavaTemplate
+                .builder("@Override public String toString() { return \"#{}(\" +\n#{}\n\")\"; }")
+                .contextSensitive()
+                .build();
+
+        private static final String TO_STRING_MEMBER_LINE_PATTERN = "\"%s=\" + %s +";
+
+        private static final String TO_STRING_MEMBER_DELIMITER = "\", \" +\n";
+
         private static final Map<String, Set<String>> RECORD_TYPE_TO_MEMBERS = new HashMap<>();
 
-        private static final String STANDARD_GETTER_START = "get";
+        private static final String STANDARD_GETTER_PREFIX = "get";
+
+        private final boolean useExactToString;
+
+        public LombokValueToRecordVisitor(final boolean useExactToString) {
+            this.useExactToString = useExactToString;
+        }
 
         @Override
         public J.MethodInvocation visitMethodInvocation(
@@ -123,7 +154,7 @@ public class LombokValueToRecord extends Recipe {
             final String methodName = methodInvocation.getName().getSimpleName();
 
             return RECORD_TYPE_TO_MEMBERS.containsKey(classType.getFullyQualifiedName())
-                    && methodName.startsWith(STANDARD_GETTER_START)
+                    && methodName.startsWith(STANDARD_GETTER_PREFIX)
                     && RECORD_TYPE_TO_MEMBERS
                     .get(classType.getFullyQualifiedName())
                     .contains(getterMethodNameToFluentMethodName(methodName));
@@ -135,7 +166,7 @@ public class LombokValueToRecord extends Recipe {
 
         private static String getterMethodNameToFluentMethodName(final String methodName) {
             final StringBuilder fluentMethodName = new StringBuilder(
-                    methodName.replace(STANDARD_GETTER_START, ""));
+                    methodName.replace(STANDARD_GETTER_PREFIX, ""));
 
             if (fluentMethodName.length() == 0) {
                 return "";
@@ -178,9 +209,29 @@ public class LombokValueToRecord extends Recipe {
                     )
                     .withPrimaryConstructor(mapToConstructorArguments(memberVariables));
 
+            if (useExactToString) {
+                classDeclaration = addExactToStringMethod(classDeclaration, memberVariables);
+            }
+
             addToRecordTypeState(classDeclaration, memberVariables);
 
             return maybeAutoFormat(cd, classDeclaration, ctx);
+        }
+
+        private J.ClassDeclaration addExactToStringMethod(final J.ClassDeclaration classDeclaration,
+                                                          final List<J.VariableDeclarations> memberVariables) {
+            return classDeclaration.withBody(TO_STRING_TEMPLATE
+                    .apply(new Cursor(getCursor(), classDeclaration.getBody()),
+                            classDeclaration.getBody().getCoordinates().lastStatement(),
+                            classDeclaration.getSimpleName(),
+                            memberVariablesToString(getMemberVariableNames(memberVariables))));
+        }
+
+        private static String memberVariablesToString(final Set<String> memberVariables) {
+            return memberVariables
+                    .stream()
+                    .map(member -> String.format(TO_STRING_MEMBER_LINE_PATTERN, member, member))
+                    .collect(Collectors.joining(TO_STRING_MEMBER_DELIMITER));
         }
 
         private static void addToRecordTypeState(final J.ClassDeclaration classDeclaration,
@@ -208,7 +259,7 @@ public class LombokValueToRecord extends Recipe {
                     .map(J.VariableDeclarations::getVariables)
                     .flatMap(List::stream)
                     .map(J.VariableDeclarations.NamedVariable::getSimpleName)
-                    .collect(Collectors.toSet());
+                    .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
         }
 
         private static boolean hasGenericTypeParameter(final J.ClassDeclaration classDeclaration) {

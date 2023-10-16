@@ -28,8 +28,44 @@ public class LombokValueToRecordTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new LombokValueToRecord())
+        spec.recipe(new LombokValueToRecord(false))
           .parser(JavaParser.fromJavaVersion().classpath("lombok"));
+    }
+
+    @Test
+    void valueAnnotatedClassWithUseExactOptionKeepsLombokToString() {
+        //language=java
+        rewriteRun(
+          s -> s.recipe(new LombokValueToRecord(true)),
+          version(
+            java(
+              """
+                import lombok.Value;
+                
+                @Value
+                public class Test {
+                    String field1;
+                    
+                    String field2;
+                }
+                """,
+              """
+                public record Test(
+                    String field1,
+                    
+                    String field2) {
+                    @Override
+                    public String toString() {
+                        return "Test(" +
+                                "field1=" + field1 + ", " +
+                                "field2=" + field2 +
+                                ")";
+                    }
+                }
+                """),
+            17
+          )
+        );
     }
 
     @Test
