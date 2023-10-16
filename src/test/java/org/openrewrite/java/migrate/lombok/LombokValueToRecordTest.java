@@ -41,7 +41,7 @@ public class LombokValueToRecordTest implements RewriteTest {
             java(
               """
                 import lombok.Value;
-                
+                                
                 @Value
                 public class Test {
                     String field1;
