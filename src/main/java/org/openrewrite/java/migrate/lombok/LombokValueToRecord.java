@@ -40,12 +40,12 @@ import org.openrewrite.java.tree.TypeUtils;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -114,7 +114,7 @@ public class LombokValueToRecord extends Recipe {
 
         private static final String TO_STRING_MEMBER_DELIMITER = "\", \" +\n";
 
-        private static final Map<String, Set<String>> RECORD_TYPE_TO_MEMBERS = new HashMap<>();
+        private static final Map<String, Set<String>> RECORD_TYPE_TO_MEMBERS = new ConcurrentHashMap<>();
 
         private static final String STANDARD_GETTER_PREFIX = "get";
 
@@ -148,8 +148,10 @@ public class LombokValueToRecord extends Recipe {
                 return false;
             }
 
-            final JavaType.Class classType = requireNonNull((JavaType.Class) expression.getType(),
-                    "Class type must not be null");
+            final JavaType.Class classType = (JavaType.Class) expression.getType();
+            if (classType == null) {
+                return false;
+            }
 
             final String methodName = methodInvocation.getName().getSimpleName();
 
@@ -182,13 +184,7 @@ public class LombokValueToRecord extends Recipe {
         public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration cd, final ExecutionContext ctx) {
             J.ClassDeclaration classDeclaration = super.visitClassDeclaration(cd, ctx);
 
-
-            if (isRecord(classDeclaration)
-                    || !hasOnlyLombokValueAnnotation(classDeclaration)
-                    || hasGenericTypeParameter(classDeclaration)
-                    || hasExplicitMethods(classDeclaration)
-                    || hasExplicitConstructor(classDeclaration)
-            ) {
+            if (!isRelevantClass(classDeclaration)) {
                 return classDeclaration;
             }
 
@@ -216,6 +212,15 @@ public class LombokValueToRecord extends Recipe {
             addToRecordTypeState(classDeclaration, memberVariables);
 
             return maybeAutoFormat(cd, classDeclaration, ctx);
+        }
+
+        private static boolean isRelevantClass(final J.ClassDeclaration classDeclaration) {
+            return !isRecord(classDeclaration)
+                    && hasOnlyLombokValueAnnotation(classDeclaration)
+                    && !hasGenericTypeParameter(classDeclaration)
+                    && !hasExplicitMethods(classDeclaration)
+                    && !hasExplicitConstructor(classDeclaration)
+                    && classDeclaration.getType() != null;
         }
 
         private J.ClassDeclaration addExactToStringMethod(final J.ClassDeclaration classDeclaration,
@@ -268,9 +273,9 @@ public class LombokValueToRecord extends Recipe {
             return typeParameters != null && !typeParameters.isEmpty();
         }
 
-        private static JavaType.Class buildRecordType(final J.ClassDeclaration cd) {
-            requireNonNull(cd.getType(), "Class type must not be null");
-            final String className = requireNonNull(cd.getType().getFullyQualifiedName(),
+        private static JavaType.Class buildRecordType(final J.ClassDeclaration classDeclaration) {
+            requireNonNull(classDeclaration.getType(), "Class type must not be null");
+            final String className = requireNonNull(classDeclaration.getType().getFullyQualifiedName(),
                     "Fully qualified name of class must not be null");
 
             return JavaType.ShallowClass.build(className)
