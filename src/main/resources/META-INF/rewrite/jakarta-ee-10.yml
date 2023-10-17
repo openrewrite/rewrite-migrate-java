@@ -26,6 +26,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
   - org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
+  - org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesResourceResolver
   - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
   - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
   - org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
@@ -36,14 +37,17 @@ name: org.openrewrite.java.migrate.jakarta.BeansXmlNoVersionNowImplicit
 displayName: TBD
 description: TBD
 recipeList:
-  - org.openrewrite.xml.ChangeNamespaceValue:
-        elementName: beans
-        newValue: https://jakarta.ee/xml/ns/jakartaee
-        searchAllNamespaces: false
-  - org.openrewrite.xml.ChangeTagValue:
-      elementName: //xsi:schemaLocation
-      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd
-      fileMatcher: "**/beans.xml"
+#  - org.openrewrite.xml.ChangeNamespaceValue:
+#        elementName: beans
+#        newValue: https://jakarta.ee/xml/ns/jakartaee
+#        searchAllNamespaces: false
+#  - org.openrewrite.xml.ChangeTagValue:
+#      elementName: //xsi:schemaLocation
+#      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd
+#      fileMatcher: "**/beans.xml"
+  - org.openrewrite.xml.AddCommentToXmlTag:
+      xPath: /beans/
+      commentText: bean-discovery-mode
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
