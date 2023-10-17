@@ -22,19 +22,12 @@ public class BeansXmlNoVersionNowImplicitTest implements RewriteTest {
           //language=xml
           xml(
             """
-              <?xml version="1.0" encoding="UTF-8"?>
-              <beans xmlns="http://java.sun.com/xml/ns/javaee"
-                        	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                        	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
+              <beans 
+                  xmlns="http://java.sun.com/xml/ns/javaee">
               </beans>
               """,
             """
-              <?xml version="1.0" encoding="UTF-8"?>
-              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
-                        	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                        	xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
-                        	bean-discovery-mode="all"
-                            version="4.0">
+              <beans xmlns="http://java.sun.com/xml/ns/javaee" bean-discovery-mode="all">
               </beans>
               """
           )
