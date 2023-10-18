@@ -23,7 +23,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
-public class UpgradeToJava6Test implements RewriteTest {
+class UpgradeToJava6Test implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -39,101 +39,101 @@ public class UpgradeToJava6Test implements RewriteTest {
           version(
             //language=java
             java("""
-                      package com.test.withoutWrapperMethods;
-                    
-                      import java.io.PrintWriter;
-                      import java.sql.Connection;
-                      import java.sql.SQLException;
-                    
-                      import javax.sql.DataSource;
-                    
-                      public class JRE6WrapperDataSource implements DataSource {
-                    
-                      	public Connection getConnection() throws SQLException {
-                      		// TODO Auto-generated method stub
-                      		return null;
-                      	}
-                    
-                      	public Connection getConnection(String username, String password)
-                      			throws SQLException {
-                      		// TODO Auto-generated method stub
-                      		return null;
-                      	}
-                    
-                      	public PrintWriter getLogWriter() throws SQLException {
-                      		// TODO Auto-generated method stub
-                      		return null;
-                      	}
-                    
-                      	public void setLogWriter(PrintWriter out) throws SQLException {
-                      		// TODO Auto-generated method stub
-                    
-                      	}
-                    
-                      	public void setLoginTimeout(int seconds) throws SQLException {
-                      		// TODO Auto-generated method stub
-                    
-                      	}
-                    
-                      	public int getLoginTimeout() throws SQLException {
-                      		// TODO Auto-generated method stub
-                      		return 0;
-                      	}
-                    
-                      }
-                      """,
+                package com.test.withoutWrapperMethods;
+                                    
+                import java.io.PrintWriter;
+                import java.sql.Connection;
+                import java.sql.SQLException;
+                                    
+                import javax.sql.DataSource;
+                                    
+                public class JRE6WrapperDataSource implements DataSource {
+                                    
+                  public Connection getConnection() throws SQLException {
+                    // TODO Auto-generated method stub
+                    return null;
+                  }
+                                    
+                  public Connection getConnection(String username, String password)
+                      throws SQLException {
+                    // TODO Auto-generated method stub
+                    return null;
+                  }
+                                    
+                  public PrintWriter getLogWriter() throws SQLException {
+                    // TODO Auto-generated method stub
+                    return null;
+                  }
+                                    
+                  public void setLogWriter(PrintWriter out) throws SQLException {
+                    // TODO Auto-generated method stub
+                                    
+                  }
+                                    
+                  public void setLoginTimeout(int seconds) throws SQLException {
+                    // TODO Auto-generated method stub
+                                    
+                  }
+                                    
+                  public int getLoginTimeout() throws SQLException {
+                    // TODO Auto-generated method stub
+                    return 0;
+                  }
+                                    
+                }
+                """,
               """
-                   package com.test.withoutWrapperMethods;
-                 
-                   import java.io.PrintWriter;
-                   import java.sql.Connection;
-                   import java.sql.SQLException;
-                 
-                   import javax.sql.DataSource;
-                 
-                   public class JRE6WrapperDataSource implements DataSource {
-                 
-                   	public Connection getConnection() throws SQLException {
-                   		// TODO Auto-generated method stub
-                   		return null;
-                   	}
-                 
-                   	public Connection getConnection(String username, String password)
-                   			throws SQLException {
-                   		// TODO Auto-generated method stub
-                   		return null;
-                   	}
-                 
-                   	public PrintWriter getLogWriter() throws SQLException {
-                   		// TODO Auto-generated method stub
-                   		return null;
-                   	}
-                 
-                   	public void setLogWriter(PrintWriter out) throws SQLException {
-                   		// TODO Auto-generated method stub
-                 
-                   	}
-                 
-                   	public void setLoginTimeout(int seconds) throws SQLException {
-                   		// TODO Auto-generated method stub
-                 
-                   	}
-                 
-                   	public int getLoginTimeout() throws SQLException {
-                   		// TODO Auto-generated method stub
-                   		return 0;
-                   	}
-                 
-                       public boolean isWrapperFor(Class<?> iface) throws java.sql.SQLException {
-                           return false;
-                       }
-                 
-                       public <T> T unwrap(Class<T> iface) throws java.sql.SQLException {
-                           return null;
-                       }
-                 
-                   }
-                   """
+                package com.test.withoutWrapperMethods;
+                                 
+                import java.io.PrintWriter;
+                import java.sql.Connection;
+                import java.sql.SQLException;
+                                 
+                import javax.sql.DataSource;
+                                 
+                public class JRE6WrapperDataSource implements DataSource {
+                                 
+                  public Connection getConnection() throws SQLException {
+                    // TODO Auto-generated method stub
+                    return null;
+                  }
+                                 
+                  public Connection getConnection(String username, String password)
+                      throws SQLException {
+                    // TODO Auto-generated method stub
+                    return null;
+                  }
+                                 
+                  public PrintWriter getLogWriter() throws SQLException {
+                    // TODO Auto-generated method stub
+                    return null;
+                  }
+                                 
+                  public void setLogWriter(PrintWriter out) throws SQLException {
+                    // TODO Auto-generated method stub
+                                 
+                  }
+                                 
+                  public void setLoginTimeout(int seconds) throws SQLException {
+                    // TODO Auto-generated method stub
+                                 
+                  }
+                                 
+                  public int getLoginTimeout() throws SQLException {
+                    // TODO Auto-generated method stub
+                    return 0;
+                  }
+                                 
+                    public boolean isWrapperFor(Class<?> iface) throws java.sql.SQLException {
+                        return false;
+                    }
+                                 
+                    public <T> T unwrap(Class<T> iface) throws java.sql.SQLException {
+                        return null;
+                    }
+                                 
+                }
+                """
             ), 6)
         );
     }
