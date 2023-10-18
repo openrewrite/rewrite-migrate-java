@@ -65,8 +65,8 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
                 }
                 Optional<Xml.Tag> maybeCompilerPlugin = t.getChildren().stream()
                         .filter(plugin -> "plugin".equals(plugin.getName())
-                                && "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse(null))
-                                && "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
+                                          && "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse("org.apache.maven.plugins"))
+                                          && "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
                         .findAny();
                 Optional<Xml.Tag> maybeCompilerPluginConfig = maybeCompilerPlugin
                         .flatMap(it -> it.getChild("configuration"));
