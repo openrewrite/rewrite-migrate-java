@@ -78,11 +78,11 @@ public class AddMissingMethodImplementation extends Recipe {
     }
 
     public class ClassImplementationVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private final JavaTemplate methodTemplate = JavaTemplate.builder( methodTemplateString).build();
+        private final JavaTemplate methodTemplate = JavaTemplate.builder(methodTemplateString).build();
         private final MethodMatcher methodMatcher = new MethodMatcher(methodPattern, true);
 
         public boolean matchesInterface(JavaType.Class type) {
-            if(type != null) {
+            if (type != null) {
                 if (type.getFullyQualifiedName().equals(fullyQualifiedClassName)) {
                     return true;
                 }
@@ -90,7 +90,7 @@ public class AddMissingMethodImplementation extends Recipe {
                 // check for matches on super interface
                 List<JavaType.FullyQualified> superInterfaces = type.getInterfaces();
                 boolean foundOnSuperInterface = false;
-                for(JavaType.FullyQualified superInterface: superInterfaces) {
+                for (JavaType.FullyQualified superInterface : superInterfaces) {
                     if (matchesInterface((JavaType.Class) superInterface)) {
                         foundOnSuperInterface = true;
                         break;
@@ -133,7 +133,7 @@ public class AddMissingMethodImplementation extends Recipe {
                 return classDecl;
             }
 
-            classDecl = classDecl.withBody( methodTemplate.apply(new Cursor(getCursor(), classDecl.getBody()),
+            classDecl = classDecl.withBody(methodTemplate.apply(new Cursor(getCursor(), classDecl.getBody()),
                     classDecl.getBody().getCoordinates().lastStatement()));
 
             return classDecl;
