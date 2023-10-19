@@ -19,32 +19,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.Cursor;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Option;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.RemoveAnnotationVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.Statement;
-import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.java.tree.*;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -56,7 +40,7 @@ import static java.util.Objects.requireNonNull;
 public class LombokValueToRecord extends Recipe {
 
     @Option(displayName = "useExactToString",
-            description = "When set the toString format from Lombok is used in the migrated record.")
+            description = "When set the `toString` format from Lombok is used in the migrated record.")
     boolean useExactToString;
 
     @JsonCreator
@@ -66,22 +50,17 @@ public class LombokValueToRecord extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Convert Value class to Record";
+        return "Convert `@lombok.Value` class to Record";
     }
 
     @Override
     public String getDescription() {
-        return "Convert Lombok Value annotated classes to standard Java Record classes in Java 17 or higher.";
+        return "Convert Lombok `@Value` annotated classes to standard Java Records.";
     }
 
     @Override
     public Set<String> getTags() {
         return Collections.singleton("lombok");
-    }
-
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(5);
     }
 
     @Override
@@ -226,12 +205,12 @@ public class LombokValueToRecord extends Recipe {
         }
 
         private static boolean isRelevantClass(final J.ClassDeclaration classDeclaration) {
-            return !isRecord(classDeclaration)
+            return classDeclaration.getType() != null
+                    && !isRecord(classDeclaration)
                     && hasOnlyLombokValueAnnotation(classDeclaration)
                     && !hasGenericTypeParameter(classDeclaration)
                     && !hasExplicitMethods(classDeclaration)
-                    && !hasExplicitConstructor(classDeclaration)
-                    && classDeclaration.getType() != null;
+                    && !hasExplicitConstructor(classDeclaration);
         }
 
         private static String memberVariablesToString(final Set<String> memberVariables) {
