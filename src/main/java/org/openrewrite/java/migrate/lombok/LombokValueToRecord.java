@@ -25,8 +25,8 @@ import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.RemoveAnnotationVisitor;
-import org.openrewrite.java.search.MaybeUsesImport;
 import org.openrewrite.java.search.UsesJavaVersion;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
 
 import java.util.*;
@@ -81,7 +81,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
     public TreeVisitor<?, ExecutionContext> getScanner(Map<String, Set<String>> acc) {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(17),
-                new MaybeUsesImport<>(LOMBOK_VALUE_IMPORT)
+                new UsesType<>(LOMBOK_VALUE_IMPORT, false)
         );
 
         return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
