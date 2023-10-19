@@ -21,7 +21,6 @@ description: These recipes help with the Migration to Jakarta EE 10, flagging an
 tags:
   - jakarta
 recipeList:
-  - org.openrewrite.java.migrate.jakarta.BeansXmlNoVersionNowImplicit
   - org.openrewrite.java.migrate.jakarta.EmptyBeansXmlNowImplicit
   - org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
@@ -30,29 +29,37 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
   - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
   - org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
+  - org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
+  - org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.BeansXmlNoVersionNowImplicit
-displayName: TBD
-description: TBD
+name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
+displayName: Remove `getComment` and `getVersion` methods
+description: >
+  Jakarta Servlet methods have been deprecated for removal in Jakarta Servlet 6.0 to align with RFC 6265. 
+  In addition, the behavior of these methods has been changed so the setters no longer have any effect, the getComment methods return null, and the getVersion method returns 0.
+  The deprecated methods are removed.
 recipeList:
-#  - org.openrewrite.xml.ChangeNamespaceValue:
-#        elementName: beans
-#        newValue: https://jakarta.ee/xml/ns/jakartaee
-#        searchAllNamespaces: false
-#  - org.openrewrite.xml.ChangeTagValue:
-#      elementName: //xsi:schemaLocation
-#      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd
-#      fileMatcher: "**/beans.xml"
-  - org.openrewrite.xml.AddCommentToXmlTag:
-      xPath: /beans/
-      commentText: bean-discovery-mode
+  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+      methodPattern: jakarta.servlet.http.Cookie getComment()
+  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+      methodPattern: jakarta.servlet.http.Cookie getVersion()
+  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+      methodPattern: jakarta.servlet.http.Cookie setComment(String)
+  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+      methodPattern: jakarta.servlet.http.Cookie setVersion(int)
+  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+      methodPattern: jakarta.servlet.SessionCookieConfig getComment()
+  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+      methodPattern: jakarta.servlet.SessionCookieConfig setComment(String)
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
-displayName: TBD
-description: TBD
+displayName:   JNDI name `jsf/ClientSideSecretKey` has been renamed to `faces/ClientSideSecretKey`, and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.
+description: >
+      The `jsf/ClientSideSecretKey` JNDI name has been renamed to `faces/ClientSideSecretKey`, 
+      and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.  The JNDI keys that have been renamed are updated to allow use of the keys.
 recipeList:
   - org.openrewrite.xml.ChangeTagValue:
       elementName: //env-entry-name
@@ -64,6 +71,36 @@ recipeList:
       newValue: faces/FlashSecretKey
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesResourceResolver
+displayName: Replace `ResourceResolver` with `ResourceHandler`
+description: > 
+  The `ResourceResolver` class was removed in Jakarta Faces 4.0. 
+  The functionality provided by that class can be replaced by using the `jakarta.faces.application.ResourceHandler` class.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.faces.view.facelets.ResourceResolver
+      newFullyQualifiedTypeName: jakarta.faces.application.ResourceHandler
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.faces.view.facelets.ResourceResolver
+      newFullyQualifiedTypeName: jakarta.faces.application.ResourceHandler
+      ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
+displayName: Replace `CURRENT_COMPONENT` and `CURRENT_COMPOSITE_COMPONENT` with `getCurrentComponent()` and `getCurrentCompositeComponent()`
+description: >
+  Replace `jakarta.faces.component.UIComponent.CURRENT_COMPONENT` and `CURRENT_COMPOSITE_COMPONENT` constants with `jakarta.faces.component.UIComponent.getCurrentComponent()` and `getCurrentCompositeComponent()`
+  that were added in JSF 2.0
+recipeList:
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: jakarta.faces.component.UIComponent.CURRENT_COMPONENT
+      fullyQualifiedConstantName: jakarta.faces.component.UIComponent.getCurrentComponent()
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: jakarta.faces.component.UIComponent.CURRENT_COMPOSITE_COMPONENT
+      fullyQualifiedConstantName: jakarta.faces.component.UIComponent.getCurrentCompositeComponent()
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
 displayName: Replace `doUpgrade(..)` with `ServerContainer.upgradeHttpToWebSocket(..)`
 description: Deprecated `WsWsocServerContainer.doUpgrade(..)` is replaced by the Jakarta WebSocket 2.1 specification `ServerContainer.upgradeHttpToWebSocket(..)`.
@@ -71,7 +108,7 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.ibm.websphere.wsoc.WsWsocServerContainer doUpgrade(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, com.ibm.websphere.wsoc.ServerEndpointConfig, java.util.Map)
       newMethodName: upgradeHttpToWebSocket
-      ignoreDefinition: false
+      ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.ibm.websphere.wsoc.WsWsocServerContainer
       newFullyQualifiedTypeName: jakarta.websocket.server.ServerContainer
@@ -87,7 +124,7 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.el.MethodExpression isParmetersProvided()
       newMethodName: isParametersProvided
-      ignoreDefinition: false
+      ignoreDefinition: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
@@ -99,11 +136,11 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.xml.soap.SOAPElementFactory create(String,..)
       newMethodName: createElement
-      ignoreDefinition: false
+      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.xml.soap.SOAPElementFactory create(jakarta.xml.soap.Name)
       newMethodName: createElement
-      ignoreDefinition: false
+      ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.xml.soap.SOAPElementFactory
       newFullyQualifiedTypeName: jakarta.xml.soap.SOAPFactory
@@ -119,23 +156,23 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
       newMethodName: saveView
-      ignoreDefinition: false
+      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager getTreeStructureToSave(*.faces.context.FacesContext)"
       newMethodName: saveView
-      ignoreDefinition: false
+      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager restoreComponentState(*.faces.context.FacesContext,*.faces.component.UIViewRoot,String)"
       newMethodName: restoreView
-      ignoreDefinition: false
+      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager restoreTreeStructure(*.faces.context.FacesContext,String,String)"
       newMethodName: restoreView
-      ignoreDefinition: false
+      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager saveSerializedView(*.faces.context.FacesContext)"
       newMethodName: saveView
-      ignoreDefinition: false
+      ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.faces.application.StateManager
       newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
