@@ -29,7 +29,12 @@ class LombokValueToRecordTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec.recipe(new LombokValueToRecord(false))
           .allSources(s -> s.markers(javaVersion(17)))
-          .parser(JavaParser.fromJavaVersion().classpath("lombok"));
+          .parser(JavaParser.fromJavaVersion()
+            .classpath(
+              "lombok",
+              "jackson-core"
+            )
+          );
     }
 
     @Test
@@ -142,6 +147,26 @@ class LombokValueToRecordTest implements RewriteTest {
                  public A() {
                      this.test = "test";
                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void classWithFieldAnnotationsIsUnchanged() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.fasterxml.jackson.annotation.JsonProperty;
+              import lombok.Value;
+                              
+              @Value
+              public class A {
+                            
+                 @JsonProperty
+                 String test;
               }
               """
           )

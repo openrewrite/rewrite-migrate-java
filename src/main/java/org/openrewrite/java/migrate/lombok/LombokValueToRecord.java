@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -169,7 +170,8 @@ public class LombokValueToRecord extends Recipe {
                 return classDeclaration;
             }
 
-            final List<J.VariableDeclarations> memberVariables = findAllClassFields(classDeclaration);
+            final List<J.VariableDeclarations> memberVariables = findAllClassFields(classDeclaration)
+                    .collect(Collectors.toList());
             if (hasMemberVariableAssignments(memberVariables)) {
                 return classDeclaration;
             }
@@ -210,7 +212,8 @@ public class LombokValueToRecord extends Recipe {
                     && hasOnlyLombokValueAnnotation(classDeclaration)
                     && !hasGenericTypeParameter(classDeclaration)
                     && !hasExplicitMethods(classDeclaration)
-                    && !hasExplicitConstructor(classDeclaration);
+                    && !hasExplicitConstructor(classDeclaration)
+                    && !hasMemberVariableAnnotations(classDeclaration);
         }
 
         private static String memberVariablesToString(final Set<String> memberVariables) {
@@ -279,6 +282,12 @@ public class LombokValueToRecord extends Recipe {
                     .anyMatch(JavaType.Method::isConstructor);
         }
 
+        private static boolean hasMemberVariableAnnotations(final J.ClassDeclaration classDeclaration) {
+            return findAllClassFields(classDeclaration)
+                    .map(J.VariableDeclarations::getAllAnnotations)
+                    .anyMatch(annotations -> !annotations.isEmpty());
+        }
+
         private static List<Statement> mapToConstructorArguments(
                 final List<J.VariableDeclarations> memberVariables
         ) {
@@ -300,12 +309,11 @@ public class LombokValueToRecord extends Recipe {
             ).visitClassDeclaration(cd, ctx);
         }
 
-        private static List<J.VariableDeclarations> findAllClassFields(final J.ClassDeclaration cd) {
+        private static Stream<J.VariableDeclarations> findAllClassFields(final J.ClassDeclaration cd) {
             return new ArrayList<>(cd.getBody().getStatements())
                     .stream()
                     .filter(J.VariableDeclarations.class::isInstance)
-                    .map(J.VariableDeclarations.class::cast)
-                    .collect(Collectors.toList());
+                    .map(J.VariableDeclarations.class::cast);
         }
 
         private static boolean hasMemberVariableAssignments(final List<J.VariableDeclarations> memberVariables) {
