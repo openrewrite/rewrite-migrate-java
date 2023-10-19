@@ -53,7 +53,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
     boolean useExactToString;
 
     @JsonCreator
-    public LombokValueToRecord(final @JsonProperty("useExactToString") boolean useExactToString) {
+    public LombokValueToRecord(@JsonProperty("useExactToString") boolean useExactToString) {
         this.useExactToString = useExactToString;
     }
 
@@ -73,36 +73,33 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
     }
 
     @Override
-    public Map<String, Set<String>> getInitialValue(final ExecutionContext ctx) {
+    public Map<String, Set<String>> getInitialValue(ExecutionContext ctx) {
         return new ConcurrentHashMap<>();
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(final Map<String, Set<String>> acc) {
-        final TreeVisitor<?, ExecutionContext> check = Preconditions.and(
+    public TreeVisitor<?, ExecutionContext> getScanner(Map<String, Set<String>> acc) {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(17),
                 new MaybeUsesImport<>(LOMBOK_VALUE_IMPORT)
         );
 
         return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(
-                    final J.ClassDeclaration classDecl,
-                    final ExecutionContext executionContext
-            ) {
-                final J.ClassDeclaration classDeclaration = super.visitClassDeclaration(classDecl, executionContext);
+            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                J.ClassDeclaration classDeclaration = super.visitClassDeclaration(classDecl, ctx);
 
                 if (!isRelevantClass(classDeclaration)) {
                     return classDeclaration;
                 }
 
-                final List<J.VariableDeclarations> memberVariables = findAllClassFields(classDeclaration)
+                List<J.VariableDeclarations> memberVariables = findAllClassFields(classDeclaration)
                         .collect(Collectors.toList());
                 if (hasMemberVariableAssignments(memberVariables)) {
                     return classDeclaration;
                 }
 
-                final JavaType.FullyQualified classType = requireNonNull(classDeclaration.getType(),
+                JavaType.FullyQualified classType = requireNonNull(classDeclaration.getType(),
                         "Class type must not be null");
 
                 acc.putIfAbsent(
@@ -115,7 +112,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(final Map<String, Set<String>> recordTypesToMembers) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(Map<String, Set<String>> recordTypesToMembers) {
         return new LombokValueToRecord.LombokValueToRecordVisitor(useExactToString, recordTypesToMembers);
     }
 
@@ -136,80 +133,76 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
         private final Map<String, Set<String>> recordTypeToMembers;
 
-        public LombokValueToRecordVisitor(final boolean useExactToString,
-                                          final Map<String, Set<String>> recordTypeToMembers) {
+        public LombokValueToRecordVisitor(boolean useExactToString, Map<String, Set<String>> recordTypeToMembers) {
             this.useExactToString = useExactToString;
             this.recordTypeToMembers = recordTypeToMembers;
         }
 
         @Override
-        public J.MethodInvocation visitMethodInvocation(
-                final J.MethodInvocation method,
-                final ExecutionContext executionContext
-        ) {
-            final J.MethodInvocation methodInvocation = super.visitMethodInvocation(method, executionContext);
+        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            J.MethodInvocation methodInvocation = super.visitMethodInvocation(method, ctx);
 
             if (!isMethodInvocationOnRecordTypeClassMember(methodInvocation)) {
                 return methodInvocation;
             }
 
-            final J.Identifier methodName = methodInvocation.getName();
+            J.Identifier methodName = methodInvocation.getName();
             return methodInvocation
                     .withName(methodName
                             .withSimpleName(getterMethodNameToFluentMethodName(methodName.getSimpleName()))
                     );
         }
 
-        private boolean isMethodInvocationOnRecordTypeClassMember(final J.MethodInvocation methodInvocation) {
-            final Expression expression = methodInvocation.getSelect();
+        private boolean isMethodInvocationOnRecordTypeClassMember(J.MethodInvocation methodInvocation) {
+            Expression expression = methodInvocation.getSelect();
             if (!isClassExpression(expression)) {
                 return false;
             }
 
-            final JavaType.Class classType = (JavaType.Class) expression.getType();
+            JavaType.Class classType = (JavaType.Class) expression.getType();
             if (classType == null) {
                 return false;
             }
 
-            final String methodName = methodInvocation.getName().getSimpleName();
-            final String classFqn = classType.getFullyQualifiedName();
+            String methodName = methodInvocation.getName().getSimpleName();
+            String classFqn = classType.getFullyQualifiedName();
 
             return recordTypeToMembers.containsKey(classFqn)
                     && methodName.startsWith(STANDARD_GETTER_PREFIX)
                     && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
         }
 
-        private static boolean isClassExpression(final @Nullable Expression expression) {
+        private static boolean isClassExpression(@Nullable Expression expression) {
             return expression != null && (expression.getType() instanceof JavaType.Class);
         }
 
-        private static String getterMethodNameToFluentMethodName(final String methodName) {
-            final StringBuilder fluentMethodName = new StringBuilder(
+        private static String getterMethodNameToFluentMethodName(String methodName) {
+            StringBuilder fluentMethodName = new StringBuilder(
                     methodName.replace(STANDARD_GETTER_PREFIX, ""));
 
             if (fluentMethodName.length() == 0) {
                 return "";
             }
 
-            final char firstMemberChar = fluentMethodName.charAt(0);
+            char firstMemberChar = fluentMethodName.charAt(0);
             fluentMethodName.setCharAt(0, Character.toLowerCase(firstMemberChar));
 
             return fluentMethodName.toString();
         }
 
         @Override
-        public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration cd, final ExecutionContext ctx) {
+        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
             J.ClassDeclaration classDeclaration = super.visitClassDeclaration(cd, ctx);
-            final JavaType.FullyQualified classType = classDeclaration.getType();
+            JavaType.FullyQualified classType = classDeclaration.getType();
 
             if (classType == null || !recordTypeToMembers.containsKey(classType.getFullyQualifiedName())) {
                 return classDeclaration;
             }
 
-            final List<J.VariableDeclarations> memberVariables = findAllClassFields(classDeclaration)
+            List<J.VariableDeclarations> memberVariables = findAllClassFields(classDeclaration)
                     .collect(Collectors.toList());
 
-            final List<Statement> bodyStatements = new ArrayList<>(classDeclaration.getBody().getStatements());
+            List<Statement> bodyStatements = new ArrayList<>(classDeclaration.getBody().getStatements());
             bodyStatements.removeAll(memberVariables);
 
             classDeclaration = removeValueAnnotation(classDeclaration, ctx);
@@ -228,8 +221,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             return maybeAutoFormat(cd, classDeclaration, ctx);
         }
 
-        private J.ClassDeclaration addExactToStringMethod(final J.ClassDeclaration classDeclaration,
-                                                          final List<J.VariableDeclarations> memberVariables) {
+        private J.ClassDeclaration addExactToStringMethod(J.ClassDeclaration classDeclaration,
+                                                          List<J.VariableDeclarations> memberVariables) {
             return classDeclaration.withBody(TO_STRING_TEMPLATE
                     .apply(new Cursor(getCursor(), classDeclaration.getBody()),
                             classDeclaration.getBody().getCoordinates().lastStatement(),
@@ -237,25 +230,23 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                             memberVariablesToString(getMemberVariableNames(memberVariables))));
         }
 
-        private static String memberVariablesToString(final Set<String> memberVariables) {
+        private static String memberVariablesToString(Set<String> memberVariables) {
             return memberVariables
                     .stream()
                     .map(member -> String.format(TO_STRING_MEMBER_LINE_PATTERN, member, member))
                     .collect(Collectors.joining(TO_STRING_MEMBER_DELIMITER));
         }
 
-        private static JavaType.Class buildRecordType(final J.ClassDeclaration classDeclaration) {
+        private static JavaType.Class buildRecordType(J.ClassDeclaration classDeclaration) {
             requireNonNull(classDeclaration.getType(), "Class type must not be null");
-            final String className = requireNonNull(classDeclaration.getType().getFullyQualifiedName(),
+            String className = requireNonNull(classDeclaration.getType().getFullyQualifiedName(),
                     "Fully qualified name of class must not be null");
 
             return JavaType.ShallowClass.build(className)
                     .withKind(JavaType.FullyQualified.Kind.Record);
         }
 
-        private static List<Statement> mapToConstructorArguments(
-                final List<J.VariableDeclarations> memberVariables
-        ) {
+        private static List<Statement> mapToConstructorArguments(List<J.VariableDeclarations> memberVariables) {
             return memberVariables
                     .stream()
                     .map(it -> it
@@ -266,7 +257,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                     .collect(Collectors.toList());
         }
 
-        private J.ClassDeclaration removeValueAnnotation(final J.ClassDeclaration cd, final ExecutionContext ctx) {
+        private J.ClassDeclaration removeValueAnnotation(J.ClassDeclaration cd, ExecutionContext ctx) {
             maybeRemoveImport(LOMBOK_VALUE_IMPORT);
 
             return new RemoveAnnotationVisitor(new AnnotationMatcher(LOMBOK_VALUE_ANNOTATION))
@@ -274,7 +265,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         }
     }
 
-    private static boolean hasMemberVariableAssignments(final List<J.VariableDeclarations> memberVariables) {
+    private static boolean hasMemberVariableAssignments(List<J.VariableDeclarations> memberVariables) {
         return memberVariables
                 .stream()
                 .map(J.VariableDeclarations::getVariables)
@@ -283,7 +274,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 .anyMatch(J.Literal.class::isInstance);
     }
 
-    private static boolean isRelevantClass(final J.ClassDeclaration classDeclaration) {
+    private static boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
         return classDeclaration.getType() != null
                 && !isRecord(classDeclaration)
                 && hasOnlyLombokValueAnnotation(classDeclaration)
@@ -293,11 +284,11 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 && !hasMemberVariableAnnotations(classDeclaration);
     }
 
-    private static boolean isRecord(final J.ClassDeclaration classDeclaration) {
+    private static boolean isRecord(J.ClassDeclaration classDeclaration) {
         return J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind());
     }
 
-    private static boolean hasExplicitConstructor(final J.ClassDeclaration classDeclaration) {
+    private static boolean hasExplicitConstructor(J.ClassDeclaration classDeclaration) {
         return classDeclaration.getPrimaryConstructor() != null || classDeclaration
                 .getBody()
                 .getStatements()
@@ -309,13 +300,13 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 .anyMatch(JavaType.Method::isConstructor);
     }
 
-    private static boolean hasGenericTypeParameter(final J.ClassDeclaration classDeclaration) {
-        final List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
+    private static boolean hasGenericTypeParameter(J.ClassDeclaration classDeclaration) {
+        List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
 
         return typeParameters != null && !typeParameters.isEmpty();
     }
 
-    private static boolean hasExplicitMethods(final J.ClassDeclaration classDeclaration) {
+    private static boolean hasExplicitMethods(J.ClassDeclaration classDeclaration) {
         return classDeclaration
                 .getBody()
                 .getStatements()
@@ -323,7 +314,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 .anyMatch(J.MethodDeclaration.class::isInstance);
     }
 
-    private static boolean hasOnlyLombokValueAnnotation(final J.ClassDeclaration cd) {
+    private static boolean hasOnlyLombokValueAnnotation(J.ClassDeclaration cd) {
         return cd.getAllAnnotations()
                 .stream()
                 .filter(annotation -> TypeUtils.isAssignableTo(LOMBOK_ANNOTATION_PATTERN, annotation.getType()))
@@ -331,20 +322,20 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 .allMatch("Value"::equals);
     }
 
-    private static boolean hasMemberVariableAnnotations(final J.ClassDeclaration classDeclaration) {
+    private static boolean hasMemberVariableAnnotations(J.ClassDeclaration classDeclaration) {
         return findAllClassFields(classDeclaration)
                 .map(J.VariableDeclarations::getAllAnnotations)
                 .anyMatch(annotations -> !annotations.isEmpty());
     }
 
-    private static Stream<J.VariableDeclarations> findAllClassFields(final J.ClassDeclaration cd) {
+    private static Stream<J.VariableDeclarations> findAllClassFields(J.ClassDeclaration cd) {
         return new ArrayList<>(cd.getBody().getStatements())
                 .stream()
                 .filter(J.VariableDeclarations.class::isInstance)
                 .map(J.VariableDeclarations.class::cast);
     }
 
-    private static Set<String> getMemberVariableNames(final List<J.VariableDeclarations> memberVariables) {
+    private static Set<String> getMemberVariableNames(List<J.VariableDeclarations> memberVariables) {
         return memberVariables
                 .stream()
                 .map(J.VariableDeclarations::getVariables)
