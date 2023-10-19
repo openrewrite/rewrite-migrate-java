@@ -64,9 +64,10 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
                     return t;
                 }
                 Optional<Xml.Tag> maybeCompilerPlugin = t.getChildren().stream()
-                        .filter(plugin -> "plugin".equals(plugin.getName())
-                                          && "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse("org.apache.maven.plugins"))
-                                          && "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
+                        .filter(plugin ->
+                                "plugin".equals(plugin.getName()) &&
+                                "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse("org.apache.maven.plugins")) &&
+                                "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
                         .findAny();
                 Optional<Xml.Tag> maybeCompilerPluginConfig = maybeCompilerPlugin
                         .flatMap(it -> it.getChild("configuration"));
@@ -91,7 +92,7 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
                     return filterTagChildren(updated, maybeCompilerPlugin.get(),
                             child -> !("configuration".equals(child.getName()) && child.getChildren().isEmpty()));
                 }
-                String releaseVersionValue = hasJavaVersionProperty(getCursor().firstEnclosingOrThrow(Xml.Document.class))
+                String releaseVersionValue = hasJavaVersionProperty(getCursor().firstEnclosingOrThrow(Xml.Document.class), ctx)
                         ? "${java.version}" : releaseVersion;
                 updated = addOrUpdateChild(updated, compilerPluginConfig,
                         Xml.Tag.build("<release>" + releaseVersionValue + "</release>"), getCursor().getParentOrThrow());
@@ -114,7 +115,8 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
         }
     }
 
-    private boolean hasJavaVersionProperty(Xml.Document xml) {
-        return !FindProperties.find(xml, "java.version").isEmpty();
+    private boolean hasJavaVersionProperty(Xml.Document xml, ExecutionContext ctx) {
+        // If the instance changes, is because it added some SearchResult
+        return new FindProperties("java\\.version").getVisitor().visitNonNull(xml, ctx) != xml;
     }
 }
