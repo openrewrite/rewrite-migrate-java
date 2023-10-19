@@ -21,7 +21,6 @@ description: These recipes help with the Migration to Jakarta EE 10, flagging an
 tags:
   - jakarta
 recipeList:
-  - org.openrewrite.java.migrate.jakarta.EmptyBeansXmlNowImplicit
   - org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
   - org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
