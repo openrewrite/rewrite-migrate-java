@@ -22,7 +22,7 @@ import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.maven.MavenIsoVisitor;
-import org.openrewrite.maven.search.FindProperties;
+import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.tree.Xml;
 
@@ -92,7 +92,7 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
                     return filterTagChildren(updated, maybeCompilerPlugin.get(),
                             child -> !("configuration".equals(child.getName()) && child.getChildren().isEmpty()));
                 }
-                String releaseVersionValue = hasJavaVersionProperty(getCursor().firstEnclosingOrThrow(Xml.Document.class), ctx)
+                String releaseVersionValue = hasJavaVersionProperty(getCursor().firstEnclosingOrThrow(Xml.Document.class))
                         ? "${java.version}" : releaseVersion;
                 updated = addOrUpdateChild(updated, compilerPluginConfig,
                         Xml.Tag.build("<release>" + releaseVersionValue + "</release>"), getCursor().getParentOrThrow());
@@ -115,8 +115,9 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
         }
     }
 
-    private boolean hasJavaVersionProperty(Xml.Document xml, ExecutionContext ctx) {
-        // If the instance changes, is because it added some SearchResult
-        return new FindProperties("java\\.version").getVisitor().visitNonNull(xml, ctx) != xml;
+    private boolean hasJavaVersionProperty(Xml.Document xml) {
+        return xml.getMarkers().findFirst(MavenResolutionResult.class)
+                .map(r -> r.getPom().getProperties().get("java.version") != null)
+                .orElse(false);
     }
 }

@@ -498,7 +498,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     }
 
     @Test
-    void reusesJavaVersionVariableIfUsedInPom() {
+    void reusesJavaVersionVariableIfDefinedInParentPom() {
         rewriteRun(
           //language=xml
           pomXml("""
