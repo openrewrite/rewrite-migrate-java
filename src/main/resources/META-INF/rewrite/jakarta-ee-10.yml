@@ -127,7 +127,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
-displayName: Use `jakarta.xml.soap.SOAPFactory to create SOAPElements`
+displayName: Use `jakarta.xml.soap.SOAPFactory` to create `SOAPElements`
 description: >
   XML Web Services prior to 4.0 provides the deprecated SOAPElementFactory class, 
   which is removed in XML Web Services 4.0. The recommended replacement is to use jakarta.xml.soap.SOAPFactory to create SOAPElements.
