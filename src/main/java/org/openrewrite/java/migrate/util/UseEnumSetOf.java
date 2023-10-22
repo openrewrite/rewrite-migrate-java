@@ -29,7 +29,6 @@ import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.StringJoiner;
 
 public class UseEnumSetOf extends Recipe {
     private static final MethodMatcher SET_OF = new MethodMatcher("java.util.Set of(..)", true);
@@ -66,9 +65,7 @@ public class UseEnumSetOf extends Recipe {
                         if (isAssignmentSetOfEnum(type)) {
                             maybeAddImport("java.util.EnumSet");
 
-                            StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
                             List<Expression> args = m.getArguments();
-                            args.forEach(o -> setOf.add("#{any()}"));
                             return JavaTemplate.builder("EnumSet.of(#{any()})")
                                     .contextSensitive()
                                     .imports("java.util.EnumSet")
