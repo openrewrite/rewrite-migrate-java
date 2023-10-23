@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.lombok;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -52,32 +54,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
     @JsonCreator
     public LombokValueToRecord(@JsonProperty("useExactToString") boolean useExactToString) {
         this.useExactToString = useExactToString;
-    }
-
-    private static boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
-        return classDeclaration.getType() != null
-               && !isRecord(classDeclaration)
-               && hasOnlyLombokValueAnnotation(classDeclaration)
-               && !hasGenericTypeParameter(classDeclaration)
-               && allStatementsAreFields(classDeclaration);
-    }
-
-    private static boolean allStatementsAreFields(J.ClassDeclaration classDeclaration) {
-        return classDeclaration.getBody().getStatements().stream().allMatch(LombokValueToRecord::isRecordCompatibleField);
-    }
-
-    private static boolean isRecordCompatibleField(Statement statement) {
-        if (!(statement instanceof J.VariableDeclarations)) {
-            return false;
-        }
-        J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) statement;
-        if (variableDeclarations.getModifiers().stream().anyMatch(modifier -> modifier.getType() == J.Modifier.Type.Static)) {
-            return false;
-        }
-        if (!variableDeclarations.getAllAnnotations().isEmpty()) {
-            return false;
-        }
-        return true;
     }
 
     @Override
@@ -95,31 +71,9 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         return new ConcurrentHashMap<>();
     }
 
-    private static boolean hasOnlyLombokValueAnnotation(J.ClassDeclaration cd) {
-        return cd.getAllAnnotations().stream().allMatch(LOMBOK_VALUE_MATCHER::matches);
-    }
-
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(Map<String, Set<String>> recordTypesToMembers) {
         return new LombokValueToRecord.LombokValueToRecordVisitor(useExactToString, recordTypesToMembers);
-    }
-
-    private static boolean hasGenericTypeParameter(J.ClassDeclaration classDeclaration) {
-        List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
-        return typeParameters != null && !typeParameters.isEmpty();
-    }
-
-    private static boolean hasMemberVariableAssignments(List<J.VariableDeclarations> memberVariables) {
-        return memberVariables
-                .stream()
-                .map(J.VariableDeclarations::getVariables)
-                .flatMap(List::stream)
-                .map(J.VariableDeclarations.NamedVariable::getInitializer)
-                .anyMatch(J.Literal.class::isInstance);
-    }
-
-    private static boolean isRecord(J.ClassDeclaration classDeclaration) {
-        return J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind());
     }
 
     @Override
@@ -133,33 +87,70 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 new UsesJavaVersion<>(17),
                 new UsesType<>("lombok.Value", false)
         );
-
-        return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-                J.ClassDeclaration classDeclaration = super.visitClassDeclaration(classDecl, ctx);
-
-                if (!isRelevantClass(classDeclaration)) {
-                    return classDeclaration;
-                }
-
-                List<J.VariableDeclarations> memberVariables = findAllClassFields(classDeclaration)
-                        .collect(Collectors.toList());
-                if (hasMemberVariableAssignments(memberVariables)) {
-                    return classDeclaration;
-                }
-
-                JavaType.FullyQualified classType = requireNonNull(classDeclaration.getType(),
-                        "Class type must not be null");
-
-                acc.putIfAbsent(
-                        classType.getFullyQualifiedName(),
-                        getMemberVariableNames(memberVariables));
-
-                return classDeclaration;
-            }
-        });
+        return Preconditions.check(check, new ScannerVisitor(acc));
     }
+
+    @RequiredArgsConstructor
+    private static class ScannerVisitor extends JavaIsoVisitor<ExecutionContext> {
+        private final Map<String, Set<String>> acc;
+
+        @Override
+        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
+            if (!isRelevantClass(cd)) {
+                return cd;
+            }
+
+            List<J.VariableDeclarations> memberVariables = findAllClassFields(cd).collect(toList());
+            if (hasMemberVariableAssignments(memberVariables)) {
+                return cd;
+            }
+
+            acc.putIfAbsent(
+                    cd.getType().getFullyQualifiedName(),
+                    getMemberVariableNames(memberVariables));
+
+            return cd;
+        }
+
+        private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
+            return classDeclaration.getType() != null
+                   && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
+                   && classDeclaration.getAllAnnotations().stream().allMatch(LOMBOK_VALUE_MATCHER::matches)
+                   && !hasGenericTypeParameter(classDeclaration)
+                   && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField);
+        }
+
+        private boolean hasGenericTypeParameter(J.ClassDeclaration classDeclaration) {
+            List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
+            return typeParameters != null && !typeParameters.isEmpty();
+        }
+
+        private boolean isRecordCompatibleField(Statement statement) {
+            if (!(statement instanceof J.VariableDeclarations)) {
+                return false;
+            }
+            J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) statement;
+            if (variableDeclarations.getModifiers().stream().anyMatch(modifier -> modifier.getType() == J.Modifier.Type.Static)) {
+                return false;
+            }
+            if (!variableDeclarations.getAllAnnotations().isEmpty()) {
+                return false;
+            }
+            return true;
+        }
+
+        private boolean hasMemberVariableAssignments(List<J.VariableDeclarations> memberVariables) {
+            return memberVariables
+                    .stream()
+                    .map(J.VariableDeclarations::getVariables)
+                    .flatMap(List::stream)
+                    .map(J.VariableDeclarations.NamedVariable::getInitializer)
+                    .anyMatch(J.Literal.class::isInstance);
+        }
+    }
+
+    ;
 
     private static class LombokValueToRecordVisitor extends JavaIsoVisitor<ExecutionContext> {
 
@@ -235,35 +226,15 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             return fluentMethodName.toString();
         }
 
-        @Override
-        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
-            J.ClassDeclaration classDeclaration = super.visitClassDeclaration(cd, ctx);
-            JavaType.FullyQualified classType = classDeclaration.getType();
-
-            if (classType == null || !recordTypeToMembers.containsKey(classType.getFullyQualifiedName())) {
-                return classDeclaration;
-            }
-
-            List<J.VariableDeclarations> memberVariables = findAllClassFields(classDeclaration)
-                    .collect(Collectors.toList());
-
-            List<Statement> bodyStatements = new ArrayList<>(classDeclaration.getBody().getStatements());
-            bodyStatements.removeAll(memberVariables);
-
-            doAfterVisit(new RemoveAnnotationVisitor(LOMBOK_VALUE_MATCHER));
-            classDeclaration = classDeclaration
-                    .withKind(J.ClassDeclaration.Kind.Type.Record)
-                    .withType(buildRecordType(classDeclaration))
-                    .withBody(classDeclaration.getBody()
-                            .withStatements(bodyStatements)
+        private static List<Statement> mapToConstructorArguments(List<J.VariableDeclarations> memberVariables) {
+            return memberVariables
+                    .stream()
+                    .map(it -> it
+                            .withModifiers(Collections.emptyList())
+                            .withVariables(it.getVariables())
                     )
-                    .withPrimaryConstructor(mapToConstructorArguments(memberVariables));
-
-            if (useExactToString) {
-                classDeclaration = addExactToStringMethod(classDeclaration, memberVariables);
-            }
-
-            return maybeAutoFormat(cd, classDeclaration, ctx);
+                    .map(Statement.class::cast)
+                    .collect(toList());
         }
 
         private J.ClassDeclaration addExactToStringMethod(J.ClassDeclaration classDeclaration,
@@ -291,15 +262,35 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                     .withKind(JavaType.FullyQualified.Kind.Record);
         }
 
-        private static List<Statement> mapToConstructorArguments(List<J.VariableDeclarations> memberVariables) {
-            return memberVariables
-                    .stream()
-                    .map(it -> it
-                            .withModifiers(Collections.emptyList())
-                            .withVariables(it.getVariables())
+        @Override
+        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
+            J.ClassDeclaration classDeclaration = super.visitClassDeclaration(cd, ctx);
+            JavaType.FullyQualified classType = classDeclaration.getType();
+
+            if (classType == null || !recordTypeToMembers.containsKey(classType.getFullyQualifiedName())) {
+                return classDeclaration;
+            }
+
+            List<J.VariableDeclarations> memberVariables = findAllClassFields(classDeclaration)
+                    .collect(toList());
+
+            List<Statement> bodyStatements = new ArrayList<>(classDeclaration.getBody().getStatements());
+            bodyStatements.removeAll(memberVariables);
+
+            doAfterVisit(new RemoveAnnotationVisitor(LOMBOK_VALUE_MATCHER));
+            classDeclaration = classDeclaration
+                    .withKind(J.ClassDeclaration.Kind.Type.Record)
+                    .withType(buildRecordType(classDeclaration))
+                    .withBody(classDeclaration.getBody()
+                            .withStatements(bodyStatements)
                     )
-                    .map(Statement.class::cast)
-                    .collect(Collectors.toList());
+                    .withPrimaryConstructor(mapToConstructorArguments(memberVariables));
+
+            if (useExactToString) {
+                classDeclaration = addExactToStringMethod(classDeclaration, memberVariables);
+            }
+
+            return maybeAutoFormat(cd, classDeclaration, ctx);
         }
     }
 
