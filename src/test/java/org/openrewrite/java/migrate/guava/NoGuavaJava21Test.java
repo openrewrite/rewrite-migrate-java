@@ -47,15 +47,15 @@ class NoGuavaJava21Test implements RewriteTest {
                 import com.google.common.primitives.Doubles;
   
                 class Test {
-                    public void testMethod() {
-                        Doubles.constrainToRange(20D, 10D, 100D);
+                    public double testMethod() {
+                        return Doubles.constrainToRange(20D, 10D, 100D);
                     }
                 }
                 """,
               """ 
                 class Test {
-                    public void testMethod() {
-                        Math.clamp(20D, 10D, 100D);
+                    public double testMethod() {
+                        return Math.clamp(20D, 10D, 100D);
                     }
                 }
                 """
@@ -74,15 +74,15 @@ class NoGuavaJava21Test implements RewriteTest {
                 import com.google.common.primitives.Longs;
   
                 class Test {
-                    public void testMethod() {
-                        Longs.constrainToRange(20L, 10L, 100L);
+                    public long testMethod() {
+                        return Longs.constrainToRange(20L, 10L, 100L);
                     }
                 }
                 """,
               """ 
                 class Test {
-                    public void testMethod() {
-                        Math.clamp(20L, 10L, 100L);
+                    public long testMethod() {
+                        return Math.clamp(20L, 10L, 100L);
                     }
                 }
                 """
@@ -101,15 +101,15 @@ class NoGuavaJava21Test implements RewriteTest {
                 import com.google.common.primitives.Floats;
   
                 class Test {
-                    public void testMethod() {
-                        Floats.constrainToRange(20F, 10F, 100F);
+                    public float testMethod() {
+                        return Floats.constrainToRange(20F, 10F, 100F);
                     }
                 }
                 """,
               """ 
                 class Test {
-                    public void testMethod() {
-                        Math.clamp(20F, 10F, 100F);
+                    public float testMethod() {
+                        return Math.clamp(20F, 10F, 100F);
                     }
                 }
                 """
