@@ -27,11 +27,13 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.RemoveAnnotationVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Statement;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,12 +43,7 @@ import static java.util.Objects.requireNonNull;
 @EqualsAndHashCode(callSuper = false)
 public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>> {
 
-    private static final Pattern LOMBOK_ANNOTATION_PATTERN = Pattern.compile("^lombok.*");
-
-    private static final String LOMBOK_VALUE_IMPORT = "lombok.Value";
-
-    private static final String LOMBOK_VALUE_ANNOTATION = "@lombok.Value";
-
+    private static final AnnotationMatcher LOMBOK_VALUE_MATCHER = new AnnotationMatcher("@lombok.Value");
 
     @Option(displayName = "useExactToString",
             description = "When set the `toString` format from Lombok is used in the migrated record.")
@@ -57,9 +54,14 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         this.useExactToString = useExactToString;
     }
 
-    @Override
-    public String getDisplayName() {
-        return String.format("Convert `%s` class to Record", LOMBOK_VALUE_ANNOTATION);
+    private static boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
+        return classDeclaration.getType() != null
+               && !isRecord(classDeclaration)
+               && hasOnlyLombokValueAnnotation(classDeclaration)
+               && !hasGenericTypeParameter(classDeclaration)
+               && !hasExplicitMethods(classDeclaration)
+               && !hasExplicitConstructor(classDeclaration)
+               && !hasMemberVariableAnnotations(classDeclaration);
     }
 
     @Override
@@ -77,11 +79,51 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         return new ConcurrentHashMap<>();
     }
 
+    private static boolean hasOnlyLombokValueAnnotation(J.ClassDeclaration cd) {
+        return cd.getAllAnnotations().stream().allMatch(LOMBOK_VALUE_MATCHER::matches);
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getVisitor(Map<String, Set<String>> recordTypesToMembers) {
+        return new LombokValueToRecord.LombokValueToRecordVisitor(useExactToString, recordTypesToMembers);
+    }
+
+    private static boolean hasGenericTypeParameter(J.ClassDeclaration classDeclaration) {
+        List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
+        return typeParameters != null && !typeParameters.isEmpty();
+    }
+
+    private static boolean hasMemberVariableAssignments(List<J.VariableDeclarations> memberVariables) {
+        return memberVariables
+                .stream()
+                .map(J.VariableDeclarations::getVariables)
+                .flatMap(List::stream)
+                .map(J.VariableDeclarations.NamedVariable::getInitializer)
+                .anyMatch(J.Literal.class::isInstance);
+    }
+
+    private static boolean hasExplicitMethods(J.ClassDeclaration classDeclaration) {
+        return classDeclaration
+                .getBody()
+                .getStatements()
+                .stream()
+                .anyMatch(J.MethodDeclaration.class::isInstance);
+    }
+
+    private static boolean isRecord(J.ClassDeclaration classDeclaration) {
+        return J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind());
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Convert `@lombok.Value` class to Record";
+    }
+
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Map<String, Set<String>> acc) {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(17),
-                new UsesType<>(LOMBOK_VALUE_IMPORT, false)
+                new UsesType<>("lombok.Value", false)
         );
 
         return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
@@ -109,11 +151,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 return classDeclaration;
             }
         });
-    }
-
-    @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Map<String, Set<String>> recordTypesToMembers) {
-        return new LombokValueToRecord.LombokValueToRecordVisitor(useExactToString, recordTypesToMembers);
     }
 
     private static class LombokValueToRecordVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -168,8 +205,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             String classFqn = classType.getFullyQualifiedName();
 
             return recordTypeToMembers.containsKey(classFqn)
-                    && methodName.startsWith(STANDARD_GETTER_PREFIX)
-                    && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
+                   && methodName.startsWith(STANDARD_GETTER_PREFIX)
+                   && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
         }
 
         private static boolean isClassExpression(@Nullable Expression expression) {
@@ -205,7 +242,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             List<Statement> bodyStatements = new ArrayList<>(classDeclaration.getBody().getStatements());
             bodyStatements.removeAll(memberVariables);
 
-            classDeclaration = removeValueAnnotation(classDeclaration, ctx);
+            doAfterVisit(new RemoveAnnotationVisitor(LOMBOK_VALUE_MATCHER));
             classDeclaration = classDeclaration
                     .withKind(J.ClassDeclaration.Kind.Type.Record)
                     .withType(buildRecordType(classDeclaration))
@@ -256,36 +293,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                     .map(Statement.class::cast)
                     .collect(Collectors.toList());
         }
-
-        private J.ClassDeclaration removeValueAnnotation(J.ClassDeclaration cd, ExecutionContext ctx) {
-            maybeRemoveImport(LOMBOK_VALUE_IMPORT);
-
-            return new RemoveAnnotationVisitor(new AnnotationMatcher(LOMBOK_VALUE_ANNOTATION))
-                    .visitClassDeclaration(cd, ctx);
-        }
-    }
-
-    private static boolean hasMemberVariableAssignments(List<J.VariableDeclarations> memberVariables) {
-        return memberVariables
-                .stream()
-                .map(J.VariableDeclarations::getVariables)
-                .flatMap(List::stream)
-                .map(J.VariableDeclarations.NamedVariable::getInitializer)
-                .anyMatch(J.Literal.class::isInstance);
-    }
-
-    private static boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
-        return classDeclaration.getType() != null
-                && !isRecord(classDeclaration)
-                && hasOnlyLombokValueAnnotation(classDeclaration)
-                && !hasGenericTypeParameter(classDeclaration)
-                && !hasExplicitMethods(classDeclaration)
-                && !hasExplicitConstructor(classDeclaration)
-                && !hasMemberVariableAnnotations(classDeclaration);
-    }
-
-    private static boolean isRecord(J.ClassDeclaration classDeclaration) {
-        return J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind());
     }
 
     private static boolean hasExplicitConstructor(J.ClassDeclaration classDeclaration) {
@@ -298,28 +305,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 .map(J.MethodDeclaration::getMethodType)
                 .filter(Objects::nonNull)
                 .anyMatch(JavaType.Method::isConstructor);
-    }
-
-    private static boolean hasGenericTypeParameter(J.ClassDeclaration classDeclaration) {
-        List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
-
-        return typeParameters != null && !typeParameters.isEmpty();
-    }
-
-    private static boolean hasExplicitMethods(J.ClassDeclaration classDeclaration) {
-        return classDeclaration
-                .getBody()
-                .getStatements()
-                .stream()
-                .anyMatch(J.MethodDeclaration.class::isInstance);
-    }
-
-    private static boolean hasOnlyLombokValueAnnotation(J.ClassDeclaration cd) {
-        return cd.getAllAnnotations()
-                .stream()
-                .filter(annotation -> TypeUtils.isAssignableTo(LOMBOK_ANNOTATION_PATTERN, annotation.getType()))
-                .map(J.Annotation::getSimpleName)
-                .allMatch("Value"::equals);
     }
 
     private static boolean hasMemberVariableAnnotations(J.ClassDeclaration classDeclaration) {
