@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -132,134 +133,155 @@ class LombokValueToRecordTest implements RewriteTest {
         );
     }
 
-    @Test
-    void classWithExplicitConstructorIsUnchanged() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import lombok.Value;
-                              
-              @Value
-              public class A {
-                 String test;
-                 
-                 public A() {
-                     this.test = "test";
-                 }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void classWithFieldAnnotationsIsUnchanged() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import com.fasterxml.jackson.annotation.JsonProperty;
-              import lombok.Value;
-                              
-              @Value
-              public class A {
-                            
-                 @JsonProperty
-                 String test;
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void classWithExplicitMethodsIsUnchanged() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import lombok.Value;
-                              
-              @Value
-              public class A {
-                 String test;
-                 
-                 public String getTest() {
-                     return test;
-                 }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void genericClassIsUnchanged() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import lombok.Value;
-                              
-              @Value
-              public class A<T extends Object> {
-                 T test;
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void nonJava17ClassIsUnchanged() {
-        //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import lombok.Value;
-                                
-                @Value
-                public class A {
-                   String test;
-                }
+    @Nested
+    class Unchanged {
+        @Test
+        void classWithExplicitConstructor() {
+            //language=java
+            rewriteRun(
+              java(
                 """
-            ),
-            11
-          )
-        );
-    }
+                  import lombok.Value;
+                                  
+                  @Value
+                  public class A {
+                     String test;
+                     
+                     public A() {
+                         this.test = "test";
+                     }
+                  }
+                  """
+              )
+            );
+        }
 
-    @Test
-    void classWithMultipleLombokAnnotationsIsUnchanged() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import lombok.Value;
-              import lombok.experimental.Accessors;
-                              
-              @Value
-              @Accessors(fluent = true)
-              public class A {
-                  String test;
-              }
-              """
-          )
-        );
-    }
+        @Test
+        void classWithFieldAnnotations() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import com.fasterxml.jackson.annotation.JsonProperty;
+                  import lombok.Value;
+                                  
+                  @Value
+                  public class A {
+                                
+                     @JsonProperty
+                     String test;
+                  }
+                  """
+              )
+            );
+        }
 
-    @Test
-    void existingRecordsAreUnchanged() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              public record A(String test) {
-              }
-              """
-          )
-        );
+        @Test
+        void classWithExplicitMethods() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import lombok.Value;
+                                  
+                  @Value
+                  public class A {
+                     String test;
+                     
+                     public String getTest() {
+                         return test;
+                     }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void genericClass() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import lombok.Value;
+                                  
+                  @Value
+                  public class A<T extends Object> {
+                     T test;
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void nonJava17Class() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    import lombok.Value;
+                                    
+                    @Value
+                    public class A {
+                       String test;
+                    }
+                    """
+                ),
+                11
+              )
+            );
+        }
+
+        @Test
+        void classWithMultipleLombokAnnotations() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import lombok.Value;
+                  import lombok.experimental.Accessors;
+                                  
+                  @Value
+                  @Accessors(fluent = true)
+                  public class A {
+                      String test;
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void existingRecordsAreUnchanged() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  public record A(String test) {
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void classWithStaticField() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import lombok.Value;
+                                  
+                  @Value
+                  public class A {
+                      static String disqualifyingField;
+                      String test;
+                  }
+                  """
+              )
+            );
+        }
     }
 }
