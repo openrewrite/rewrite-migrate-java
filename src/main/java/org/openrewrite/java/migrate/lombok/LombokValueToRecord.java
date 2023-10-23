@@ -56,13 +56,28 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
     private static boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
         return classDeclaration.getType() != null
-                && !isRecord(classDeclaration)
-                && hasOnlyLombokValueAnnotation(classDeclaration)
-                && !hasGenericTypeParameter(classDeclaration)
-                && !hasExplicitMethods(classDeclaration)
-                && !hasExplicitConstructor(classDeclaration)
-                && !hasMemberVariableAnnotations(classDeclaration)
-                && !hasStaticMembers(classDeclaration);
+               && !isRecord(classDeclaration)
+               && hasOnlyLombokValueAnnotation(classDeclaration)
+               && !hasGenericTypeParameter(classDeclaration)
+               && allStatementsAreFields(classDeclaration);
+    }
+
+    private static boolean allStatementsAreFields(J.ClassDeclaration classDeclaration) {
+        return classDeclaration.getBody().getStatements().stream().allMatch(LombokValueToRecord::isRecordCompatibleField);
+    }
+
+    private static boolean isRecordCompatibleField(Statement statement) {
+        if (!(statement instanceof J.VariableDeclarations)) {
+            return false;
+        }
+        J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) statement;
+        if (variableDeclarations.getModifiers().stream().anyMatch(modifier -> modifier.getType() == J.Modifier.Type.Static)) {
+            return false;
+        }
+        if (!variableDeclarations.getAllAnnotations().isEmpty()) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -101,14 +116,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 .flatMap(List::stream)
                 .map(J.VariableDeclarations.NamedVariable::getInitializer)
                 .anyMatch(J.Literal.class::isInstance);
-    }
-
-    private static boolean hasExplicitMethods(J.ClassDeclaration classDeclaration) {
-        return classDeclaration
-                .getBody()
-                .getStatements()
-                .stream()
-                .anyMatch(J.MethodDeclaration.class::isInstance);
     }
 
     private static boolean isRecord(J.ClassDeclaration classDeclaration) {
@@ -294,32 +301,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                     .map(Statement.class::cast)
                     .collect(Collectors.toList());
         }
-    }
-
-    private static boolean hasExplicitConstructor(J.ClassDeclaration classDeclaration) {
-        return classDeclaration.getPrimaryConstructor() != null || classDeclaration
-                .getBody()
-                .getStatements()
-                .stream()
-                .filter(J.MethodDeclaration.class::isInstance)
-                .map(J.MethodDeclaration.class::cast)
-                .map(J.MethodDeclaration::getMethodType)
-                .filter(Objects::nonNull)
-                .anyMatch(JavaType.Method::isConstructor);
-    }
-
-    private static boolean hasStaticMembers(J.ClassDeclaration classDeclaration) {
-        return findAllClassFields(classDeclaration)
-                .map(J.VariableDeclarations::getModifiers)
-                .flatMap(List::stream)
-                .map(J.Modifier::getType)
-                .anyMatch(J.Modifier.Type.Static::equals);
-    }
-
-    private static boolean hasMemberVariableAnnotations(J.ClassDeclaration classDeclaration) {
-        return findAllClassFields(classDeclaration)
-                .map(J.VariableDeclarations::getAllAnnotations)
-                .anyMatch(annotations -> !annotations.isEmpty());
     }
 
     private static Stream<J.VariableDeclarations> findAllClassFields(J.ClassDeclaration cd) {
