@@ -28,7 +28,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JREWrapperInterface
 displayName: Add missing `iwWrapper` and `unwrap` methods.
-description: Check for new methods on Java SQL interfaces.
+description: Add method implementations stubs to classes that implement `java.sql.Wrapper`.
 recipeList:
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Wrapper
@@ -37,4 +37,4 @@ recipeList:
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Wrapper
       methodPattern: "*..* unwrap(..)"
-      methodTemplateString: "public <T> T unwrap(Class<T> iface) throws java.sql.SQLException { return null; }"
+      methodTemplateString: "public <T> T unwrap(Class<T> iface) throws java.sql.SQLException { try { if (isWrapperFor(iface)) { return (T) this; } throw DbException.getInvalidValueException(\"iface\", iface); } catch (Exception e) { throw logAndConvert(e); } }"

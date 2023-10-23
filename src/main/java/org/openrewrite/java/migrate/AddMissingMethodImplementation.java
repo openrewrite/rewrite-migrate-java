@@ -21,6 +21,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
 import org.openrewrite.internal.lang.NonNull;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
@@ -109,6 +110,13 @@ public class AddMissingMethodImplementation extends Recipe {
                     JavaType.Class type = (JavaType.Class) implementedClass.getType();
                     return matchesInterface(type);
                 }
+            }
+
+            // also check extended class to handle abstract classes
+            TypeTree extendedClass = classDecl.getExtends();
+            if (extendedClass != null) {
+                JavaType.Class type = (JavaType.Class) extendedClass.getType();
+                return matchesInterface(type);
             }
             return false;
         }
