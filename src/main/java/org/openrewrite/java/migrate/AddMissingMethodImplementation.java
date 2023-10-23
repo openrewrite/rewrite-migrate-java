@@ -25,6 +25,7 @@ import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeTree;
@@ -74,16 +75,15 @@ public class AddMissingMethodImplementation extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        // getVisitor() should always return a new instance of the visitor to avoid any state leaking between cycles
-        return new ClassImplementationVisitor();
+        return Preconditions.check(new UsesType<>(fullyQualifiedClassName, true), new ClassImplementationVisitor());
     }
 
     public class ClassImplementationVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private final JavaTemplate methodTemplate = JavaTemplate.builder( methodTemplateString).build();
+        private final JavaTemplate methodTemplate = JavaTemplate.builder(methodTemplateString).build();
         private final MethodMatcher methodMatcher = new MethodMatcher(methodPattern, true);
 
         public boolean matchesInterface(JavaType.Class type) {
-            if(type != null) {
+            if (type != null) {
                 if (type.getFullyQualifiedName().equals(fullyQualifiedClassName)) {
                     return true;
                 }
@@ -91,7 +91,7 @@ public class AddMissingMethodImplementation extends Recipe {
                 // check for matches on super interface
                 List<JavaType.FullyQualified> superInterfaces = type.getInterfaces();
                 boolean foundOnSuperInterface = false;
-                for(JavaType.FullyQualified superInterface: superInterfaces) {
+                for (JavaType.FullyQualified superInterface : superInterfaces) {
                     if (matchesInterface((JavaType.Class) superInterface)) {
                         foundOnSuperInterface = true;
                         break;
@@ -141,7 +141,7 @@ public class AddMissingMethodImplementation extends Recipe {
                 return classDecl;
             }
 
-            classDecl = classDecl.withBody( methodTemplate.apply(new Cursor(getCursor(), classDecl.getBody()),
+            classDecl = classDecl.withBody(methodTemplate.apply(new Cursor(getCursor(), classDecl.getBody()),
                     classDecl.getBody().getCoordinates().lastStatement()));
 
             return classDecl;
