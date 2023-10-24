@@ -87,13 +87,13 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         return Preconditions.check(check, new ScannerVisitor(acc));
     }
 
-    public String getDisplayName() {
-        return "Convert `@lombok.Value` class to Record";
-    }
-
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(Map<String, Set<String>> recordTypesToMembers) {
         return new LombokValueToRecord.LombokValueToRecordVisitor(useExactToString, recordTypesToMembers);
+    }
+
+    public String getDisplayName() {
+        return "Convert `@lombok.Value` class to Record";
     }
 
     private static class LombokValueToRecordVisitor extends JavaIsoVisitor<ExecutionContext> {
