@@ -56,11 +56,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         this.useExactToString = useExactToString;
     }
 
-    private static Stream<J.VariableDeclarations> findAllClassFields(J.ClassDeclaration cd) {
-        return cd.getBody().getStatements()
-                .stream()
-                .filter(J.VariableDeclarations.class::isInstance)
-                .map(J.VariableDeclarations.class::cast);
+    public String getDisplayName() {
+        return "Convert `@lombok.Value` class to Record";
     }
 
     @Override
@@ -92,8 +89,66 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         return new LombokValueToRecord.LombokValueToRecordVisitor(useExactToString, recordTypesToMembers);
     }
 
-    public String getDisplayName() {
-        return "Convert `@lombok.Value` class to Record";
+
+    @RequiredArgsConstructor
+    private static class ScannerVisitor extends JavaIsoVisitor<ExecutionContext> {
+        private final Map<String, Set<String>> acc;
+
+        @Override
+        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
+            if (!isRelevantClass(cd)) {
+                return cd;
+            }
+
+            List<J.VariableDeclarations> memberVariables = findAllClassFields(cd).collect(toList());
+            if (hasMemberVariableAssignments(memberVariables)) {
+                return cd;
+            }
+
+            acc.putIfAbsent(
+                    cd.getType().getFullyQualifiedName(),
+                    getMemberVariableNames(memberVariables));
+
+            return cd;
+        }
+
+        private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
+            return classDeclaration.getType() != null
+                   && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
+                   && classDeclaration.getAllAnnotations().stream().allMatch(LOMBOK_VALUE_MATCHER::matches)
+                   && !hasGenericTypeParameter(classDeclaration)
+                   && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField);
+        }
+
+        private boolean hasGenericTypeParameter(J.ClassDeclaration classDeclaration) {
+            List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
+            return typeParameters != null && !typeParameters.isEmpty();
+        }
+
+        private boolean isRecordCompatibleField(Statement statement) {
+            if (!(statement instanceof J.VariableDeclarations)) {
+                return false;
+            }
+            J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) statement;
+            if (variableDeclarations.getModifiers().stream().anyMatch(modifier -> modifier.getType() == J.Modifier.Type.Static)) {
+                return false;
+            }
+            if (!variableDeclarations.getAllAnnotations().isEmpty()) {
+                return false;
+            }
+            return true;
+        }
+
+        private boolean hasMemberVariableAssignments(List<J.VariableDeclarations> memberVariables) {
+            return memberVariables
+                    .stream()
+                    .map(J.VariableDeclarations::getVariables)
+                    .flatMap(List::stream)
+                    .map(J.VariableDeclarations.NamedVariable::getInitializer)
+                    .anyMatch(Objects::nonNull);
+        }
+
     }
 
     private static class LombokValueToRecordVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -234,65 +289,11 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         }
     }
 
-    @RequiredArgsConstructor
-    private static class ScannerVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private final Map<String, Set<String>> acc;
-
-        @Override
-        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-            J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
-            if (!isRelevantClass(cd)) {
-                return cd;
-            }
-
-            List<J.VariableDeclarations> memberVariables = findAllClassFields(cd).collect(toList());
-            if (hasMemberVariableAssignments(memberVariables)) {
-                return cd;
-            }
-
-            acc.putIfAbsent(
-                    cd.getType().getFullyQualifiedName(),
-                    getMemberVariableNames(memberVariables));
-
-            return cd;
-        }
-
-        private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
-            return classDeclaration.getType() != null
-                   && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
-                   && classDeclaration.getAllAnnotations().stream().allMatch(LOMBOK_VALUE_MATCHER::matches)
-                   && !hasGenericTypeParameter(classDeclaration)
-                   && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField);
-        }
-
-        private boolean hasGenericTypeParameter(J.ClassDeclaration classDeclaration) {
-            List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
-            return typeParameters != null && !typeParameters.isEmpty();
-        }
-
-        private boolean isRecordCompatibleField(Statement statement) {
-            if (!(statement instanceof J.VariableDeclarations)) {
-                return false;
-            }
-            J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) statement;
-            if (variableDeclarations.getModifiers().stream().anyMatch(modifier -> modifier.getType() == J.Modifier.Type.Static)) {
-                return false;
-            }
-            if (!variableDeclarations.getAllAnnotations().isEmpty()) {
-                return false;
-            }
-            return true;
-        }
-
-        private boolean hasMemberVariableAssignments(List<J.VariableDeclarations> memberVariables) {
-            return memberVariables
-                    .stream()
-                    .map(J.VariableDeclarations::getVariables)
-                    .flatMap(List::stream)
-                    .map(J.VariableDeclarations.NamedVariable::getInitializer)
-                    .anyMatch(Objects::nonNull);
-        }
-
+    private static Stream<J.VariableDeclarations> findAllClassFields(J.ClassDeclaration cd) {
+        return cd.getBody().getStatements()
+                .stream()
+                .filter(J.VariableDeclarations.class::isInstance)
+                .map(J.VariableDeclarations.class::cast);
     }
 
     private static Set<String> getMemberVariableNames(List<J.VariableDeclarations> memberVariables) {
