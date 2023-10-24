@@ -148,7 +148,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                     .map(J.VariableDeclarations::getVariables)
                     .flatMap(List::stream)
                     .map(J.VariableDeclarations.NamedVariable::getInitializer)
-                    .anyMatch(J.Literal.class::isInstance);
+                    .anyMatch(Objects::nonNull);
         }
     }
 
@@ -177,12 +177,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         public LombokValueToRecordVisitor(boolean useExactToString, Map<String, Set<String>> recordTypeToMembers) {
             this.useExactToString = useExactToString;
             this.recordTypeToMembers = recordTypeToMembers;
-        }
-
-        @Override
-        public J.NewClass visitNewClass(J.NewClass newClass, ExecutionContext executionContext) {
-            // TODO Add type to record constructor
-            return super.visitNewClass(newClass, executionContext);
         }
 
         @Override

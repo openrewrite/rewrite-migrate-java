@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lombok;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -72,6 +73,7 @@ class LombokValueToRecordTest implements RewriteTest {
     }
 
     @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/141")
     void convertOnlyValueAnnotatedClassWithoutDefaultValuesToRecord() {
         //language=java
         rewriteRun(
