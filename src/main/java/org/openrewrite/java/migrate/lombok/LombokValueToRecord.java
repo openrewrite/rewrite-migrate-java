@@ -15,12 +15,15 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.openrewrite.*;
+import org.openrewrite.Cursor;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Option;
+import org.openrewrite.Preconditions;
+import org.openrewrite.ScanningRecipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -33,12 +36,17 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 @Value
@@ -47,14 +55,9 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
     private static final AnnotationMatcher LOMBOK_VALUE_MATCHER = new AnnotationMatcher("@lombok.Value");
 
-    @Option(displayName = "useExactToString",
+    @Option(displayName = "Add a `toString()` implementation matching Lombok",
             description = "When set the `toString` format from Lombok is used in the migrated record.")
     boolean useExactToString;
-
-    @JsonCreator
-    public LombokValueToRecord(@JsonProperty("useExactToString") boolean useExactToString) {
-        this.useExactToString = useExactToString;
-    }
 
     public String getDisplayName() {
         return "Convert `@lombok.Value` class to Record";
@@ -106,6 +109,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 return cd;
             }
 
+            assert cd.getType() != null : "Class type must not be null";
             acc.putIfAbsent(
                     cd.getType().getFullyQualifiedName(),
                     getMemberVariableNames(memberVariables));
@@ -115,10 +119,10 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
         private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
             return classDeclaration.getType() != null
-                   && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
-                   && classDeclaration.getAllAnnotations().stream().allMatch(LOMBOK_VALUE_MATCHER::matches)
-                   && !hasGenericTypeParameter(classDeclaration)
-                   && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField);
+                    && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
+                    && classDeclaration.getAllAnnotations().stream().allMatch(LOMBOK_VALUE_MATCHER::matches)
+                    && !hasGenericTypeParameter(classDeclaration)
+                    && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField);
         }
 
         private boolean hasGenericTypeParameter(J.ClassDeclaration classDeclaration) {
@@ -199,8 +203,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             String classFqn = classType.getFullyQualifiedName();
 
             return recordTypeToMembers.containsKey(classFqn)
-                   && methodName.startsWith(STANDARD_GETTER_PREFIX)
-                   && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
+                    && methodName.startsWith(STANDARD_GETTER_PREFIX)
+                    && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
         }
 
         private static boolean isClassExpression(@Nullable Expression expression) {
@@ -249,9 +253,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         }
 
         private static JavaType.Class buildRecordType(J.ClassDeclaration classDeclaration) {
-            requireNonNull(classDeclaration.getType(), "Class type must not be null");
-            String className = requireNonNull(classDeclaration.getType().getFullyQualifiedName(),
-                    "Fully qualified name of class must not be null");
+            assert classDeclaration.getType() != null : "Class type must not be null";
+            String className = classDeclaration.getType().getFullyQualifiedName();
 
             return JavaType.ShallowClass.build(className)
                     .withKind(JavaType.FullyQualified.Kind.Record);
