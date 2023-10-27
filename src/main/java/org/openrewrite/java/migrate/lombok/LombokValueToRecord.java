@@ -18,12 +18,7 @@ package org.openrewrite.java.migrate.lombok;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.openrewrite.Cursor;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Option;
-import org.openrewrite.Preconditions;
-import org.openrewrite.ScanningRecipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -36,13 +31,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,7 +46,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
     @Option(displayName = "Add a `toString()` implementation matching Lombok",
             description = "When set the `toString` format from Lombok is used in the migrated record.")
-    boolean useExactToString;
+    @Nullable
+    Boolean useExactToString;
 
     public String getDisplayName() {
         return "Convert `@lombok.Value` class to Record";
@@ -165,10 +155,10 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         private static final String TO_STRING_MEMBER_DELIMITER = "\", \" +\n";
         private static final String STANDARD_GETTER_PREFIX = "get";
 
-        private final boolean useExactToString;
+        private final Boolean useExactToString;
         private final Map<String, Set<String>> recordTypeToMembers;
 
-        public LombokValueToRecordVisitor(boolean useExactToString, Map<String, Set<String>> recordTypeToMembers) {
+        public LombokValueToRecordVisitor(Boolean useExactToString, Map<String, Set<String>> recordTypeToMembers) {
             this.useExactToString = useExactToString;
             this.recordTypeToMembers = recordTypeToMembers;
         }
@@ -284,7 +274,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                     )
                     .withPrimaryConstructor(mapToConstructorArguments(memberVariables));
 
-            if (useExactToString) {
+            if (useExactToString != null && useExactToString) {
                 classDeclaration = addExactToStringMethod(classDeclaration, memberVariables);
             }
 
