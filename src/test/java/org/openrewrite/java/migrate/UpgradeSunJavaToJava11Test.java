@@ -247,4 +247,27 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
           )
         );
     }
+
+    @Test
+    @SuppressWarnings("removal")
+    void testBoxedPrimitiveConstructors() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              class Test {
+                  Integer i = new Integer(12);
+                  Boolean b = new Boolean("true");
+              }
+              """,
+            """
+              class Test {
+                  Integer i = Integer.valueOf(12);
+                  Boolean b = Boolean.valueOf("true");
+              }
+              """
+          )
+        );
+    }
+
 }
