@@ -45,7 +45,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
     private static final AnnotationMatcher LOMBOK_VALUE_MATCHER = new AnnotationMatcher("@lombok.Value");
 
     @Option(displayName = "Add a `toString()` implementation matching Lombok",
-            description = "When set the `toString` format from Lombok is used in the migrated record.")
+            description = "When set the `toString` format from Lombok is used in the migrated record.",
+            required = false)
     @Nullable
     Boolean useExactToString;
 
