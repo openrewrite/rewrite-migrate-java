@@ -20,128 +20,127 @@ import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.*;
 
 public class UpgradeToJava6Test implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(Environment.builder()
-          .scanRuntimeClasspath("org.openrewrite.java.migrate")
-          .build()
-          .activateRecipes("org.openrewrite.java.migrate.UpgradeToJava6"));
+            .scanRuntimeClasspath("org.openrewrite.java.migrate")
+            .build()
+            .activateRecipes("org.openrewrite.java.migrate.UpgradeToJava6"))
+          .allSources(src -> src.markers(javaVersion(6)));
     }
 
     @Test
     void testDataSource() {
         rewriteRun(
-          version(
-            //language=java
-            java("""
-                      package com.test.withoutWrapperMethods;
-                    
-                      import java.io.PrintWriter;
-                      import java.sql.Connection;
-                      import java.sql.SQLException;
-                    
-                      import javax.sql.DataSource;
-                    
-                      public class JRE6WrapperDataSource implements DataSource {
-                    
-                      	public Connection getConnection() throws SQLException {
-                      		// TODO Auto-generated method stub
-                      		return null;
-                      	}
-                    
-                      	public Connection getConnection(String username, String password)
-                      			throws SQLException {
-                      		// TODO Auto-generated method stub
-                      		return null;
-                      	}
-                    
-                      	public PrintWriter getLogWriter() throws SQLException {
-                      		// TODO Auto-generated method stub
-                      		return null;
-                      	}
-                    
-                      	public void setLogWriter(PrintWriter out) throws SQLException {
-                      		// TODO Auto-generated method stub
-                    
-                      	}
-                    
-                      	public void setLoginTimeout(int seconds) throws SQLException {
-                      		// TODO Auto-generated method stub
-                    
-                      	}
-                    
-                      	public int getLoginTimeout() throws SQLException {
-                      		// TODO Auto-generated method stub
-                      		return 0;
-                      	}
-                    
+          //language=java
+          java("""
+              package com.test.withoutWrapperMethods;
+                                  
+              import java.io.PrintWriter;
+              import java.sql.Connection;
+              import java.sql.SQLException;
+                                  
+              import javax.sql.DataSource;
+                                  
+              public class JRE6WrapperDataSource implements DataSource {
+                                  
+              	public Connection getConnection() throws SQLException {
+              		// TODO Auto-generated method stub
+              		return null;
+              	}
+                                  
+              	public Connection getConnection(String username, String password)
+              			throws SQLException {
+              		// TODO Auto-generated method stub
+              		return null;
+              	}
+                                  
+              	public PrintWriter getLogWriter() throws SQLException {
+              		// TODO Auto-generated method stub
+              		return null;
+              	}
+                                  
+              	public void setLogWriter(PrintWriter out) throws SQLException {
+              		// TODO Auto-generated method stub
+                                  
+              	}
+                                  
+              	public void setLoginTimeout(int seconds) throws SQLException {
+              		// TODO Auto-generated method stub
+                                  
+              	}
+                                  
+              	public int getLoginTimeout() throws SQLException {
+              		// TODO Auto-generated method stub
+              		return 0;
+              	}
+                                  
+              }
+              """,
+            """
+              package com.test.withoutWrapperMethods;
+                               
+              import java.io.PrintWriter;
+              import java.sql.Connection;
+              import java.sql.SQLException;
+                               
+              import javax.sql.DataSource;
+                               
+              public class JRE6WrapperDataSource implements DataSource {
+                               
+              	public Connection getConnection() throws SQLException {
+              		// TODO Auto-generated method stub
+              		return null;
+              	}
+                               
+              	public Connection getConnection(String username, String password)
+              			throws SQLException {
+              		// TODO Auto-generated method stub
+              		return null;
+              	}
+                               
+              	public PrintWriter getLogWriter() throws SQLException {
+              		// TODO Auto-generated method stub
+              		return null;
+              	}
+                               
+              	public void setLogWriter(PrintWriter out) throws SQLException {
+              		// TODO Auto-generated method stub
+                               
+              	}
+                               
+              	public void setLoginTimeout(int seconds) throws SQLException {
+              		// TODO Auto-generated method stub
+                               
+              	}
+                               
+              	public int getLoginTimeout() throws SQLException {
+              		// TODO Auto-generated method stub
+              		return 0;
+              	}
+                               
+                  public boolean isWrapperFor(Class<?> iface) throws java.sql.SQLException {
+                      return iface != null && iface.isAssignableFrom(this.getClass());
+                  }
+                               
+                  public <T> T unwrap(Class<T> iface) throws java.sql.SQLException {
+                      try {
+                          if (iface != null && iface.isAssignableFrom(this.getClass())) {
+                              return (T) this;
+                          }
+                          throw new java.lang.Exception();
+                      } catch (Exception e) {
+                          throw new java.sql.SQLException();
                       }
-                      """,
+                  }
+                                  
+              }
               """
-                   package com.test.withoutWrapperMethods;
-                 
-                   import java.io.PrintWriter;
-                   import java.sql.Connection;
-                   import java.sql.SQLException;
-                 
-                   import javax.sql.DataSource;
-                 
-                   public class JRE6WrapperDataSource implements DataSource {
-                 
-                   	public Connection getConnection() throws SQLException {
-                   		// TODO Auto-generated method stub
-                   		return null;
-                   	}
-                 
-                   	public Connection getConnection(String username, String password)
-                   			throws SQLException {
-                   		// TODO Auto-generated method stub
-                   		return null;
-                   	}
-                 
-                   	public PrintWriter getLogWriter() throws SQLException {
-                   		// TODO Auto-generated method stub
-                   		return null;
-                   	}
-                 
-                   	public void setLogWriter(PrintWriter out) throws SQLException {
-                   		// TODO Auto-generated method stub
-                 
-                   	}
-                 
-                   	public void setLoginTimeout(int seconds) throws SQLException {
-                   		// TODO Auto-generated method stub
-                 
-                   	}
-                 
-                   	public int getLoginTimeout() throws SQLException {
-                   		// TODO Auto-generated method stub
-                   		return 0;
-                   	}
-                 
-                       public boolean isWrapperFor(Class<?> iface) throws java.sql.SQLException {
-                           return iface != null && iface.isAssignableFrom(this.getClass());
-                       }
-                 
-                       public <T> T unwrap(Class<T> iface) throws java.sql.SQLException {
-                           try {
-                               if (iface != null && iface.isAssignableFrom(this.getClass())) {
-                                   return (T) this;
-                               }
-                               throw new java.lang.Exception();
-                           } catch (Exception e) {
-                               throw new java.sql.SQLException();
-                           }
-                       }
-                 
-                   }
-                   """
-            ), 6)
+          )
         );
     }
 }
