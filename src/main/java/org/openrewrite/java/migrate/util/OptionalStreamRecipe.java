@@ -39,12 +39,12 @@ import java.util.stream.Collectors;
 public class OptionalStreamRecipe extends Recipe {
   @Override
   public String getDisplayName() {
-    return "Stream<Optional> idiom recipe";
+    return "`Stream<Optional>` idiom recipe";
   }
 
   @Override
   public String getDescription() {
-    return "Migrate Java 8 optional stream idiom .filter(Optional::isPresent).map(Optional::get) to Java 11 .flatMap(Optional::stream).";
+    return "Migrate Java 8 `Optional<Stream>.filter(Optional::isPresent).map(Optional::get)` to Java 11 `.flatMap(Optional::stream)`.";
   }
 
   @Override
