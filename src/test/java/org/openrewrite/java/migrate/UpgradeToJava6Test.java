@@ -105,7 +105,7 @@ class UpgradeToJava6Test implements RewriteTest {
                 public void setLogWriter(PrintWriter out) throws SQLException {
                   // TODO Auto-generated method stub
                 }
-                               
+                
                 public void setLoginTimeout(int seconds) throws SQLException {
                   // TODO Auto-generated method stub
                 }
@@ -114,13 +114,20 @@ class UpgradeToJava6Test implements RewriteTest {
                   // TODO Auto-generated method stub
                   return 0;
                 }
-                               
+                            
                   public boolean isWrapperFor(Class<?> iface) throws java.sql.SQLException {
-                      return false;
+                      return iface != null && iface.isAssignableFrom(this.getClass());
                   }
-                               
+               
                   public <T> T unwrap(Class<T> iface) throws java.sql.SQLException {
-                      return null;
+                      try {
+                          if (isWrapperFor(iface)) {
+                              return (T) this;
+                          }
+                          throw DbException.getInvalidValueException("iface", iface);
+                      } catch (Exception e) {
+                          throw logAndConvert(e);
+                      }
                   }
               }
               """
