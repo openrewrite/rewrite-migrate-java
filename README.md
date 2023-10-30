@@ -21,7 +21,7 @@ of the platform. This changed in June 2018 when a new, six-month release cadence
 The new model allows features to be released within any six-month window allowing features to be incrementally
 introduced when they are ready. Additionally, there are Java LTS (Long term support) releases on which there exists
 enterprise support offered through several vendors that provide builds of the JVM, compiler, and standard libraries. The
-current LTS versions of the Java platform (Java 8, 11, and 17) are the most common versions in use within the Java
+current LTS versions of the Java platform (Java 8, 11, 17, and 21) are the most common versions in use within the Java
 ecosystem.
 
 # Java EE/Jakarta EE
@@ -102,7 +102,7 @@ migrate applications that were previously running on Java 8 through 10. This rec
 ## Java 17 Migrations
 
 OpenRewrite provides a set of recipes that will help developers migrate to Java 17 when their existing application
-workloads are on Java 11 through 16. The composite recipe `org.openrewrite.java.migrate.UpgradeJava17` will cover the
+workloads are on Java 11 through 16. The composite recipe `org.openrewrite.java.migrate.UpgradeToJava17` will cover the
 following themes:
 
 - Any deprecated APIs in the earlier versions of Java that have a well-defined migration path will be automatically
@@ -112,6 +112,15 @@ following themes:
   application or a third-party library attempts to access an API that has not been publicly exported via the module
   system. This recipe will upgrade well-known, third-party libraries if they provide a version that is compliant with
   the Java module system.
+
+## Java 21 Migrations
+
+OpenRewrite provides a set of recipes that will help developers migrate to Java 21 when their existing application
+workloads are on Java 11 through 20. The composite recipe `org.openrewrite.java.migrate.UpgradeToJava21` will cover the
+following themes:
+
+- everything covered by the Java 17 Migration
+- initial support for the migration to Sequenced collections
 
 ## Illegal Reflective Access<a name="IllegalReflectiveAccess"></a>
 

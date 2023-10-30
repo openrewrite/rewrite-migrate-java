@@ -24,6 +24,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
   - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
   - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
+  - org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
   - org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
 ---
@@ -35,7 +36,7 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.ibm.websphere.wsoc.WsWsocServerContainer doUpgrade(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, com.ibm.websphere.wsoc.ServerEndpointConfig, java.util.Map)
       newMethodName: upgradeHttpToWebSocket
-      ignoreDefinition: false
+      ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.ibm.websphere.wsoc.WsWsocServerContainer
       newFullyQualifiedTypeName: jakarta.websocket.server.ServerContainer
@@ -51,7 +52,7 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.el.MethodExpression isParmetersProvided()
       newMethodName: isParametersProvided
-      ignoreDefinition: false
+      ignoreDefinition: true
 ---
   type: specs.openrewrite.org/v1beta/recipe
   name: org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
@@ -63,15 +64,51 @@ recipeList:
     - org.openrewrite.java.ChangeMethodName:
         methodPattern: jakarta.xml.soap.SOAPElementFactory create(String,..)
         newMethodName: createElement
-        ignoreDefinition: false
+        ignoreDefinition: true
     - org.openrewrite.java.ChangeMethodName:
         methodPattern: jakarta.xml.soap.SOAPElementFactory create(jakarta.xml.soap.Name)
         newMethodName: createElement
-        ignoreDefinition: false
+        ignoreDefinition: true
     - org.openrewrite.java.ChangeType:
         oldFullyQualifiedTypeName: jakarta.xml.soap.SOAPElementFactory
         newFullyQualifiedTypeName: jakarta.xml.soap.SOAPFactory
         ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
+displayName: Use `StateManagementStrategy`
+description: >
+      Methods that were removed from the `jakarta.faces.application.StateManager` and `javax.faces.application.StateManager` classes in Jakarta Faces 4.0 are replaced
+      by `jakarta.faces.view.StateManagementStrategy` or `javax.faces.view.StateManagementStrategy` based on Jakarta10 migration in Faces 4.0
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
+      newMethodName: saveView
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "*.faces.application.StateManager getTreeStructureToSave(*.faces.context.FacesContext)"
+      newMethodName: saveView
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "*.faces.application.StateManager restoreComponentState(*.faces.context.FacesContext,*.faces.component.UIViewRoot,String)"
+      newMethodName: restoreView
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "*.faces.application.StateManager restoreTreeStructure(*.faces.context.FacesContext,String,String)"
+      newMethodName: restoreView
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "*.faces.application.StateManager saveSerializedView(*.faces.context.FacesContext)"
+      newMethodName: saveView
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.faces.application.StateManager
+      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.faces.application.StateManager
+      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
+      ignoreDefinition: true
 ---
   type: specs.openrewrite.org/v1beta/recipe
   name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses

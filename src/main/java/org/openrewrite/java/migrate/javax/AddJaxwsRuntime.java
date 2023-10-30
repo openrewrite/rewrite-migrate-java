@@ -40,9 +40,6 @@ import java.util.*;
 @EqualsAndHashCode(callSuper = true)
 public class AddJaxwsRuntime extends Recipe {
 
-    private static final String LEGACY_JAVA_JAXWS_API_GROUP = "javax.xml.ws";
-    private static final String LEGACY_JAVA_JAXWS_API_ARTIFACT = "jaxws-api";
-
     private static final String JAKARTA_JAXWS_API_GROUP = "jakarta.xml.ws";
     private static final String JAKARTA_JAXWS_API_ARTIFACT = "jakarta.xml.ws-api";
 
