@@ -162,6 +162,7 @@ class LombokValueToRecordTest implements RewriteTest {
         void classWithFieldAnnotations() {
             //language=java
             rewriteRun(
+              s -> s.typeValidationOptions(TypeValidation.none()),
               java(
                 """
                   import com.fasterxml.jackson.annotation.JsonProperty;
