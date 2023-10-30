@@ -32,224 +32,11 @@ class OptionalStreamRecipeTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion());
     }
 
-    @Test
-    public void test_basic_case() {
-        rewriteRun(java(getTestClass("""
-                     var x = Stream.of(Optional.empty())
-                         .filter(Optional::isPresent)
-                         .map(Optional::get);
-            """, "java.util.Optional", "java.util.stream.Stream"),
-          getTestClass("""
-                     var x = Stream.of(Optional.empty())
-                         .flatMap(Optional::stream);
-            """, "java.util.Optional", "java.util.stream.Stream")
-        ));
-    }
-
-    @Test
-    public void test_twice() {
-        rewriteRun(java(getTestClass("""
-                    var x = Stream.of(Optional.empty())
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .map(Optional::of)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .toList();
-            """, "java.util.Optional", "java.util.stream.Stream"),
-          getTestClass("""
-                    var x = Stream.of(Optional.empty())
-                    .flatMap(Optional::stream)
-                    .map(Optional::of)
-                    .flatMap(Optional::stream)
-                    .toList();
-            """, "java.util.Optional", "java.util.stream.Stream")
-        ));
-    }
-
-    @Test
-    public void test_without_assignment() {
-        rewriteRun(java(getTestClass("""
-                    Stream.of(Optional.empty())
-                         .filter(Optional::isPresent)
-                         .map(Optional::get);
-            """, "java.util.Optional", "java.util.stream.Stream"),
-          getTestClass("""
-                    Stream.of(Optional.empty())
-                         .flatMap(Optional::stream);
-            """, "java.util.Optional", "java.util.stream.Stream")
-        ));
-    }
-
-    @Test
-    public void test_oneliner() {
-        rewriteRun(java("""
-                 import java.util.Optional;
-                 import java.util.stream.Stream;
-                 
-                 class Scratch {
-                   public void foo() {Stream.of(Optional.empty()).filter(Optional::isPresent).map(Optional::get);}
-                 }
-            """,
-          """
-                 import java.util.Optional;
-                 import java.util.stream.Stream;
-                 
-                 class Scratch {
-                   public void foo() {Stream.of(Optional.empty()).flatMap(Optional::stream);}
-                 }
-            """
-        ));
-    }
-
-    @Test
-    public void test_with_toList() {
-        rewriteRun(java(
-          getTestClass("""
-                    final List<Integer> list = Stream.of(17)
-                        .map(Optional::of)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
-          getTestClass("""
-                    final List<Integer> list = Stream.of(17)
-                        .map(Optional::of)
-                        .flatMap(Optional::stream)
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")));
-    }
-
-    @Test
-    public void test_with_toList2() {
-        rewriteRun(java(getTestClass("""
-                    final List<Object> list = Stream.of(Optional.empty())
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
-          getTestClass("""
-                    final List<Object> list = Stream.of(Optional.empty())
-                        .flatMap(Optional::stream)
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")
-        ));
-    }
-
-    @Test
-    public void test_with_comment() {
-        rewriteRun(java(getTestClass("""
-                    final List<Object> list = Stream.of(Optional.empty())
-                        // some comment
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
-          getTestClass("""
-                    final List<Object> list = Stream.of(Optional.empty())
-                        // some comment
-                        .flatMap(Optional::stream)
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")
-        ));
-    }
-
-    @Test
-    public void test_with_comment_after() {
-        rewriteRun(java(getTestClass("""
-                    final List<Object> list = Stream.of(Optional.empty())
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        // some comment
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
-          getTestClass("""
-                    final List<Object> list = Stream.of(Optional.empty())
-                        .flatMap(Optional::stream)
-                        // some comment
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")
-        ));
-    }
-
-    @Test
-    public void test_with_comment_in_the_middle() {
-        rewriteRun(java(getTestClass("""
-                    final List<Object> list = Stream.of(Optional.empty())
-                        .filter(Optional::isPresent)
-                        // some comment
-                        .map(Optional::get)
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
-          getTestClass("""
-                    final List<Object> list = Stream.of(Optional.empty())
-                        // TODO this block was automatically refactor, check if the comment is still relevant: some comment
-                        .flatMap(Optional::stream)
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")
-        ));
-    }
-
-    @Test
-    public void test_with_multiple_coments() {
-        rewriteRun(java(getTestClass("""
-                    final List<Object> list = Stream.of(Optional.empty())
-                        /* comment before */ .filter(Optional::isPresent) /* comment between */ .map(Optional::get) /* comment after */
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
-          getTestClass("""
-                    final List<Object> list = Stream.of(Optional.empty())
-                        /* comment before */ /* TODO this block was automatically refactor, check if the comment is still relevant: comment between */ .flatMap(Optional::stream) /* comment after */
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")
-        ));
-    }
-
-    @Test
-    public void test_with_block_comment() {
-        rewriteRun(java(getTestClass("""
-                    final List<Object> list = Stream.of(Optional.empty())
-                        /* some comment */
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
-          getTestClass("""
-                    final List<Object> list = Stream.of(Optional.empty())
-                        /* some comment */
-                        .flatMap(Optional::stream)
-                        .toList();
-            """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")
-        ));
-    }
-
-    @Test
-    public void test_dont_match_different_optional() {
-        rewriteRun(java("""
-           import java.util.stream.Stream;
-           
-           class Scratch {
-             public void foo() {
-               var x = Stream.of(Optional.empty())
-                   .filter(Optional::isPresent)
-                   .map(Optional::get);
-             }
-             private static class Optional {
-               public static Optional empty() {}
-               public boolean isPresent() {return false;}
-               public Object get() {return null;}
-             }
-           }
-          """
-        ));
-    }
-
-
-    private String getTestClass(String methodBody, String... imports) {
-        final String importsBlock = Arrays.stream(imports)
+    private static String getTestClass(String methodBody, String... imports) {
+        String importsBlock = Arrays.stream(imports)
           .map(clazz -> "import " + clazz + ";\n")
           .collect(Collectors.joining());
-        final String template = """
+        return """
           %s
                     
           class Scratch {
@@ -257,8 +44,266 @@ class OptionalStreamRecipeTest implements RewriteTest {
               %s
             }
           }
-                    
-          """;
-        return String.format(template, importsBlock, methodBody);
+          """.formatted(importsBlock, methodBody);
+    }
+
+    @Test
+    public void basic_case() {
+        rewriteRun(
+          java(
+            getTestClass(
+              """
+                         var x = Stream.of(Optional.empty())
+                             .filter(Optional::isPresent)
+                             .map(Optional::get);
+                """,
+              "java.util.Optional",
+              "java.util.stream.Stream"),
+            getTestClass(
+              """
+                         var x = Stream.of(Optional.empty())
+                             .flatMap(Optional::stream);
+                """,
+              "java.util.Optional",
+              "java.util.stream.Stream")
+          ));
+    }
+
+    @Test
+    public void twice() {
+        rewriteRun(
+          java(
+            getTestClass(
+              """
+                        var x = Stream.of(Optional.empty())
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .map(Optional::of)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .toList();
+                """, "java.util.Optional", "java.util.stream.Stream"),
+            getTestClass(
+              """
+                        var x = Stream.of(Optional.empty())
+                        .flatMap(Optional::stream)
+                        .map(Optional::of)
+                        .flatMap(Optional::stream)
+                        .toList();
+                """, "java.util.Optional", "java.util.stream.Stream")
+          ));
+    }
+
+    @Test
+    public void without_assignment() {
+        rewriteRun(
+          java(
+            getTestClass(
+              """
+                        Stream.of(Optional.empty())
+                             .filter(Optional::isPresent)
+                             .map(Optional::get);
+                """, "java.util.Optional", "java.util.stream.Stream"),
+            getTestClass(
+              """
+                        Stream.of(Optional.empty())
+                             .flatMap(Optional::stream);
+                """, "java.util.Optional", "java.util.stream.Stream")
+          ));
+    }
+
+    @Test
+    public void oneliner() {
+        rewriteRun(
+          java(
+            """
+                   import java.util.Optional;
+                   import java.util.stream.Stream;
+                   
+                   class Scratch {
+                     public void foo() {Stream.of(Optional.empty()).filter(Optional::isPresent).map(Optional::get);}
+                   }
+              """,
+            """
+                   import java.util.Optional;
+                   import java.util.stream.Stream;
+                   
+                   class Scratch {
+                     public void foo() {Stream.of(Optional.empty()).flatMap(Optional::stream);}
+                   }
+              """
+          ));
+    }
+
+    @Test
+    public void with_toList() {
+        rewriteRun(
+          java(
+            getTestClass(
+              """
+                        final List<Integer> list = Stream.of(17)
+                            .map(Optional::of)
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
+            getTestClass(
+              """
+                        final List<Integer> list = Stream.of(17)
+                            .map(Optional::of)
+                            .flatMap(Optional::stream)
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")));
+    }
+
+    @Test
+    public void with_toList2() {
+        rewriteRun(
+          java(
+            getTestClass(
+              """
+                        final List<Object> list = Stream.of(Optional.empty())
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
+            getTestClass(
+              """
+                        final List<Object> list = Stream.of(Optional.empty())
+                            .flatMap(Optional::stream)
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")
+          ));
+    }
+
+    @Test
+    public void with_comment() {
+        rewriteRun(
+          java(
+            getTestClass(
+              """
+                        final List<Object> list = Stream.of(Optional.empty())
+                            // some comment
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
+            getTestClass(
+              """
+                        final List<Object> list = Stream.of(Optional.empty())
+                            // some comment
+                            .flatMap(Optional::stream)
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")
+          ));
+    }
+
+    @Test
+    public void with_comment_after() {
+        rewriteRun(
+          java(
+            getTestClass(
+              """
+                        final List<Object> list = Stream.of(Optional.empty())
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            // some comment
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
+            getTestClass(
+              """
+                        final List<Object> list = Stream.of(Optional.empty())
+                            .flatMap(Optional::stream)
+                            // some comment
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")
+          ));
+    }
+
+    @Test
+    public void with_comment_in_the_middle() {
+        rewriteRun(
+          java(
+            getTestClass(
+              """
+                        final List<Object> list = Stream.of(Optional.empty())
+                            .filter(Optional::isPresent)
+                            // some comment
+                            .map(Optional::get)
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
+            getTestClass(
+              """
+                        final List<Object> list = Stream.of(Optional.empty())
+                            // TODO this block was automatically refactor, check if the comment is still relevant: some comment
+                            .flatMap(Optional::stream)
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")
+          ));
+    }
+
+    @Test
+    public void with_multiple_coments() {
+        rewriteRun(
+          java(
+            getTestClass(
+              """
+                        final List<Object> list = Stream.of(Optional.empty())
+                            /* comment before */ .filter(Optional::isPresent) /* comment between */ .map(Optional::get) /* comment after */
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
+            getTestClass(
+              """
+                        final List<Object> list = Stream.of(Optional.empty())
+                            /* comment before */ /* TODO this block was automatically refactor, check if the comment is still relevant: comment between */ .flatMap(Optional::stream) /* comment after */
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")
+          ));
+    }
+
+    @Test
+    public void with_block_comment() {
+        rewriteRun(
+          java(
+            getTestClass(
+              """
+                        final List<Object> list = Stream.of(Optional.empty())
+                            /* some comment */
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream"),
+            getTestClass(
+              """
+                        final List<Object> list = Stream.of(Optional.empty())
+                            /* some comment */
+                            .flatMap(Optional::stream)
+                            .toList();
+                """, "java.util.List", "java.util.Optional", "java.util.stream.Stream")
+          ));
+    }
+
+    @Test
+    public void dont_match_different_optional() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+               import java.util.stream.Stream;
+               
+               class Scratch {
+                 public void foo() {
+                   var x = Stream.of(Optional.empty())
+                       .filter(Optional::isPresent)
+                       .map(Optional::get);
+                 }
+                 private static class Optional {
+                   public static Optional empty() {}
+                   public boolean isPresent() {return false;}
+                   public Object get() {return null;}
+                 }
+               }
+              """
+          ));
     }
 }
