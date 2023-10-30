@@ -37,4 +37,4 @@ recipeList:
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Wrapper
       methodPattern: "*..* unwrap(..)"
-      methodTemplateString: "public <T> T unwrap(Class<T> iface) throws java.sql.SQLException { try { if (isWrapperFor(iface)) { return (T) this; } throw DbException.getInvalidValueException(\"iface\", iface); } catch (Exception e) { throw logAndConvert(e); } }"
+      methodTemplateString: "public <T> T unwrap(Class<T> iface) throws java.sql.SQLException { try { if (iface != null && iface.isAssignableFrom(this.getClass())) { return (T) this; } throw new java.lang.Exception(); } catch (Exception e) { throw new java.sql.SQLException(); } }"
