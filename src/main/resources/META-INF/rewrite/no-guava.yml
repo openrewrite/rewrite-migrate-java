@@ -77,6 +77,20 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNullElse
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaJava21
+displayName: Prefer the Java 21 standard library instead of Guava
+description: >
+  Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface
+  area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they
+  migrate to standard library for these functions.
+tags:
+  - guava
+  - java21
+recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaJava11
+  - org.openrewrite.java.migrate.guava.PreferMathClamp
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaNioCharsetStandardCharsets
 displayName: Prefer `java.nio.charset.StandardCharsets`
 description: Prefer `java.nio.charset.StandardCharsets` instead of using `com.google.common.base.Charsets`.
@@ -453,4 +467,32 @@ recipeList:
       newMethodName: multiplyExact
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.math.IntMath multiplyExact(..)
+      fullyQualifiedTargetTypeName: java.lang.Math
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.PreferMathClamp
+displayName: Prefer `Math#clamp`
+description: Prefer `java.lang.Math#clamp` instead of using `com.google.common.primitives.*#constrainToRange`.
+tags:
+  - guava
+  - java21
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.primitives.Doubles constrainToRange(..)
+      newMethodName: clamp
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.primitives.Doubles clamp(..)
+      fullyQualifiedTargetTypeName: java.lang.Math
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.primitives.Floats constrainToRange(..)
+      newMethodName: clamp
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.primitives.Floats clamp(..)
+      fullyQualifiedTargetTypeName: java.lang.Math
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.primitives.Longs constrainToRange(..)
+      newMethodName: clamp
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.primitives.Longs clamp(..)
       fullyQualifiedTargetTypeName: java.lang.Math

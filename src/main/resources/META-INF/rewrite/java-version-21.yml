@@ -29,6 +29,7 @@ recipeList:
   - org.openrewrite.java.migrate.util.UseLocaleOf
   - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
   - org.openrewrite.java.migrate.util.SequencedCollection
+  - org.openrewrite.github.SetupJavaUpgradeJavaVersion
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

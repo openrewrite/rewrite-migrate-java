@@ -30,7 +30,8 @@ recipeList:
   - org.openrewrite.java.migrate.Java8toJava11
   - org.openrewrite.java.migrate.JavaVersion17
   - org.openrewrite.java.migrate.lang.StringFormatted
-  - org.openrewrite.github.SetupJavaUpgradeJavaVersion
+  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
+      minimumJavaMajorVersion: 17
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.java.migrate.lang.UseTextBlocks
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
