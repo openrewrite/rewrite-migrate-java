@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lombok;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -73,6 +74,7 @@ class LombokValueToRecordTest implements RewriteTest {
     }
 
     @Test
+    @DocumentExample
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/141")
     void convertOnlyValueAnnotatedClassWithoutDefaultValuesToRecord() {
         //language=java
@@ -128,6 +130,80 @@ class LombokValueToRecordTest implements RewriteTest {
                   
                   public String getRecordValue() {
                       return record.test();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void onlyRemoveAnnotationFromRecords() {
+        //language=java
+        rewriteRun(
+          s -> s.typeValidationOptions(TypeValidation.none()),
+          java(
+            """
+              package example;
+              
+              import lombok.ToString;
+              import lombok.Value;
+                              
+              @Value
+              public class A {
+                  String test;
+              }
+              
+              @Value
+              @ToString
+              public class B {
+                  Strign test;
+              }
+              """,
+            """
+              package example;
+                              
+              import lombok.ToString;
+              import lombok.Value;
+              
+              public record A(
+                  String test) {
+              }
+              
+              @Value
+              @ToString
+              public class B {
+                  Strign test;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void innerRecordsNotStatic() {
+        //language=java
+        rewriteRun(
+          s -> s.typeValidationOptions(TypeValidation.none()),
+          java(
+            """
+              package example;
+              
+              import lombok.Value;
+              
+              public class A {
+                  @Value
+                  static class B {
+                      String test;
+                  }
+              }
+              """,
+            """
+              package example;
+              
+              public class A {
+                  record B(
+                      String test) {
                   }
               }
               """
@@ -280,6 +356,48 @@ class LombokValueToRecordTest implements RewriteTest {
                   @Value
                   public class A {
                       static String disqualifyingField;
+                      String test;
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void nonStaticInnerClass() {
+            //language=java
+            rewriteRun(
+              s -> s.typeValidationOptions(TypeValidation.none()),
+              java(
+                """
+                  package example;
+                  
+                  import lombok.Value;
+                  
+                  public class A {
+                      @Value
+                      class B {
+                          String test;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void staticConstructor() {
+            //language=java
+            rewriteRun(
+              s -> s.typeValidationOptions(TypeValidation.none()),
+              java(
+                """
+                  package example;
+                  
+                  import lombok.Value;
+                  
+                  @Value(staticConstructor = "of")
+                  public class A {
                       String test;
                   }
                   """
