@@ -157,7 +157,7 @@ class LombokValueToRecordTest implements RewriteTest {
               @Value
               @ToString
               public class B {
-                  Strign test;
+                  String test;
               }
               """,
             """
@@ -173,7 +173,7 @@ class LombokValueToRecordTest implements RewriteTest {
               @Value
               @ToString
               public class B {
-                  Strign test;
+                  String test;
               }
               """
           )
