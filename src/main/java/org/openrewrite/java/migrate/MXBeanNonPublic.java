@@ -54,12 +54,12 @@ public class MXBeanNonPublic extends Recipe {
     public class ClassImplementationVisitor extends JavaIsoVisitor<ExecutionContext> {
 
         public boolean shouldUpdate(J.ClassDeclaration classDecl) {
-            if(classDecl.hasModifier(J.Modifier.Type.Public) || !(classDecl.hasModifier(Modifier.Type.Abstract) || classDecl.getKind().name().equals("Interface"))) {
+            if (classDecl.hasModifier(J.Modifier.Type.Public) || !(classDecl.hasModifier(Modifier.Type.Abstract) || classDecl.getKind().name().equals("Interface"))) {
                 return false;
             }
 
             List<J.Annotation> leadingAnnotations = classDecl.getLeadingAnnotations();
-            for (J.Annotation leadingAnnotation: leadingAnnotations) {
+            for (J.Annotation leadingAnnotation : leadingAnnotations) {
                 JavaType.Class type = (JavaType.Class) leadingAnnotation.getType();
                 if (type.getFullyQualifiedName().equals("javax.management.MXBean")) {
                     List<Expression> args = leadingAnnotation.getArguments();
@@ -67,12 +67,12 @@ public class MXBeanNonPublic extends Recipe {
                         return true;
                     }
 
-                    for (Expression arg: args) {
-                        if(arg instanceof J.Assignment) {
+                    for (Expression arg : args) {
+                        if (arg instanceof J.Assignment) {
                             J.Assignment assignment = (J.Assignment) arg;
                             if (assignment.getVariable().toString().equals("value")) {
                                 Expression assignmentExp = assignment.getAssignment();
-                                if(assignmentExp instanceof J.Assignment) {
+                                if (assignmentExp instanceof J.Assignment) {
                                     J.Literal literal = (J.Literal) assignmentExp;
                                     return literal.getValue() == null || !literal.getValue().toString().equals("false");
                                 }
@@ -95,7 +95,7 @@ public class MXBeanNonPublic extends Recipe {
 
             List<Modifier> oldModifiers = classDecl.getModifiers();
             List<Modifier> newModifiers = new ArrayList<Modifier>();
-            for (Modifier modifier: oldModifiers) {
+            for (Modifier modifier : oldModifiers) {
                 if (modifier.getType() != Modifier.Type.Private && modifier.getType() != Modifier.Type.Protected) {
                     newModifiers.add(modifier);
                 }
@@ -111,8 +111,8 @@ public class MXBeanNonPublic extends Recipe {
             J.Block body = classDecl.getBody();
             List<Statement> statements = body.getStatements();
             int index = 0;
-            for(Statement statement: statements) {
-                if(statement instanceof J.ClassDeclaration) {
+            for (Statement statement : statements) {
+                if (statement instanceof J.ClassDeclaration) {
                     J.ClassDeclaration innerClassDeclararion = (J.ClassDeclaration) statement;
                     statements.set(index, doClassDeclarationVists(innerClassDeclararion, executionContext));
                 }
