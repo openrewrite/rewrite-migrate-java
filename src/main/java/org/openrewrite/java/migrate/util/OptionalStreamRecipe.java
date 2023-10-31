@@ -17,11 +17,13 @@ package org.openrewrite.java.migrate.util;
 
 import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.*;
 
 import java.util.ArrayList;
@@ -38,16 +40,17 @@ public class OptionalStreamRecipe extends Recipe {
         return "Migrate Java 8 `Optional<Stream>.filter(Optional::isPresent).map(Optional::get)` to Java 11 `.flatMap(Optional::stream)`.";
     }
 
+    private static final MethodMatcher mapMatcher = new MethodMatcher("java.util.stream.Stream map(java.util.function.Function)");
+    private static final MethodMatcher filterMatcher = new MethodMatcher("java.util.stream.Stream filter(java.util.function.Predicate)");
+    private static final MethodMatcher optionalGetMatcher = new MethodMatcher("java.util.Optional get()");
+    private static final MethodMatcher optionalIsPresentMatcher = new MethodMatcher("java.util.Optional isPresent()");
+
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new OptionalStreamVisitor();
+        return Preconditions.check(new UsesMethod<>(optionalIsPresentMatcher), new OptionalStreamVisitor());
     }
 
     private static class OptionalStreamVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private static final MethodMatcher mapMatcher = new MethodMatcher("java.util.stream.Stream map(java.util.function.Function)");
-        private static final MethodMatcher filterMatcher = new MethodMatcher("java.util.stream.Stream filter(java.util.function.Predicate)");
-        private static final MethodMatcher optionalGetMatcher = new MethodMatcher("java.util.Optional get()");
-        private static final MethodMatcher optionalIsPresentMatcher = new MethodMatcher("java.util.Optional isPresent()");
         private static final JavaTemplate template =
                 JavaTemplate.builder("#{any(java.util.stream.Stream)}.flatMap(Optional::stream)")
                         .imports("java.util.Optional")
@@ -85,11 +88,9 @@ public class OptionalStreamRecipe extends Recipe {
 
         @NotNull
         private static Space getFlatMapComments(JRightPadded<Expression> mapSelect, JRightPadded<Expression> filterSelect) {
-            List<Comment> commentsBetweenMethods = mapSelect.getAfter().getComments();
-            List<Comment> commentsBefore = filterSelect.getAfter().getComments();
             List<Comment> comments = new ArrayList<>();
-            comments.addAll(commentsBefore);
-            comments.addAll(commentsBetweenMethods);
+            comments.addAll(filterSelect.getAfter().getComments());
+            comments.addAll(mapSelect.getAfter().getComments());
             return filterSelect.getAfter().withComments(comments);
         }
     }
