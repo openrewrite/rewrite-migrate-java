@@ -2011,9 +2011,11 @@ class UpgradeToJava7Test implements RewriteTest {
                 }
                                
                   public void closeOnCompletion() {
+                      // TODO Auto-generated method stub
                   }
                                
                   public boolean isCloseOnCompletion() {
+                      // TODO Auto-generated method stub
                       return false;
                   }
                                
@@ -2103,6 +2105,7 @@ class UpgradeToJava7Test implements RewriteTest {
                 }
                                
                   public java.util.logging.Logger getParentLogger() {
+                      // TODO Auto-generated method stub
                       return null;
                   }
               }
@@ -2176,6 +2179,7 @@ class UpgradeToJava7Test implements RewriteTest {
                 }
                                
                   public java.util.logging.Logger getParentLogger() {
+                      // TODO Auto-generated method stub
                       return null;
                   }
                                
@@ -2640,23 +2644,29 @@ class UpgradeToJava7Test implements RewriteTest {
                 }
                                
                   public void abort(java.util.concurrent.Executor executor) {
+                      // TODO Auto-generated method stub
                   }
                                
                   public int getNetworkTimeout() {
+                      // TODO Auto-generated method stub
                       return 0;
                   }
                                
                   public java.lang.String getSchema() {
+                      // TODO Auto-generated method stub
                       return null;
                   }
                                
                   public void isWrapperFor(java.util.concurrent.Executor executor, int milliseconds) {
+                      // TODO Auto-generated method stub
                   }
                                
                   public void setSchema(java.lang.String schema) throws java.sql.SQLException {
+                      // TODO Auto-generated method stub
                   }
                                
                   public void isWrapperFor(java.util.concurrent.Executor executor, int milliseconds) {
+                      // TODO Auto-generated method stub
                   }
                                
               }
@@ -2768,6 +2778,7 @@ class UpgradeToJava7Test implements RewriteTest {
                 }
                                
                   public java.util.logging.Logger getParentLogger() {
+                      // TODO Auto-generated method stub
                       return null;
                   }
                                
@@ -2856,6 +2867,7 @@ class UpgradeToJava7Test implements RewriteTest {
                 }
                                
                   public java.util.logging.Logger getParentLogger() {
+                      // TODO Auto-generated method stub
                       return null;
                   }
                                
@@ -3779,9 +3791,11 @@ class UpgradeToJava7Test implements RewriteTest {
                 }
                                
                   public void closeOnCompletion() {
+                      // TODO Auto-generated method stub
                   }
                                
                   public boolean isCloseOnCompletion() {
+                      // TODO Auto-generated method stub
                       return false;
                   }
               }

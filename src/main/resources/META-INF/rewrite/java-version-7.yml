@@ -34,36 +34,36 @@ recipeList:
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
       methodPattern: "*..* abort(java.util.concurrent.Executor)"
-      methodTemplateString: "public void abort(java.util.concurrent.Executor executor) { }"
+      methodTemplateString: "public void abort(java.util.concurrent.Executor executor) { \n\t// TODO Auto-generated method stub\n }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
       methodPattern: "*..* getNetworkTimeout()"
-      methodTemplateString: "public int getNetworkTimeout() { return 0; }"
+      methodTemplateString: "public int getNetworkTimeout() { \n\t// TODO Auto-generated method stub\n return 0; }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
       methodPattern: "*..* getSchema()"
-      methodTemplateString: "public java.lang.String getSchema() { return null; }"
+      methodTemplateString: "public java.lang.String getSchema() { \n\t// TODO Auto-generated method stub\n return null; }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
       methodPattern: "*..* setNetworkTimeout(java.util.concurrent.Executor)"
-      methodTemplateString: "public void isWrapperFor(java.util.concurrent.Executor executor, int milliseconds) { }"
+      methodTemplateString: "public void isWrapperFor(java.util.concurrent.Executor executor, int milliseconds) { \n\t// TODO Auto-generated method stub\n }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
       methodPattern: "*..* setSchema(java.lang.String)"
-      methodTemplateString: "public void setSchema(java.lang.String schema) throws java.sql.SQLException { }"
+      methodTemplateString: "public void setSchema(java.lang.String schema) throws java.sql.SQLException { \n\t// TODO Auto-generated method stub\n }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Driver
       methodPattern: "*..* getParentLogger()"
-      methodTemplateString: "public java.util.logging.Logger getParentLogger() { return null; }"
+      methodTemplateString: "public java.util.logging.Logger getParentLogger() { \n\t// TODO Auto-generated method stub\n return null; }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Statement
       methodPattern: "*..* closeOnCompletion()"
-      methodTemplateString: "public void closeOnCompletion() { }"
+      methodTemplateString: "public void closeOnCompletion() { \n\t// TODO Auto-generated method stub\n }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Statement
       methodPattern: "*..* isCloseOnCompletion()"
-      methodTemplateString: "public boolean isCloseOnCompletion() { return false; }"
+      methodTemplateString: "public boolean isCloseOnCompletion() { \n\t// TODO Auto-generated method stub\n return false; }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: javax.sql.CommonDataSource
       methodPattern: "*..* getParentLogger()"
-      methodTemplateString: "public java.util.logging.Logger getParentLogger() { return null; }"
+      methodTemplateString: "public java.util.logging.Logger getParentLogger() { \n\t// TODO Auto-generated method stub\n return null; }"

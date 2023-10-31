@@ -33,8 +33,8 @@ recipeList:
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Wrapper
       methodPattern: "*..* isWrapperFor(..)"
-      methodTemplateString: "public boolean isWrapperFor(Class<?> iface) throws java.sql.SQLException { return iface != null && iface.isAssignableFrom(this.getClass()); }"
+      methodTemplateString: "public boolean isWrapperFor(Class<?> iface) throws java.sql.SQLException { \n\t// TODO Auto-generated method stub\n return iface != null && iface.isAssignableFrom(this.getClass()); }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Wrapper
       methodPattern: "*..* unwrap(..)"
-      methodTemplateString: "public <T> T unwrap(Class<T> iface) throws java.sql.SQLException { try { if (iface != null && iface.isAssignableFrom(this.getClass())) { return (T) this; } throw new java.lang.Exception(); } catch (Exception e) { throw new java.sql.SQLException(); } }"
+      methodTemplateString: "public <T> T unwrap(Class<T> iface) throws java.sql.SQLException { \n\t// TODO Auto-generated method stub\n try { if (iface != null && iface.isAssignableFrom(this.getClass())) { return (T) this; } throw new java.lang.Exception(); } catch (Exception e) { throw new java.sql.SQLException(); } }"

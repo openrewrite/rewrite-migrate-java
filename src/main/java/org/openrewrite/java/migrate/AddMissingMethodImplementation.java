@@ -142,7 +142,6 @@ public class AddMissingMethodImplementation extends Recipe {
 
             classDecl = classDecl.withBody(methodTemplate.apply(new Cursor(getCursor(), classDecl.getBody()),
                     classDecl.getBody().getCoordinates().lastStatement()));
-
             return classDecl;
         }
     }
