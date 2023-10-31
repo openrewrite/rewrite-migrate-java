@@ -134,9 +134,9 @@ public class UpgradeToJava6Test implements RewriteTest {
                           if (iface != null && iface.isAssignableFrom(this.getClass())) {
                               return (T) this;
                           }
-                          throw new java.lang.Exception();
+                          throw new java.sql.SQLException("Auto-generated unwrap failed; Revisit implementation");
                       } catch (Exception e) {
-                          throw new java.sql.SQLException();
+                          throw new java.sql.SQLException(e);
                       }
                   }
                                   
