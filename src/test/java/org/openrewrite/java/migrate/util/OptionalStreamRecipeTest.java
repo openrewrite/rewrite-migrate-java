@@ -135,20 +135,20 @@ class OptionalStreamRecipeTest implements RewriteTest {
           //language=java
           java(
             """
-                   import java.util.Optional;
-                   import java.util.stream.Stream;
-                   
-                   class Scratch {
-                     public void foo() {Stream.of(Optional.empty()).filter(Optional::isPresent).map(Optional::get);}
-                   }
+              import java.util.Optional;
+              import java.util.stream.Stream;
+              
+              class Scratch {
+                public void foo() {Stream.of(Optional.empty()).filter(Optional::isPresent).map(Optional::get);}
+              }
               """,
             """
-                   import java.util.Optional;
-                   import java.util.stream.Stream;
-                   
-                   class Scratch {
-                     public void foo() {Stream.of(Optional.empty()).flatMap(Optional::stream);}
-                   }
+              import java.util.Optional;
+              import java.util.stream.Stream;
+              
+              class Scratch {
+                public void foo() {Stream.of(Optional.empty()).flatMap(Optional::stream);}
+              }
               """
           ));
     }
@@ -326,7 +326,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
-                          // TODO this block was automatically refactor, check if the comment is still relevant: some comment
+                          // some comment
                           .flatMap(Optional::stream)
                           .toList();
                               }
@@ -361,7 +361,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
-                          /* comment before */ /* TODO this block was automatically refactor, check if the comment is still relevant: comment between */ .flatMap(Optional::stream) /* comment after */
+                          /* comment before */ /* comment between */ .flatMap(Optional::stream) /* comment after */
                           .toList();
                               }
               }

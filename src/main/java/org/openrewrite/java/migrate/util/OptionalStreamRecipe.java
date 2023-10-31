@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -27,8 +26,6 @@ import org.openrewrite.java.tree.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class OptionalStreamRecipe extends Recipe {
     @Override
@@ -47,81 +44,53 @@ public class OptionalStreamRecipe extends Recipe {
     }
 
     private static class OptionalStreamVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private static MethodMatcher mapMatcher = new MethodMatcher("java.util.stream.Stream map(..)");
-        private static MethodMatcher filterMatcher = new MethodMatcher("java.util.stream.Stream filter(..)");
-        private static MethodMatcher optionalGetMatcher = new MethodMatcher("java.util.Optional get()");
-        private static MethodMatcher optionalIsPresentMatcher = new MethodMatcher("java.util.Optional isPresent()");
-        private static JavaTemplate template =
+        private static final MethodMatcher mapMatcher = new MethodMatcher("java.util.stream.Stream map(java.util.function.Function)");
+        private static final MethodMatcher filterMatcher = new MethodMatcher("java.util.stream.Stream filter(java.util.function.Predicate)");
+        private static final MethodMatcher optionalGetMatcher = new MethodMatcher("java.util.Optional get()");
+        private static final MethodMatcher optionalIsPresentMatcher = new MethodMatcher("java.util.Optional isPresent()");
+        private static final JavaTemplate template =
                 JavaTemplate.builder("#{any(java.util.stream.Stream)}.flatMap(Optional::stream)")
                         .imports("java.util.Optional")
                         .build();
 
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation invocation, ExecutionContext ctx) {
-            return getInvocation(invocation, mapMatcher)
-                    .flatMap(mapInvocation -> getInvocation(mapInvocation.getSelect(), filterMatcher)
-                            .flatMap(filterInvocation -> getReference(mapInvocation.getArguments().get(0), optionalGetMatcher)
-                                    .flatMap(optionalGetReference -> getReference(filterInvocation.getArguments().get(0), optionalIsPresentMatcher)
-                                            .flatMap(optionalIsPresentReference -> {
-                                                JRightPadded<Expression> filterSelect = filterInvocation.getPadding().getSelect();
-                                                JRightPadded<Expression> mapSelect = mapInvocation.getPadding().getSelect();
-                                                JavaType.Method mapInvocationType = mapInvocation.getMethodType();
-                                                if (filterSelect != null && mapSelect != null && mapInvocationType != null) {
-                                                    Space flatMapComments = getFlatMapComments(mapSelect, filterSelect);
-                                                    J.MethodInvocation flatMapInvocation = template
-                                                            .apply(updateCursor(mapInvocation), mapInvocation.getCoordinates().replace(), filterInvocation.getSelect());
-                                                    flatMapInvocation = flatMapInvocation.getPadding().withSelect(filterSelect.withAfter(flatMapComments))
-                                                            .withMethodType(mapInvocationType.withName("flatMap"))
-                                                            .withPrefix(mapInvocation.getPrefix());
-                                                    return Optional.of(super.visitMethodInvocation(flatMapInvocation, ctx));
-                                                }
-                                                return Optional.empty();
-                                            }))))
-                    .orElse(super.visitMethodInvocation(invocation, ctx));
-        }
-
-        private Optional<J.MemberReference> getReference(@Nullable Expression expr, MethodMatcher matcher) {
-            if (expr instanceof J.MemberReference) {
-                J.MemberReference reference = (J.MemberReference) expr;
-                if (matcher.matches(reference)) {
-                    return Optional.of(reference);
-                }
+            J.MethodInvocation mapInvocation = super.visitMethodInvocation(invocation, ctx);
+            // .map(Optional::get)
+            if (!mapMatcher.matches(mapInvocation) || !optionalGetMatcher.matches(mapInvocation.getArguments().get(0))) {
+                return mapInvocation;
             }
-            return Optional.empty();
-        }
-
-        private Optional<J.MethodInvocation> getInvocation(@Nullable Expression expr, MethodMatcher matcher) {
-            if (expr instanceof J.MethodInvocation) {
-                J.MethodInvocation invocation = (J.MethodInvocation) expr;
-                if (matcher.matches(invocation)) {
-                    return Optional.of(invocation);
-                }
+            // .filter
+            Expression mapSelectExpr = mapInvocation.getSelect();
+            if (!filterMatcher.matches(mapSelectExpr)) {
+                return mapInvocation;
             }
-            return Optional.empty();
+            // Optional::isPresent
+            J.MethodInvocation filterInvocation = (J.MethodInvocation) mapSelectExpr;
+            if (!optionalIsPresentMatcher.matches(filterInvocation.getArguments().get(0))) {
+                return mapInvocation;
+            }
+
+            JRightPadded<Expression> filterSelect = filterInvocation.getPadding().getSelect();
+            JRightPadded<Expression> mapSelect = mapInvocation.getPadding().getSelect();
+            JavaType.Method mapInvocationType = mapInvocation.getMethodType();
+            Space flatMapComments = getFlatMapComments(mapSelect, filterSelect);
+            J.MethodInvocation flatMapInvocation = template
+                    .apply(updateCursor(mapInvocation), mapInvocation.getCoordinates().replace(), filterInvocation.getSelect());
+            return flatMapInvocation.getPadding()
+                    .withSelect(filterSelect.withAfter(flatMapComments))
+                    .withMethodType(mapInvocationType.withName("flatMap"))
+                    .withPrefix(mapInvocation.getPrefix());
         }
 
         @NotNull
         private static Space getFlatMapComments(JRightPadded<Expression> mapSelect, JRightPadded<Expression> filterSelect) {
-            List<Comment> commentsBetweenMethods = mapSelect.getAfter().getComments().stream()
-                    .map(OptionalStreamVisitor::prefixComment)
-                    .collect(Collectors.toList());
+            List<Comment> commentsBetweenMethods = mapSelect.getAfter().getComments();
             List<Comment> commentsBefore = filterSelect.getAfter().getComments();
             List<Comment> comments = new ArrayList<>();
             comments.addAll(commentsBefore);
             comments.addAll(commentsBetweenMethods);
-
             return filterSelect.getAfter().withComments(comments);
-        }
-
-        private static Comment prefixComment(Comment comment) {
-            String refactoringInfo = " TODO this block was automatically refactor, check if the comment is still relevant: ";
-            if (comment instanceof TextComment) {
-                TextComment textComment = (TextComment) comment;
-                return textComment.withText(refactoringInfo + textComment.getText().trim()
-                        + (textComment.isMultiline() ? " " : ""));
-            } else {
-                return comment;
-            }
         }
     }
 }
