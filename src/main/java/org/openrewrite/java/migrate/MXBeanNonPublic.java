@@ -86,7 +86,11 @@ public class MXBeanNonPublic extends Recipe {
             return className.endsWith("MXBean") || className.endsWith("MBean");
         }
 
-        public J.ClassDeclaration doClassDeclarationVists(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
+        @Override
+        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext executionContext) {
+            // need to visit sub-classes
+            J.ClassDeclaration classDecl = super.visitClassDeclaration(cd, executionContext);
+
             boolean shouldUpdate = shouldUpdate(classDecl);
             // Don't make changes to classes that don't match the fully qualified name
             if (classDecl.getType() == null || !shouldUpdate) {
@@ -103,25 +107,8 @@ public class MXBeanNonPublic extends Recipe {
             newModifiers.add(new J.Modifier(randomId(), Space.EMPTY, Markers.EMPTY, Modifier.Type.Public, emptyList()));
             newModifiers = sortModifiers(newModifiers);
             classDecl = maybeAutoFormat(classDecl, classDecl.withModifiers(newModifiers), executionContext);
+
             return classDecl;
-        }
-
-        @Override
-        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
-            J.Block body = classDecl.getBody();
-            List<Statement> statements = body.getStatements();
-            int index = 0;
-            for (Statement statement : statements) {
-                if (statement instanceof J.ClassDeclaration) {
-                    J.ClassDeclaration innerClassDeclararion = (J.ClassDeclaration) statement;
-                    statements.set(index, doClassDeclarationVists(innerClassDeclararion, executionContext));
-                }
-                index++;
-            }
-            body = body.withStatements(statements);
-            classDecl = classDecl.withBody(body);
-
-            return doClassDeclarationVists(classDecl, executionContext);
         }
     }
 }
