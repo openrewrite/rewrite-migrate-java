@@ -337,6 +337,29 @@ class StringFormattedTest implements RewriteTest {
     }
 
     @Test
+    void doNotWrapFieldAccess() {
+        //language=java
+        rewriteRun(
+          version(
+            java("""
+                class A {
+                    final String fmt = "foo %s";
+                    String str = String.format(this.fmt, "a");
+                }
+                """,
+              """
+                class A {
+                    final String fmt = "foo %s";
+                    String str = this.fmt.formatted("a");
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
     void removeStaticImport() {
         //language=java
