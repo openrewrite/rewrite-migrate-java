@@ -17,8 +17,6 @@ package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -37,7 +35,6 @@ class SequencedCollectionTest implements RewriteTest {
     @Nested
     class IteratorNext {
         @Test
-        @EnabledForJreRange(min = JRE.JAVA_21)
         void sequencedCollectionIteratorNextToGetFirst() {
             rewriteRun(
               //language=java

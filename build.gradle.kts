@@ -59,3 +59,9 @@ dependencies {
     testRuntimeOnly("org.codehaus.groovy:groovy:latest.release")
     testRuntimeOnly(gradleApi())
 }
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
