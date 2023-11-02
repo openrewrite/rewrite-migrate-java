@@ -121,7 +121,10 @@ public class AddMissingMethodImplementation extends Recipe {
         }
 
         @Override
-        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
+        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cs, ExecutionContext executionContext) {
+            // need to make sure we handle sub-classes
+            J.ClassDeclaration classDecl = super.visitClassDeclaration(cs, executionContext);
+
             boolean implementsInterface = implementsInterface(classDecl);
             // Don't make changes to classes that don't match the fully qualified name
             if (classDecl.getType() == null || !implementsInterface) {
