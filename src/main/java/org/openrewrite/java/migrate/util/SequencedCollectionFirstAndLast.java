@@ -32,7 +32,7 @@ import java.util.List;
 
 public class SequencedCollectionFirstAndLast extends Recipe {
 
-    private static final MethodMatcher ADD_MATCHER = new MethodMatcher("java.util.List add(int, Object)", true);
+    private static final MethodMatcher ADD_MATCHER = new MethodMatcher("java.util.List add(int, ..)", true); // , * fails
     private static final MethodMatcher GET_MATCHER = new MethodMatcher("java.util.List get(int)", true);
     private static final MethodMatcher REMOVE_MATCHER = new MethodMatcher("java.util.List remove(int)", true);
     private static final MethodMatcher SIZE_MATCHER = new MethodMatcher("java.util.List size()", true);

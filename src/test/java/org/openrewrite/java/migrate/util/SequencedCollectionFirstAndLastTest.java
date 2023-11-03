@@ -18,8 +18,10 @@ package org.openrewrite.java.migrate.util;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
@@ -31,6 +33,7 @@ class SequencedCollectionFirstAndLastTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new SequencedCollectionFirstAndLast())
+          .afterTypeValidationOptions(TypeValidation.builder().methodInvocations(false).build())
           .allSources(src -> src.markers(javaVersion(21)));
     }
 
