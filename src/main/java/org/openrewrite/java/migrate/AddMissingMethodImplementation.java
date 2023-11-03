@@ -52,16 +52,6 @@ public class AddMissingMethodImplementation extends Recipe {
     @NonNull
     String methodTemplateString;
 
-    // All recipes must be serializable. This is verified by RewriteTest.rewriteRun() in your tests.
-    @JsonCreator
-    public AddMissingMethodImplementation(@NonNull @JsonProperty("fullyQualifiedClassName") String fullyQualifiedClassName,
-                                          @NonNull @JsonProperty("methodPattern") String methodPattern,
-                                          @NonNull @JsonProperty("methodTemplateString") String methodTemplateString) {
-        this.fullyQualifiedClassName = fullyQualifiedClassName;
-        this.methodPattern = methodPattern;
-        this.methodTemplateString = methodTemplateString;
-    }
-
     @Override
     public String getDisplayName() {
         return "Adds missing method implementations.";
@@ -140,9 +130,8 @@ public class AddMissingMethodImplementation extends Recipe {
                 return classDecl;
             }
 
-            classDecl = classDecl.withBody(methodTemplate.apply(new Cursor(getCursor(), classDecl.getBody()),
+            return classDecl.withBody(methodTemplate.apply(new Cursor(getCursor(), classDecl.getBody()),
                     classDecl.getBody().getCoordinates().lastStatement()));
-            return classDecl;
         }
     }
 }
