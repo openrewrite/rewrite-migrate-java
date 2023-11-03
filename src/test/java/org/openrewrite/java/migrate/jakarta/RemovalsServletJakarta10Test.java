@@ -217,14 +217,4 @@ public class RemovalsServletJakarta10Test implements RewriteTest {
             }
             """));
     }
-    @Test
-    void testY() {
-        rewriteRun(
-          //language=java
-          java(b),
-          java(
-            "public class A {{ B.foo(0, 1, 2); }}",
-            "public class A {{ B.foo(0, 2); }}"
-          ));
-    }
 }

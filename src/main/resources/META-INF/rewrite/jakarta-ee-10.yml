@@ -357,9 +357,7 @@ recipeList:
       oldParameterNames: [ in, str ]
       ignoreDefinition: true
       matchOverrides: true
-  - org.openrewrite.java.DeleteMethodArgument:
-      methodPattern: "B foo(int, int, int)"
-      argumentIndex: 1
+
 
 
 
