@@ -103,19 +103,16 @@ public class AddMissingMethodImplementation extends Recipe {
         }
 
         public boolean implementsInterface(J.ClassDeclaration classDecl) {
+            if(classDecl.hasModifier(J.Modifier.Type.Abstract)) {
+                return false;
+            }
+
             List<TypeTree> implementedClasses = classDecl.getImplements();
             if (implementedClasses != null) {
                 for (TypeTree implementedClass : implementedClasses) {
                     JavaType.Class type = (JavaType.Class) implementedClass.getType();
                     return matchesInterface(type);
                 }
-            }
-
-            // also check extended class to handle abstract classes
-            TypeTree extendedClass = classDecl.getExtends();
-            if (extendedClass != null) {
-                JavaType.Class type = (JavaType.Class) extendedClass.getType();
-                return matchesInterface(type);
             }
             return false;
         }
