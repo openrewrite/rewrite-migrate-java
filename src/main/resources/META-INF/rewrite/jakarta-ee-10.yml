@@ -31,6 +31,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
   - org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
+  - org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -55,10 +56,10 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
-displayName:   JNDI name `jsf/ClientSideSecretKey` has been renamed to `faces/ClientSideSecretKey`, and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.
+displayName: JNDI name `jsf/ClientSideSecretKey` has been renamed to `faces/ClientSideSecretKey`, and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.
 description: >
-      The `jsf/ClientSideSecretKey` JNDI name has been renamed to `faces/ClientSideSecretKey`, 
-      and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.  The JNDI keys that have been renamed are updated to allow use of the keys.
+  The `jsf/ClientSideSecretKey` JNDI name has been renamed to `faces/ClientSideSecretKey`, 
+  and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.  The JNDI keys that have been renamed are updated to allow use of the keys.
 recipeList:
   - org.openrewrite.xml.ChangeTagValue:
       elementName: //env-entry-name
@@ -72,7 +73,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesResourceResolver
 displayName: Replace `ResourceResolver` with `ResourceHandler`
-description: > 
+description: >
   The `ResourceResolver` class was removed in Jakarta Faces 4.0. 
   The functionality provided by that class can be replaced by using the `jakarta.faces.application.ResourceHandler` class.
 recipeList:
@@ -149,8 +150,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
 displayName: Use `StateManagementStrategy`
 description: >
-      Methods that were removed from the `jakarta.faces.application.StateManager` and `javax.faces.application.StateManager` classes in Jakarta Faces 4.0 are replaced
-      by `jakarta.faces.view.StateManagementStrategy` or `javax.faces.view.StateManagementStrategy` based on Jakarta10 migration in Faces 4.0
+  Methods that were removed from the `jakarta.faces.application.StateManager` and `javax.faces.application.StateManager` classes in Jakarta Faces 4.0 are replaced
+  by `jakarta.faces.view.StateManagementStrategy` or `javax.faces.view.StateManagementStrategy` based on Jakarta10 migration in Faces 4.0
 
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -253,3 +254,112 @@ recipeList:
       oldFullyQualifiedTypeName: javax.faces.el.ReferenceSyntaxException
       newFullyQualifiedTypeName: jakarta.el.ELException
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10
+displayName: Replace  deprecated Jakarta Servlet methods and classes
+description: >
+  This recipe replaces the classes and methods deprecated in Jakarta Servlet 6.0
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.servlet.http.HttpServletRequest
+      newFullyQualifiedTypeName: jakarta.servlet.http.HttpServletRequest
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.servlet.http.HttpServletRequestWrapper
+      newFullyQualifiedTypeName: jakarta.servlet.http.HttpServletRequestWrapper
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.servlet.http.HttpServletResponse
+      newFullyQualifiedTypeName: jakarta.servlet.http.HttpServletResponse
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.servlet.http.HttpServletResponseWrapper
+      newFullyQualifiedTypeName: jakarta.servlet.http.HttpServletResponseWrapper
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.servlet.http.HttpSession
+      newFullyQualifiedTypeName: jakarta.servlet.http.HttpSession
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.servlet.ServletContext
+      newFullyQualifiedTypeName: jakarta.servlet.ServletContext
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.servlet.UnavailableException
+      newFullyQualifiedTypeName: jakarta.servlet.UnavailableException
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: jakarta.servlet.http.HttpServletRequest  isRequestedSessionIdFromUrl()
+      newMethodName: isRequestedSessionIdFromURL
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: jakarta.servlet.http.HttpServletRequestWrapper  isRequestedSessionIdFromUrl()
+      newMethodName: isRequestedSessionIdFromURL
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: jakarta.servlet.http.HttpServletResponse encodeUrl(String)
+      newMethodName: encodeURL
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: jakarta.servlet.http.HttpServletResponseWrapper encodeUrl(String)
+      newMethodName: encodeURL
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: jakarta.servlet.http.HttpServletResponse encodeRedirectUrl(String)
+      newMethodName: encodeRedirectURL
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: jakarta.servlet.http.HttpServletResponseWrapper encodeRedirectUrl(String)"
+      newMethodName: encodeRedirectURL
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: jakarta.servlet.http.HttpSession getValue(String)
+      newMethodName: getAttribute
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: jakarta.servlet.http.HttpSession getValueNames()
+      newMethodName: getAttributeNames
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: jakarta.servlet.http.HttpSession putValue(String, Object)
+      newMethodName: setAttribute
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: jakarta.servlet.http.HttpSession removeValue(String)
+      newMethodName: removeAttribute
+      ignoreDefinition: true
+  - org.openrewrite.java.DeleteMethodArgument:
+      methodPattern: jakarta.servlet.http.HttpServletResponse setStatus(int, String)
+      argumentIndex: 1
+  - org.openrewrite.java.DeleteMethodArgument:
+      methodPattern: jakarta.servlet.http.HttpServletResponseWrapper setStatus(int, String)
+      argumentIndex: 1
+  - org.openrewrite.java.ReorderMethodArguments:
+      methodPattern: jakarta.servlet.ServletContext log(Exception, String)
+      newParameterNames: [ ex, str ]
+      oldParameterNames: [ str, ex ]
+      ignoreDefinition: true
+      matchOverrides: true
+  - org.openrewrite.java.migrate.jakarta.GetRealPathUpdate:
+      methodPattern: jakarta.servlet.ServletRequest getRealPath(String)
+  - org.openrewrite.java.migrate.jakarta.GetRealPathUpdate:
+      methodPattern: jakarta.servlet.ServletRequestWrapper getRealPath(String)
+  - org.openrewrite.java.DeleteMethodArgument:
+      methodPattern: jakarta.servlet.UnavailableException <constructor>(jakarta.servlet.Servlet, String)
+      argumentIndex: 0
+  - org.openrewrite.java.DeleteMethodArgument:
+      methodPattern: jakarta.servlet.UnavailableException <constructor>( int,jakarta.servlet.Servlet, String)
+      argumentIndex: 1
+  - org.openrewrite.java.ReorderMethodArguments:
+      methodPattern: jakarta.servlet.UnavailableException <constructor>( int, String)
+      newParameterNames: [ str, in ]
+      oldParameterNames: [ in, str ]
+      ignoreDefinition: true
+      matchOverrides: true
+  - org.openrewrite.java.DeleteMethodArgument:
+      methodPattern: "B foo(int, int, int)"
+      argumentIndex: 1
+
+
+
