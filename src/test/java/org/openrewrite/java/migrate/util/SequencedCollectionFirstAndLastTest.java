@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.util;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
@@ -207,8 +206,76 @@ class SequencedCollectionFirstAndLastTest implements RewriteTest {
 
     @Nested
     class NoChange {
+        @Test
+        void getSecond() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      String bar(List<String> collection) {
+                          return collection.get(1);
+                      }
+                  }
+                  """
+              )
+            );
+        }
 
-        // TODO SortedSet throws UnsupportedOperationException on addFirst / addLast
-        // TODO last of different collection
+        @Test
+        void getSecondToLast() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.List;
+                                
+                  class Foo {
+                      String bar(List<String> collection) {
+                          return collection.get(collection.size() - 2);
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void getLastOfDifferentCollection() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      String bar(List<String> a, List<String> b) {
+                          return a.get(b.size() - 1);
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void addInteger() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      String bar(List<Integer> collection) {
+                          return collection.add(0);
+                      }
+                  }
+                  """
+              )
+            );
+        }
     }
 }

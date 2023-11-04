@@ -108,14 +108,12 @@ public class SequencedCollectionFirstAndLast extends Recipe {
         private static boolean lastElementOfSequencedCollection(J.Identifier sequencedCollection, Expression expression) {
             if (expression instanceof J.Binary) {
                 J.Binary binary = (J.Binary) expression;
-                if (binary.getOperator() == J.Binary.Type.Subtraction) {
-                    if (J.Literal.isLiteralValue(binary.getRight(), 1) && SIZE_MATCHER.matches(binary.getLeft())) {
-                        Expression sizeSelect = ((J.MethodInvocation) binary.getLeft()).getSelect();
-                        if (sizeSelect instanceof J.Identifier) {
-                            if (sequencedCollection.getSimpleName().equals(((J.Identifier) sizeSelect).getSimpleName())) {
-                                return true;
-                            }
-                        }
+                if (binary.getOperator() == J.Binary.Type.Subtraction
+                        && J.Literal.isLiteralValue(binary.getRight(), 1)
+                        && SIZE_MATCHER.matches(binary.getLeft())) {
+                    Expression sizeSelect = ((J.MethodInvocation) binary.getLeft()).getSelect();
+                    if (sizeSelect instanceof J.Identifier) {
+                        return sequencedCollection.getSimpleName().equals(((J.Identifier) sizeSelect).getSimpleName());
                     }
                 }
             }
