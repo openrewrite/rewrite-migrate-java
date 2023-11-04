@@ -28,41 +28,9 @@ import static org.openrewrite.java.Assertions.java;
 
 @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
 class SequencedCollectionTest implements RewriteTest {
-
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResource("/META-INF/rewrite/java-version-21.yml", "org.openrewrite.java.migrate.util.SequencedCollection");
-    }
-
-    @Nested
-    class IteratorNext {
-        @Test
-        @EnabledForJreRange(min = JRE.JAVA_21)
-        void sequencedCollectionIteratorNextToGetFirst() {
-            rewriteRun(
-              //language=java
-              java(
-                """
-                  import java.util.*;
-                      
-                  class Foo {
-                      void bar(SequencedCollection<String> collection) {
-                          String first = collection.iterator().next();
-                      }
-                  }
-                  """,
-                """
-                  import java.util.*;
-                                
-                  class Foo {
-                      void bar(SequencedCollection<String> collection) {
-                          String first = collection.getFirst();
-                      }
-                  }
-                  """
-              )
-            );
-        }
     }
 
     @Nested

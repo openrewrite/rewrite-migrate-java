@@ -30,7 +30,7 @@ import org.openrewrite.java.tree.J;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SequencedCollectionFirstAndLast extends Recipe {
+public class ListFirstAndLast extends Recipe {
 
     private static final MethodMatcher ADD_MATCHER = new MethodMatcher("java.util.List add(int, ..)", true); // , * fails
     private static final MethodMatcher GET_MATCHER = new MethodMatcher("java.util.List get(int)", true);
@@ -39,12 +39,12 @@ public class SequencedCollectionFirstAndLast extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Adopt `First` and `Last` methods for `SequencedCollections`";
+        return "Replace `List` `get`, `add`, and `remove` with `SequencedCollection` `*First` and `*Last` methods";
     }
 
     @Override
     public String getDescription() {
-        return "Replace `sc.get(0)` with `sc.getFirst()`, `sc.get(sc.size() - 1)` with `sc.getLast()`, and similar for `add(int, E)` and `remove(int)`.";
+        return "Replace `list.get(0)` with `list.getFirst()`, `list.get(list.size() - 1)` with `list.getLast()`, and similar for `add(int, E)` and `remove(int)`.";
     }
 
     @Override

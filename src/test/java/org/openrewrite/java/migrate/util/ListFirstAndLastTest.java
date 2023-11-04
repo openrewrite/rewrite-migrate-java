@@ -27,11 +27,11 @@ import static org.openrewrite.java.Assertions.javaVersion;
 
 
 @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
-class SequencedCollectionFirstAndLastTest implements RewriteTest {
+class ListFirstAndLastTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new SequencedCollectionFirstAndLast())
+        spec.recipe(new ListFirstAndLast())
           .afterTypeValidationOptions(TypeValidation.builder().methodInvocations(false).build())
           .allSources(src -> src.markers(javaVersion(21)));
     }
