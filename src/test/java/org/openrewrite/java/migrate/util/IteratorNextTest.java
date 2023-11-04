@@ -16,6 +16,8 @@
 package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -25,6 +27,7 @@ import static org.openrewrite.java.Assertions.javaVersion;
 
 
 @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
+@EnabledForJreRange(min = JRE.JAVA_21)
 class IteratorNextTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {

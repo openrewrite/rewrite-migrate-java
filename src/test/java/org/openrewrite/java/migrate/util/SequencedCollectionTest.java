@@ -27,6 +27,7 @@ import static org.openrewrite.java.Assertions.java;
 
 
 @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
+@EnabledForJreRange(min = JRE.JAVA_21)
 class SequencedCollectionTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
