@@ -37,36 +37,7 @@ public class RemovalsServletJakarta10Test implements RewriteTest {
             .activateRecipes("org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10"));
 
     }
-    String b = """
-      class B {
-         public static void foo() {}
-         public static void foo(int n) {}
-         public static void foo(int n1, int n2) {}
-         public static void foo(int n1, int n2, int n3) {}
-         public B() {}
-         public B(int n) {}
-      }
-      """;
-    String c = """
-      import java.io.File;
-      
-      class C {
-         public C() {}
-         public C(String n){}
-         public C(String n,int x) {}
-         public C(String n,int x,int y) {}
-         public C(String n,int x,char y) {}
-         public C(String n,char y) {}
-         public C(int x,char k) {}
-         public C(String n){}
-         public C(int x) {}
-         public C(String x,int n, char y) {}
-         public C(int n, char y) {}
-         public C(String x,File fp, int a){}
-         public C(String x, int a){}
-         
-      }
-      """;
+
     @Test
     void testServlet() {
 
