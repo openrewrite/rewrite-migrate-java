@@ -2767,7 +2767,7 @@ class UpgradeToJava7Test implements RewriteTest {
                       return null;
                   }
                                
-                  public void isWrapperFor(java.util.concurrent.Executor executor, int milliseconds) {
+                  public void setNetworkTimeout(java.util.concurrent.Executor executor, int milliseconds) {
                       // TODO Auto-generated method stub
                   }
                                

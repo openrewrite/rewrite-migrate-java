@@ -46,7 +46,7 @@ recipeList:
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
       methodPattern: "*..* setNetworkTimeout(java.util.concurrent.Executor)"
-      methodTemplateString: "public void isWrapperFor(java.util.concurrent.Executor executor, int milliseconds) { \n\t// TODO Auto-generated method stub\n }"
+      methodTemplateString: "public void setNetworkTimeout(java.util.concurrent.Executor executor, int milliseconds) { \n\t// TODO Auto-generated method stub\n }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
       methodPattern: "*..* setSchema(java.lang.String)"
