@@ -153,33 +153,6 @@ class ListFirstAndLastTest implements RewriteTest {
         }
 
         @Test
-        void addLast() {
-            rewriteRun(
-              //language=java
-              java(
-                """
-                  import java.util.*;
-                                
-                  class Foo {
-                      void bar(List<String> collection) {
-                          collection.add(collection.size() - 1, "last");
-                      }
-                  }
-                  """,
-                """
-                  import java.util.*;
-                                
-                  class Foo {
-                      void bar(List<String> collection) {
-                          collection.addLast("last");
-                      }
-                  }
-                  """
-              )
-            );
-        }
-
-        @Test
         void removeLast() {
             rewriteRun(
               //language=java
@@ -274,6 +247,42 @@ class ListFirstAndLastTest implements RewriteTest {
                   class Foo {
                       String bar(List<Integer> collection) {
                           return collection.add(0);
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void addAtSize() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      void bar(List<String> collection) {
+                          collection.add(collection.size(), "last");
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void addAtSizeMinusOne() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      void bar(List<String> collection) {
+                          collection.add(collection.size() - 1, "last");
                       }
                   }
                   """

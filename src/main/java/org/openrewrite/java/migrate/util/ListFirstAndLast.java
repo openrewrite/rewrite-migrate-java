@@ -66,7 +66,7 @@ public class ListFirstAndLast extends Recipe {
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
             J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
             Expression select = mi.getSelect();
-            if (select == null || !(select instanceof J.Identifier)) {
+            if (!(select instanceof J.Identifier)) {
                 return mi;
             }
             J.Identifier sequencedCollection = (J.Identifier) select;
@@ -86,7 +86,7 @@ public class ListFirstAndLast extends Recipe {
             Expression expression = mi.getArguments().get(0);
             if (J.Literal.isLiteralValue(expression, 0)) {
                 firstOrLast = "First";
-            } else if (lastElementOfSequencedCollection(sequencedCollection, expression)) {
+            } else if (!"add".equals(operation) && lastElementOfSequencedCollection(sequencedCollection, expression)) {
                 firstOrLast = "Last";
             } else {
                 return mi;
@@ -101,9 +101,9 @@ public class ListFirstAndLast extends Recipe {
         }
 
         /**
-         * @param sequencedCollection
-         * @param expression
-         * @return true, if we're calling `sequencedCollection.size() - 1` in expression
+         * @param sequencedCollection the identifier of the collection we're calling `get` on
+         * @param expression          the expression we're passing to `get`
+         * @return true, if we're calling `sequencedCollection.size() - 1` in expression on the same collection
          */
         private static boolean lastElementOfSequencedCollection(J.Identifier sequencedCollection, Expression expression) {
             if (expression instanceof J.Binary) {
