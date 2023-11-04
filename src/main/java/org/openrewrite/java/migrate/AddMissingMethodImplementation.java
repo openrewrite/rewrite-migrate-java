@@ -15,8 +15,6 @@
  */
 package org.openrewrite.java.migrate;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
@@ -26,10 +24,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.TypeTree;
-
-import java.util.List;
+import org.openrewrite.java.tree.TypeUtils;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -71,62 +66,24 @@ public class AddMissingMethodImplementation extends Recipe {
         private final JavaTemplate methodTemplate = JavaTemplate.builder(methodTemplateString).build();
         private final MethodMatcher methodMatcher = new MethodMatcher(methodPattern, true);
 
-        public boolean matchesInterface(JavaType.Class type) {
-            if (type != null) {
-                if (type.getFullyQualifiedName().equals(fullyQualifiedClassName)) {
-                    return true;
-                }
-
-                // check for matches on super interface
-                List<JavaType.FullyQualified> superInterfaces = type.getInterfaces();
-                boolean foundOnSuperInterface = false;
-                for (JavaType.FullyQualified superInterface : superInterfaces) {
-                    if (matchesInterface((JavaType.Class) superInterface)) {
-                        foundOnSuperInterface = true;
-                        break;
-                    }
-                }
-                return foundOnSuperInterface;
-            }
-
-            return false;
-        }
-
-        public boolean implementsInterface(J.ClassDeclaration classDecl) {
-            if(classDecl.hasModifier(J.Modifier.Type.Abstract)) {
-                return false;
-            }
-
-            List<TypeTree> implementedClasses = classDecl.getImplements();
-            if (implementedClasses != null) {
-                for (TypeTree implementedClass : implementedClasses) {
-                    JavaType.Class type = (JavaType.Class) implementedClass.getType();
-                    return matchesInterface(type);
-                }
-            }
-            return false;
-        }
-
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cs, ExecutionContext executionContext) {
             // need to make sure we handle sub-classes
             J.ClassDeclaration classDecl = super.visitClassDeclaration(cs, executionContext);
 
-            boolean implementsInterface = implementsInterface(classDecl);
-            // Don't make changes to classes that don't match the fully qualified name
-            if (classDecl.getType() == null || !implementsInterface) {
+            // No need to make changes to abstract classes; only change concrete classes.
+            if (classDecl.hasModifier(J.Modifier.Type.Abstract)) {
                 return classDecl;
             }
-
-            // Check if the class already has a method".
-            J.ClassDeclaration finalClassDecl = classDecl;
-            boolean methodExists = classDecl.getBody().getStatements().stream()
+            // Don't make changes to classes that don't match the fully qualified name
+            if (!TypeUtils.isAssignableTo(fullyQualifiedClassName, classDecl.getType())) {
+                return classDecl;
+            }
+            // If the class already has method, don't make any changes to it.
+            if (classDecl.getBody().getStatements().stream()
                     .filter(statement -> statement instanceof J.MethodDeclaration)
                     .map(J.MethodDeclaration.class::cast)
-                    .anyMatch(methodDeclaration -> methodMatcher.matches(methodDeclaration, finalClassDecl));
-
-            // If the class already has method, don't make any changes to it.
-            if (methodExists) {
+                    .anyMatch(methodDeclaration -> methodMatcher.matches(methodDeclaration, classDecl))) {
                 return classDecl;
             }
 

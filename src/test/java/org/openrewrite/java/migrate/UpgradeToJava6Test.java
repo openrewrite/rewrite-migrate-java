@@ -16,20 +16,17 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.*;
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
-public class UpgradeToJava6Test implements RewriteTest {
+class UpgradeToJava6Test implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder()
-            .scanRuntimeClasspath("org.openrewrite.java.migrate")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.UpgradeToJava6"))
+        spec.recipeFromResource("/META-INF/rewrite/java-version-6.yml", "org.openrewrite.java.migrate.UpgradeToJava6")
           .allSources(src -> src.markers(javaVersion(6)));
     }
 

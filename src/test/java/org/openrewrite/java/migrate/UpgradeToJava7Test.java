@@ -2194,68 +2194,68 @@ class UpgradeToJava7Test implements RewriteTest {
         rewriteRun(
           //language=java
           java("""
-                  package com.test.withoutV170Methods;
-                  
-                  import javax.sql.CommonDataSource;
-                  
-                  import java.io.PrintWriter;
-                  import java.sql.SQLException;
-                  
-                  public class TestSubClass {
-                      public class JRE7JdbcCommonDataSource implements CommonDataSource {
-                  
-                          public int getLoginTimeout() throws SQLException {
-                              return 0;
-                          }
-                  
-                          public PrintWriter getLogWriter() throws SQLException {
-                              return null;
-                          }
-                  
-                          public void setLoginTimeout(int seconds) throws SQLException {
-                  
-                          }
-                  
-                          public void setLogWriter(PrintWriter out) throws SQLException {
-                  
-                          }
+              package com.test.withoutV170Methods;
+                                
+              import javax.sql.CommonDataSource;
+                                
+              import java.io.PrintWriter;
+              import java.sql.SQLException;
+                                
+              public class TestSubClass {
+                  public class JRE7JdbcCommonDataSource implements CommonDataSource {
+                                
+                      public int getLoginTimeout() throws SQLException {
+                          return 0;
+                      }
+                                
+                      public PrintWriter getLogWriter() throws SQLException {
+                          return null;
+                      }
+                                
+                      public void setLoginTimeout(int seconds) throws SQLException {
+                                
+                      }
+                                
+                      public void setLogWriter(PrintWriter out) throws SQLException {
+                                
                       }
                   }
-                  """,
+              }
+              """,
             """
-                    package com.test.withoutV170Methods;
-                                   
-                    import javax.sql.CommonDataSource;
-                                   
-                    import java.io.PrintWriter;
-                    import java.sql.SQLException;
-                                   
-                    public class TestSubClass {
-                        public class JRE7JdbcCommonDataSource implements CommonDataSource {
-                                   
-                            public int getLoginTimeout() throws SQLException {
-                                return 0;
-                            }
-                                   
-                            public PrintWriter getLogWriter() throws SQLException {
-                                return null;
-                            }
-                                   
-                            public void setLoginTimeout(int seconds) throws SQLException {
-                                   
-                            }
-                              
-                            public void setLogWriter(PrintWriter out) throws SQLException {
-                                   
-                            }
-                                   
-                            public java.util.logging.Logger getParentLogger() {
-                                // TODO Auto-generated method stub
-                                return null;
-                            }
-                        }
-                    }
-                    """
+              package com.test.withoutV170Methods;
+                             
+              import javax.sql.CommonDataSource;
+                             
+              import java.io.PrintWriter;
+              import java.sql.SQLException;
+                             
+              public class TestSubClass {
+                  public class JRE7JdbcCommonDataSource implements CommonDataSource {
+                             
+                      public int getLoginTimeout() throws SQLException {
+                          return 0;
+                      }
+                             
+                      public PrintWriter getLogWriter() throws SQLException {
+                          return null;
+                      }
+                             
+                      public void setLoginTimeout(int seconds) throws SQLException {
+                             
+                      }
+                        
+                      public void setLogWriter(PrintWriter out) throws SQLException {
+                             
+                      }
+                             
+                      public java.util.logging.Logger getParentLogger() {
+                          // TODO Auto-generated method stub
+                          return null;
+                      }
+                  }
+              }
+              """
           )
         );
     }
@@ -2265,36 +2265,36 @@ class UpgradeToJava7Test implements RewriteTest {
         rewriteRun(
           //language=java
           java("""
-              package com.test.withoutV170Methods;
-                                  
-              import javax.sql.CommonDataSource;
-                                  
-              import java.io.PrintWriter;
-              import java.sql.SQLException;
-                                  
-                                  
-              public abstract class JRE7JdbcCommonDataSource implements CommonDataSource {
-                                  
-                public int getLoginTimeout() throws SQLException {
-                  return 0;
-                }
-                                  
-                public PrintWriter getLogWriter() throws SQLException {
-                  return null;
-                }
-                                  
-                public void setLoginTimeout(int seconds) throws SQLException {
-                                  
-                  
-                }
-                                  
-                public void setLogWriter(PrintWriter out) throws SQLException {
-                                  
-                  
-                }
-                                  
+            package com.test.withoutV170Methods;
+                                
+            import javax.sql.CommonDataSource;
+                                
+            import java.io.PrintWriter;
+            import java.sql.SQLException;
+                                
+                                
+            public abstract class JRE7JdbcCommonDataSource implements CommonDataSource {
+                                
+              public int getLoginTimeout() throws SQLException {
+                return 0;
               }
-              """
+                                
+              public PrintWriter getLogWriter() throws SQLException {
+                return null;
+              }
+                                
+              public void setLoginTimeout(int seconds) throws SQLException {
+                                
+                
+              }
+                                
+              public void setLogWriter(PrintWriter out) throws SQLException {
+                                
+                
+              }
+                                
+            }
+            """
           )
         );
     }
