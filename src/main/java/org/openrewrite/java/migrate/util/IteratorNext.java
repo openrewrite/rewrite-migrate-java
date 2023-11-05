@@ -60,7 +60,9 @@ public class IteratorNext extends Recipe {
                             if (TypeUtils.isAssignableTo("java.util.SequencedCollection", iteratorInvocation.getSelect().getType())) {
                                 J.MethodInvocation getFirstInvocation = nextInvocation.withSelect(iteratorInvocation.getSelect())
                                         .withName(nextInvocation.getName().withSimpleName("getFirst"))
-                                        .withMethodType(iteratorInvocation.getMethodType().withName("getFirst"));
+                                        .withMethodType(nextInvocation.getMethodType()
+                                                .withName("getFirst")
+                                                .withDeclaringType(iteratorInvocation.getMethodType().getDeclaringType()));
                                 return getFirstInvocation;
                             }
                         }
