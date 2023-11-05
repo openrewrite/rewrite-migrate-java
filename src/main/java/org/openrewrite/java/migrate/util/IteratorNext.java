@@ -54,16 +54,17 @@ public class IteratorNext extends Recipe {
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                        J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
-                        if (NEXT_MATCHER.matches(mi) && ITERATOR_MATCHER.matches(mi.getSelect())) {
-                            Expression select = ((J.MethodInvocation) mi.getSelect()).getSelect();
-                            if (TypeUtils.isAssignableTo("java.util.SequencedCollection", select.getType())) {
-                                return mi.withSelect(select)
-                                        .withName(mi.getName().withSimpleName("getFirst"))
-                                        .withMethodType(mi.getMethodType().withName("getFirst"));
+                        J.MethodInvocation nextInvocation = super.visitMethodInvocation(method, executionContext);
+                        if (NEXT_MATCHER.matches(nextInvocation) && ITERATOR_MATCHER.matches(nextInvocation.getSelect())) {
+                            J.MethodInvocation iteratorInvocation = (J.MethodInvocation) nextInvocation.getSelect();
+                            if (TypeUtils.isAssignableTo("java.util.SequencedCollection", iteratorInvocation.getSelect().getType())) {
+                                J.MethodInvocation getFirstInvocation = nextInvocation.withSelect(iteratorInvocation.getSelect())
+                                        .withName(nextInvocation.getName().withSimpleName("getFirst"))
+                                        .withMethodType(iteratorInvocation.getMethodType().withName("getFirst"));
+                                return getFirstInvocation;
                             }
                         }
-                        return mi;
+                        return nextInvocation;
                     }
                 }
         );
