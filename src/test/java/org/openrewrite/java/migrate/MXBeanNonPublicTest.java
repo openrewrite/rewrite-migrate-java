@@ -101,18 +101,17 @@ class MXBeanNonPublicTest implements RewriteTest {
           java(
             """
               import javax.management.MXBean;
-                                
+              
               @MXBean
-              interface TestNonPublicInterfaceAnnotationMXBean {
-                                
+              interface Foo {
               }
               """,
             """
               import javax.management.MXBean;
-                             
+              
               @MXBean
-              public interface TestNonPublicInterfaceAnnotationMXBean {
-                             
+              public
+              interface Foo {
               }
               """
           )
@@ -128,16 +127,15 @@ class MXBeanNonPublicTest implements RewriteTest {
               import javax.management.MXBean;
                                 
               @MXBean(true)
-              interface TestNonPublicInterfaceAnnotationTrueMXBean {
-                                
+              interface Foo {
               }
               """,
             """
               import javax.management.MXBean;
                              
               @MXBean(true)
-              public interface TestNonPublicInterfaceAnnotationTrueMXBean {
-                             
+              public
+              interface Foo {
               }
               """
           )
@@ -151,14 +149,13 @@ class MXBeanNonPublicTest implements RewriteTest {
           java(
             """
               @javax.management.MXBean(value=true)
-              interface TestNonPublicInterfaceAnnotationValueTrueMXBean {
-                                
+              interface Foo {
               }
               """,
             """
               @javax.management.MXBean(value = true)
-              public interface TestNonPublicInterfaceAnnotationValueTrueMXBean {
-                             
+              public
+              interface Foo {
               }
               """
           )
@@ -207,7 +204,7 @@ class MXBeanNonPublicTest implements RewriteTest {
               //language=java
               java(
                 """
-                  interface TestNonPublicInterface {
+                  interface Foo {
                   }
                   """
               )
@@ -223,7 +220,7 @@ class MXBeanNonPublicTest implements RewriteTest {
                   import javax.management.MXBean;
                   
                   @MXBean(false)
-                  interface TestPublicInterfaceAnnotationFalseMXBean {
+                  interface Foo {
                   }
                   """
               )
@@ -239,7 +236,7 @@ class MXBeanNonPublicTest implements RewriteTest {
                   import javax.management.MXBean;
                   
                   @MXBean(value=false)
-                  interface TestPublicInterfaceAnnotationValueFalseMXBean {
+                  interface Foo {
                   }
                   """
               )
@@ -255,7 +252,7 @@ class MXBeanNonPublicTest implements RewriteTest {
                   import javax.management.MXBean;
                   
                   @MXBean(true)
-                  public interface TestPublicInterfaceAnnotationTrueMXBean {
+                  public interface Foo {
                   }
                   """
               )
@@ -271,7 +268,7 @@ class MXBeanNonPublicTest implements RewriteTest {
                   import javax.management.MXBean;
                   
                   @MXBean(value=true)
-                  public interface TestPublicInterfaceAnnotationValueTrueMXBean {
+                  public interface Foo {
                   }
                   """
               )
@@ -284,7 +281,7 @@ class MXBeanNonPublicTest implements RewriteTest {
               //language=java
               java(
                 """
-                  public interface TestPublicInterfaceMBean {
+                  public interface SuffixMBean {
                   }
                   """
               )
@@ -297,7 +294,7 @@ class MXBeanNonPublicTest implements RewriteTest {
               //language=java
               java(
                 """
-                  public interface TestPublicInterfaceMXBean {
+                  public interface SuffixMXBean {
                   }
                   """
               )
