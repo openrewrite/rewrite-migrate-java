@@ -78,4 +78,67 @@ class IteratorNextTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void nextCommentRetained() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+                  
+              class Foo {
+                  void bar(List<String> collection) {
+                      String first = collection
+                        .iterator()
+                        // Next comment
+                        .next();
+                  }
+              }
+              """,
+            """
+              import java.util.*;
+                  
+              class Foo {
+                  void bar(List<String> collection) {
+                      String first = collection
+                        // Next comment
+                        .getFirst();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void iteratorCommentLost() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+                  
+              class Foo {
+                  void bar(List<String> collection) {
+                      String first = collection
+                        // Iterator comment
+                        .iterator()
+                        .next();
+                  }
+              }
+              """,
+            """
+              import java.util.List;
+                  
+              class Foo {
+                  void bar(List<String> collection) {
+                      String first = collection
+                        .getFirst();
+                  }
+              }
+              """
+          )
+        );
+    }
 }
