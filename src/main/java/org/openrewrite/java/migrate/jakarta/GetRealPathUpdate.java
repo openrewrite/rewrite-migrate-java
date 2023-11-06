@@ -16,8 +16,8 @@
 
 package org.openrewrite.java.migrate.jakarta;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
@@ -29,21 +29,14 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.MethodCall;
 
+@Value
+@EqualsAndHashCode(callSuper = false)
 public class GetRealPathUpdate extends Recipe {
-    final private String SERVLET_CONTEXT = "jakarta.servlet.ServletContext";
-    final private String UPDATE_METHOD = "getContext().";
     @Option(displayName = "Method Pattern",
-            description = "A jakarta.servlet.ServletRequest or jakarta.servlet.ServletRequestWrapper getRealPath(String) matching required",
+            description = "A `jakarta.servlet.ServletRequest` or `jakarta.servlet.ServletRequestWrapper getRealPath(String)` matching required",
             example = "jakarta.servlet.ServletRequest getRealPath(String)")
     @NonNull String methodPattern;
-
-    // All recipes must be serializable. This is verified by RewriteTest.rewriteRun() in your tests.
-    @JsonCreator
-    public GetRealPathUpdate(@NonNull @JsonProperty("methodPattern") String methodPattern) {
-        this.methodPattern = methodPattern;
-    }
 
     @Override
     public @NotNull String getDisplayName() {
@@ -57,19 +50,22 @@ public class GetRealPathUpdate extends Recipe {
 
     @Override
     public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new GetRealPathUpdate.MethodInvocationVisitor();
+        return new MethodInvocationVisitor(methodPattern);
     }
 
-    private class MethodInvocationVisitor extends JavaVisitor<ExecutionContext> {
-        private final MethodMatcher METHOD_PATTERN = new MethodMatcher(methodPattern, false);
+    private static class MethodInvocationVisitor extends JavaVisitor<ExecutionContext> {
+        private final MethodMatcher METHOD_PATTERN;
+
+        private MethodInvocationVisitor(String methodPattern) {
+            METHOD_PATTERN = new MethodMatcher(methodPattern, false);
+        }
 
         @Nullable
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
-
             if (METHOD_PATTERN.matches(method)) {
-                maybeAddImport(SERVLET_CONTEXT);
-                String newMethodName = UPDATE_METHOD + method.getSimpleName();
+                maybeAddImport("jakarta.servlet.ServletContext");
+                String newMethodName = "getContext()." + method.getSimpleName();
                 JavaType.Method type = method.getMethodType();
                 if (type != null) {
                     type = type.withName(newMethodName);
@@ -78,19 +74,5 @@ public class GetRealPathUpdate extends Recipe {
             }
             return method;
         }
-
-        @Nullable
-        private <M extends MethodCall> M visitMethodCall(M methodCall) {
-
-            if (METHOD_PATTERN.matches(methodCall)) {
-                return methodCall;
-            }
-            J.Block parentBlock = getCursor().firstEnclosing(J.Block.class);
-            if (parentBlock != null && !parentBlock.getStatements().contains(methodCall)) {
-                return methodCall;
-            }
-            return null;
-        }
     }
-
 }

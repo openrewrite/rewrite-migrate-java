@@ -349,15 +349,11 @@ recipeList:
       methodPattern: jakarta.servlet.UnavailableException <constructor>(jakarta.servlet.Servlet, String)
       argumentIndex: 0
   - org.openrewrite.java.DeleteMethodArgument:
-      methodPattern: jakarta.servlet.UnavailableException <constructor>( int,jakarta.servlet.Servlet, String)
+      methodPattern: jakarta.servlet.UnavailableException <constructor>(int, jakarta.servlet.Servlet, String)
       argumentIndex: 1
   - org.openrewrite.java.ReorderMethodArguments:
-      methodPattern: jakarta.servlet.UnavailableException <constructor>( int, String)
-      newParameterNames: [ str, in ]
+      methodPattern: jakarta.servlet.UnavailableException <constructor>(int, String)
       oldParameterNames: [ in, str ]
+      newParameterNames: [ str, in ]
       ignoreDefinition: true
       matchOverrides: true
-
-
-
-

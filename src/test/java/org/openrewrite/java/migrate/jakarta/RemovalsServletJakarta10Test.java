@@ -17,175 +17,191 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
-import org.openrewrite.java.DeleteMethodArgument;
 
-public class RemovalsServletJakarta10Test implements RewriteTest {
-
+class RemovalsServletJakarta10Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.servlet-api-5.0.0","jakarta.servlet-api-6.0.0", "javax.servlet-api-4.0.0"))
-          .recipe(Environment.builder()
-            .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10"));
-
+            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.servlet-api-5.0.0", "jakarta.servlet-api-6.0.0", "javax.servlet-api-4.0.0"))
+          .recipeFromResource("/META-INF/rewrite/jakarta-ee-10.yml", "org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10");
     }
 
     @Test
-    void testServlet() {
-
+    void servletReplacements() {
         rewriteRun(
           //language=java
-          java("""
-            package com.test;
-            import java.io.IOException;
+          java(
+            """
+              import java.io.IOException;
 
-            import jakarta.servlet.ServletContext;
-            import jakarta.servlet.ServletException;
-            import jakarta.servlet.SingleThreadModel;
-            import jakarta.servlet.UnavailableException;
-            import jakarta.servlet.http.HttpServlet;
-            import jakarta.servlet.http.HttpServletRequest;
-            import jakarta.servlet.http.HttpServletRequestWrapper;
-            import jakarta.servlet.http.HttpServletResponse;
-            import jakarta.servlet.http.HttpServletResponseWrapper;
-            import jakarta.servlet.http.HttpSession;
-            import jakarta.servlet.http.HttpSessionContext;
-            import jakarta.servlet.http.HttpUtils;
-            
-            public class TestJakarta extends HttpServlet implements SingleThreadModel {
-            
-                public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-                    req.isRequestedSessionIdFromUrl();            
-                    res.encodeUrl("");
-                    res.encodeRedirectUrl("");        
-                    res.setStatus(0,  "");            
-                    res.setStatus(0);           
-                    HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
-                    reqWrapper.isRequestedSessionIdFromUrl();            
-                    HttpServletResponseWrapper resWrapper = new HttpServletResponseWrapper(res);     
-                    resWrapper.encodeUrl("");
-                    resWrapper.encodeRedirectUrl("");    
-                    resWrapper.setStatus(0,  "");                 
-                    HttpSession httpSession = req.getSession();
-                    httpSession.getSessionContext();
-                    httpSession.getValue("");
-                    httpSession.getValueNames();
-                    httpSession.putValue("", null);
-                    httpSession.removeValue("");     
-                    ServletContext servletContext = getServletContext();  
-                    servletContext.getServlet("");
-                    servletContext.getServlets();
-                    servletContext.getServletNames();   
-                    servletContext.log(null, "");   
-                    req.getRealPath("");        
-                    HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
-                    reqWrapper.getRealPath("");          
-                }        
-            }         
-            """, """
-            package com.test;
-            import java.io.IOException;
+              import jakarta.servlet.ServletContext;
+              import jakarta.servlet.ServletException;
+              import jakarta.servlet.SingleThreadModel;
+              import jakarta.servlet.UnavailableException;
+              import jakarta.servlet.http.HttpServlet;
+              import jakarta.servlet.http.HttpServletRequest;
+              import jakarta.servlet.http.HttpServletRequestWrapper;
+              import jakarta.servlet.http.HttpServletResponse;
+              import jakarta.servlet.http.HttpServletResponseWrapper;
+              import jakarta.servlet.http.HttpSession;
+              import jakarta.servlet.http.HttpSessionContext;
+              import jakarta.servlet.http.HttpUtils;
+                            
+              public class TestJakarta extends HttpServlet implements SingleThreadModel {
+                  public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+                      req.isRequestedSessionIdFromUrl();
+                         
+                      res.encodeUrl("");
+                      res.encodeRedirectUrl("");
+                     
+                      res.setStatus(0,  "");
+                         
+                      res.setStatus(0);
+                        
+                      HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
+                      reqWrapper.isRequestedSessionIdFromUrl();
+                         
+                      HttpServletResponseWrapper resWrapper = new HttpServletResponseWrapper(res);
+                  
+                      resWrapper.encodeUrl("");
+                      resWrapper.encodeRedirectUrl("");
+                 
+                      resWrapper.setStatus(0,  "");
+                
+                      HttpSession httpSession = req.getSession();
+                      httpSession.getSessionContext();
+                      httpSession.getValue("");
+                      httpSession.getValueNames();
+                      httpSession.putValue("", null);
+                      httpSession.removeValue("");
+                  
+                      ServletContext servletContext = getServletContext();
+               
+                      servletContext.getServlet("");
+                      servletContext.getServlets();
+                      servletContext.getServletNames();
+                
+                      servletContext.log(null, "");
+                
+                      req.getRealPath("");
+                     
+                      HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
+                      reqWrapper.getRealPath("");
+                  }
+              }
+              """,
+            """
+              import java.io.IOException;
 
-            import jakarta.servlet.ServletContext;
-            import jakarta.servlet.ServletException;
-            import jakarta.servlet.SingleThreadModel;
-            import jakarta.servlet.UnavailableException;
-            import jakarta.servlet.http.HttpServlet;
-            import jakarta.servlet.http.HttpServletRequest;
-            import jakarta.servlet.http.HttpServletRequestWrapper;
-            import jakarta.servlet.http.HttpServletResponse;
-            import jakarta.servlet.http.HttpServletResponseWrapper;
-            import jakarta.servlet.http.HttpSession;
-            import jakarta.servlet.http.HttpSessionContext;
-            import jakarta.servlet.http.HttpUtils;
-            
-            public class TestJakarta extends HttpServlet implements SingleThreadModel {
-            
-                public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-                    req.isRequestedSessionIdFromURL();            
-                    res.encodeURL("");
-                    res.encodeRedirectURL("");   
-                    res.setStatus(0);            
-                    res.setStatus(0);          
-                    HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
-                    reqWrapper.isRequestedSessionIdFromURL();            
-                    HttpServletResponseWrapper resWrapper = new HttpServletResponseWrapper(res);   
-                    resWrapper.encodeURL("");
-                    resWrapper.encodeRedirectURL("");   
-                    resWrapper.setStatus(0);                
-                    HttpSession httpSession = req.getSession();
-                    httpSession.getSessionContext();
-                    httpSession.getAttribute("");
-                    httpSession.getAttributeNames();
-                    httpSession.setAttribute("", null);
-                    httpSession.removeAttribute("");        
-                    ServletContext servletContext = getServletContext();  
-                    servletContext.getServlet("");
-                    servletContext.getServlets();
-                    servletContext.getServletNames();    
-                    servletContext.log("", null);
-                    req.getContext().getRealPath("");        
-                    HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
-                    reqWrapper.getContext().getRealPath("");             
-                }        
-            }       
-            """));
+              import jakarta.servlet.ServletContext;
+              import jakarta.servlet.ServletException;
+              import jakarta.servlet.SingleThreadModel;
+              import jakarta.servlet.UnavailableException;
+              import jakarta.servlet.http.HttpServlet;
+              import jakarta.servlet.http.HttpServletRequest;
+              import jakarta.servlet.http.HttpServletRequestWrapper;
+              import jakarta.servlet.http.HttpServletResponse;
+              import jakarta.servlet.http.HttpServletResponseWrapper;
+              import jakarta.servlet.http.HttpSession;
+              import jakarta.servlet.http.HttpSessionContext;
+              import jakarta.servlet.http.HttpUtils;
+                            
+              public class TestJakarta extends HttpServlet implements SingleThreadModel {
+                  public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+                      req.isRequestedSessionIdFromURL();
+                         
+                      res.encodeURL("");
+                      res.encodeRedirectURL("");
+                
+                      res.setStatus(0);
+                         
+                      res.setStatus(0);
+                       
+                      HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
+                      reqWrapper.isRequestedSessionIdFromURL();
+                         
+                      HttpServletResponseWrapper resWrapper = new HttpServletResponseWrapper(res);
+                
+                      resWrapper.encodeURL("");
+                      resWrapper.encodeRedirectURL("");
+                
+                      resWrapper.setStatus(0);
+               
+                      HttpSession httpSession = req.getSession();
+                      httpSession.getSessionContext();
+                      httpSession.getAttribute("");
+                      httpSession.getAttributeNames();
+                      httpSession.setAttribute("", null);
+                      httpSession.removeAttribute("");
+                     
+                      ServletContext servletContext = getServletContext();
+               
+                      servletContext.getServlet("");
+                      servletContext.getServlets();
+                      servletContext.getServletNames();
+                 
+                      servletContext.log("", null);
+
+                      req.getContext().getRealPath("");
+                     
+                      HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
+                      reqWrapper.getContext().getRealPath("");
+                  }
+              }
+              """
+          )
+        );
     }
-    void testException() {
+
+    @Test
+    void unavailableException() {
         rewriteRun(
           //language=java
-          java("""
-            package com.test;
-             
-            import java.io.IOException;
-  
-            import jakarta.servlet.ServletException;            
-            import jakarta.servlet.SingleThreadModel;
-            import jakarta.servlet.UnavailableException;
-            import jakarta.servlet.http.HttpServlet;
-            import jakarta.servlet.http.HttpServletRequest;
-            import jakarta.servlet.http.HttpServletResponse;         
-  
-            public class Test {
-            
-                public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+          java(
+            """
+              import java.io.IOException;
                 
-                 	   jakarta.servlet.Servlet servlet ;
-                 	   UnavailableException unavailableEx2 = new UnavailableException("x",1);     
-                 	   UnavailableException unavailableEx1 = new UnavailableException(0, null, "");     
-                }
-               
-            }
-            """, """
-            package com.test;
-             
-            import java.io.IOException;
-  
-            import jakarta.servlet.ServletException;            
-            import jakarta.servlet.SingleThreadModel;
-            import jakarta.servlet.UnavailableException;
-            import jakarta.servlet.http.HttpServlet;
-            import jakarta.servlet.http.HttpServletRequest;
-            import jakarta.servlet.http.HttpServletResponse;         
-  
-            public class Test {
-            
-                public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+              import jakarta.servlet.ServletException;
+              import jakarta.servlet.SingleThreadModel;
+              import jakarta.servlet.UnavailableException;
+              import jakarta.servlet.http.HttpServlet;
+              import jakarta.servlet.http.HttpServletRequest;
+              import jakarta.servlet.http.HttpServletResponse;
                 
-                 	   jakarta.servlet.Servlet servlet ;
-                 	   UnavailableException unavailableEx2 = new UnavailableException("x");  
-                 	   UnavailableException unavailableEx1 = new UnavailableException(0, "");
-                }
-               
-            }
-            """));
+              public class Test {
+                  public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+                      jakarta.servlet.Servlet servlet ;
+                      UnavailableException unavailableEx1 = new UnavailableException(1, null, "y");
+                      UnavailableException unavailableEx2 = new UnavailableException(0, servlet, "x");
+                      UnavailableException unavailableEx3 = new UnavailableException(servlet, "x");
+                  }
+              }
+              """,
+            """
+              import java.io.IOException;
+                
+              import jakarta.servlet.ServletException;
+              import jakarta.servlet.SingleThreadModel;
+              import jakarta.servlet.UnavailableException;
+              import jakarta.servlet.http.HttpServlet;
+              import jakarta.servlet.http.HttpServletRequest;
+              import jakarta.servlet.http.HttpServletResponse;
+                
+              public class Test {
+                  public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+                      jakarta.servlet.Servlet servlet ;
+                      UnavailableException unavailableEx1 = new UnavailableException("", 1);
+                      UnavailableException unavailableEx2 = new UnavailableException("x", 0);
+                      UnavailableException unavailableEx3 = new UnavailableException("x");
+                  }
+              }
+              """
+          )
+        );
     }
 }
