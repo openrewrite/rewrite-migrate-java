@@ -168,11 +168,11 @@ class MXBeanNonPublicTest implements RewriteTest {
           //language=java
           java(
             """
-              interface TestNonPublicInterfaceMBean {
+              interface SuffixMBean {
               }
               """,
             """
-              public interface TestNonPublicInterfaceMBean {
+              public interface SuffixMBean {
               }
               """
           )
@@ -185,11 +185,11 @@ class MXBeanNonPublicTest implements RewriteTest {
           //language=java
           java(
             """
-              interface TestNonPublicInterfaceMXBean {
+              interface SuffixMXBean {
               }
               """,
             """
-              public interface TestNonPublicInterfaceMXBean {
+              public interface SuffixMXBean {
               }
               """
           )
