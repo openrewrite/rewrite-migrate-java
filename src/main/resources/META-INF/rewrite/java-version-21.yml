@@ -54,10 +54,9 @@ tags:
   - java21
   - collections
 recipeList:
+  - org.openrewrite.java.migrate.util.FirstAndLast
+  - org.openrewrite.java.migrate.util.IteratorNext
   # Iterator
-  - org.openrewrite.java.SimplifyMethodChain:
-      methodPatternChain: [ 'java.util.SequencedCollection iterator()', 'java.util.Iterator next()' ]
-      newMethodName: getFirst
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.SortedSet first()
       newMethodName: getFirst
@@ -68,11 +67,5 @@ recipeList:
       methodPattern: java.util.NavigableSet descendingSet()
       newMethodName: reversed
   # TODO convert additional patterns to sequenced collections
-  # SequencedCollection.get(0) -> SequencedCollection.getFirst()
-  # SequencedCollection.get(SequencedCollection.size() - 1) -> SequencedCollection.getLast()
-  # list.add(0, E) -> SequencedCollection.addFirst(E)
-  # list.addLast(list.size(), E) -> SequencedCollection.addLast(E)
-  # list.remove(0) -> SequencedCollection.removeFirst()
-  # list.remove(list.size() - 1) -> SequencedCollection.removeLast()
   # list.listIterator() -> ???
   # list.listIterator(int) -> ???

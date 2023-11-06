@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.openrewrite.*;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -26,10 +27,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.RemoveAnnotationVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +40,7 @@ import static java.util.stream.Collectors.toList;
 @EqualsAndHashCode(callSuper = false)
 public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>> {
 
-    private static final AnnotationMatcher LOMBOK_VALUE_MATCHER = new AnnotationMatcher("@lombok.Value");
+    private static final AnnotationMatcher LOMBOK_VALUE_MATCHER = new AnnotationMatcher("@lombok.Value()");
 
     @Option(displayName = "Add a `toString()` implementation matching Lombok",
             description = "When set the `toString` format from Lombok is used in the migrated record.",
@@ -111,14 +109,29 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
             return classDeclaration.getType() != null
                     && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
-                    && classDeclaration.getAllAnnotations().stream().allMatch(LOMBOK_VALUE_MATCHER::matches)
+                    && classDeclaration.getAllAnnotations().stream()
+                    .allMatch(ann -> LOMBOK_VALUE_MATCHER.matches(ann) && (ann.getArguments() == null || ann.getArguments().isEmpty()))
                     && !hasGenericTypeParameter(classDeclaration)
-                    && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField);
+                    && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField)
+                    && !hasIncompatibleModifier(classDeclaration);
         }
 
         private boolean hasGenericTypeParameter(J.ClassDeclaration classDeclaration) {
             List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
             return typeParameters != null && !typeParameters.isEmpty();
+        }
+
+        private boolean hasIncompatibleModifier(J.ClassDeclaration classDeclaration) {
+            // Inner classes need to be static
+            if (getCursor().getParent() != null) {
+                Object parentValue = getCursor().getParent().getValue();
+                if (parentValue instanceof J.ClassDeclaration || (parentValue instanceof JRightPadded && ((JRightPadded) parentValue).getElement() instanceof J.ClassDeclaration)) {
+                    if (classDeclaration.getModifiers().stream().noneMatch(mod -> mod.getType() == J.Modifier.Type.Static)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private boolean isRecordCompatibleField(Statement statement) {
@@ -266,9 +279,18 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             List<Statement> bodyStatements = new ArrayList<>(classDeclaration.getBody().getStatements());
             bodyStatements.removeAll(memberVariables);
 
-            doAfterVisit(new RemoveAnnotationVisitor(LOMBOK_VALUE_MATCHER));
+            classDeclaration = new RemoveAnnotationVisitor(LOMBOK_VALUE_MATCHER).visitClassDeclaration(classDeclaration, ctx);
+            maybeRemoveImport("lombok.Value");
+
             classDeclaration = classDeclaration
                     .withKind(J.ClassDeclaration.Kind.Type.Record)
+                    .withModifiers(ListUtils.map(classDeclaration.getModifiers(), modifier -> {
+                        J.Modifier.Type type = modifier.getType();
+                        if (type == J.Modifier.Type.Static || type == J.Modifier.Type.Final) {
+                            return null;
+                        }
+                        return modifier;
+                    }))
                     .withType(buildRecordType(classDeclaration))
                     .withBody(classDeclaration.getBody()
                             .withStatements(bodyStatements)
@@ -299,4 +321,3 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
     }
 }
-
