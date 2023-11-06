@@ -25,7 +25,6 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
-
 @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
 @EnabledForJreRange(min = JRE.JAVA_21)
 class IteratorNextTest implements RewriteTest {
@@ -36,16 +35,16 @@ class IteratorNextTest implements RewriteTest {
     }
 
     @Test
-    void list() {
+    void listIteratorNextToGetFirst() {
         rewriteRun(
           //language=java
           java(
             """
               import java.util.*;
-                  
+                            
               class Foo {
-                  void bar(List<String> collection) {
-                      String first = collection.iterator().next();
+                  String bar(List<String> collection) {
+                      return collection.iterator().next();
                   }
               }
               """,
@@ -53,8 +52,8 @@ class IteratorNextTest implements RewriteTest {
               import java.util.*;
                             
               class Foo {
-                  void bar(List<String> collection) {
-                      String first = collection.getFirst();
+                  String bar(List<String> collection) {
+                      return collection.getFirst();
                   }
               }
               """
@@ -63,7 +62,7 @@ class IteratorNextTest implements RewriteTest {
     }
 
     @Test
-    void collection() {
+    void nonSequencedCollectionUnchanged() {
         rewriteRun(
           //language=java
           java(
