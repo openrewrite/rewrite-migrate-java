@@ -51,9 +51,9 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.http.HttpSession;
               import jakarta.servlet.http.HttpSessionContext;
               import jakarta.servlet.http.HttpUtils;
-                            
-              public class TestJakarta extends HttpServlet implements SingleThreadModel {
-                  public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+              
+              class TestJakarta extends HttpServlet implements SingleThreadModel {
+                  void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                       req.isRequestedSessionIdFromUrl();
                          
                       res.encodeUrl("");
@@ -110,9 +110,9 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.http.HttpSession;
               import jakarta.servlet.http.HttpSessionContext;
               import jakarta.servlet.http.HttpUtils;
-                            
-              public class TestJakarta extends HttpServlet implements SingleThreadModel {
-                  public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+              
+              class TestJakarta extends HttpServlet implements SingleThreadModel {
+                  void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                       req.isRequestedSessionIdFromURL();
                          
                       res.encodeURL("");
@@ -173,10 +173,10 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.http.HttpServletRequest;
               import jakarta.servlet.http.HttpServletResponse;
                 
-              public class Test {
-                  public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+              class Test {
+                  void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                       jakarta.servlet.Servlet servlet ;
-                      UnavailableException unavailableEx1 = new UnavailableException(1, null, "y");
+                      UnavailableException unavailableEx1 = new UnavailableException(0, null, "x");
                       UnavailableException unavailableEx2 = new UnavailableException(0, servlet, "x");
                       UnavailableException unavailableEx3 = new UnavailableException(servlet, "x");
                   }
@@ -192,10 +192,10 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.http.HttpServletRequest;
               import jakarta.servlet.http.HttpServletResponse;
                 
-              public class Test {
-                  public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+              class Test {
+                  void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                       jakarta.servlet.Servlet servlet ;
-                      UnavailableException unavailableEx1 = new UnavailableException("", 1);
+                      UnavailableException unavailableEx1 = new UnavailableException("x", 0);
                       UnavailableException unavailableEx2 = new UnavailableException("x", 0);
                       UnavailableException unavailableEx3 = new UnavailableException("x");
                   }
