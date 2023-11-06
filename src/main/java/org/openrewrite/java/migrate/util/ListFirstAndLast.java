@@ -20,14 +20,16 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Space;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ListFirstAndLast extends Recipe {
@@ -92,12 +94,24 @@ public class ListFirstAndLast extends Recipe {
                 return mi;
             }
 
-            List<Object> arguments = new ArrayList<>();
+            List<Expression> arguments = new ArrayList<>();
+            final JavaType.Method newMethodType;
+            JavaType.Method originalMethodType = mi.getMethodType();
             if ("add".equals(operation)) {
-                arguments.add(mi.getArguments().get(1));
+                arguments.add(mi.getArguments().get(1).withPrefix(Space.EMPTY));
+                newMethodType = originalMethodType
+                        .withName(operation + firstOrLast)
+                        .withParameterNames(Collections.singletonList(originalMethodType.getParameterNames().get(1)))
+                        .withParameterTypes(Collections.singletonList(originalMethodType.getParameterTypes().get(1)));
+            } else {
+                newMethodType = originalMethodType
+                        .withName(operation + firstOrLast)
+                        .withParameterNames(null)
+                        .withParameterTypes(null);
             }
-            return JavaTemplate.builder(operation + firstOrLast + (arguments.isEmpty() ? "()" : "(#{})")).build()
-                    .apply(updateCursor(mi), mi.getCoordinates().replaceMethod(), arguments.toArray());
+            return mi.withName(mi.getName().withSimpleName(operation + firstOrLast))
+                    .withArguments(arguments)
+                    .withMethodType(newMethodType);
         }
 
         /**
