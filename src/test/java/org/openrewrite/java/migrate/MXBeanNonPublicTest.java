@@ -35,25 +35,9 @@ class MXBeanNonPublicTest implements RewriteTest {
           //language=java
           java(
             """
-              import javax.management.InstanceAlreadyExistsException;
-              import javax.management.MBeanException;
-              import javax.management.MBeanRegistrationException;
-              import javax.management.MBeanServer;
               import javax.management.MXBean;
-              import javax.management.NotCompliantMBeanException;
-              import javax.management.ObjectName;
-              import javax.management.ReflectionException;
               
               class TestClassAndNonPublicInterface {
-                  public void regMBean(ObjectName objectName, MBeanServer server) throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
-                      Object obj = new NonPublic();
-                      server.registerMBean(obj, objectName);
-                  }
-              
-                  public void createMBean(ObjectName objectName, MBeanServer server) throws InstanceAlreadyExistsException, NotCompliantMBeanException, ReflectionException, MBeanException {
-                      server.createMBean("bean", objectName);
-                  }
-              
                   class NonPublic implements NonPublicMBean {
                   }
               
@@ -63,25 +47,9 @@ class MXBeanNonPublicTest implements RewriteTest {
               }
               """,
             """
-              import javax.management.InstanceAlreadyExistsException;
-              import javax.management.MBeanException;
-              import javax.management.MBeanRegistrationException;
-              import javax.management.MBeanServer;
               import javax.management.MXBean;
-              import javax.management.NotCompliantMBeanException;
-              import javax.management.ObjectName;
-              import javax.management.ReflectionException;
                              
               class TestClassAndNonPublicInterface {
-                  public void regMBean(ObjectName objectName, MBeanServer server) throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
-                      Object obj = new NonPublic();
-                      server.registerMBean(obj, objectName);
-                  }
-              
-                  public void createMBean(ObjectName objectName, MBeanServer server) throws InstanceAlreadyExistsException, NotCompliantMBeanException, ReflectionException, MBeanException {
-                      server.createMBean("bean", objectName);
-                  }
-              
                   class NonPublic implements NonPublicMBean {
                   }
               
