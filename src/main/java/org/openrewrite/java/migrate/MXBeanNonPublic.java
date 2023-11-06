@@ -15,16 +15,19 @@
  */
 package org.openrewrite.java.migrate;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.*;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.Modifier;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
 
-import javax.swing.plaf.nimbus.State;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +55,6 @@ public class MXBeanNonPublic extends Recipe {
     }
 
     public class ClassImplementationVisitor extends JavaIsoVisitor<ExecutionContext> {
-
         public boolean shouldUpdate(J.ClassDeclaration classDecl) {
             if (classDecl.hasModifier(J.Modifier.Type.Public) || !(classDecl.hasModifier(Modifier.Type.Abstract) || classDecl.getKind().name().equals("Interface"))) {
                 return false;

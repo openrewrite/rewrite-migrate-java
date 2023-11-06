@@ -13,34 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.openrewrite.java.migrate;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.*;
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
-public class UpgradeToJava8Test implements RewriteTest {
-
+class UpgradeToJava8Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder()
-            .scanRuntimeClasspath("org.openrewrite.java.migrate")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.UpgradeToJava8"))
+        spec.recipeFromResource("/META-INF/rewrite/java-version-8.yml", "org.openrewrite.java.migrate.UpgradeToJava8")
           .allSources(src -> src.markers(javaVersion(8)));
     }
 
     @Test
-    void testClassAndNonPublicInterface() {
+    void classAndNonPublicInterface() {
         rewriteRun(
           //language=java
-          java("""
-              package com.ibm.test;
-                                
+          java(
+            """
               import javax.management.InstanceAlreadyExistsException;
               import javax.management.MBeanException;
               import javax.management.MBeanRegistrationException;
@@ -49,91 +44,63 @@ public class UpgradeToJava8Test implements RewriteTest {
               import javax.management.NotCompliantMBeanException;
               import javax.management.ObjectName;
               import javax.management.ReflectionException;
-                                
-              public class TestClassAndNonPublicInterface {
-              	
-              	public void regMBean(ObjectName objectName, MBeanServer server) throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
-              		Object obj = new NonPublic();
-              		server.registerMBean(obj, objectName);
-              	}
-              	
-              	public void createMBean(ObjectName objectName, MBeanServer server) throws InstanceAlreadyExistsException, NotCompliantMBeanException, ReflectionException, MBeanException {
-              		server.createMBean("bean", objectName);
-              	}
-                                
-              	class NonPublic implements NonPublicMBean {
-                                
-              	}
-              	
-              	@MXBean
-              	private interface NonPublicMBean {
-                                
-              	}
-                                
+              
+              class TestClassAndNonPublicInterface {
+                  public void regMBean(ObjectName objectName, MBeanServer server) throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
+                      Object obj = new NonPublic();
+                      server.registerMBean(obj, objectName);
+                  }
+              
+                  public void createMBean(ObjectName objectName, MBeanServer server) throws InstanceAlreadyExistsException, NotCompliantMBeanException, ReflectionException, MBeanException {
+                      server.createMBean("bean", objectName);
+                  }
+              
+                  class NonPublic implements NonPublicMBean {
+                  }
+              
+                  @MXBean
+                  private interface NonPublicMBean {
+                  }
               }
               """,
             """
-               package com.ibm.test;
-               
-               import javax.management.InstanceAlreadyExistsException;
-               import javax.management.MBeanException;
-               import javax.management.MBeanRegistrationException;
-               import javax.management.MBeanServer;
-               import javax.management.MXBean;
-               import javax.management.NotCompliantMBeanException;
-               import javax.management.ObjectName;
-               import javax.management.ReflectionException;
-               
-               public class TestClassAndNonPublicInterface {
-               
-               	public void regMBean(ObjectName objectName, MBeanServer server) throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
-               		Object obj = new NonPublic();
-               		server.registerMBean(obj, objectName);
-               	}
-               
-               	public void createMBean(ObjectName objectName, MBeanServer server) throws InstanceAlreadyExistsException, NotCompliantMBeanException, ReflectionException, MBeanException {
-               		server.createMBean("bean", objectName);
-               	}
-               
-               	class NonPublic implements NonPublicMBean {
-               
-               	}
-               
-                   @MXBean
-                   public interface NonPublicMBean {
-               
-                   }
-               
-               }
-               """
+              import javax.management.InstanceAlreadyExistsException;
+              import javax.management.MBeanException;
+              import javax.management.MBeanRegistrationException;
+              import javax.management.MBeanServer;
+              import javax.management.MXBean;
+              import javax.management.NotCompliantMBeanException;
+              import javax.management.ObjectName;
+              import javax.management.ReflectionException;
+                             
+              class TestClassAndNonPublicInterface {
+                  public void regMBean(ObjectName objectName, MBeanServer server) throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
+                      Object obj = new NonPublic();
+                      server.registerMBean(obj, objectName);
+                  }
+              
+                  public void createMBean(ObjectName objectName, MBeanServer server) throws InstanceAlreadyExistsException, NotCompliantMBeanException, ReflectionException, MBeanException {
+                      server.createMBean("bean", objectName);
+                  }
+              
+                  class NonPublic implements NonPublicMBean {
+                  }
+              
+                  @MXBean
+                  public interface NonPublicMBean {
+                  }
+              }
+              """
           )
         );
     }
 
     @Test
-    void testNonPublicInterface() {
+    void nonPublicInterfaceAnnotationMXBean() {
         rewriteRun(
           //language=java
-          java("""
-            package com.ibm.test;
-                              
-            // don't flag this interface
-                              
-            abstract interface TestNonPublicInterface {
-                              
-            }
+          java(
             """
-          )
-        );
-    }
-
-    @Test
-    void testNonPublicInterfaceAnnotationMXBean() {
-        rewriteRun(
-          //language=java
-          java("""
-              package com.ibm.test;
-                                
               import javax.management.MXBean;
                                 
               // flag this interface
@@ -144,8 +111,6 @@ public class UpgradeToJava8Test implements RewriteTest {
               }
               """,
             """
-              package com.ibm.test;
-                             
               import javax.management.MXBean;
                              
               // flag this interface
@@ -161,12 +126,11 @@ public class UpgradeToJava8Test implements RewriteTest {
     }
 
     @Test
-    void testNonPublicInterfaceAnnotationTrueMXBean() {
+    void nonPublicInterfaceAnnotationTrueMXBean() {
         rewriteRun(
           //language=java
-          java("""
-              package com.ibm.test;
-                                
+          java(
+            """
               import javax.management.MXBean;
                                 
               // flag this interface
@@ -177,8 +141,6 @@ public class UpgradeToJava8Test implements RewriteTest {
               }
               """,
             """
-              package com.ibm.test;
-                             
               import javax.management.MXBean;
                              
               // flag this interface
@@ -194,12 +156,11 @@ public class UpgradeToJava8Test implements RewriteTest {
     }
 
     @Test
-    void testNonPublicInterfaceAnnotationValueTrueMXBean() {
+    void nonPublicInterfaceAnnotationValueTrueMXBean() {
         rewriteRun(
           //language=java
-          java("""
-              package com.ibm.test;
-                                
+          java(
+            """
               // flag this interface
                                 
               @javax.management.MXBean(value=true)
@@ -208,8 +169,6 @@ public class UpgradeToJava8Test implements RewriteTest {
               }
               """,
             """
-              package com.ibm.test;
-                             
               // flag this interface
                              
               @javax.management.MXBean(value = true)
@@ -223,12 +182,11 @@ public class UpgradeToJava8Test implements RewriteTest {
     }
 
     @Test
-    void testNonPublicInterfaceMBean() {
+    void nonPublicInterfaceMBean() {
         rewriteRun(
           //language=java
-          java("""
-              package com.ibm.test;
-                                
+          java(
+            """
               // flag this interface
                                 
               abstract interface TestNonPublicInterfaceMBean {
@@ -236,8 +194,6 @@ public class UpgradeToJava8Test implements RewriteTest {
               }
               """,
             """
-              package com.ibm.test;
-                             
               // flag this interface
                              
               public abstract interface TestNonPublicInterfaceMBean {
@@ -249,12 +205,11 @@ public class UpgradeToJava8Test implements RewriteTest {
     }
 
     @Test
-    void testNonPublicInterfaceMXBean() {
+    void nonPublicInterfaceMXBean() {
         rewriteRun(
           //language=java
-          java("""
-              package com.ibm.test;
-                                
+          java(
+            """
               // flag this interface
                                 
               interface TestNonPublicInterfaceMXBean {
@@ -262,8 +217,6 @@ public class UpgradeToJava8Test implements RewriteTest {
               }
               """,
             """
-              package com.ibm.test;
-                             
               // flag this interface
                              
               public interface TestNonPublicInterfaceMXBean {
@@ -274,117 +227,130 @@ public class UpgradeToJava8Test implements RewriteTest {
         );
     }
 
-    @Test
-    void testPublicInterfaceAnnotationFalseMXBean() {
-        rewriteRun(
-          //language=java
-          java("""
-            package com.ibm.test;
-                              
-            import javax.management.MXBean;
-                              
-            // don't flag this interface
-                              
-            @MXBean(false)
-            public interface TestPublicInterfaceAnnotationFalseMXBean {
-                              
-            }
-            """
-          )
-        );
-    }
+    @Nested
+    class NoChange {
+        @Test
+        void nonPublicInterface() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  // don't flag this interface
+                                    
+                  abstract interface TestNonPublicInterface {
+                                    
+                  }
+                  """
+              )
+            );
+        }
 
-    @Test
-    void testPublicInterfaceAnnotationTrueMXBean() {
-        rewriteRun(
-          //language=java
-          java("""
-            package com.ibm.test;
-                              
-            import javax.management.MXBean;
-                              
-            // don't flag this interface
-                              
-            @MXBean(true)
-            public interface TestPublicInterfaceAnnotationTrueMXBean {
-                              
-            }
-            """
-          )
-        );
-    }
+        @Test
+        void publicInterfaceAnnotationFalseMXBean() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import javax.management.MXBean;
+                                    
+                  // don't flag this interface
+                                    
+                  @MXBean(false)
+                  public interface TestPublicInterfaceAnnotationFalseMXBean {
+                                    
+                  }
+                  """
+              )
+            );
+        }
 
-    @Test
-    void testPublicInterfaceAnnotationValueFalseMXBean() {
-        rewriteRun(
-          //language=java
-          java("""
-            package com.ibm.test;
-                              
-            import javax.management.MXBean;
-                              
-            // don't flag this interface
-                              
-            @MXBean(value=false)
-            public interface TestPublicInterfaceAnnotationValueFalseMXBean {
-                              
-            }
-            """
-          )
-        );
-    }
+        @Test
+        void publicInterfaceAnnotationTrueMXBean() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import javax.management.MXBean;
+                                    
+                  // don't flag this interface
+                                    
+                  @MXBean(true)
+                  public interface TestPublicInterfaceAnnotationTrueMXBean {
+                                    
+                  }
+                  """
+              )
+            );
+        }
 
-    @Test
-    void testPublicInterfaceAnnotationValueTrueMXBean() {
-        rewriteRun(
-          //language=java
-          java("""
-            package com.ibm.test;
-                              
-            import javax.management.MXBean;
-                              
-            // don't flag this interface
-                              
-            @MXBean(value=true)
-            public interface TestPublicInterfaceAnnotationValueTrueMXBean {
-                              
-            }
-            """
-          )
-        );
-    }
+        @Test
+        void publicInterfaceAnnotationValueFalseMXBean() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import javax.management.MXBean;
+                                    
+                  // don't flag this interface
+                                    
+                  @MXBean(value=false)
+                  public interface TestPublicInterfaceAnnotationValueFalseMXBean {
+                                    
+                  }
+                  """
+              )
+            );
+        }
 
-    @Test
-    void testPublicInterfaceMBean() {
-        rewriteRun(
-          //language=java
-          java("""
-            package com.ibm.test;
-                              
-            // don't flag this interface
-                              
-            public interface TestPublicInterfaceMBean {
-                              
-            }
-            """
-          )
-        );
-    }
+        @Test
+        void publicInterfaceAnnotationValueTrueMXBean() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import javax.management.MXBean;
+                                    
+                  // don't flag this interface
+                                    
+                  @MXBean(value=true)
+                  public interface TestPublicInterfaceAnnotationValueTrueMXBean {
+                                    
+                  }
+                  """
+              )
+            );
+        }
 
-    @Test
-    void testPublicInterfaceMXBean() {
-        rewriteRun(
-          //language=java
-          java("""
-            package com.ibm.test;
-                              
-            // don't flag this interface
-                              
-            public interface TestPublicInterfaceMXBean {
-                              
-            }
-            """
-          )
-        );
+        @Test
+        void publicInterfaceMBean() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  // don't flag this interface
+                                    
+                  public interface TestPublicInterfaceMBean {
+                                    
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void publicInterfaceMXBean() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  // don't flag this interface
+                                    
+                  public interface TestPublicInterfaceMXBean {
+                                    
+                  }
+                  """
+              )
+            );
+        }
     }
 }

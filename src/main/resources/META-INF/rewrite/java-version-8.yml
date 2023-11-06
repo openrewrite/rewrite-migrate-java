@@ -21,6 +21,6 @@ description: >
   This recipe will apply changes commonly needed when upgrading to Java 8. This recipe will also replace deprecated API
   with equivalents when there is a clear migration strategy.
 tags:
-  - java6
+  - java8
 recipeList:
   - org.openrewrite.java.migrate.MXBeanNonPublic
