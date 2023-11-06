@@ -30,6 +30,7 @@ tags:
   - deprecated
   - jakarta
 recipeList:
+  - org.openrewrite.java.migrate.UpgradeToJava7
   - org.openrewrite.java.migrate.UseJavaUtilBase64
   # Add an explicit JAXB/JAX-WS runtime and upgrade the dependencies to Jakarta EE 8
   - org.openrewrite.java.migrate.javax.AddJaxbDependencies
@@ -56,6 +57,7 @@ recipeList:
 #  - org.openrewrite.java.migrate.util.JavaUtilAPIs
   - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
   - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
+  - org.openrewrite.java.migrate.util.OptionalStreamRecipe
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 11
   - org.openrewrite.java.migrate.InternalBindContextFactory
