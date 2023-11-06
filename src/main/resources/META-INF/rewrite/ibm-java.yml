@@ -74,3 +74,15 @@ recipeList:
       oldFullyQualifiedTypeName: com.sun.net.ssl.internal.ssl.SSLSocketFactoryImpl
       newFullyQualifiedTypeName: com.ibm.jsse2.SSLSocketFactoryImpl
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.JREDoNotUseSunNetSslAPIs
+displayName: Use `javax.net.ssl` instead of `com.sun.net.ssl`
+description: Do not use APIs from `com.sun.net.ssl` packages.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: com.sun.net.ssl
+      newPackageName: javax.net.ssl
+      recursive: false
