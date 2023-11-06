@@ -23,11 +23,10 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
-class UpgradeToJava8Test implements RewriteTest {
+class MXBeanNonPublicTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResource("/META-INF/rewrite/java-version-8.yml", "org.openrewrite.java.migrate.UpgradeToJava8")
-          .allSources(src -> src.markers(javaVersion(8)));
+        spec.recipe(new MXBeanNonPublic()).allSources(src -> src.markers(javaVersion(8)));
     }
 
     @Test
@@ -103,8 +102,6 @@ class UpgradeToJava8Test implements RewriteTest {
             """
               import javax.management.MXBean;
                                 
-              // flag this interface
-                                
               @MXBean
               interface TestNonPublicInterfaceAnnotationMXBean {
                                 
@@ -113,11 +110,8 @@ class UpgradeToJava8Test implements RewriteTest {
             """
               import javax.management.MXBean;
                              
-              // flag this interface
-                             
               @MXBean
-              public
-              interface TestNonPublicInterfaceAnnotationMXBean {
+              public interface TestNonPublicInterfaceAnnotationMXBean {
                              
               }
               """
@@ -133,8 +127,6 @@ class UpgradeToJava8Test implements RewriteTest {
             """
               import javax.management.MXBean;
                                 
-              // flag this interface
-                                
               @MXBean(true)
               interface TestNonPublicInterfaceAnnotationTrueMXBean {
                                 
@@ -143,11 +135,8 @@ class UpgradeToJava8Test implements RewriteTest {
             """
               import javax.management.MXBean;
                              
-              // flag this interface
-                             
               @MXBean(true)
-              public
-              interface TestNonPublicInterfaceAnnotationTrueMXBean {
+              public interface TestNonPublicInterfaceAnnotationTrueMXBean {
                              
               }
               """
@@ -161,19 +150,14 @@ class UpgradeToJava8Test implements RewriteTest {
           //language=java
           java(
             """
-              // flag this interface
-                                
               @javax.management.MXBean(value=true)
               interface TestNonPublicInterfaceAnnotationValueTrueMXBean {
                                 
               }
               """,
             """
-              // flag this interface
-                             
               @javax.management.MXBean(value = true)
-              public
-              interface TestNonPublicInterfaceAnnotationValueTrueMXBean {
+              public interface TestNonPublicInterfaceAnnotationValueTrueMXBean {
                              
               }
               """
@@ -182,22 +166,16 @@ class UpgradeToJava8Test implements RewriteTest {
     }
 
     @Test
-    void nonPublicInterfaceMBean() {
+    void mbeanSuffix() {
         rewriteRun(
           //language=java
           java(
             """
-              // flag this interface
-                                
-              abstract interface TestNonPublicInterfaceMBean {
-                                
+              interface TestNonPublicInterfaceMBean {
               }
               """,
             """
-              // flag this interface
-                             
-              public abstract interface TestNonPublicInterfaceMBean {
-                             
+              public interface TestNonPublicInterfaceMBean {
               }
               """
           )
@@ -205,22 +183,16 @@ class UpgradeToJava8Test implements RewriteTest {
     }
 
     @Test
-    void nonPublicInterfaceMXBean() {
+    void mxbeanSuffix() {
         rewriteRun(
           //language=java
           java(
             """
-              // flag this interface
-                                
               interface TestNonPublicInterfaceMXBean {
-                                
               }
               """,
             """
-              // flag this interface
-                             
               public interface TestNonPublicInterfaceMXBean {
-                             
               }
               """
           )
@@ -230,15 +202,12 @@ class UpgradeToJava8Test implements RewriteTest {
     @Nested
     class NoChange {
         @Test
-        void nonPublicInterface() {
+        void packagePrivateWithNoAnnotation() {
             rewriteRun(
               //language=java
               java(
                 """
-                  // don't flag this interface
-                                    
-                  abstract interface TestNonPublicInterface {
-                                    
+                  interface TestNonPublicInterface {
                   }
                   """
               )
@@ -246,18 +215,15 @@ class UpgradeToJava8Test implements RewriteTest {
         }
 
         @Test
-        void publicInterfaceAnnotationFalseMXBean() {
+        void annotationWithArgumentFalse() {
             rewriteRun(
               //language=java
               java(
                 """
                   import javax.management.MXBean;
-                                    
-                  // don't flag this interface
-                                    
+                  
                   @MXBean(false)
-                  public interface TestPublicInterfaceAnnotationFalseMXBean {
-                                    
+                  interface TestPublicInterfaceAnnotationFalseMXBean {
                   }
                   """
               )
@@ -265,18 +231,31 @@ class UpgradeToJava8Test implements RewriteTest {
         }
 
         @Test
-        void publicInterfaceAnnotationTrueMXBean() {
+        void annotationWithArgumentValueFalse() {
             rewriteRun(
               //language=java
               java(
                 """
                   import javax.management.MXBean;
-                                    
-                  // don't flag this interface
-                                    
+                  
+                  @MXBean(value=false)
+                  interface TestPublicInterfaceAnnotationValueFalseMXBean {
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void annotationWithArgumentTrueButAlreadyPublic() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import javax.management.MXBean;
+                  
                   @MXBean(true)
                   public interface TestPublicInterfaceAnnotationTrueMXBean {
-                                    
                   }
                   """
               )
@@ -284,37 +263,15 @@ class UpgradeToJava8Test implements RewriteTest {
         }
 
         @Test
-        void publicInterfaceAnnotationValueFalseMXBean() {
+        void annotatonWithArgumentValueTrueButAlreadyPublic() {
             rewriteRun(
               //language=java
               java(
                 """
                   import javax.management.MXBean;
-                                    
-                  // don't flag this interface
-                                    
-                  @MXBean(value=false)
-                  public interface TestPublicInterfaceAnnotationValueFalseMXBean {
-                                    
-                  }
-                  """
-              )
-            );
-        }
-
-        @Test
-        void publicInterfaceAnnotationValueTrueMXBean() {
-            rewriteRun(
-              //language=java
-              java(
-                """
-                  import javax.management.MXBean;
-                                    
-                  // don't flag this interface
-                                    
+                  
                   @MXBean(value=true)
                   public interface TestPublicInterfaceAnnotationValueTrueMXBean {
-                                    
                   }
                   """
               )
@@ -322,15 +279,12 @@ class UpgradeToJava8Test implements RewriteTest {
         }
 
         @Test
-        void publicInterfaceMBean() {
+        void sufficMBeanButAlreadyPublic() {
             rewriteRun(
               //language=java
               java(
                 """
-                  // don't flag this interface
-                                    
                   public interface TestPublicInterfaceMBean {
-                                    
                   }
                   """
               )
@@ -338,15 +292,12 @@ class UpgradeToJava8Test implements RewriteTest {
         }
 
         @Test
-        void publicInterfaceMXBean() {
+        void suffixMXBeanButAlreadyPublic() {
             rewriteRun(
               //language=java
               java(
                 """
-                  // don't flag this interface
-                                    
                   public interface TestPublicInterfaceMXBean {
-                                    
                   }
                   """
               )
