@@ -25,7 +25,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 
-public class DeprecatedCDIAPIsRemoved40Test implements RewriteTest {
+ class DeprecatedCDIAPIsRemoved40Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
