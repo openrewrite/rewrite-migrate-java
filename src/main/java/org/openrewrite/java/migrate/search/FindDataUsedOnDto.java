@@ -17,10 +17,7 @@ package org.openrewrite.java.migrate.search;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Option;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -59,7 +56,7 @@ public class FindDataUsedOnDto extends Recipe {
                 J.MethodDeclaration methodDeclaration = getCursor().firstEnclosing(J.MethodDeclaration.class);
                 if (methodDeclaration != null && dtoFields.matches(method)) {
                     dtoDataUses.insertRow(ctx, new DtoDataUses.Row(
-                            getCursor().firstEnclosingOrThrow(J.CompilationUnit.class).getSourcePath().toString(),
+                            getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath().toString(),
                             methodDeclaration.getSimpleName(),
                             uncapitalize(method.getSimpleName().replaceAll("^get", ""))
                     ));
