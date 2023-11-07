@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.search;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.java.migrate.table.DtoDataUses;
@@ -60,6 +61,58 @@ public class FindDtoOverfetchingTest implements RewriteTest {
                   
                   /*~~(dayOfMonth)~~>*/void test2(LocalDate date) {
                         date.getDayOfMonth();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void mustHaveSelect() {
+        rewriteRun(
+          spec -> spec.recipe(new FindDtoOverfetching("animals.Dog")),
+          //language=java
+          java(
+            """
+              package animals;
+              
+              public class Dog {
+                  String name;
+                  String breed;
+                  
+                  public String getName() {
+                      return getBreed();
+                  }
+                  
+                  public String getBreed() {
+                      return breed;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void mustBeParameter() {
+        rewriteRun(
+          spec -> spec.recipe(new FindDtoOverfetching("animals.Dog")),
+          //language=java
+          java(
+            """
+              package animals;
+              
+              public class Dog {
+                  String name;
+                  String breed;
+                  
+                  public String getName() {
+                      return new Dog().getBreed();
+                  }
+                  
+                  public String getBreed() {
+                      return breed;
                   }
               }
               """

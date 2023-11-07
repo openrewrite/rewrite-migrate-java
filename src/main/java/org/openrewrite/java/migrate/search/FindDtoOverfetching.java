@@ -18,10 +18,14 @@ package org.openrewrite.java.migrate.search;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
+import org.openrewrite.analysis.dataflow.DataFlowNode;
+import org.openrewrite.analysis.dataflow.DataFlowSpec;
+import org.openrewrite.analysis.dataflow.Dataflow;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.migrate.table.DtoDataUses;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Statement;
 import org.openrewrite.marker.SearchResult;
 
 import java.util.*;
@@ -65,12 +69,26 @@ public class FindDtoOverfetching extends Recipe {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
-                if (dtoFields.matches(method)) {
+                if (method.getSelect() instanceof J.Identifier && dtoFields.matches(method)) {
                     Iterator<Cursor> methodDeclarations = getCursor()
                             .getPathAsCursors(c -> c.getValue() instanceof J.MethodDeclaration);
                     if (methodDeclarations.hasNext()) {
-                        methodDeclarations.next().computeMessageIfAbsent("dtoDataUses", k -> new TreeSet<>())
-                                .add(uncapitalize(method.getSimpleName().replaceAll("^get", "")));
+                        Cursor methodCursor = methodDeclarations.next();
+                        J.MethodDeclaration methodDeclaration = methodCursor.getValue();
+
+                        outer:
+                        for (Statement parameter : methodDeclaration.getParameters()) {
+                            if (parameter instanceof J.VariableDeclarations) {
+                                J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) parameter;
+                                for (J.VariableDeclarations.NamedVariable variable : variableDeclarations.getVariables()) {
+                                    if (variable.getName().getSimpleName().equals(((J.Identifier) method.getSelect()).getSimpleName())) {
+                                        methodCursor.computeMessageIfAbsent("dtoDataUses", k -> new TreeSet<>())
+                                                .add(uncapitalize(method.getSimpleName().replaceAll("^get", "")));
+                                        break outer;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 return m;
