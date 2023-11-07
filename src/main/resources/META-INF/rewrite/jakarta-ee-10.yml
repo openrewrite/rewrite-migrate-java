@@ -257,11 +257,16 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
-displayName: TBD
+displayName: Remove deprecated API's not supported in CDI4.0
 description: >
-  TBD
+  Deprecated APIs have been removed in CDI 4.0. This recipe removes and updates the corresponding deprecated methods.
 recipeList:
   - org.openrewrite.java.migrate.jakarta.RemoveMethods:
       methodPattern: jakarta.enterprise.inject.spi.Bean isNullable()
   - org.openrewrite.java.migrate.jakarta.UpdateAddAnnotatedType:
       methodPattern: jakarta.enterprise.inject.spi.BeforeBeanDiscovery addAnnotatedType(jakarta.enterprise.inject.spi.AnnotatedType)
+  - org.openrewrite.java.migrate.jakarta.UpdateBeanManagerMethod:
+      methodPattern: "jakarta.enterprise.inject.spi.BeanManager fireEvent(..)"
+  - org.openrewrite.java.migrate.jakarta.UpdateBeanManagerMethod:
+      methodPattern:  "jakarta.enterprise.inject.spi.BeanManager createInjectionTarget(..)"
+

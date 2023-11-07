@@ -93,9 +93,9 @@ public class DeprecatedCDIAPIsRemoved40Test implements RewriteTest {
             		beforeBeanDiscovery.addAnnotatedType(producerType, "my unique id");				// Not this one
             		beforeBeanDiscovery.addAnnotatedType(String.class, "my other unique id");	// Not this one
             
-            		beanManager.createInjectionTarget(producerType);
+            		beanManager.getInjectionTargetFactory().createInjectionTarget(producerType);
             
-            		beanManager.fireEvent(beforeBeanDiscovery);
+            		beanManager.getEvent().fire(beforeBeanDiscovery);
             
             		Set<Bean<?>> myBeans = beanManager.getBeans("my precious beans");
             		Bean myFavoriteBean = myBeans.stream().findFirst().get();           
