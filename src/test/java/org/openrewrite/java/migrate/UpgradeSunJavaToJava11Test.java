@@ -23,6 +23,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
 
 class UpgradeSunJavaToJava11Test implements RewriteTest {
 
@@ -30,9 +31,10 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "sun.internal"))
+            .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.new"))
           .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate").build()
             .activateRecipes("org.openrewrite.java.migrate.Java8toJava11", "org.openrewrite.java.migrate.IBMSemeru"));
+
     }
 
     @Test
@@ -251,150 +253,150 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
     @Test
     void testFullyQualifiedPackage() {
         rewriteRun(
-          //language=java
-          java(
-            """
-               package com.test;
-               
-               import com.sun.net.ssl.HostnameVerifier;
-               import com.sun.net.ssl.HttpsURLConnection;
-               import com.sun.net.ssl.KeyManager;
-               import com.sun.net.ssl.KeyManagerFactory;
-               import com.sun.net.ssl.KeyManagerFactorySpi;
-               import com.sun.net.ssl.SSLContext;
-               import com.sun.net.ssl.SSLContextSpi;
-               import com.sun.net.ssl.SSLPermission;
-               import com.sun.net.ssl.TrustManager;
-               import com.sun.net.ssl.TrustManagerFactory;
-               import com.sun.net.ssl.TrustManagerFactorySpi;
-               import com.sun.net.ssl.X509KeyManager;
-               import com.sun.net.ssl.X509TrustManager;
-               
-               public class TestFullyQualifiedPackage {
-               
-               	public com.sun.net.ssl.HostnameVerifier hv;
-               	public com.sun.net.ssl.HttpsURLConnection huc;
-               	public com.sun.net.ssl.KeyManager km;
-               	public com.sun.net.ssl.KeyManagerFactory kmf;
-               	public com.sun.net.ssl.KeyManagerFactorySpi kmfs;
-               	public com.sun.net.ssl.SSLContext sslc;
-               	public com.sun.net.ssl.SSLContextSpi sslcs;
-               	public com.sun.net.ssl.SSLPermission sslp;
-               	public com.sun.net.ssl.TrustManager tm;
-               	public com.sun.net.ssl.TrustManagerFactory tmf;
-               	public com.sun.net.ssl.TrustManagerFactorySpi tmfs;
-               	public com.sun.net.ssl.X509KeyManager x509km;
-               	public com.sun.net.ssl.X509TrustManager xtm;
-               	
-               	public  HostnameVerifier hv2;
-               	public  HttpsURLConnection huc2;
-               	public  KeyManager km2;
-               	public  KeyManagerFactory kmf2;
-               	public  KeyManagerFactorySpi kmfs2;
-               	public  SSLContext sslc2;
-               	public  SSLContextSpi sslcs2;
-               	public  SSLPermission sslp2;
-               	public  TrustManager tm2;
-               	public  TrustManagerFactory tmf2;
-               	public  TrustManagerFactorySpi tmfs2;
-               	public  X509KeyManager x509km2;
-               	public  X509TrustManager xtm2;
-               }
-               """,
-            """
-              package com.test;
-              
-              import javax.net.ssl.HostnameVerifier;
-              import javax.net.ssl.HttpsURLConnection;
-              import javax.net.ssl.KeyManager;
-              import javax.net.ssl.KeyManagerFactory;
-              import javax.net.ssl.KeyManagerFactorySpi;
-              import javax.net.ssl.SSLContext;
-              import javax.net.ssl.SSLContextSpi;
-              import javax.net.ssl.SSLPermission;
-              import javax.net.ssl.TrustManager;
-              import javax.net.ssl.TrustManagerFactory;
-              import javax.net.ssl.TrustManagerFactorySpi;
-              import javax.net.ssl.X509KeyManager;
-              import javax.net.ssl.X509TrustManager;
-              
-              public class TestFullyQualifiedPackage {
-                             
-              	public javax.net.ssl.HostnameVerifier hv;
-              	public javax.net.ssl.HttpsURLConnection huc;
-              	public javax.net.ssl.KeyManager km;
-              	public javax.net.ssl.KeyManagerFactory kmf;
-              	public javax.net.ssl.KeyManagerFactorySpi kmfs;
-              	public javax.net.ssl.SSLContext sslc;
-              	public javax.net.ssl.SSLContextSpi sslcs;
-              	public javax.net.ssl.SSLPermission sslp;
-              	public javax.net.ssl.TrustManager tm;
-              	public javax.net.ssl.TrustManagerFactory tmf;
-              	public javax.net.ssl.TrustManagerFactorySpi tmfs;
-              	public javax.net.ssl.X509KeyManager x509km;
-              	public javax.net.ssl.X509TrustManager xtm;
-              	
-              	public  HostnameVerifier hv2;
-              	public  HttpsURLConnection huc2;
-              	public  KeyManager km2;
-              	public  KeyManagerFactory kmf2;
-              	public  KeyManagerFactorySpi kmfs2;
-              	public  SSLContext sslc2;
-              	public  SSLContextSpi sslcs2;
-              	public  SSLPermission sslp2;
-              	public  TrustManager tm2;
-              	public  TrustManagerFactory tmf2;
-              	public  TrustManagerFactorySpi tmfs2;
-              	public  X509KeyManager x509km2;
-              	public  X509TrustManager xtm2;
-              }
+          version(
+            //language=java
+            java("""
+                package com.test;
+                               
+                import com.sun.net.ssl.HostnameVerifier;
+                import com.sun.net.ssl.HttpsURLConnection;
+                import com.sun.net.ssl.KeyManager;
+                import com.sun.net.ssl.KeyManagerFactory;
+                import com.sun.net.ssl.KeyManagerFactorySpi;
+                import com.sun.net.ssl.SSLContext;
+                import com.sun.net.ssl.SSLContextSpi;
+                import com.sun.net.ssl.SSLPermission;
+                import com.sun.net.ssl.TrustManager;
+                import com.sun.net.ssl.TrustManagerFactory;
+                import com.sun.net.ssl.TrustManagerFactorySpi;
+                import com.sun.net.ssl.X509KeyManager;
+                import com.sun.net.ssl.X509TrustManager;
+                               
+                public class TestFullyQualifiedPackage {
+                               
+                	public com.sun.net.ssl.HostnameVerifier hv;
+                	public com.sun.net.ssl.HttpsURLConnection huc;
+                	public com.sun.net.ssl.KeyManager km;
+                	public com.sun.net.ssl.KeyManagerFactory kmf;
+                	public com.sun.net.ssl.KeyManagerFactorySpi kmfs;
+                	public com.sun.net.ssl.SSLContext sslc;
+                	public com.sun.net.ssl.SSLContextSpi sslcs;
+                	public com.sun.net.ssl.SSLPermission sslp;
+                	public com.sun.net.ssl.TrustManager tm;
+                	public com.sun.net.ssl.TrustManagerFactory tmf;
+                	public com.sun.net.ssl.TrustManagerFactorySpi tmfs;
+                	public com.sun.net.ssl.X509KeyManager x509km;
+                	public com.sun.net.ssl.X509TrustManager xtm;
+                	
+                	public  HostnameVerifier hv2;
+                	public  HttpsURLConnection huc2;
+                	public  KeyManager km2;
+                	public  KeyManagerFactory kmf2;
+                	public  KeyManagerFactorySpi kmfs2;
+                	public  SSLContext sslc2;
+                	public  SSLContextSpi sslcs2;
+                	public  SSLPermission sslp2;
+                	public  TrustManager tm2;
+                	public  TrustManagerFactory tmf2;
+                	public  TrustManagerFactorySpi tmfs2;
+                	public  X509KeyManager x509km2;
+                	public  X509TrustManager xtm2;
+                }
+                """,
               """
-          )
+                package com.test;
+                              
+                import javax.net.ssl.HostnameVerifier;
+                import javax.net.ssl.HttpsURLConnection;
+                import javax.net.ssl.KeyManager;
+                import javax.net.ssl.KeyManagerFactory;
+                import javax.net.ssl.KeyManagerFactorySpi;
+                import javax.net.ssl.SSLContext;
+                import javax.net.ssl.SSLContextSpi;
+                import javax.net.ssl.SSLPermission;
+                import javax.net.ssl.TrustManager;
+                import javax.net.ssl.TrustManagerFactory;
+                import javax.net.ssl.TrustManagerFactorySpi;
+                import javax.net.ssl.X509KeyManager;
+                import javax.net.ssl.X509TrustManager;
+                              
+                public class TestFullyQualifiedPackage {
+                               
+                	public javax.net.ssl.HostnameVerifier hv;
+                	public javax.net.ssl.HttpsURLConnection huc;
+                	public javax.net.ssl.KeyManager km;
+                	public javax.net.ssl.KeyManagerFactory kmf;
+                	public javax.net.ssl.KeyManagerFactorySpi kmfs;
+                	public javax.net.ssl.SSLContext sslc;
+                	public javax.net.ssl.SSLContextSpi sslcs;
+                	public javax.net.ssl.SSLPermission sslp;
+                	public javax.net.ssl.TrustManager tm;
+                	public javax.net.ssl.TrustManagerFactory tmf;
+                	public javax.net.ssl.TrustManagerFactorySpi tmfs;
+                	public javax.net.ssl.X509KeyManager x509km;
+                	public javax.net.ssl.X509TrustManager xtm;
+                	
+                	public  HostnameVerifier hv2;
+                	public  HttpsURLConnection huc2;
+                	public  KeyManager km2;
+                	public  KeyManagerFactory kmf2;
+                	public  KeyManagerFactorySpi kmfs2;
+                	public  SSLContext sslc2;
+                	public  SSLContextSpi sslcs2;
+                	public  SSLPermission sslp2;
+                	public  TrustManager tm2;
+                	public  TrustManagerFactory tmf2;
+                	public  TrustManagerFactorySpi tmfs2;
+                	public  X509KeyManager x509km2;
+                	public  X509TrustManager xtm2;
+                }
+                """
+            ), 6)
         );
     }
 
     @Test
     void testHostnameVerifier() {
         rewriteRun(
-          //language=java
-          java(
-            """
-               package com.test;
-               
-               import com.sun.net.ssl.HostnameVerifier;
-               
-               public class TestHostnameVerifier implements HostnameVerifier {
-               
-               	public TestHostnameVerifier() {
-               		
-               	}
-               
-               	public boolean verify(String arg0, String arg1) {
-               		
-               		return false;
-               	}
-               
-               }
-               """,
-            """
-               package com.test;
-               
-               import javax.net.ssl.HostnameVerifier;
-               
-               public class TestHostnameVerifier implements HostnameVerifier {
-               
-               	public TestHostnameVerifier() {
-               		
-               	}
-               
-               	public boolean verify(String arg0, String arg1) {
-               		
-               		return false;
-               	}
-               
-               }
-               """
-          )
+          version(
+            //language=java
+            java("""
+                package com.test;
+                               
+                import com.sun.net.ssl.HostnameVerifier;
+                               
+                public class TestHostnameVerifier implements HostnameVerifier {
+                               
+                	public TestHostnameVerifier() {
+                		
+                	}
+                               
+                	public boolean verify(String arg0, String arg1) {
+                		
+                		return false;
+                	}
+                               
+                }
+                """,
+              """
+                package com.test;
+                               
+                import javax.net.ssl.HostnameVerifier;
+                               
+                public class TestHostnameVerifier implements HostnameVerifier {
+                               
+                	public TestHostnameVerifier() {
+                		
+                	}
+                               
+                	public boolean verify(String arg0, String arg1) {
+                		
+                		return false;
+                	}
+                               
+                }
+                """
+            ), 6)
         );
     }
 }

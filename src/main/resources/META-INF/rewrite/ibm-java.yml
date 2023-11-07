@@ -26,6 +26,7 @@ recipeList:
   - org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocolHttpsHandler
   - org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocol
   - org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalSslProvider
+  - org.openrewrite.java.migrate.JREDoNotUseSunNetSslAPIs
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
