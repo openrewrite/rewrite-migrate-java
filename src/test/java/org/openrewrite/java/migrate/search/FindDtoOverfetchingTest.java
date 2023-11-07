@@ -17,30 +17,22 @@ package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.openrewrite.java.migrate.search.FindDataUsedOnDto;
 import org.openrewrite.java.migrate.table.DtoDataUses;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 
-public class FindDataUsedOnDtoTest implements RewriteTest {
+public class FindDtoOverfetchingTest implements RewriteTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @ParameterizedTest
     @ValueSource(strings = {
       "java.time.LocalDate", "java.time.*"
     })
-    void findDataUsedOnDto(String dtoType) {
+    void findDtoOverfetching(String dtoType) {
         rewriteRun(
-          spec -> spec.recipe(new FindDataUsedOnDto(dtoType))
-            .dataTable(DtoDataUses.Row.class, rows -> {
-                for (DtoDataUses.Row row : rows) {
-                    assertThat(row.getSourcePath()).isEqualTo("Test.java");
-                    assertThat(row.getMethodName()).isEqualTo("test");
-                    assertThat(row.getField()).isIn("dayOfMonth", "dayOfYear");
-                }
-            }),
+          spec -> spec.recipe(new FindDtoOverfetching(dtoType)),
           //language=java
           java(
             """
@@ -51,6 +43,10 @@ public class FindDataUsedOnDtoTest implements RewriteTest {
                         date.getDayOfMonth();
                         date.getDayOfYear();
                   }
+                  
+                  void test2(LocalDate date) {
+                        date.getDayOfMonth();
+                  }
               }
               """,
             """
@@ -58,8 +54,12 @@ public class FindDataUsedOnDtoTest implements RewriteTest {
               
               class Test {
                   void test(LocalDate date) {
-                        /*~~>*/date.getDayOfMonth();
-                        /*~~>*/date.getDayOfYear();
+                        date.getDayOfMonth();
+                        date.getDayOfYear();
+                  }
+                  
+                  /*~~(dayOfMonth)~~>*/void test2(LocalDate date) {
+                        date.getDayOfMonth();
                   }
               }
               """
