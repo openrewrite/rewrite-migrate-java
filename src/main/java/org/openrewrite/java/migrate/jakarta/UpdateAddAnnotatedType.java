@@ -43,7 +43,7 @@ public class UpdateAddAnnotatedType extends Recipe {
 
     @Override
     public String getDescription() {
-        return "BeforeBeanDiscovery.addAnnotatedType(AnnotatedType) is Deprecated in CDI 1.1. It is Replaced by BeforeBeanDiscovery.addAnnotatedType(AnnotatedType, String).";
+        return "`BeforeBeanDiscovery.addAnnotatedType(AnnotatedType)` is Deprecated in CDI 1.1. It is Replaced by `BeforeBeanDiscovery.addAnnotatedType(AnnotatedType, String)`.";
     }
 
     @Override

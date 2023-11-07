@@ -40,7 +40,7 @@ public class UpdateBeanManagerMethod extends Recipe {
 
     @Override
     public @NotNull String getDisplayName() {
-        return "Update fireEvent() and createInjectionTarget() calls";
+        return "Update `fireEvent()` and `createInjectionTarget()` calls";
     }
 
     @Override
