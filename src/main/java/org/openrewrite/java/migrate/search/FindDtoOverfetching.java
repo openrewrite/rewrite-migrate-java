@@ -18,20 +18,16 @@ package org.openrewrite.java.migrate.search;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
-import org.openrewrite.analysis.dataflow.DataFlowNode;
-import org.openrewrite.analysis.dataflow.DataFlowSpec;
-import org.openrewrite.analysis.dataflow.Dataflow;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.migrate.table.DtoDataUses;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.marker.SearchResult;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static org.openrewrite.internal.StringUtils.uncapitalize;
 
