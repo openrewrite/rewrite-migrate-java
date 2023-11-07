@@ -31,6 +31,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
   - org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
+  - org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -253,3 +254,14 @@ recipeList:
       oldFullyQualifiedTypeName: javax.faces.el.ReferenceSyntaxException
       newFullyQualifiedTypeName: jakarta.el.ELException
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
+displayName: TBD
+description: >
+  TBD
+recipeList:
+  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+      methodPattern: jakarta.enterprise.inject.spi.Bean isNullable()
+  - org.openrewrite.java.migrate.jakarta.UpdateAddAnnotatedType:
+      methodPattern: jakarta.enterprise.inject.spi.BeforeBeanDiscovery addAnnotatedType(jakarta.enterprise.inject.spi.AnnotatedType)
