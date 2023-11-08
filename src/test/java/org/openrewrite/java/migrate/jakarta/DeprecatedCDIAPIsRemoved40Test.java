@@ -68,7 +68,9 @@ import static org.openrewrite.java.Assertions.java;
             
             		Set<Bean<?>> myBeans = beanManager.getBeans("my precious beans");
             		Bean myFavoriteBean = myBeans.stream().findFirst().get();
-            		myFavoriteBean.isNullable();
+            		if(!myFavoriteBean.isNullable()){
+            		    //do something
+            		};
             	}
             }
             """, """
@@ -93,12 +95,15 @@ import static org.openrewrite.java.Assertions.java;
             		beforeBeanDiscovery.addAnnotatedType(producerType, "my unique id");				// Not this one
             		beforeBeanDiscovery.addAnnotatedType(String.class, "my other unique id");	// Not this one
             
-            		beanManager.getInjectionTargetFactory().createInjectionTarget(producerType);
+            		beanManager.getInjectionTargetFactory(producerType).createInjectionTarget(null);
             
             		beanManager.getEvent().fire(beforeBeanDiscovery);
             
             		Set<Bean<?>> myBeans = beanManager.getBeans("my precious beans");
-            		Bean myFavoriteBean = myBeans.stream().findFirst().get();           
+            		Bean myFavoriteBean = myBeans.stream().findFirst().get();   
+            		if(!false){
+            		    //do something
+            		};        
             	}
             }
             """));

@@ -61,8 +61,11 @@ public class UpdateAddAnnotatedType extends Recipe {
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (METHOD_INPUT_PATTERN.matches(method)) {
                     String tempString = "#{any(" + finalTemplateBuilderString + ")},null\"";
-                    //"#{any(jakarta.enterprise.inject.spi.AnnotatedType)},null"
-                    return JavaTemplate.builder(tempString).build().apply(updateCursor(method), method.getCoordinates().replaceArguments(), method.getArguments().get(0));
+                    return JavaTemplate.builder(tempString).
+                            build().apply(updateCursor(method),
+                                    method.getCoordinates().
+                                            replaceArguments(),
+                                    method.getArguments().get(0));
                 }
                 return super.visitMethodInvocation(method, ctx);
             }
