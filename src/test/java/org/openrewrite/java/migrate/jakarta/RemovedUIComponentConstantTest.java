@@ -25,48 +25,114 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 public class RemovedUIComponentConstantTest implements RewriteTest {
-
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().
-            classpathFromResources(new InMemoryExecutionContext(), "jakarta.faces-3.0.3")).
-          recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
-            .build()
+        spec
+          .parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "uicomponent"))
+          .recipe(Environment.builder()
+            .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
             .activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant"));
     }
 
     @Test
-    void removedUIComponentConstant_1() {
+    void useBothConstants() {
         rewriteRun(
           //language=java
           java("""
-            package com.test;
-            import jakarta.faces.component.UIComponent;
-             
-             public class UseUIComponentConstants {
-             
-             	public static void main(String[] args) {
-             		String str = UIComponent.CURRENT_COMPONENT;
-             		String str2 = UIComponent.CURRENT_COMPOSITE_COMPONENT;
-             		System.out.println(str);
-             		System.out.println(str2);
-             	}
-             }
-            """, """
-            package com.test;
-            import jakarta.faces.component.UIComponent;
-             
-             public class UseUIComponentConstants {
-             
-             	public static void main(String[] args) {
-             		String str = UIComponent.getCurrentComponent();
-             		String str2 = UIComponent.getCurrentCompositeComponent();
-             		System.out.println(str);
-             		System.out.println(str2);
-             	}
-             }
-            """));
+              package com.test;
+                                    
+              import jakarta.faces.component.UIComponent;
+                                
+              public class UseUIComponentConstants {
+                                
+              	public static void main(String[] args) {
+              		String str = UIComponent.CURRENT_COMPONENT;
+              		String str2 = UIComponent.CURRENT_COMPOSITE_COMPONENT;
+              		System.out.println(str);
+              		System.out.println(str2);
+              	}
+              }
+              """,
+            """
+              package com.test;
+                             
+              import jakarta.faces.component.UIComponent;
+                             
+              public class UseUIComponentConstants {
+                             
+              	public static void main(String[] args) {
+              		String str = UIComponent.getCurrentComponent();
+              		String str2 = UIComponent.getCurrentCompositeComponent();
+              		System.out.println(str);
+              		System.out.println(str2);
+              	}
+              }
+              """));
     }
 
+    @Test
+    void useCurrentComponentConstants() {
+        rewriteRun(
+          //language=java
+          java("""
+              package com.test;
+                                    
+              import jakarta.faces.component.UIComponent;
+                                
+              public class UseUIComponentConstants {
+                                
+              	public static void main(String[] args) {
+              		String str = UIComponent.CURRENT_COMPONENT;
+              		System.out.println(str);
+              	}
+              }
+              """,
+            """
+              package com.test;
+                             
+              import jakarta.faces.component.UIComponent;
+                             
+              public class UseUIComponentConstants {
+                             
+              	public static void main(String[] args) {
+              		String str = UIComponent.getCurrentComponent();
+              		System.out.println(str);
+              	}
+              }
+              """));
+    }
+
+    @Test
+    void useCurrentCompositeComponentConstants() {
+        rewriteRun(
+          //language=java
+          java("""
+              package com.test;
+                                    
+              import jakarta.faces.component.UIComponent;
+                                
+              public class UseUIComponentConstants {
+                                
+              	public static void main(String[] args) {
+              		String str = UIComponent.CURRENT_COMPOSITE_COMPONENT;
+              		System.out.println(str);
+              	}
+              }
+              """,
+            """
+              package com.test;
+                             
+              import jakarta.faces.component.UIComponent;
+                             
+              public class UseUIComponentConstants {
+                             
+              	public static void main(String[] args) {
+              		String str = UIComponent.getCurrentCompositeComponent();
+              		System.out.println(str);
+              	}
+              }
+              """));
+    }
 
 }
