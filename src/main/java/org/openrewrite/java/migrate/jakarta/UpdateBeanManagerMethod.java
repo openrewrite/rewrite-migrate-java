@@ -30,6 +30,7 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.JavaParser;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -64,19 +65,25 @@ public class UpdateBeanManagerMethod extends Recipe {
         @Nullable
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
-            String newMethodName = "";
+            J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ec);
             if (METHOD_PATTERN.matches(method)) {
-                if (method.getSimpleName().equals("fireEvent")){
+                String newMethodName = "";
+                if(method.getSimpleName().equals("fireEvent")) {
                     newMethodName = "getEvent()." + "fire";
+
+                    JavaType.Method type = method.getMethodType();
+                    if (type != null) {
+                        type = type.withName(newMethodName);
+                    }
+                    return method.withName(method.getName().withSimpleName(newMethodName)).withMethodType(type);
+                } else if (method.getSimpleName().equals("createInjectionTarget")) {
+                    maybeRemoveImport("jakarta.enterprise.inject.spi.BeanManager");
+                    return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getInjectionTargetFactory(#{any(jakarta.enterprise.inject.spi.AnnotatedType)}).createInjectionTarget(null)")
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ec, "jakarta.enterprise.cdi-api-3.0.0-M4"))
+                            .build()
+                            .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), mi.getArguments().get(0));
+
                 }
-                else if (method.getSimpleName().equals("createInjectionTarget")){
-                    newMethodName = "getInjectionTargetFactory()." + "createInjectionTarget";
-                }
-                JavaType.Method type = method.getMethodType();
-                if (type != null) {
-                    type = type.withName(newMethodName);
-                }
-                method = method.withName(method.getName().withSimpleName(newMethodName)).withMethodType(type);
             }
             return method;
         }
