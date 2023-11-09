@@ -1,0 +1,38 @@
+#
+# Copyright 2023 the original author or authors.
+# <p>
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://www.apache.org/licenses/LICENSE-2.0
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javaee7
+displayName: Migrate to JavaEE7
+description: These recipes help with the Migration to Java EE 7, flagging and updating deprecated methods.
+tags:
+  - javaee8
+  - deprecated
+recipeList:
+  - org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
+displayName: Removed OpenJPA providers in the persistence.xml file
+description: >
+  When migrating  to EclipseLink, using OpenJPA providers in EclipseLink results in runtime errors. To resolve these errors, 
+  the recipe removes the flagged OpenJPA provider from the persistence.xml.
+recipeList:
+  - org.openrewrite.xml.ChangeTagValue:
+          elementName: //provider
+          oldValue: org.apache.openjpa.persistence.PersistenceProviderImpl
+          newValue: org.eclipse.persistence.jpa.PersistenceProvider
