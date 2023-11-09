@@ -19,7 +19,7 @@ name: org.openrewrite.java.migrate.javaee7
 displayName: Migrate to JavaEE7
 description: These recipes help with the Migration to Java EE 7, flagging and updating deprecated methods.
 tags:
-  - javaee8
+  - javaee7
   - deprecated
 recipeList:
   - org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
