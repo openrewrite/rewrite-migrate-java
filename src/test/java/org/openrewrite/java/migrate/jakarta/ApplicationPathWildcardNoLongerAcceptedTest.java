@@ -25,7 +25,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import org.openrewrite.java.AddOrUpdateAnnotationAttribute;
 
-public class ApplicationPathWildcardNoLongerAcceptedTest  implements RewriteTest{
+class ApplicationPathWildcardNoLongerAcceptedTest  implements RewriteTest{
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion().
