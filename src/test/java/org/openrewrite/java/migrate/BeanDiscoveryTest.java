@@ -21,7 +21,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.xml.Assertions.xml;
 
-public class BeanDiscoveryTest implements RewriteTest {
+class BeanDiscoveryTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
