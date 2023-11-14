@@ -25,7 +25,7 @@ public class BeanDiscoveryTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResource("/META-INF/rewrite/jakarta-ee-10.yml", "org.openrewrite.java.migrate.jakarta.JakartaEE10");
+        spec.recipe(new BeanDiscovery());
     }
 
     @Test
