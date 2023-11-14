@@ -33,6 +33,6 @@ description: >
   the recipe removes the flagged OpenJPA provider from the persistence.xml.
 recipeList:
   - org.openrewrite.xml.ChangeTagValue:
-          elementName: //provider
-          oldValue: org.apache.openjpa.persistence.PersistenceProviderImpl
-          newValue: org.eclipse.persistence.jpa.PersistenceProvider
+      elementName: /persistence/persistence-unit/provider
+      oldValue: org.apache.openjpa.persistence.PersistenceProviderImpl
+      newValue: org.eclipse.persistence.jpa.PersistenceProvider

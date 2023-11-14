@@ -33,7 +33,7 @@ displayName: Replace `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` w
 description: The  method `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` is deprecated in JavaEE8 and is replaced by `HttpServletRequestWrapper.isRequestedSessionIdFromURL()`
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: javax.servlet.http.HttpServletRequestWrapper isRequestedSessionIdFromUrl(*)
+      methodPattern: javax.servlet.http.HttpServletRequestWrapper isRequestedSessionIdFromUrl()
       newMethodName: isRequestedSessionIdFromURL
       ignoreDefinition: true
 ---
@@ -41,21 +41,22 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8.ApacheDefaultProvider
 displayName: Flags any `org.apache.bval.jsr*` (bval 1.1) and `org.apache.bval.jsr303*` (bval 1.0) package references
 description: >
-  This recipe flags any org.apache.bval.jsr* (bval 1.1) and org.apache.bval.jsr303* (bval 1.0) package references in validation.xml deployment descriptors. 
+  This recipe flags any `org.apache.bval.jsr*` (bval 1.1) and `org.apache.bval.jsr303*` (bval 1.0) package references in validation.xml deployment descriptors. 
   Bean Validation 2.0 and later use the Hibernate Validator implementation instead of the 
   Apache BVal implementation which was used for Bean Validation 1.0 and 1.1
 recipeList:
   - org.openrewrite.xml.ChangeTagValue:
-      elementName: //default-provider
+      elementName: /validation-config/default-provider
       newValue: org.hibernate.validator.HibernateValidator
   - org.openrewrite.xml.ChangeTagValue:
-      elementName: //message-interpolator
+      elementName: /validation-config/message-interpolator
       newValue: org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator
   - org.openrewrite.xml.ChangeTagValue:
-      elementName: //traversable-resolver
+      elementName: /validation-config/traversable-resolver
       newValue: org.hibernate.validator.engine.resolver.DefaultTraversableResolver
   - org.openrewrite.xml.ChangeTagValue:
-      elementName: //constraint-validator-factory
+      elementName: /validation-config/constraint-validator-factory
       newValue: org.hibernate.validator.engine.ConstraintValidatorFactoryImpl
   - org.openrewrite.xml.RemoveXmlTag:
-      xPath: //parameter-name-provider
+      xPath: /validation-config/parameter-name-provider
+      
