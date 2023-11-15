@@ -20,6 +20,7 @@ import lombok.Value;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.xml.ChangeTagAttribute;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Xml;
@@ -31,9 +32,12 @@ import java.util.regex.Pattern;
 @EqualsAndHashCode(callSuper = true)
 public class BeanDiscovery extends Recipe {
 
+    private static final XPathMatcher BEANS_MATCHER = new XPathMatcher("/beans");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("_([^\\/\\.]+)\\.xsd");
+
     @Override
     public String getDisplayName() {
-        return "Behavior change to bean discovery in modules with beans.xml file with no version specified";
+        return "Behavior change to bean discovery in modules with `beans.xml` file with no version specified";
     }
 
     @Override
@@ -44,77 +48,58 @@ public class BeanDiscovery extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         XmlVisitor<ExecutionContext> xmlVisitor = new XmlVisitor<ExecutionContext>() {
-            final Pattern versionPattern = Pattern.compile("_([^\\/\\.]+)\\.xsd");
-
-            boolean hasVersion = false;
-            boolean hasBeanDiscoveryMode = false;
-            String idealVersion = null;
-
             @Override
             public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = (Xml.Tag) super.visitTag(tag, ctx);
-                this.hasVersion = false;
-                if (new XPathMatcher("beans").matches(getCursor())) {
-                    // find versions
-                    t = t.withAttributes(ListUtils.map(t.getAttributes(), this::visitAttributes));
-
-                    if (!this.hasVersion) {
-                        if (this.hasBeanDiscoveryMode) {
-                            t = t.withAttributes(ListUtils.map(t.getAttributes(), this::visitBeanDiscoveryModeAttribute));
-                        } else {
-                            t = t.withAttributes(ListUtils.concat(t.getAttributes(), autoFormat(new Xml.Attribute(Tree.randomId(), "", Markers.EMPTY,
-                                    new Xml.Ident(Tree.randomId(), "", Markers.EMPTY, "bean-discovery-mode"),
-                                    "",
-                                    autoFormat(new Xml.Attribute.Value(Tree.randomId(), "", Markers.EMPTY,
-                                            Xml.Attribute.Value.Quote.Double,
-                                            "all"), ctx)), ctx)));
-                        }
-
-                        String version = this.idealVersion != null ? this.idealVersion : "4.0";
-
-                        t = t.withAttributes(ListUtils.concat(t.getAttributes(), autoFormat(new Xml.Attribute(Tree.randomId(), "", Markers.EMPTY,
-                                new Xml.Ident(Tree.randomId(), "", Markers.EMPTY, "version"),
-                                "",
-                                autoFormat(new Xml.Attribute.Value(Tree.randomId(), "", Markers.EMPTY,
-                                        Xml.Attribute.Value.Quote.Double,
-                                        version), ctx)), ctx)));
-                    }
-
+                if (!BEANS_MATCHER.matches(getCursor()) || t.getAttributes().stream()
+                        .map(Xml.Attribute::getKeyAsString)
+                        .anyMatch("version"::equals)) {
+                    return t;
                 }
-                return t;
+
+                // Determine which tags are already present
+                boolean hasBeanDiscoveryMode = false;
+                String idealVersion = null;
+                for (Xml.Attribute attribute : t.getAttributes()) {
+                    if (attribute.getKeyAsString().equals("bean-discovery-mode")) {
+                        hasBeanDiscoveryMode = true;
+                    } else if (attribute.getKeyAsString().endsWith("schemaLocation")) {
+                        String schemaLocation = attribute.getValueAsString();
+                        idealVersion = parseVersion(schemaLocation);
+                    }
+                }
+
+                // Update or apply bean-discovery-mode=all
+                if (hasBeanDiscoveryMode) {
+                    TreeVisitor<?, ExecutionContext> changeTagVisitor = new ChangeTagAttribute("beans", "bean-discovery-mode", "all", null).getVisitor();
+                    t = (Xml.Tag) changeTagVisitor.visit(t, ctx, getCursor());
+                } else {
+                    t = t.withAttributes(ListUtils.concat(t.getAttributes(), autoFormat(new Xml.Attribute(Tree.randomId(), "", Markers.EMPTY,
+                            new Xml.Ident(Tree.randomId(), "", Markers.EMPTY, "bean-discovery-mode"),
+                            "",
+                            autoFormat(new Xml.Attribute.Value(Tree.randomId(), "", Markers.EMPTY,
+                                    Xml.Attribute.Value.Quote.Double,
+                                    "all"), ctx)), ctx)));
+                }
+
+                // Add version attribute
+                String version = idealVersion != null ? idealVersion : "4.0";
+                Xml.Attribute versionAttribute = new Xml.Attribute(Tree.randomId(), "", Markers.EMPTY,
+                        new Xml.Ident(Tree.randomId(), "", Markers.EMPTY, "version"),
+                        "",
+                        autoFormat(new Xml.Attribute.Value(Tree.randomId(), "", Markers.EMPTY,
+                                Xml.Attribute.Value.Quote.Double,
+                                version), ctx));
+                return t.withAttributes(ListUtils.concat(t.getAttributes(), autoFormat(versionAttribute, ctx)));
             }
 
             private String parseVersion(String schemaLocation) {
                 String version = null;
-                Matcher m = versionPattern.matcher(schemaLocation);
+                Matcher m = VERSION_PATTERN.matcher(schemaLocation);
                 if (m.find()) {
                     version = m.group(1).replace("_", ".");
                 }
                 return version;
-            }
-
-            private Xml.Attribute visitBeanDiscoveryModeAttribute(Xml.Attribute attribute) {
-                if (attribute.getKeyAsString().equals("bean-discovery-mode")) {
-                    return attribute.withValue(
-                            new Xml.Attribute.Value(attribute.getId(),
-                                    "",
-                                    attribute.getMarkers(),
-                                    attribute.getValue().getQuote(),
-                                    "all"));
-                }
-                return attribute;
-            }
-
-            private Xml.Attribute visitAttributes(Xml.Attribute attribute) {
-                if (attribute.getKeyAsString().equals("version")) {
-                    hasVersion = true;
-                } else if (attribute.getKeyAsString().equals("bean-discovery-mode")) {
-                    this.hasBeanDiscoveryMode = true;
-                } else if (attribute.getKeyAsString().contains("schemaLocation")) {
-                    String schemaLocation = attribute.getValueAsString();
-                    this.idealVersion = parseVersion(schemaLocation);
-                }
-                return attribute;
             }
         };
         return Preconditions.check(new HasSourcePath<>("**/beans.xml"), xmlVisitor);
