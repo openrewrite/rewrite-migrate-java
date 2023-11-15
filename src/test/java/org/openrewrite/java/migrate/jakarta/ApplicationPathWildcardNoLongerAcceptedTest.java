@@ -75,7 +75,8 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
             public class ApplicationPathWithWildcard extends Application {             
                 
             }
-             """, """
+             """,
+            """
                         
             package com.test;
                         
@@ -94,7 +95,8 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
     void noUpdateAnnotation() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+            """
             package com.test;
             import jakarta.ws.rs.ApplicationPath;
             import jakarta.ws.rs.core.Application;
