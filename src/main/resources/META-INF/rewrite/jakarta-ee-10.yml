@@ -32,6 +32,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
   - org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
   - org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
+  - org.openrewrite.java.migrate.BeanDiscovery
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
