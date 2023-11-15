@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -25,86 +24,13 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
-class UpgradeSunJavaToJava11Test implements RewriteTest {
+class IBMSemeruTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
           .parser(JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.new"))
-          .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate").build()
-            .activateRecipes("org.openrewrite.java.migrate.Java8toJava11", "org.openrewrite.java.migrate.IBMSemeru"));
-    }
-
-    @Test
-    void internalBindContextFactory() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              class Foo {
-                  void bar() {
-                      com.sun.xml.internal.bind.v2.ContextFactory contextFactory = null;
-                      contextFactory.hashCode();
-                  }
-              }
-              """,
-            """
-              class Foo {
-                  void bar() {
-                      com.sun.xml.bind.v2.ContextFactory contextFactory = null;
-                      contextFactory.hashCode();
-                  }
-              }
-              """
-          ),
-          java(
-            """
-              import com.sun.xml.internal.bind.v2.ContextFactory;
-                 
-              class Foo2 {
-                void bar() {
-                    ContextFactory factory = null;
-                    factory.hashCode();
-                }
-              }
-              """,
-            """
-              import com.sun.xml.bind.v2.ContextFactory;
-                 
-              class Foo2 {
-                void bar() {
-                    ContextFactory factory = null;
-                    factory.hashCode();
-                }
-              }
-              """
-          ),
-          java(
-            """
-              import com.sun.xml.internal.bind.v2.*;
-                
-              class Foo3 {
-                void bar() {
-                    ContextFactory factory = null;
-                    factory.hashCode();
-                }
-                
-              }
-              """,
-            """
-              import com.sun.xml.bind.v2.ContextFactory;
-              import com.sun.xml.internal.bind.v2.*;
-                
-              class Foo3 {
-                void bar() {
-                    ContextFactory factory = null;
-                    factory.hashCode();
-                }
-                
-              }
-              """
-          )
-        );
+          .recipeFromResource("/META-INF/rewrite/ibm-java.yml", "org.openrewrite.java.migrate.IBMSemeru");
     }
 
     @Test
@@ -270,7 +196,7 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
                     com.sun.net.ssl.TrustManagerFactorySpi tmfs;
                     com.sun.net.ssl.X509KeyManager x509km;
                     com.sun.net.ssl.X509TrustManager xtm;
-                
+                                
                     HostnameVerifier hv2;
                     HttpsURLConnection huc2;
                     KeyManager km2;
@@ -315,7 +241,7 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
                     javax.net.ssl.TrustManagerFactorySpi tmfs;
                     javax.net.ssl.X509KeyManager x509km;
                     javax.net.ssl.X509TrustManager xtm;
-                
+                                
                     HostnameVerifier hv2;
                     HttpsURLConnection huc2;
                     KeyManager km2;
