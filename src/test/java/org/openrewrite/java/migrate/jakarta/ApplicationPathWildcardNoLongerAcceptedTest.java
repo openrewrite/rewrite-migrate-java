@@ -73,8 +73,7 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
             import jakarta.ws.rs.core.Application;
                         
             @ApplicationPath(value="should-flag/*")
-            public class ApplicationPathWithWildcard extends Application {             
-                
+            public class ApplicationPathWithWildcard extends Application {                          
             }
             """,
             """
@@ -85,8 +84,7 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
             import jakarta.ws.rs.core.Application;
                                      
             @ApplicationPath(value="should-flag")    
-            public class ApplicationPathWithWildcard extends Application { 
-               
+            public class ApplicationPathWithWildcard extends Application {    
             }
             """
           )
