@@ -39,7 +39,8 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
     void updateFacesManagedBean() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+            """
             import javax.enterprise.context.ApplicationScoped;
             import javax.enterprise.context.RequestScoped;
             import javax.enterprise.context.SessionScoped;  
@@ -54,9 +55,9 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
             @NoneScoped
             @ViewScoped
             public class ApplicationBean2 {
-             
             }              
-            """, """
+            """,
+            """
             import jakarta.enterprise.context.ApplicationScoped;
             import jakarta.enterprise.context.Dependent;
             import jakarta.enterprise.context.RequestScoped;
@@ -71,7 +72,6 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
             @Dependent
             @ViewScoped
             public class ApplicationBean2 {
-                          
             }             
             """
           )
