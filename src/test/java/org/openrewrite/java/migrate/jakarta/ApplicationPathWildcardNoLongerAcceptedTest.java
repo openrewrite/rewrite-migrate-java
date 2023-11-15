@@ -32,7 +32,6 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
           .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
             .activateRecipes("org.openrewrite.java.migrate.jakarta.ApplicationPathWildcardNoLongerAccepted"));
     }
-
     @Test
     void updateAnnotation() {
         rewriteRun(
@@ -44,10 +43,9 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
             import jakarta.ws.rs.core.Application;                    
                        
             @ApplicationPath("should-flag/*")
-            public class ApplicationPathWithWildcard extends Application {             
-                
+            public class ApplicationPathWithWildcard extends Application {               
             }
-             """, """
+            """, """
                         
             package com.test;
                         
@@ -55,14 +53,12 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
             import jakarta.ws.rs.core.Application;                    
                         
             @ApplicationPath("should-flag")    
-            public class ApplicationPathWithWildcard extends Application { 
-               
+            public class ApplicationPathWithWildcard extends Application {          
             }
             """
           )
         );
     }
-
     @Test
     void updateAnnotationValue() {
         rewriteRun(
@@ -92,7 +88,6 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
           )
         );
     }
-
     @Test
     void noUpdateAnnotation() {
         rewriteRun(
@@ -103,8 +98,7 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
             import jakarta.ws.rs.core.Application;
                       
             @ApplicationPath("should-not-flag*")
-            public class TestAnnotate extends Application { }
-             
+            public class TestAnnotate extends Application { }        
             """
           )
         );
