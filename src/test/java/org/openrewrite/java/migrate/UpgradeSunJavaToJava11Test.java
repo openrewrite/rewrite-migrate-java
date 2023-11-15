@@ -26,7 +26,6 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
 class UpgradeSunJavaToJava11Test implements RewriteTest {
-
     @Override
     public void defaults(RecipeSpec spec) {
         spec
@@ -34,25 +33,24 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
             .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.new"))
           .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate").build()
             .activateRecipes("org.openrewrite.java.migrate.Java8toJava11", "org.openrewrite.java.migrate.IBMSemeru"));
-
     }
 
     @Test
-    void testInternalBindContextFactory() {
+    void internalBindContextFactory() {
         //language=java
         rewriteRun(
           java(
             """
-              public class TestInternalBindContextFactoryAPIs {
-                  public void testInternalBindContextFactory() {
+              class Foo {
+                  void bar() {
                       com.sun.xml.internal.bind.v2.ContextFactory contextFactory = null;
                       contextFactory.hashCode();
                   }
               }
               """,
             """
-              public class TestInternalBindContextFactoryAPIs {
-                  public void testInternalBindContextFactory() {
+              class Foo {
+                  void bar() {
                       com.sun.xml.bind.v2.ContextFactory contextFactory = null;
                       contextFactory.hashCode();
                   }
@@ -63,8 +61,8 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
             """
               import com.sun.xml.internal.bind.v2.ContextFactory;
                  
-              public class TestInternalBindContextFactoryAPIs2 {
-                public void testInternalBindContextFactory() {
+              class Foo2 {
+                void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
@@ -73,8 +71,8 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
             """
               import com.sun.xml.bind.v2.ContextFactory;
                  
-              public class TestInternalBindContextFactoryAPIs2 {
-                public void testInternalBindContextFactory() {
+              class Foo2 {
+                void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
@@ -85,8 +83,8 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
             """
               import com.sun.xml.internal.bind.v2.*;
                 
-              public class TestInternalBindContextFactoryAPIs3 {
-                public void testInternalBindContextFactory() {
+              class Foo3 {
+                void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
@@ -97,8 +95,8 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
               import com.sun.xml.bind.v2.ContextFactory;
               import com.sun.xml.internal.bind.v2.*;
                 
-              public class TestInternalBindContextFactoryAPIs3 {
-                public void testInternalBindContextFactory() {
+              class Foo3 {
+                void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
@@ -110,18 +108,15 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
     }
 
     @Test
-    void testJREDoNotUseSunNetSslInternalWwwProtocolHttpsHandler() {
+    void doNotUseSunNetSslInternalWwwProtocolHttpsHandler() {
         rewriteRun(
           //language=java
           java(
             """
-              package com.test;
-                            
               import com.sun.net.ssl.internal.www.protocol.https.*;  //do NOT flag this
                             
-              public class TestClass_1{
-                            
-                public static void main(String[] args) {
+              class Foo{
+                void bar() {
                     com.sun.net.ssl.internal.www.protocol.https.Handler handler_1 =           //flag
                         new com.sun.net.ssl.internal.www.protocol.https.Handler();            //flag
                     Handler handler_2 =   new Handler("String", 1); //flag (2)
@@ -142,14 +137,11 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
               }
               """,
             """
-              package com.test;
-                            
               import com.ibm.net.ssl.www2.protocol.https.Handler;
               import com.sun.net.ssl.internal.www.protocol.https.*;  //do NOT flag this
                             
-              public class TestClass_1{
-                            
-                public static void main(String[] args) {
+              class Foo{
+                void bar() {
                     com.ibm.net.ssl.www2.protocol.https.Handler handler_1 =           //flag
                         new com.ibm.net.ssl.www2.protocol.https.Handler();            //flag
                     Handler handler_2 =   new Handler("String", 1); //flag (2)
@@ -174,17 +166,15 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
     }
 
     @Test
-    void testJREDoNotUseSunNetSslInternalWwwProtocol() {
+    void doNotUseSunNetSslInternalWwwProtocol() {
         rewriteRun(
           //language=java
           java(
             """
-              package com.test;
-                            
-              public class TestClass_1{
+              class Foo{
                 private String flagMe = "com.sun.net.ssl.internal.www.protocol"; //flag this
                             
-                public static void main(String[] args) {
+                void bar() {
                     System.setProperty("java.protocol.handler.pkgs", "com.sun.net.ssl.internal.www.protocol"); //flag this
                     String s1 = "com.sun.net.ssl";                              //DO NOT FLAG
                     String s2 = "com.sun.net.ssl.internal";                     //DO NOT FLAG
@@ -196,12 +186,10 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
               }
               """,
             """
-              package com.test;
-               
-              public class TestClass_1{
+              class Foo{
                 private String flagMe = "com.ibm.net.ssl.www2.protocol"; //flag this
                             
-                public static void main(String[] args) {
+                void bar() {
                     System.setProperty("java.protocol.handler.pkgs", "com.ibm.net.ssl.www2.protocol"); //flag this
                     String s1 = "com.sun.net.ssl";                              //DO NOT FLAG
                     String s2 = "com.sun.net.ssl.internal";                     //DO NOT FLAG
@@ -217,16 +205,15 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
     }
 
     @Test
-    void testJREDoNotUseSunNetSslInternalSslProvider() {
+    void doNotUseSunNetSslInternalSslProvider() {
         rewriteRun(
           //language=java
           java(
             """
               import com.sun.net.ssl.internal.ssl.*;  // do NOT flag, handled by other rule
                             
-              public class TestClass_2{
-               
-                public static void main(String[] args) {
+              class TestClass_2{
+                void bar() {
                     Provider provider_4 = new Provider();  // flag (2)
                 }
                             
@@ -237,9 +224,8 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
               import com.ibm.jsse2.IBMJSSEProvider2;
               import com.sun.net.ssl.internal.ssl.*;  // do NOT flag, handled by other rule
                             
-              public class TestClass_2{
-                            
-                public static void main(String[] args) {
+              class TestClass_2{
+                void bar() {
                     IBMJSSEProvider2 provider_4 = new IBMJSSEProvider2();  // flag (2)
                 }
                             
@@ -251,13 +237,11 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
     }
 
     @Test
-    void testFullyQualifiedPackage() {
+    void fullyQualifiedPackage() {
         rewriteRun(
           version(
             //language=java
             java("""
-                package com.test;
-                               
                 import com.sun.net.ssl.HostnameVerifier;
                 import com.sun.net.ssl.HttpsURLConnection;
                 import com.sun.net.ssl.KeyManager;
@@ -272,40 +256,37 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
                 import com.sun.net.ssl.X509KeyManager;
                 import com.sun.net.ssl.X509TrustManager;
                                
-                public class TestFullyQualifiedPackage {
-                               
-                	public com.sun.net.ssl.HostnameVerifier hv;
-                	public com.sun.net.ssl.HttpsURLConnection huc;
-                	public com.sun.net.ssl.KeyManager km;
-                	public com.sun.net.ssl.KeyManagerFactory kmf;
-                	public com.sun.net.ssl.KeyManagerFactorySpi kmfs;
-                	public com.sun.net.ssl.SSLContext sslc;
-                	public com.sun.net.ssl.SSLContextSpi sslcs;
-                	public com.sun.net.ssl.SSLPermission sslp;
-                	public com.sun.net.ssl.TrustManager tm;
-                	public com.sun.net.ssl.TrustManagerFactory tmf;
-                	public com.sun.net.ssl.TrustManagerFactorySpi tmfs;
-                	public com.sun.net.ssl.X509KeyManager x509km;
-                	public com.sun.net.ssl.X509TrustManager xtm;
-                	
-                	public  HostnameVerifier hv2;
-                	public  HttpsURLConnection huc2;
-                	public  KeyManager km2;
-                	public  KeyManagerFactory kmf2;
-                	public  KeyManagerFactorySpi kmfs2;
-                	public  SSLContext sslc2;
-                	public  SSLContextSpi sslcs2;
-                	public  SSLPermission sslp2;
-                	public  TrustManager tm2;
-                	public  TrustManagerFactory tmf2;
-                	public  TrustManagerFactorySpi tmfs2;
-                	public  X509KeyManager x509km2;
-                	public  X509TrustManager xtm2;
+                class TestFullyQualifiedPackage {
+                    com.sun.net.ssl.HostnameVerifier hv;
+                    com.sun.net.ssl.HttpsURLConnection huc;
+                    com.sun.net.ssl.KeyManager km;
+                    com.sun.net.ssl.KeyManagerFactory kmf;
+                    com.sun.net.ssl.KeyManagerFactorySpi kmfs;
+                    com.sun.net.ssl.SSLContext sslc;
+                    com.sun.net.ssl.SSLContextSpi sslcs;
+                    com.sun.net.ssl.SSLPermission sslp;
+                    com.sun.net.ssl.TrustManager tm;
+                    com.sun.net.ssl.TrustManagerFactory tmf;
+                    com.sun.net.ssl.TrustManagerFactorySpi tmfs;
+                    com.sun.net.ssl.X509KeyManager x509km;
+                    com.sun.net.ssl.X509TrustManager xtm;
+                
+                    HostnameVerifier hv2;
+                    HttpsURLConnection huc2;
+                    KeyManager km2;
+                    KeyManagerFactory kmf2;
+                    KeyManagerFactorySpi kmfs2;
+                    SSLContext sslc2;
+                    SSLContextSpi sslcs2;
+                    SSLPermission sslp2;
+                    TrustManager tm2;
+                    TrustManagerFactory tmf2;
+                    TrustManagerFactorySpi tmfs2;
+                    X509KeyManager x509km2;
+                    X509TrustManager xtm2;
                 }
                 """,
               """
-                package com.test;
-                              
                 import javax.net.ssl.HostnameVerifier;
                 import javax.net.ssl.HttpsURLConnection;
                 import javax.net.ssl.KeyManager;
@@ -320,35 +301,34 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
                 import javax.net.ssl.X509KeyManager;
                 import javax.net.ssl.X509TrustManager;
                               
-                public class TestFullyQualifiedPackage {
-                               
-                	public javax.net.ssl.HostnameVerifier hv;
-                	public javax.net.ssl.HttpsURLConnection huc;
-                	public javax.net.ssl.KeyManager km;
-                	public javax.net.ssl.KeyManagerFactory kmf;
-                	public javax.net.ssl.KeyManagerFactorySpi kmfs;
-                	public javax.net.ssl.SSLContext sslc;
-                	public javax.net.ssl.SSLContextSpi sslcs;
-                	public javax.net.ssl.SSLPermission sslp;
-                	public javax.net.ssl.TrustManager tm;
-                	public javax.net.ssl.TrustManagerFactory tmf;
-                	public javax.net.ssl.TrustManagerFactorySpi tmfs;
-                	public javax.net.ssl.X509KeyManager x509km;
-                	public javax.net.ssl.X509TrustManager xtm;
-                	
-                	public  HostnameVerifier hv2;
-                	public  HttpsURLConnection huc2;
-                	public  KeyManager km2;
-                	public  KeyManagerFactory kmf2;
-                	public  KeyManagerFactorySpi kmfs2;
-                	public  SSLContext sslc2;
-                	public  SSLContextSpi sslcs2;
-                	public  SSLPermission sslp2;
-                	public  TrustManager tm2;
-                	public  TrustManagerFactory tmf2;
-                	public  TrustManagerFactorySpi tmfs2;
-                	public  X509KeyManager x509km2;
-                	public  X509TrustManager xtm2;
+                class TestFullyQualifiedPackage {
+                    javax.net.ssl.HostnameVerifier hv;
+                    javax.net.ssl.HttpsURLConnection huc;
+                    javax.net.ssl.KeyManager km;
+                    javax.net.ssl.KeyManagerFactory kmf;
+                    javax.net.ssl.KeyManagerFactorySpi kmfs;
+                    javax.net.ssl.SSLContext sslc;
+                    javax.net.ssl.SSLContextSpi sslcs;
+                    javax.net.ssl.SSLPermission sslp;
+                    javax.net.ssl.TrustManager tm;
+                    javax.net.ssl.TrustManagerFactory tmf;
+                    javax.net.ssl.TrustManagerFactorySpi tmfs;
+                    javax.net.ssl.X509KeyManager x509km;
+                    javax.net.ssl.X509TrustManager xtm;
+                
+                    HostnameVerifier hv2;
+                    HttpsURLConnection huc2;
+                    KeyManager km2;
+                    KeyManagerFactory kmf2;
+                    KeyManagerFactorySpi kmfs2;
+                    SSLContext sslc2;
+                    SSLContextSpi sslcs2;
+                    SSLPermission sslp2;
+                    TrustManager tm2;
+                    TrustManagerFactory tmf2;
+                    TrustManagerFactorySpi tmfs2;
+                    X509KeyManager x509km2;
+                    X509TrustManager xtm2;
                 }
                 """
             ), 6)
@@ -356,44 +336,26 @@ class UpgradeSunJavaToJava11Test implements RewriteTest {
     }
 
     @Test
-    void testHostnameVerifier() {
+    void hostnameVerifier() {
         rewriteRun(
           version(
             //language=java
             java("""
-                package com.test;
-                               
                 import com.sun.net.ssl.HostnameVerifier;
                                
-                public class TestHostnameVerifier implements HostnameVerifier {
-                               
-                	public TestHostnameVerifier() {
-                		
-                	}
-                               
-                	public boolean verify(String arg0, String arg1) {
-                		
-                		return false;
-                	}
-                               
+                class TestHostnameVerifier implements HostnameVerifier {
+                    public boolean verify(String arg0, String arg1) {
+                        return false;
+                    }
                 }
                 """,
               """
-                package com.test;
-                               
                 import javax.net.ssl.HostnameVerifier;
                                
-                public class TestHostnameVerifier implements HostnameVerifier {
-                               
-                	public TestHostnameVerifier() {
-                		
-                	}
-                               
-                	public boolean verify(String arg0, String arg1) {
-                		
-                		return false;
-                	}
-                               
+                class TestHostnameVerifier implements HostnameVerifier {
+                    public boolean verify(String arg0, String arg1) {
+                        return false;
+                    }
                 }
                 """
             ), 6)
