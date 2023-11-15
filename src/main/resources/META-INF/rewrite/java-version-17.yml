@@ -34,6 +34,7 @@ recipeList:
       minimumJavaMajorVersion: 17
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.java.migrate.lang.UseTextBlocks
+  - org.openrewrite.java.migrate.lombok.LombokValueToRecord
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
   - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
   - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
