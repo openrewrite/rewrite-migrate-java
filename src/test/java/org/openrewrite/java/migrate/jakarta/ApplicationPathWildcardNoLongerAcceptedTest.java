@@ -101,7 +101,8 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
             import jakarta.ws.rs.core.Application;
                       
             @ApplicationPath("should-not-flag*")
-            public class TestAnnotate extends Application { }        
+            public class TestAnnotate extends Application {
+            }        
             """
           )
         );
