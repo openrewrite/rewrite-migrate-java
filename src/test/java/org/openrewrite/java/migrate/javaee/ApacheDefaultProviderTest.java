@@ -32,35 +32,37 @@ class ApacheDefaultProviderTest implements RewriteTest {
     }
 
     @Test
-    void replaceApache() {
+    void apacheDefaultProvider() {
         rewriteRun(
           //language=xml
-          xml("""
-            <?xml version="1.0" encoding="UTF-8"?>
-            <validation-config
-                xmlns="http://jboss.org/xml/ns/javax/validation/configuration"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://jboss.org/xml/ns/javax/validation/configuration validation-configuration-1.1.xsd"
-                version="1.1">
-                <default-provider>org.apache.bval.jsr303.ApacheValidationProvider</default-provider>
-                <message-interpolator>org.apache.bval.jsr.DefaultMessageInterpolator</message-interpolator>
-                <traversable-resolver>org.apache.bval.jsr.resolver.DefaultTraversableResolver</traversable-resolver>
-                <constraint-validator-factory>org.apache.bval.jsr.DefaultConstraintValidatorFactory</constraint-validator-factory>
-                <parameter-name-provider>org.apache.bval.jsr.parameter.DefaultParameterNameProvider</parameter-name-provider>
-            </validation-config>
-             """, """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <validation-config
-                xmlns="http://jboss.org/xml/ns/javax/validation/configuration"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://jboss.org/xml/ns/javax/validation/configuration validation-configuration-1.1.xsd"
-                version="1.1">
-                <default-provider>org.hibernate.validator.HibernateValidator</default-provider>
-                <message-interpolator>org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator</message-interpolator>
-                <traversable-resolver>org.hibernate.validator.engine.resolver.DefaultTraversableResolver</traversable-resolver>
-                <constraint-validator-factory>org.hibernate.validator.engine.ConstraintValidatorFactoryImpl</constraint-validator-factory>                                                                                                                 
-            </validation-config>
-             """
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <validation-config
+                  xmlns="http://jboss.org/xml/ns/javax/validation/configuration"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://jboss.org/xml/ns/javax/validation/configuration validation-configuration-1.1.xsd"
+                  version="1.1">
+                  <default-provider>org.apache.bval.jsr303.ApacheValidationProvider</default-provider>
+                  <message-interpolator>org.apache.bval.jsr.DefaultMessageInterpolator</message-interpolator>
+                  <traversable-resolver>org.apache.bval.jsr.resolver.DefaultTraversableResolver</traversable-resolver>
+                  <constraint-validator-factory>org.apache.bval.jsr.DefaultConstraintValidatorFactory</constraint-validator-factory>
+                  <parameter-name-provider>org.apache.bval.jsr.parameter.DefaultParameterNameProvider</parameter-name-provider>
+              </validation-config>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <validation-config
+                  xmlns="http://jboss.org/xml/ns/javax/validation/configuration"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://jboss.org/xml/ns/javax/validation/configuration validation-configuration-1.1.xsd"
+                  version="1.1">
+                  <default-provider>org.hibernate.validator.HibernateValidator</default-provider>
+                  <message-interpolator>org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator</message-interpolator>
+                  <traversable-resolver>org.hibernate.validator.engine.resolver.DefaultTraversableResolver</traversable-resolver>
+                  <constraint-validator-factory>org.hibernate.validator.engine.ConstraintValidatorFactoryImpl</constraint-validator-factory>                                                                                                                 
+              </validation-config>
+              """
           )
         );
     }

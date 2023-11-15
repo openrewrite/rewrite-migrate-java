@@ -29,7 +29,7 @@ class UpdateApacheWSSecurityPackagesTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-          .classpathFromResources(new InMemoryExecutionContext(), "wss4j-1.6.19", "wss4j-ws-security-common-2.0.0"))
+            .classpathFromResources(new InMemoryExecutionContext(), "wss4j-1.6.19", "wss4j-ws-security-common-2.0.0"))
           .recipe(Environment.builder()
             .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
             .build()
@@ -37,32 +37,30 @@ class UpdateApacheWSSecurityPackagesTest implements RewriteTest {
     }
 
     @Test
-    public void updateApache() {
+    void updateApacheWSSecurityPackages() {
         rewriteRun(
           //language=java
-          java("""
-            package com.test;
-
-            import org.apache.ws.security.WSSecurityException;
-            import org.apache.ws.security.components.crypto.CryptoBase;
-            public class Test {
-                void foo() {                       
-                    WSSecurityException x = new WSSecurityException(1,"");            
-                    CryptoBase base = null;                  
-                }
-            }
-            """, """
-            package com.test;
-                        
-            import org.apache.wss4j.common.ext.WSSecurityException;
-            import org.apache.wss4j.common.ext.components.crypto.CryptoBase;
-            public class Test {
-                void foo() {                       
-                    WSSecurityException x = new WSSecurityException(1,"");                    
-                    CryptoBase base = null;                       
-                }
-            }
+          java(
             """
+              import org.apache.ws.security.WSSecurityException;
+              import org.apache.ws.security.components.crypto.CryptoBase;
+              class Test {
+                  void foo() {
+                      WSSecurityException x = new WSSecurityException(1,"");
+                      CryptoBase base = null;
+                  }
+              }
+              """,
+            """
+              import org.apache.wss4j.common.ext.WSSecurityException;
+              import org.apache.wss4j.common.ext.components.crypto.CryptoBase;
+              class Test {
+                  void foo() {
+                      WSSecurityException x = new WSSecurityException(1,"");
+                      CryptoBase base = null;
+                  }
+              }
+              """
           )
         );
     }

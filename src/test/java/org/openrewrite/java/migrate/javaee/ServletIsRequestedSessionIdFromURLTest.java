@@ -28,37 +28,32 @@ class ServletIsRequestedSessionIdFromURLTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-          .classpathFromResources(new InMemoryExecutionContext(), "javax.servlet-3.0"))
+            .classpathFromResources(new InMemoryExecutionContext(), "javax.servlet-3.0"))
           .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.javaee8")
             .build().activateRecipes("org.openrewrite.java.migrate.javaee8.ServletIsRequestedSessionIdFromURL"));
     }
 
     @Test
-    void testUpdateSessionURL() {
+    void servletIsRequestedSessionIdFromURL() {
         rewriteRun(
           //language=java
-          java("""
-            package com.test;
-
-            import javax.servlet.http.HttpServletRequestWrapper;
-                        
-            public class IsRequestedSessionIdFromUrlTest {
-                public static void main(String[] args) {
-                    HttpServletRequestWrapper foo = new HttpServletRequestWrapper(null);
-                    foo.isRequestedSessionIdFromUrl();
-                }
-            }
-            """, """
-            package com.test;
-
-            import javax.servlet.http.HttpServletRequestWrapper;
-                        
-            public class IsRequestedSessionIdFromUrlTest {
-                public static void main(String[] args) {
-                    HttpServletRequestWrapper foo = new HttpServletRequestWrapper(null);
-                    foo.isRequestedSessionIdFromURL();
-                }
-            }
-            """));
+          java(
+            """
+              import javax.servlet.http.HttpServletRequestWrapper;
+              class Foo {
+                  void bar(HttpServletRequestWrapper foo) {
+                      foo.isRequestedSessionIdFromUrl();
+                  }
+              }
+              """, """
+              import javax.servlet.http.HttpServletRequestWrapper;
+              class Foo {
+                  void bar(HttpServletRequestWrapper foo) {
+                      foo.isRequestedSessionIdFromURL();
+                  }
+              }
+              """
+          )
+        );
     }
 }
