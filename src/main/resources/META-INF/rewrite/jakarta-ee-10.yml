@@ -32,6 +32,8 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
   - org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
   - org.openrewrite.java.migrate.BeanDiscovery
+  - org.openrewrite.java.migrate.FacesManagedBeansRemoved
+  - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -253,4 +255,35 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.faces.el.ReferenceSyntaxException
       newFullyQualifiedTypeName: jakarta.el.ELException
+      ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
+displayName: TBD
+description: >
+  TBD
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.enterprise.context.ApplicationScoped
+      newFullyQualifiedTypeName: jakarta.enterprise.context.ApplicationScoped
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.faces.bean.ManagedProperty
+      newFullyQualifiedTypeName: jakarta.faces.annotation.ManagedProperty
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.faces.bean.NoneScoped
+      newFullyQualifiedTypeName: jakarta.enterprise.context.Dependent
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.enterprise.context.RequestScoped
+      newFullyQualifiedTypeName: jakarta.enterprise.context.RequestScoped
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.enterprise.context.SessionScoped
+      newFullyQualifiedTypeName: jakarta.enterprise.context.SessionScoped
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.faces.bean.ViewScoped
+      newFullyQualifiedTypeName: jakarta.faces.view.ViewScoped
       ignoreDefinition: true
