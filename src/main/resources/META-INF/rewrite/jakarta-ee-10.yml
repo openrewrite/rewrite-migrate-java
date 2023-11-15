@@ -259,9 +259,9 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
-displayName: TBD
+displayName: Substitute deprecated Faces Managed Beans
 description: >
-  TBD
+  This recipe substitutes Faces Managed Beans, which were deprecated in JavaServer Faces 2.3 and  have been removed from Jakarta Faces 4.0.
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.enterprise.context.ApplicationScoped
