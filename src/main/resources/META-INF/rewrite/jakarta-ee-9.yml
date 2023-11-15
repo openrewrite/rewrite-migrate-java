@@ -1085,6 +1085,6 @@ description: >
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing RestAssured dependencies with their
   counterparts that are compatible with Jakarta EE 9.
 recipeList:
-    - org.openrewrite.java.migrate.jakarta.RemoveTrailingSlashAnnotation:
-        annotationType: "jakarta.ws.rs.ApplicationPath"
+  - org.openrewrite.java.migrate.jakarta.RemoveTrailingSlashAnnotation:
+      annotationType: "jakarta.ws.rs.ApplicationPath"
 
