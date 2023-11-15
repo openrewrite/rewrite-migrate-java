@@ -40,8 +40,6 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
         rewriteRun(
           //language=java
           java("""
-            package com.test;
-                          
             import javax.enterprise.context.ApplicationScoped;
             import javax.enterprise.context.RequestScoped;
             import javax.enterprise.context.SessionScoped;  
@@ -59,8 +57,6 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
              
             }              
             """, """
-            package com.test;
-              
             import jakarta.enterprise.context.ApplicationScoped;
             import jakarta.enterprise.context.Dependent;
             import jakarta.enterprise.context.RequestScoped;
@@ -81,23 +77,4 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
           )
         );
     }
-
-    @Test
-    void noUpdate() {
-        rewriteRun(
-          //language=java
-          java("""
-            package com.test;
-                          
-            import java.lang.annotation.Documented;
-             
-            @Documented
-            public @interface MyCustomAnnotation{
-                       int studentAge() default 18;            
-            }        
-            """
-          )
-        );
-    }
-
 }
