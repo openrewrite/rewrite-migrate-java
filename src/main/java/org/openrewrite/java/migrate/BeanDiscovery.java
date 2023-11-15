@@ -19,13 +19,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
+import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.marker.Markers;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Xml;
-import org.openrewrite.marker.Markers;
-import org.openrewrite.*;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,13 +47,11 @@ public class BeanDiscovery extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new XmlVisitor<ExecutionContext>() {
-
             final Pattern versionPattern = Pattern.compile("_([^\\/\\.]+)\\.xsd");
 
             boolean hasVersion = false;
             boolean hasBeanDiscoveryMode = false;
             String idealVersion = null;
-
 
             @Override
             public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
@@ -62,8 +61,8 @@ public class BeanDiscovery extends Recipe {
                     // find versions
                     t = t.withAttributes(ListUtils.map(t.getAttributes(), this::visitAttributes));
 
-                    if(!this.hasVersion) {
-                        if(this.hasBeanDiscoveryMode) {
+                    if (!this.hasVersion) {
+                        if (this.hasBeanDiscoveryMode) {
                             t = t.withAttributes(ListUtils.map(t.getAttributes(), this::visitBeanDiscoveryModeAttribute));
                         } else {
                             t = t.withAttributes(ListUtils.concat(t.getAttributes(), autoFormat(new Xml.Attribute(Tree.randomId(), "", Markers.EMPTY,
@@ -88,7 +87,7 @@ public class BeanDiscovery extends Recipe {
                 return t;
             }
 
-            public String parseVersion(String schemaLocation) {
+            private String parseVersion(String schemaLocation) {
                 String version = null;
                 Matcher m = versionPattern.matcher(schemaLocation);
                 if (m.find()) {
@@ -97,7 +96,7 @@ public class BeanDiscovery extends Recipe {
                 return version;
             }
 
-            public Xml.Attribute visitBeanDiscoveryModeAttribute(Xml.Attribute attribute) {
+            private Xml.Attribute visitBeanDiscoveryModeAttribute(Xml.Attribute attribute) {
                 if (attribute.getKeyAsString().equals("bean-discovery-mode")) {
                     return attribute.withValue(
                             new Xml.Attribute.Value(attribute.getId(),
@@ -109,7 +108,7 @@ public class BeanDiscovery extends Recipe {
                 return attribute;
             }
 
-            public Xml.Attribute visitAttributes(Xml.Attribute attribute) {
+            private Xml.Attribute visitAttributes(Xml.Attribute attribute) {
                 if (attribute.getKeyAsString().equals("version")) {
                     hasVersion = true;
                 } else if (attribute.getKeyAsString().equals("bean-discovery-mode")) {
@@ -122,5 +121,5 @@ public class BeanDiscovery extends Recipe {
             }
         };
     }
-    
+
 }
