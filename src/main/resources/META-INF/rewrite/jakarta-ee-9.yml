@@ -1088,6 +1088,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RemoveTrailingSlashAnnotation:
       annotationType: "jakarta.ws.rs.ApplicationPath"
 ---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
 displayName: Migrate `org.apache.ws.security` and `org.apache.ws.security.components.crypto` packages to  `org.apache.wss4j.common.ext` and `org.apache.wss4j.common.crypto` packages
 description: >
