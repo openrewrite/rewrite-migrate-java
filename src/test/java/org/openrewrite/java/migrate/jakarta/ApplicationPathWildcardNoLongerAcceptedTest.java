@@ -36,7 +36,8 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
     void updateAnnotation() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+            """
             package com.test;
                     
             import jakarta.ws.rs.ApplicationPath;
@@ -45,7 +46,8 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
             @ApplicationPath("should-flag/*")
             public class ApplicationPathWithWildcard extends Application {               
             }
-            """, """
+            """,
+            """
                         
             package com.test;
                         
