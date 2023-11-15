@@ -74,23 +74,11 @@ public class BeanDiscovery extends Recipe {
                     TreeVisitor<?, ExecutionContext> changeTagVisitor = new ChangeTagAttribute("beans", "bean-discovery-mode", "all", null).getVisitor();
                     t = (Xml.Tag) changeTagVisitor.visit(t, ctx, getCursor());
                 } else {
-                    t = t.withAttributes(ListUtils.concat(t.getAttributes(), autoFormat(new Xml.Attribute(Tree.randomId(), "", Markers.EMPTY,
-                            new Xml.Ident(Tree.randomId(), "", Markers.EMPTY, "bean-discovery-mode"),
-                            "",
-                            autoFormat(new Xml.Attribute.Value(Tree.randomId(), "", Markers.EMPTY,
-                                    Xml.Attribute.Value.Quote.Double,
-                                    "all"), ctx)), ctx)));
+                    t = addAttribute(t, "bean-discovery-mode", "all", ctx);
                 }
 
                 // Add version attribute
-                String version = idealVersion != null ? idealVersion : "4.0";
-                Xml.Attribute versionAttribute = new Xml.Attribute(Tree.randomId(), "", Markers.EMPTY,
-                        new Xml.Ident(Tree.randomId(), "", Markers.EMPTY, "version"),
-                        "",
-                        autoFormat(new Xml.Attribute.Value(Tree.randomId(), "", Markers.EMPTY,
-                                Xml.Attribute.Value.Quote.Double,
-                                version), ctx));
-                return t.withAttributes(ListUtils.concat(t.getAttributes(), autoFormat(versionAttribute, ctx)));
+                return addAttribute(t, "version", idealVersion != null ? idealVersion : "4.0", ctx);
             }
 
             private String parseVersion(String schemaLocation) {
@@ -101,6 +89,15 @@ public class BeanDiscovery extends Recipe {
                 }
                 return version;
             }
+
+            private Xml.Tag addAttribute(Xml.Tag t, String name, String all, ExecutionContext ctx) {
+                Xml.Attribute attribute = new Xml.Attribute(Tree.randomId(), "", Markers.EMPTY,
+                        new Xml.Ident(Tree.randomId(), "", Markers.EMPTY, name),
+                        "",
+                        new Xml.Attribute.Value(Tree.randomId(), "", Markers.EMPTY, Xml.Attribute.Value.Quote.Double, all));
+                return t.withAttributes(ListUtils.concat(t.getAttributes(), autoFormat(attribute, ctx)));
+            }
+
         };
         return Preconditions.check(new HasSourcePath<>("**/beans.xml"), xmlVisitor);
     }
