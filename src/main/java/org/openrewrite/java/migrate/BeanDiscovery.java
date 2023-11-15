@@ -17,10 +17,7 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Recipe;
-import org.openrewrite.Tree;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.xml.XPathMatcher;
@@ -46,7 +43,7 @@ public class BeanDiscovery extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new XmlVisitor<ExecutionContext>() {
+        XmlVisitor<ExecutionContext> xmlVisitor = new XmlVisitor<ExecutionContext>() {
             final Pattern versionPattern = Pattern.compile("_([^\\/\\.]+)\\.xsd");
 
             boolean hasVersion = false;
@@ -120,6 +117,6 @@ public class BeanDiscovery extends Recipe {
                 return attribute;
             }
         };
+        return Preconditions.check(new HasSourcePath<>("**/beans.xml"), xmlVisitor);
     }
-
 }

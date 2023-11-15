@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -46,7 +47,8 @@ class BeanDiscoveryTest implements RewriteTest {
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                   xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd" bean-discovery-mode="all" version="3.0">
               </beans>
-              """
+              """,
+            sourceSpecs -> sourceSpecs.path("beans.xml")
           )
         );
     }
@@ -71,26 +73,49 @@ class BeanDiscoveryTest implements RewriteTest {
                   xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
                   bean-discovery-mode="all" version="4.0">
               </beans>
-              """
+              """,
+            sourceSpecs -> sourceSpecs.path("beans.xml")
           )
         );
     }
 
-    @Test
-    void hasVersionAndMode() {
-        rewriteRun(
-          //language=xml
-          xml(
-            """
-              <?xml version="1.0" encoding="UTF-8"?>
-              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
-                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd"
-                  bean-discovery-mode="all"
-                  version="3.0">
-              </beans>
-              """
-          )
-        );
+    @Nested
+    class NoChanges {
+        @Test
+        void fileNotNamedBeansXml() {
+            rewriteRun(
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd">
+                  </beans>
+                  """,
+                sourceSpecs -> sourceSpecs.path("not-beans.xml")
+              )
+            );
+        }
+
+        @Test
+        void alreadyHasVersionAndMode() {
+            rewriteRun(
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd"
+                      bean-discovery-mode="all"
+                      version="3.0">
+                  </beans>
+                  """,
+                sourceSpecs -> sourceSpecs.path("beans.xml")
+              )
+            );
+        }
+
     }
 }
