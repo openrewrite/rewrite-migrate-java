@@ -21,11 +21,16 @@ import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.marker.Markers;
+
+import org.openrewrite.java.tree.*;
+import org.openrewrite.staticanalysis.RemoveUnusedLocalVariables;
+import org.openrewrite.staticanalysis.SimplifyConstantIfBranchExecution;;import java.util.UUID;
+
+import static org.openrewrite.Tree.randomId;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -50,14 +55,16 @@ public class UpdateBeanIsNullable extends Recipe {
 
     private static class MethodInvocationVisitor extends JavaVisitor<ExecutionContext> {
 
-        @Nullable
         @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
+        public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
             if (!methodInputPattern.matches(method)) {
                 return method;
             }
+            // clean up leftover conditions and remove unused variables
+            doAfterVisit(new SimplifyConstantIfBranchExecution().getVisitor());
+            doAfterVisit(new RemoveUnusedLocalVariables(null).getVisitor());
             //case where we delete here create a build a template with just false being returned
-            return JavaTemplate.builder("Boolean.valueOf(\"false\")").build().apply(getCursor(), method.getCoordinates().replace());
+            return new J.Literal(randomId(), Space.EMPTY, Markers.EMPTY, Boolean.FALSE, "false", null, JavaType.Primitive.Boolean);
         }
     }
 

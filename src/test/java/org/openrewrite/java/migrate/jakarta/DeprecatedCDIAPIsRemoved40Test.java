@@ -69,8 +69,8 @@ import static org.openrewrite.java.Assertions.java;
             		Set<Bean<?>> myBeans = beanManager.getBeans("my precious beans");
             		Bean myFavoriteBean = myBeans.stream().findFirst().get();
             		if(!myFavoriteBean.isNullable()){
-            		    //do something
-            		};
+            		    return;
+            		}
             	}
             }
             """, """
@@ -101,9 +101,7 @@ import static org.openrewrite.java.Assertions.java;
                     
                     		Set<Bean<?>> myBeans = beanManager.getBeans("my precious beans");
                     		Bean myFavoriteBean = myBeans.stream().findFirst().get();
-                    		if(!Boolean.valueOf("false")){
-                    		    //do something
-                    		};
+                            return;
                     	}
                     }
                     """));
