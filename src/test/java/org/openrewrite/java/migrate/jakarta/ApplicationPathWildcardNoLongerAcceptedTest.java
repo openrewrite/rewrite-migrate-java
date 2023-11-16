@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -28,82 +27,68 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-          .classpathFromResources(new InMemoryExecutionContext(), "jakarta.ws.rs-api-2.1.3", "jakarta.ws.rs-api-3.1.0"))
-          .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
-            .activateRecipes("org.openrewrite.java.migrate.jakarta.ApplicationPathWildcardNoLongerAccepted"));
+            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.ws.rs-api-2.1.3", "jakarta.ws.rs-api-3.1.0"))
+          .recipe(new ApplicationPathWildcardNoLongerAccepted());
     }
+
     @Test
     void updateAnnotation() {
         rewriteRun(
           //language=java
           java(
             """
-            package com.test;
-                    
-            import jakarta.ws.rs.ApplicationPath;
-            import jakarta.ws.rs.core.Application;                    
-                       
-            @ApplicationPath("should-flag/*")
-            public class ApplicationPathWithWildcard extends Application {               
-            }
-            """,
+              import jakarta.ws.rs.ApplicationPath;
+              import jakarta.ws.rs.core.Application;
+              @ApplicationPath("should-flag/*")
+              public class ApplicationPathWithWildcard extends Application {
+              }
+              """,
             """
-                        
-            package com.test;
-                        
-            import jakarta.ws.rs.ApplicationPath;
-            import jakarta.ws.rs.core.Application;                    
-                        
-            @ApplicationPath("should-flag")    
-            public class ApplicationPathWithWildcard extends Application {          
-            }
-            """
+              import jakarta.ws.rs.ApplicationPath;
+              import jakarta.ws.rs.core.Application;
+              @ApplicationPath("should-flag")
+              public class ApplicationPathWithWildcard extends Application {
+              }
+              """
           )
         );
     }
+
     @Test
     void updateAnnotationValue() {
         rewriteRun(
           //language=java
           java(
             """
-            package com.test;
-                    
-            import jakarta.ws.rs.ApplicationPath;
-            import jakarta.ws.rs.core.Application;
-                        
-            @ApplicationPath(value="should-flag/*")
-            public class ApplicationPathWithWildcard extends Application {                          
-            }
-            """,
+              import jakarta.ws.rs.ApplicationPath;
+              import jakarta.ws.rs.core.Application;
+              @ApplicationPath(value="should-flag/*")
+              public class ApplicationPathWithWildcard extends Application {
+              }
+              """,
             """
-                        
-            package com.test;
-                        
-            import jakarta.ws.rs.ApplicationPath;
-            import jakarta.ws.rs.core.Application;
-                                     
-            @ApplicationPath(value="should-flag")    
-            public class ApplicationPathWithWildcard extends Application {    
-            }
-            """
+              import jakarta.ws.rs.ApplicationPath;
+              import jakarta.ws.rs.core.Application;
+              @ApplicationPath(value="should-flag")
+              public class ApplicationPathWithWildcard extends Application {
+              }
+              """
           )
         );
     }
+
     @Test
     void noUpdateAnnotation() {
         rewriteRun(
           //language=java
           java(
             """
-            package com.test;
-            import jakarta.ws.rs.ApplicationPath;
-            import jakarta.ws.rs.core.Application;
-                      
-            @ApplicationPath("should-not-flag*")
-            public class TestAnnotate extends Application {
-            }        
-            """
+              import jakarta.ws.rs.ApplicationPath;
+              import jakarta.ws.rs.core.Application;
+              @ApplicationPath("should-not-flag*")
+              public class TestAnnotate extends Application {
+              }
+              """
           )
         );
     }

@@ -1079,16 +1079,6 @@ recipeList:
       newVersion: 5.1.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.ApplicationPathWildcardNoLongerAccepted
-displayName: This recipe flags any `javax.ws.rs.ApplicationPath` annotations with values that ends in /* and removes it.
-description: >
-  Java EE has been rebranded to Jakarta EE.  This recipe replaces existing RestAssured dependencies with their
-  counterparts that are compatible with Jakarta EE 9.
-recipeList:
-  - org.openrewrite.java.migrate.jakarta.RemoveTrailingSlashAnnotation:
-      annotationType: "jakarta.ws.rs.ApplicationPath"
----
-type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
 displayName: Migrate `org.apache.ws.security` and `org.apache.ws.security.components.crypto` packages to  `org.apache.wss4j.common.ext` and `org.apache.wss4j.common.crypto` packages
 description: >
