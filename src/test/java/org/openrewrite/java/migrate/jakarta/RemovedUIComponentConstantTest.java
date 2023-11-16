@@ -24,7 +24,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class RemovedUIComponentConstantTest implements RewriteTest {
+class RemovedUIComponentConstantTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -39,33 +39,33 @@ public class RemovedUIComponentConstantTest implements RewriteTest {
     void removedUIComponentConstant_1() {
         rewriteRun(
           //language=java
-          java("""
-            package com.test;
-            import jakarta.faces.component.UIComponent;
+          java(
+            """
+             import jakarta.faces.component.UIComponent;
              
-             public class UseUIComponentConstants {
-             
-             	public static void main(String[] args) {
-             		String str = UIComponent.CURRENT_COMPONENT;
-             		String str2 = UIComponent.CURRENT_COMPOSITE_COMPONENT;
-             		System.out.println(str);
-             		System.out.println(str2);
-             	}
+             class Bar {
+                 void foo() {
+                     String str = UIComponent.CURRENT_COMPONENT;
+                     String str2 = UIComponent.CURRENT_COMPOSITE_COMPONENT;
+                     System.out.println(str);
+                     System.out.println(str2);
+                 }
              }
-            """, """
-            package com.test;
-            import jakarta.faces.component.UIComponent;
+            """, 
+            """
+             import jakarta.faces.component.UIComponent;
              
-             public class UseUIComponentConstants {
-             
-             	public static void main(String[] args) {
-             		String str = UIComponent.getCurrentComponent();
-             		String str2 = UIComponent.getCurrentCompositeComponent();
-             		System.out.println(str);
-             		System.out.println(str2);
-             	}
+             class Bar {
+                 void foo() {
+                     String str = UIComponent.getCurrentComponent();
+                     String str2 = UIComponent.getCurrentCompositeComponent();
+                     System.out.println(str);
+                     System.out.println(str2);
+                 }
              }
-            """));
+            """
+          )
+        );
     }
 
 
