@@ -129,7 +129,7 @@ class IteratorNextTest implements RewriteTest {
               }
               """,
             """
-              import java.util.List;
+              import java.util.*;
                   
               class Foo {
                   void bar(List<String> collection) {
