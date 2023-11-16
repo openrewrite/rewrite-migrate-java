@@ -1,5 +1,5 @@
 #
-# Copyright 2021 the original author or authors.
+# Copyright 2023 the original author or authors.
 # <p>
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,7 +57,9 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.RestAssuredJavaxToJakarta
-
+  - org.openrewrite.java.migrate.jakarta.ApplicationPathWildcardNoLongerAccepted
+  - org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
+  - org.openrewrite.java.migrate.javaee8
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxActivationMigrationToJakartaActivation
@@ -1061,7 +1063,6 @@ recipeList:
       groupId: org.apache.johnzon
       artifactId: "*"
       newClassifier: jakarta
-
 ---
 # Currently this recipe is only updating the artifacts to a version that is compatible with J2EE 9. There still may be
 # breaking changes to the Rest Assured API that need to be addressed.
@@ -1076,3 +1077,18 @@ recipeList:
       groupId: io.rest-assured
       artifactId: "*"
       newVersion: 5.1.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
+displayName: Migrate `org.apache.ws.security` and `org.apache.ws.security.components.crypto` packages to  `org.apache.wss4j.common.ext` and `org.apache.wss4j.common.crypto` packages
+description: >
+  Java EE has been rebranded to Jakarta EE.  This recipe replaces Apache security packages to migrate to Apache `wss4j`
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.ws.security
+      newPackageName: org.apache.wss4j.common.ext
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.ws.security.components.crypto
+      newPackageName: org.apache.wss4j.common.crypto
+      recursive: true
