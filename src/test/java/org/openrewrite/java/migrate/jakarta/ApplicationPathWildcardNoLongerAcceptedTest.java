@@ -27,7 +27,7 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.ws.rs-api-2.1.3", "jakarta.ws.rs-api-3.1.0"))
+            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.ws.rs-api-3.1.0"))
           .recipe(new ApplicationPathWildcardNoLongerAccepted());
     }
 
