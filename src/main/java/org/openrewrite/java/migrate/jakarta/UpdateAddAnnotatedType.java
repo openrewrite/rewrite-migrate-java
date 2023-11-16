@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -27,14 +29,19 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
-@Value
-@EqualsAndHashCode(callSuper = true)
 public class UpdateAddAnnotatedType extends Recipe {
 
     @Option(displayName = "Method Pattern", description = "A method pattern for matching required method definition.", example = "jakarta.enterprise.inject.spi.BeforeBeanDiscovery addAnnotatedType(jakarta.enterprise.inject.spi.AnnotatedType)")
     @NonNull String methodPattern;
-    String TEMPLATE_STRING_JAKARTA = "jakarta.enterprise.inject.spi.AnnotatedType";
-    String TEMPLATE_STRING_JAVAX = "javax.enterprise.inject.spi.AnnotatedType";
+    String templateStringJakarta = "jakarta.enterprise.inject.spi.AnnotatedType";
+    String templateStringJavax = "javax.enterprise.inject.spi.AnnotatedType";
+    MethodMatcher methodInputPattern = null;
+
+    @JsonCreator
+    public UpdateAddAnnotatedType(@NonNull @JsonProperty("methodPattern") String methodPattern) {
+        this.methodPattern = methodPattern;
+        methodInputPattern = new MethodMatcher(methodPattern, false);
+    }
 
     @Override
     public String getDisplayName() {
@@ -48,18 +55,17 @@ public class UpdateAddAnnotatedType extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        MethodMatcher METHOD_INPUT_PATTERN = new MethodMatcher(methodPattern, false);
         String templateBuilderString = null;
         if (methodPattern.contains("jakarta.enterprise.inject.spi.")) {
-            templateBuilderString = TEMPLATE_STRING_JAKARTA;
+            templateBuilderString = templateStringJakarta;
         } else if (methodPattern.contains("javax.enterprise.inject.spi.")) {
-            templateBuilderString = TEMPLATE_STRING_JAVAX;
+            templateBuilderString = templateStringJavax;
         }
         String finalTemplateBuilderString = templateBuilderString;
         return new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                if (METHOD_INPUT_PATTERN.matches(method)) {
+                if (methodInputPattern.matches(method)) {
                     String tempString = "#{any(" + finalTemplateBuilderString + ")},null\"";
                     return JavaTemplate.builder(tempString).
                             build().apply(updateCursor(method),

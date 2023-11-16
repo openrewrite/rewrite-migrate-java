@@ -16,8 +16,8 @@
 
 package org.openrewrite.java.migrate.jakarta;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
@@ -32,8 +32,6 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.JavaParser;
 
-@Value
-@EqualsAndHashCode(callSuper = false)
 public class UpdateBeanManagerMethod extends Recipe {
     @Option(displayName = "Method Pattern",
             description = "A `BeanManager.fireEvent()` or `BeanManager.createInjectionTarget()` matching required",
@@ -50,25 +48,33 @@ public class UpdateBeanManagerMethod extends Recipe {
         return " Updates `BeanManager.fireEvent()` or `BeanManager.createInjectionTarget()`";
     }
 
+    MethodMatcher methodInputPattern = null;
+
+    @JsonCreator
+    public UpdateBeanManagerMethod(@NonNull @JsonProperty("methodPattern") String methodPattern) {
+        this.methodPattern = methodPattern;
+        methodInputPattern = new MethodMatcher(methodPattern, false);
+    }
+
     @Override
     public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MethodInvocationVisitor(methodPattern);
     }
 
     private static class MethodInvocationVisitor extends JavaVisitor<ExecutionContext> {
-        private final MethodMatcher METHOD_PATTERN;
+        private final MethodMatcher methodPattern;
 
         private MethodInvocationVisitor(String methodPattern) {
-            METHOD_PATTERN = new MethodMatcher(methodPattern, false);
+            this.methodPattern = new MethodMatcher(methodPattern, false);
         }
 
         @Nullable
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
             J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ec);
-            if (METHOD_PATTERN.matches(method)) {
+            if (methodPattern.matches(method)) {
                 String newMethodName = "";
-                if(method.getSimpleName().equals("fireEvent")) {
+                if (method.getSimpleName().equals("fireEvent")) {
                     newMethodName = "getEvent()." + "fire";
 
                     JavaType.Method type = method.getMethodType();

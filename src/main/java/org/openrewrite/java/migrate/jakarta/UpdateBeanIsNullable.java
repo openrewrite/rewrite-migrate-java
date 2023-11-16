@@ -41,22 +41,19 @@ public class UpdateBeanIsNullable extends Recipe {
         return "Checks for a method patterns and removes the method call from the class";
     }
 
+    static final MethodMatcher methodInputPattern = new MethodMatcher("jakarta.enterprise.inject.spi.Bean isNullable()", false);
+
     @Override
     public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MethodInvocationVisitor("jakarta.enterprise.inject.spi.Bean isNullable()");
+        return new MethodInvocationVisitor();
     }
 
     private static class MethodInvocationVisitor extends JavaVisitor<ExecutionContext> {
-        private final MethodMatcher METHOD_PATTERN;
-
-        private MethodInvocationVisitor(String methodPattern) {
-            METHOD_PATTERN = new MethodMatcher(methodPattern, false);
-        }
 
         @Nullable
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
-            if (!METHOD_PATTERN.matches(method)) {
+            if (!methodInputPattern.matches(method)) {
                 return method;
             }
             //case where we delete here create a build a template with just false being returned
