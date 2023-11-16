@@ -35,36 +35,6 @@ class SequencedCollectionTest implements RewriteTest {
     }
 
     @Nested
-    class IteratorNext {
-        @Test
-        void sequencedCollectionIteratorNextToGetFirst() {
-            rewriteRun(
-              //language=java
-              java(
-                """
-                  import java.util.*;
-                      
-                  class Foo {
-                      void bar(SequencedCollection<String> collection) {
-                          String first = collection.iterator().next();
-                      }
-                  }
-                  """,
-                """
-                  import java.util.*;
-                                
-                  class Foo {
-                      void bar(SequencedCollection<String> collection) {
-                          String first = collection.getFirst();
-                      }
-                  }
-                  """
-              )
-            );
-        }
-    }
-
-    @Nested
     class SortedSetFirstLast {
         @Test
         void firstToGetFirst() {
