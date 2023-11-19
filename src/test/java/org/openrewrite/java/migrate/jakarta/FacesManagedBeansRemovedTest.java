@@ -58,13 +58,14 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
             }              
             """,
             """
-            import jakarta.enterprise.context.ApplicationScoped;
             import jakarta.enterprise.context.Dependent;
-            import jakarta.enterprise.context.RequestScoped;
-            import jakarta.enterprise.context.SessionScoped;
             import jakarta.faces.annotation.ManagedProperty;
             import jakarta.faces.view.ViewScoped;
-                          
+  
+            import javax.enterprise.context.ApplicationScoped;
+            import javax.enterprise.context.RequestScoped;
+            import javax.enterprise.context.SessionScoped;
+                     
             @ApplicationScoped
             @RequestScoped
             @SessionScoped
@@ -72,7 +73,7 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
             @Dependent
             @ViewScoped
             public class ApplicationBean2 {
-            }             
+            }
             """
           )
         );
