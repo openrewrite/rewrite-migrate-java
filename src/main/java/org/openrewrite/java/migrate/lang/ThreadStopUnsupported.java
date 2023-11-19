@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -24,6 +23,7 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.TextComment;
 import org.openrewrite.marker.Markers;
 
@@ -46,24 +46,37 @@ public class ThreadStopUnsupported extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesJavaVersion<>(21),
-                new JavaVisitor<ExecutionContext>() {
-                    @Override
-                    public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                        if (THREAD_STOP_MATCHER.matches(method)) {
-                            JavaTemplate template = JavaTemplate.builder("throw new UnsupportedOperationException()")
-                                    .contextSensitive().build();
-                            J throwNewUOE = template.apply(getCursor(), method.getCoordinates().replace());
-                            String prefixWhitespace = throwNewUOE.getPrefix().getWhitespace();
-                            String commentText =
-                                    prefixWhitespace + " * `Thread.stop()` always throws a `new UnsupportedOperationException()` in Java 21+." +
-                                    prefixWhitespace + " * For detailed migration instructions see the migration guide available at" +
-                                    prefixWhitespace + " * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html" +
-                                    prefixWhitespace + " ";
-                            return throwNewUOE.withComments(Collections.singletonList(new TextComment(true, commentText, prefixWhitespace, Markers.EMPTY)));
-                        }
-                        return super.visitMethodInvocation(method, executionContext);
+        return new JavaVisitor<ExecutionContext>() {
+            @Override
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
+                J j = super.visitMethodInvocation(method, executionContext);
+                if (THREAD_STOP_MATCHER.matches(method)) {
+                    if (usesJava21(executionContext)) {
+                        JavaTemplate template = JavaTemplate.builder("throw new UnsupportedOperationException()")
+                                .contextSensitive().build();
+                        j = template.apply(getCursor(), method.getCoordinates().replace());
                     }
-                });
+                    if (j.getComments().isEmpty()) {
+                        j = getWithComment(j);
+                    }
+                }
+                return j;
+            }
+
+            private boolean usesJava21(ExecutionContext executionContext) {
+                JavaSourceFile javaSourceFile = getCursor().firstEnclosing(JavaSourceFile.class);
+                return javaSourceFile != null && new UsesJavaVersion<>(21).visit(javaSourceFile, executionContext) != javaSourceFile;
+            }
+
+            private J getWithComment(J j) {
+                String prefixWhitespace = j.getPrefix().getWhitespace();
+                String commentText =
+                        prefixWhitespace + " * `Thread.stop()` always throws a `new UnsupportedOperationException()` in Java 21+." +
+                        prefixWhitespace + " * For detailed migration instructions see the migration guide available at" +
+                        prefixWhitespace + " * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html" +
+                        prefixWhitespace + " ";
+                return j.withComments(Collections.singletonList(new TextComment(true, commentText, prefixWhitespace, Markers.EMPTY)));
+            }
+        };
     }
 }

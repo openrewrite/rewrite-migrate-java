@@ -27,14 +27,64 @@ import static org.openrewrite.java.Assertions.javaVersion;
 class ThreadStopUnsupportedTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new ThreadStopUnsupported())
-          .allSources(src -> src.markers(javaVersion(21)));
+        spec.recipe(new ThreadStopUnsupported());
     }
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/194")
     @DocumentExample
-    void replaceWithThrows() {
+    void addCommentPreJava21() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  void bar() {
+                      Thread.currentThread().stop();
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void bar() {
+                      /*
+                       * `Thread.stop()` always throws a `new UnsupportedOperationException()` in Java 21+.
+                       * For detailed migration instructions see the migration guide available at
+                       * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html
+                       */
+                      Thread.currentThread().stop();
+                  }
+              }
+              """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/194")
+    @DocumentExample
+    void retainCommentIfPresent() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  void bar() {
+                      // I know, I know, but it's a legacy codebase and we're not ready to migrate yet
+                      Thread.currentThread().stop();
+                  }
+              }
+              """,
+            src -> src.markers(javaVersion(8))
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/194")
+    @DocumentExample
+    void replaceWithThrowsOnJava21() {
         rewriteRun(
           //language=java
           java(
@@ -56,7 +106,8 @@ class ThreadStopUnsupportedTest implements RewriteTest {
                       throw new UnsupportedOperationException();
                   }
               }
-              """
+              """,
+            src -> src.markers(javaVersion(21))
           )
         );
     }
