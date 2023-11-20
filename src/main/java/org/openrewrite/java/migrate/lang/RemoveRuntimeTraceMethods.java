@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.openrewrite.java.migrate.lang;
 
 import org.openrewrite.ExecutionContext;
@@ -21,19 +20,16 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Set;
 
-public class RemoveDeprecatedRuntime extends Recipe {
-
-    public static final String TRACE_INSTRUCTIONS = "traceInstructions";
-    public static final String JAVA_LANG_RUNTIME = "java.lang.Runtime";
-    public static final String TRACE_METHOD_CALLS = "traceMethodCalls";
+public class RemoveRuntimeTraceMethods extends Recipe {
+    private static final MethodMatcher TRACE_INSTRUCTIONS = new MethodMatcher("java.lang.Runtime traceInstructions(boolean)");
+    private static final MethodMatcher TRACE_METHOD_CALLS = new MethodMatcher("java.lang.Runtime traceMethodCalls(boolean)");
 
     @Override
     public String getDisplayName() {
@@ -52,19 +48,18 @@ public class RemoveDeprecatedRuntime extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-
-        return Preconditions.check(new UsesType<>(JAVA_LANG_RUNTIME, false),
+        return Preconditions.check(Preconditions.or(
+                        new UsesMethod<>(TRACE_INSTRUCTIONS),
+                        new UsesMethod<>(TRACE_METHOD_CALLS)),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
-                        if(Objects.nonNull(mi.getSelect())
-                                && TypeUtils.isAssignableTo(JAVA_LANG_RUNTIME, mi.getSelect().getType())
-                                && (TRACE_INSTRUCTIONS.equals(mi.getSimpleName()) || TRACE_METHOD_CALLS.equals(mi.getSimpleName())))
+                        if (TRACE_INSTRUCTIONS.matches(mi) || TRACE_METHOD_CALLS.matches(mi)) {
                             return null;
+                        }
                         return mi;
                     }
-            });
+                });
     }
-
 }

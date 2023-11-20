@@ -13,70 +13,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
 
+@EnabledForJreRange(min = JRE.JAVA_8, max = JRE.JAVA_11)
 class RemoveDeprecatedRuntimeTest implements RewriteTest {
-
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new RemoveDeprecatedRuntime());
+        spec.recipe(new RemoveRuntimeTraceMethods());
     }
 
     @Test
     void traceInstructionsRemove() {
         //language=java
         rewriteRun(
-          version(
-            java(
-              """
-                class FooBar{
-                    void test(Runtime r) {
-                        r.traceInstructions();
-                    }
-                }
-                 """,
-              """
-                class FooBar{
-                    void test(Runtime r) {
-                    }
-                }
-                 """
-            ),
-            8
+          java(
+            """
+              class FooBar{
+                  void test(Runtime r) {
+                      r.traceInstructions();
+                  }
+              }
+               """,
+            """
+              class FooBar{
+                  void test(Runtime r) {
+                  }
+              }
+               """
           )
         );
     }
-
 
     @Test
     void traceMethodCallsRemove() {
         //language=java
         rewriteRun(
-          version(
-            java(
-              """
-                class FooBar{
-                    void test(Runtime r) {
-                        r.traceMethodCalls();
-                    }
-                }
-                 """,
-              """
-                class FooBar{
-                    void test(Runtime r) {
-                    }
-                }
-                 """
-            ),
-            8
+          java(
+            """
+              class FooBar{
+                  void test(Runtime r) {
+                      r.traceMethodCalls();
+                  }
+              }
+               """,
+            """
+              class FooBar{
+                  void test(Runtime r) {
+                  }
+              }
+               """
           )
         );
     }
@@ -85,17 +78,14 @@ class RemoveDeprecatedRuntimeTest implements RewriteTest {
     void noChange() {
         //language=java
         rewriteRun(
-          version(
-            java(
-              """
-                class FooBar{
-                    void test(Runtime r) {
-                        r.gc();
-                    }
-                }
-                 """
-            ),
-            8
+          java(
+            """
+              class FooBar{
+                  void test(Runtime r) {
+                      r.gc();
+                  }
+              }
+               """
           )
         );
     }
@@ -104,21 +94,18 @@ class RemoveDeprecatedRuntimeTest implements RewriteTest {
     void noChanges() {
         //language=java
         rewriteRun(
-          version(
-            java(
-              """
-                class FooBar{
-                    public static void main(String[] args){
-                        Runtime r = Runtime.getRuntime();
-                        test(r);
-                    }              
-                    public void test(Runtime r) {
-                        r.gc();
-                    }
-                }
-                 """
-            ),
-            8
+          java(
+            """
+              class FooBar{
+                  public static void main(String[] args){
+                      Runtime r = Runtime.getRuntime();
+                      test(r);
+                  }
+                  public void test(Runtime r) {
+                      r.gc();
+                  }
+              }
+               """
           )
         );
     }
