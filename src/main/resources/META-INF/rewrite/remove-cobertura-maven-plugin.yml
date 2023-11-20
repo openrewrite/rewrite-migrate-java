@@ -21,7 +21,6 @@ description: This recipe will remove Cobertura, as it is not compatible with Jav
 tags:
   - java11
   - cobertura
-
 recipeList:
   - org.openrewrite.maven.RemovePlugin:
       groupId: org.codehaus.mojo
