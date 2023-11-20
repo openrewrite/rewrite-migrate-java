@@ -29,7 +29,7 @@ public class RemovedStateManagerMethodsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-          .classpathFromResources(new InMemoryExecutionContext(), "jakarta.faces-2.3.19", "jakarta.faces-3.0.3", "jakarta.faces-api-4.0.1"))
+            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.faces-2.3.19", "jakarta.faces-3.0.3", "jakarta.faces-api-4.0.1"))
           .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
             .build()
             .activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods"));
@@ -39,97 +39,97 @@ public class RemovedStateManagerMethodsTest implements RewriteTest {
     void stateManagerReplacement() {
         rewriteRun(
           //language=java
-          java("""             
-            package com.test;
-                        
-            import jakarta.faces.application.StateManager;
-            import jakarta.faces.component.UIViewRoot;
-            import jakarta.faces.context.FacesContext;
-                        
-            public class StateManagerParent extends StateManager {
-                        
-            	@Override
-            	public UIViewRoot restoreView(FacesContext arg0, String arg1, String arg2) {
-                    UIViewRoot uv = null;
-            		super.getComponentStateToSave(arg0);
-            		super.getTreeStructureToSave(arg0);
-            		super.restoreComponentState(arg0, uv, arg2);
-            		super.restoreTreeStructure(arg0, arg1, arg2);
-            		return null;
-            	}            
-            }
-            """, """
-            package com.test;
-                        
-            import jakarta.faces.component.UIViewRoot;
-            import jakarta.faces.context.FacesContext;
-            import jakarta.faces.view.StateManagementStrategy;
-                        
-            public class StateManagerParent extends StateManagementStrategy {
-                        
-            	@Override
-            	public UIViewRoot restoreView(FacesContext arg0, String arg1, String arg2) {
-                    UIViewRoot uv = null;
-            		super.saveView(arg0);
-            		super.saveView(arg0);
-            		super.restoreView(arg0, uv, arg2);
-            		super.restoreView(arg0, arg1, arg2);
-            		return null;
-            	}            
-            }
-            """));
+          java(
+            """             
+              import jakarta.faces.application.StateManager;
+              import jakarta.faces.component.UIViewRoot;
+              import jakarta.faces.context.FacesContext;
+                          
+              class StateManagerParent extends StateManager {
+                          
+                  @Override
+                  public UIViewRoot restoreView(FacesContext arg0, String arg1, String arg2) {
+                      UIViewRoot uv = null;
+                      super.getComponentStateToSave(arg0);
+                      super.getTreeStructureToSave(arg0);
+                      super.restoreComponentState(arg0, uv, arg2);
+                      super.restoreTreeStructure(arg0, arg1, arg2);
+                      return null;
+                  }            
+              }
+              """,
+            """
+              import jakarta.faces.component.UIViewRoot;
+              import jakarta.faces.context.FacesContext;
+              import jakarta.faces.view.StateManagementStrategy;
+                          
+              class StateManagerParent extends StateManagementStrategy {
+                          
+                  @Override
+                  public UIViewRoot restoreView(FacesContext arg0, String arg1, String arg2) {
+                      UIViewRoot uv = null;
+                      super.saveView(arg0);
+                      super.saveView(arg0);
+                      super.restoreView(arg0, uv, arg2);
+                      super.restoreView(arg0, arg1, arg2);
+                      return null;
+                  }            
+              }
+              """
+          )
+        );
     }
 
     @Test
     void stateManagerRemove() {
         rewriteRun(
           //language=java
-          java("""             
-            package com.test;
-                       
-            import jakarta.faces.application.StateManager;            
-            import jakarta.faces.context.FacesContext;
-            import java.io.IOException;
-             
-             public class StateMgrTest {
-             
-                 public void test() throws IOException {
-             
-                     StateManager st = null;
-                     FacesContext fc = null;
-                     String var1 = null;
-                     String var2 = null;
-                     st.restoreView(fc,var1,var2);
-                     st.saveSerializedView(fc);
-                     st.saveView(fc);
-                     StateManager.SerializedView sv = null;
-                     st.writeState(fc,sv);
-                 }
-             }
-            """, """
-            package com.test;
-              
-            import jakarta.faces.context.FacesContext;            
-            import jakarta.faces.view.StateManagementStrategy;
+          java(
+            """             
+              import jakarta.faces.application.StateManager;            
+              import jakarta.faces.context.FacesContext;
+              import java.io.IOException;
+               
+               class StateMgrTest {
+               
+                   public void test() throws IOException {
+               
+                       StateManager st = null;
+                       FacesContext fc = null;
+                       String var1 = null;
+                       String var2 = null;
+                       st.restoreView(fc,var1,var2);
+                       st.saveSerializedView(fc);
+                       st.saveView(fc);
+                       StateManager.SerializedView sv = null;
+                       st.writeState(fc,sv);
+                   }
+               }
+              """,
+            """
+              import jakarta.faces.context.FacesContext;            
+              import jakarta.faces.view.StateManagementStrategy;
+                          
+              import java.io.IOException;
                         
-            import java.io.IOException;
-                      
-            public class StateMgrTest {
-             
-                 public void test() throws IOException {
-             
-                     StateManagementStrategy st = null;
-                     FacesContext fc = null;
-                     String var1 = null;
-                     String var2 = null;
-                     st.restoreView(fc,var1,var2);
-                     st.saveView(fc);
-                     st.saveView(fc);
-                     StateManagementStrategy.SerializedView sv = null;
-                     st.writeState(fc,sv);
-                 }
-             }
-            """));
+              class StateMgrTest {
+               
+                   public void test() throws IOException {
+               
+                       StateManagementStrategy st = null;
+                       FacesContext fc = null;
+                       String var1 = null;
+                       String var2 = null;
+                       st.restoreView(fc,var1,var2);
+                       st.saveView(fc);
+                       st.saveView(fc);
+                       StateManagementStrategy.SerializedView sv = null;
+                       st.writeState(fc,sv);
+                   }
+               }
+              """
+          )
+        );
     }
 
 }
