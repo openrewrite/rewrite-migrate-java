@@ -178,6 +178,7 @@ There are currently no recipes that will automatically apply "<Add-Opens>" direc
 
 - http://ibm.biz/WAMT4AppBinaries
 
-# Jakarta EE 8 Migration Recipes
+## Contributing
 
-# Jakarta EE 9 Migration Recipes
+We appreciate all types of contributions. See the [contributing guide](https://github.com/openrewrite/.github/blob/main/CONTRIBUTING.md) for detailed instructions on how to get started.
+
