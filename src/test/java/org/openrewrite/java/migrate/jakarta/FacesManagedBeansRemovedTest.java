@@ -26,28 +26,25 @@ import static org.openrewrite.java.Assertions.java;
 
 class FacesManagedBeansRemovedTest implements RewriteTest {
 
-    @Override
-    public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion()
-          .classpathFromResources(new InMemoryExecutionContext(), "cdi-api-2.0.SP1", "jsf-api-2.1.29-11", "jakarta.enterprise.cdi-api-4.0.1"))
-          .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved"));
-    }
-
     @Test
-    void updateFacesManagedBean() {
+    void updateFacesManagedBeanFromEE8() {
         rewriteRun(
-          //language=java
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+              .classpathFromResources(new InMemoryExecutionContext(), "cdi-api-2.0.SP1", "jsf-api-2.1.29-11", "jakarta.enterprise.cdi-api-4.0.1"))
+            .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
+              .build()
+              .activateRecipes("org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved"))
+,
+        //language=java
           java(
             """
-            import javax.enterprise.context.ApplicationScoped;
-            import javax.enterprise.context.RequestScoped;
-            import javax.enterprise.context.SessionScoped;  
+            import javax.faces.bean.ApplicationScoped;
+            import javax.faces.bean.RequestScoped;
+            import javax.faces.bean.SessionScoped;
             import javax.faces.bean.ManagedProperty;
             import javax.faces.bean.NoneScoped;
             import javax.faces.bean.ViewScoped;
-             
+
             @ApplicationScoped
             @RequestScoped
             @SessionScoped
@@ -55,7 +52,7 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
             @NoneScoped
             @ViewScoped
             public class ApplicationBean2 {
-            }              
+            }
             """,
             """
             import jakarta.enterprise.context.ApplicationScoped;
@@ -64,7 +61,7 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
             import jakarta.enterprise.context.SessionScoped;
             import jakarta.faces.annotation.ManagedProperty;
             import jakarta.faces.view.ViewScoped;
-                          
+
             @ApplicationScoped
             @RequestScoped
             @SessionScoped
@@ -72,9 +69,59 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
             @Dependent
             @ViewScoped
             public class ApplicationBean2 {
-            }             
+            }
             """
           )
         );
     }
+
+    @Test
+    void updateFacesManagedBeanFromEE9() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+              .classpathFromResources(new InMemoryExecutionContext(), "cdi-api-2.0.SP1", "jakarta.faces-api-3.0.0", "jakarta.enterprise.cdi-api-4.0.1"))
+            .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
+              .build()
+              .activateRecipes("org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved"))
+          ,
+          //language=java
+          java(
+            """
+            import jakarta.faces.bean.ApplicationScoped;
+            import jakarta.faces.bean.RequestScoped;
+            import jakarta.faces.bean.SessionScoped;
+            import jakarta.faces.bean.ManagedProperty;
+            import jakarta.faces.bean.NoneScoped;
+            import jakarta.faces.bean.ViewScoped;
+
+            @ApplicationScoped
+            @RequestScoped
+            @SessionScoped
+            @ManagedProperty
+            @NoneScoped
+            @ViewScoped
+            public class ApplicationBean2 {
+            }
+            """,
+            """
+            import jakarta.enterprise.context.ApplicationScoped;
+            import jakarta.enterprise.context.Dependent;
+            import jakarta.enterprise.context.RequestScoped;
+            import jakarta.enterprise.context.SessionScoped;
+            import jakarta.faces.annotation.ManagedProperty;
+            import jakarta.faces.view.ViewScoped;
+
+            @ApplicationScoped
+            @RequestScoped
+            @SessionScoped
+            @ManagedProperty
+            @Dependent
+            @ViewScoped
+            public class ApplicationBean2 {
+            }
+            """
+          )
+        );
+    }
+
 }
