@@ -66,10 +66,11 @@ public class UseEnumSetOf extends Recipe {
                         if (isAssignmentSetOfEnum(type)) {
                             maybeAddImport("java.util.EnumSet");
 
-                            StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
                             List<Expression> args = m.getArguments();
+                            StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
                             args.forEach(o -> setOf.add("#{any()}"));
-                            return JavaTemplate.builder("EnumSet.of(#{any()})")
+
+                            return JavaTemplate.builder(setOf.toString())
                                     .contextSensitive()
                                     .imports("java.util.EnumSet")
                                     .build()
@@ -85,8 +86,8 @@ public class UseEnumSetOf extends Recipe {
                     JavaType.Parameterized parameterized = (JavaType.Parameterized) type;
                     if (TypeUtils.isOfClassType(parameterized.getType(), "java.util.Set")) {
                         return ((JavaType.Parameterized) type).getTypeParameters().stream()
-                                .filter(o -> o instanceof JavaType.Class)
-                                .map(o -> (JavaType.Class) o)
+                                .filter(org.openrewrite.java.tree.JavaType.Class.class::isInstance)
+                                .map(org.openrewrite.java.tree.JavaType.Class.class::cast)
                                 .anyMatch(o -> o.getKind() == JavaType.FullyQualified.Kind.Enum);
                     }
                 }

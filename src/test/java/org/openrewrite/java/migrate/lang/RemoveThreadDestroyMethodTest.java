@@ -20,9 +20,9 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.javaVersion;
 
 class RemoveThreadDestroyMethodTest implements RewriteTest {
 
@@ -36,6 +36,7 @@ class RemoveThreadDestroyMethodTest implements RewriteTest {
     void removeDestroyCall() {
         //language=java
         rewriteRun(
+          spec -> spec.typeValidationOptions(TypeValidation.builder().methodInvocations(false).build()),
           java(
             """
               class FooBar{
@@ -45,7 +46,7 @@ class RemoveThreadDestroyMethodTest implements RewriteTest {
                       thread.destroy();
                   }
               }
-               """,
+              """,
             """
               class FooBar{
                   public void test() {
@@ -53,7 +54,7 @@ class RemoveThreadDestroyMethodTest implements RewriteTest {
                       thread.setName("Main Thread");
                   }
               }
-               """
+              """
           )
         );
     }
@@ -70,7 +71,7 @@ class RemoveThreadDestroyMethodTest implements RewriteTest {
                       thread.setName("Main Thread");
                   }
               }
-               """
+              """
           )
         );
     }
@@ -89,7 +90,7 @@ class RemoveThreadDestroyMethodTest implements RewriteTest {
                   public void destroy(){
                   }
               }
-               """
+              """
           )
         );
     }

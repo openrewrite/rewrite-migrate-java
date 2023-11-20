@@ -23,20 +23,18 @@ import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.marker.JavaVersion;
-import org.openrewrite.java.migrate.table.JavaVersionPerFile;
 import org.openrewrite.java.migrate.table.JavaVersionPerSourceSet;
 import org.openrewrite.java.migrate.table.JavaVersionRow;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.marker.SearchResult;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class AboutJavaVersion extends ScanningRecipe<Map<AboutJavaVersion.ProjectSourceSet, JavaVersionRow>> {
-    transient JavaVersionPerFile javaVersionPerFile = new JavaVersionPerFile(this);
+public class AboutJavaVersion extends Recipe {
     transient JavaVersionPerSourceSet javaVersionPerSourceSet = new JavaVersionPerSourceSet(this);
 
     @Option(required = false,
@@ -57,42 +55,13 @@ public class AboutJavaVersion extends ScanningRecipe<Map<AboutJavaVersion.Projec
     }
 
     @Override
-    public Map<ProjectSourceSet, JavaVersionRow> getInitialValue(ExecutionContext ctx) {
-        return new HashMap<>();
-    }
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        Set<ProjectSourceSet> seenSourceSets = new HashSet<>();
 
-    @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Map<ProjectSourceSet, JavaVersionRow> sourceSetVersion) {
-        return new TreeVisitor<Tree, ExecutionContext>() {
-            @Override
-            @Nullable
-            public Tree visit(@Nullable Tree sourceFile, ExecutionContext ctx) {
-                sourceFile.getMarkers().findFirst(JavaProject.class).ifPresent(javaProject ->
-                        sourceFile.getMarkers().findFirst(JavaSourceSet.class).ifPresent(sourceSet ->
-                                sourceFile.getMarkers().findFirst(JavaVersion.class).ifPresent(version -> sourceSetVersion.put(new ProjectSourceSet(javaProject, sourceSet),
-                                        new JavaVersionRow(
-                                                javaProject.getProjectName(),
-                                                sourceSet.getName(),
-                                                version.getCreatedBy(),
-                                                version.getVmVendor(),
-                                                version.getSourceCompatibility(),
-                                                Integer.toString(version.getMajorReleaseVersion()),
-                                                version.getTargetCompatibility()
-                                        ))
-                                )
-                        )
-                );
-                return sourceFile;
-            }
-        };
-    }
-
-    @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Map<ProjectSourceSet, JavaVersionRow> unused) {
         TreeVisitor<?, ExecutionContext> visitor = new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public Tree visit(@Nullable Tree cu, ExecutionContext ctx) {
-                if(!(cu instanceof JavaSourceFile)) {
+                if (!(cu instanceof JavaSourceFile)) {
                     return cu;
                 }
                 return cu.getMarkers().findFirst(JavaVersion.class)
@@ -101,22 +70,23 @@ public class AboutJavaVersion extends ScanningRecipe<Map<AboutJavaVersion.Projec
                                     .orElse("");
                             String sourceSet = cu.getMarkers().findFirst(JavaSourceSet.class).map(JavaSourceSet::getName)
                                     .orElse("");
-
-                            javaVersionPerFile.insertRow(ctx, new JavaVersionRow(
-                                    projectName,
-                                    sourceSet,
-                                    version.getCreatedBy(),
-                                    version.getVmVendor(),
-                                    version.getSourceCompatibility(),
-                                    Integer.toString(version.getMajorReleaseVersion()),
-                                    version.getTargetCompatibility()
-                            ));
+                            if (seenSourceSets.add(new ProjectSourceSet(projectName, sourceSet))) {
+                                javaVersionPerSourceSet.insertRow(ctx, new JavaVersionRow(
+                                        projectName,
+                                        sourceSet,
+                                        version.getCreatedBy(),
+                                        version.getVmVendor(),
+                                        version.getSourceCompatibility(),
+                                        Integer.toString(version.getMajorReleaseVersion()),
+                                        version.getTargetCompatibility()
+                                ));
+                            }
                             return SearchResult.found(cu, "Java version: " + version.getMajorVersion());
                         })
                         .orElse(cu);
             }
         };
-        if(StringUtils.isNotBlank(whenUsesType)) {
+        if (StringUtils.isNotBlank(whenUsesType)) {
             visitor = Preconditions.check(new UsesType<>(whenUsesType, false), visitor);
         }
         return visitor;
@@ -124,7 +94,7 @@ public class AboutJavaVersion extends ScanningRecipe<Map<AboutJavaVersion.Projec
 
     @Value
     static class ProjectSourceSet {
-        JavaProject javaProject;
-        JavaSourceSet javaSourceSet;
+        String javaProject;
+        String javaSourceSet;
     }
 }

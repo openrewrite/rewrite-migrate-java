@@ -24,6 +24,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
+    @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new UseVarForGenericMethodInvocations())
           .allSources(s -> s.markers(javaVersion(10)));
@@ -172,7 +173,7 @@ public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                       List<String> strs = List.of("one", "two");
                   }
                 }
-                ""","""
+                """, """
                 package com.example.app;
                                     
                 import java.util.List;
@@ -203,7 +204,7 @@ public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                       List<? extends String> lst = List.of("Test");
                   }
                 }
-                ""","""
+                """, """
                 package com.example.app;
                                     
                 import java.util.List;
@@ -237,7 +238,7 @@ public class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                       List<String> strs = myList("one", "two");
                   }
                 }
-                ""","""
+                """, """
                 package com.example.app;
                                     
                 import java.util.List;

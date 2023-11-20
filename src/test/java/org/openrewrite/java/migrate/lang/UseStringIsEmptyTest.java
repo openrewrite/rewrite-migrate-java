@@ -22,7 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class UseStringIsEmptyTest implements RewriteTest {
+class UseStringIsEmptyTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -33,11 +33,15 @@ public class UseStringIsEmptyTest implements RewriteTest {
     @Test
     void lengthGreaterZero() {
         rewriteRun(
+          //language=java
           java(
             """
               class Test {
                   void m(String s) {
                       boolean b = s.length() > 0;
+                      boolean c = 0 < s.length();
+                      boolean d = 0 != s.length();
+                      boolean e = s.length() != 0;
                   }
               }
               """,
@@ -45,6 +49,9 @@ public class UseStringIsEmptyTest implements RewriteTest {
               class Test {
                   void m(String s) {
                       boolean b = !s.isEmpty();
+                      boolean c = !s.isEmpty();
+                      boolean d = !s.isEmpty();
+                      boolean e = !s.isEmpty();
                   }
               }
               """

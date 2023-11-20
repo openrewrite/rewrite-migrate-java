@@ -122,20 +122,22 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
     @Test
     void doNotChangeMethodInvocation() {
         rewriteRun(
-          //language=java
           spec -> spec.parser(
-            JavaParser.fromJavaVersion().dependsOn(
-              """
-                import com.google.common.collect.ImmutableList;
-                                
-                public class A {
-                    ImmutableList<String> immutableList;
-                    public void method(ImmutableList<String> immutableList) {
-                        this.immutableList = immutableList;
-                    }
-                }
+            JavaParser.fromJavaVersion()
+              .classpath("guava")
+              .dependsOn(
+                //language=java
                 """
-            )
+                  import com.google.common.collect.ImmutableList;
+                                  
+                  public class A {
+                      ImmutableList<String> immutableList;
+                      public void method(ImmutableList<String> immutableList) {
+                          this.immutableList = immutableList;
+                      }
+                  }
+                  """
+              )
           ),
           //language=java
           java(

@@ -92,21 +92,23 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
 
     @Test
     void doNotChangeNewClass() {
-        //language=java
         rewriteRun(
           spec -> spec.parser(
-            JavaParser.fromJavaVersion().dependsOn(
-              """
-                import com.google.common.collect.ImmutableSet;
-                      
-                public class A {
-                    ImmutableSet<String> immutableSet;
-                    public A(ImmutableSet<String> immutableSet) {
-                        this.immutableSet = immutableSet;
-                    }
-                }
+            JavaParser.fromJavaVersion()
+              .classpath("guava")
+              .dependsOn(
+                //language=java
                 """
-            )
+                  import com.google.common.collect.ImmutableSet;
+                        
+                  public class A {
+                      ImmutableSet<String> immutableSet;
+                      public A(ImmutableSet<String> immutableSet) {
+                          this.immutableSet = immutableSet;
+                      }
+                  }
+                  """
+              )
           ),
           java(
             """
@@ -122,21 +124,23 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
 
     @Test
     void doNotChangeMethodInvocation() {
-        //language=java
         rewriteRun(
           spec -> spec.parser(
-            JavaParser.fromJavaVersion().dependsOn(
-              """
-                import com.google.common.collect.ImmutableSet;
-                      
-                public class A {
-                    ImmutableSet<String> immutableSet;
-                    public void method(ImmutableSet<String> immutableSet) {
-                        this.immutableSet = immutableSet;
-                    }
-                }
+            JavaParser.fromJavaVersion()
+              .classpath("guava")
+              .dependsOn(
+                //language=java
                 """
-            )
+                  import com.google.common.collect.ImmutableSet;
+                        
+                  public class A {
+                      ImmutableSet<String> immutableSet;
+                      public void method(ImmutableSet<String> immutableSet) {
+                          this.immutableSet = immutableSet;
+                      }
+                  }
+                  """
+              )
           ),
           java(
             """

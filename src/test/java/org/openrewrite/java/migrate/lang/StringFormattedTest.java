@@ -26,6 +26,7 @@ import static org.openrewrite.java.Assertions.version;
 
 @SuppressWarnings("RedundantStringFormatCall")
 class StringFormattedTest implements RewriteTest {
+    @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new StringFormatted())
           .typeValidationOptions(new TypeValidation().methodInvocations(false));
@@ -327,6 +328,29 @@ class StringFormattedTest implements RewriteTest {
                 class A {
                     static final String fmt = "foo %s";
                     String str = fmt.formatted("a");
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void doNotWrapFieldAccess() {
+        //language=java
+        rewriteRun(
+          version(
+            java("""
+                class A {
+                    final String fmt = "foo %s";
+                    String str = String.format(this.fmt, "a");
+                }
+                """,
+              """
+                class A {
+                    final String fmt = "foo %s";
+                    String str = this.fmt.formatted("a");
                 }
                 """
             ),

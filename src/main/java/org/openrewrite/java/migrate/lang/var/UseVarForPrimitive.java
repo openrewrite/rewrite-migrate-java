@@ -68,7 +68,7 @@ public class UseVarForPrimitive extends Recipe {
 
 
         @Override
-        public J.VariableDeclarations visitVariableDeclarations( J.VariableDeclarations vd,  ExecutionContext ctx) {
+        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, ExecutionContext ctx) {
             vd = super.visitVariableDeclarations(vd, ctx);
 
             boolean isGeneralApplicable = DeclarationCheck.isVarApplicable(this.getCursor(), vd);
@@ -86,7 +86,7 @@ public class UseVarForPrimitive extends Recipe {
         }
 
 
-        private J.VariableDeclarations transformToVar( J.VariableDeclarations vd) {
+        private J.VariableDeclarations transformToVar(J.VariableDeclarations vd) {
             Expression initializer = vd.getVariables().get(0).getInitializer();
             String simpleName = vd.getVariables().get(0).getSimpleName();
 
@@ -107,7 +107,7 @@ public class UseVarForPrimitive extends Recipe {
         }
 
 
-        private Expression expandWithPrimitivTypeHint( J.VariableDeclarations vd,  Expression initializer) {
+        private Expression expandWithPrimitivTypeHint(J.VariableDeclarations vd, Expression initializer) {
             String valueSource = ((J.Literal) initializer).getValueSource();
 
             if (valueSource == null) return initializer;

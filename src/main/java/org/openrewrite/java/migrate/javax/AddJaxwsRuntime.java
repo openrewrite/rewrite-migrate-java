@@ -40,9 +40,6 @@ import java.util.*;
 @EqualsAndHashCode(callSuper = true)
 public class AddJaxwsRuntime extends Recipe {
 
-    private static final String LEGACY_JAVA_JAXWS_API_GROUP = "javax.xml.ws";
-    private static final String LEGACY_JAVA_JAXWS_API_ARTIFACT = "jaxws-api";
-
     private static final String JAKARTA_JAXWS_API_GROUP = "jakarta.xml.ws";
     private static final String JAKARTA_JAXWS_API_ARTIFACT = "jakarta.xml.ws-api";
 
@@ -88,7 +85,7 @@ public class AddJaxwsRuntime extends Recipe {
 
     @Value
     @EqualsAndHashCode(callSuper = true)
-    private static class AddJaxwsRuntimeGradle extends Recipe {
+    public static class AddJaxwsRuntimeGradle extends Recipe {
         @Override
         public String getDisplayName() {
             return "Use the latest JAX-WS API and runtime for Jakarta EE 8";
@@ -177,7 +174,7 @@ public class AddJaxwsRuntime extends Recipe {
 
     @Value
     @EqualsAndHashCode(callSuper = true)
-    private static class AddJaxwsRuntimeMaven extends Recipe {
+    public static class AddJaxwsRuntimeMaven extends Recipe {
         @Override
         public String getDisplayName() {
             return "Use the latest JAX-WS API and runtime for Jakarta EE 8";

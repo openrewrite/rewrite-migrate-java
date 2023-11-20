@@ -108,4 +108,30 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
           """));
     }
 
+    @Test
+    void moreObjectsFirstNonNullToObjectsRequireNonNullElse() {
+        //language=java
+        rewriteRun((spec) -> {spec.recipes(Environment.builder()
+            .scanRuntimeClasspath("org.openrewrite.java.migrate.guava")
+            .build()
+            .activateRecipes("org.openrewrite.java.migrate.guava.NoGuavaJava11"));
+            },
+          java("""
+          import com.google.common.base.MoreObjects;
+
+          class A {
+              Object foo(Object obj) {
+                  return MoreObjects.firstNonNull(obj, "default");
+              }
+          }
+          """, """
+          import java.util.Objects;
+
+          class A {
+              Object foo(Object obj) {
+                  return Objects.requireNonNullElse(obj, "default");
+              }
+          }
+          """));
+    }
 }

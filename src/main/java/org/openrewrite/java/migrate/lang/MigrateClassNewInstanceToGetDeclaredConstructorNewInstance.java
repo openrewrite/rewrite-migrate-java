@@ -45,6 +45,7 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
         return "Use `Class#getDeclaredConstructor().newInstance()` instead of the deprecated `Class#newInstance()` in Java 9 or higher.";
     }
 
+    @Override
     public Set<String> getTags() {
         return Collections.singleton("deprecated");
     }

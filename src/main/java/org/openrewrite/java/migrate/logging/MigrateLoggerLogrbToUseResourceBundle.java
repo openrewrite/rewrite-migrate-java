@@ -41,6 +41,7 @@ public class MigrateLoggerLogrbToUseResourceBundle extends Recipe {
         return "Use `Logger#logrb(.., ResourceBundle bundleName, ..)` instead of the deprecated `java.util.logging.Logger#logrb(.., String bundleName, ..)` in Java 8 or higher.";
     }
 
+    @Override
     public Set<String> getTags() {
         return Collections.singleton("deprecated");
     }

@@ -20,6 +20,7 @@ import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -143,7 +144,8 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
     @Test
     void lombokAllArgsConstructor() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().classpath("lombok")),
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath("lombok"))
+            .typeValidationOptions(TypeValidation.builder().constructorInvocations(false).build()),
           //language=java
           version(
             java(
@@ -159,7 +161,7 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
                     @AllArgsConstructor
                     public enum BarEnum {
                         foobar(singletonList(FOO));
-
+                
                         private final List<FooEnum> expectedStates;
                     }
                 }

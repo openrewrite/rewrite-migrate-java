@@ -25,11 +25,12 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-public class JacksonJavaxtoJakartaTest implements RewriteTest {
+class JacksonJavaxtoJakartaTest implements RewriteTest {
 
+    @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(Environment.builder()
-          .scanRuntimeClasspath()
+          .scanRuntimeClasspath("org.openrewrite.java.migrate")
           .build()
           .activateRecipes("org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta"));
     }
