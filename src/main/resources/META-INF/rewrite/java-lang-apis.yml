@@ -34,7 +34,6 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.MigrateCharacterIsJavaLetterToIsJavaIdentifierStart
 displayName: Use `Character#isJavaIdentifierStart(char)`
 description: Use `Character#isJavaIdentifierStart(char)` instead of the deprecated `Character#isJavaLetter(char)` in Java 1.1 or higher.
-
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.lang.Character isJavaLetter(char)
