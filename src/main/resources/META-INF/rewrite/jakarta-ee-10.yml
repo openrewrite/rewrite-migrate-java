@@ -42,17 +42,17 @@ description: >
   In addition, the behavior of these methods has been changed so the setters no longer have any effect, the getComment methods return null, and the getVersion method returns 0.
   The deprecated methods are removed.
 recipeList:
-  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.http.Cookie getComment()
-  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.http.Cookie getVersion()
-  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.http.Cookie setComment(String)
-  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.http.Cookie setVersion(int)
-  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.SessionCookieConfig getComment()
-  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.SessionCookieConfig setComment(String)
 ---
 type: specs.openrewrite.org/v1beta/recipe

@@ -33,7 +33,10 @@ recipeList:
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 17
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
-  - org.openrewrite.java.migrate.lang.RemoveRuntimeTraceMethods
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: java.lang.Runtime traceInstructions(boolean)
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: java.lang.System traceMethodCalls(boolean)
   - org.openrewrite.java.migrate.lang.UseTextBlocks
   - org.openrewrite.java.migrate.lombok.LombokValueToRecord
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert

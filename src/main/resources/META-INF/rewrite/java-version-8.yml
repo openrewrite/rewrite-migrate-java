@@ -24,3 +24,5 @@ tags:
   - java8
 recipeList:
   - org.openrewrite.java.migrate.MXBeanNonPublic
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: java.lang.Thread destroy()
