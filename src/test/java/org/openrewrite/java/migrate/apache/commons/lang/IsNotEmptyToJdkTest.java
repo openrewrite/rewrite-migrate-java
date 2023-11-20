@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.apache.commons.lang;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -53,6 +54,52 @@ class IsNotEmptyToJdkTest implements RewriteTest {
                 }
             }
             """));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+      "org.apache.commons.lang3.StringUtils",
+      "org.apache.maven.shared.utils.StringUtils",
+      "org.codehaus.plexus.util.StringUtils"
+    })
+    void trim(String import_) {
+        // language=java
+        rewriteRun(
+          java(
+            """
+              import %s;
+                            
+              class A {
+                  boolean test(String first) {
+                      boolean a = StringUtils.isEmpty(first.trim());
+                      boolean b = !StringUtils.isEmpty(first.trim());
+                      boolean c = StringUtils.isNotEmpty(first.trim());
+                      boolean d = !StringUtils.isNotEmpty(first.trim()); // yeah, this is weird, but not worth cleaning up
+                      boolean e = StringUtils.isEmpty(foo().trim()); // Not guaranteed safe to replace
+                  }
+                  String foo() {
+                      return "foo";
+                  }
+              }
+              """.formatted(import_),
+            """
+              import %s;
+                            
+              class A {
+                  boolean test(String first) {
+                      boolean a = first.trim().isEmpty();
+                      boolean b = !first.trim().isEmpty();
+                      boolean c = !first.trim().isEmpty();
+                      boolean d = !!first.trim().isEmpty(); // yeah, this is weird, but not worth cleaning up
+                      boolean e = StringUtils.isEmpty(foo().trim()); // Not guaranteed safe to replace
+                  }
+                  String foo() {
+                      return "foo";
+                  }
+              }
+              """.formatted(import_)
+          )
+        );
     }
 
     @ParameterizedTest
@@ -123,6 +170,41 @@ class IsNotEmptyToJdkTest implements RewriteTest {
               """.formatted(afterLine)));
     }
 
+    @Test
+    void convertSimpleGetters() {
+        // language=java
+        rewriteRun(
+          java(
+            """
+              class B {
+                  String field;
+                  String getField() {
+                      return field;
+                  }
+              }
+              """
+          ),
+          java(
+            """
+              import org.apache.commons.lang3.StringUtils;
+                            
+              class A {
+                  boolean test(B b) {
+                      return StringUtils.isEmpty(b.getField());
+                  }
+              }
+              """,
+            """
+              class A {
+                  boolean test(B b) {
+                      return b.getField() == null || b.getField().isEmpty();
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @ParameterizedTest
     @CsvSource(delimiter = '#', textBlock = """
       org.apache.commons.lang3.StringUtils # StringUtils.isEmpty(foo())
@@ -140,7 +222,6 @@ class IsNotEmptyToJdkTest implements RewriteTest {
               import %s;
 
               class A {
-                  String field;
                   boolean test(String first, String second) {
                       return %s;
                   }

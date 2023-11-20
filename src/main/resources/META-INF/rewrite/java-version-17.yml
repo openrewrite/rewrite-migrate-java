@@ -30,9 +30,15 @@ recipeList:
   - org.openrewrite.java.migrate.Java8toJava11
   - org.openrewrite.java.migrate.JavaVersion17
   - org.openrewrite.java.migrate.lang.StringFormatted
-  - org.openrewrite.github.SetupJavaUpgradeJavaVersion
+  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
+      minimumJavaMajorVersion: 17
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.java.migrate.lang.UseTextBlocks
+  - org.openrewrite.java.migrate.lombok.LombokValueToRecord
+  - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
+  - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
+  - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
+  - org.openrewrite.java.migrate.Jre17AgentMainPreMainPublic
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -47,3 +53,62 @@ recipeList:
       version: 17
   - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
       releaseVersion: 17
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
+displayName: Use `java.security.cert` instead of `javax.security.cert`
+description: The `javax.security.cert` package has been deprecated for removal.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.security.cert
+      newPackageName: java.security.cert
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
+displayName: Use `SunJSSE` instead of `com.sun.net.ssl.internal.ssl.Provider`
+description: The `com.sun.net.ssl.internal.ssl.Provider` provider name was removed.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.migrate.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.net.ssl.internal.ssl.Provider
+      newLiteralValue: SunJSSE
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
+displayName: Adopt `setLongThreadID` in `java.util.logging.LogRecord`
+description: Avoid using the deprecated methods in `java.util.logging.LogRecord`
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.logging.LogRecord getThreadID()
+      newMethodName: getLongThreadID
+  - org.openrewrite.java.migrate.ChangeMethodInvocationReturnType:
+      methodPattern: java.util.logging.LogRecord getLongThreadID()
+      newReturnType: long
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.logging.LogRecord setThreadID(int)
+      newMethodName: setLongThreadID
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.Jre17AgentMainPreMainPublic
+displayName: Set visibility of `premain` and `agentmain` methods to `public`
+description: Check for a behavior change in Java agents.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangeMethodAccessLevel:
+      methodPattern: "*..* agentmain(java.lang.String)"
+      newAccessLevel: public
+  - org.openrewrite.java.ChangeMethodAccessLevel:
+      methodPattern: "*..* agentmain(java.lang.String, java.lang.instrument.Instrumentation)"
+      newAccessLevel: public
+  - org.openrewrite.java.ChangeMethodAccessLevel:
+      methodPattern: "*..* premain(java.lang.String)"
+      newAccessLevel: public
+  - org.openrewrite.java.ChangeMethodAccessLevel:
+      methodPattern: "*..* premain(java.lang.String, java.lang.instrument.Instrumentation)"
+      newAccessLevel: public

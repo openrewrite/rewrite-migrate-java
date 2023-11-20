@@ -33,9 +33,9 @@ import org.openrewrite.xml.tree.Xml;
 import java.time.Duration;
 import java.util.*;
 
-@EqualsAndHashCode(callSuper = true)
+@Value
+@EqualsAndHashCode(callSuper = false)
 public class AddJaxbRuntime extends Recipe {
-
     private static final String JAKARTA_API_GROUP = "jakarta.xml.bind";
     private static final String JAKARTA_API_ARTIFACT = "jakarta.xml.bind-api";
 
@@ -49,16 +49,7 @@ public class AddJaxbRuntime extends Recipe {
             description = "Which implementation of the JAXB run-time that will be added to maven projects that have transitive dependencies on the JAXB API",
             valid = {"glassfish", "sun"},
             example = "glassfish")
-    private final String runtime;
-
-    private final AddJaxbRuntimeGradle addJaxbRuntimeGradle;
-    private final AddJaxbRuntimeMaven addJaxbRuntimeMaven;
-
-    public AddJaxbRuntime(String runtime) {
-        this.runtime = runtime;
-        this.addJaxbRuntimeGradle = new AddJaxbRuntimeGradle(runtime);
-        this.addJaxbRuntimeMaven = new AddJaxbRuntimeMaven(runtime);
-    }
+    String runtime;
 
     @Override
     public String getDisplayName() {
@@ -91,12 +82,12 @@ public class AddJaxbRuntime extends Recipe {
 
     @Override
     public List<Recipe> getRecipeList() {
-        return Arrays.asList(addJaxbRuntimeGradle, addJaxbRuntimeMaven);
+        return Arrays.asList(new AddJaxbRuntimeGradle(runtime), new AddJaxbRuntimeMaven(runtime));
     }
 
     @Value
-    @EqualsAndHashCode(callSuper = true)
-    private static class AddJaxbRuntimeGradle extends Recipe {
+    @EqualsAndHashCode(callSuper = false)
+    static class AddJaxbRuntimeGradle extends Recipe {
         String runtime;
 
         @Override
@@ -125,7 +116,7 @@ public class AddJaxbRuntime extends Recipe {
                             doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
                         }
                         g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
-                                SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null
+                                SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
                         ).getVisitor().visit(g, ctx);
                     } else {
                         if (getAfterVisit().isEmpty()) {
@@ -133,7 +124,7 @@ public class AddJaxbRuntime extends Recipe {
                             doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
                         }
                         g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
-                                GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null
+                                GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
                         ).getVisitor().visit(g, ctx);
                     }
                     maybeAddRuntimeDependency(g);
@@ -216,8 +207,8 @@ public class AddJaxbRuntime extends Recipe {
     }
 
     @Value
-    @EqualsAndHashCode(callSuper = true)
-    private static class AddJaxbRuntimeMaven extends Recipe {
+    @EqualsAndHashCode(callSuper = false)
+    static class AddJaxbRuntimeMaven extends Recipe {
         String runtime;
 
         @Override
@@ -324,4 +315,5 @@ public class AddJaxbRuntime extends Recipe {
             };
         }
     }
+
 }

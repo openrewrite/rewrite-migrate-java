@@ -30,6 +30,7 @@ tags:
   - deprecated
   - jakarta
 recipeList:
+  - org.openrewrite.java.migrate.UpgradeToJava7
   - org.openrewrite.java.migrate.UseJavaUtilBase64
   # Add an explicit JAXB/JAX-WS runtime and upgrade the dependencies to Jakarta EE 8
   - org.openrewrite.java.migrate.javax.AddJaxbDependencies
@@ -56,8 +57,10 @@ recipeList:
 #  - org.openrewrite.java.migrate.util.JavaUtilAPIs
   - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
   - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
+  - org.openrewrite.java.migrate.util.OptionalStreamRecipe
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 11
+  - org.openrewrite.java.migrate.InternalBindContextFactory
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -67,6 +70,10 @@ description: Change maven.compiler.source and maven.compiler.target values to 11
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 11
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-compiler-plugin
+      newVersion: 3.6.2
   - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
       releaseVersion: 11
 ---
@@ -140,7 +147,7 @@ name: org.openrewrite.java.migrate.javax.AddJaxwsDependencies
 displayName: Add explicit JAX-WS dependencies
 description: >
   This recipe will add explicit dependencies for Jakarta EE 8 when a Java 8 application is using JAX-WS. Any existing
-  dependencies will be upgraded to the latest version of Jakarta EE 8. **The artifacts are moved to Jakarta EE 8 but the
+  dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 but the
   application can continue to use the `javax.xml.bind` namespace.
 tags:
   - javax
@@ -192,4 +199,15 @@ recipeList:
       groupPattern: com.sun.xml.ws
       artifactPattern: "*"
       onlyIfVersionsMatch: true
-
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.InternalBindContextFactory
+displayName: Use `com.sun.xml.bind.v2.ContextFactory` instead of `com.sun.xml.internal.bind.v2.ContextFactory`
+description: Do not use the `com.sun.xml.internal.bind.v2.ContextFactory` class.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.xml.internal.bind.v2.ContextFactory
+      newFullyQualifiedTypeName: com.sun.xml.bind.v2.ContextFactory
+      ignoreDefinition: true

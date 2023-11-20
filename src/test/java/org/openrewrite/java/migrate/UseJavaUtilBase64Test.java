@@ -24,7 +24,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class UseJavaUtilBase64Test implements RewriteTest {
+class UseJavaUtilBase64Test implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {

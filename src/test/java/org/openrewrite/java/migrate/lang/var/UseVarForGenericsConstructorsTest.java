@@ -25,6 +25,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 public class UseVarForGenericsConstructorsTest implements RewriteTest {
+    @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new UseVarForGenericsConstructors())
           .allSources(s -> s.markers(javaVersion(10)));
@@ -34,7 +35,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
     class NotApplicable {
 
         @Test
-        void boundedGenerics(){
+        void boundedGenerics() {
             // could be var lst = new ArrayList<? extends String>();
             //language=java
             rewriteRun(
@@ -188,7 +189,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                           List<T> lst = new ArrayList<>();
                       }
                   }
-                  ""","""
+                  """, """
                   package com.example.app;
 
                   import java.util.ArrayList;
@@ -205,7 +206,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
         }
 
         @Test
-        void unboundedGenerics(){
+        void unboundedGenerics() {
             //language=java
             rewriteRun(
               version(
@@ -220,7 +221,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                           List<?> lst = new ArrayList<>();
                       }
                   }
-                  ""","""
+                  """, """
                   package com.example.app;
                                                 
                   import java.util.ArrayList;
@@ -237,7 +238,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
         }
 
             @Test
-            void boundedGenerics(){
+            void boundedGenerics() {
                 // could be var lst = new ArrayList<? extends String>();
                 //language=java
                 rewriteRun(
@@ -341,7 +342,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                         List<String> strs = new ArrayList<String>();
                     }
                   }
-                  ""","""
+                  """, """
                   package com.example.app;
 
                   import java.util.ArrayList;
@@ -373,7 +374,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                         List<char[]> strs = new ArrayList<>();
                     }
                   }
-                  ""","""
+                  """, """
                   package com.example.app;
 
                   import java.util.ArrayList;
@@ -430,7 +431,7 @@ public class UseVarForGenericsConstructorsTest implements RewriteTest {
                         List<String> strs = new ArrayList<>();
                     }
                   }
-                  ""","""
+                  """, """
                   package com.example.app;
 
                   import java.util.ArrayList;

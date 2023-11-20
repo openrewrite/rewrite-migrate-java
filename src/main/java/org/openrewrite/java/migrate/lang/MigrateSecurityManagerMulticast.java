@@ -40,6 +40,7 @@ public class MigrateSecurityManagerMulticast extends Recipe {
         return "Use `SecurityManager#checkMulticast(InetAddress)` instead of the deprecated `SecurityManager#checkMulticast(InetAddress, byte)` in Java 1.4 or higher.";
     }
 
+    @Override
     public Set<String> getTags() {
         return Collections.singleton("deprecated");
     }

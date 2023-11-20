@@ -44,7 +44,7 @@ class UseEnumSetOfTest implements RewriteTest {
                         RED, GREEN, BLUE
                     }
                     public void method() {
-                        Set<Color> warm = Set.of(Color.RED);
+                        Set<Color> warm = Set.of(Color.RED, Color.GREEN);
                     }
                 }
                 """,
@@ -57,7 +57,7 @@ class UseEnumSetOfTest implements RewriteTest {
                         RED, GREEN, BLUE
                     }
                     public void method() {
-                        Set<Color> warm = EnumSet.of(Color.RED);
+                        Set<Color> warm = EnumSet.of(Color.RED, Color.GREEN);
                     }
                 }
                 """

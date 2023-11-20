@@ -19,20 +19,17 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.AnnotationMatcher;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
     private static final String JAVAX_INJECT_INJECT = "javax.inject.Inject";
     private static final String JAVAX_ENTERPRISE_CONTEXT_DEPENDENT = "javax.enterprise.context.Dependent";
-    private static final Collection<String> TYPES_PROMPTING_SCOPE_ADDITION = Arrays.asList(JAVAX_INJECT_INJECT);
 
     @Override
     public String getDisplayName() {
@@ -63,13 +60,14 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
                 return cd;
             }
 
+            private final AnnotationMatcher matcher = new AnnotationMatcher('@' + JAVAX_INJECT_INJECT);
+
             private boolean variableTypeRequiresScope(@Nullable JavaType.Variable memberVariable) {
                 if (memberVariable == null) {
                     return false;
                 }
-                AnnotationMatcher matcher = new AnnotationMatcher(JAVAX_INJECT_INJECT);
                 for (JavaType.FullyQualified fullYQualifiedAnnotation : memberVariable.getAnnotations()) {
-                    if(memberVariable.getAnnotations().stream().anyMatch(matcher::matchesAnnotationOrMetaAnnotation)) {
+                    if (matcher.matchesAnnotationOrMetaAnnotation(fullYQualifiedAnnotation)) {
                         return true;
                     }
                 }
@@ -85,9 +83,9 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
             public J.CompilationUnit visitCompilationUnit(J.CompilationUnit compilationUnit, ExecutionContext executionContext) {
                 J.CompilationUnit cu = super.visitCompilationUnit(compilationUnit, executionContext);
                 for (J.ClassDeclaration aClass : cu.getClasses()) {
-                    if (injectedTypes.contains(aClass.getType().getFullyQualifiedName())) {
-                        return new AnnotateTypesVisitor(JAVAX_ENTERPRISE_CONTEXT_DEPENDENT)
-                                .visitCompilationUnit(cu, injectedTypes);
+                    if (aClass.getType() != null && injectedTypes.contains(aClass.getType().getFullyQualifiedName())) {
+                        return (J.CompilationUnit) new AnnotateTypesVisitor(JAVAX_ENTERPRISE_CONTEXT_DEPENDENT)
+                                .visit(cu, injectedTypes, getCursor().getParent());
                     }
                 }
                 return cu;

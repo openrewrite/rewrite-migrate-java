@@ -22,7 +22,7 @@ import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.maven.MavenIsoVisitor;
-import org.openrewrite.maven.search.FindProperties;
+import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.tree.Xml;
 
@@ -64,9 +64,10 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
                     return t;
                 }
                 Optional<Xml.Tag> maybeCompilerPlugin = t.getChildren().stream()
-                        .filter(plugin -> "plugin".equals(plugin.getName())
-                                && "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse(null))
-                                && "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
+                        .filter(plugin ->
+                                "plugin".equals(plugin.getName()) &&
+                                "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse("org.apache.maven.plugins")) &&
+                                "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
                         .findAny();
                 Optional<Xml.Tag> maybeCompilerPluginConfig = maybeCompilerPlugin
                         .flatMap(it -> it.getChild("configuration"));
@@ -102,7 +103,7 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
     }
 
     private boolean currentNewerThanProposed(@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<String> maybeRelease) {
-        if(!maybeRelease.isPresent()) {
+        if (!maybeRelease.isPresent()) {
             return false;
         }
         try {
@@ -115,6 +116,8 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
     }
 
     private boolean hasJavaVersionProperty(Xml.Document xml) {
-        return !FindProperties.find(xml, "java.version").isEmpty();
+        return xml.getMarkers().findFirst(MavenResolutionResult.class)
+                .map(r -> r.getPom().getProperties().get("java.version") != null)
+                .orElse(false);
     }
 }
