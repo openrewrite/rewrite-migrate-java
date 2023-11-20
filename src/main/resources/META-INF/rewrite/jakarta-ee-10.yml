@@ -409,3 +409,7 @@ recipeList:
       oldFullyQualifiedTypeName: javax.faces.bean.ViewScoped
       newFullyQualifiedTypeName: jakarta.faces.view.ViewScoped
       ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.faces.bean.ViewScoped
+      newFullyQualifiedTypeName: jakarta.faces.view.ViewScoped
+      ignoreDefinition: true
