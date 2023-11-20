@@ -26,6 +26,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.JavaVersion21
+  - org.openrewrite.java.migrate.lang.ThreadStopUnsupported
   - org.openrewrite.java.migrate.net.URLConstructorsToURIRecipes
   - org.openrewrite.java.migrate.util.SequencedCollection
   - org.openrewrite.java.migrate.util.UseLocaleOf
