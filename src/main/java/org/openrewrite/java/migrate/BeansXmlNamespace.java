@@ -18,8 +18,7 @@ package org.openrewrite.java.migrate;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
-import org.openrewrite.internal.ListUtils;
-import org.openrewrite.marker.Markers;
+import org.openrewrite.xml.ChangeTagAttribute;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Xml;
@@ -42,7 +41,7 @@ public class BeansXmlNamespace extends Recipe {
 
     @Override
     public String getDescription() {
-        return " Adds JVM property `org.jboss.weld.xml.disableValidating=true` when valid namespace and schema location is not found in file.";
+        return "The recipe updates incompatible namespaces with the right value of schemaLocation.";
     }
 
     @Override
@@ -56,31 +55,33 @@ public class BeansXmlNamespace extends Recipe {
                 }
                 String nameSpaceValue = null, schemaLocation = null;
                 for (Xml.Attribute attribute : t.getAttributes()) {
-                    if (attribute.getKeyAsString().equals("xmlns")) {
-                        nameSpaceValue = attribute.getValueAsString();
-                    } else if (attribute.getKeyAsString().endsWith("schemaLocation")) {
-                        schemaLocation = attribute.getValueAsString();
-                    } else if (DISABLE_VALIDATING.equalsIgnoreCase(attribute.getKeyAsString())) {
-                        return t;
+                    String key = attribute.getKeyAsString();
+                    String value = attribute.getValueAsString();
+                    if ("xmlns".equals(key)) {
+                        nameSpaceValue = value;
+                    } else if (key.endsWith("schemaLocation")) {
+                        schemaLocation = value;
                     }
-
                 }
-                if (!checkNameSpaceSchemaLocation(nameSpaceValue, schemaLocation)) {
-                    return addAttribute(t, DISABLE_VALIDATING, String.valueOf(true), ctx);
+                if (!updateNameSpaceSchemaLocation(nameSpaceValue, schemaLocation).isEmpty()) {
+                    t = updateAttribute(t, updateNameSpaceSchemaLocation(nameSpaceValue, schemaLocation), ctx);
                 }
                 return t;
             }
 
-            private Xml.Tag addAttribute(Xml.Tag t, String name, String all, ExecutionContext ctx) {
-                Xml.Attribute attribute = new Xml.Attribute(Tree.randomId(), "", Markers.EMPTY, new Xml.Ident(Tree.randomId(), "", Markers.EMPTY, name), "", new Xml.Attribute.Value(Tree.randomId(), "", Markers.EMPTY, Xml.Attribute.Value.Quote.Double, all));
-                return t.withAttributes(ListUtils.concat(t.getAttributes(), autoFormat(attribute, ctx)));
+            private Xml.Tag updateAttribute(Xml.Tag t, String value, ExecutionContext ctx) {
+                TreeVisitor<?, ExecutionContext> changeTagVisitor = new ChangeTagAttribute("beans", "xsi:schemaLocation", value, null).getVisitor();
+                t = (Xml.Tag) changeTagVisitor.visit(t, ctx, getCursor());
+                return t;
             }
 
-            private boolean checkNameSpaceSchemaLocation(String nameSpaceValue, String schemaLocation) {
-                if (NS_SUN.equalsIgnoreCase(nameSpaceValue) && SUN_SCHEMA_LOCATION.equalsIgnoreCase(schemaLocation)) {
-                    return true;
+            private String updateNameSpaceSchemaLocation(String nameSpaceValue, String schemaLocation) {
+                if (NS_SUN.equalsIgnoreCase(nameSpaceValue) && !(SUN_SCHEMA_LOCATION.equalsIgnoreCase(schemaLocation))) {
+                    return (SUN_SCHEMA_LOCATION);
+                } else if (NS_JCP.equalsIgnoreCase(nameSpaceValue) && !(JCP_SCHEMA_LOCATION.equalsIgnoreCase(schemaLocation))) {
+                    return (JCP_SCHEMA_LOCATION);
                 }
-                return nameSpaceValue.equalsIgnoreCase(NS_JCP) && schemaLocation.equalsIgnoreCase(JCP_SCHEMA_LOCATION);
+                return "";
             }
 
         };
