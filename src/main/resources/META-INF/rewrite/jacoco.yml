@@ -25,7 +25,6 @@ description: This recipe will upgrade the JaCoCo Maven plugin to a more recent v
 tags:
   - java11
   - jacoco
-
 recipeList:
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.jacoco

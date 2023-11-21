@@ -21,7 +21,6 @@ description: This recipe will upgrade Wro4j to a more recent version compatible 
 tags:
   - java11
   - wro4j
-
 recipeList:
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: ro.isdc.wro4j

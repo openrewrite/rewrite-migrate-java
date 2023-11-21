@@ -32,7 +32,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
   - org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
   - org.openrewrite.java.migrate.BeanDiscovery
-  - org.openrewrite.java.migrate.FacesManagedBeansRemoved
+  - org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -42,17 +42,17 @@ description: >
   In addition, the behavior of these methods has been changed so the setters no longer have any effect, the getComment methods return null, and the getVersion method returns 0.
   The deprecated methods are removed.
 recipeList:
-  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.http.Cookie getComment()
-  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.http.Cookie getVersion()
-  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.http.Cookie setComment(String)
-  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.http.Cookie setVersion(int)
-  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.SessionCookieConfig getComment()
-  - org.openrewrite.java.migrate.jakarta.RemoveMethods:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.SessionCookieConfig setComment(String)
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -153,7 +153,6 @@ displayName: Use `StateManagementStrategy`
 description: >
       Methods that were removed from the `jakarta.faces.application.StateManager` and `javax.faces.application.StateManager` classes in Jakarta Faces 4.0 are replaced
       by `jakarta.faces.view.StateManagementStrategy` or `javax.faces.view.StateManagementStrategy` based on Jakarta10 migration in Faces 4.0
-
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
@@ -263,7 +262,11 @@ description: >
   This recipe substitutes Faces Managed Beans, which were deprecated in JavaServer Faces 2.3 and have been removed from Jakarta Faces 4.0.
 recipeList:
   - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.enterprise.context.ApplicationScoped
+      oldFullyQualifiedTypeName: javax.faces.bean.ApplicationScoped
+      newFullyQualifiedTypeName: jakarta.enterprise.context.ApplicationScoped
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.faces.bean.ApplicationScoped
       newFullyQualifiedTypeName: jakarta.enterprise.context.ApplicationScoped
       ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
@@ -271,18 +274,38 @@ recipeList:
       newFullyQualifiedTypeName: jakarta.faces.annotation.ManagedProperty
       ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.faces.bean.ManagedProperty
+      newFullyQualifiedTypeName: jakarta.faces.annotation.ManagedProperty
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.faces.bean.NoneScoped
       newFullyQualifiedTypeName: jakarta.enterprise.context.Dependent
       ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.enterprise.context.RequestScoped
+      oldFullyQualifiedTypeName: jakarta.faces.bean.NoneScoped
+      newFullyQualifiedTypeName: jakarta.enterprise.context.Dependent
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.faces.bean.RequestScoped
       newFullyQualifiedTypeName: jakarta.enterprise.context.RequestScoped
       ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.enterprise.context.SessionScoped
+      oldFullyQualifiedTypeName: jakarta.faces.bean.RequestScoped
+      newFullyQualifiedTypeName: jakarta.enterprise.context.RequestScoped
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.faces.bean.SessionScoped
+      newFullyQualifiedTypeName: jakarta.enterprise.context.SessionScoped
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.faces.bean.SessionScoped
       newFullyQualifiedTypeName: jakarta.enterprise.context.SessionScoped
       ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.faces.bean.ViewScoped
+      newFullyQualifiedTypeName: jakarta.faces.view.ViewScoped
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.faces.bean.ViewScoped
       newFullyQualifiedTypeName: jakarta.faces.view.ViewScoped
       ignoreDefinition: true
