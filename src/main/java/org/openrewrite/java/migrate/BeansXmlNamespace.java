@@ -39,12 +39,12 @@ public class BeansXmlNamespace extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Check valid namespace and schema location in the`beans.xml` file ";
+        return "Change `beans.xml` `schemaLocation` to match XML namespace";
     }
 
     @Override
     public String getDescription() {
-        return "The recipe updates incompatible namespaces with the right value of schemaLocation.";
+        return "Set the `schemaLocation` that corresponds to the `xmlns` set in `beans.xml` files.";
     }
 
     @Override
