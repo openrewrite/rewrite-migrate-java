@@ -578,4 +578,80 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void reusesConfigurationFromPluginManagement() {
+        rewriteRun(
+          //language=xml
+          pomXml("""
+              <?xml version="1.0" encoding="UTF-8"?>
+              <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>org.sample</groupId>
+                <artifactId>parent</artifactId>
+                <version>1.0.0</version>
+                
+                <properties>
+                  <java.version>8</java.version>
+                </properties>
+                
+                <build>
+                  <pluginManagement>
+                    <plugins>
+                      <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.0</version>
+                        <!-- pluginManagement before -->
+                        <configuration>
+                          <source>${java.version}</source>
+                          <target>${java.version}</target>
+                        </configuration>
+                      </plugin>
+                    </plugins>
+                  </pluginManagement>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>org.sample</groupId>
+                <artifactId>parent</artifactId>
+                <version>1.0.0</version>
+                
+                <properties>
+                  <java.version>11</java.version>
+                </properties>
+                
+                <build>
+                  <pluginManagement>
+                    <plugins>
+                      <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.0</version>
+                        <!-- pluginManagement after -->
+                        <configuration>
+                          <release>${java.version}</release>
+                        </configuration>
+                      </plugin>
+                    </plugins>
+                  </pluginManagement>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """)
+        );
+    }
 }
