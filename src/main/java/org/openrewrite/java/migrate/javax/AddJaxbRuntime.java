@@ -76,11 +76,6 @@ public class AddJaxbRuntime extends Recipe {
     }
 
     @Override
-    public boolean causesAnotherCycle() {
-        return true;
-    }
-
-    @Override
     public List<Recipe> getRecipeList() {
         return Arrays.asList(new AddJaxbRuntimeGradle(runtime), new AddJaxbRuntimeMaven(runtime));
     }
