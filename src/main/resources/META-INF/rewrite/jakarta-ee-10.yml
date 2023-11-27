@@ -342,9 +342,9 @@ recipeList:
       oldParameterNames: [ str, ex ]
       ignoreDefinition: true
       matchOverrides: true
-  - org.openrewrite.java.migrate.jakarta.GetRealPathUpdate:
+  - org.openrewrite.java.migrate.jakarta.UpdateGetRealPath:
       methodPattern: jakarta.servlet.ServletRequest getRealPath(String)
-  - org.openrewrite.java.migrate.jakarta.GetRealPathUpdate:
+  - org.openrewrite.java.migrate.jakarta.UpdateGetRealPath:
       methodPattern: jakarta.servlet.ServletRequestWrapper getRealPath(String)
   - org.openrewrite.java.DeleteMethodArgument:
       methodPattern: jakarta.servlet.UnavailableException <constructor>(jakarta.servlet.Servlet, String)

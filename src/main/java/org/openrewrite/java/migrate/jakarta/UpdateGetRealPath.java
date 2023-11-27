@@ -18,13 +18,11 @@ package org.openrewrite.java.migrate.jakarta;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.NonNull;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
@@ -32,24 +30,24 @@ import org.openrewrite.java.tree.JavaType;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class GetRealPathUpdate extends Recipe {
+public class UpdateGetRealPath extends Recipe {
     @Option(displayName = "Method Pattern",
             description = "A `jakarta.servlet.ServletRequest` or `jakarta.servlet.ServletRequestWrapper getRealPath(String)` matching required",
             example = "jakarta.servlet.ServletRequest getRealPath(String)")
     @NonNull String methodPattern;
 
     @Override
-    public @NotNull String getDisplayName() {
-        return "Remove methods calls";
+    public String getDisplayName() {
+        return "Updates getRealPath() to call getContext() followed by getRealPath()";
     }
 
     @Override
-    public @NotNull String getDescription() {
-        return "Updates `getRealPath()` for `jakarta.servlet.ServletRequest` and `jakarta.servlet.ServletRequestWrapper`";
+    public String getDescription() {
+        return "Updates `getRealPath()` for `jakarta.servlet.ServletRequest` and `jakarta.servlet.ServletRequestWrapper` to use `ServletContext.getRealPath(String)`";
     }
 
     @Override
-    public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MethodInvocationVisitor(methodPattern);
     }
 
@@ -60,7 +58,6 @@ public class GetRealPathUpdate extends Recipe {
             METHOD_PATTERN = new MethodMatcher(methodPattern, false);
         }
 
-        @Nullable
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
             if (METHOD_PATTERN.matches(method)) {
