@@ -270,6 +270,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateBeanManagerMethod:
       methodPattern:  "jakarta.enterprise.inject.spi.BeanManager createInjectionTarget(..)"
 ---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
 displayName: Substitute deprecated Faces Managed Beans
 description: >
