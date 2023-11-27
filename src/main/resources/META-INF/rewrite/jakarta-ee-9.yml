@@ -773,6 +773,14 @@ recipeList:
   - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: com.sun.xml.bind
       artifactId: jaxb-impl
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.codehaus.mojo
+      artifactId: jaxb2-maven-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.codehaus.mojo
+      artifactId: jaxb-maven-plugin
+      newVersion: 4.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
