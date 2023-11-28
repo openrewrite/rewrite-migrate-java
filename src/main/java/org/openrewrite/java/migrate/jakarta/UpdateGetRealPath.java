@@ -38,7 +38,7 @@ public class UpdateGetRealPath extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Updates getRealPath() to call getContext() followed by getRealPath()";
+        return "Updates `getRealPath()` to call `getContext()` followed by `getRealPath()`";
     }
 
     @Override
