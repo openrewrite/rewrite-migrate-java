@@ -591,9 +591,6 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>parent</artifactId>
                 <version>1.0.0</version>
-                <properties>
-                  <java.version>8</java.version>
-                </properties>
                 <build>
                   <pluginManagement>
                     <plugins>
@@ -601,7 +598,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>3.8.0</version>
                         <configuration>
-                          <release>${java.version}</release>
+                          <release>8</release>
                         </configuration>
                       </plugin>
                     </plugins>
@@ -616,9 +613,6 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>parent</artifactId>
                 <version>1.0.0</version>
-                <properties>
-                  <java.version>11</java.version>
-                </properties>
                 <build>
                   <pluginManagement>
                     <plugins>
@@ -626,7 +620,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>3.8.0</version>
                         <configuration>
-                          <release>${java.version}</release>
+                          <release>11</release>
                         </configuration>
                       </plugin>
                     </plugins>
