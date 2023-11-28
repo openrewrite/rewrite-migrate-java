@@ -3,17 +3,15 @@ package org.openrewrite.java.migrate;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
-import org.openrewrite.internal.ListUtils;
-import org.openrewrite.marker.Markers;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
+import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.openrewrite.xml.AddOrUpdateChild.addOrUpdateChild;
@@ -79,6 +77,24 @@ public class JpaCacheProperties extends Recipe {
             }
         }
         return null;
+    }
+
+    private Xml.Tag updateAttributeValue(String attrName, String newValue, Xml.Tag node) {
+        List<Xml.Attribute> updatedAttributes = new ArrayList<Xml.Attribute>();
+        for (Xml.Attribute attribute : node.getAttributes()) {
+            if (attribute.getKeyAsString().equals(attrName)) {
+                attribute = attribute.withValue(
+                        new Xml.Attribute.Value(attribute.getId(),
+                                "",
+                                attribute.getMarkers(),
+                                attribute.getValue().getQuote(),
+                                newValue));
+                updatedAttributes.add(attribute);
+            } else {
+                updatedAttributes.add(attribute);
+            }
+        }
+        return node.withAttributes(updatedAttributes);
     }
 
     /**
@@ -169,6 +185,18 @@ public class JpaCacheProperties extends Recipe {
         return sdh;
     }
 
+    private Xml.Tag updatePropertyValue(Xml.Tag parent, Xml.Tag orginalProp, Xml.Tag updatedProp) {
+        List<Content> contents = new ArrayList<>();
+        for(Content content: parent.getContent()) {
+            if(content == orginalProp) {
+                contents.add(updatedProp);
+            } else {
+                contents.add(content);
+            }
+        }
+        return parent.withContent(contents);
+    }
+
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
 
@@ -213,6 +241,18 @@ public class JpaCacheProperties extends Recipe {
                         return node;
                     }
                 }
+                return null;
+            }
+
+            // convert the scmValue to either true or false.
+            // return null for complex values.
+            private String convertScmValue(String scmValue) {
+                if ("NONE".equals(scmValue)) {
+                    return "false";
+                } else if ("ALL".equals(scmValue)) {
+                    return "true";
+                }
+                // otherwise, don't process it
                 return null;
             }
 
@@ -262,13 +302,16 @@ public class JpaCacheProperties extends Recipe {
                                     String propVal = getAttributeValue("value", sdh.openJPACacheProperty);
                                     scmValue = interpretOpenJPAPropertyValue(propVal);
                                 }
-                                sdh.sharedCacheModeProperty = sdh.sharedCacheModeProperty.withValue(scmValue);
-                                t = addOrUpdateChild(t, sdh.sharedCacheModeProperty, getCursor().getParentOrThrow());
+
+                                Xml.Tag updatedProp = updateAttributeValue("value", scmValue, sdh.sharedCacheModeProperty);
+                                sdh.propertiesElement = updatePropertyValue(sdh.propertiesElement, sdh.sharedCacheModeProperty, updatedProp);
+                                sdh.sharedCacheModeProperty = updatedProp;
+                                t = addOrUpdateChild(t, sdh.propertiesElement, getCursor().getParentOrThrow());
                             }
                         }
                     } else {
                         // or create a new one
-                        // Figure out what the the element value should contain.
+                        // Figure out what the element value should contain.
                         String scmValue = null;
                         if (sdh.openJPACacheProperty == null) {
                             scmValue = "NONE";
@@ -281,20 +324,8 @@ public class JpaCacheProperties extends Recipe {
                         if (scmValue != null) {
                             if (!v1) {
                                 Xml.Tag newNode = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
-                                Xml.Tag refNode = getARefNode(t);
-                                if (refNode != null) {
-                                    t = addOrUpdateChild(t, newNode, getCursor().getParentOrThrow());
-                                    puNode.insertBefore(newNode, refNode);
-                                    if (whiteSpaceFormat != null) {
-                                        puNode.insertBefore(doc.createTextNode(whiteSpaceFormat), refNode);
-                                    }
-                                } else {
-                                    puNode.appendChild(doc.createTextNode("\t"));
-                                    puNode.appendChild(newNode);
-                                    if (whiteSpaceFormat != null) {
-                                        puNode.appendChild(doc.createTextNode(whiteSpaceFormat));
-                                    }
-                                }
+                                // Ideally we would insert <shared-cache-mode> before the <validation-mode> and <properties> nodes
+                                t = addOrUpdateChild(t, newNode, getCursor().getParentOrThrow());
                             } else {
                                 // version="1.0"
                                 // add a property for eclipselink
@@ -306,40 +337,41 @@ public class JpaCacheProperties extends Recipe {
                                 if (eclipseLinkPropValue != null) {
 
                                     // Find the properties element, if there is one
-                                    Element propertiesElement = XMLParserHelper.getFirstChildElement((Element) puNode, "*", "properties");
-                                    String propWhiteSpace = "\n";
+                                    Xml.Tag propertiesElement = sdh.propertiesElement;
                                     // If not found, we need to create a properties element
-                                    if (propertiesElement == null) {
-                                        propertiesElement = insertPropertiesNode(doc, puNode);
-                                    }
-
-                                    // get the white space text at the end of the properties list
-                                    // so that spacing stays the same.
-                                    Node lastChild = propertiesElement.getLastChild();
-                                    if (lastChild != null && lastChild.getNodeType() == Node.TEXT_NODE) {
-                                        propWhiteSpace = lastChild.getNodeValue();
+                                    if (sdh.propertiesElement == null) {
+                                        propertiesElement = Xml.Tag.build("<properties></properties>");
                                     }
 
                                     // add a property element to the end of the properties list.
-                                    Element newElement = doc.createElement("property");
-                                    newElement.setAttribute("name", "eclipselink.cache.shared.default");
-                                    newElement.setAttribute("value", eclipseLinkPropValue);
-                                    // tab in from the <properties> element and add the <property>
-                                    // and more white space at the end
-                                    propertiesElement.appendChild(doc.createTextNode("\t"));
-                                    propertiesElement.appendChild(newElement);
-                                    propertiesElement.appendChild(doc.createTextNode(propWhiteSpace));
+                                    Xml.Tag newElement = Xml.Tag.build("<property name=\"eclipselink.cache.shared.default\" value=\""+eclipseLinkPropValue+"\"></property>");
+
+                                    propertiesElement = addOrUpdateChild(propertiesElement, newElement, getCursor().getParentOrThrow());
+
+                                    t = addOrUpdateChild(t, propertiesElement, getCursor().getParentOrThrow());
                                 }
                             }
                         }
                     }
 
-                    if(sdh.openJPACacheProperty != null) {
-                        updatedPersistence = filterTagChildren(sdh.propertiesElement, child -> child != sdh.openJPACacheProperty);
+                    // delete any openjpa.DataCache property that has a value of a simple "true" or
+                    // "false".  Leave more complex values for the user to consider.
+                    if (sdh.openJPACacheProperty != null) {
+                        String attrValue = getAttributeValue("value", sdh.openJPACacheProperty);
+                        if ("true".equalsIgnoreCase(attrValue) || "false".equalsIgnoreCase(attrValue)) {
+                            sdh.propertiesElement = filterTagChildren(sdh.propertiesElement, child -> child != sdh.openJPACacheProperty);
+
+                            t = addOrUpdateChild(t, sdh.propertiesElement, getCursor().getParentOrThrow());
+                        }
+                    }
+
+                    // if both shared-cache-mode and javax cache property are set, delete the
+                    // javax cache property
+                    if (sdh.sharedCacheModeElement != null && sdh.sharedCacheModeProperty != null) {
+                        sdh.propertiesElement = filterTagChildren(sdh.propertiesElement, child -> child != sdh.sharedCacheModeProperty);
+                        t = addOrUpdateChild(t, sdh.propertiesElement, getCursor().getParentOrThrow());
                     }
                 }
-
-                // Add version attribute
                 return t;
             }
 
