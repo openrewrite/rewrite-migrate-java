@@ -17,8 +17,6 @@ package org.openrewrite.java.migrate.jakarta;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
@@ -33,8 +31,6 @@ public class UpdateAddAnnotatedType extends Recipe {
 
     @Option(displayName = "Method Pattern", description = "A method pattern for matching required method definition.", example = "jakarta.enterprise.inject.spi.BeforeBeanDiscovery addAnnotatedType(jakarta.enterprise.inject.spi.AnnotatedType)")
     @NonNull String methodPattern;
-    String templateStringJakarta = "jakarta.enterprise.inject.spi.AnnotatedType";
-    String templateStringJavax = "javax.enterprise.inject.spi.AnnotatedType";
     MethodMatcher methodInputPattern = null;
 
     @JsonCreator
@@ -55,18 +51,12 @@ public class UpdateAddAnnotatedType extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        String templateBuilderString = null;
-        if (methodPattern.contains("jakarta.enterprise.inject.spi.")) {
-            templateBuilderString = templateStringJakarta;
-        } else if (methodPattern.contains("javax.enterprise.inject.spi.")) {
-            templateBuilderString = templateStringJavax;
-        }
-        String finalTemplateBuilderString = templateBuilderString;
+
         return new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (methodInputPattern.matches(method)) {
-                    String tempString = "#{any(" + finalTemplateBuilderString + ")},null\"";
+                    String tempString = "#{any(jakarta.enterprise.inject.spi.AnnotatedType)},null\"";
                     return JavaTemplate.builder(tempString).
                             build().apply(updateCursor(method),
                                     method.getCoordinates().

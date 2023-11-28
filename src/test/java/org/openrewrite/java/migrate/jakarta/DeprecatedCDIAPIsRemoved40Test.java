@@ -44,7 +44,6 @@ import static org.openrewrite.java.Assertions.java;
             package sample.cdi;
             
             import jakarta.enterprise.event.Observes;
-            import jakarta.enterprise.inject.New;
             import jakarta.enterprise.inject.spi.AnnotatedType;
             import jakarta.enterprise.inject.spi.Bean;
             import jakarta.enterprise.inject.spi.BeanManager;
@@ -57,53 +56,46 @@ import static org.openrewrite.java.Assertions.java;
             	public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
             		System.out.println("SPI registered extention beforeBeanDiscovery has been fired");
             		AnnotatedType<String> producerType = beanManager.createAnnotatedType(String.class);
- 
             		beforeBeanDiscovery.addAnnotatedType(producerType);									// Flag this one
             		beforeBeanDiscovery.addAnnotatedType(producerType, "my unique id");				// Not this one
-            		beforeBeanDiscovery.addAnnotatedType(String.class, "my other unique id");	// Not this one
-                    
-            		beanManager.createInjectionTarget(producerType);
-            
-            		beanManager.fireEvent(beforeBeanDiscovery);
-            
+            		beforeBeanDiscovery.addAnnotatedType(String.class, "my other unique id");	// Not this one                  
+            		beanManager.createInjectionTarget(producerType);            
+            		beanManager.fireEvent(beforeBeanDiscovery);            
             		Set<Bean<?>> myBeans = beanManager.getBeans("my precious beans");
             		Bean myFavoriteBean = myBeans.stream().findFirst().get();
             		if(!myFavoriteBean.isNullable()){
-            		    return;
+            		return;
             		}
             	}
             }
             """, """
-                    package sample.cdi;
-                    
-                    import jakarta.enterprise.event.Observes;
-                    import jakarta.enterprise.inject.New;
-                    import jakarta.enterprise.inject.spi.AnnotatedType;
-                    import jakarta.enterprise.inject.spi.Bean;
-                    import jakarta.enterprise.inject.spi.BeanManager;
-                    import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
-                    import jakarta.enterprise.inject.spi.Extension;
-                    import java.util.Set;
-                    
-                    public class JakartaCdiMethods implements Extension {
-                    
-                    	public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
-                    		System.out.println("SPI registered extention beforeBeanDiscovery has been fired");
-                    		AnnotatedType<String> producerType = beanManager.createAnnotatedType(String.class);
-                    
-                    		beforeBeanDiscovery.addAnnotatedType(producerType, null);									// Flag this one
-                    		beforeBeanDiscovery.addAnnotatedType(producerType, "my unique id");				// Not this one
-                    		beforeBeanDiscovery.addAnnotatedType(String.class, "my other unique id");	// Not this one
-                    
-                            beanManager.getInjectionTargetFactory(producerType).createInjectionTarget(null);
-                    
-                    		beanManager.getEvent().fire(beforeBeanDiscovery);
-                    
-                    		Set<Bean<?>> myBeans = beanManager.getBeans("my precious beans");
-                    		Bean myFavoriteBean = myBeans.stream().findFirst().get();
-                            return;
-                    	}
-                    }
-                    """));
+                     package sample.cdi;
+                     \s
+                      import jakarta.enterprise.event.Observes;
+                      import jakarta.enterprise.inject.spi.AnnotatedType;
+                      import jakarta.enterprise.inject.spi.Bean;
+                      import jakarta.enterprise.inject.spi.BeanManager;
+                      import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+                      import jakarta.enterprise.inject.spi.Extension;
+                      import java.util.Set;
+                     \s
+                      public class JakartaCdiMethods implements Extension {
+                     \s
+                      	public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
+                      		System.out.println("SPI registered extention beforeBeanDiscovery has been fired");
+                      		AnnotatedType<String> producerType = beanManager.createAnnotatedType(String.class);
+                      		beforeBeanDiscovery.addAnnotatedType(producerType, null);									// Flag this one
+                      		beforeBeanDiscovery.addAnnotatedType(producerType, "my unique id");				// Not this one
+                      		beforeBeanDiscovery.addAnnotatedType(String.class, "my other unique id");	// Not this one
+                              beanManager.getInjectionTargetFactory(producerType).createInjectionTarget(null);
+                              beanManager.getEvent().fire(beforeBeanDiscovery);
+                      		Set<Bean<?>> myBeans = beanManager.getBeans("my precious beans");
+                      		Bean myFavoriteBean = myBeans.stream().findFirst().get();
+                              return;
+                      	}
+                      }
+                      """
+          )
+        );
     }
 }

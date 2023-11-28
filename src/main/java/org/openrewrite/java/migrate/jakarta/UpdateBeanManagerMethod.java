@@ -39,12 +39,12 @@ public class UpdateBeanManagerMethod extends Recipe {
     @NonNull String methodPattern;
 
     @Override
-    public @NotNull String getDisplayName() {
+    public String getDisplayName() {
         return "Update `fireEvent()` and `createInjectionTarget()` calls";
     }
 
     @Override
-    public @NotNull String getDescription() {
+    public String getDescription() {
         return " Updates `BeanManager.fireEvent()` or `BeanManager.createInjectionTarget()`";
     }
 
@@ -57,7 +57,7 @@ public class UpdateBeanManagerMethod extends Recipe {
     }
 
     @Override
-    public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MethodInvocationVisitor(methodPattern);
     }
 
@@ -72,16 +72,14 @@ public class UpdateBeanManagerMethod extends Recipe {
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
             J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ec);
+            String templateBuilderString = null;
             if (methodPattern.matches(method)) {
                 String newMethodName = "";
                 if (method.getSimpleName().equals("fireEvent")) {
-                    newMethodName = "getEvent()." + "fire";
-
-                    JavaType.Method type = method.getMethodType();
-                    if (type != null) {
-                        type = type.withName(newMethodName);
-                    }
-                    return method.withName(method.getName().withSimpleName(newMethodName)).withMethodType(type);
+                    maybeRemoveImport("jakarta.enterprise.inject.spi.BeanManager");
+                    return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getEvent().fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})")
+                            .build()
+                            .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), mi.getArguments().get(0));
                 } else if (method.getSimpleName().equals("createInjectionTarget")) {
                     maybeRemoveImport("jakarta.enterprise.inject.spi.BeanManager");
                     return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getInjectionTargetFactory(#{any(jakarta.enterprise.inject.spi.AnnotatedType)}).createInjectionTarget(null)")
