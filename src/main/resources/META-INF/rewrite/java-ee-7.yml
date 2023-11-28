@@ -23,6 +23,7 @@ tags:
   - deprecated
 recipeList:
   - org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
+  - org.openrewrite.java.migrate.JpaCacheProperties
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

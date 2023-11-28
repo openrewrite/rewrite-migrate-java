@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import static org.openrewrite.xml.AddOrUpdateChild.addOrUpdateChild;
 import static org.openrewrite.xml.FilterTagChildrenVisitor.filterTagChildren;
@@ -38,16 +37,15 @@ public class JpaCacheProperties extends Recipe {
 
     private static final XPathMatcher PERSISTANCE_MATCHER = new XPathMatcher("/persistence");
     protected static final String SHARED_CACHE_MODE_VALUE_UNSPECIFIED = "UNSPECIFIED";
-    private static final Pattern VERSION_PATTERN = Pattern.compile("_([^\\/\\.]+)\\.xsd");
 
     @Override
     public String getDisplayName() {
-        return "Behavior change to bean discovery in modules with `beans.xml` file with no version specified";
+        return "Disable the persistence unit second-level cache";
     }
 
     @Override
     public String getDescription() {
-        return "Alters beans with missing version attribute to include this attribute as well as the bean-discovery-mode=\"all\" attribute to maintain an explicit bean archive.";
+        return "Sets an explicit value for the shared cache mode.";
     }
 
     private class SharedDataHolder {
