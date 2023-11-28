@@ -18,25 +18,29 @@ package org.openrewrite.java.migrate.jakarta;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.NonNull;
 import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.JavaParser;
 
 public class UpdateBeanManagerMethod extends Recipe {
-    @Option(displayName = "Method Pattern",
-            description = "A `BeanManager.fireEvent()` or `BeanManager.createInjectionTarget()` matching required",
-            example = "jakarta.enterprise.inject.spi.BeanManager fireEvent()")
+    @Option(displayName = "Method Pattern", description = "A `BeanManager.fireEvent()` or `BeanManager.createInjectionTarget()` matching required", example = "jakarta.enterprise.inject.spi.BeanManager fireEvent()")
     @NonNull String methodPattern;
+    MethodMatcher methodInputPattern = null;
+
+    @JsonCreator
+    public UpdateBeanManagerMethod(@NonNull @JsonProperty("methodPattern") String methodPattern) {
+        this.methodPattern = methodPattern;
+        methodInputPattern = new MethodMatcher(methodPattern, false);
+    }
 
     @Override
     public String getDisplayName() {
@@ -46,14 +50,6 @@ public class UpdateBeanManagerMethod extends Recipe {
     @Override
     public String getDescription() {
         return " Updates `BeanManager.fireEvent()` or `BeanManager.createInjectionTarget()`";
-    }
-
-    MethodMatcher methodInputPattern = null;
-
-    @JsonCreator
-    public UpdateBeanManagerMethod(@NonNull @JsonProperty("methodPattern") String methodPattern) {
-        this.methodPattern = methodPattern;
-        methodInputPattern = new MethodMatcher(methodPattern, false);
     }
 
     @Override
@@ -76,23 +72,16 @@ public class UpdateBeanManagerMethod extends Recipe {
             if (methodPattern.matches(method)) {
                 String newMethodName = "";
                 if (method.getSimpleName().equals("fireEvent")) {
-//                    maybeRemoveImport("jakarta.enterprise.inject.spi.BeanManager");
-//                    return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getEvent().fire(#{any()})")
-//                            .build()
-//                            .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), mi.getArguments().get(0));
-                        newMethodName = "getEvent()." + "fire";
+                    newMethodName = "getEvent()." + "fire";
 
-                        JavaType.Method type = method.getMethodType();
-                        if (type != null) {
-                            type = type.withName(newMethodName);
-                        }
-                        return method.withName(method.getName().withSimpleName(newMethodName)).withMethodType(type);
+                    JavaType.Method type = method.getMethodType();
+                    if (type != null) {
+                        type = type.withName(newMethodName);
+                    }
+                    return method.withName(method.getName().withSimpleName(newMethodName)).withMethodType(type);
                 } else if (method.getSimpleName().equals("createInjectionTarget")) {
                     maybeRemoveImport("jakarta.enterprise.inject.spi.BeanManager");
-                    return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getInjectionTargetFactory(#{any(jakarta.enterprise.inject.spi.AnnotatedType)}).createInjectionTarget(null)")
-                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ec, "jakarta.enterprise.cdi-api-3.0.0-M4"))
-                            .build()
-                            .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), mi.getArguments().get(0));
+                    return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getInjectionTargetFactory(#{any(jakarta.enterprise.inject.spi.AnnotatedType)}).createInjectionTarget(null)").javaParser(JavaParser.fromJavaVersion().classpathFromResources(ec, "jakarta.enterprise.cdi-api-3.0.0-M4")).build().apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), mi.getArguments().get(0));
 
                 }
             }
