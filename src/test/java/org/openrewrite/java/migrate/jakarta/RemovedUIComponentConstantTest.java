@@ -67,6 +67,4 @@ class RemovedUIComponentConstantTest implements RewriteTest {
           )
         );
     }
-
-
 }
