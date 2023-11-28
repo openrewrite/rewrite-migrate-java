@@ -88,7 +88,7 @@ import static org.openrewrite.java.Assertions.java;
                     		beforeBeanDiscovery.addAnnotatedType(producerType, "my unique id");				// Not this one
                     		beforeBeanDiscovery.addAnnotatedType(String.class, "my other unique id");	// Not this one
                             beanManager.getInjectionTargetFactory(producerType).createInjectionTarget(null);
-                            beanManager.getEvent().fire(beforeBeanDiscovery);
+                    		beanManager.getEvent().fire(beforeBeanDiscovery);
                     		Set<Bean<?>> myBeans = beanManager.getBeans("my precious beans");
                     		Bean myFavoriteBean = myBeans.stream().findFirst().get();
                             return;
