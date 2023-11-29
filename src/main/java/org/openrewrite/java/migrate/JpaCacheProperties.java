@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Content;
@@ -36,7 +37,7 @@ import static org.openrewrite.xml.FilterTagChildrenVisitor.filterTagChildren;
 public class JpaCacheProperties extends Recipe {
 
     private static final XPathMatcher PERSISTANCE_MATCHER = new XPathMatcher("/persistence");
-    protected static final String SHARED_CACHE_MODE_VALUE_UNSPECIFIED = "UNSPECIFIED";
+    private static final String SHARED_CACHE_MODE_VALUE_UNSPECIFIED = "UNSPECIFIED";
 
     @Override
     public String getDisplayName() {
@@ -48,14 +49,14 @@ public class JpaCacheProperties extends Recipe {
         return "Sets an explicit value for the shared cache mode.";
     }
 
-    private class SharedDataHolder {
+    private static class SharedDataHolder {
         boolean sharedCacheModePropertyUnspecified;
         boolean sharedCacheModeElementUnspecified;
-        Xml.Tag sharedCacheModeElement;
-        Xml.Tag propertiesElement;
-        Xml.Tag sharedCacheModeProperty;
-        Xml.Tag openJPACacheProperty;
-        Xml.Tag eclipselinkCacheProperty;
+        @Nullable Xml.Tag sharedCacheModeElement;
+        @Nullable Xml.Tag propertiesElement;
+        @Nullable Xml.Tag sharedCacheModeProperty;
+        @Nullable Xml.Tag openJPACacheProperty;
+        @Nullable Xml.Tag eclipselinkCacheProperty;
 
         // Flag in the following conditions:
         //   an openjpa.DataCache property is present
@@ -66,7 +67,7 @@ public class JpaCacheProperties extends Recipe {
             return (openJPACacheProperty != null ||
                     ((sharedCacheModeElement != null && sharedCacheModeElementUnspecified) || (sharedCacheModeProperty != null && sharedCacheModePropertyUnspecified)) ||
                     (sharedCacheModeElement != null && sharedCacheModeProperty != null) ||
-                    (openJPACacheProperty == null && sharedCacheModeElement == null && sharedCacheModeProperty == null && eclipselinkCacheProperty == null));
+                    (sharedCacheModeElement == null && sharedCacheModeProperty == null && eclipselinkCacheProperty == null));
         }
     }
 
@@ -75,14 +76,15 @@ public class JpaCacheProperties extends Recipe {
      * <p>
      * Return Node <shared-cache-mode> or null
      *
-     * @param puNode
      * @return Node
      */
+    @Nullable
     private Xml.Tag getSharedCacheModeNode(Xml.Tag puNode) {
         Optional<Xml.Tag> cacheModes = puNode.getChild("shared-cache-mode");
-        return cacheModes.isPresent() ? cacheModes.get() : null;
+        return cacheModes.orElse(null);
     }
 
+    @Nullable
     private String getAttributeValue(String attrName, Xml.Tag node) {
         for (Xml.Attribute attribute : node.getAttributes()) {
             if (attribute.getKeyAsString().equals(attrName)) {
@@ -93,7 +95,7 @@ public class JpaCacheProperties extends Recipe {
     }
 
     private Xml.Tag updateAttributeValue(String attrName, String newValue, Xml.Tag node) {
-        List<Xml.Attribute> updatedAttributes = new ArrayList<Xml.Attribute>();
+        List<Xml.Attribute> updatedAttributes = new ArrayList<>();
         for (Xml.Attribute attribute : node.getAttributes()) {
             if (attribute.getKeyAsString().equals(attrName)) {
                 attribute = attribute.withValue(
@@ -114,18 +116,14 @@ public class JpaCacheProperties extends Recipe {
      * Loop through all the properties and gather openjpa.DataCache,
      * javax.persistence.sharedCache.mode or eclipselink.cache.shared.default properties
      *
-     * @param puNode
-     * @param sdh    Data holder for the properties.
-     * @return boolean
+     * @param sdh Data holder for the properties.
      */
     private void getDataCacheProps(Xml.Tag puNode, SharedDataHolder sdh) {
         Optional<Xml.Tag> propertiesTag = puNode.getChild("properties");
         if (propertiesTag.isPresent()) {
             sdh.propertiesElement = propertiesTag.get();
             List<Xml.Tag> properties = sdh.propertiesElement.getChildren("property");
-            Iterator<Xml.Tag> propItr = properties.iterator();
-            while (propItr.hasNext()) {
-                Xml.Tag prop = propItr.next();
+            for (Xml.Tag prop : properties) {
                 String name = getAttributeValue("name", prop);
                 if (name != null) {
                     if ("openjpa.DataCache".equals(name)) {
@@ -140,7 +138,8 @@ public class JpaCacheProperties extends Recipe {
         }
     }
 
-    private String getTextContent(Xml.Tag node) {
+    @Nullable
+    private String getTextContent(@Nullable Xml.Tag node) {
         if (node != null) {
             String textContent = null;
             Optional<String> optionalValue = node.getValue();
@@ -159,9 +158,9 @@ public class JpaCacheProperties extends Recipe {
      * @param node node for <shared-cache-mode>
      * @return boolean
      */
-    private boolean isSharedCacheModeElementUnspecified(Xml.Tag node) {
+    private boolean isSharedCacheModeElementUnspecified(@Nullable Xml.Tag node) {
         if (node != null) {
-           // returns true if shared-cache-mode set to UNSPECIFIED.
+            // returns true if shared-cache-mode set to UNSPECIFIED.
             return (SHARED_CACHE_MODE_VALUE_UNSPECIFIED.equals(getTextContent(node)));
         } else {
             return false;
@@ -174,7 +173,7 @@ public class JpaCacheProperties extends Recipe {
      * @param node Xml.Tag
      * @return boolean
      */
-    private boolean isSharedCacheModePropertyUnspecified(Xml.Tag node) {
+    private boolean isSharedCacheModePropertyUnspecified(@Nullable Xml.Tag node) {
         if (node != null) {
             String value = getAttributeValue("value", node);
 
@@ -200,8 +199,8 @@ public class JpaCacheProperties extends Recipe {
 
     private Xml.Tag updatePropertyValue(Xml.Tag parent, Xml.Tag orginalProp, Xml.Tag updatedProp) {
         List<Content> contents = new ArrayList<>();
-        for(Content content: parent.getContent()) {
-            if(content == orginalProp) {
+        for (Content content : parent.getContent()) {
+            if (content == orginalProp) {
                 contents.add(updatedProp);
             } else {
                 contents.add(content);
@@ -215,9 +214,11 @@ public class JpaCacheProperties extends Recipe {
 
         XmlVisitor<ExecutionContext> xmlVisitor = new XmlVisitor<ExecutionContext>() {
 
-            String version = null;
+            @Nullable
+            private String version = null;
 
-            private String interpretOpenJPAPropertyValue(String propVal) {
+            @Nullable
+            private String interpretOpenJPAPropertyValue(@Nullable String propVal) {
                 String scmValue = null;
                 if (propVal != null) {
                     if ("false".equalsIgnoreCase(propVal)) {
@@ -234,20 +235,17 @@ public class JpaCacheProperties extends Recipe {
             }
 
             // return boolean true if version is 1.0
-            private boolean isVersion10(String version) {
-                boolean v1 = false;
+            private boolean isVersion10(@Nullable String version) {
                 // If the version is missing the spec is assumed to be at
                 // the latest version, thus not V1.0.
-                if (version != null && "1.0".equals(version)) {
-                    v1 = true;
-                }
-                return v1;
+                return "1.0".equals(version);
             }
 
             // shared-cache-mode should go before <validation-mode> and <properties> if present.
             // If not present, it should go at the end of the persistence-unit element.
+            @Nullable
             public Xml.Tag getARefNode(Xml.Tag puNode) {
-                for(Xml.Tag node: puNode.getChildren()) {
+                for (Xml.Tag node : puNode.getChildren()) {
                     if ("validation-mode".equals(node.getName())) {
                         return node;
                     } else if ("properties".equals(node.getName())) {
@@ -259,6 +257,7 @@ public class JpaCacheProperties extends Recipe {
 
             // convert the scmValue to either true or false.
             // return null for complex values.
+            @Nullable
             private String convertScmValue(String scmValue) {
                 if ("NONE".equals(scmValue)) {
                     return "false";
@@ -289,11 +288,11 @@ public class JpaCacheProperties extends Recipe {
                 if (sdh.shouldFlag()) {
                     boolean v1 = isVersion10(version);
                     // Do we need to edit a shared cache mode property
-                    if((sdh.sharedCacheModeElement != null || sdh.sharedCacheModeProperty != null)) {
+                    if ((sdh.sharedCacheModeElement != null || sdh.sharedCacheModeProperty != null)) {
                         // if UNSPECIFIED, defaults to NONE but if present, use
                         // OpenJpa property to decide value
                         if (sdh.sharedCacheModeElement != null &&
-                                sdh.sharedCacheModeElementUnspecified) {
+                            sdh.sharedCacheModeElementUnspecified) {
                             String scmValue = "NONE";
                             if (sdh.openJPACacheProperty != null) {
                                 String propVal = getAttributeValue("value", sdh.openJPACacheProperty);
@@ -308,7 +307,7 @@ public class JpaCacheProperties extends Recipe {
                             // There is no shared-cache-mode, so process javax if present.
                             // javax property is deleted below if shared-cache-mode is set.
                             if (sdh.sharedCacheModeProperty != null &&
-                                    sdh.sharedCacheModePropertyUnspecified) {
+                                sdh.sharedCacheModePropertyUnspecified) {
 
                                 String scmValue = "NONE";
                                 if (sdh.openJPACacheProperty != null) {
@@ -325,7 +324,7 @@ public class JpaCacheProperties extends Recipe {
                     } else {
                         // or create a new one
                         // Figure out what the element value should contain.
-                        String scmValue = null;
+                        String scmValue;
                         if (sdh.openJPACacheProperty == null) {
                             scmValue = "NONE";
                         } else {
@@ -357,7 +356,7 @@ public class JpaCacheProperties extends Recipe {
                                     }
 
                                     // add a property element to the end of the properties list.
-                                    Xml.Tag newElement = Xml.Tag.build("<property name=\"eclipselink.cache.shared.default\" value=\""+eclipseLinkPropValue+"\"></property>");
+                                    Xml.Tag newElement = Xml.Tag.build("<property name=\"eclipselink.cache.shared.default\" value=\"" + eclipseLinkPropValue + "\"></property>");
 
                                     propertiesElement = addOrUpdateChild(propertiesElement, newElement, getCursor().getParentOrThrow());
 
