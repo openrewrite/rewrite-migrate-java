@@ -22,6 +22,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.xml.Assertions.xml;
 
 class JpaCachePropertiesTest implements RewriteTest {
+    private static final String PERSISTENCE_FILENAME = "persistence.xml";
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new JpaCacheProperties());
@@ -60,7 +61,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -98,7 +99,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -136,7 +137,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -173,7 +174,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -208,7 +209,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -243,7 +244,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -278,7 +279,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -313,7 +314,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -346,7 +347,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -367,7 +368,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -402,7 +403,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -437,7 +438,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -457,20 +458,20 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """, """
-                         <?xml version="1.0" encoding="UTF-8"?>
-                         <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                             <persistence-unit name="set_notset_set4">
-                                 <!-- flag -->
-                                 <shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode>
-                                 <!-- leave -->
-                                 <validation-mode>NONE</validation-mode>
-                                 <properties>
-                                     <!-- remove -->   \s
-                                 </properties>
-                             </persistence-unit>
-                         </persistence>
-                         """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+                 <?xml version="1.0" encoding="UTF-8"?>
+                 <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+                     <persistence-unit name="set_notset_set4">
+                         <!-- flag -->
+                         <shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode>
+                         <!-- leave -->
+                         <validation-mode>NONE</validation-mode>
+                         <properties>
+                             <!-- remove -->   \s
+                         </properties>
+                     </persistence-unit>
+                 </persistence>
+                 """,
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -487,7 +488,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -507,7 +508,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -534,7 +535,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -553,7 +554,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit> \s
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -588,7 +589,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -623,7 +624,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -658,7 +659,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -679,7 +680,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -699,7 +700,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -719,7 +720,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -752,7 +753,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -772,7 +773,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -805,7 +806,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -838,7 +839,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -873,7 +874,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -908,7 +909,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -941,7 +942,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -963,7 +964,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -971,20 +972,21 @@ class JpaCachePropertiesTest implements RewriteTest {
     void notset_notset_notset3() {
         rewriteRun(
           //language=xml
-          xml("""
+          xml(
+                 """
                  <?xml version="1.0" encoding="UTF-8"?>
                  <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
                      <persistence-unit name="notset_notset_notset3"></persistence-unit>
                  </persistence>
                  """, """
-                         <?xml version="1.0" encoding="UTF-8"?>
-                         <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                             <persistence-unit name="notset_notset_notset3">
-                                 <shared-cache-mode>NONE</shared-cache-mode>
-                         </persistence-unit>
-                         </persistence>
-                         """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+                 <?xml version="1.0" encoding="UTF-8"?>
+                 <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+                     <persistence-unit name="notset_notset_notset3">
+                         <shared-cache-mode>NONE</shared-cache-mode>
+                     </persistence-unit>
+                 </persistence>
+                 """,
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -1019,7 +1021,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -1052,7 +1054,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -1084,7 +1086,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -1116,7 +1118,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -1148,7 +1150,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -1179,7 +1181,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -1199,7 +1201,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                   </persistence-unit>
               </persistence>
               """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -1219,7 +1221,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -1251,7 +1253,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -1282,7 +1284,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }
@@ -1311,7 +1313,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                      </persistence-unit>
                  </persistence>
                  """,
-            sourceSpecs -> sourceSpecs.path("persistence.xml")
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
     }

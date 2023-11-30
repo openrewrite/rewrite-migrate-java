@@ -25,7 +25,6 @@ import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -337,7 +336,8 @@ public class JpaCacheProperties extends Recipe {
                             if (!v1) {
                                 Xml.Tag newNode = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
                                 // Ideally we would insert <shared-cache-mode> before the <validation-mode> and <properties> nodes
-                                t = addOrUpdateChild(t, newNode, getCursor().getParentOrThrow());
+                                Cursor parent = getCursor().getParentOrThrow();
+                                t = autoFormat(addOrUpdateChild(t, newNode, parent), ctx, parent);
                             } else {
                                 // version="1.0"
                                 // add a property for eclipselink
