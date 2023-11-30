@@ -210,9 +210,7 @@ public class JpaCacheProperties extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-
-        XmlVisitor<ExecutionContext> xmlVisitor = new XmlVisitor<ExecutionContext>() {
-
+        return Preconditions.check(new HasSourcePath<>("**/persistence.xml"), new XmlVisitor<ExecutionContext>() {
             @Nullable
             private String version = null;
 
@@ -386,8 +384,6 @@ public class JpaCacheProperties extends Recipe {
                 }
                 return t;
             }
-
-        };
-        return Preconditions.check(new HasSourcePath<>("**/persistence.xml"), xmlVisitor);
+        });
     }
 }
