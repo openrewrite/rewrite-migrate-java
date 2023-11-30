@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
@@ -197,15 +198,10 @@ public class JpaCacheProperties extends Recipe {
     }
 
     private Xml.Tag updatePropertyValue(Xml.Tag parent, Xml.Tag orginalProp, Xml.Tag updatedProp) {
-        List<Content> contents = new ArrayList<>();
-        for (Content content : parent.getContent()) {
-            if (content == orginalProp) {
-                contents.add(updatedProp);
-            } else {
-                contents.add(content);
-            }
-        }
-        return parent.withContent(contents);
+        //noinspection unchecked
+        return parent.withContent(ListUtils.map((List<Content>)parent.getContent(), content ->
+                content == orginalProp ? updatedProp : content
+        ));
     }
 
     @Override
@@ -216,19 +212,18 @@ public class JpaCacheProperties extends Recipe {
 
             @Nullable
             private String interpretOpenJPAPropertyValue(@Nullable String propVal) {
-                String scmValue = null;
                 if (propVal != null) {
                     if ("false".equalsIgnoreCase(propVal)) {
-                        scmValue = "NONE";
+                        return "NONE";
                     } else if ("true".equalsIgnoreCase(propVal)) {
-                        scmValue = "ALL";
+                        return "ALL";
                     } else if (propVal.matches("(?i:true)\\(ExcludedTypes=.*")) {
-                        scmValue = "DISABLE_SELECTIVE";
+                        return "DISABLE_SELECTIVE";
                     } else if (propVal.matches("(?i:true)\\(Types=.*")) {
-                        scmValue = "ENABLE_SELECTIVE";
+                        return "ENABLE_SELECTIVE";
                     }
                 }
-                return scmValue;
+                return null;
             }
 
             // return boolean true if version is 1.0
@@ -346,19 +341,17 @@ public class JpaCacheProperties extends Recipe {
                                 String eclipseLinkPropValue = convertScmValue(scmValue);
                                 if (eclipseLinkPropValue != null) {
 
-                                    // Find the properties element, if there is one
-                                    Xml.Tag propertiesElement = sdh.propertiesElement;
-                                    // If not found, we need to create a properties element
+                                    // If not found the properties element, we need to create it
                                     if (sdh.propertiesElement == null) {
-                                        propertiesElement = Xml.Tag.build("<properties></properties>");
+                                        sdh.propertiesElement = Xml.Tag.build("<properties></properties>");
                                     }
 
                                     // add a property element to the end of the properties list.
                                     Xml.Tag newElement = Xml.Tag.build("<property name=\"eclipselink.cache.shared.default\" value=\"" + eclipseLinkPropValue + "\"></property>");
 
-                                    propertiesElement = addOrUpdateChild(propertiesElement, newElement, getCursor().getParentOrThrow());
+                                    sdh.propertiesElement = addOrUpdateChild(sdh.propertiesElement, newElement, getCursor().getParentOrThrow());
 
-                                    t = addOrUpdateChild(t, propertiesElement, getCursor().getParentOrThrow());
+                                    t = addOrUpdateChild(t, sdh.propertiesElement, getCursor().getParentOrThrow());
                                 }
                             }
                         }
