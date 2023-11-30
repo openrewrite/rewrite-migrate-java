@@ -226,13 +226,6 @@ public class JpaCacheProperties extends Recipe {
                 return null;
             }
 
-            // return boolean true if version is 1.0
-            private boolean isVersion10(@Nullable String version) {
-                // If the version is missing the spec is assumed to be at
-                // the latest version, thus not V1.0.
-                return "1.0".equals(version);
-            }
-
             // shared-cache-mode should go before <validation-mode> and <properties> if present.
             // If not present, it should go at the end of the persistence-unit element.
             @Nullable
@@ -278,7 +271,7 @@ public class JpaCacheProperties extends Recipe {
 
                 SharedDataHolder sdh = extractData(t);
                 if (sdh.shouldFlag()) {
-                    boolean v1 = isVersion10(version);
+                    boolean v1 = "1.0".equals(version);
                     // Do we need to edit a shared cache mode property
                     if ((sdh.sharedCacheModeElement != null || sdh.sharedCacheModeProperty != null)) {
                         // if UNSPECIFIED, defaults to NONE but if present, use
