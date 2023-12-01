@@ -99,6 +99,6 @@ public class BeanDiscovery extends Recipe {
             }
 
         };
-        return Preconditions.check(new HasSourcePath<>("**/beans.xml"), xmlVisitor);
+        return Preconditions.check(new HasSourcePath("**/beans.xml"), xmlVisitor);
     }
 }
