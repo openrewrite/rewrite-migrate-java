@@ -101,7 +101,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
 
         boolean v1 = "1.0".equals(version);
         // Do we need to edit a shared cache mode property
-        if ((sdh.sharedCacheModeElement != null || sdh.sharedCacheModeProperty != null)) {
+        if (sdh.sharedCacheModeElement != null || sdh.sharedCacheModeProperty != null) {
             // if UNSPECIFIED, defaults to NONE but if present, use
             // OpenJpa property to decide value
             if (sdh.sharedCacheModeElement != null && sdh.sharedCacheModeElementUnspecified) {
@@ -185,7 +185,6 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
             String attrValue = getAttributeValue("value", sdh.openJPACacheProperty);
             if ("true".equalsIgnoreCase(attrValue) || "false".equalsIgnoreCase(attrValue)) {
                 sdh.propertiesElement = filterTagChildren(sdh.propertiesElement, child -> child != sdh.openJPACacheProperty);
-
                 t = addOrUpdateChild(t, sdh.propertiesElement, getCursor().getParentOrThrow());
             }
         }
