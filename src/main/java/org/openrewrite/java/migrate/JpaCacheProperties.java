@@ -206,7 +206,7 @@ public class JpaCacheProperties extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new HasSourcePath<>("**/persistence.xml"), new XmlVisitor<ExecutionContext>() {
+        return Preconditions.check(new FindSourceFiles("**/persistence.xml"), new XmlVisitor<ExecutionContext>() {
             @Nullable
             private String version = null;
 
