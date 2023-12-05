@@ -49,7 +49,7 @@ public class BeansXmlNamespace extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new HasSourcePath<>("**/beans.xml"), new XmlVisitor<ExecutionContext>() {
+        return Preconditions.check(new FindSourceFiles("**/beans.xml"), new XmlVisitor<ExecutionContext>() {
             @Override
             public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = (Xml.Tag) super.visitTag(tag, ctx);

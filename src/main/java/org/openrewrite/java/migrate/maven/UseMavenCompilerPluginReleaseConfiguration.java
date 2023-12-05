@@ -34,7 +34,7 @@ import static org.openrewrite.xml.FilterTagChildrenVisitor.filterTagChildren;
 @Value
 @EqualsAndHashCode(callSuper = true)
 public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
-    private static final XPathMatcher PLUGINS_MATCHER = new XPathMatcher("/project/build/plugins");
+    private static final XPathMatcher PLUGINS_MATCHER = new XPathMatcher("/project/build//plugins");
 
     @Option(
             displayName = "Release Version",
