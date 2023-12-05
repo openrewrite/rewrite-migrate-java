@@ -74,7 +74,7 @@ implementation was governed as part of the J2EE specification.
 
 # Java Migration Recipes
 
-OpenRewrite provides a set of recipes that will help developers migrate to either Java 11, Java 17, or Java 21. These two LTS
+OpenRewrite provides a set of recipes that will help developers migrate to either Java 11, Java 17, or Java 21. These LTS
 releases are the most common targets for organizations that are looking to modernize their applications.
 
 ## Java 11 Migrations
