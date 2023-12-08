@@ -22,34 +22,34 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-
 
 public class CastArraysAsListToList extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Fix code like `(Type[])Arrays.asList(...).toArray()`";
+        return "Remove explicit casts on `Arrays.asList(..).toArray()`";
     }
 
     @Override
     public String getDescription() {
         //language=markdown
-        return "convert code like `(Integer[]) Arrays.asList(1, 2, 3).toArray()` to `Arrays.asList(1, 2, 3).toArray(new Integer[0])`.";
+        return "Convert code like `(Integer[]) Arrays.asList(1, 2, 3).toArray()` to `Arrays.asList(1, 2, 3).toArray(new Integer[0])`.";
     }
+
+    private static final MethodMatcher ARRAYS_AS_LIST = new MethodMatcher("java.util.Arrays asList(..)", false);
+    private static final MethodMatcher LIST_TO_ARRAY = new MethodMatcher("java.util.List toArray()", true);
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        TreeVisitor<?, ExecutionContext> precondition = new UsesType<>("java.util.Arrays", false);
-        return Preconditions.check(precondition, new CastArraysAsListToListVisitor());
+        return Preconditions.check(
+                Preconditions.and(new UsesMethod<>(ARRAYS_AS_LIST), new UsesMethod<>(LIST_TO_ARRAY)),
+                new CastArraysAsListToListVisitor());
     }
 
     private static class CastArraysAsListToListVisitor extends JavaVisitor<ExecutionContext> {
-        private static MethodMatcher arraysAsList = new MethodMatcher("java.util.Arrays asList(..)", false);
-        private static MethodMatcher arrayListToArray = new MethodMatcher("java.util.List toArray()", true);
-
         @Override
         public J visitTypeCast(J.TypeCast typeCast, ExecutionContext executionContext) {
             J j = super.visitTypeCast(typeCast, executionContext);
@@ -59,11 +59,11 @@ public class CastArraysAsListToList extends Recipe {
             typeCast = (J.TypeCast) j;
 
             boolean matches = typeCast.getClazz().getTree() instanceof J.ArrayType
-                    && (typeCast.getType() instanceof JavaType.Class || typeCast.getType() instanceof JavaType.Parameterized)
-                    && ((JavaType.FullyQualified) typeCast.getType()).getOwningClass() == null // does not support inner class now
-                    && arrayListToArray.matches(typeCast.getExpression())
-                    && typeCast.getExpression() instanceof J.MethodInvocation
-                    && arraysAsList.matches(((J.MethodInvocation) typeCast.getExpression()).getSelect());
+                              && (typeCast.getType() instanceof JavaType.Class || typeCast.getType() instanceof JavaType.Parameterized)
+                              && ((JavaType.FullyQualified) typeCast.getType()).getOwningClass() == null // does not support inner class now
+                              && LIST_TO_ARRAY.matches(typeCast.getExpression())
+                              && typeCast.getExpression() instanceof J.MethodInvocation
+                              && ARRAYS_AS_LIST.matches(((J.MethodInvocation) typeCast.getExpression()).getSelect());
             if (!matches) {
                 return typeCast;
             }
@@ -92,5 +92,4 @@ public class CastArraysAsListToList extends Recipe {
             return t.apply(updateCursor(typeCast), typeCast.getCoordinates().replace(), ((J.MethodInvocation) typeCast.getExpression()).getSelect());
         }
     }
-
 }

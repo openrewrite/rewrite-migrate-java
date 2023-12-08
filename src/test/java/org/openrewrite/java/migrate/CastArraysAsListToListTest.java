@@ -21,38 +21,33 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class CastArraysAsListToListTest implements RewriteTest {
+class CastArraysAsListToListTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new CastArraysAsListToList());
     }
 
     @Test
-    public void positiveCases() {
-        //language=java
+    void positiveCases() {
         rewriteRun(
+          //language=java
           java(
             """
-              import java.util.ArrayList;
               import java.util.Arrays;
-              import java.util.List;
-                            
-              public class Main {
-                  public static void main(String[] args) {
+              
+              class Foo {
+                  void bar() {
                       Integer[] array1 = (Integer[]) Arrays.asList(1, 2, 3).toArray();
                       Integer[][] array2 = (Integer[][]) Arrays.asList(new Integer[]{1}, new Integer[]{2}).toArray();
                       Object[][] array3 = (Object[][]) Arrays.asList(new Object[]{}, new Object[]{}).toArray();
                   }
               }
               """,
-
             """
-              import java.util.ArrayList;
               import java.util.Arrays;
-              import java.util.List;
-                            
-              public class Main {
-                  public static void main(String[] args) {
+              
+              class Foo {
+                  void bar() {
                       Integer[] array1 = Arrays.asList(1, 2, 3).toArray(new Integer[0]);
                       Integer[][] array2 = Arrays.asList(new Integer[]{1}, new Integer[]{2}).toArray(new Integer[0][]);
                       Object[][] array3 = Arrays.asList(new Object[]{}, new Object[]{}).toArray(new Object[0][]);
@@ -64,21 +59,22 @@ public class CastArraysAsListToListTest implements RewriteTest {
     }
 
     @Test
-    public void negativeCases() {
-        //language=java
+    void negativeCases() {
         rewriteRun(
-          java("""
-            import java.util.Arrays;
-            import java.util.Collections;
-            public class Main {
-
-                public static void main(String[] args) {
-                    Object[] array1 = (Object[]) Arrays.asList("a","b").toArray();
-                    Integer[] array2 = (Integer[]) Collections.singletonList(1).toArray();
-                    Integer[] array3 = Arrays.asList(1, 2, 3).toArray(new Integer[0]);
-                }
-            }
+          //language=java
+          java(
             """
+              import java.util.Arrays;
+              import java.util.Collections;
+              
+              class Foo {
+                  void bar() {
+                      Object[] array1 = (Object[]) Arrays.asList("a","b").toArray();
+                      Integer[] array2 = (Integer[]) Collections.singletonList(1).toArray();
+                      Integer[] array3 = Arrays.asList(1, 2, 3).toArray(new Integer[0]);
+                  }
+              }
+              """
           )
         );
     }
