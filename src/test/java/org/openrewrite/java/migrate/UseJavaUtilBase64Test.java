@@ -177,7 +177,8 @@ class UseJavaUtilBase64Test implements RewriteTest {
     void otherBase64() {
         //language=java
         rewriteRun(
-          java("""
+          java(
+                """
               package test.sun.misc;
               
               public class App {

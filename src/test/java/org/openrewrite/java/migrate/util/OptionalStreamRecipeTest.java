@@ -412,20 +412,20 @@ class OptionalStreamRecipeTest implements RewriteTest {
           //language=java
           java(
             """
-               import java.util.stream.Stream;
-               
-               class Scratch {
-                 public void foo() {
-                   var x = Stream.of(Optional.empty())
-                       .filter(Optional::isPresent)
-                       .map(Optional::get);
-                 }
-                 private static class Optional {
-                   public static Optional empty() {}
-                   public boolean isPresent() {return false;}
-                   public Object get() {return null;}
-                 }
-               }
+              import java.util.stream.Stream;
+              
+              class Scratch {
+                public void foo() {
+                  var x = Stream.of(Optional.empty())
+                      .filter(Optional::isPresent)
+                      .map(Optional::get);
+                }
+                private static class Optional {
+                  public static Optional empty() {}
+                  public boolean isPresent() {return false;}
+                  public Object get() {return null;}
+                }
+              }
               """
           ));
     }

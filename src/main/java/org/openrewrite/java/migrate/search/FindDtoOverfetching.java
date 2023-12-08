@@ -53,8 +53,8 @@ public class FindDtoOverfetching extends Recipe {
         MethodMatcher dtoFields = new MethodMatcher(dtoType + " get*()");
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
-                J.MethodDeclaration m = super.visitMethodDeclaration(method, executionContext);
+            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+                J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
                 Set<String> allUses = getCursor().getMessage("dtoDataUses", emptySet());
                 if (allUses.size() == 1) {
                     return SearchResult.found(m, String.join(", ", allUses));

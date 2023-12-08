@@ -41,28 +41,28 @@ class RemovedUIComponentConstantTest implements RewriteTest {
           //language=java
           java(
             """
-             import jakarta.faces.component.UIComponent;
-             
-             class Bar {
-                 void foo() {
-                     String str = UIComponent.CURRENT_COMPONENT;
-                     String str2 = UIComponent.CURRENT_COMPOSITE_COMPONENT;
-                     System.out.println(str);
-                     System.out.println(str2);
-                 }
-             }
+            import jakarta.faces.component.UIComponent;
+            
+            class Bar {
+                void foo() {
+                    String str = UIComponent.CURRENT_COMPONENT;
+                    String str2 = UIComponent.CURRENT_COMPOSITE_COMPONENT;
+                    System.out.println(str);
+                    System.out.println(str2);
+                }
+            }
             """, 
             """
-             import jakarta.faces.component.UIComponent;
-             
-             class Bar {
-                 void foo() {
-                     String str = UIComponent.getCurrentComponent();
-                     String str2 = UIComponent.getCurrentCompositeComponent();
-                     System.out.println(str);
-                     System.out.println(str2);
-                 }
-             }
+            import jakarta.faces.component.UIComponent;
+            
+            class Bar {
+                void foo() {
+                    String str = UIComponent.getCurrentComponent();
+                    String str2 = UIComponent.getCurrentCompositeComponent();
+                    System.out.println(str);
+                    System.out.println(str2);
+                }
+            }
             """
           )
         );

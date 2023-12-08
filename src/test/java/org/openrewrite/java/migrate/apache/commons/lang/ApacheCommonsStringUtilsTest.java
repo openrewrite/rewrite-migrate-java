@@ -278,7 +278,8 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
     void inputMethodsNotCalledTwice() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
             class Bar {
                 String baz() {
                     return "baz";
@@ -305,7 +306,8 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
     void getterIsCalledTwice() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
             class Bar {
                 String getBaz() {
                     return "baz";

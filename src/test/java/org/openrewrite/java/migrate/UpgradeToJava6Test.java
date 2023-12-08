@@ -34,7 +34,8 @@ class UpgradeToJava6Test implements RewriteTest {
     void testDataSource() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
               package com.test.withoutWrapperMethods;
                                   
               import java.io.PrintWriter;
