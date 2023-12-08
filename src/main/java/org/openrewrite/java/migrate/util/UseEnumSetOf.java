@@ -66,10 +66,11 @@ public class UseEnumSetOf extends Recipe {
                         if (isAssignmentSetOfEnum(type)) {
                             maybeAddImport("java.util.EnumSet");
 
-                            StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
                             List<Expression> args = m.getArguments();
+                            StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
                             args.forEach(o -> setOf.add("#{any()}"));
-                            return JavaTemplate.builder("EnumSet.of(#{any()})")
+
+                            return JavaTemplate.builder(setOf.toString())
                                     .contextSensitive()
                                     .imports("java.util.EnumSet")
                                     .build()

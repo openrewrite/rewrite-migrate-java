@@ -26,9 +26,12 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.JavaVersion21
+  - org.openrewrite.java.migrate.lang.ThreadStopUnsupported
+  - org.openrewrite.java.migrate.net.URLConstructorsToURIRecipes
+  - org.openrewrite.java.migrate.util.SequencedCollection
   - org.openrewrite.java.migrate.util.UseLocaleOf
   - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
-  - org.openrewrite.java.migrate.util.SequencedCollection
+  - org.openrewrite.github.SetupJavaUpgradeJavaVersion
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -53,10 +56,8 @@ tags:
   - java21
   - collections
 recipeList:
-  # Iterator
-  - org.openrewrite.java.SimplifyMethodChain:
-      methodPatternChain: [ 'java.util.SequencedCollection iterator()', 'java.util.Iterator next()' ]
-      newMethodName: getFirst
+  - org.openrewrite.java.migrate.util.ListFirstAndLast
+  - org.openrewrite.java.migrate.util.IteratorNext
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.SortedSet first()
       newMethodName: getFirst
@@ -66,12 +67,6 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.NavigableSet descendingSet()
       newMethodName: reversed
-  # TODO convert additional patterns to sequenced collections
-  # SequencedCollection.get(0) -> SequencedCollection.getFirst()
-  # SequencedCollection.get(SequencedCollection.size() - 1) -> SequencedCollection.getLast()
-  # list.add(0, E) -> SequencedCollection.addFirst(E)
-  # list.addLast(list.size(), E) -> SequencedCollection.addLast(E)
-  # list.remove(0) -> SequencedCollection.removeFirst()
-  # list.remove(list.size() - 1) -> SequencedCollection.removeLast()
+  # XXX convert additional patterns to sequenced collections
   # list.listIterator() -> ???
   # list.listIterator(int) -> ???

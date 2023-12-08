@@ -76,11 +76,6 @@ public class AddJaxbRuntime extends Recipe {
     }
 
     @Override
-    public boolean causesAnotherCycle() {
-        return true;
-    }
-
-    @Override
     public List<Recipe> getRecipeList() {
         return Arrays.asList(new AddJaxbRuntimeGradle(runtime), new AddJaxbRuntimeMaven(runtime));
     }
@@ -116,7 +111,7 @@ public class AddJaxbRuntime extends Recipe {
                             doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
                         }
                         g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
-                                SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null
+                                SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
                         ).getVisitor().visit(g, ctx);
                     } else {
                         if (getAfterVisit().isEmpty()) {
@@ -124,7 +119,7 @@ public class AddJaxbRuntime extends Recipe {
                             doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
                         }
                         g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
-                                GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null
+                                GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
                         ).getVisitor().visit(g, ctx);
                     }
                     maybeAddRuntimeDependency(g);

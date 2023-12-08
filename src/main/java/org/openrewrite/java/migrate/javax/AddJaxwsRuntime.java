@@ -40,9 +40,6 @@ import java.util.*;
 @EqualsAndHashCode(callSuper = true)
 public class AddJaxwsRuntime extends Recipe {
 
-    private static final String LEGACY_JAVA_JAXWS_API_GROUP = "javax.xml.ws";
-    private static final String LEGACY_JAVA_JAXWS_API_ARTIFACT = "jaxws-api";
-
     private static final String JAKARTA_JAXWS_API_GROUP = "jakarta.xml.ws";
     private static final String JAKARTA_JAXWS_API_ARTIFACT = "jakarta.xml.ws-api";
 
@@ -114,27 +111,29 @@ public class AddJaxwsRuntime extends Recipe {
                             .orElseThrow(() -> new RuntimeException("Gradle build scripts must have a GradleProject marker"));
 
                     Set<String> apiConfigurations = getTransitiveDependencyConfiguration(gp, JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
-                    Set<String> runtimeConfigurations = getTransitiveDependencyConfiguration(gp, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
 
-                    if (runtimeConfigurations.isEmpty()) {
-                        if (gp.getConfiguration("compileOnly") != null) {
-                            g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, "compileOnly", null, null, null, null)
-                                    .visitNonNull(g, ctx);
-                        }
-                        if (gp.getConfiguration("testImplementation") != null) {
-                            g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, "testImplementation", null, null, null, null)
-                                    .visitNonNull(g, ctx);
-                        }
-                    } else {
-                        for (String apiConfiguration : apiConfigurations) {
-                            GradleDependencyConfiguration apiGdc = gp.getConfiguration(apiConfiguration);
-                            List<GradleDependencyConfiguration> apiTransitives = gp.configurationsExtendingFrom(apiGdc, true);
-                            for (String runtimeConfiguration : runtimeConfigurations) {
-                                GradleDependencyConfiguration runtimeGdc = gp.getConfiguration(runtimeConfiguration);
-                                List<GradleDependencyConfiguration> runtimeTransitives = gp.configurationsExtendingFrom(runtimeGdc, true);
-                                if (apiTransitives.stream().noneMatch(runtimeTransitives::contains)) {
-                                    g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, apiConfiguration, null, null, null, null)
-                                            .visitNonNull(g, ctx);
+                    if (!apiConfigurations.isEmpty()) {
+                        Set<String> runtimeConfigurations = getTransitiveDependencyConfiguration(gp, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
+                        if (runtimeConfigurations.isEmpty()) {
+                            if (gp.getConfiguration("compileOnly") != null) {
+                                g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, "compileOnly", null, null, null, null)
+                                        .visitNonNull(g, ctx);
+                            }
+                            if (gp.getConfiguration("testImplementation") != null) {
+                                g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, "testImplementation", null, null, null, null)
+                                        .visitNonNull(g, ctx);
+                            }
+                        } else {
+                            for (String apiConfiguration : apiConfigurations) {
+                                GradleDependencyConfiguration apiGdc = gp.getConfiguration(apiConfiguration);
+                                List<GradleDependencyConfiguration> apiTransitives = gp.configurationsExtendingFrom(apiGdc, true);
+                                for (String runtimeConfiguration : runtimeConfigurations) {
+                                    GradleDependencyConfiguration runtimeGdc = gp.getConfiguration(runtimeConfiguration);
+                                    List<GradleDependencyConfiguration> runtimeTransitives = gp.configurationsExtendingFrom(runtimeGdc, true);
+                                    if (apiTransitives.stream().noneMatch(runtimeTransitives::contains)) {
+                                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, apiConfiguration, null, null, null, null)
+                                                .visitNonNull(g, ctx);
+                                    }
                                 }
                             }
                         }
@@ -202,13 +201,15 @@ public class AddJaxwsRuntime extends Recipe {
 
                     //Find the highest scope of a transitive dependency on the JAX-WS API (if it exists at all)
                     Scope apiScope = getTransitiveDependencyScope(mavenModel, JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
-                    //Find the highest scope of a transitive dependency on the JAX-WS runtime (if it exists at all)
-                    Scope runtimeScope = getTransitiveDependencyScope(mavenModel, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
+                    if (apiScope != null) {
+                        //Find the highest scope of a transitive dependency on the JAX-WS runtime (if it exists at all)
+                        Scope runtimeScope = getTransitiveDependencyScope(mavenModel, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
 
-                    if (apiScope != null && (runtimeScope == null || !apiScope.isInClasspathOf(runtimeScope))) {
-                        String resolvedScope = apiScope == Scope.Test ? "test" : "provided";
-                        d = (Xml.Document) new AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT,
-                                "2.3.x", null, resolvedScope, null, null, null, null, null).visit(d, ctx);
+                        if (runtimeScope == null || !apiScope.isInClasspathOf(runtimeScope)) {
+                            String resolvedScope = apiScope == Scope.Test ? "test" : "provided";
+                            d = (Xml.Document) new AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT,
+                                    "2.3.x", null, resolvedScope, null, null, null, null, null).visit(d, ctx);
+                        }
                     }
 
                     return d;

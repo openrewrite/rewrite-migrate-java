@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.lombok;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -24,7 +25,6 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
 class LombokValToFinalVarTest implements RewriteTest {
-
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new LombokValToFinalVar())
@@ -32,7 +32,8 @@ class LombokValToFinalVarTest implements RewriteTest {
     }
 
     @Test
-    void replaceAssignment() {
+    @DocumentExample
+    void replaceAssignmentVal() {
         //language=java
         rewriteRun(
           version(
@@ -49,6 +50,33 @@ class LombokValToFinalVarTest implements RewriteTest {
                 class A {
                     void bar() {
                         final var foo = "foo";
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void replaceAssignmentVar() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import lombok.var;
+                class A {
+                    void bar() {
+                        var foo = "foo";
+                    }
+                }
+                """,
+              """
+                class A {
+                    void bar() {
+                        var foo = "foo";
                     }
                 }
                 """

@@ -5,7 +5,7 @@
 [![ci](https://github.com/openrewrite/rewrite-migrate-java/actions/workflows/ci.yml/badge.svg)](https://github.com/openrewrite/rewrite-migrate-java/actions/workflows/ci.yml)
 [![Apache 2.0](https://img.shields.io/github/license/openrewrite/rewrite-migrate-java.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://img.shields.io/maven-central/v/org.openrewrite.recipe/rewrite-migrate-java.svg)](https://mvnrepository.com/artifact/org.openrewrite.recipe/rewrite-migrate-java)
-[![Revved up by Gradle Enterprise](https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.openrewrite.org/scans)
+[![Revved up by Develocity](https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.openrewrite.org/scans)
 
 ### What is this?
 
@@ -21,7 +21,7 @@ of the platform. This changed in June 2018 when a new, six-month release cadence
 The new model allows features to be released within any six-month window allowing features to be incrementally
 introduced when they are ready. Additionally, there are Java LTS (Long term support) releases on which there exists
 enterprise support offered through several vendors that provide builds of the JVM, compiler, and standard libraries. The
-current LTS versions of the Java platform (Java 8, 11, and 17) are the most common versions in use within the Java
+current LTS versions of the Java platform (Java 8, 11, 17, and 21) are the most common versions in use within the Java
 ecosystem.
 
 # Java EE/Jakarta EE
@@ -38,7 +38,7 @@ implementation to their builds.**
 
 To muddy the waters further, the governance of the Java Platform, Enterprise Edition, was transferred to the Eclipse
 Foundation and was renamed to Jakarta EE. The Jakarta EE 8 release (the first under the Jakarta name) maintains
-the `javax.xml.bind` package namespace whereas Jakarta EE 9 is the first release where the package namespace was changed
+the `javax.xml.bind` package namespace, whereas Jakarta EE 9 is the first release where the package namespace was changed
 to `jakarta.xml.bind`:
 
 ## Java Architecture for XML Binding (JAXB)
@@ -46,7 +46,7 @@ to `jakarta.xml.bind`:
 Java Architecture for XML Binding (JAXB) provides a framework for mapping XML documents to/from a Java representation of
 those documents. The specification/implementation of this library that is bundled with older versions of the JDK was
 part of the Java EE specification before it was moved to the Jakarta project. It can be confusing because Java EE 8
-and Jakarta EE 8 provide exactly the same specification (they use the same `javax.xml.bind` namespace), and there are
+and Jakarta EE 8 provides exactly the same specification (they use the same `javax.xml.bind` namespace), and there are
 two different reference implementations for the specification.
 
 | Jakarta EE Version | XML Binding Artifact                        | Package Namespace | Description                   |
@@ -62,7 +62,7 @@ two different reference implementations for the specification.
 
 Java API for XML Web Services (JAX-WS) provides a framework for building SOAP-based XML web services in Java. This
 framework was originally part of the Java Platform, Enterprise Edition (J2EE), and both the API and the reference
-implementation were governed as part of the J2EE specification.
+implementation was governed as part of the J2EE specification.
 
 | Jakarta EE Version | XML Web Services Artifact               | Package Namespace | Description                     |
 |--------------------|-----------------------------------------|-------------------|---------------------------------|
@@ -74,7 +74,7 @@ implementation were governed as part of the J2EE specification.
 
 # Java Migration Recipes
 
-OpenRewrite provides a set of recipes that will help developers migrate to either Java 11 or Java 17. These two LTS
+OpenRewrite provides a set of recipes that will help developers migrate to either Java 11, Java 17, or Java 21. These LTS
 releases are the most common targets for organizations that are looking to modernize their applications.
 
 ## Java 11 Migrations
@@ -102,7 +102,7 @@ migrate applications that were previously running on Java 8 through 10. This rec
 ## Java 17 Migrations
 
 OpenRewrite provides a set of recipes that will help developers migrate to Java 17 when their existing application
-workloads are on Java 11 through 16. The composite recipe `org.openrewrite.java.migrate.UpgradeJava17` will cover the
+workloads are on Java 11 through 16. The composite recipe `org.openrewrite.java.migrate.UpgradeToJava17` will cover the
 following themes:
 
 - Any deprecated APIs in the earlier versions of Java that have a well-defined migration path will be automatically
@@ -112,6 +112,15 @@ following themes:
   application or a third-party library attempts to access an API that has not been publicly exported via the module
   system. This recipe will upgrade well-known, third-party libraries if they provide a version that is compliant with
   the Java module system.
+
+## Java 21 Migrations
+
+OpenRewrite provides a set of recipes that will help developers migrate to Java 21 when their existing application
+workloads are on Java 11 through 20. The composite recipe `org.openrewrite.java.migrate.UpgradeToJava21` will cover the
+following themes:
+
+- everything covered by the Java 17 Migration
+- initial support for the migration to Sequenced collections
 
 ## Illegal Reflective Access<a name="IllegalReflectiveAccess"></a>
 
@@ -146,7 +155,7 @@ are now fatal and the application will terminate if such illegal access occurs.
 
 ### Suppressing Illegal Reflective Access Exceptions.
 
-In situations where there a third-party library does not provide a version that is compliant with the Java module
+In situations where a third-party library does not provide a version that is compliant with the Java module
 system, it is possible to suppress these warnings/errors. An application may add `Add-Opens` declarations to its
 top-level JAR's manifest:
 
@@ -169,6 +178,7 @@ There are currently no recipes that will automatically apply "<Add-Opens>" direc
 
 - http://ibm.biz/WAMT4AppBinaries
 
-# Jakarta EE 8 Migration Recipes
+## Contributing
 
-# Jakarta EE 9 Migration Recipes
+We appreciate all types of contributions. See the [contributing guide](https://github.com/openrewrite/.github/blob/main/CONTRIBUTING.md) for detailed instructions on how to get started.
+

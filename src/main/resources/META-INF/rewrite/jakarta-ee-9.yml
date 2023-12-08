@@ -1,5 +1,5 @@
 #
-# Copyright 2021 the original author or authors.
+# Copyright 2023 the original author or authors.
 # <p>
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,7 +57,9 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.RestAssuredJavaxToJakarta
-
+  - org.openrewrite.java.migrate.jakarta.ApplicationPathWildcardNoLongerAccepted
+  - org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
+  - org.openrewrite.java.migrate.javaee8
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxActivationMigrationToJakartaActivation
@@ -67,7 +69,6 @@ tags:
   - activation
   - javax
   - jakarta
-
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.activation
@@ -90,53 +91,19 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
-displayName: Migrate deprecated `javax.annotation` packages to `jakarta.annotation`
+displayName: Migrate deprecated `javax.annotation` to `jakarta.annotation`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 tags:
   - annotation
   - javax
   - jakarta
 recipeList:
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.annotation
-      artifactId: jakarta.annotation-api
-      version: latest.release
-      onlyIfUsing: javax.annotation..*
-      acceptTransitive: true
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: jakarta.annotation
-      artifactId: jakarta.annotation-api
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.annotation
+      oldArtifactId: javax.annotation-api
+      newGroupId: jakarta.annotation
+      newArtifactId: jakarta.annotation-api
       newVersion: latest.release
-  - org.openrewrite.java.migrate.jakarta.ChangeJavaxAnnotationToJakarta
-  - org.openrewrite.java.dependencies.RemoveDependency:
-      groupId: javax.annotation
-      artifactId: javax.annotation-api
-
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.ChangeJavaxAnnotationToJakarta
-displayName: Migrate deprecated `javax.annotation` packages to `jakarta.annotation`
-description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation. Excludes `javax.annotation.processing`.
-tags:
-  - batch
-  - javax
-  - jakarta
-
-recipeList:
-  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationPackageToJakarta
-  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationSecurityPackageToJakarta
-  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationSqlPackageToJakarta
-
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationPackageToJakarta
-displayName: Migrate deprecated `javax.annotation` packages to `jakarta.annotation`
-description: Change type of classes in the `javax.annotation` package to jakarta.
-tags:
-  - batch
-  - javax
-  - jakarta
-recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.Generated
       newFullyQualifiedTypeName: jakarta.annotation.Generated
@@ -164,6 +131,8 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.Resources
       newFullyQualifiedTypeName: jakarta.annotation.Resources
+  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationSecurityPackageToJakarta
+  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationSqlPackageToJakarta
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -171,7 +140,6 @@ name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationSecurityPackageToJakar
 displayName: Migrate deprecated `javax.annotation.security` packages to `jakarta.annotation.security`
 description: Change type of classes in the `javax.annotation.security` package to jakarta.
 tags:
-  - batch
   - javax
   - jakarta
 recipeList:
@@ -197,7 +165,6 @@ name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationSqlPackageToJakarta
 displayName: Migrate deprecated `javax.annotation.sql` packages to `jakarta.annotation.sql`
 description: Change type of classes in the `javax.annotation.sql` package to jakarta.
 tags:
-  - batch
   - javax
   - jakarta
 recipeList:
@@ -253,7 +220,6 @@ tags:
   - security
   - javax
   - jakarta
-
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.authorization
@@ -282,7 +248,6 @@ tags:
   - batch
   - javax
   - jakarta
-
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.batch
@@ -310,7 +275,6 @@ tags:
   - validation
   - javax
   - jakarta
-
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.validation
@@ -471,7 +435,6 @@ tags:
   - inject
   - javax
   - jakarta
-
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.inject
@@ -705,7 +668,6 @@ tags:
   - transaction
   - javax
   - jakarta
-
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.transaction
@@ -779,7 +741,6 @@ tags:
   - jaxb
   - javax
   - jakarta
-
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.xml.bind
@@ -812,6 +773,14 @@ recipeList:
   - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: com.sun.xml.bind
       artifactId: jaxb-impl
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.codehaus.mojo
+      artifactId: jaxb2-maven-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.codehaus.mojo
+      artifactId: jaxb-maven-plugin
+      newVersion: 4.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
@@ -844,7 +813,6 @@ tags:
   - jaxws
   - javax
   - jakarta
-
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.xml.ws
@@ -879,7 +847,6 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxPersistenceXmlToJakartaPersistenceXml
 displayName: Migrate xmlns entries in `persistence.xml` files
 description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
-
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: name
@@ -916,7 +883,6 @@ displayName: Migrate Jackson from javax to jakarta namespace
 description: >
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Jackson dependencies with their counterparts
   that are compatible with Jakarta EE 9.
-
 recipeList:
   # JAXB annotations support
   - org.openrewrite.java.dependencies.ChangeDependency:
@@ -1028,7 +994,6 @@ displayName: Migrate Ehcache from javax to jakarta namespace
 description: >
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Ehcache dependencies with their counterparts
   that are compatible with Jakarta EE 9.
-
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.ehcache
@@ -1051,7 +1016,6 @@ displayName: Migrate Johnzon from javax to jakarta namespace
 description: >
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Johnzon dependencies with their counterparts
   that are compatible with Jakarta EE 9.
-
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.johnzon
@@ -1061,7 +1025,6 @@ recipeList:
       groupId: org.apache.johnzon
       artifactId: "*"
       newClassifier: jakarta
-
 ---
 # Currently this recipe is only updating the artifacts to a version that is compatible with J2EE 9. There still may be
 # breaking changes to the Rest Assured API that need to be addressed.
@@ -1076,3 +1039,18 @@ recipeList:
       groupId: io.rest-assured
       artifactId: "*"
       newVersion: 5.1.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
+displayName: Migrate `org.apache.ws.security` and `org.apache.ws.security.components.crypto` packages to  `org.apache.wss4j.common.ext` and `org.apache.wss4j.common.crypto` packages
+description: >
+  Java EE has been rebranded to Jakarta EE.  This recipe replaces Apache security packages to migrate to Apache `wss4j`
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.ws.security
+      newPackageName: org.apache.wss4j.common.ext
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.ws.security.components.crypto
+      newPackageName: org.apache.wss4j.common.crypto
+      recursive: true

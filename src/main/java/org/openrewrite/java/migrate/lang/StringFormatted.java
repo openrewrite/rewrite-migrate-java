@@ -63,6 +63,9 @@ public class StringFormatted extends Recipe {
             Optional<JavaType.Method> formatted = method.getMethodType().getDeclaringType().getMethods().stream()
                 .filter(m -> m.getName().equals("formatted")).findAny();
             mi = mi.withMethodType(formatted.orElse(null));
+            if (mi.getName().getType() != null) {
+                mi = mi.withName(mi.getName().withType(mi.getMethodType()));
+            }
             Expression select = wrapperNotNeeded ? arguments.get(0) :
                 new J.Parentheses<>(Tree.randomId(), Space.EMPTY, Markers.EMPTY, JRightPadded.build(arguments.get(0)));
             mi = mi.withSelect(select);
@@ -73,7 +76,8 @@ public class StringFormatted extends Recipe {
         private static boolean wrapperNotNeeded(Expression expression) {
             return expression instanceof J.Identifier
                     || expression instanceof J.Literal
-                    || expression instanceof J.MethodInvocation;
+                    || expression instanceof J.MethodInvocation
+                    || expression instanceof J.FieldAccess;
         }
     }
 

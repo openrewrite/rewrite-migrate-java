@@ -30,7 +30,9 @@ tags:
   - deprecated
   - jakarta
 recipeList:
+  - org.openrewrite.java.migrate.UpgradeToJava8
   - org.openrewrite.java.migrate.UseJavaUtilBase64
+  - org.openrewrite.java.migrate.CastArraysAsListToList
   # Add an explicit JAXB/JAX-WS runtime and upgrade the dependencies to Jakarta EE 8
   - org.openrewrite.java.migrate.javax.AddJaxbDependencies
   - org.openrewrite.java.migrate.javax.AddJaxwsDependencies
@@ -40,6 +42,10 @@ recipeList:
   - org.openrewrite.staticanalysis.PrimitiveWrapperClassConstructorToValueOf
   - org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
   - org.openrewrite.java.migrate.lang.JavaLangAPIs
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: java.lang.Runtime runFinalizersOnExit(boolean)
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: java.lang.System runFinalizersOnExit(boolean)
   - org.openrewrite.java.migrate.logging.JavaLoggingAPIs
   - org.openrewrite.java.migrate.lombok.UpdateLombokToJava11
   - org.openrewrite.java.migrate.net.JavaNetAPIs
@@ -56,6 +62,7 @@ recipeList:
 #  - org.openrewrite.java.migrate.util.JavaUtilAPIs
   - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
   - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
+  - org.openrewrite.java.migrate.util.OptionalStreamRecipe
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 11
   - org.openrewrite.java.migrate.InternalBindContextFactory
@@ -139,13 +146,17 @@ recipeList:
       groupPattern: jakarta.xml.bind
       artifactPattern: "*"
       onlyIfVersionsMatch: true
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.codehaus.mojo
+      artifactId: jaxb2-maven-plugin
+      newVersion: 2.5.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxwsDependencies
 displayName: Add explicit JAX-WS dependencies
 description: >
   This recipe will add explicit dependencies for Jakarta EE 8 when a Java 8 application is using JAX-WS. Any existing
-  dependencies will be upgraded to the latest version of Jakarta EE 8. **The artifacts are moved to Jakarta EE 8 but the
+  dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 but the
   application can continue to use the `javax.xml.bind` namespace.
 tags:
   - javax
