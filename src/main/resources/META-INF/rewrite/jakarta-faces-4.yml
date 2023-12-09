@@ -1,0 +1,89 @@
+#
+# Copyright 2023 the original author or authors.
+# <p>
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://www.apache.org/licenses/LICENSE-2.0
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlNamespaces
+displayName: Faces 4 migration for Jakarta EE 10
+description: Find and replace legacy JSF namespaces with Jakarta Faces namespaces in XHTML files.
+tags:
+  - jakarta
+  - faces
+  - jsf
+recipeList:
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://java.sun.com/jsf/html"
+      replace: "jakarta.faces.html"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://xmlns.jcp.org/jsf/html"
+      replace: "jakarta.faces.html"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://java.sun.com/jsf/facelets"
+      replace: "jakarta.faces.facelets"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://xmlns.jcp.org/jsf/facelets"
+      replace: "jakarta.faces.facelets"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://java.sun.com/jsf/core"
+      replace: "jakarta.faces.core"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://xmlns.jcp.org/jsf/core"
+      replace: "jakarta.faces.core"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://java.sun.com/jsp/jstl/core"
+      replace: "jakarta.tags.core"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://xmlns.jcp.org/jsp/jstl/core"
+      replace: "jakarta.tags.core"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://java.sun.com/jsf/composite"
+      replace: "jakarta.faces.composite"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://xmlns.jcp.org/jsf/composite"
+      replace: "jakarta.faces.composite"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://java.sun.com/jsf"
+      replace: "jakarta.faces"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://xmlns.jcp.org/jsf"
+      replace: "jakarta.faces"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://java.sun.com/jsf/passthrough"
+      replace: "jakarta.faces.passthrough"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://xmlns.jcp.org/jsf/passthrough"
+      replace: "jakarta.faces.passthrough"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://java.sun.com/jsp/jstl/functions"
+      replace: "jakarta.tags.functions"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://xmlns.jcp.org/jsp/jstl/functions"
+      replace: "jakarta.tags.functions"
+      filePattern: '**/*.xhtml'
