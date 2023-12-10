@@ -33,6 +33,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
   - org.openrewrite.java.migrate.BeanDiscovery
   - org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
+  - org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -309,3 +310,29 @@ recipeList:
       oldFullyQualifiedTypeName: jakarta.faces.bean.ViewScoped
       newFullyQualifiedTypeName: jakarta.faces.view.ViewScoped
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
+displayName: Migrate xmlns entries in `beans.xml` files
+description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
+tags:
+  - jakarta
+  - beans
+  - cdi
+recipeList:
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: version
+      elementName: beans
+      newValue: 3.0
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xmlns
+      elementName: beans
+      newValue: https://jakarta.ee/xml/ns/jakartaee
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xsi:schemaLocation
+      elementName: beans
+      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd
+  - org.openrewrite.text.FindAndReplace:
+      find: "javax."
+      replace: "jakarta."
+      filePattern: '**/beans.xml'
