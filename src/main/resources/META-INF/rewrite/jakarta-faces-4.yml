@@ -15,100 +15,41 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlNamespaces
-displayName: Faces 4 migration for Jakarta EE 10
-description: Find and replace legacy JSF namespaces with Jakarta Faces namespaces in XHTML files.
+name: org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakarta4x
+displayName: JSF 2.x to Jakarta Faces 4.x
+description: Jakarta EE 10 uses Faces 4.0 a major upgrade to Jakarta packages and XML namespaces.
 tags:
   - jakarta
   - faces
   - jsf
 recipeList:
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://java.sun.com/jsf/html"
-      replace: "jakarta.faces.html"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://xmlns.jcp.org/jsf/html"
-      replace: "jakarta.faces.html"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://java.sun.com/jsf/facelets"
-      replace: "jakarta.faces.facelets"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://xmlns.jcp.org/jsf/facelets"
-      replace: "jakarta.faces.facelets"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://java.sun.com/jsf/core"
-      replace: "jakarta.faces.core"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://xmlns.jcp.org/jsf/core"
-      replace: "jakarta.faces.core"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://java.sun.com/jsp/jstl/core"
-      replace: "jakarta.tags.core"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://xmlns.jcp.org/jsp/jstl/core"
-      replace: "jakarta.tags.core"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://java.sun.com/jsf/composite"
-      replace: "jakarta.faces.composite"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://xmlns.jcp.org/jsf/composite"
-      replace: "jakarta.faces.composite"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://java.sun.com/jsf"
-      replace: "jakarta.faces"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://xmlns.jcp.org/jsf"
-      replace: "jakarta.faces"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://java.sun.com/jsf/passthrough"
-      replace: "jakarta.faces.passthrough"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://xmlns.jcp.org/jsf/passthrough"
-      replace: "jakarta.faces.passthrough"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://java.sun.com/jsp/jstl/functions"
-      replace: "jakarta.tags.functions"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://xmlns.jcp.org/jsp/jstl/functions"
-      replace: "jakarta.tags.functions"
-      filePattern: '**/*.xhtml'
+  - org.openrewrite.java.migrate.jakarta.JavaxFacesConfigXmlToJakartaFacesConfigXml
+  - org.openrewrite.java.migrate.jakarta.JavaxFacesTaglibraryXmlToJakartaFacesTaglibraryXml
+  - org.openrewrite.java.migrate.jakarta.JavaxWebFragmentXmlToJakartaWebFragmentXml
+  - org.openrewrite.java.migrate.jakarta.JavaxWebXmlToJakartaWebXml
+  - org.openrewrite.java.migrate.jakarta.FacesEcmaScript
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxFacesConfigXmlToJakartaFacesConfigXml
 displayName: Migrate xmlns entries in `faces-config.xml` files
 description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
+tags:
+  - jakarta
+  - faces
+  - jsf
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: faces-config
       newValue: 4.0
-      fileMatcher: "**/faces-config.xml"
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: faces-config
-      oldValue: http://xmlns.jcp.org/xml/ns/javaee
       newValue: https://jakarta.ee/xml/ns/jakartaee
-      fileMatcher: "**/faces-config.xml"
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: faces-config
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd
-      fileMatcher: "**/faces-config.xml"
   - org.openrewrite.text.FindAndReplace:
       find: "javax."
       replace: "jakarta."
@@ -118,24 +59,99 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxFacesTaglibraryXmlToJakartaFacesTaglibraryXml
 displayName: Migrate xmlns entries in `taglib.xml` files
 description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
+tags:
+  - jakarta
+  - faces
+  - jsf
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: facelet-taglib
       newValue: 3.0
-      fileMatcher: "**/*taglib*.xml"
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: facelet-taglib
-      oldValue: http://xmlns.jcp.org/xml/ns/javaee
       newValue: https://jakarta.ee/xml/ns/jakartaee
-      fileMatcher: "**/*taglib*.xml"
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: facelet-taglib
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_3_0.xsd
-      fileMatcher: "**/*taglib*.xml"
+  - org.openrewrite.text.FindAndReplace:
+      find: javax.
+      replace: jakarta.
+      filePattern: '**/*taglib*.xml'
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxWebFragmentXmlToJakartaWebFragmentXml
+displayName: Migrate xmlns entries in `web-fragment.xml` files
+description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
+tags:
+  - jakarta
+  - faces
+  - jsf
+recipeList:
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: version
+      elementName: web-fragment
+      newValue: 5.0
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xmlns
+      elementName: web-fragment
+      newValue: https://jakarta.ee/xml/ns/jakartaee
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xsi:schemaLocation
+      elementName: web-fragment
+      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_5_0.xsd
   - org.openrewrite.text.FindAndReplace:
       find: "javax."
       replace: "jakarta."
-      filePattern: '**/*taglib*.xml'
+      filePattern: '**/web-fragment.xml'
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxWebXmlToJakartaWebXml
+displayName: Migrate xmlns entries in `web.xml` files
+description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
+tags:
+  - jakarta
+  - faces
+  - jsf
+recipeList:
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: version
+      elementName: web-app
+      newValue: 6.0
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xmlns
+      elementName: web-app
+      newValue: https://jakarta.ee/xml/ns/jakartaee
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xsi:schemaLocation
+      elementName: web-app
+      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd
+  - org.openrewrite.text.FindAndReplace:
+      find: "javax."
+      replace: "jakarta."
+      filePattern: '**/web.xml'
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.FacesEcmaScript
+displayName: Migrate JSF values inside EcmaScript files
+description: Convert JSF to Faces values inside JavaScript/TypeScript files
+tags:
+  - jakarta
+  - faces
+  - jsf
+recipeList:
+  - org.openrewrite.text.FindAndReplace:
+      find: javax
+      replace: jakarta
+      filePattern: '**/*.js;**/*.ts;**/*.properties'
+  - org.openrewrite.text.FindAndReplace:
+      find: window.jsf
+      replace: window.faces
+      filePattern: '**/*.js;**/*.ts'
+  - org.openrewrite.text.FindAndReplace:
+      find: jsf.ajax
+      replace: faces.ajax
+      filePattern: '**/*.js;**/*.ts'
+      
