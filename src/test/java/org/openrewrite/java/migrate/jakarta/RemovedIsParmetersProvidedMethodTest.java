@@ -40,7 +40,8 @@ public class RemovedIsParmetersProvidedMethodTest implements RewriteTest {
     void removedIsParametersProvidedMethod() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
             package com.test;
              
             import jakarta.el.MethodExpression;

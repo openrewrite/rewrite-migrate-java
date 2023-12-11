@@ -97,9 +97,9 @@ public class UpgradeJavaVersion extends Recipe {
             "/project/properties/maven.compiler.target",
             "/project/properties/maven.compiler.release",
             "/project/properties/release.version",
-            "/project/build/plugins/plugin[artifactId='maven-compiler-plugin']/configuration/source",
-            "/project/build/plugins/plugin[artifactId='maven-compiler-plugin']/configuration/target",
-            "/project/build/plugins/plugin[artifactId='maven-compiler-plugin']/configuration/release");
+            "/project/build//plugins/plugin[artifactId='maven-compiler-plugin']/configuration/source",
+            "/project/build//plugins/plugin[artifactId='maven-compiler-plugin']/configuration/target",
+            "/project/build//plugins/plugin[artifactId='maven-compiler-plugin']/configuration/release");
 
     private static final List<XPathMatcher> JAVA_VERSION_XPATH_MATCHERS =
             JAVA_VERSION_XPATHS.stream().map(XPathMatcher::new).collect(Collectors.toList());

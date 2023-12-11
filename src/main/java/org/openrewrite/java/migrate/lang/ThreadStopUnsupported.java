@@ -48,10 +48,10 @@ public class ThreadStopUnsupported extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                J j = super.visitMethodInvocation(method, executionContext);
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J j = super.visitMethodInvocation(method, ctx);
                 if (THREAD_STOP_MATCHER.matches(method)) {
-                    if (usesJava21(executionContext)) {
+                    if (usesJava21(ctx)) {
                         JavaTemplate template = JavaTemplate.builder("throw new UnsupportedOperationException()")
                                 .contextSensitive().build();
                         j = template.apply(getCursor(), method.getCoordinates().replace());
@@ -63,9 +63,9 @@ public class ThreadStopUnsupported extends Recipe {
                 return j;
             }
 
-            private boolean usesJava21(ExecutionContext executionContext) {
+            private boolean usesJava21(ExecutionContext ctx) {
                 JavaSourceFile javaSourceFile = getCursor().firstEnclosing(JavaSourceFile.class);
-                return javaSourceFile != null && new UsesJavaVersion<>(21).visit(javaSourceFile, executionContext) != javaSourceFile;
+                return javaSourceFile != null && new UsesJavaVersion<>(21).visit(javaSourceFile, ctx) != javaSourceFile;
             }
 
             private J getWithComment(J j) {

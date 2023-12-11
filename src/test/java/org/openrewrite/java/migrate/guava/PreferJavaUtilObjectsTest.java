@@ -41,7 +41,8 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
     @Test
     void preconditionsCheckNotNullToObjectsRequireNonNull() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import com.google.common.base.Preconditions;
 
           class A {
@@ -67,7 +68,8 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
       """)
     void preconditionsCheckNotNullToObjectsRequireNonNullTwoArguments() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import com.google.common.base.Preconditions;
 
           class A {
@@ -89,7 +91,8 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
     @Test
     void preconditionsCheckNotNullToObjectsRequireNonNullStatic() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import static com.google.common.base.Preconditions.checkNotNull;
 
           class A {
@@ -116,7 +119,8 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
             .build()
             .activateRecipes("org.openrewrite.java.migrate.guava.NoGuavaJava11"));
             },
-          java("""
+          java(
+                """
           import com.google.common.base.MoreObjects;
 
           class A {

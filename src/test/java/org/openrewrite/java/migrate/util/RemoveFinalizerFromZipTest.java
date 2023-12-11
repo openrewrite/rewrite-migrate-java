@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -27,7 +28,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new RemoveFinalizerFromZip()).allSources(s -> s.markers(javaVersion(12)));
+        spec.recipe(new RemoveFinalizerFromZip()).allSources(s -> s.markers(javaVersion(12)))
+          .parser(JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(false));
     }
 
     @Test
@@ -258,7 +260,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
         //language=java
         rewriteRun(version(java("""
           import java.util.zip.ZipFile;
-          
+                    
           class FooBar extends ZipFile {
               FooBar(){
                   super("");

@@ -25,7 +25,6 @@ description: >
   also be upgraded to versions that are compatible with Java 17.
 tags:
   - java17
-  - lombok
 recipeList:
   - org.openrewrite.java.migrate.Java8toJava11
   - org.openrewrite.java.migrate.JavaVersion17
@@ -38,12 +37,14 @@ recipeList:
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: java.lang.System traceMethodCalls(boolean)
   - org.openrewrite.java.migrate.lang.UseTextBlocks
-  - org.openrewrite.java.migrate.lombok.LombokValueToRecord
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
   - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
   - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
   - org.openrewrite.java.migrate.Jre17AgentMainPreMainPublic
-
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-checkstyle-plugin
+      newVersion: 3.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaVersion17
