@@ -81,36 +81,4 @@ class JavaxBeansXmlToJakartaBeansXmlTest implements RewriteTest {
           )
         );
     }
-
-    @Test
-    void updateContents() {
-        rewriteRun(
-          //language=xml
-          xml(
-            """
-              <?xml version="1.0" encoding="UTF-8"?>
-              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
-                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xsi:schemaLocation="http://xmlns.jcp.org/DDDDxml/ns/javaee22 http://xmlns.jcp.org11/xml/ns/javaee777/beans_1_1.xsd"
-                 version="1.1">
-                 <scan>
-                  		<exclude name="javax.faces.test.**" />
-                 </scan>
-              </beans> 
-              """,
-            """
-              <?xml version="1.0" encoding="UTF-8"?>
-              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee" 
-                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd"
-                 version="3.0">
-                 <scan>
-                  		<exclude name="jakarta.faces.test.**" />
-                 </scan>
-              </beans> 
-              """,
-            sourceSpecs -> sourceSpecs.path("beans.xml")
-          )
-        );
-    }
 }

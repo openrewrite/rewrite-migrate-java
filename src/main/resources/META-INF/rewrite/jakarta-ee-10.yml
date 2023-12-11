@@ -332,7 +332,3 @@ recipeList:
       attributeName: xsi:schemaLocation
       elementName: beans
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd
-  - org.openrewrite.text.FindAndReplace:
-      find: "javax."
-      replace: "jakarta."
-      filePattern: '**/beans.xml'
