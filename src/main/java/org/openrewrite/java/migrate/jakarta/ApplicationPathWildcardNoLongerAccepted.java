@@ -47,8 +47,8 @@ public class ApplicationPathWildcardNoLongerAccepted extends Recipe {
         private static final AnnotationMatcher APPLICATION_PATH = new AnnotationMatcher("@jakarta.ws.rs.ApplicationPath");
 
         @Override
-        public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext context) {
-            J.Annotation a = super.visitAnnotation(annotation, context);
+        public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
+            J.Annotation a = super.visitAnnotation(annotation, ctx);
             if (!APPLICATION_PATH.matches(a) || a.getArguments() == null || a.getArguments().isEmpty()) {
                 return a;
             }

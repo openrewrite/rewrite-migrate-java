@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
@@ -25,17 +25,14 @@ import org.openrewrite.internal.lang.NonNull;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.staticanalysis.RemoveMethodCallVisitor;
 
+@Value
+@EqualsAndHashCode(callSuper = true)
 public class RemoveMethodInvocation extends Recipe {
     @Option(displayName = "Method Pattern",
             description = "A method pattern for matching required method definition.",
             example = "*..* hello(..)")
     @NonNull
-    private String methodPattern;
-
-    @JsonCreator
-    public RemoveMethodInvocation(@JsonProperty("methodPattern") String methodPattern) {
-        this.methodPattern = methodPattern;
-    }
+    String methodPattern;
 
     @Override
     public String getDisplayName() {

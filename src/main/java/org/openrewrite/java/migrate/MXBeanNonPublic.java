@@ -61,23 +61,23 @@ public class MXBeanNonPublic extends Recipe {
                 Preconditions.and(
                         new JavaVisitor<ExecutionContext>() {
                             @Override
-                            public J visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
+                            public J visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                                 if (!classDecl.hasModifier(Modifier.Type.Public) && classDecl.getKind() == Interface) {
                                     return SearchResult.found(classDecl, "Not yet public interface");
                                 }
-                                return super.visitClassDeclaration(classDecl, executionContext);
+                                return super.visitClassDeclaration(classDecl, ctx);
                             }
                         },
                         Preconditions.or(
                                 new UsesType("javax.management.MXBean", true),
                                 new JavaVisitor<ExecutionContext>() {
                                     @Override
-                                    public J visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
+                                    public J visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                                         String className = classDecl.getName().getSimpleName();
                                         if (className.endsWith("MXBean") || className.endsWith("MBean")) {
                                             return SearchResult.found(classDecl, "Matching class name");
                                         }
-                                        return super.visitClassDeclaration(classDecl, executionContext);
+                                        return super.visitClassDeclaration(classDecl, ctx);
                                     }
                                 })
                 ), new ClassImplementationVisitor());
@@ -101,8 +101,8 @@ public class MXBeanNonPublic extends Recipe {
         }
 
         @Override
-        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDeclaration, ExecutionContext executionContext) {
-            J.ClassDeclaration cd = super.visitClassDeclaration(classDeclaration, executionContext);
+        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDeclaration, ExecutionContext ctx) {
+            J.ClassDeclaration cd = super.visitClassDeclaration(classDeclaration, ctx);
             if (!shouldUpdate(cd)) {
                 return cd;
             }
@@ -112,7 +112,7 @@ public class MXBeanNonPublic extends Recipe {
                     || modifier.getType() == Modifier.Type.Protected
                     || modifier.getType() == Modifier.Type.Abstract);
             modifiers.add(new J.Modifier(randomId(), Space.EMPTY, Markers.EMPTY, Modifier.Type.Public, emptyList()));
-            return maybeAutoFormat(cd, cd.withModifiers(sortModifiers(modifiers)), executionContext);
+            return maybeAutoFormat(cd, cd.withModifiers(sortModifiers(modifiers)), ctx);
         }
     }
 }

@@ -50,8 +50,8 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
     public TreeVisitor<?, ExecutionContext> getScanner(Set<String> injectedTypes) {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
-                J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, executionContext);
+            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
                 for (JavaType.Variable variable : cd.getType().getMembers()) {
                     if (variableTypeRequiresScope(variable)) {
                         injectedTypes.add(((JavaType.FullyQualified) variable.getType()).getFullyQualifiedName());
@@ -80,8 +80,8 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
     public TreeVisitor<?, ExecutionContext> getVisitor(Set<String> injectedTypes) {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit compilationUnit, ExecutionContext executionContext) {
-                J.CompilationUnit cu = super.visitCompilationUnit(compilationUnit, executionContext);
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit compilationUnit, ExecutionContext ctx) {
+                J.CompilationUnit cu = super.visitCompilationUnit(compilationUnit, ctx);
                 for (J.ClassDeclaration aClass : cu.getClasses()) {
                     if (aClass.getType() != null && injectedTypes.contains(aClass.getType().getFullyQualifiedName())) {
                         return (J.CompilationUnit) new AnnotateTypesVisitor(JAVAX_ENTERPRISE_CONTEXT_DEPENDENT)

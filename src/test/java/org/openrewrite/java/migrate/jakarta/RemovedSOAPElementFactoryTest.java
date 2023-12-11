@@ -40,7 +40,8 @@ public class RemovedSOAPElementFactoryTest implements RewriteTest {
     void removeSOAPElementFactory() {
         rewriteRun(
           //language=java
-          java("""             
+          java(
+                """             
             package com.test;
                         
             import jakarta.xml.soap.Name;

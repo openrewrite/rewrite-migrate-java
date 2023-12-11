@@ -63,8 +63,8 @@ public class RemoveFinalizerFromZip extends Recipe {
                                 new UsesType<>(JAVA_UTIL_ZIP_ZIP_FILE, false))),
                 new JavaVisitor<ExecutionContext>() {
                     @Override
-                    public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                        J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, executionContext);
+                    public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                        J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
 
                         if (METHOD_MATCHER.matches(mi)) {
                             Expression select = mi.getSelect();
