@@ -15,24 +15,19 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
-import static org.openrewrite.xml.Assertions.xml;
-
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-public class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
+import static org.openrewrite.xml.Assertions.xml;
+
+class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext()))
-          .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxWebFragmentXmlToJakartaWebFragmentXml"));
+        spec.recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
+          .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxWebFragmentXmlToJakartaWebFragmentXml"));
     }
 
     @Test
