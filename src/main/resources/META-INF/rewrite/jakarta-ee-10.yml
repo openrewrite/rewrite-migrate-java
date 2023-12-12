@@ -32,6 +32,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
   - org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
   - org.openrewrite.java.migrate.BeanDiscovery
+  - org.openrewrite.java.migrate.jakarta.BeanValidationMessages
   - org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -309,3 +310,17 @@ recipeList:
       oldFullyQualifiedTypeName: jakarta.faces.bean.ViewScoped
       newFullyQualifiedTypeName: jakarta.faces.view.ViewScoped
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.BeanValidationMessages
+displayName: Migrate Bean Validation messages
+description: Migrate 'javax.validation' messages found in Java files to 'jakarta.validation' equivalents
+tags:
+  - jakarta
+  - bean
+  - validation
+recipeList:
+  - org.openrewrite.text.FindAndReplace:
+      find: "javax.validation"
+      replace: "jakarta.validation"
+      filePattern: '**/*.java'
