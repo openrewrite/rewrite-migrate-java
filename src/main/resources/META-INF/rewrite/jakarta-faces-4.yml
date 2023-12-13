@@ -228,8 +228,8 @@ tags:
   - jsf
 recipeList:
   - org.openrewrite.text.FindAndReplace:
-      find: javax
-      replace: jakarta
+      find: javax.
+      replace: jakarta.
       filePattern: '**/*.js;**/*.ts;**/*.properties'
   - org.openrewrite.text.FindAndReplace:
       find: window.jsf
