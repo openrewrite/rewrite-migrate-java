@@ -28,6 +28,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
   - org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
   - org.openrewrite.java.migrate.BeanDiscovery
+  - org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -96,3 +97,25 @@ recipeList:
       oldFullyQualifiedTypeName: jakarta.xml.soap.SOAPElementFactory
       newFullyQualifiedTypeName: jakarta.xml.soap.SOAPFactory
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
+displayName: Migrate xmlns entries in `beans.xml` files
+description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
+tags:
+  - jakarta
+  - beans
+  - cdi
+recipeList:
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: version
+      elementName: beans
+      newValue: 3.0
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xmlns
+      elementName: beans
+      newValue: https://jakarta.ee/xml/ns/jakartaee
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xsi:schemaLocation
+      elementName: beans
+      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd
