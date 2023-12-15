@@ -130,19 +130,3 @@ recipeList:
   - org.openrewrite.RenameFile:
       fileMatcher: '**/javax.enterprise.inject.spi.Extension'
       fileName: jakarta.enterprise.inject.spi.Extension
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.BeanValidationMessages
-displayName: Migrate Bean Validation messages
-description: Migrate 'javax.validation' messages found in Java files to 'jakarta.validation' equivalents
-tags:
-  - jakarta
-  - bean
-  - validation
-recipeList:
-  - org.openrewrite.text.FindAndReplace:
-      find: "javax.validation"
-      replace: "jakarta.validation"
-      filePattern: '**/*.java'
-
-
