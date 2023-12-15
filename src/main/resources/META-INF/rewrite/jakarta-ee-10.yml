@@ -29,6 +29,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
   - org.openrewrite.java.migrate.BeanDiscovery
   - org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
+  - org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -119,3 +120,12 @@ recipeList:
       attributeName: xsi:schemaLocation
       elementName: beans
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
+displayName: Rename CDI Extension to Jakarta
+description: Rename javax.enterprise.inject.spi.Extension to jakarta.enterprise.inject.spi.Extension.
+recipeList:
+  - org.openrewrite.RenameFile:
+      fileMatcher: '**/javax.enterprise.inject.spi.Extension'
+      fileName: jakarta.enterprise.inject.spi.Extension
