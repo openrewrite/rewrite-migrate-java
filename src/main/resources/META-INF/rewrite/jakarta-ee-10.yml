@@ -124,7 +124,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
 displayName: Rename CDI Extension to Jakarta
-description: Rename javax.enterprise.inject.spi.Extension to jakarta.enterprise.inject.spi.Extension.
+description: Rename `javax.enterprise.inject.spi.Extension` to `jakarta.enterprise.inject.spi.Extension`.
 recipeList:
   - org.openrewrite.RenameFile:
       fileMatcher: '**/javax.enterprise.inject.spi.Extension'
