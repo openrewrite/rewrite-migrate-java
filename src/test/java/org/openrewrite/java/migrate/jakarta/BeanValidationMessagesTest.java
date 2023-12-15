@@ -38,7 +38,7 @@ class BeanValidationMessagesTest implements RewriteTest {
                 @Target(value={METHOD,FIELD,ANNOTATION_TYPE,CONSTRUCTOR,PARAMETER,TYPE_USE})
                 @Retention(value=RUNTIME)
                 public @interface NotNull {
-                    String message() default "{javax.validation.constraints.NotNull.message}";
+                    String message() default "{jakarta.validation.constraints.NotNull.message}";
                 }
                 """
             )
