@@ -454,16 +454,21 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpgradeFacesOpenSourceLibraries
 displayName: Upgrade Faces open source libraries
 description: Upgrade PrimeFaces, OmniFaces, and MyFaces libraries to Jakarta EE10 versions.
+tags:
+  - jakarta
+  - faces
+  - jsf
+  - myfaces
+  - omnifaces
+  - primefaces
 recipeList:
   - org.openrewrite.maven.ChangeDependencyClassifier:
       groupId: org.primefaces
       artifactId: primefaces
       newClassifier: jakarta
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
-      oldGroupId: org.primefaces
-      oldArtifactId: primefaces
-      newGroupId: org.primefaces
-      newArtifactId: primefaces
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.primefaces
+      artifactId: primefaces
       newVersion: 13.0.x
   - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: org.primefaces
@@ -475,11 +480,9 @@ recipeList:
       groupId: org.primefaces.extensions
       artifactId: primefaces-extensions
       newClassifier: jakarta
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
-      oldGroupId: org.primefaces.extensions
-      oldArtifactId: primefaces-extensions
-      newGroupId: org.primefaces.extensions
-      newArtifactId: primefaces-extensions
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.primefaces.extensions
+      artifactId: primefaces-extensions
       newVersion: 13.0.x
   - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: org.primefaces.extensions
@@ -487,11 +490,9 @@ recipeList:
       newGroupId: org.primefaces.extensions
       newArtifactId: primefaces-extensions
       newVersion: 13.0.x
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
-      oldGroupId: org.omnifaces
-      oldArtifactId: omnifaces
-      newGroupId: org.omnifaces
-      newArtifactId: omnifaces
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.omnifaces
+      artifactId: omnifaces
       newVersion: 4.x
   - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: org.omnifaces
@@ -499,11 +500,9 @@ recipeList:
       newGroupId: org.omnifaces
       newArtifactId: omnifaces
       newVersion: 4.x
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
-      oldGroupId: org.apache.myfaces.core
-      oldArtifactId: myfaces-api
-      newGroupId: org.apache.myfaces.core
-      newArtifactId: myfaces-api
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.myfaces.core
+      artifactId: myfaces-api
       newVersion: 4.0.x
   - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: org.apache.myfaces.core
@@ -511,11 +510,9 @@ recipeList:
       newGroupId: org.apache.myfaces.core
       newArtifactId: myfaces-api
       newVersion: 4.0.x
-  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
-      oldGroupId: org.apache.myfaces.core
-      oldArtifactId: myfaces-impl
-      newGroupId: org.apache.myfaces.core
-      newArtifactId: myfaces-impl
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.myfaces.core
+      artifactId: myfaces-impl
       newVersion: 4.0.x
   - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: org.apache.myfaces.core
