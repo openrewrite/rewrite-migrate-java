@@ -157,7 +157,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
 
                       string = Objects.toString(in, "");
                       string = Objects.toString(in, "nil");
-                      string = in == null ? null : in.replaceAll("\\s+", "");
+                      string = in == null ? null : in.replaceAll("\\\\s+", "");
 
                       //bool = StringUtils.endsWithIgnoreCase(in, "suffix");
                       bool = in == null ? false : in.equalsIgnoreCase("other");
@@ -195,7 +195,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.rightPad(in, 5, ' ');
                       string = StringUtils.rightPad(in, 5, " ");
 
-                      array = in == null ? null : in.split("\\s+");
+                      array = in == null ? null : in.split("\\\\s+");
                       //array = StringUtils.split(in, "*");
                       bool = StringUtils.startsWith(in, "prefix");
                       bool = StringUtils.startsWithAny(in, "prefix");
