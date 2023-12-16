@@ -35,6 +35,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
   - org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
   - org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
+  - org.openrewrite.java.migrate.jakarta.UpgradeFacesOpenSourceLibraries
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtml
@@ -448,3 +449,44 @@ recipeList:
       oldFullyQualifiedTypeName: jakarta.faces.bean.ViewScoped
       newFullyQualifiedTypeName: jakarta.faces.view.ViewScoped
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpgradeFacesOpenSourceLibraries
+displayName: Upgrade Faces open source libraries
+description: Upgrade PrimeFaces, OmniFaces, and MyFaces libraries to Jakarta EE10 versions.
+tags:
+  - jakarta
+  - faces
+  - jsf
+  - myfaces
+  - omnifaces
+  - primefaces
+recipeList:
+  - org.openrewrite.maven.ChangeDependencyClassifier:
+      groupId: org.primefaces
+      artifactId: primefaces
+      newClassifier: jakarta
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.primefaces
+      artifactId: primefaces
+      newVersion: 13.0.x
+  - org.openrewrite.maven.ChangeDependencyClassifier:
+      groupId: org.primefaces.extensions
+      artifactId: primefaces-extensions
+      newClassifier: jakarta
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.primefaces.extensions
+      artifactId: primefaces-extensions
+      newVersion: 13.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.omnifaces
+      artifactId: omnifaces
+      newVersion: 4.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.myfaces.core
+      artifactId: myfaces-api
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.myfaces.core
+      artifactId: myfaces-impl
+      newVersion: 4.0.x
