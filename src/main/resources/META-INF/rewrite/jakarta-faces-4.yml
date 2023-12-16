@@ -470,12 +470,6 @@ recipeList:
       groupId: org.primefaces
       artifactId: primefaces
       newVersion: 13.0.x
-  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
-      oldGroupId: org.primefaces
-      oldArtifactId: primefaces
-      newGroupId: org.primefaces
-      newArtifactId: primefaces
-      newVersion: 13.0.x
   - org.openrewrite.maven.ChangeDependencyClassifier:
       groupId: org.primefaces.extensions
       artifactId: primefaces-extensions
@@ -484,39 +478,15 @@ recipeList:
       groupId: org.primefaces.extensions
       artifactId: primefaces-extensions
       newVersion: 13.0.x
-  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
-      oldGroupId: org.primefaces.extensions
-      oldArtifactId: primefaces-extensions
-      newGroupId: org.primefaces.extensions
-      newArtifactId: primefaces-extensions
-      newVersion: 13.0.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.omnifaces
       artifactId: omnifaces
-      newVersion: 4.x
-  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
-      oldGroupId: org.omnifaces
-      oldArtifactId: omnifaces
-      newGroupId: org.omnifaces
-      newArtifactId: omnifaces
       newVersion: 4.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.myfaces.core
       artifactId: myfaces-api
       newVersion: 4.0.x
-  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
-      oldGroupId: org.apache.myfaces.core
-      oldArtifactId: myfaces-api
-      newGroupId: org.apache.myfaces.core
-      newArtifactId: myfaces-api
-      newVersion: 4.0.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.myfaces.core
       artifactId: myfaces-impl
-      newVersion: 4.0.x
-  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
-      oldGroupId: org.apache.myfaces.core
-      oldArtifactId: myfaces-impl
-      newGroupId: org.apache.myfaces.core
-      newArtifactId: myfaces-impl
       newVersion: 4.0.x
