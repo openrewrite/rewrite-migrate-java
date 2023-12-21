@@ -153,7 +153,7 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: facelet-taglib
-      newValue: 3.0
+      newValue: 4.0
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: facelet-taglib
@@ -161,7 +161,7 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: facelet-taglib
-      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_3_0.xsd
+      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_0.xsd
   - org.openrewrite.text.FindAndReplace:
       find: javax.
       replace: jakarta.
