@@ -50,10 +50,10 @@ class JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXmlTest implements RewriteT
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
-              <facelet-taglib version="3.0"
+              <facelet-taglib version="4.0"
                               xmlns="https://jakarta.ee/xml/ns/jakartaee"
                               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                              xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_3_0.xsd">
+                              xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_0.xsd">
                   <function>
                       <function-name>getFileContent</function-name>
                       <function-class>jakarta.util.ShowcaseUtil</function-class>
@@ -86,10 +86,10 @@ class JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXmlTest implements RewriteT
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
-              <facelet-taglib version="3.0"
+              <facelet-taglib version="4.0"
                               xmlns="https://jakarta.ee/xml/ns/jakartaee"
                               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                              xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_3_0.xsd">
+                              xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_0.xsd">
                   <function>
                       <function-name>getFileContent</function-name>
                       <function-class>jakarta.util.ShowcaseUtil</function-class>
