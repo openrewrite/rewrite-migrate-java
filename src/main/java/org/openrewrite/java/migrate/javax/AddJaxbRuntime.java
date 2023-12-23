@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.jetbrains.annotations.NotNull;
 import org.openrewrite.*;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
@@ -112,93 +111,103 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                 Tree t = gradleVisitor.visit(tree, ctx);
                 return mavenVisitor.visit(t, ctx);
             }
+
+            final TreeVisitor<?, ExecutionContext> gradleVisitor = Preconditions.check(new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(), new GroovyIsoVisitor<ExecutionContext>() {
+                @Override
+                public G.CompilationUnit visitCompilationUnit(G.CompilationUnit cu, ExecutionContext ctx) {
+                    G.CompilationUnit g = cu;
+                    if ("sun".equals(runtime)) {
+                        if (getAfterVisit().isEmpty()) {
+                            // Upgrade any previous runtimes to the most current 2.3.x version
+                            doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
+                        }
+                        g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
+                                SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
+                        ).getVisitor().visitNonNull(g, ctx);
+                    } else {
+                        if (getAfterVisit().isEmpty()) {
+                            // Upgrade any previous runtimes to the most current 2.3.x version
+                            doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
+                        }
+                        g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
+                                GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
+                        ).getVisitor().visitNonNull(g, ctx);
+                    }
+                    if(!acc.get()) {
+                        return g;
+                    }
+
+                    Optional<GradleProject> maybeGp = g.getMarkers().findFirst(GradleProject.class);
+                    if (!maybeGp.isPresent()) {
+                        return g;
+                    }
+
+                    GradleProject gp = maybeGp.get();
+                    GradleDependencyConfiguration rc = gp.getConfiguration("runtimeClasspath");
+                    if (rc == null || rc.findResolvedDependency(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT) == null
+                        || rc.findResolvedDependency(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT) != null) {
+                        return g;
+                    }
+
+                    if ("sun".equals(runtime)) {
+                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, "runtimeOnly", null, null, null, null)
+                                .visitNonNull(g, ctx);
+                    } else {
+                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, "runtimeOnly", null, null, null, null)
+                                .visitNonNull(g, ctx);
+                    }
+                    return g;
+                }
+            });
+
+
+            final TreeVisitor<?, ExecutionContext> mavenVisitor = new MavenIsoVisitor<ExecutionContext>() {
+                @SuppressWarnings("ConstantConditions")
+                @Override
+                public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
+                    Xml.Document d = super.visitDocument(document, ctx);
+
+                    //Normalize any existing runtimes to the one selected in this recipe.
+                    if ("sun".equals(runtime)) {
+                        d = jaxbDependencySwap(ctx, d, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT);
+                    } else {
+                        //Upgrade any previous runtimes to the most current 2.3.x version
+                        d = jaxbDependencySwap(ctx, d, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT);
+                    }
+                    return maybeAddRuntimeDependency(d, ctx);
+                }
+
+                @SuppressWarnings("ConstantConditions")
+                private Xml.Document maybeAddRuntimeDependency(Xml.Document d, ExecutionContext ctx) {
+                    if(!acc.get()) {
+                        return d;
+                    }
+                    MavenResolutionResult mavenModel = getResolutionResult();
+                    if (!mavenModel.findDependencies(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT, Scope.Runtime).isEmpty()
+                        || mavenModel.findDependencies(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT, Scope.Runtime).isEmpty()) {
+                        return d;
+                    }
+
+                    if ("sun".equals(runtime)) {
+                        d = (Xml.Document) new org.openrewrite.maven.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, Scope.Runtime.name().toLowerCase(), null, null, null, null, null)
+                                .visitNonNull(d, ctx);
+                    } else {
+                        d = (Xml.Document) new org.openrewrite.maven.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, Scope.Runtime.name().toLowerCase(), null, null, null, null, null)
+                                .visitNonNull(d, ctx);
+                    }
+                    return d;
+                }
+            };
         };
     }
 
-    TreeVisitor<?, ExecutionContext> gradleVisitor = Preconditions.check(new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(), new GroovyIsoVisitor<ExecutionContext>() {
-        @Override
-        public G.CompilationUnit visitCompilationUnit(G.CompilationUnit cu, ExecutionContext ctx) {
-            G.CompilationUnit g = cu;
-            if ("sun".equals(runtime)) {
-                if (getAfterVisit().isEmpty()) {
-                    // Upgrade any previous runtimes to the most current 2.3.x version
-                    doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
-                }
-                g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
-                        SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
-                ).getVisitor().visitNonNull(g, ctx);
-            } else {
-                if (getAfterVisit().isEmpty()) {
-                    // Upgrade any previous runtimes to the most current 2.3.x version
-                    doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
-                }
-                g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
-                        GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
-                ).getVisitor().visitNonNull(g, ctx);
-            }
-            Optional<GradleProject> maybeGp = g.getMarkers().findFirst(GradleProject.class);
-            if (!maybeGp.isPresent()) {
-                return g;
-            }
 
-            GradleProject gp = maybeGp.get();
-            GradleDependencyConfiguration rc = gp.getConfiguration("runtimeClasspath");
-            if(rc == null || rc.findResolvedDependency(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT) == null
-               || rc.findResolvedDependency(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT) != null) {
-                return g;
-            }
 
-            if("sun".equals(runtime)) {
-                g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, "runtimeOnly", null, null, null, null)
-                        .visitNonNull(g, ctx);
-            } else {
-                g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, "runtimeOnly", null, null, null, null)
-                        .visitNonNull(g, ctx);
-            }
-            return g;
-        }
-    });
 
-    TreeVisitor<?, ExecutionContext> mavenVisitor = new MavenIsoVisitor<ExecutionContext>() {
-        @SuppressWarnings("ConstantConditions")
-        @Override
-        public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
-            Xml.Document d = super.visitDocument(document, ctx);
 
-            //Normalize any existing runtimes to the one selected in this recipe.
-            if ("sun".equals(runtime)) {
-                d = jaxbDependencySwap(ctx, d, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT);
-            } else {
-                //Upgrade any previous runtimes to the most current 2.3.x version
-                d = jaxbDependencySwap(ctx, d, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT);
-            }
-            return maybeAddRuntimeDependency(d, ctx);
-        }
-
-        @SuppressWarnings("ConstantConditions")
-        private Xml.Document maybeAddRuntimeDependency(Xml.Document d, ExecutionContext ctx) {
-
-            MavenResolutionResult mavenModel = getResolutionResult();
-            if (!mavenModel.findDependencies(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT, Scope.Runtime).isEmpty()
-                || mavenModel.findDependencies(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT, Scope.Runtime).isEmpty()) {
-                return d;
-            }
-
-            if("sun".equals(runtime)) {
-                d = (Xml.Document) new org.openrewrite.maven.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, Scope.Runtime.name().toLowerCase(), null, null, null, null, null)
-                        .visitNonNull(d, ctx);
-            } else {
-                d = (Xml.Document) new org.openrewrite.maven.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, Scope.Runtime.name().toLowerCase(), null, null, null, null, null)
-                        .visitNonNull(d, ctx);
-            }
-            return d;
-        }
-    };
-
-    @NotNull
     private Xml.Document jaxbDependencySwap(ExecutionContext ctx, Xml.Document d, String sunJaxbRuntimeGroup, String sunJaxbRuntimeArtifact, String glassfishJaxbRuntimeGroup, String glassfishJaxbRuntimeArtifact) {
         d = (Xml.Document) new org.openrewrite.maven.UpgradeDependencyVersion(sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x", null, null, null)
-                    .getVisitor()
+                .getVisitor()
                 .visitNonNull(d, ctx);
         d = (Xml.Document) new org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId(
                 glassfishJaxbRuntimeGroup, glassfishJaxbRuntimeArtifact,

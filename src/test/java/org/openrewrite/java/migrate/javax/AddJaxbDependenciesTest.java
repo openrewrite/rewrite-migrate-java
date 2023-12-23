@@ -25,9 +25,11 @@ import java.util.regex.Pattern;
 
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.Assertions.withToolingApi;
+import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("LanguageMismatch")
 class AddJaxbDependenciesTest implements RewriteTest {
 
     @Override
@@ -38,10 +40,28 @@ class AddJaxbDependenciesTest implements RewriteTest {
           .activateRecipes("org.openrewrite.java.migrate.javax.AddJaxbDependencies"));
     }
 
+    // language=java
+    private static final String XML_ELEMENT_STUB = """
+      package javax.xml.bind.annotation;
+      public @interface XmlElement {}
+      """;
+
+    // language=java
+    private static final String CLASS_USING_XML_BIND = """
+      import javax.xml.bind.annotation.XmlElement;
+      
+      public class Test {
+          @XmlElement
+          private String name;
+      }
+      """;
+
     @Test
     void addJaxbRuntimeOnce() {
         rewriteRun(
           spec -> spec.beforeRecipe(withToolingApi()),
+          java(XML_ELEMENT_STUB),
+          java(CLASS_USING_XML_BIND),
           buildGradle(
             //language=gradle
             """
@@ -132,6 +152,8 @@ class AddJaxbDependenciesTest implements RewriteTest {
     void renameRuntime() {
         rewriteRun(
           spec -> spec.beforeRecipe(withToolingApi()),
+          java(XML_ELEMENT_STUB),
+          java(CLASS_USING_XML_BIND),
           buildGradle(
             //language=gradle
             """
@@ -236,6 +258,8 @@ class AddJaxbDependenciesTest implements RewriteTest {
     void renameAndUpdateApiAndRuntime() {
         rewriteRun(
           spec -> spec.beforeRecipe(withToolingApi()),
+          java(XML_ELEMENT_STUB),
+          java(CLASS_USING_XML_BIND),
           buildGradle(
             //language=gradle
             """
@@ -339,6 +363,8 @@ class AddJaxbDependenciesTest implements RewriteTest {
     @Test
     void renameAndUpdateApiAndAddRuntimeManagedDependencies() {
         rewriteRun(
+          java(XML_ELEMENT_STUB),
+          java(CLASS_USING_XML_BIND),
           pomXml(
             //language=xml
             """
@@ -417,6 +443,8 @@ class AddJaxbDependenciesTest implements RewriteTest {
     void dontAddWhenJacksonPresent() {
         rewriteRun(
           spec -> spec.beforeRecipe(withToolingApi()),
+          java(XML_ELEMENT_STUB),
+          java(CLASS_USING_XML_BIND),
           buildGradle(
             //language=gradle
             """
