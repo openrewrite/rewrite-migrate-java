@@ -112,7 +112,7 @@ public class AddJaxbRuntime extends Recipe {
                         }
                         g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
                                 SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
-                        ).getVisitor().visit(g, ctx);
+                        ).getVisitor().visitNonNull(g, ctx);
                     } else {
                         if (getAfterVisit().isEmpty()) {
                             // Upgrade any previous runtimes to the most current 2.3.x version
@@ -120,7 +120,7 @@ public class AddJaxbRuntime extends Recipe {
                         }
                         g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
                                 GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
-                        ).getVisitor().visit(g, ctx);
+                        ).getVisitor().visitNonNull(g, ctx);
                     }
                     maybeAddRuntimeDependency(g);
                     return g;
@@ -166,7 +166,10 @@ public class AddJaxbRuntime extends Recipe {
                 private Set<String> getTransitiveDependencyConfiguration(GradleProject gp, String groupId, String artifactId) {
                     Set<String> configurations = new HashSet<>();
                     for (GradleDependencyConfiguration gdc : gp.getConfigurations()) {
-                        if (gdc.findRequestedDependency(groupId, artifactId) != null || gdc.findResolvedDependency(groupId, artifactId) != null) {
+                        if(gdc.findResolvedDependency("com.fasterxml.jackson.module", "jackson-module-jaxb-annotations") != null) {
+                            continue;
+                        }
+                        if (gdc.findResolvedDependency(groupId, artifactId) != null) {
                             configurations.add(gdc.getName());
                         }
                     }
@@ -182,6 +185,9 @@ public class AddJaxbRuntime extends Recipe {
                     tmpConfigurations = new HashSet<>(configurations);
                     for (String configuration : tmpConfigurations) {
                         GradleDependencyConfiguration gdc = gp.getConfiguration(configuration);
+                        if(gdc == null) {
+                            continue;
+                        }
                         for (GradleDependencyConfiguration extendsFrom : gdc.allExtendsFrom()) {
                             if (configurations.contains(extendsFrom.getName())) {
                                 configurations.remove(configuration);
@@ -266,7 +272,10 @@ public class AddJaxbRuntime extends Recipe {
                 private Xml.Document maybeAddRuntimeDependency(Xml.Document d, ExecutionContext ctx) {
 
                     MavenResolutionResult mavenModel = getResolutionResult();
-
+                    Scope jacksonModule = getTransitiveDependencyScope(mavenModel, "com.fasterxml.jackson.module", "jackson-module-jaxb-annotations");
+                    if(jacksonModule != null) {
+                        return d;
+                    }
                     Scope apiScope = getTransitiveDependencyScope(mavenModel, JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT);
                     Scope runtimeScope = "sun".equals(runtime) ?
                             getTransitiveDependencyScope(mavenModel, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT) :
@@ -310,5 +319,4 @@ public class AddJaxbRuntime extends Recipe {
             };
         }
     }
-
 }

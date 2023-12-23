@@ -410,4 +410,45 @@ class AddJaxbDependenciesTest implements RewriteTest {
           )
         );
     }
+
+
+    @Test
+    void dontAddWhenJacksonPresent() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+              
+              repositories {
+                  mavenCentral()
+              }
+              
+              dependencies {
+                  api("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.16.0")
+              }
+              """
+          ),
+          pomXml(
+            //language=xml
+            """
+              <project>
+                  <groupId>com.example.jaxb</groupId>
+                  <artifactId>jaxb-example</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.module</groupId>
+                          <artifactId>jackson-module-jaxb-annotations</artifactId>
+                          <version>2.16.0</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """
+          )
+        );
+    }
 }
