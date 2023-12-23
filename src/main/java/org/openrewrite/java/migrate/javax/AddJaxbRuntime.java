@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 import org.openrewrite.*;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
@@ -24,18 +25,24 @@ import org.openrewrite.gradle.search.FindGradleProject;
 import org.openrewrite.groovy.GroovyIsoVisitor;
 import org.openrewrite.groovy.tree.G;
 import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.MavenResolutionResult;
-import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.xml.tree.Xml;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class AddJaxbRuntime extends Recipe {
+public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
+    private static final String JACKSON_GROUP = "com.fasterxml.jackson.module";
+    private static final String JACKSON_JAXB_ARTIFACT = "jackson-module-jaxb-annotations";
+
     private static final String JAKARTA_API_GROUP = "jakarta.xml.bind";
     private static final String JAKARTA_API_ARTIFACT = "jakarta.xml.bind-api";
 
@@ -59,10 +66,10 @@ public class AddJaxbRuntime extends Recipe {
     @Override
     public String getDescription() {
         return "Update build files to use the latest JAXB runtime from Jakarta EE 8 to maintain compatibility with " +
-                "Java version 11 or greater. The recipe will add a JAXB run-time, in Gradle " +
-                "`compileOnly`+`testImplementation` and Maven `provided` scope, to any project that has a transitive " +
-                "dependency on the JAXB API. **The resulting dependencies still use the `javax` namespace, despite " +
-                "the move to the Jakarta artifact**.";
+               "Java version 11 or greater. The recipe will add a JAXB run-time, in Gradle " +
+               "`compileOnly`+`testImplementation` and Maven `provided` scope, to any project that has a transitive " +
+               "dependency on the JAXB API. **The resulting dependencies still use the `javax` namespace, despite " +
+               "the move to the Jakarta artifact**.";
     }
 
     @Override
@@ -76,247 +83,131 @@ public class AddJaxbRuntime extends Recipe {
     }
 
     @Override
-    public List<Recipe> getRecipeList() {
-        return Arrays.asList(new AddJaxbRuntimeGradle(runtime), new AddJaxbRuntimeMaven(runtime));
+    public AtomicBoolean getInitialValue(ExecutionContext ctx) {
+        return new AtomicBoolean(false);
     }
 
-    @Value
-    @EqualsAndHashCode(callSuper = false)
-    static class AddJaxbRuntimeGradle extends Recipe {
-        String runtime;
-
-        @Override
-        public String getDisplayName() {
-            return "Use latest JAXB API and runtime for Jakarta EE 8";
-        }
-
-        @Override
-        public String getDescription() {
-            return "Update Gradle build files to use the latest JAXB runtime from Jakarta EE 8 to maintain compatibility " +
-                    "with Java version 11 or greater.  The recipe will add a JAXB run-time, in " +
-                    "`compileOnly`+`testImplementation` configurations, to any project that has a transitive dependency " +
-                    "on the JAXB API. **The resulting dependencies still use the `javax` namespace, despite the move to " +
-                    "the Jakarta artifact**.";
-        }
-
-        @Override
-        public TreeVisitor<?, ExecutionContext> getVisitor() {
-            return Preconditions.check(new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(), new GroovyIsoVisitor<ExecutionContext>() {
-                @Override
-                public G.CompilationUnit visitCompilationUnit(G.CompilationUnit cu, ExecutionContext ctx) {
-                    G.CompilationUnit g = cu;
-                    if ("sun".equals(runtime)) {
-                        if (getAfterVisit().isEmpty()) {
-                            // Upgrade any previous runtimes to the most current 2.3.x version
-                            doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
-                        }
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
-                                SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
-                        ).getVisitor().visitNonNull(g, ctx);
-                    } else {
-                        if (getAfterVisit().isEmpty()) {
-                            // Upgrade any previous runtimes to the most current 2.3.x version
-                            doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
-                        }
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
-                                GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
-                        ).getVisitor().visitNonNull(g, ctx);
-                    }
-                    maybeAddRuntimeDependency(g);
-                    return g;
+    @Override
+    public TreeVisitor<?, ExecutionContext> getScanner(AtomicBoolean acc) {
+        return new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public @Nullable J visit(@Nullable Tree tree, ExecutionContext ctx) {
+                if (acc.get()) {
+                    return (J) tree;
                 }
-
-                private void maybeAddRuntimeDependency(G.CompilationUnit g) {
-                    Optional<GradleProject> maybeGp = g.getMarkers().findFirst(GradleProject.class);
-                    if (!maybeGp.isPresent()) {
-                        return;
-                    }
-
-                    GradleProject gp = maybeGp.get();
-                    Set<String> apiConfigurations = getTransitiveDependencyConfiguration(gp, JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT);
-                    if (apiConfigurations.isEmpty()) {
-                        return;
-                    }
-                    Set<String> runtimeConfigurations = "sun".equals(runtime) ?
-                            getTransitiveDependencyConfiguration(gp, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT) :
-                            getTransitiveDependencyConfiguration(gp, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT);
-
-                    if (runtimeConfigurations.isEmpty()) {
-                        if (gp.getConfiguration("compileOnly") != null) {
-                            doAfterVisit(addDependency("compileOnly"));
-                        }
-                        if (gp.getConfiguration("testImplementation") != null) {
-                            doAfterVisit(addDependency("testImplementation"));
-                        }
-                    } else {
-                        for (String apiConfiguration : apiConfigurations) {
-                            GradleDependencyConfiguration apiGdc = gp.getConfiguration(apiConfiguration);
-                            List<GradleDependencyConfiguration> apiTransitives = gp.configurationsExtendingFrom(apiGdc, true);
-                            for (String runtimeConfiguration : runtimeConfigurations) {
-                                GradleDependencyConfiguration runtimeGdc = gp.getConfiguration(runtimeConfiguration);
-                                List<GradleDependencyConfiguration> runtimeTransitives = gp.configurationsExtendingFrom(runtimeGdc, true);
-                                if (apiTransitives.stream().noneMatch(runtimeTransitives::contains)) {
-                                    doAfterVisit(addDependency(apiConfiguration));
-                                }
-                            }
-                        }
-                    }
+                J t = new UsesType<ExecutionContext>("javax.xml.bind..*", true).visit(tree, ctx);
+                if (t != tree) {
+                    acc.set(true);
                 }
-
-                private Set<String> getTransitiveDependencyConfiguration(GradleProject gp, String groupId, String artifactId) {
-                    Set<String> configurations = new HashSet<>();
-                    for (GradleDependencyConfiguration gdc : gp.getConfigurations()) {
-                        if(gdc.findResolvedDependency("com.fasterxml.jackson.module", "jackson-module-jaxb-annotations") != null) {
-                            continue;
-                        }
-                        if (gdc.findResolvedDependency(groupId, artifactId) != null) {
-                            configurations.add(gdc.getName());
-                        }
-                    }
-
-                    Set<String> tmpConfigurations = new HashSet<>(configurations);
-                    for (String tmpConfiguration : tmpConfigurations) {
-                        GradleDependencyConfiguration gdc = gp.getConfiguration(tmpConfiguration);
-                        for (GradleDependencyConfiguration transitive : gp.configurationsExtendingFrom(gdc, true)) {
-                            configurations.remove(transitive.getName());
-                        }
-                    }
-
-                    tmpConfigurations = new HashSet<>(configurations);
-                    for (String configuration : tmpConfigurations) {
-                        GradleDependencyConfiguration gdc = gp.getConfiguration(configuration);
-                        if(gdc == null) {
-                            continue;
-                        }
-                        for (GradleDependencyConfiguration extendsFrom : gdc.allExtendsFrom()) {
-                            if (configurations.contains(extendsFrom.getName())) {
-                                configurations.remove(configuration);
-                            }
-                        }
-                    }
-
-                    return configurations;
-                }
-
-                private org.openrewrite.gradle.AddDependencyVisitor addDependency(String configuration) {
-                    return "sun".equals(runtime) ?
-                            new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, configuration, null, null, null, null) :
-                            new org.openrewrite.gradle.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, configuration, null, null, null, null);
-                }
-            });
-        }
+                return (J) tree;
+            }
+        };
     }
 
-    @Value
-    @EqualsAndHashCode(callSuper = false)
-    static class AddJaxbRuntimeMaven extends Recipe {
-        String runtime;
+    @Override
+    public TreeVisitor<?, ExecutionContext> getVisitor(AtomicBoolean acc) {
+        return new TreeVisitor<Tree, ExecutionContext>() {
+            @Override
+            public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
+                Tree t = gradleVisitor.visit(tree, ctx);
+                return mavenVisitor.visit(t, ctx);
+            }
+        };
+    }
 
+    TreeVisitor<?, ExecutionContext> gradleVisitor = Preconditions.check(new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(), new GroovyIsoVisitor<ExecutionContext>() {
         @Override
-        public String getDisplayName() {
-            return "Use latest JAXB API and runtime for Jakarta EE 8";
+        public G.CompilationUnit visitCompilationUnit(G.CompilationUnit cu, ExecutionContext ctx) {
+            G.CompilationUnit g = cu;
+            if ("sun".equals(runtime)) {
+                if (getAfterVisit().isEmpty()) {
+                    // Upgrade any previous runtimes to the most current 2.3.x version
+                    doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
+                }
+                g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
+                        SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
+                ).getVisitor().visitNonNull(g, ctx);
+            } else {
+                if (getAfterVisit().isEmpty()) {
+                    // Upgrade any previous runtimes to the most current 2.3.x version
+                    doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
+                }
+                g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
+                        GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
+                ).getVisitor().visitNonNull(g, ctx);
+            }
+            Optional<GradleProject> maybeGp = g.getMarkers().findFirst(GradleProject.class);
+            if (!maybeGp.isPresent()) {
+                return g;
+            }
+
+            GradleProject gp = maybeGp.get();
+            GradleDependencyConfiguration rc = gp.getConfiguration("runtimeClasspath");
+            if(rc == null || rc.findResolvedDependency(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT) == null
+               || rc.findResolvedDependency(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT) != null) {
+                return g;
+            }
+
+            if("sun".equals(runtime)) {
+                g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, "runtimeOnly", null, null, null, null)
+                        .visitNonNull(g, ctx);
+            } else {
+                g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, "runtimeOnly", null, null, null, null)
+                        .visitNonNull(g, ctx);
+            }
+            return g;
+        }
+    });
+
+    TreeVisitor<?, ExecutionContext> mavenVisitor = new MavenIsoVisitor<ExecutionContext>() {
+        @SuppressWarnings("ConstantConditions")
+        @Override
+        public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
+            Xml.Document d = super.visitDocument(document, ctx);
+
+            //Normalize any existing runtimes to the one selected in this recipe.
+            if ("sun".equals(runtime)) {
+                d = jaxbDependencySwap(ctx, d, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT);
+            } else {
+                //Upgrade any previous runtimes to the most current 2.3.x version
+                d = jaxbDependencySwap(ctx, d, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT);
+            }
+            return maybeAddRuntimeDependency(d, ctx);
         }
 
-        @Override
-        public String getDescription() {
-            return "Update Maven build files to use the latest JAXB runtime from Jakarta EE 8 to maintain compatibility " +
-                    "with Java version 11 or greater.  The recipe will add a JAXB run-time, in `provided` scope, to any project " +
-                    "that has a transitive dependency on the JAXB API. **The resulting dependencies still use the `javax` " +
-                    "namespace, despite the move to the Jakarta artifact**.";
+        @SuppressWarnings("ConstantConditions")
+        private Xml.Document maybeAddRuntimeDependency(Xml.Document d, ExecutionContext ctx) {
+
+            MavenResolutionResult mavenModel = getResolutionResult();
+            if (!mavenModel.findDependencies(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT, Scope.Runtime).isEmpty()
+                || mavenModel.findDependencies(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT, Scope.Runtime).isEmpty()) {
+                return d;
+            }
+
+            if("sun".equals(runtime)) {
+                d = (Xml.Document) new org.openrewrite.maven.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, Scope.Runtime.name().toLowerCase(), null, null, null, null, null)
+                        .visitNonNull(d, ctx);
+            } else {
+                d = (Xml.Document) new org.openrewrite.maven.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, Scope.Runtime.name().toLowerCase(), null, null, null, null, null)
+                        .visitNonNull(d, ctx);
+            }
+            return d;
         }
+    };
 
-        @Override
-        public TreeVisitor<?, ExecutionContext> getVisitor() {
-            return new MavenIsoVisitor<ExecutionContext>() {
-                @SuppressWarnings("ConstantConditions")
-                @Override
-                public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
-                    Xml.Document d = super.visitDocument(document, ctx);
-
-                    //Normalize any existing runtimes to the one selected in this recipe.
-                    if ("sun".equals(runtime)) {
-                        if (getAfterVisit().isEmpty()) {
-                            //Upgrade any previous runtimes to the most current 2.3.x version
-                            doAfterVisit(new org.openrewrite.maven.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null).getVisitor());
-                        }
-                        d = (Xml.Document) new org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId(
-                                GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
-                                SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null
-                        ).getVisitor().visit(d, ctx);
-                        d = (Xml.Document) new org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId(
-                                GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
-                                SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x"
-                        ).getVisitor().visit(d, ctx);
-                    } else {
-                        if (getAfterVisit().isEmpty()) {
-                            //Upgrade any previous runtimes to the most current 2.3.x version
-                            doAfterVisit(new org.openrewrite.maven.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, null).getVisitor());
-                        }
-                        d = (Xml.Document) new org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId(
-                                SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
-                                GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null
-                        ).getVisitor().visit(d, ctx);
-                        d = (Xml.Document) new org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId(
-                                SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
-                                GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x"
-                        ).getVisitor().visit(d, ctx);
-                    }
-                    if (d != document) {
-                        //If changes have been made, update the maven model, next cycle, runtime will be added.
-                        return d;
-                    }
-                    return maybeAddRuntimeDependency(d, ctx);
-                }
-
-                @SuppressWarnings("ConstantConditions")
-                private Xml.Document maybeAddRuntimeDependency(Xml.Document d, ExecutionContext ctx) {
-
-                    MavenResolutionResult mavenModel = getResolutionResult();
-                    Scope jacksonModule = getTransitiveDependencyScope(mavenModel, "com.fasterxml.jackson.module", "jackson-module-jaxb-annotations");
-                    if(jacksonModule != null) {
-                        return d;
-                    }
-                    Scope apiScope = getTransitiveDependencyScope(mavenModel, JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT);
-                    Scope runtimeScope = "sun".equals(runtime) ?
-                            getTransitiveDependencyScope(mavenModel, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT) :
-                            getTransitiveDependencyScope(mavenModel, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT);
-
-                    if (apiScope != null && (runtimeScope == null || !apiScope.isInClasspathOf(runtimeScope))) {
-                        String resolvedScope = apiScope == Scope.Test ? "test" : "provided";
-                        org.openrewrite.maven.AddDependencyVisitor addDependency = "sun".equals(runtime) ?
-                                new org.openrewrite.maven.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, resolvedScope, null, null, null, null, null) :
-                                new org.openrewrite.maven.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, resolvedScope, null, null, null, null, null);
-                        return (Xml.Document) addDependency.visit(d, ctx);
-                    }
-
-                    return d;
-                }
-
-                /**
-                 * Finds the highest scope for a given group/artifact.
-                 *
-                 * @param mavenModel The maven model to search for a dependency.
-                 * @param groupId The group ID of the dependency
-                 * @param artifactId The artifact ID of the dependency
-                 * @return The highest scope of the given dependency or null if the dependency does not exist.
-                 */
-                @Nullable
-                private Scope getTransitiveDependencyScope(MavenResolutionResult mavenModel, String groupId, String artifactId) {
-                    Scope maxScope = null;
-                    for (Map.Entry<Scope, List<ResolvedDependency>> entry : mavenModel.getDependencies().entrySet()) {
-                        for (ResolvedDependency dependency : entry.getValue()) {
-                            if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
-                                maxScope = Scope.maxPrecedence(maxScope, entry.getKey());
-                                if (Scope.Compile.equals(maxScope)) {
-                                    return maxScope;
-                                }
-                                break;
-                            }
-                        }
-                    }
-                    return maxScope;
-                }
-            };
-        }
+    @NotNull
+    private Xml.Document jaxbDependencySwap(ExecutionContext ctx, Xml.Document d, String sunJaxbRuntimeGroup, String sunJaxbRuntimeArtifact, String glassfishJaxbRuntimeGroup, String glassfishJaxbRuntimeArtifact) {
+        d = (Xml.Document) new org.openrewrite.maven.UpgradeDependencyVersion(sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x", null, null, null)
+                    .getVisitor()
+                .visitNonNull(d, ctx);
+        d = (Xml.Document) new org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId(
+                glassfishJaxbRuntimeGroup, glassfishJaxbRuntimeArtifact,
+                sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x", null
+        ).getVisitor().visitNonNull(d, ctx);
+        d = (Xml.Document) new org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId(
+                glassfishJaxbRuntimeGroup, glassfishJaxbRuntimeArtifact,
+                sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x"
+        ).getVisitor().visitNonNull(d, ctx);
+        return d;
     }
 }
