@@ -211,7 +211,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.substringAfter(in, "|");
                       string = StringUtils.substring(in, 2, 4);
                       string = StringUtils.swapCase(in);
-                      string = in == null ? "" : in;
+                      string = in == null ? "" : in.trim();
                       string = in == null || in.trim().isEmpty() ? null : in.trim();
                       string = in == null ? null : in.trim();
                       string = in == null ? null : in.toUpperCase();
