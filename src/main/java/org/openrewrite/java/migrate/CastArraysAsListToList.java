@@ -25,6 +25,7 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeTree;
 
 public class CastArraysAsListToList extends Recipe {
 
@@ -53,14 +54,17 @@ public class CastArraysAsListToList extends Recipe {
         @Override
         public J visitTypeCast(J.TypeCast typeCast, ExecutionContext executionContext) {
             J j = super.visitTypeCast(typeCast, executionContext);
-            if (!(j instanceof J.TypeCast)) {
+            if (!(j instanceof J.TypeCast) || !(((J.TypeCast) j).getType() instanceof JavaType.Array)) {
                 return j;
             }
             typeCast = (J.TypeCast) j;
+            JavaType elementType = ((JavaType.Array) typeCast.getType()).getElemType();
+            while (elementType instanceof JavaType.Array) {
+                elementType = ((JavaType.Array) elementType).getElemType();
+            }
 
-            boolean matches = typeCast.getClazz().getTree() instanceof J.ArrayType
-                              && (typeCast.getType() instanceof JavaType.Class || typeCast.getType() instanceof JavaType.Parameterized)
-                              && ((JavaType.FullyQualified) typeCast.getType()).getOwningClass() == null // does not support inner class now
+            boolean matches = (elementType instanceof JavaType.Class || elementType instanceof JavaType.Parameterized)
+                              && ((JavaType.FullyQualified) elementType).getOwningClass() == null // does not support inner class now
                               && LIST_TO_ARRAY.matches(typeCast.getExpression())
                               && typeCast.getExpression() instanceof J.MethodInvocation
                               && ARRAYS_AS_LIST.matches(((J.MethodInvocation) typeCast.getExpression()).getSelect());
@@ -68,10 +72,10 @@ public class CastArraysAsListToList extends Recipe {
                 return typeCast;
             }
 
-            String fullyQualifiedName = ((JavaType.FullyQualified) typeCast.getType()).getFullyQualifiedName();
-            int dimensionSize = ((J.ArrayType) typeCast.getClazz().getTree()).getDimensions().size();
+            String fullyQualifiedName = ((JavaType.FullyQualified) elementType).getFullyQualifiedName();
+            J.ArrayType castType = (J.ArrayType) typeCast.getClazz().getTree();
 
-            if (fullyQualifiedName.equals("java.lang.Object") && dimensionSize == 1) {
+            if (fullyQualifiedName.equals("java.lang.Object") && !(castType.getElementType() instanceof J.ArrayType)) {
                 // we don't need to fix this case because toArray() does return Object[] type
                 return typeCast;
             }
@@ -81,7 +85,7 @@ public class CastArraysAsListToList extends Recipe {
             String className = fullyQualifiedName.substring(fullyQualifiedName.lastIndexOf(".") + 1);
             newArrayString.append(className);
             newArrayString.append("[0]");
-            for (int i = 0; i < dimensionSize - 1; i++) {
+            for (TypeTree temp = castType.getElementType(); temp instanceof J.ArrayType; temp = ((J.ArrayType) temp).getElementType()) {
                 newArrayString.append("[]");
             }
 
