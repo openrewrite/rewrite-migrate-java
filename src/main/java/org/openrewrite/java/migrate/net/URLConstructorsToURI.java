@@ -19,6 +19,9 @@ import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.openrewrite.java.template.RecipeDescriptor;
 
+import java.net.URI;
+import java.net.URL;
+
 public class URLConstructorsToURI {
     @RecipeDescriptor(
             name = "Convert `new URL(String)` to `URI.create(String).toURL()`",
@@ -26,13 +29,13 @@ public class URLConstructorsToURI {
     )
     public static class URLSingleArgumentConstructor {
         @BeforeTemplate
-        java.net.URL urlConstructor(String spec) throws Exception {
-            return new java.net.URL(spec);
+        URL urlConstructor(String spec) throws Exception {
+            return new URL(spec);
         }
 
         @AfterTemplate
-        java.net.URL uriCreateToURL(String spec) throws Exception {
-            return java.net.URI.create(spec).toURL();
+        URL uriCreateToURL(String spec) throws Exception {
+            return URI.create(spec).toURL();
         }
     }
 
@@ -42,13 +45,13 @@ public class URLConstructorsToURI {
     )
     public static class URLThreeArgumentConstructor {
         @BeforeTemplate
-        java.net.URL urlConstructor(String protocol, String host, String file) throws Exception {
-            return new java.net.URL(protocol, host, file);
+        URL urlConstructor(String protocol, String host, String file) throws Exception {
+            return new URL(protocol, host, file);
         }
 
         @AfterTemplate
-        java.net.URL newUriToUrl(String protocol, String host, String file) throws Exception {
-            return new java.net.URI(protocol, null, host, -1, file, null, null).toURL();
+        URL newUriToUrl(String protocol, String host, String file) throws Exception {
+            return new URI(protocol, null, host, -1, file, null, null).toURL();
         }
     }
 
@@ -58,13 +61,13 @@ public class URLConstructorsToURI {
     )
     public static class URLFourArgumentConstructor {
         @BeforeTemplate
-        java.net.URL urlConstructor(String protocol, String host, int port, String file) throws Exception {
-            return new java.net.URL(protocol, host, port, file);
+        URL urlConstructor(String protocol, String host, int port, String file) throws Exception {
+            return new URL(protocol, host, port, file);
         }
 
         @AfterTemplate
-        java.net.URL newUriToUrl(String protocol, String host, int port, String file) throws Exception {
-            return new java.net.URI(protocol, null, host, port, file, null, null).toURL();
+        URL newUriToUrl(String protocol, String host, int port, String file) throws Exception {
+            return new URI(protocol, null, host, port, file, null, null).toURL();
         }
     }
 }

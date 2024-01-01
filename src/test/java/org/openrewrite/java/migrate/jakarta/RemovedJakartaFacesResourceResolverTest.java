@@ -38,7 +38,8 @@ public class RemovedJakartaFacesResourceResolverTest implements RewriteTest {
     void removedJakartaFacesResourceResolver_1() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
             package com.test;
             import java.net.URL;
                
@@ -78,40 +79,41 @@ public class RemovedJakartaFacesResourceResolverTest implements RewriteTest {
     void removedJavaxFacesResourceResolver_1() {
         rewriteRun(
           //language=java
-          java("""
-                    package com.test;
-                    import java.net.URL;
-                       
-                    import javax.faces.application.StateManager;
-                    import javax.faces.component.UIViewRoot;
-                    import javax.faces.context.FacesContext;
-                    import javax.faces.view.facelets.ResourceResolver;
-                       
-                    public class ResourceResolverParent extends ResourceResolver {
-                       
-                        @Override
-                        public URL resolveUrl(String arg0) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-                    }
+          java(
+                """
+            package com.test;
+            import java.net.URL;
+               
+            import javax.faces.application.StateManager;
+            import javax.faces.component.UIViewRoot;
+            import javax.faces.context.FacesContext;
+            import javax.faces.view.facelets.ResourceResolver;
+               
+            public class ResourceResolverParent extends ResourceResolver {
+               
+                @Override
+                public URL resolveUrl(String arg0) {
+                    // TODO Auto-generated method stub
+                    return null;
+                }
+            }
             """, """
-                    package com.test;
-                    import java.net.URL;
-                       
-                    import jakarta.faces.application.ResourceHandler;
-                    import jakarta.faces.application.StateManager;
-                    import jakarta.faces.component.UIViewRoot;
-                    import jakarta.faces.context.FacesContext;
-                       
-                    public class ResourceResolverParent extends ResourceHandler {
-                       
-                        @Override
-                        public URL resolveUrl(String arg0) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-                    }
+            package com.test;
+            import java.net.URL;
+               
+            import jakarta.faces.application.ResourceHandler;
+            import jakarta.faces.application.StateManager;
+            import jakarta.faces.component.UIViewRoot;
+            import jakarta.faces.context.FacesContext;
+               
+            public class ResourceResolverParent extends ResourceHandler {
+               
+                @Override
+                public URL resolveUrl(String arg0) {
+                    // TODO Auto-generated method stub
+                    return null;
+                }
+            }
             """));
     }
 

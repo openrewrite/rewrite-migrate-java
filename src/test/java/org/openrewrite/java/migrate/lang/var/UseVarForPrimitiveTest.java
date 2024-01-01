@@ -36,7 +36,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
         void forShort() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                           
                 class A {
@@ -53,7 +54,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
         void forByte() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                           
                 class A {
@@ -74,7 +76,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
         void forBoolean() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                           
                 class A {
@@ -100,7 +103,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
         void forChar() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                           
                 class A {
@@ -125,7 +129,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
         void forDouble() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                           
                 class A {
@@ -150,7 +155,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
         void forFloat() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                           
                 class A {
@@ -175,7 +181,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
         void forLong() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                           
                 class A {
@@ -200,7 +207,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
         void forDoubleWithTypNotation() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                           
                 class A {
@@ -225,7 +233,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
         void forFloatWithTypNotation() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                           
                 class A {
@@ -250,7 +259,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
         void forLongWithTypNotation() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                           
                 class A {
@@ -275,7 +285,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
         void withModifier() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 class A {
                   void m() {
                       final int i = 42;

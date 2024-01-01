@@ -65,8 +65,8 @@ public class ListFirstAndLast extends Recipe {
 
     private static class FirstLastVisitor extends JavaIsoVisitor<ExecutionContext> {
         @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-            J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
+        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
             Expression select = mi.getSelect();
             if (!(select instanceof J.Identifier)) {
                 return mi;

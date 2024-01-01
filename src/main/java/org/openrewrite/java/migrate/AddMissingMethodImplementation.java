@@ -67,9 +67,9 @@ public class AddMissingMethodImplementation extends Recipe {
         private final MethodMatcher methodMatcher = new MethodMatcher(methodPattern, true);
 
         @Override
-        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cs, ExecutionContext executionContext) {
+        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cs, ExecutionContext ctx) {
             // need to make sure we handle sub-classes
-            J.ClassDeclaration classDecl = super.visitClassDeclaration(cs, executionContext);
+            J.ClassDeclaration classDecl = super.visitClassDeclaration(cs, ctx);
 
             // No need to make changes to abstract classes; only change concrete classes.
             if (classDecl.hasModifier(J.Modifier.Type.Abstract)) {

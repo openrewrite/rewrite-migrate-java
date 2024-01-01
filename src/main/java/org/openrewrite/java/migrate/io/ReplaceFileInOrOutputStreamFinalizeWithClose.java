@@ -63,8 +63,8 @@ public class ReplaceFileInOrOutputStreamFinalizeWithClose extends Recipe {
                 Preconditions.and(new UsesJavaVersion<>(9, 11), new UsesMethod<>(METHOD_MATCHER)),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                        J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
+                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                        J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
                         if (METHOD_MATCHER.matches(mi)) {
                             Expression select = mi.getSelect();
                             JavaType type = select != null ? select.getType() : getCursor().firstEnclosingOrThrow(J.ClassDeclaration.class).getType();

@@ -43,13 +43,15 @@ public class FindJavaVersionTest implements RewriteTest {
               );
           }),
           //language=java
-          java("""
+          java(
+                """
             class A {
             }
             """,
             spec -> spec.markers(jv)),
           //language=java
-          java("""
+          java(
+                """
             class B {
             }
             """,

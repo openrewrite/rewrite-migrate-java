@@ -45,7 +45,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     @Test
     void absentToEmpty() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import com.google.common.base.Optional;
 
           class A {
@@ -68,7 +69,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     void orNullToOrElseNull() {
         // Comparison to java.util.Optional: this method is equivalent to Java 8's Optional.orElse(null).
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
               import com.google.common.base.Optional;
 
               class A {
@@ -90,7 +92,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     @Test
     void orToOrElse() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import com.google.common.base.Optional;
 
           class A {
@@ -112,7 +115,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     @Test
     void orSupplierToOrElseGetWithLambda() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import com.google.common.base.Optional;
 
           class A {
@@ -135,7 +139,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     void orSupplierToOrElseGetWithSupplierArgument() {
         //language=java
         rewriteRun(
-          java("""
+          java(
+                """
               import com.google.common.base.Optional;
               import com.google.common.base.Supplier;
 
@@ -159,7 +164,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     @Test
     void transformToMap() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import com.google.common.base.Optional;
 
           class A {
@@ -181,7 +187,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     @Test
     void removeFromJavaUtil() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
               import com.google.common.base.Optional;
 
               class A {
@@ -203,7 +210,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     @Test
     void removeToJavaUtil() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
               import com.google.common.base.Optional;
 
               class A {
@@ -228,7 +236,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
         //language=java
         rewriteRun(
           spec -> spec.allSources(s -> s.markers(javaVersion(9))),
-          java("""
+          java(
+                """
               import com.google.common.base.Optional;
 
               class A {
@@ -257,7 +266,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
             // > when the value is absent, this method throws IllegalStateException, whereas the Java 8 counterpart throws NoSuchElementException.
             // Sure hope no one actually does this, but you never know.
             //language=java
-            rewriteRun(java("""
+            rewriteRun(java(
+                    """
               import com.google.common.base.Optional;
 
               class A {
@@ -289,7 +299,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
         void asSetToStreamCollectToSet() {
             // Comparison to java.util.Optional: this method has no equivalent in Java 8's Optional class. However, some use cases can be written with calls to optional.stream().
             //language=java
-            rewriteRun(java("""
+            rewriteRun(java(
+                    """
               import com.google.common.base.Optional;
 
               class A {
@@ -315,7 +326,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
         void presentInstances() {
             // Comparison to java.util.Optional: this method has no equivalent in Java 8's Optional class; use optionals.stream().filter(Optional::isPresent).map(Optional::get) instead.
             //language=java
-            rewriteRun(java("""
+            rewriteRun(java(
+                    """
               import com.google.common.base.Optional;
 
               class A {

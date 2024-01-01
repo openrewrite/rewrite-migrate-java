@@ -69,6 +69,9 @@ public class ChangeMethodInvocationReturnType extends Recipe {
                 if (methodMatcher.matches(method) && type != null && !newReturnType.equals(type.getReturnType().toString())) {
                     type = type.withReturnType(JavaType.buildType(newReturnType));
                     m = m.withMethodType(type);
+                    if (m.getName().getType() != null) {
+                        m = m.withName(m.getName().withType(type));
+                    }
                     methodUpdated = true;
                 }
                 return m;

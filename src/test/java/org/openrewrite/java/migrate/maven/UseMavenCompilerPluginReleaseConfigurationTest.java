@@ -35,7 +35,8 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     void replacesSourceAndTargetConfig() {
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
               <?xml version="1.0" encoding="UTF-8"?>
               <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                 <modelVersion>4.0.0</modelVersion>
@@ -90,7 +91,8 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     void deletesSourceAndTargetConfigWithNoReplacementIfDefaultAndCleansUpConfiguration() {
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
               <?xml version="1.0" encoding="UTF-8"?>
               <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                 <modelVersion>4.0.0</modelVersion>
@@ -142,7 +144,8 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     void deletesSourceAndTargetConfigWithNoReplacementIfDefault() {
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
               <?xml version="1.0" encoding="UTF-8"?>
               <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                 <modelVersion>4.0.0</modelVersion>
@@ -198,7 +201,8 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     void reusesJavaVersionVariableIfAvailable() {
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
               <?xml version="1.0" encoding="UTF-8"?>
               <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                 <modelVersion>4.0.0</modelVersion>
@@ -259,7 +263,8 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     void upgradesExistingReleaseConfig() {
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
               <?xml version="1.0" encoding="UTF-8"?>
               <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                 <modelVersion>4.0.0</modelVersion>
@@ -313,7 +318,8 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     void prefersJavaVersionIfAvailable() {
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
               <?xml version="1.0" encoding="UTF-8"?>
               <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                 <modelVersion>4.0.0</modelVersion>
@@ -375,7 +381,8 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     void notMisledByUnrelatedProperty() {
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
               <?xml version="1.0" encoding="UTF-8"?>
               <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                 <modelVersion>4.0.0</modelVersion>
@@ -439,7 +446,8 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     void doesNotChangeIfNoSourceOrTargetConfig() {
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
             <?xml version="1.0" encoding="UTF-8"?>
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
               <modelVersion>4.0.0</modelVersion>
@@ -471,7 +479,8 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     void noVersionDowngrade() {
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
             <?xml version="1.0" encoding="UTF-8"?>
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
               <modelVersion>4.0.0</modelVersion>
@@ -501,7 +510,8 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     void reusesJavaVersionVariableIfDefinedInParentPom() {
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
             <?xml version="1.0" encoding="UTF-8"?>
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
               <modelVersion>4.0.0</modelVersion>

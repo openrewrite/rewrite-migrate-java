@@ -157,7 +157,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
 
                       string = Objects.toString(in, "");
                       string = Objects.toString(in, "nil");
-                      string = in == null ? null : in.replaceAll("\\s+", "");
+                      string = in == null ? null : in.replaceAll("\\\\s+", "");
 
                       //bool = StringUtils.endsWithIgnoreCase(in, "suffix");
                       bool = in == null ? false : in.equalsIgnoreCase("other");
@@ -195,7 +195,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.rightPad(in, 5, ' ');
                       string = StringUtils.rightPad(in, 5, " ");
 
-                      array = in == null ? null : in.split("\\s+");
+                      array = in == null ? null : in.split("\\\\s+");
                       //array = StringUtils.split(in, "*");
                       bool = StringUtils.startsWith(in, "prefix");
                       bool = StringUtils.startsWithAny(in, "prefix");
@@ -211,7 +211,7 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                       string = StringUtils.substringAfter(in, "|");
                       string = StringUtils.substring(in, 2, 4);
                       string = StringUtils.swapCase(in);
-                      string = in == null ? "" : in;
+                      string = in == null ? "" : in.trim();
                       string = in == null || in.trim().isEmpty() ? null : in.trim();
                       string = in == null ? null : in.trim();
                       string = in == null ? null : in.toUpperCase();
@@ -278,7 +278,8 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
     void inputMethodsNotCalledTwice() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
             class Bar {
                 String baz() {
                     return "baz";
@@ -305,7 +306,8 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
     void getterIsCalledTwice() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
             class Bar {
                 String getBaz() {
                     return "baz";

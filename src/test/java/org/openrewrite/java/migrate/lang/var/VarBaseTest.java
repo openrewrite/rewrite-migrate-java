@@ -44,7 +44,8 @@ abstract class VarBaseTest implements RewriteTest {
         void fieldsInInnerClass() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
 
                 class A {
@@ -64,7 +65,8 @@ abstract class VarBaseTest implements RewriteTest {
         void assignNull() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
 
                 class A {
@@ -81,7 +83,8 @@ abstract class VarBaseTest implements RewriteTest {
         void assignNothing() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
 
                 class A {
@@ -99,7 +102,8 @@ abstract class VarBaseTest implements RewriteTest {
         void multipleVariables() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
 
                 class A {
@@ -117,7 +121,8 @@ abstract class VarBaseTest implements RewriteTest {
         void simpleAssigment() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
 
                 class A {
@@ -137,7 +142,8 @@ abstract class VarBaseTest implements RewriteTest {
         void varUsage() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
 
                 import java.util.Date;
@@ -157,7 +163,8 @@ abstract class VarBaseTest implements RewriteTest {
         void withTernary() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
 
                 class A {
@@ -177,7 +184,8 @@ abstract class VarBaseTest implements RewriteTest {
             void inDefinition() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                        """
                     package com.example.app;
 
                     import java.util.List;
@@ -197,7 +205,8 @@ abstract class VarBaseTest implements RewriteTest {
             void inInitializer() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                        """
                     package com.example.app;
                     
                     import java.util.ArrayList;

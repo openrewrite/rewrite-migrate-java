@@ -21,18 +21,16 @@ description: These recipes help with the Migration to Jakarta EE 10, flagging an
 tags:
   - jakarta
 recipeList:
-  - org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
-  - org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
-  - org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesResourceResolver
+  - org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakarta4x
   - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
   - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
-  - org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
-  - org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
   - org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
   - org.openrewrite.java.migrate.BeanDiscovery
-  - org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
+  - org.openrewrite.java.migrate.jakarta.BeanValidationMessages
+  - org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
+  - org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -54,52 +52,7 @@ recipeList:
       methodPattern: jakarta.servlet.SessionCookieConfig getComment()
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: jakarta.servlet.SessionCookieConfig setComment(String)
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
-displayName:   JNDI name `jsf/ClientSideSecretKey` has been renamed to `faces/ClientSideSecretKey`, and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.
-description: >
-      The `jsf/ClientSideSecretKey` JNDI name has been renamed to `faces/ClientSideSecretKey`, 
-      and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.  The JNDI keys that have been renamed are updated to allow use of the keys.
-recipeList:
-  - org.openrewrite.xml.ChangeTagValue:
-      elementName: //env-entry-name
-      oldValue: jsf/ClientSideSecretKey
-      newValue: faces/ClientSideSecretKey
-  - org.openrewrite.xml.ChangeTagValue:
-      elementName: //env-entry-name
-      oldValue: jsf/FlashSecretKey
-      newValue: faces/FlashSecretKey
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesResourceResolver
-displayName: Replace `ResourceResolver` with `ResourceHandler`
-description: > 
-  The `ResourceResolver` class was removed in Jakarta Faces 4.0. 
-  The functionality provided by that class can be replaced by using the `jakarta.faces.application.ResourceHandler` class.
-recipeList:
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.view.facelets.ResourceResolver
-      newFullyQualifiedTypeName: jakarta.faces.application.ResourceHandler
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.view.facelets.ResourceResolver
-      newFullyQualifiedTypeName: jakarta.faces.application.ResourceHandler
-      ignoreDefinition: true
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
-displayName: Replace `CURRENT_COMPONENT` and `CURRENT_COMPOSITE_COMPONENT` with `getCurrentComponent()` and `getCurrentCompositeComponent()`
-description: >
-  Replace `jakarta.faces.component.UIComponent.CURRENT_COMPONENT` and `CURRENT_COMPOSITE_COMPONENT` constants with `jakarta.faces.component.UIComponent.getCurrentComponent()` and `getCurrentCompositeComponent()`
-  that were added in JSF 2.0
-recipeList:
-  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
-      existingFullyQualifiedConstantName: jakarta.faces.component.UIComponent.CURRENT_COMPONENT
-      fullyQualifiedConstantName: jakarta.faces.component.UIComponent.getCurrentComponent()
-  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
-      existingFullyQualifiedConstantName: jakarta.faces.component.UIComponent.CURRENT_COMPOSITE_COMPONENT
-      fullyQualifiedConstantName: jakarta.faces.component.UIComponent.getCurrentCompositeComponent()
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
@@ -148,164 +101,32 @@ recipeList:
       ignoreDefinition: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
-displayName: Use `StateManagementStrategy`
-description: >
-      Methods that were removed from the `jakarta.faces.application.StateManager` and `javax.faces.application.StateManager` classes in Jakarta Faces 4.0 are replaced
-      by `jakarta.faces.view.StateManagementStrategy` or `javax.faces.view.StateManagementStrategy` based on Jakarta10 migration in Faces 4.0
+name: org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
+displayName: Migrate xmlns entries in `beans.xml` files
+description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
+tags:
+  - jakarta
+  - beans
+  - cdi
 recipeList:
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
-      newMethodName: saveView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager getTreeStructureToSave(*.faces.context.FacesContext)"
-      newMethodName: saveView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager restoreComponentState(*.faces.context.FacesContext,*.faces.component.UIViewRoot,String)"
-      newMethodName: restoreView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager restoreTreeStructure(*.faces.context.FacesContext,String,String)"
-      newMethodName: restoreView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager saveSerializedView(*.faces.context.FacesContext)"
-      newMethodName: saveView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.application.StateManager
-      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.application.StateManager
-      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
-      ignoreDefinition: true
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: version
+      elementName: beans
+      newValue: 4.0
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xmlns
+      elementName: beans
+      newValue: https://jakarta.ee/xml/ns/jakartaee
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xsi:schemaLocation
+      elementName: beans
+      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
-displayName: Use `jakarta.el` instead of `jakarta.faces.el` and `javax.faces.el`
-description: >
-  Several classes were removed and replaced in Jakarta Faces 4.0.
-  The only Object definition not removed in the `jakarta.faces.el` package is the CompositeComponentExpressionHolder interface.
+name: org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
+displayName: Rename CDI Extension to Jakarta
+description: Rename `javax.enterprise.inject.spi.Extension` to `jakarta.enterprise.inject.spi.Extension`.
 recipeList:
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.el.MethodBinding
-      newFullyQualifiedTypeName: jakarta.el.MethodExpression
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.el.PropertyResolver
-      newFullyQualifiedTypeName: jakarta.el.ELResolver
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.el.ValueBinding
-      newFullyQualifiedTypeName: jakarta.el.ValueExpression
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.el.VariableResolver
-      newFullyQualifiedTypeName: jakarta.el.ELResolver
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.el.EvaluationException
-      newFullyQualifiedTypeName: jakarta.el.ELException
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.el.MethodNotFoundException
-      newFullyQualifiedTypeName: jakarta.el.MethodNotFoundException
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.el.PropertyNotFoundException
-      newFullyQualifiedTypeName: jakarta.el.PropertyNotFoundException
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.el.ReferenceSyntaxException
-      newFullyQualifiedTypeName: jakarta.el.ELException
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.el.MethodBinding
-      newFullyQualifiedTypeName: jakarta.el.MethodExpression
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.el.PropertyResolver
-      newFullyQualifiedTypeName: jakarta.el.ELResolver
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.el.ValueBinding
-      newFullyQualifiedTypeName: jakarta.el.ValueExpression
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.el.VariableResolver
-      newFullyQualifiedTypeName: jakarta.el.ELResolver
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.el.EvaluationException
-      newFullyQualifiedTypeName: jakarta.el.ELException
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.el.MethodNotFoundException
-      newFullyQualifiedTypeName: jakarta.el.MethodNotFoundException
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.el.PropertyNotFoundException
-      newFullyQualifiedTypeName: jakarta.el.PropertyNotFoundException
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.el.ReferenceSyntaxException
-      newFullyQualifiedTypeName: jakarta.el.ELException
-      ignoreDefinition: true
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
-displayName: Substitute deprecated Faces Managed Beans
-description: >
-  This recipe substitutes Faces Managed Beans, which were deprecated in JavaServer Faces 2.3 and have been removed from Jakarta Faces 4.0.
-recipeList:
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.bean.ApplicationScoped
-      newFullyQualifiedTypeName: jakarta.enterprise.context.ApplicationScoped
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.bean.ApplicationScoped
-      newFullyQualifiedTypeName: jakarta.enterprise.context.ApplicationScoped
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.bean.ManagedProperty
-      newFullyQualifiedTypeName: jakarta.faces.annotation.ManagedProperty
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.bean.ManagedProperty
-      newFullyQualifiedTypeName: jakarta.faces.annotation.ManagedProperty
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.bean.NoneScoped
-      newFullyQualifiedTypeName: jakarta.enterprise.context.Dependent
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.bean.NoneScoped
-      newFullyQualifiedTypeName: jakarta.enterprise.context.Dependent
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.bean.RequestScoped
-      newFullyQualifiedTypeName: jakarta.enterprise.context.RequestScoped
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.bean.RequestScoped
-      newFullyQualifiedTypeName: jakarta.enterprise.context.RequestScoped
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.bean.SessionScoped
-      newFullyQualifiedTypeName: jakarta.enterprise.context.SessionScoped
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.bean.SessionScoped
-      newFullyQualifiedTypeName: jakarta.enterprise.context.SessionScoped
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.bean.ViewScoped
-      newFullyQualifiedTypeName: jakarta.faces.view.ViewScoped
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.bean.ViewScoped
-      newFullyQualifiedTypeName: jakarta.faces.view.ViewScoped
-      ignoreDefinition: true
+  - org.openrewrite.RenameFile:
+      fileMatcher: '**/javax.enterprise.inject.spi.Extension'
+      fileName: jakarta.enterprise.inject.spi.Extension

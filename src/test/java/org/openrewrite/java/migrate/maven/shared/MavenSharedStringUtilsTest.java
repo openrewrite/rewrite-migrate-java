@@ -87,7 +87,7 @@ class MavenSharedStringUtilsTest implements RewriteTest {
                       string = in == null || in.isEmpty() ? in : Character.toTitleCase(in.charAt(0)) + in.substring(1);
                       string = Objects.toString(in, "");
                       string = Objects.toString(in, "nil");
-                      string = in.replaceAll("\\s+", "");
+                      string = in.replaceAll("\\\\s+", "");
                             
                       bool = in == null ? false : in.equalsIgnoreCase("other");
                       bool = Objects.equals(in, "other");
@@ -97,7 +97,7 @@ class MavenSharedStringUtilsTest implements RewriteTest {
                       string = in == null ? null : in.toLowerCase();
                       string = in == null || in.isEmpty() ? in : in.replace("search", "replacement");
                       string = in == null ? null : new StringBuffer(in).reverse().toString();
-                      array = in.split("\\s+");
+                      array = in.split("\\\\s+");
                       string = in == null ? null : in.trim();
                       string = in == null ? null : in.trim();
                       string = in == null ? null : in.toUpperCase();
