@@ -172,6 +172,52 @@ class UseJavaUtilBase64Test implements RewriteTest {
         );
     }
 
+    @Test
+    void mime() {
+        rewriteRun(
+          spec -> {
+              spec.recipe(new UseJavaUtilBase64("test.sun.misc", true));
+          },
+          //language=java
+          java(
+            """
+              package test.sun.misc;
+                          
+              import test.sun.misc.BASE64Encoder;
+              import test.sun.misc.BASE64Decoder;
+              import java.io.IOException;
+
+              class Test {
+                  void test(byte[] bBytes) {
+                      BASE64Encoder encoder = new BASE64Encoder();
+                      String encoded = encoder.encode(bBytes);
+                      encoded += encoder.encodeBuffer(bBytes);
+                      try {
+                          byte[] decoded = new BASE64Decoder().decodeBuffer(encoded);
+                      } catch (IOException e) {
+                          e.printStackTrace();
+                      }
+                  }
+              }
+              """,
+            """
+              package test.sun.misc;
+                          
+              import java.util.Base64;
+                          
+              class Test {
+                  void test(byte[] bBytes) {
+                      Base64.Encoder encoder = Base64.getMimeEncoder();
+                      String encoded = encoder.encodeToString(bBytes);
+                      encoded += encoder.encodeToString(bBytes);
+                      byte[] decoded = Base64.getMimeDecoder().decode(encoded);
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/212")
     @Test
     void otherBase64() {
