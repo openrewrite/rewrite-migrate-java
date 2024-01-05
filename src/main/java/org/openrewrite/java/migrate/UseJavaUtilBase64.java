@@ -34,7 +34,7 @@ import java.util.Base64;
 public class UseJavaUtilBase64 extends Recipe {
     private final String sunPackage;
 
-    @Option(displayName = "Use Mime Coder", description = "Use Base64.getMimeEncoder()/getMimeDecoder() instead of Base64.getEncoder()/getDecoder().", required = false, example = "false")
+    @Option(displayName = "Use Mime Coder", description = "Use `Base64.getMimeEncoder()/getMimeDecoder()` instead of `Base64.getEncoder()/getDecoder()`.", required = false, example = "false")
     boolean useMimeCoder;
 
     @Override
@@ -49,24 +49,14 @@ public class UseJavaUtilBase64 extends Recipe {
                "by the Java module system and accessing this class will result in a warning in Java 11 and an error in Java 17.";
     }
 
-
+    public UseJavaUtilBase64(String sunPackage, boolean useMimeCoder) {
+        this.sunPackage = sunPackage;
+        this.useMimeCoder = useMimeCoder;
+    }
 
     @JsonCreator
     public UseJavaUtilBase64() {
         this("sun.misc", false);
-    }
-
-    public UseJavaUtilBase64(String sunPackage) {
-        this(sunPackage, false);
-    }
-
-    public UseJavaUtilBase64(boolean useMimeCoder) {
-        this("sun.misc", useMimeCoder);
-    }
-
-    public UseJavaUtilBase64(String sunPackage, boolean useMimeCoder) {
-        this.sunPackage = sunPackage;
-        this.useMimeCoder = useMimeCoder;
     }
 
     @Override
@@ -137,15 +127,12 @@ public class UseJavaUtilBase64 extends Recipe {
                 J.NewClass c = (J.NewClass) super.visitNewClass(newClass, ctx);
                 if (newBase64Encoder.matches(c)) {
                     // noinspection Convert2MethodRef
-                    if (useMimeCoder) {
-                        return Semantics.expression(this, "getMimeEncoder", () -> Base64.getMimeEncoder())
-                                .build()
-                                .apply(updateCursor(c), c.getCoordinates().replace());
-                    } else {
-                        return Semantics.expression(this, "getEncoder", () -> Base64.getEncoder())
-                                .build()
-                                .apply(updateCursor(c), c.getCoordinates().replace());
-                    }
+                    JavaTemplate.Builder encoderTemplate = useMimeCoder
+                            ? Semantics.expression(this, "getMimeEncoder", () -> Base64.getMimeEncoder())
+                            : Semantics.expression(this, "getEncoder", () -> Base64.getEncoder());
+                    return encoderTemplate
+                            .build()
+                            .apply(updateCursor(c), c.getCoordinates().replace());
 
                 } else if (newBase64Decoder.matches(c)) {
                     return getDecoderTemplate.apply(updateCursor(c), c.getCoordinates().replace());
