@@ -70,20 +70,20 @@ class BeanValidationMessagesTest implements RewriteTest {
           //language=java
           java(
             """
-                import javax.validation.constraints.*;
-                
-                class Test {
-                   @NotNull(message = "Resource Code {javax.validation.constraints.NotNull.message}")
-                   private String resourceCode;
-                }
+              import javax.validation.constraints.*;
+              
+              class Test {
+                 @NotNull(message = "Resource Code {javax.validation.constraints.NotNull.message}")
+                 private String resourceCode;
+              }
               """,
             """
-                import javax.validation.constraints.*;
-                
-                class Test {
-                   @NotNull(message = "Resource Code {jakarta.validation.constraints.NotNull.message}")
-                   private String resourceCode;
-                }
+              import javax.validation.constraints.*;
+              
+              class Test {
+                 @NotNull(message = "Resource Code {jakarta.validation.constraints.NotNull.message}")
+                 private String resourceCode;
+              }
               """
           )
         );
