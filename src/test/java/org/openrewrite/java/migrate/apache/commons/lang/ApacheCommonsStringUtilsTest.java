@@ -258,14 +258,14 @@ class ApacheCommonsStringUtilsTest implements RewriteTest {
                             
               class Foo {
                   void test(String s, String other) {
-                      String test = !StringUtils.equalsIgnoreCase(s, other);
+                      boolean test = !StringUtils.equalsIgnoreCase(s, other);
                   }
               }
               """,
             """
               class Foo {
                   void test(String s, String other) {
-                      String test = !(s == null ? other == null : s.equalsIgnoreCase(other));
+                      boolean test = !(s == null ? other == null : s.equalsIgnoreCase(other));
                   }
               }
               """
