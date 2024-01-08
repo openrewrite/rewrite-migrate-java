@@ -108,6 +108,9 @@ tags:
   - jakarta
   - beans
   - cdi
+preconditions:
+  - org.openrewrite.FindSourceFiles:
+      filePattern: '**/beans.xml'
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
