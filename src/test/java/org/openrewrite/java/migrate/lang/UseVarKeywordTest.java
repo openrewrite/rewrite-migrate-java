@@ -15,9 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,6 +22,9 @@ import org.openrewrite.Example;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
 
 class UseVarKeywordTest implements RewriteTest {
 
@@ -35,6 +35,233 @@ class UseVarKeywordTest implements RewriteTest {
             .scanRuntimeClasspath("org.openrewrite.java.migrate.lang")
             .build()
             .activateRecipes("org.openrewrite.java.migrate.lang.UseVar"));
+    }
+
+    @Nested
+    class BugFixing {
+
+        @Test
+        void anonymousClass() {
+            // spring-projects/spring-data-commons @ main: src/test/java/org/springframework/data/domain/ManagedTypesUnitTests.java
+            // solving: Expected a template that would generate exactly one statement to replace one statement, but generated 2. Template:
+            //var typesSupplier = __P__.<org.springframework.data.domain.ManagedTypesUnitTests.1>/*__p1__*/p()
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                      package com.example.app;
+                                    
+                      import java.util.Collections;
+                      import java.util.function.Supplier;
+                                    
+                      class ManagedTypesUnitTests {
+                          void supplierBasedManagedTypesAreEvaluatedLazily() {
+                              Supplier<Iterable<Class<?>>> typesSupplier = spy(new Supplier<Iterable<Class<?>>>() {
+                                  @Override
+                                  public Iterable<Class<?>> get() {
+                                      return Collections.singleton(Object.class);
+                                  }
+                              });
+                          }
+                                    
+                          // mock for mockito method
+                          private Supplier<Iterable<Class<?>>> spy(Supplier<Iterable<Class<?>>> supplier) {
+                              return null;
+                          }
+                      }
+                  """, """
+                      package com.example.app;
+                                    
+                      import java.util.Collections;
+                      import java.util.function.Supplier;
+                                    
+                      class ManagedTypesUnitTests {
+                          void supplierBasedManagedTypesAreEvaluatedLazily() {
+                              var typesSupplier = spy(new Supplier<Iterable<Class<?>>>() {
+                                  @Override
+                                  public Iterable<Class<?>> get() {
+                                      return Collections.singleton(Object.class);
+                                  }
+                              });
+                          }
+                                    
+                          // mock for mockito method
+                          private Supplier<Iterable<Class<?>>> spy(Supplier<Iterable<Class<?>>> supplier) {
+                              return null;
+                          }
+                      }
+                  """),
+                10
+              )
+            );
+        }
+
+        @Test
+        void multiGenerics() {
+            // spring-cloud/spring-cloud-contract @ main: spring-cloud-contract-verifier/src/test/resources/contractsToCompile/contract_multipart.java
+            // solving java.lang.IllegalArgumentException: Unable to parse expression from JavaType Unknown
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  import java.util.Collection;
+                  import java.util.HashMap;
+                  import java.util.Map;
+                  import java.util.function.Supplier;
+                                    
+                  class contract_multipart implements Supplier<Collection<Contract>> {                                      \s
+                        private static Map<String, DslProperty> namedProps(HttpSender.Request r) {
+                            Map<String, DslProperty> map = new HashMap<>();
+                            return map;
+                        }
+                                    
+                      @Override
+                      public Collection<Contract> get() { return null; }
+                  }
+                  // replacements
+                  class Contract{}
+                  class DslProperty{}
+                  class HttpSender {
+                      static class Request {}
+                  }
+                  """, """
+                  import java.util.Collection;
+                  import java.util.HashMap;
+                  import java.util.Map;
+                  import java.util.function.Supplier;
+                                    
+                  class contract_multipart implements Supplier<Collection<Contract>> {                                      \s
+                        private static Map<String, DslProperty> namedProps(HttpSender.Request r) {
+                            var map = new HashMap<String, DslProperty>();
+                            return map;
+                        }
+                                    
+                      @Override
+                      public Collection<Contract> get() { return null; }
+                  }
+                  // replacements
+                  class Contract{}
+                  class DslProperty{}
+                  class HttpSender {
+                      static class Request {}
+                  }
+                  """),
+                10
+              )
+            );
+        }
+
+        @Test
+        void duplicateTemplate() {
+            // spring-projects/spring-hateoas @ main src/test/java/org/springframework/hateoas/mediatype/html/HtmlInputTypeUnitTests.java
+            // solving Expected a template that would generate exactly one statement to replace one statement, but generated 2. Template:
+            //var numbers = __P__.<java.util.stream.Stream<org.springframework.hateoas.mediatype.html.HtmlInputTypeUnitTests..>>/*__p1__*/p()
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  import java.math.BigDecimal;
+                  import java.util.Arrays;
+                  import java.util.Collection;
+                  import java.util.stream.Stream;
+                                    
+                  class HtmlInputTypeUnitTests {
+                        Stream<DynamicTest> derivesInputTypesFromType() {
+                            Stream<$> numbers = HtmlInputType.NUMERIC_TYPES.stream() //
+                                        .map(it -> $.of(it, HtmlInputType.NUMBER));
+                            return null;
+                        }
+                     
+                        static class HtmlInputType {
+                            static final Collection<Class<?>> NUMERIC_TYPES = Arrays.asList(int.class, long.class, float.class,
+                                    double.class, short.class, Integer.class, Long.class, Float.class, Double.class, Short.class, BigDecimal.class);
+                                    
+                            public static final HtmlInputType NUMBER = new HtmlInputType();
+                         
+                            public static HtmlInputType from(Class<?> type) { return null; }
+                        }
+                     
+                        static class $ {
+                                    
+                            Class<?> type;
+                            HtmlInputType expected;
+                                    
+                            static $ of(Class<?> it, HtmlInputType number){ return null; }\s
+                         
+                            public void verify() {
+                                assertThat(HtmlInputType.from(type)).isEqualTo(expected);
+                            }
+                                    
+                            @Override
+                            public String toString() {
+                                return String.format("Derives %s from %s.", expected, type);
+                            }
+                            //mocking
+                            private <SELF extends AbstractBigDecimalAssert<SELF>> AbstractBigDecimalAssert assertThat(HtmlInputType from) {
+                                return null;
+                            }
+                        }
+                  }
+                  // replacement
+                  class DynamicTest {}
+                  class AbstractBigDecimalAssert<T> {
+                      public void isEqualTo(Object expected) {}
+                  }
+                  """, """
+                  import java.math.BigDecimal;
+                  import java.util.Arrays;
+                  import java.util.Collection;
+                  import java.util.stream.Stream;
+                                    
+                  import static org.assertj.core.api.Assertions.assertThat;
+                                    
+                  class HtmlInputTypeUnitTests {
+                        Stream<DynamicTest> derivesInputTypesFromType() {
+                            var numbers = HtmlInputType.NUMERIC_TYPES.stream() //
+                                        .map(it -> $.of(it, HtmlInputType.NUMBER));
+                            return null;
+                        }
+                      
+                        static class HtmlInputType {
+                            static final Collection<Class<?>> NUMERIC_TYPES = Arrays.asList(int.class, long.class, float.class,
+                                    double.class, short.class, Integer.class, Long.class, Float.class, Double.class, Short.class, BigDecimal.class);
+                                    
+                            public static final HtmlInputType NUMBER = new HtmlInputType();
+                          
+                            public static HtmlInputType from(Class<?> type) { return null; }
+                        }
+                      
+                        static class $ {
+                                    
+                            Class<?> type;
+                            HtmlInputType expected;
+                                    
+                            static $ of(Class<?> it, HtmlInputType number){ return null; }\s
+                          
+                            public void verify() {
+                                assertThat(HtmlInputType.from(type)).isEqualTo(expected);
+                            }
+                                    
+                            @Override
+                            public String toString() {
+                                return String.format("Derives %s from %s.", expected, type);
+                            }
+                            //mocking
+                            private <SELF extends AbstractBigDecimalAssert<SELF>> AbstractBigDecimalAssert assertThat(HtmlInputType from) {
+                                return null;
+                            }
+                        }
+                  }
+                  // replacement
+                  class DynamicTest {}
+                  class AbstractBigDecimalAssert<T> {
+                      public void isEqualTo(Object expected) {}
+                  }
+                  """),
+                10
+              )
+            );
+        }
     }
 
     @Nested
@@ -142,14 +369,14 @@ class UseVarKeywordTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-                      package com.example.app;
-                                        
-                      class A {
-                        void m() {
-                            String o = true ? "isTrue" : "Test";
-                        }
-                      }
-                      """),
+                  package com.example.app;
+                                    
+                  class A {
+                    void m() {
+                        String o = true ? "isTrue" : "Test";
+                    }
+                  }
+                  """),
                 10
               )
             );

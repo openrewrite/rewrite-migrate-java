@@ -15,9 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
@@ -25,6 +22,9 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Collections.emptyList;
 
@@ -51,6 +51,7 @@ public class UseVarForGenericMethodInvocations extends Recipe {
 
     static final class UseVarForGenericsVisitor extends JavaIsoVisitor<ExecutionContext> {
         private final JavaTemplate template = JavaTemplate.builder("var #{} = #{any()}")
+                .contextSensitive()
                 .javaParser(JavaParser.fromJavaVersion()).build();
 
         @Override
@@ -77,9 +78,29 @@ public class UseVarForGenericMethodInvocations extends Recipe {
             if (hasNoTypeParams && argumentsEmpty) return vd;
 
             // mark imports for removal if unused
-            if (vd.getType() instanceof JavaType.FullyQualified) maybeRemoveImport((JavaType.FullyQualified) vd.getType());
+            JavaType typeRemoved = vd.getType();
+            if (typeRemoved instanceof JavaType.FullyQualified) {
+                if (typeRemoved instanceof JavaType.Parameterized) { // parameterized have to be decomposed
+                    typeRemoved = ((JavaType.Parameterized) typeRemoved).getType();
+                }
+                maybeRemoveImport((JavaType.FullyQualified) typeRemoved);
+            }
 
-            return transformToVar(vd, new ArrayList<>(), new ArrayList<>());
+
+            //determine types
+            List<JavaType> leftTypes = new ArrayList<>();
+            TypeTree leftTypeExpression = vd.getTypeExpression();
+            if (leftTypeExpression != null) {
+                leftTypes.add(leftTypeExpression.getType());
+            }
+
+            List<JavaType> rightTypes = new ArrayList<>();
+            JavaType initializerType = initializer.getType();
+            if (initializerType != null) {
+                rightTypes.add(initializerType);
+            }
+
+            return transformToVar(vd, leftTypes, rightTypes);
         }
 
         private static boolean allArgumentsEmpty(J.MethodInvocation invocation) {
@@ -100,10 +121,13 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 // we need to switch type infos from left to right here
                 List<Expression> typeArgument = new ArrayList<>();
                 for (JavaType t : leftTypes) {
-                    typeArgument.add(new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), ((JavaType.Class) t).getClassName(), t, null));
+                    typeArgument.add(new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), ((JavaType.FullyQualified) t).getClassName(), t, null));
                 }
-                J.ParameterizedType typedInitializerClazz = ((J.ParameterizedType) ((J.NewClass) initializer).getClazz()).withTypeParameters(typeArgument);
-                initializer = ((J.NewClass) initializer).withClazz(typedInitializerClazz);
+
+                if (initializer instanceof J.NewClass) { // for constructor invocations we need to handle generics
+                    J.ParameterizedType typedInitializerClazz = ((J.ParameterizedType) ((J.NewClass) initializer).getClazz()).withTypeParameters(typeArgument);
+                    initializer = ((J.NewClass) initializer).withClazz(typedInitializerClazz);
+                }
             }
 
             J.VariableDeclarations result = template.<J.VariableDeclarations>apply(getCursor(), vd.getCoordinates().replace(), simpleName, initializer)
