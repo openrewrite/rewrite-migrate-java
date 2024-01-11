@@ -33,7 +33,7 @@ import static org.openrewrite.java.tree.TypeUtils.isString;
 
 class PreferJavaStringJoinVisitor extends JavaIsoVisitor<ExecutionContext> {
     private static final MethodMatcher ON_METHOD_MATCHER =
-        new MethodMatcher("com.google.common.base.Joiner on(String)");
+            new MethodMatcher("com.google.common.base.Joiner on(String)");
 
     @Override
     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -61,13 +61,12 @@ class PreferJavaStringJoinVisitor extends JavaIsoVisitor<ExecutionContext> {
 
             maybeRemoveImport("com.google.common.base.Joiner");
 
-            J.MethodInvocation x = JavaTemplate.apply(
+            return JavaTemplate.<J.MethodInvocation>apply(
                     "String.join(#{any(java.lang.CharSequence)}",
                     getCursor(),
                     mi.getCoordinates().replace(),
                     select.getArguments().get(0)
-            );
-            return x.withArguments(newArgs);
+            ).withArguments(newArgs);
         }
         return mi;
     }
