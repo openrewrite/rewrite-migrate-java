@@ -15,20 +15,21 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import static org.openrewrite.java.migrate.guava.PreferJavaStringJoin.JOIN_METHOD_MATCHER;
-import static org.openrewrite.java.tree.TypeUtils.isAssignableTo;
-import static org.openrewrite.java.tree.TypeUtils.isString;
-
-import java.util.ArrayList;
-import java.util.List;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JLeftPadded;
 import org.openrewrite.java.tree.JavaType;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.openrewrite.java.migrate.guava.PreferJavaStringJoin.JOIN_METHOD_MATCHER;
+import static org.openrewrite.java.tree.TypeUtils.isAssignableTo;
+import static org.openrewrite.java.tree.TypeUtils.isString;
 
 class PreferJavaStringJoinVisitor extends JavaIsoVisitor<ExecutionContext> {
     private static final MethodMatcher ON_METHOD_MATCHER =
@@ -38,18 +39,7 @@ class PreferJavaStringJoinVisitor extends JavaIsoVisitor<ExecutionContext> {
     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
         J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
 
-        if (ON_METHOD_MATCHER.matches(method)) {
-            // FIXME, should I rewrite or remove this invocation?
-            return mi;
-        }
-
-        Object parent = getCursor().firstEnclosingOrThrow(JLeftPadded.class).getElement();
-        if (!(parent instanceof J.MethodInvocation)) {
-            return mi;
-        }
-        J.MethodInvocation parentElement = (J.MethodInvocation) parent;
-
-        if (!(JOIN_METHOD_MATCHER.matches(mi) && ON_METHOD_MATCHER.matches(parentElement.getSelect()))) {
+        if (!JOIN_METHOD_MATCHER.matches(mi) || !(mi.getSelect() instanceof J.MethodInvocation) || !ON_METHOD_MATCHER.matches(mi.getSelect())) {
             return mi;
         }
 
@@ -65,20 +55,19 @@ class PreferJavaStringJoinVisitor extends JavaIsoVisitor<ExecutionContext> {
         }
 
         if (rewriteToJavaString) {
-            J.MethodInvocation select = (J.MethodInvocation) parentElement.getSelect();
+            J.MethodInvocation select = (J.MethodInvocation) mi.getSelect();
             assert select != null;
             List<Expression> newArgs = appendArguments(select.getArguments(), mi.getArguments());
 
-            maybeRemoveImport("com.google.base.Joiner");
+            maybeRemoveImport("com.google.common.base.Joiner");
 
-            JavaType.ShallowClass stringType = JavaType.ShallowClass.build("java.lang.String");
-
-            assert mi.getMethodType() != null;
-            return mi.withSelect(select.withDeclaringType(stringType))
-                .withMethodType(mi.getMethodType().withReturnType(stringType))
-                .withName(mi.getName().withSimpleName("join").withType(stringType))
-                .withDeclaringType(stringType)
-                .withArguments(newArgs);
+            J.MethodInvocation x = JavaTemplate.apply(
+                    "String.join(#{any(java.lang.CharSequence)}",
+                    getCursor(),
+                    mi.getCoordinates().replace(),
+                    select.getArguments().get(0)
+            );
+            return x.withArguments(newArgs);
         }
         return mi;
     }

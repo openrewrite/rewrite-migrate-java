@@ -15,12 +15,12 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import static org.openrewrite.java.Assertions.java;
-
 import org.junit.jupiter.api.Test;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.java.Assertions.java;
 
 class PreferJavaStringJoinTest implements RewriteTest {
     @Override
@@ -110,8 +110,8 @@ class PreferJavaStringJoinTest implements RewriteTest {
               """,
             """                    
              class Test {
-                  String s = String.join(", ", "a", new StringBuilder("b"));
-              }
+                 String s = String.join(", ", "a", new StringBuilder("b"));
+             }
               """
           )
         );
@@ -127,14 +127,14 @@ class PreferJavaStringJoinTest implements RewriteTest {
               import java.util.HashSet;
                             
               class Test {
-                  String s = Joiner.on(", ").join(new HashSet<>());
+                  String s = Joiner.on(", ").join(new HashSet<String>());
               }
               """,
             """                            
               import java.util.HashSet;
 
               class Test {
-                  String s = String.join(", ", new HashSet<>());
+                  String s = String.join(", ", new HashSet<String>());
               }
               """
           )
