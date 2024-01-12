@@ -1,0 +1,40 @@
+#
+# Copyright 2024 the original author or authors.
+# <p>
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://www.apache.org/licenses/LICENSE-2.0
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javaee6
+displayName: Migrate to JavaEE6
+description: These recipes help with the Migration to Java EE 6, flagging and updating deprecated methods.
+tags:
+  - javaee6
+  - deprecated
+recipeList:
+  - org.openrewrite.java.migrate.javaee6.HttpSessionInvalidateMethod
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javaee6.HttpSessionInvalidateMethod
+displayName: Use HttpServletRequest `logout` method for programmatic security logout in Servlet 3.0
+description: Do not rely on HttpSession `invalidate` method for programmatic security logout. Add the HttpServletRequest `logout` method which was introduced in Java EE 6 as part of the Servlet 3.0 specification.
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: javax.servlet.http.HttpSession invalidate()
+      newMethodName: logout
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.servlet.http.HttpSession
+      newFullyQualifiedTypeName: javax.servlet.http.HttpServletRequest
+      ignoreDefinition: true
