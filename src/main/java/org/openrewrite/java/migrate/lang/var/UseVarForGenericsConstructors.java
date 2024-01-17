@@ -52,7 +52,9 @@ public class UseVarForGenericsConstructors extends Recipe {
 
     static final class UseVarForGenericsConstructorsVisitor extends JavaIsoVisitor<ExecutionContext> {
         private final JavaTemplate template = JavaTemplate.builder("var #{} = #{any()}")
-                .javaParser(JavaParser.fromJavaVersion()).build();
+                .contextSensitive()
+                .javaParser(JavaParser.fromJavaVersion())
+                .build();
 
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, ExecutionContext ctx) {
