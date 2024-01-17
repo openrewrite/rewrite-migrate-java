@@ -43,7 +43,7 @@ import static org.openrewrite.staticanalysis.ModifierOrder.sortModifiers;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class MXBeanNonPublic extends Recipe {
+public class MXBeanRule extends Recipe {
 
     @Override
     public String getDisplayName() {
