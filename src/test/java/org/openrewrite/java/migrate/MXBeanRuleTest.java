@@ -23,10 +23,10 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
-class MXBeanNonPublicTest implements RewriteTest {
+class MXBeanRuleTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new MXBeanNonPublic()).allSources(src -> src.markers(javaVersion(8)));
+        spec.recipe(new MXBeanRule()).allSources(src -> src.markers(javaVersion(8)));
     }
 
     @Test

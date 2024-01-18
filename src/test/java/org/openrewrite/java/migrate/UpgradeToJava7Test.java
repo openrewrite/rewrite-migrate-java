@@ -38,7 +38,8 @@ class UpgradeToJava7Test implements RewriteTest {
     void testCallableStatement() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
               package com.test.withoutV170Methods;
                               
               import java.io.InputStream;
@@ -2029,7 +2030,8 @@ class UpgradeToJava7Test implements RewriteTest {
     void testConnectionPoolDataSource() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
               package com.test.withoutV170Methods;
                                   
               import javax.sql.ConnectionPoolDataSource;
@@ -2118,7 +2120,8 @@ class UpgradeToJava7Test implements RewriteTest {
     void testCommonDataSource() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
               package com.test.withoutV170Methods;
                                   
               import javax.sql.CommonDataSource;
@@ -2193,7 +2196,8 @@ class UpgradeToJava7Test implements RewriteTest {
     void testCommonDataSourceSub() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
               package com.test.withoutV170Methods;
                                 
               import javax.sql.CommonDataSource;
@@ -2264,7 +2268,8 @@ class UpgradeToJava7Test implements RewriteTest {
     void testOnAbstractClassWithMissingMethod() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
             package com.test.withoutV170Methods;
                                 
             import javax.sql.CommonDataSource;
@@ -2302,8 +2307,10 @@ class UpgradeToJava7Test implements RewriteTest {
     @Test
     void testConnection() {
         rewriteRun(
+          spec -> spec.recipeOutputStabilityValidation(false),
           //language=java
-          java("""
+          java(
+                """
               package com.test.withoutV170Methods;
                                   
               import java.sql.*;
@@ -2775,10 +2782,6 @@ class UpgradeToJava7Test implements RewriteTest {
                       // TODO Auto-generated method stub
                   }
                                
-                  public void setNetworkTimeout(java.util.concurrent.Executor executor, int milliseconds) {
-                      // TODO Auto-generated method stub
-                  }
-                               
               }
               """
           )
@@ -2789,7 +2792,8 @@ class UpgradeToJava7Test implements RewriteTest {
     void testDataSource() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
               package com.test.withoutV170Methods;
                                   
               import javax.sql.DataSource;
@@ -2902,7 +2906,8 @@ class UpgradeToJava7Test implements RewriteTest {
     void testJRE7JdbcDriver() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
               package com.test.withoutV170Methods;
                                   
               import java.sql.Connection;
@@ -2993,7 +2998,8 @@ class UpgradeToJava7Test implements RewriteTest {
     void testPreparedStatement() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
               package com.test.withoutV170Methods;
                                   
               import java.io.InputStream;

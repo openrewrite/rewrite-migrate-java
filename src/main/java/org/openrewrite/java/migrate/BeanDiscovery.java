@@ -71,7 +71,7 @@ public class BeanDiscovery extends Recipe {
 
                 // Update or apply bean-discovery-mode=all
                 if (hasBeanDiscoveryMode) {
-                    TreeVisitor<?, ExecutionContext> changeTagVisitor = new ChangeTagAttribute("beans", "bean-discovery-mode", "all", null).getVisitor();
+                    TreeVisitor<?, ExecutionContext> changeTagVisitor = new ChangeTagAttribute("beans", "bean-discovery-mode", "all", null, null).getVisitor();
                     t = (Xml.Tag) changeTagVisitor.visit(t, ctx, getCursor());
                 } else {
                     t = addAttribute(t, "bean-discovery-mode", "all", ctx);
@@ -99,6 +99,6 @@ public class BeanDiscovery extends Recipe {
             }
 
         };
-        return Preconditions.check(new HasSourcePath<>("**/beans.xml"), xmlVisitor);
+        return Preconditions.check(new FindSourceFiles("**/beans.xml"), xmlVisitor);
     }
 }

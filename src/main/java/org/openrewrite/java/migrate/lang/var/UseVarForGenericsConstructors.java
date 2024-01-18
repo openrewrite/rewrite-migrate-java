@@ -15,13 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.jetbrains.annotations.NotNull;
 import org.openrewrite.*;
-import org.openrewrite.internal.StringUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
@@ -29,6 +24,9 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Collections.emptyList;
 
@@ -54,7 +52,9 @@ public class UseVarForGenericsConstructors extends Recipe {
 
     static final class UseVarForGenericsConstructorsVisitor extends JavaIsoVisitor<ExecutionContext> {
         private final JavaTemplate template = JavaTemplate.builder("var #{} = #{any()}")
-                .javaParser(JavaParser.fromJavaVersion()).build();
+                .contextSensitive()
+                .javaParser(JavaParser.fromJavaVersion())
+                .build();
 
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, ExecutionContext ctx) {
@@ -202,10 +202,8 @@ public class UseVarForGenericsConstructors extends Recipe {
                 return new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), className, type, null);
             }
             if (type instanceof JavaType.Array) {
-                int dimensions = StringUtils.countOccurrences(type.toString(), "[]");
-                List<JRightPadded<Space>> dimensionsDefinition = Collections.nCopies(dimensions, JRightPadded.build(Space.EMPTY));
                 TypeTree elemType = (TypeTree) typeToExpression(((JavaType.Array) type).getElemType());
-                return new J.ArrayType(Tree.randomId(), Space.EMPTY, Markers.EMPTY, elemType, dimensionsDefinition);
+                return new J.ArrayType(Tree.randomId(), Space.EMPTY, Markers.EMPTY, elemType, null, JLeftPadded.build(Space.EMPTY), type);
             }
             if (type instanceof JavaType.GenericTypeVariable) {
                 String variableName = ((JavaType.GenericTypeVariable) type).getName();

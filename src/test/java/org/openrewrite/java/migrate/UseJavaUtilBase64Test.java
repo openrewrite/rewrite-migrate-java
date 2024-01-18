@@ -25,107 +25,107 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 class UseJavaUtilBase64Test implements RewriteTest {
-
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new UseJavaUtilBase64("test.sun.misc"))
+        spec.recipe(new UseJavaUtilBase64("test.sun.misc", false))
           .parser(JavaParser.fromJavaVersion()
             .logCompilationWarningsAndErrors(true)
             //language=java
             .dependsOn(
               """
-                    package test.sun.misc;
-                                                    
-                    import java.io.InputStream;
-                    import java.io.ByteArrayInputStream;
-                    import java.io.OutputStream;
-                    import java.io.ByteArrayOutputStream;
-                    import java.io.PrintStream;
-                    import java.io.IOException;
-                    import java.nio.ByteBuffer;
-                                 
-                    @SuppressWarnings("RedundantThrows")
-                    class CharacterEncoder {
-                        public void encode(InputStream inStream, OutputStream outStream) throws IOException {
-                        }
-
-                        public void encode(byte[] aBuffer, OutputStream aStream) throws IOException {
-                        }
-                                                    
-                        public String encode(byte[] aBuffer) {
-                            return "";
-                        }
-
-                        public void encode(ByteBuffer aBuffer, OutputStream aStream) throws IOException {
-                        }
-                        
-                        public String encode(ByteBuffer aBuffer) {
-                            return "";
-                        }
-                                
-                        public void encodeBuffer(InputStream inStream, OutputStream outStream) throws IOException {
-                        }
-                                                    
-                        public void encodeBuffer(byte[] aBuffer, OutputStream aStream) throws IOException {
-                        }
-                                                    
-                        public String encodeBuffer(byte[] aBuffer) {
-                            return "";
-                        }
-                        
-                        public void encodeBuffer(ByteBuffer aBuffer, OutputStream aStream) throws IOException {
-                        }
-                        
-                        public String encodeBuffer(ByteBuffer aBuffer) {
-                            return "";
-                        }
+                package test.sun.misc;
+                                                
+                import java.io.InputStream;
+                import java.io.ByteArrayInputStream;
+                import java.io.OutputStream;
+                import java.io.ByteArrayOutputStream;
+                import java.io.PrintStream;
+                import java.io.IOException;
+                import java.nio.ByteBuffer;
+                             
+                @SuppressWarnings("RedundantThrows")
+                class CharacterEncoder {
+                    public void encode(InputStream inStream, OutputStream outStream) throws IOException {
                     }
+
+                    public void encode(byte[] aBuffer, OutputStream aStream) throws IOException {
+                    }
+                
+                    public String encode(byte[] aBuffer) {
+                        return "";
+                    }
+
+                    public void encode(ByteBuffer aBuffer, OutputStream aStream) throws IOException {
+                    }
+                
+                    public String encode(ByteBuffer aBuffer) {
+                        return "";
+                    }
+                
+                    public void encodeBuffer(InputStream inStream, OutputStream outStream) throws IOException {
+                    }
+                
+                    public void encodeBuffer(byte[] aBuffer, OutputStream aStream) throws IOException {
+                    }
+                
+                    public String encodeBuffer(byte[] aBuffer) {
+                        return "";
+                    }
+                
+                    public void encodeBuffer(ByteBuffer aBuffer, OutputStream aStream) throws IOException {
+                    }
+                
+                    public String encodeBuffer(ByteBuffer aBuffer) {
+                        return "";
+                    }
+                }
                 """,
               """
-                  package test.sun.misc;
-                                                  
-                  import java.io.InputStream;
-                  import java.io.ByteArrayInputStream;
-                  import java.io.OutputStream;
-                  import java.io.ByteArrayOutputStream;
-                  import java.io.PrintStream;
-                  import java.io.IOException;
-                  import java.nio.ByteBuffer;
-                  
-                  @SuppressWarnings("RedundantThrows")
-                  class CharacterDecoder {
-                      public void decode(InputStream inStream, OutputStream outStream) throws IOException {
-                      }
-                  
-                      public void decode(String inString, OutputStream outStream) throws IOException {
-                      }
-                                                  
-                      public void decodeBuffer(InputStream inStream, OutputStream outStream) throws IOException {
-                      }
-                  
-                      public void decodeBuffer(String inString, OutputStream outStream) throws IOException {
-                      }
-                                                  
-                      public byte[] decodeBuffer(String inString) throws IOException {
-                          return new byte[0];
-                      }
-                      
-                      public byte[] decodeBuffer(InputStream inStream) throws IOException {
-                          return new byte[0];
-                      }
-                  }
-              """,
+                package test.sun.misc;
+                                                
+                import java.io.InputStream;
+                import java.io.ByteArrayInputStream;
+                import java.io.OutputStream;
+                import java.io.ByteArrayOutputStream;
+                import java.io.PrintStream;
+                import java.io.IOException;
+                import java.nio.ByteBuffer;
+                
+                @SuppressWarnings("RedundantThrows")
+                class CharacterDecoder {
+                    public void decode(InputStream inStream, OutputStream outStream) throws IOException {
+                    }
+                
+                    public void decode(String inString, OutputStream outStream) throws IOException {
+                    }
+                
+                    public void decodeBuffer(InputStream inStream, OutputStream outStream) throws IOException {
+                    }
+                
+                    public void decodeBuffer(String inString, OutputStream outStream) throws IOException {
+                    }
+                
+                    public byte[] decodeBuffer(String inString) throws IOException {
+                        return new byte[0];
+                    }
+                
+                    public byte[] decodeBuffer(InputStream inStream) throws IOException {
+                        return new byte[0];
+                    }
+                }
+                """,
               """
                 package test.sun.misc;
                 class BASE64Encoder extends CharacterEncoder {
                 }
-              """,
+                """,
               """
                 package test.sun.misc;
                 class BASE64Decoder extends CharacterDecoder {
                 }
-              """
-            ));
+                """
+            )
+          );
     }
 
     @DocumentExample
@@ -172,12 +172,59 @@ class UseJavaUtilBase64Test implements RewriteTest {
         );
     }
 
+    @Test
+    void mime() {
+        rewriteRun(
+          spec -> {
+              spec.recipe(new UseJavaUtilBase64("test.sun.misc", true));
+          },
+          //language=java
+          java(
+            """
+              package test.sun.misc;
+                          
+              import test.sun.misc.BASE64Encoder;
+              import test.sun.misc.BASE64Decoder;
+              import java.io.IOException;
+
+              class Test {
+                  void test(byte[] bBytes) {
+                      BASE64Encoder encoder = new BASE64Encoder();
+                      String encoded = encoder.encode(bBytes);
+                      encoded += encoder.encodeBuffer(bBytes);
+                      try {
+                          byte[] decoded = new BASE64Decoder().decodeBuffer(encoded);
+                      } catch (IOException e) {
+                          e.printStackTrace();
+                      }
+                  }
+              }
+              """,
+            """
+              package test.sun.misc;
+                          
+              import java.util.Base64;
+                          
+              class Test {
+                  void test(byte[] bBytes) {
+                      Base64.Encoder encoder = Base64.getMimeEncoder();
+                      String encoded = encoder.encodeToString(bBytes);
+                      encoded += encoder.encodeToString(bBytes);
+                      byte[] decoded = Base64.getMimeDecoder().decode(encoded);
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/212")
     @Test
     void otherBase64() {
         //language=java
         rewriteRun(
-          java("""
+          java(
+            """
               package test.sun.misc;
               
               public class App {
@@ -200,7 +247,8 @@ class UseJavaUtilBase64Test implements RewriteTest {
               
               class Base64 {
               }
-              """)
+              """
+          )
         );
     }
 }

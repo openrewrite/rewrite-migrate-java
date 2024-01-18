@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,39 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate;
+package org.openrewrite.java.migrate.guava;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import java.util.Collections;
+import java.util.Set;
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.Option;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.lang.NonNull;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.staticanalysis.RemoveMethodCallVisitor;
+import org.openrewrite.java.search.UsesMethod;
 
-@Value
-@EqualsAndHashCode(callSuper = true)
-public class RemoveMethodInvocation extends Recipe {
-    @Option(displayName = "Method Pattern",
-            description = "A method pattern for matching required method definition.",
-            example = "*..* hello(..)")
-    @NonNull
-    String methodPattern;
+public class PreferJavaStringJoin extends Recipe {
+
+    static final MethodMatcher JOIN_METHOD_MATCHER = new MethodMatcher("com.google.common.base.Joiner join(..)");
 
     @Override
     public String getDisplayName() {
-        return "Remove methods calls";
+        return "Prefer `String#join()` over Guava `Joiner#join()`";
     }
 
     @Override
     public String getDescription() {
-        return "Checks for a method patterns and removes the method call from the class.";
+        return "Replaces supported calls to `com.google.common.base.Joiner#join()` with `java.lang.String#join()`.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("guava");
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new RemoveMethodCallVisitor<>(new MethodMatcher(methodPattern), (n, it) -> true);
+        return Preconditions.check(new UsesMethod<>(JOIN_METHOD_MATCHER), new PreferJavaStringJoinVisitor());
     }
 }

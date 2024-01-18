@@ -53,8 +53,8 @@ public class IteratorNext extends Recipe {
                 ),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
-                        J.MethodInvocation nextInvocation = super.visitMethodInvocation(method, executionContext);
+                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                        J.MethodInvocation nextInvocation = super.visitMethodInvocation(method, ctx);
                         if (NEXT_MATCHER.matches(nextInvocation) && ITERATOR_MATCHER.matches(nextInvocation.getSelect())) {
                             J.MethodInvocation iteratorInvocation = (J.MethodInvocation) nextInvocation.getSelect();
                             if (TypeUtils.isAssignableTo("java.util.SequencedCollection", iteratorInvocation.getSelect().getType())) {

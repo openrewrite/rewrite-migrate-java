@@ -49,7 +49,7 @@ public class BeansXmlNamespace extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new HasSourcePath<>("**/beans.xml"), new XmlVisitor<ExecutionContext>() {
+        return Preconditions.check(new FindSourceFiles("**/beans.xml"), new XmlVisitor<ExecutionContext>() {
             @Override
             public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = (Xml.Tag) super.visitTag(tag, ctx);
@@ -58,9 +58,9 @@ public class BeansXmlNamespace extends Recipe {
                     String xmlns = attributes.get("xmlns");
                     String schemaLocation = attributes.get("xsi:schemaLocation");
                     if (NS_SUN.equalsIgnoreCase(xmlns) && !SUN_SCHEMA_LOCATION.equalsIgnoreCase(schemaLocation)) {
-                        doAfterVisit(new ChangeTagAttribute("beans", "xsi:schemaLocation", SUN_SCHEMA_LOCATION, null).getVisitor());
+                        doAfterVisit(new ChangeTagAttribute("beans", "xsi:schemaLocation", SUN_SCHEMA_LOCATION, null, null).getVisitor());
                     } else if (NS_JCP.equalsIgnoreCase(xmlns) && !JCP_SCHEMA_LOCATION.equalsIgnoreCase(schemaLocation)) {
-                        doAfterVisit(new ChangeTagAttribute("beans", "xsi:schemaLocation", JCP_SCHEMA_LOCATION, null).getVisitor());
+                        doAfterVisit(new ChangeTagAttribute("beans", "xsi:schemaLocation", JCP_SCHEMA_LOCATION, null, null).getVisitor());
                     }
                 }
                 return t;

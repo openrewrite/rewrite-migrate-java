@@ -49,6 +49,7 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferIntegerCompareUnsigned
   - org.openrewrite.java.migrate.guava.PreferIntegerDivideUnsigned
   - org.openrewrite.java.migrate.guava.PreferIntegerParseUnsignedInt
+  - org.openrewrite.java.migrate.guava.PreferJavaStringJoin
   - org.openrewrite.java.migrate.guava.PreferLongCompareUnsigned
   - org.openrewrite.java.migrate.guava.PreferLongDivideUnsigned
   - org.openrewrite.java.migrate.guava.PreferLongParseUnsignedLong

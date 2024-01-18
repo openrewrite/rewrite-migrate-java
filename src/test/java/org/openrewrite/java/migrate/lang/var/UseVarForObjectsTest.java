@@ -38,7 +38,8 @@ class UseVarForObjectsTest extends VarBaseTest {
         void inMethodBody() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                                   
                 class A {
@@ -62,7 +63,8 @@ class UseVarForObjectsTest extends VarBaseTest {
         void reassignment() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                                   
                 class A {
@@ -90,7 +92,8 @@ class UseVarForObjectsTest extends VarBaseTest {
         void withModifier() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 class A {
                   void m() {
                       final Object o = new Object();
@@ -112,7 +115,8 @@ class UseVarForObjectsTest extends VarBaseTest {
         void withTernary() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                                   
                 class A {
@@ -137,7 +141,8 @@ class UseVarForObjectsTest extends VarBaseTest {
         void inStaticInitializer() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                                       
                 class A {
@@ -162,7 +167,8 @@ class UseVarForObjectsTest extends VarBaseTest {
         void inInstanceInitializer() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                                   
                 class A {
@@ -308,7 +314,8 @@ class UseVarForObjectsTest extends VarBaseTest {
         void fieldInAnonymousSubclass() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 class A {
                     void m() {
                         new Object() {
@@ -325,7 +332,8 @@ class UseVarForObjectsTest extends VarBaseTest {
         void asParameter() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                                   
                 class A {
@@ -342,7 +350,8 @@ class UseVarForObjectsTest extends VarBaseTest {
         void asField() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 package com.example.app;
                                   
                 class A {

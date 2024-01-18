@@ -15,9 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,15 +23,20 @@ import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
+
 class UseVarKeywordTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(
-          Environment.builder()
-            .scanRuntimeClasspath("org.openrewrite.java.migrate.lang")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.lang.UseVar"));
+            Environment.builder()
+              .scanRuntimeClasspath("org.openrewrite.java.migrate.lang")
+              .build()
+              .activateRecipes("org.openrewrite.java.migrate.lang.UseVar"))
+          .allSources(sources -> version(sources, 10))
+        ;
     }
 
     @Nested
@@ -44,8 +46,8 @@ class UseVarKeywordTest implements RewriteTest {
         void assignNull() {
             //language=java
             rewriteRun(
-              version(
-                java("""
+              java(
+                """
                   package com.example.app;
                             
                   class A {
@@ -53,8 +55,7 @@ class UseVarKeywordTest implements RewriteTest {
                       String str = null;
                     }
                   }
-                  """),
-                10
+                  """
               )
             );
         }
@@ -63,8 +64,8 @@ class UseVarKeywordTest implements RewriteTest {
         void assignNothing() {
             //language=java
             rewriteRun(
-              version(
-                java("""
+              java(
+                """
                   package com.example.app;
                             
                   class A {
@@ -72,8 +73,7 @@ class UseVarKeywordTest implements RewriteTest {
                         String str;
                     }
                   }
-                  """),
-                10
+                  """
               )
             );
         }
@@ -82,8 +82,8 @@ class UseVarKeywordTest implements RewriteTest {
         void multipleVariables() {
             //language=java
             rewriteRun(
-              version(
-                java("""
+              java(
+                """
                   package com.example.app;
                             
                   class A {
@@ -91,8 +91,7 @@ class UseVarKeywordTest implements RewriteTest {
                       String str1, str2 = "Hello World!";
                     }
                   }
-                  """),
-                10
+                  """
               )
             );
         }
@@ -101,8 +100,8 @@ class UseVarKeywordTest implements RewriteTest {
         void simpleAssigment() {
             //language=java
             rewriteRun(
-              version(
-                java("""
+              java(
+                """
                   package com.example.app;
                             
                   class A {
@@ -111,8 +110,7 @@ class UseVarKeywordTest implements RewriteTest {
                         str1 = "Hello World!";
                     }
                   }
-                  """),
-                10
+                  """
               )
             );
         }
@@ -121,8 +119,8 @@ class UseVarKeywordTest implements RewriteTest {
         void varUsage() {
             //language=java
             rewriteRun(
-              version(
-                java("""
+              java(
+                """
                   package com.example.app;
                         
                   class A {
@@ -130,8 +128,7 @@ class UseVarKeywordTest implements RewriteTest {
                         var str1 = "Hello World!";
                     }
                   }
-                  """),
-                10
+                  """
               )
             );
         }
@@ -140,17 +137,16 @@ class UseVarKeywordTest implements RewriteTest {
         void withTernary() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                      package com.example.app;
-                                        
-                      class A {
-                        void m() {
-                            String o = true ? "isTrue" : "Test";
-                        }
-                      }
-                      """),
-                10
+              java(
+                """
+                  package com.example.app;
+                                    
+                  class A {
+                    void m() {
+                        String o = true ? "isTrue" : "Test";
+                    }
+                  }
+                  """
               )
             );
         }
@@ -165,8 +161,8 @@ class UseVarKeywordTest implements RewriteTest {
             void inMethodBody() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java(
+                    """
                       package com.example.app;
                                         
                       class A {
@@ -174,7 +170,8 @@ class UseVarKeywordTest implements RewriteTest {
                             Object o = new Object();
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                         
                       class A {
@@ -182,8 +179,7 @@ class UseVarKeywordTest implements RewriteTest {
                             var o = new Object();
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -192,8 +188,8 @@ class UseVarKeywordTest implements RewriteTest {
             void reassignment() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java(
+                    """
                       package com.example.app;
                                         
                       class A {
@@ -202,7 +198,8 @@ class UseVarKeywordTest implements RewriteTest {
                             Object innerO = o;
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                         
                       class A {
@@ -211,8 +208,7 @@ class UseVarKeywordTest implements RewriteTest {
                             var innerO = o;
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -222,8 +218,8 @@ class UseVarKeywordTest implements RewriteTest {
             void withTernary() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java(
+                    """
                       package com.example.app;
                                         
                       class A {
@@ -231,7 +227,8 @@ class UseVarKeywordTest implements RewriteTest {
                             String o = true ? "isTrue" : "Test";
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                         
                       class A {
@@ -239,8 +236,7 @@ class UseVarKeywordTest implements RewriteTest {
                             var o = true ? "isTrue" : "Test";
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -249,8 +245,8 @@ class UseVarKeywordTest implements RewriteTest {
             void inStaticInitializer() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java(
+                    """
                       package com.example.app;
                                         
                       class A {
@@ -258,7 +254,8 @@ class UseVarKeywordTest implements RewriteTest {
                             Object o = new Object();
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                         
                       class A {
@@ -266,8 +263,7 @@ class UseVarKeywordTest implements RewriteTest {
                             var o = new Object();
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -276,8 +272,8 @@ class UseVarKeywordTest implements RewriteTest {
             void inInstanceInitializer() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java(
+                    """
                       package com.example.app;
                                         
                       class A {
@@ -285,7 +281,8 @@ class UseVarKeywordTest implements RewriteTest {
                             Object o = new Object();
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                         
                       class A {
@@ -293,8 +290,7 @@ class UseVarKeywordTest implements RewriteTest {
                             var o = new Object();
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -306,8 +302,8 @@ class UseVarKeywordTest implements RewriteTest {
             void asParameter() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java(
+                    """
                       package com.example.app;
                                         
                       class A {
@@ -315,8 +311,7 @@ class UseVarKeywordTest implements RewriteTest {
                             return o;
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -325,8 +320,8 @@ class UseVarKeywordTest implements RewriteTest {
             void asField() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java(
+                    """
                       package com.example.app;
                                         
                       class A {
@@ -335,8 +330,7 @@ class UseVarKeywordTest implements RewriteTest {
                             return o;
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -351,8 +345,8 @@ class UseVarKeywordTest implements RewriteTest {
             void forShort() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java(
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -360,8 +354,7 @@ class UseVarKeywordTest implements RewriteTest {
                             short mask = 0x7fff;
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -370,8 +363,8 @@ class UseVarKeywordTest implements RewriteTest {
             void forByte() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java(
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -379,8 +372,7 @@ class UseVarKeywordTest implements RewriteTest {
                             byte flags = 0;
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -393,8 +385,8 @@ class UseVarKeywordTest implements RewriteTest {
             void forString() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java(
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -402,7 +394,8 @@ class UseVarKeywordTest implements RewriteTest {
                             String str = "I am a value";
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -410,8 +403,7 @@ class UseVarKeywordTest implements RewriteTest {
                             var str = "I am a value";
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -420,8 +412,8 @@ class UseVarKeywordTest implements RewriteTest {
             void forBoolean() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java(
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -429,7 +421,8 @@ class UseVarKeywordTest implements RewriteTest {
                             boolean b = true;
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -437,8 +430,7 @@ class UseVarKeywordTest implements RewriteTest {
                             var b = true;
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -447,8 +439,7 @@ class UseVarKeywordTest implements RewriteTest {
             void forChar() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java("""
                       package com.example.app;
                                 
                       class A {
@@ -456,7 +447,8 @@ class UseVarKeywordTest implements RewriteTest {
                             char ch = '\ufffd';
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -464,8 +456,7 @@ class UseVarKeywordTest implements RewriteTest {
                             var ch = '\ufffd';
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -474,8 +465,8 @@ class UseVarKeywordTest implements RewriteTest {
             void forDouble() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java(
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -483,7 +474,8 @@ class UseVarKeywordTest implements RewriteTest {
                             double d = 2.0;
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -491,8 +483,7 @@ class UseVarKeywordTest implements RewriteTest {
                             var d = 2.0;
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -501,25 +492,24 @@ class UseVarKeywordTest implements RewriteTest {
             void forFloat() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java("""
                       package com.example.app;
                                 
                       class A {
                         void m() {
-                            float f = 2.0;
+                            float f = 2.0F;
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                 
-                      class A {                      
+                      class A {
                         void m() {
                             var f = 2.0F;
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -530,22 +520,23 @@ class UseVarKeywordTest implements RewriteTest {
                 rewriteRun(
                   version(
                     java("""
-                      package com.example.app;
-                                
-                      class A {
-                        void m() {
-                            long l = 2;
+                        package com.example.app;
+                                  
+                        class A {
+                          void m() {
+                              long l = 2;
+                          }
                         }
-                      }
-                      """, """
-                      package com.example.app;
-                                
-                      class A {
-                        void m() {
-                            var l = 2L;
+                        """,
+                      """
+                        package com.example.app;
+                                  
+                        class A {
+                          void m() {
+                              var l = 2L;
+                          }
                         }
-                      }
-                      """),
+                        """),
                     10
                   )
                 );
@@ -555,8 +546,7 @@ class UseVarKeywordTest implements RewriteTest {
             void forDoubleWithTypNotation() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java("""
                       package com.example.app;
                                 
                       class A {
@@ -564,7 +554,8 @@ class UseVarKeywordTest implements RewriteTest {
                             double d = 2.0D;
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -572,8 +563,7 @@ class UseVarKeywordTest implements RewriteTest {
                             var d = 2.0D;
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -582,8 +572,7 @@ class UseVarKeywordTest implements RewriteTest {
             void forFloatWithTypNotation() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java("""
                       package com.example.app;
                                 
                       class A {
@@ -591,7 +580,8 @@ class UseVarKeywordTest implements RewriteTest {
                             float f = 2.0F;
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -599,8 +589,7 @@ class UseVarKeywordTest implements RewriteTest {
                             var f = 2.0F;
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -609,8 +598,7 @@ class UseVarKeywordTest implements RewriteTest {
             void forLongWithTypNotation() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
+                  java("""
                       package com.example.app;
                                 
                       class A {
@@ -618,7 +606,8 @@ class UseVarKeywordTest implements RewriteTest {
                             long l = 2L;
                         }
                       }
-                      """, """
+                      """,
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -626,8 +615,7 @@ class UseVarKeywordTest implements RewriteTest {
                             var l = 2L;
                         }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -642,62 +630,60 @@ class UseVarKeywordTest implements RewriteTest {
             void forEmptyFactoryMethod() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java(
-                      """
-                          package com.example.app;
-                          
-                          import java.util.List;
-                          
-                          class A {
-                            void m() {
-                                List<String> strs = List.of();
-                            }
+                  java(
+                    """
+                        package com.example.app;
+                        
+                        import java.util.List;
+                        
+                        class A {
+                          void m() {
+                              List<String> strs = List.of();
                           }
-                        """),
-                    10
+                        }
+                      """
                   )
                 );
             }
+
             @Test
             void forEmptyDiamondOperators() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java(
-                      """
-                          package com.example.app;
-                          
-                          import java.util.ArrayList;
-                          import java.util.List;
-                          
-                          class A {
-                            void m() {
-                                List strs = new ArrayList<>();
-                            }
+                  java(
+                    """
+                        package com.example.app;
+                        
+                        import java.util.ArrayList;
+                        import java.util.List;
+                        
+                        class A {
+                          void m() {
+                              List strs = new ArrayList<>();
                           }
-                        """),
-                    10
+                        }
+                      """
                   )
                 );
             }
+
             @Test
             void withDiamondOperatorOnRaw() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
-                  package com.example.app;
-                                    
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                    void m() {
-                        List<String> strs = new ArrayList();
+                  java("""
+                    package com.example.app;
+                                      
+                    import java.util.List;
+                    import java.util.ArrayList;
+                                      
+                    class A {
+                      void m() {
+                          List<String> strs = new ArrayList();
+                      }
                     }
-                  }
-                  """),
-                    10
+                    """
+
                   )
                 );
             }
@@ -709,126 +695,123 @@ class UseVarKeywordTest implements RewriteTest {
             void ifWelldefined() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
-                  package com.example.app;
-                                    
-                  import java.util.List;
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                    void m() {
-                        List<String> strs = new ArrayList<String>();
-                    }
-                  }
-                  """, """
-                  package com.example.app;
-                                    
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                    void m() {
-                        var strs = new ArrayList<String>();
-                    }
-                  }
-                  """),
-                    10
-                  )
-                );
-            }
-            @Test
-            void forNoDiamondOperators() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java(
+                  java("""
+                      package com.example.app;
+                                        
+                      import java.util.List;
+                      import java.util.ArrayList;
+                                        
+                      class A {
+                        void m() {
+                            List<String> strs = new ArrayList<String>();
+                        }
+                      }
+                      """,
+                    """
+                      package com.example.app;
+                                        
+                      import java.util.ArrayList;
+                                        
+                      class A {
+                        void m() {
+                            var strs = new ArrayList<String>();
+                        }
+                      }
                       """
-                          package com.example.app;
-                          
-                          import java.util.ArrayList;
-                          import java.util.List;
-                          
-                          class A {
-                            void m() {
-                                List strs = new ArrayList();
-                            }
-                          }
-                        """, """
-                          package com.example.app;
-                          
-                          import java.util.ArrayList;
-                          
-                          class A {
-                            void m() {
-                                var strs = new ArrayList();
-                            }
-                          }
-                        """),
-                    10
-                  )
-                );
-            }
-            @Test
-            @Example
-            void withDiamondOperator() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java("""
-                  package com.example.app;
-                  
-                  import java.util.List;
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                    void m() {
-                        List<String> strs = new ArrayList<>();
-                    }
-                  }
-                  """, """
-                  package com.example.app;         
-                  
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                    void m() {
-                        var strs = new ArrayList<String>();
-                    }
-                  }
-                  """),
-                    10
                   )
                 );
             }
 
             @Test
-            @Disabled("not yet implemented by UseVarForMethodInvocations") // todo mboegers in PR #249
+            void forNoDiamondOperators() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                        package com.example.app;
+                        
+                        import java.util.ArrayList;
+                        import java.util.List;
+                        
+                        class A {
+                          void m() {
+                              List strs = new ArrayList();
+                          }
+                        }
+                      """,
+                    """
+                        package com.example.app;
+                        
+                        import java.util.ArrayList;
+                        
+                        class A {
+                          void m() {
+                              var strs = new ArrayList();
+                          }
+                        }
+                      """
+                  )
+                );
+            }
+
+            @Test
+            @Example
+            void withDiamondOperator() {
+                //language=java
+                rewriteRun(
+                  java("""
+                      package com.example.app;
+                                        
+                      import java.util.List;
+                      import java.util.ArrayList;
+                                        
+                      class A {
+                        void m() {
+                            List<String> strs = new ArrayList<>();
+                        }
+                      }
+                      """,
+                    """
+                      package com.example.app;         
+                                        
+                      import java.util.ArrayList;
+                                        
+                      class A {
+                        void m() {
+                            var strs = new ArrayList<String>();
+                        }
+                      }
+                      """
+                  )
+                );
+            }
+
+            @Test
             void withFactoryMethods() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  void m() {
-                      List<String> strs = List.of("one", "two");
-                  }
-                }
-                """, """
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  void m() {
-                      List<String> strs = List.of("one", "two");
-                  }
-                }
-                """),
-                    10
+                  java("""
+                      package com.example.app;
+                                          
+                      import java.util.List;
+                                          
+                      class A {
+                        void m() {
+                            List<String> strs = List.of("one", "two");
+                        }
+                      }
+                      """,
+                    """
+                      package com.example.app;
+                                          
+                      import java.util.List;
+                                          
+                      class A {
+                        void m() {
+                            var strs = List.of("one", "two");
+                        }
+                      }
+                      """
                   )
                 );
             }
