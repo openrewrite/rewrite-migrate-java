@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.openrewrite.java.migrate.jakarta;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.NoArgsConstructor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
@@ -31,6 +31,7 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
+@NoArgsConstructor
 public class UpdateBeanManagerMethod extends Recipe {
     @Option(displayName = "Method Pattern", description = "A `BeanManager.fireEvent()` or `BeanManager.createInjectionTarget()` matching required", example = "jakarta.enterprise.inject.spi.BeanManager fireEvent()")
     @NonNull String methodPattern;

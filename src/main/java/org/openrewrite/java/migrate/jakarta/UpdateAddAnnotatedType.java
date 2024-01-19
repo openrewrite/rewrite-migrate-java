@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.NoArgsConstructor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
@@ -27,6 +28,7 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
+@NoArgsConstructor
 public class UpdateAddAnnotatedType extends Recipe {
 
     @Option(displayName = "Method Pattern", description = "A method pattern for matching required method definition.", example = "jakarta.enterprise.inject.spi.BeforeBeanDiscovery addAnnotatedType(jakarta.enterprise.inject.spi.AnnotatedType)")
