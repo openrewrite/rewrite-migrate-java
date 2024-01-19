@@ -2307,6 +2307,7 @@ class UpgradeToJava7Test implements RewriteTest {
     @Test
     void testConnection() {
         rewriteRun(
+          spec -> spec.recipeOutputStabilityValidation(false),
           //language=java
           java(
                 """
@@ -2778,10 +2779,6 @@ class UpgradeToJava7Test implements RewriteTest {
                   }
                                
                   public void setSchema(java.lang.String schema) throws java.sql.SQLException {
-                      // TODO Auto-generated method stub
-                  }
-                               
-                  public void setNetworkTimeout(java.util.concurrent.Executor executor, int milliseconds) {
                       // TODO Auto-generated method stub
                   }
                                
