@@ -72,15 +72,8 @@ public class UpdateBeanManagerMethod extends Recipe {
             if (methodPattern.matches(method)) {
                 String newMethodName = "";
                 if (method.getSimpleName().equals("fireEvent")) {
-                    newMethodName = "getEvent()." + "fire";
-
-                    JavaType.Method type = method.getMethodType();
-                    if (type != null) {
-                        type = type.withName(newMethodName);
-                    }
-                    return method.withName(method.getName().withSimpleName(newMethodName)).withMethodType(type);
+                    return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getEvent().fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})").javaParser(JavaParser.fromJavaVersion().classpathFromResources(ec, "jakarta.enterprise.cdi-api-3.0.0-M4")).build().apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), mi.getArguments().get(0));
                 } else if (method.getSimpleName().equals("createInjectionTarget")) {
-                    maybeRemoveImport("jakarta.enterprise.inject.spi.BeanManager");
                     return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getInjectionTargetFactory(#{any(jakarta.enterprise.inject.spi.AnnotatedType)}).createInjectionTarget(null)").javaParser(JavaParser.fromJavaVersion().classpathFromResources(ec, "jakarta.enterprise.cdi-api-3.0.0-M4")).build().apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), mi.getArguments().get(0));
 
                 }
