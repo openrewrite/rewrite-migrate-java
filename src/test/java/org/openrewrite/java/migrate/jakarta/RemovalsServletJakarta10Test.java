@@ -53,7 +53,7 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.http.HttpUtils;
                             
               class TestJakarta extends HttpServlet implements SingleThreadModel {
-                  void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+                  protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                       req.isRequestedSessionIdFromUrl();
                          
                       res.encodeUrl("");
@@ -90,8 +90,8 @@ class RemovalsServletJakarta10Test implements RewriteTest {
                 
                       req.getRealPath("");
                      
-                      HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
-                      reqWrapper.getRealPath("");
+                      HttpServletRequestWrapper reqWrapper2 = new HttpServletRequestWrapper(req);
+                      reqWrapper2.getRealPath("");
                   }
               }
               """,
@@ -112,7 +112,7 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.http.HttpUtils;
                             
               class TestJakarta extends HttpServlet implements SingleThreadModel {
-                  void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+                  protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                       req.isRequestedSessionIdFromURL();
                          
                       res.encodeURL("");
@@ -147,10 +147,10 @@ class RemovalsServletJakarta10Test implements RewriteTest {
                  
                       servletContext.log("", null);
 
-                      req.getContext().getRealPath("");
+                      req.getServletContext().getRealPath("");
                      
-                      HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
-                      reqWrapper.getContext().getRealPath("");
+                      HttpServletRequestWrapper reqWrapper2 = new HttpServletRequestWrapper(req);
+                      reqWrapper2.getServletContext().getRealPath("");
                   }
               }
               """

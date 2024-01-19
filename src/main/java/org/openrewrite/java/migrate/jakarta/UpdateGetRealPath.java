@@ -23,6 +23,8 @@ import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.NonNull;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
@@ -61,13 +63,7 @@ public class UpdateGetRealPath extends Recipe {
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
             if (METHOD_PATTERN.matches(method)) {
-                maybeAddImport("jakarta.servlet.ServletContext");
-                String newMethodName = "getContext()." + method.getSimpleName();
-                JavaType.Method type = method.getMethodType();
-                if (type != null) {
-                    type = type.withName(newMethodName);
-                }
-                method = method.withName(method.getName().withSimpleName(newMethodName)).withMethodType(type);
+                return JavaTemplate.builder("#{any()}.getServletContext().getRealPath(#{any(String)})").javaParser(JavaParser.fromJavaVersion().classpathFromResources(ec, "jakarta.servlet-api-6.0.0")).build().apply(updateCursor(method), method.getCoordinates().replace(), method.getSelect(), method.getArguments().get(0));
             }
             return method;
         }
