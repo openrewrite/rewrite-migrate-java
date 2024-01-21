@@ -60,3 +60,16 @@ dependencies {
     testRuntimeOnly("org.codehaus.groovy:groovy:latest.release")
     testRuntimeOnly(gradleApi())
 }
+
+// Add a source set for refaster rules that allows for Java 9+ syntax
+sourceSets {
+    val refaster = create("refaster") {
+        java {
+            compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
+            runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath
+            annotationProcessorPath += sourceSets.main.get().annotationProcessorPath
+        }
+    }
+    sourceSets.test.get().compileClasspath += refaster.output
+    sourceSets.test.get().runtimeClasspath += refaster.output
+}
