@@ -73,3 +73,9 @@ sourceSets {
     sourceSets.test.get().compileClasspath += refaster.output
     sourceSets.test.get().runtimeClasspath += refaster.output
 }
+
+tasks {
+    withType<Jar>{
+        from(sourceSets["refaster"].output)
+    }
+}
