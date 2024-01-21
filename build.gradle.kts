@@ -7,26 +7,6 @@ plugins {
 group = "org.openrewrite.recipe"
 description = "Migrate to later Java versions. Automatically."
 
-
-// Add a source set for refaster rules that allows for Java 9+ syntax
-sourceSets {
-    val refaster = create("refaster") {
-        java {
-            annotationProcessorPath += sourceSets.main.get().annotationProcessorPath
-            compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
-            runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath
-        }
-    }
-    sourceSets.test.get().compileClasspath += refaster.output
-    sourceSets.test.get().runtimeClasspath += refaster.output
-}
-
-configurations {
-    create("refaster") {
-        extendsFrom(configurations.implementation.get())
-    }
-}
-
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
 dependencies {
     compileOnly("org.projectlombok:lombok:latest.release")
@@ -35,9 +15,8 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:latest.release")
     testImplementation("org.projectlombok:lombok:latest.release")
 
-    "refaster"("com.google.guava:guava:29.0-jre")
     annotationProcessor("org.openrewrite:rewrite-templating:$rewriteVersion")
-    compileOnly("com.google.errorprone:error_prone_core:2.19.1:with-dependencies") {
+    compileOnly("com.google.errorprone:error_prone_core:2.19.1") {
         exclude("com.google.auto.service", "auto-service-annotations")
     }
 
@@ -80,4 +59,17 @@ dependencies {
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind")
     testRuntimeOnly("org.codehaus.groovy:groovy:latest.release")
     testRuntimeOnly(gradleApi())
+}
+
+// Add a source set for refaster rules that allows for Java 9+ syntax
+sourceSets {
+    val refaster = create("refaster") {
+        java {
+            annotationProcessorPath += sourceSets.main.get().annotationProcessorPath
+            compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
+            runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath
+        }
+    }
+    sourceSets.test.get().compileClasspath += refaster.output
+    sourceSets.test.get().runtimeClasspath += refaster.output
 }
