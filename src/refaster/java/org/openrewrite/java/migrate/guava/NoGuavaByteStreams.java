@@ -35,7 +35,7 @@ public class NoGuavaByteStreams {
             name = "ByteStreams#copy",
             description = "Replaces Guava `ByteStreams.copy` with `InputStream.transferTo`.",
             tags = "guava")
-    static final class InputStreamTransferTo {
+    public static final class InputStreamTransferTo {
         @BeforeTemplate
         long before(InputStream in, OutputStream out) throws IOException {
             return ByteStreams.copy(in, out);
@@ -51,7 +51,7 @@ public class NoGuavaByteStreams {
             name = "ByteStreams#toByteArray",
             description = "Replaces Guava `ByteStreams.toByteArray` with `InputStream.readAllBytes`.",
             tags = "guava")
-    static final class InputStreamReadAllBytes {
+    public static final class InputStreamReadAllBytes {
         @BeforeTemplate
         byte[] before(InputStream in) throws IOException {
             return ByteStreams.toByteArray(in);

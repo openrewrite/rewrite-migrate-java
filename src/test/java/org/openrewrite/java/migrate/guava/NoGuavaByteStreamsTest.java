@@ -37,30 +37,31 @@ class NoGuavaByteStreamsTest implements RewriteTest {
           java(
             """
               import com.google.common.io.ByteStreams;
-              import java.io.ByteArrayInputStream;
-              import java.io.ByteArrayOutputStream;
-              import java.io.IOException;
 
-              class InputStreamRulesTest {
-                long testInputStreamTransferTo() throws IOException {
-                  return ByteStreams.copy(new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+              import java.io.IOException;
+              import java.io.InputStream;
+              import java.io.OutputStream;
+
+              class Foo {
+                long testInputStreamTransferTo(InputStream from, OutputStream to) throws IOException {
+                  return ByteStreams.copy(from, to);
                 }
-                byte[] testInputStreamReadAllBytes() throws IOException {
-                  return ByteStreams.toByteArray(new ByteArrayInputStream(new byte[0]));
+                byte[] testInputStreamReadAllBytes(InputStream from) throws IOException {
+                  return ByteStreams.toByteArray(from);
                 }
               }
               """,
             """
-              import java.io.ByteArrayInputStream;
-              import java.io.ByteArrayOutputStream;
               import java.io.IOException;
+              import java.io.InputStream;
+              import java.io.OutputStream;
 
-              class InputStreamRulesTest {
-                long testInputStreamTransferTo() throws IOException {
-                  return new ByteArrayInputStream(new byte[0]).transferTo(new ByteArrayOutputStream());
+              class Foo {
+                long testInputStreamTransferTo(InputStream from, OutputStream to) throws IOException {
+                  return from.transferTo(to);
                 }
-                byte[] testInputStreamReadAllBytes() throws IOException {
-                  return new ByteArrayInputStream(new byte[0]).readAllBytes();
+                byte[] testInputStreamReadAllBytes(InputStream from) throws IOException {
+                  return from.readAllBytes();
                 }
               }
               """
