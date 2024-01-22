@@ -31,7 +31,6 @@ import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class UpgradeJavaVersionTest implements RewriteTest {
-
     @DocumentExample
     @Test
     void mavenUpgradeFromJava8ToJava17ViaProperties() {
