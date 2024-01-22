@@ -62,20 +62,21 @@ dependencies {
 }
 
 // Add a source set for refaster rules that allows for Java 9+ syntax
-sourceSets {
-    val refaster = create("refaster") {
-        java {
-            annotationProcessorPath += sourceSets.main.get().annotationProcessorPath
-            compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
-            runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath
-        }
+val refaster by sourceSets.registering {
+    java {
+        val main = sourceSets.main.get()
+        annotationProcessorPath += main.annotationProcessorPath
+        compileClasspath += main.output + main.compileClasspath
+        runtimeClasspath += main.output + main.runtimeClasspath
     }
-    sourceSets.test.get().compileClasspath += refaster.output
-    sourceSets.test.get().runtimeClasspath += refaster.output
+}
+sourceSets.named("test").configure {
+    compileClasspath += refaster.get().output.classesDirs
+    runtimeClasspath += refaster.get().output.classesDirs
 }
 
 tasks {
-    withType<Jar>{
-        from(sourceSets["refaster"].output)
+    jar {
+        from(refaster.get().output)
     }
 }
