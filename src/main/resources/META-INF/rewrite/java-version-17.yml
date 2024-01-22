@@ -45,10 +45,6 @@ recipeList:
       groupId: org.apache.maven.plugins
       artifactId: maven-checkstyle-plugin
       newVersion: 3.x
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: org.projectlombok
-      artifactId: lombok
-      newVersion: 1.18.22
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: com.sonatype.clm
       artifactId: clm-maven-plugin
