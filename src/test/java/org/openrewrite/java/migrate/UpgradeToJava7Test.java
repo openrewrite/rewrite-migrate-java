@@ -2307,7 +2307,7 @@ class UpgradeToJava7Test implements RewriteTest {
     @Test
     void testConnection() {
         rewriteRun(
-          spec -> spec.recipeOutputStabilityValidation(false),
+          spec -> spec.cycles(1).expectedCyclesThatMakeChanges(1),
           //language=java
           java(
                 """

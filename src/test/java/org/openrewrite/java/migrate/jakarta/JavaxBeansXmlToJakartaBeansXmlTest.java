@@ -37,6 +37,7 @@ class JavaxBeansXmlToJakartaBeansXmlTest implements RewriteTest {
     @Test
     void noSchemaCD1() {
         rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(2),
           //language=xml
           xml(
             """
@@ -61,6 +62,7 @@ class JavaxBeansXmlToJakartaBeansXmlTest implements RewriteTest {
     @Test
     void noSchemaCD12() {
         rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(2),
           //language=xml
           xml(
             """
