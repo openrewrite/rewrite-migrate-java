@@ -60,6 +60,7 @@ public class UseVarForObject extends Recipe {
 
     static final class UseVarForObjectVisitor extends JavaIsoVisitor<ExecutionContext> {
         private final JavaTemplate template = JavaTemplate.builder("var #{} = #{any()}")
+                .contextSensitive()
                 .javaParser(JavaParser.fromJavaVersion()).build();
 
 

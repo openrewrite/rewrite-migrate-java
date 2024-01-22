@@ -24,6 +24,6 @@ tags:
   - java8
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava7
-  - org.openrewrite.java.migrate.MXBeanNonPublic
+  - org.openrewrite.java.migrate.MXBeanRule
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: java.lang.Thread destroy()

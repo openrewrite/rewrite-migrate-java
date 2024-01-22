@@ -847,35 +847,33 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxPersistenceXmlToJakartaPersistenceXml
 displayName: Migrate xmlns entries in `persistence.xml` files
 description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
+preconditions:
+  - org.openrewrite.FindSourceFiles:
+      filePattern: '**/persistence.xml'
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: name
       elementName: //property
       oldValue: javax.persistence
       newValue: jakarta.persistence
-      fileMatcher: "**/persistence.xml"
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: persistence
       newValue: 3.0
-      fileMatcher: "**/persistence.xml"
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: persistence
       oldValue: http://xmlns.jcp.org
       newValue: https://jakarta.ee
-      fileMatcher: "**/persistence.xml"
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: persistence
       oldValue: http://java.sun.com/xml/ns/persistence
       newValue: https://jakarta.ee/xml/ns/persistence
-      fileMatcher: "**/persistence.xml"
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: persistence
       newValue: https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd
-      fileMatcher: "**/persistence.xml"
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
