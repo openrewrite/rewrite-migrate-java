@@ -19,19 +19,15 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.NoMissingTypes;
-import org.openrewrite.java.
+import org.openrewrite.java.*;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
+import static java.util.Collections.nCopies;
+
 public class MigrateCollectionsSingletonList extends Recipe {
     private static final MethodMatcher SINGLETON_LIST = new MethodMatcher("java.util.Collections singletonList(..)", true);
-    @Nullable
-    private static J.MethodInvocation listOfTemplate;
 
     @Override
     public String getDisplayName() {
@@ -47,20 +43,20 @@ public class MigrateCollectionsSingletonList extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
                 new UsesMethod<>(SINGLETON_LIST), new NoMissingTypes());
-        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
                 if (SINGLETON_LIST.matches(method)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.List");
-                    String argsPlaceHolders = String.join(",", Collections.nCopies(recipes.size(), "#{any()}"));
-                    return JavaTemplate.builder("List.of(" + argsPlaceHolders + ')')
+                    String argsPlaceHolders = String.join(", ", nCopies(m.getArguments().size(), "#{any()}"));
+                    J.MethodInvocation listOf = JavaTemplate.builder("List.of(" + argsPlaceHolders + ')')
                             .imports("java.util.List")
                             .build()
-                            .apply(getCursor(), m.getCoordinates().replace(), m.getArguments());
+                            .apply(getCursor(), m.getCoordinates().replace(), m.getArguments().toArray());
+                    return listOf; // TODO MethodInvocation type is missing or malformed
                 }
-
                 return m;
             }
         });
