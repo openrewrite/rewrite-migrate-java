@@ -54,10 +54,11 @@ public class MigrateCollectionsSingletonList extends Recipe {
                 if (SINGLETON_LIST.matches(method)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.List");
-                    return JavaTemplate.builder("List.of(\"X\")")
+                    String argsPlaceHolders = String.join(",", Collections.nCopies(recipes.size(), "#{any()}"));
+                    return JavaTemplate.builder("List.of(" + argsPlaceHolders + ')')
                             .staticImports('java.util.List')
                             .build()
-                            .apply(getCursor(), m.getCoordinates().replace());
+                            .apply(getCursor(), m.getCoordinates().replace(), m.getArguments());
                 }
 
                 return m;
