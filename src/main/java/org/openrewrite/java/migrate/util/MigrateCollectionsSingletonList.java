@@ -56,7 +56,7 @@ public class MigrateCollectionsSingletonList extends Recipe {
                     maybeAddImport("java.util.List");
                     String argsPlaceHolders = String.join(",", Collections.nCopies(recipes.size(), "#{any()}"));
                     return JavaTemplate.builder("List.of(" + argsPlaceHolders + ')')
-                            .staticImports('java.util.List')
+                            .imports("java.util.List")
                             .build()
                             .apply(getCursor(), m.getCoordinates().replace(), m.getArguments());
                 }
