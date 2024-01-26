@@ -80,7 +80,7 @@ class IteratorNextTest implements RewriteTest {
     }
 
     @Test
-    void nextCommentList() {
+    void nextCommentLost() {
         rewriteRun(
           //language=java
           java(
