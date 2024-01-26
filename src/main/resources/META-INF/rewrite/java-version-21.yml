@@ -79,6 +79,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.util.ListFirstAndLast
   - org.openrewrite.java.migrate.util.IteratorNext
+  - org.openrewrite.java.migrate.util.StreamFindFirst
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.SortedSet first()
       newMethodName: getFirst
