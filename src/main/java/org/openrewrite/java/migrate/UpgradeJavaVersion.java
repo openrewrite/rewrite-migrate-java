@@ -30,7 +30,6 @@ import org.openrewrite.xml.tree.Xml;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @Value
 @EqualsAndHashCode(callSuper = true)
 public class UpgradeJavaVersion extends Recipe {
@@ -42,9 +41,9 @@ public class UpgradeJavaVersion extends Recipe {
     @Override
     public String getDescription() {
         return "Upgrade build plugin configuration to use the specified Java version. " +
-                "This recipe changes `java.toolchain.languageVersion` in `build.gradle(.kts)` of gradle projects, " +
-                "or maven-compiler-plugin target version and related settings. " +
-                "Will not downgrade if the version is newer than the specified version.";
+               "This recipe changes `java.toolchain.languageVersion` in `build.gradle(.kts)` of gradle projects, " +
+               "or maven-compiler-plugin target version and related settings. " +
+               "Will not downgrade if the version is newer than the specified version.";
     }
 
     @Option(displayName = "Java version",
@@ -65,24 +64,17 @@ public class UpgradeJavaVersion extends Recipe {
                 }
                 SourceFile source = (SourceFile) tree;
 
-                Optional<JavaVersion> maybeJavaVersion = source.getMarkers().findFirst(JavaVersion.class);
-                if (maybeJavaVersion.isPresent() && maybeJavaVersion.get().getMajorVersion() >= version) {
-                    // No change if try to downgrade java version, or on same java version.
-                    return source;
-                }
-
                 if (source instanceof G.CompilationUnit && new IsBuildGradle<ExecutionContext>().visit(source, ctx) != source) {
-                    source = (SourceFile) new UpdateJavaCompatibility(version, null, null).getVisitor().visitNonNull(source, ctx);
+                    source = (SourceFile) new UpdateJavaCompatibility(version, null, null, false).getVisitor().visitNonNull(source, ctx);
                 } else if (source instanceof Xml.Document) {
                     source = (SourceFile) new MavenUpdateJavaVersionVisitor().visitNonNull(source, ctx);
                 }
 
-                if (maybeJavaVersion.isPresent()) {
-                    source =
-                        source.withMarkers(source.getMarkers().setByType(updatedMarkers.computeIfAbsent(maybeJavaVersion.get(),
-                        m -> m.withSourceCompatibility(newVersion).withTargetCompatibility(newVersion))));
+                Optional<JavaVersion> maybeJavaVersion = source.getMarkers().findFirst(JavaVersion.class);
+                if (maybeJavaVersion.isPresent() && maybeJavaVersion.get().getMajorVersion() < version) {
+                    source = source.withMarkers(source.getMarkers().setByType(updatedMarkers.computeIfAbsent(maybeJavaVersion.get(),
+                            m -> m.withSourceCompatibility(newVersion).withTargetCompatibility(newVersion))));
                 }
-
                 return source;
             }
         };

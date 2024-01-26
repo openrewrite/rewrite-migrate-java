@@ -32,10 +32,13 @@ recipeList:
   - org.openrewrite.java.migrate.util.UseLocaleOf
   - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion
+  # GitHub Actions bump needs Gradle Wrapper bump too https://docs.gradle.org/current/userguide/compatibility.html#java
+  - org.openrewrite.gradle.UpdateGradleWrapper:
+      version: 8.5
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.jacoco
       artifactId: jacoco-maven-plugin
-      newVersion: 0.8.11
+      newVersion: 0.8.+
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: com.sonatype.clm
       artifactId: clm-maven-plugin
