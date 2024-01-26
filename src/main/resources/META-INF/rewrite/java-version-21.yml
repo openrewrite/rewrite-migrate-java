@@ -35,6 +35,7 @@ recipeList:
   # GitHub Actions bump needs Gradle Wrapper bump too https://docs.gradle.org/current/userguide/compatibility.html#java
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 8.5
+      addIfMissing: false
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.jacoco
       artifactId: jacoco-maven-plugin
