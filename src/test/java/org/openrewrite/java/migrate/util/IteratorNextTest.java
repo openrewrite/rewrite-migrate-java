@@ -80,7 +80,7 @@ class IteratorNextTest implements RewriteTest {
     }
 
     @Test
-    void nextCommentRetained() {
+    void nextCommentLost() {
         rewriteRun(
           //language=java
           java(
@@ -102,7 +102,6 @@ class IteratorNextTest implements RewriteTest {
               class Foo {
                   void bar(List<String> collection) {
                       String first = collection
-                        // Next comment
                         .getFirst();
                   }
               }
@@ -112,7 +111,7 @@ class IteratorNextTest implements RewriteTest {
     }
 
     @Test
-    void iteratorCommentLost() {
+    void iteratorCommentRetained() {
         rewriteRun(
           //language=java
           java(
@@ -134,6 +133,7 @@ class IteratorNextTest implements RewriteTest {
               class Foo {
                   void bar(List<String> collection) {
                       String first = collection
+                        // Iterator comment
                         .getFirst();
                   }
               }
