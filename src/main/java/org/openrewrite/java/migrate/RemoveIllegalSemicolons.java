@@ -45,7 +45,7 @@ public class RemoveIllegalSemicolons extends Recipe {
                 if (im.getPrefix().getWhitespace().contains(";")) {
                     im = im.withPrefix(im.getPrefix()
                             .withWhitespace(im.getPrefix().getWhitespace()
-                                    .replaceAll("\\s*;(\\R?)\\s*", "$1")));
+                                    .replaceAll("\\s*;(\\R*)\\s*", "$1")));
                 }
                 return im;
             }
