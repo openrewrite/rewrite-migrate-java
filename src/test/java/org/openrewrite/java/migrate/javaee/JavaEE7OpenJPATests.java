@@ -1,0 +1,213 @@
+package org.openrewrite.java.migrate.javaee;
+
+import org.junit.jupiter.api.Test;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.config.Environment;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.test.RecipeSpec;
+import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.java.Assertions.java;
+
+public class JavaEE7OpenJPATests implements RewriteTest {
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "javax.persistence-api-2.2")).
+          recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.javaee7")
+            .build()
+            .activateRecipes("org.openrewrite.java.migrate.javaee7.openJPA"));
+    }
+
+    @Test
+    void generatedValueExample() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+               package com.ibm.test;
+               
+               import javax.persistence.Entity;
+               import javax.persistence.GeneratedValue;
+               import javax.persistence.GenerationType;
+               import javax.persistence.Id;
+               import javax.persistence.TableGenerator;
+               
+               @Entity
+               public class GeneratedValueExample  {
+               
+               	// flag it
+               	@Id
+               	@GeneratedValue(strategy=GenerationType.AUTO)
+               	private int id;
+               	
+               	// flag it.  Does not require @Id
+               	@GeneratedValue
+               	private int id2;
+               	
+               	// flag it even though it has a TableGenerator since GeneratedValue is default
+               	// A second TableGenerator will be created.
+               	@TableGenerator(name = "SOME_TABLE", table = "SOME_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
+               	@GeneratedValue
+               	private int id3;
+               
+               }
+               """, """
+              package com.ibm.test;
+                                     
+              import javax.persistence.Entity;
+              import javax.persistence.GeneratedValue;
+              import javax.persistence.GenerationType;
+              import javax.persistence.Id;
+              import javax.persistence.TableGenerator;
+                                     
+              @Entity
+              public class GeneratedValueExample  {
+                                     
+                  // flag it
+                  @Id
+                  @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
+                  @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
+                  private int id;
+                                     
+                  // flag it.  Does not require @Id
+                  @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
+                  @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
+                  private int id2;
+                                     
+                  // flag it even though it has a TableGenerator since GeneratedValue is default
+                  // A second TableGenerator will be created.
+                  @TableGenerator(name = "SOME_TABLE", table = "SOME_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
+                  @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
+                  @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
+                  private int id3;
+                                     
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void generatedValueName() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+               package com.ibm.test;
+               
+               import javax.persistence.Entity;
+               import javax.persistence.GeneratedValue;
+               import javax.persistence.Id;
+               
+               @Entity
+               public class GeneratedValueName  {
+               
+               	// flag it
+               	@Id
+               	@GeneratedValue
+               	private String name;
+               	
+               
+               }
+               """, """
+              package com.ibm.test;
+å
+              import javax.persistence.Entity;
+              import javax.persistence.GeneratedValue;
+              import javax.persistence.Id;
+
+              @Entity
+              public class GeneratedValueName  {
+
+                  // flag it
+                  @Id
+                  @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
+                  @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
+                  private String name;
+
+
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void generatedValueQuickFixApplied() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+               package com.ibm.test;
+               
+               import javax.persistence.Entity;
+               import javax.persistence.GeneratedValue;
+               import javax.persistence.GenerationType;
+               import javax.persistence.Id;
+               import javax.persistence.TableGenerator;
+               
+               @Entity
+               public class GeneratedValueQuickFixApplied  {
+               
+               	// not flagged since GeneratedValue is not default or AUTO
+               	@Id
+               	@TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
+               	@GeneratedValue(strategy = GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
+               	private int id;
+               	
+               
+               }
+               """
+          )
+        );
+    }
+
+    @Test
+    void generatedValueStrategySpaces() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+               package com.ibm.test;
+               
+               import javax.persistence.Entity;
+               import javax.persistence.GeneratedValue;
+               import javax.persistence.GenerationType;
+               import javax.persistence.Id;
+               
+               @Entity
+               public class GeneratedValueStrategySpaces  {
+               
+               	// flag it
+               	@Id
+               	@GeneratedValue( strategy = GenerationType.AUTO )
+               	private int id;
+               	
+               
+               }
+               """,
+            """
+               package com.ibm.test;
+               
+               import javax.persistence.Entity;
+               import javax.persistence.GeneratedValue;
+               import javax.persistence.GenerationType;
+               import javax.persistence.Id;
+               
+               @Entity
+               public class GeneratedValueStrategySpaces  {
+               
+                   // flag it
+                   @Id
+                   @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
+                   @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
+                   private int id;
+               
+               
+               }
+               """
+          )
+        );
+    }
+}

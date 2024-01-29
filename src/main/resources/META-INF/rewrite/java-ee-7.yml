@@ -25,6 +25,18 @@ recipeList:
   - org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
   - org.openrewrite.java.migrate.JpaCacheProperties
   - org.openrewrite.java.migrate.BeansXmlNamespace
+  - org.openrewrite.java.migrate.javaee7.openJPA
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javaee7.openJPA
+displayName: Migrate to JavaEE7
+description: These recipes help with the Migration to Java EE 7, flagging and updating deprecated methods.
+tags:
+  - javaee7
+  - deprecated
+recipeList:
+  - org.openrewrite.java.migrate.javaee7.openJPA.OpenJPAPersistenceProvider
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -38,3 +50,16 @@ recipeList:
       elementName: /persistence/persistence-unit/provider
       oldValue: org.apache.openjpa.persistence.PersistenceProviderImpl
       newValue: org.eclipse.persistence.jpa.PersistenceProvider
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javaee7.openJPA.OpenJPAPersistenceProvider
+displayName: Removed OpenJPA providers in the persistence.xml file
+description: >
+  When migrating  to EclipseLink, using OpenJPA providers in EclipseLink results in runtime errors. To resolve these errors, 
+  the recipe removes the flagged OpenJPA provider from the persistence.xml.
+recipeList:
+  - org.openrewrite.java.migrate.AddMissingFieldAnnotation:
+      fullyQualifiedClassName: "*"
+      methodPattern: "*..* *(..)"
+      annotationTemplateString: "/persistence/persistence-unit/provider"
