@@ -31,34 +31,14 @@ import java.util.Set;
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class AddMissingFieldAnnotation extends Recipe {
-    @Option(displayName = "Fully Qualified Class Name",
-            description = "A fully qualified class being implemented with missing method.",
-            required = false,
-            example = "java.lang.Override")
-    @NonNull
-    String fullyQualifiedClassName;
-
-    @Option(displayName = "Method Pattern",
-            description = "A method pattern for matching required method definition.",
-            required = false,
-            example = "*..* hello(..)")
-    @NonNull
-    String methodPattern;
-
-    @Option(displayName = "Annotation Template",
-            description = "Template of annotation to add",
-            example = "java.lang.Override")
-    @NonNull
-    String annotationTemplateString;
-
     @Override
     public String getDisplayName() {
-        return "Adds missing annotation.";
+        return "Attributes with automatically generated values require configuration.";
     }
 
     @Override
     public String getDescription() {
-        return "Check for missing annotation required by method and adds them.";
+        return "Adds missing configuration for attributes with automatically generated values.";
     }
 
     @Override
