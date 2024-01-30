@@ -15,54 +15,47 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.lang.NonNull;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
-@NoArgsConstructor
+@Value
+@EqualsAndHashCode(callSuper = false)
 public class UpdateAddAnnotatedType extends Recipe {
-
-    @Option(displayName = "Method Pattern", description = "A method pattern for matching required method definition.", example = "jakarta.enterprise.inject.spi.BeforeBeanDiscovery addAnnotatedType(jakarta.enterprise.inject.spi.AnnotatedType)")
-    @NonNull String methodPattern;
-    MethodMatcher methodInputPattern = null;
-
-    @JsonCreator
-    public UpdateAddAnnotatedType(@NonNull @JsonProperty("methodPattern") String methodPattern) {
-        this.methodPattern = methodPattern;
-        methodInputPattern = new MethodMatcher(methodPattern, false);
-    }
+    @Option(displayName = "Method Pattern",
+            description = "A method pattern for matching required method definition.",
+            example = "jakarta.enterprise.inject.spi.BeforeBeanDiscovery addAnnotatedType(jakarta.enterprise.inject.spi.AnnotatedType)")
+    String methodPattern;
 
     @Override
     public String getDisplayName() {
-        return "Replace `addAnnotatedType(AnnotatedType)` with `addAnnotatedType(AnnotatedType,String)`";
+        return "Replace `BeforeBeanDiscovery.addAnnotatedType(AnnotatedType)` with `addAnnotatedType(AnnotatedType, String)`";
     }
 
     @Override
     public String getDescription() {
-        return "`BeforeBeanDiscovery.addAnnotatedType(AnnotatedType)` is Deprecated in CDI 1.1. It is Replaced by `BeforeBeanDiscovery.addAnnotatedType(AnnotatedType, String)`.";
+        return "`BeforeBeanDiscovery.addAnnotatedType(AnnotatedType)` is deprecated in CDI 1.1. It is Replaced by `BeforeBeanDiscovery.addAnnotatedType(AnnotatedType, String)`.";
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return new JavaIsoVisitor<ExecutionContext>() {
+            private final MethodMatcher methodInputPattern = new MethodMatcher(methodPattern, false);
 
-        return new JavaVisitor<ExecutionContext>() {
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (methodInputPattern.matches(method)) {
-                    String tempString = "#{any(jakarta.enterprise.inject.spi.AnnotatedType)},null\"";
-                    return JavaTemplate.builder(tempString).
-                            build().apply(updateCursor(method),
-                                    method.getCoordinates().
-                                            replaceArguments(),
+                    return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.AnnotatedType)}, null\"")
+                            .build()
+                            .apply(updateCursor(method),
+                                    method.getCoordinates().replaceArguments(),
                                     method.getArguments().get(0));
                 }
                 return super.visitMethodInvocation(method, ctx);
