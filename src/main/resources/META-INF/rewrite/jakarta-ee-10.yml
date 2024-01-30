@@ -27,6 +27,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
   - org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
+  - org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
   - org.openrewrite.java.migrate.BeanDiscovery
   - org.openrewrite.java.migrate.jakarta.BeanValidationMessages
   - org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
@@ -126,6 +127,16 @@ recipeList:
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
+displayName: Remove deprecated API's not supported in CDI4.0
+description: >
+  Deprecated APIs have been removed in CDI 4.0. This recipe removes and updates the corresponding deprecated methods.
+recipeList:
+  - org.openrewrite.java.migrate.jakarta.RemoveBeanIsNullable
+  - org.openrewrite.java.migrate.jakarta.UpdateAddAnnotatedTypes
+  - org.openrewrite.java.migrate.jakarta.UpdateBeanManagerMethods
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
 displayName: Rename CDI Extension to Jakarta
 description: Rename `javax.enterprise.inject.spi.Extension` to `jakarta.enterprise.inject.spi.Extension`.
@@ -133,3 +144,4 @@ recipeList:
   - org.openrewrite.RenameFile:
       fileMatcher: '**/javax.enterprise.inject.spi.Extension'
       fileName: jakarta.enterprise.inject.spi.Extension
+
