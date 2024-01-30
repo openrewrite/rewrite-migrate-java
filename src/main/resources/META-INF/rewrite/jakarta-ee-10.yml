@@ -63,11 +63,9 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.ibm.websphere.wsoc.WsWsocServerContainer doUpgrade(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, com.ibm.websphere.wsoc.ServerEndpointConfig, java.util.Map)
       newMethodName: upgradeHttpToWebSocket
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.ibm.websphere.wsoc.WsWsocServerContainer
       newFullyQualifiedTypeName: jakarta.websocket.server.ServerContainer
-      ignoreDefinition: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
@@ -79,7 +77,6 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.el.MethodExpression isParmetersProvided()
       newMethodName: isParametersProvided
-      ignoreDefinition: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
@@ -91,15 +88,12 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.xml.soap.SOAPElementFactory create(String,..)
       newMethodName: createElement
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.xml.soap.SOAPElementFactory create(jakarta.xml.soap.Name)
       newMethodName: createElement
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.xml.soap.SOAPElementFactory
       newFullyQualifiedTypeName: jakarta.xml.soap.SOAPFactory
-      ignoreDefinition: true
 ---
 name: org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
 displayName: Migrate xmlns entries in `beans.xml` files
@@ -134,71 +128,54 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.servlet.http.HttpServletRequest
       newFullyQualifiedTypeName: jakarta.servlet.http.HttpServletRequest
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.servlet.http.HttpServletRequestWrapper
       newFullyQualifiedTypeName: jakarta.servlet.http.HttpServletRequestWrapper
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.servlet.http.HttpServletResponse
       newFullyQualifiedTypeName: jakarta.servlet.http.HttpServletResponse
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.servlet.http.HttpServletResponseWrapper
       newFullyQualifiedTypeName: jakarta.servlet.http.HttpServletResponseWrapper
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.servlet.http.HttpSession
       newFullyQualifiedTypeName: jakarta.servlet.http.HttpSession
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.servlet.ServletContext
       newFullyQualifiedTypeName: jakarta.servlet.ServletContext
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.servlet.UnavailableException
       newFullyQualifiedTypeName: jakarta.servlet.UnavailableException
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.servlet.http.HttpServletRequest  isRequestedSessionIdFromUrl()
       newMethodName: isRequestedSessionIdFromURL
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.servlet.http.HttpServletRequestWrapper  isRequestedSessionIdFromUrl()
       newMethodName: isRequestedSessionIdFromURL
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.servlet.http.HttpServletResponse encodeUrl(String)
       newMethodName: encodeURL
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.servlet.http.HttpServletResponseWrapper encodeUrl(String)
       newMethodName: encodeURL
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.servlet.http.HttpServletResponse encodeRedirectUrl(String)
       newMethodName: encodeRedirectURL
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.servlet.http.HttpServletResponseWrapper encodeRedirectUrl(String)"
       newMethodName: encodeRedirectURL
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.servlet.http.HttpSession getValue(String)
       newMethodName: getAttribute
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.servlet.http.HttpSession getValueNames()
       newMethodName: getAttributeNames
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.servlet.http.HttpSession putValue(String, Object)
       newMethodName: setAttribute
-      ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.servlet.http.HttpSession removeValue(String)
       newMethodName: removeAttribute
-      ignoreDefinition: true
   - org.openrewrite.java.DeleteMethodArgument:
       methodPattern: jakarta.servlet.http.HttpServletResponse setStatus(int, String)
       argumentIndex: 1
@@ -209,7 +186,6 @@ recipeList:
       methodPattern: jakarta.servlet.ServletContext log(Exception, String)
       newParameterNames: [ ex, str ]
       oldParameterNames: [ str, ex ]
-      ignoreDefinition: true
       matchOverrides: true
   - org.openrewrite.java.migrate.jakarta.UpdateGetRealPath
   - org.openrewrite.java.DeleteMethodArgument:
@@ -222,7 +198,6 @@ recipeList:
       methodPattern: jakarta.servlet.UnavailableException <constructor>(int, String)
       oldParameterNames: [ in, str ]
       newParameterNames: [ str, in ]
-      ignoreDefinition: true
       matchOverrides: true
 ---
 name: org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
