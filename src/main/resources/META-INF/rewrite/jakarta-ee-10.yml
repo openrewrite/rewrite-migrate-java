@@ -56,52 +56,6 @@ recipeList:
       methodPattern: jakarta.servlet.SessionCookieConfig setComment(String)
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
-displayName: JNDI name `jsf/ClientSideSecretKey` has been renamed to `faces/ClientSideSecretKey`, and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.
-description: >
-  The `jsf/ClientSideSecretKey` JNDI name has been renamed to `faces/ClientSideSecretKey`, 
-  and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.  The JNDI keys that have been renamed are updated to allow use of the keys.
-recipeList:
-  - org.openrewrite.xml.ChangeTagValue:
-      elementName: //env-entry-name
-      oldValue: jsf/ClientSideSecretKey
-      newValue: faces/ClientSideSecretKey
-  - org.openrewrite.xml.ChangeTagValue:
-      elementName: //env-entry-name
-      oldValue: jsf/FlashSecretKey
-      newValue: faces/FlashSecretKey
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesResourceResolver
-displayName: Replace `ResourceResolver` with `ResourceHandler`
-description: >
-  The `ResourceResolver` class was removed in Jakarta Faces 4.0. 
-  The functionality provided by that class can be replaced by using the `jakarta.faces.application.ResourceHandler` class.
-recipeList:
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.view.facelets.ResourceResolver
-      newFullyQualifiedTypeName: jakarta.faces.application.ResourceHandler
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.view.facelets.ResourceResolver
-      newFullyQualifiedTypeName: jakarta.faces.application.ResourceHandler
-      ignoreDefinition: true
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
-displayName: Replace `CURRENT_COMPONENT` and `CURRENT_COMPOSITE_COMPONENT` with `getCurrentComponent()` and `getCurrentCompositeComponent()`
-description: >
-  Replace `jakarta.faces.component.UIComponent.CURRENT_COMPONENT` and `CURRENT_COMPOSITE_COMPONENT` constants with `jakarta.faces.component.UIComponent.getCurrentComponent()` and `getCurrentCompositeComponent()`
-  that were added in JSF 2.0
-recipeList:
-  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
-      existingFullyQualifiedConstantName: jakarta.faces.component.UIComponent.CURRENT_COMPONENT
-      fullyQualifiedConstantName: jakarta.faces.component.UIComponent.getCurrentComponent()
-  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
-      existingFullyQualifiedConstantName: jakarta.faces.component.UIComponent.CURRENT_COMPOSITE_COMPONENT
-      fullyQualifiedConstantName: jakarta.faces.component.UIComponent.getCurrentCompositeComponent()
----
-type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
 displayName: Replace `doUpgrade(..)` with `ServerContainer.upgradeHttpToWebSocket(..)`
 description: Deprecated `WsWsocServerContainer.doUpgrade(..)` is replaced by the Jakarta WebSocket 2.1 specification `ServerContainer.upgradeHttpToWebSocket(..)`.
@@ -147,48 +101,6 @@ recipeList:
       newFullyQualifiedTypeName: jakarta.xml.soap.SOAPFactory
       ignoreDefinition: true
 ---
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
-displayName: Use `StateManagementStrategy`
-description: >
-  Methods that were removed from the `jakarta.faces.application.StateManager` and `javax.faces.application.StateManager` classes in Jakarta Faces 4.0 are replaced
-  by `jakarta.faces.view.StateManagementStrategy` or `javax.faces.view.StateManagementStrategy` based on Jakarta10 migration in Faces 4.0
-recipeList:
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
-      newMethodName: saveView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager getTreeStructureToSave(*.faces.context.FacesContext)"
-      newMethodName: saveView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager restoreComponentState(*.faces.context.FacesContext,*.faces.component.UIViewRoot,String)"
-      newMethodName: restoreView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager restoreTreeStructure(*.faces.context.FacesContext,String,String)"
-      newMethodName: restoreView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager saveSerializedView(*.faces.context.FacesContext)"
-      newMethodName: saveView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.application.StateManager
-      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.application.StateManager
-      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
-      ignoreDefinition: true
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
-displayName: Use `jakarta.el` instead of `jakarta.faces.el` and `javax.faces.el`
-description: >
-  Several classes were removed and replaced in Jakarta Faces 4.0.
-  The only Object definition not removed in the `jakarta.faces.el` package is the CompositeComponentExpressionHolder interface.
 name: org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
 displayName: Migrate xmlns entries in `beans.xml` files
 description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
@@ -315,6 +227,7 @@ recipeList:
       newParameterNames: [ str, in ]
       ignoreDefinition: true
       matchOverrides: true
+---
 name: org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
 displayName: Remove deprecated API's not supported in CDI4.0
 description: >
