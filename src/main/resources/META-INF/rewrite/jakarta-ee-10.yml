@@ -133,18 +133,8 @@ description: >
   Deprecated APIs have been removed in CDI 4.0. This recipe removes and updates the corresponding deprecated methods.
 recipeList:
   - org.openrewrite.java.migrate.jakarta.RemoveBeanIsNullable
-  - org.openrewrite.java.migrate.jakarta.UpdateAddAnnotatedType:
-      methodPattern: jakarta.enterprise.inject.spi.BeforeBeanDiscovery addAnnotatedType(jakarta.enterprise.inject.spi.AnnotatedType)
-  - org.openrewrite.java.migrate.jakarta.UpdateAddAnnotatedType:
-      methodPattern: javax.enterprise.inject.spi.BeforeBeanDiscovery addAnnotatedType(javax.enterprise.inject.spi.AnnotatedType)
-  - org.openrewrite.java.migrate.jakarta.UpdateBeanManagerMethod:
-      methodPattern: "jakarta.enterprise.inject.spi.BeanManager fireEvent(..)"
-  - org.openrewrite.java.migrate.jakarta.UpdateBeanManagerMethod:
-      methodPattern: "javax.enterprise.inject.spi.BeanManager fireEvent(..)"
-  - org.openrewrite.java.migrate.jakarta.UpdateBeanManagerMethod:
-      methodPattern:  "jakarta.enterprise.inject.spi.BeanManager createInjectionTarget(..)"
-  - org.openrewrite.java.migrate.jakarta.UpdateBeanManagerMethod:
-      methodPattern: "javax.enterprise.inject.spi.BeanManager createInjectionTarget(..)"
+  - org.openrewrite.java.migrate.jakarta.UpdateAddAnnotatedTypes
+  - org.openrewrite.java.migrate.jakarta.UpdateBeanManagerMethods
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved

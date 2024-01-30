@@ -15,10 +15,7 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -26,14 +23,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
-@Value
-@EqualsAndHashCode(callSuper = false)
-public class UpdateAddAnnotatedType extends Recipe {
-    @Option(displayName = "Method Pattern",
-            description = "A method pattern for matching required method definition.",
-            example = "jakarta.enterprise.inject.spi.BeforeBeanDiscovery addAnnotatedType(jakarta.enterprise.inject.spi.AnnotatedType)")
-    String methodPattern;
-
+public class UpdateAddAnnotatedTypes extends Recipe {
     @Override
     public String getDisplayName() {
         return "Replace `BeforeBeanDiscovery.addAnnotatedType(AnnotatedType)` with `addAnnotatedType(AnnotatedType, String)`";
@@ -47,7 +37,8 @@ public class UpdateAddAnnotatedType extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
-            private final MethodMatcher methodInputPattern = new MethodMatcher(methodPattern, false);
+            private final MethodMatcher methodInputPattern = new MethodMatcher(
+                    "*.enterprise.inject.spi.BeforeBeanDiscovery addAnnotatedType(*.enterprise.inject.spi.AnnotatedType)", false);
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
