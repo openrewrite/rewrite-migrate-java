@@ -38,8 +38,6 @@ class UpdateAddAnnotatedTypesTest implements RewriteTest {
           //language=java
           java(
             """
-              package sample.cdi;
-              
               import jakarta.enterprise.inject.spi.AnnotatedType;
               import jakarta.enterprise.inject.spi.BeanManager;
               import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
@@ -54,8 +52,6 @@ class UpdateAddAnnotatedTypesTest implements RewriteTest {
               }
               """,
             """
-              package sample.cdi;
-              
               import jakarta.enterprise.inject.spi.AnnotatedType;
               import jakarta.enterprise.inject.spi.BeanManager;
               import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;

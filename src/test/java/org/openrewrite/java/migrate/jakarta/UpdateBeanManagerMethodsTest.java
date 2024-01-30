@@ -24,7 +24,6 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 class UpdateBeanManagerMethodsTest implements RewriteTest {
-
     @Override
     public void defaults(RecipeSpec spec) {
         spec
@@ -39,27 +38,23 @@ class UpdateBeanManagerMethodsTest implements RewriteTest {
           //language=java
           java(
             """
-              import jakarta.enterprise.inject.spi.AnnotatedType;
               import jakarta.enterprise.inject.spi.BeanManager;
               import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
               import java.util.Set;
                             
               class Foo {
-                  void bar(BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
-                      AnnotatedType<String> producerType = beanManager.createAnnotatedType(String.class);
+                  void bar(BeanManager beanManager, BeforeBeanDiscovery beforeBeanDiscovery) {
                       beanManager.fireEvent(beforeBeanDiscovery);
                   }
               }
               """,
             """
-              import jakarta.enterprise.inject.spi.AnnotatedType;
               import jakarta.enterprise.inject.spi.BeanManager;
               import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
               import java.util.Set;
                             
               class Foo {
-                  void bar(BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
-                      AnnotatedType<String> producerType = beanManager.createAnnotatedType(String.class);
+                  void bar(BeanManager beanManager, BeforeBeanDiscovery beforeBeanDiscovery) {
                       beanManager.getEvent().fire(beforeBeanDiscovery);
                   }
               }
