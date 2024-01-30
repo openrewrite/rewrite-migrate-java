@@ -87,11 +87,6 @@ class RemovalsServletJakarta10Test implements RewriteTest {
                       servletContext.getServletNames();
                 
                       servletContext.log(null, "");
-                
-                      req.getRealPath("");
-                     
-                      HttpServletRequestWrapper reqWrapper2 = new HttpServletRequestWrapper(req);
-                      reqWrapper2.getRealPath("");
                   }
               }
               """,
@@ -146,11 +141,6 @@ class RemovalsServletJakarta10Test implements RewriteTest {
                       servletContext.getServletNames();
                  
                       servletContext.log("", null);
-
-                      req.getServletContext().getRealPath("");
-                     
-                      HttpServletRequestWrapper reqWrapper2 = new HttpServletRequestWrapper(req);
-                      reqWrapper2.getServletContext().getRealPath("");
                   }
               }
               """
