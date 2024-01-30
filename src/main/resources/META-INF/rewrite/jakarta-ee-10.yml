@@ -95,6 +95,7 @@ recipeList:
       oldFullyQualifiedTypeName: jakarta.xml.soap.SOAPElementFactory
       newFullyQualifiedTypeName: jakarta.xml.soap.SOAPFactory
 ---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
 displayName: Migrate xmlns entries in `beans.xml` files
 description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
