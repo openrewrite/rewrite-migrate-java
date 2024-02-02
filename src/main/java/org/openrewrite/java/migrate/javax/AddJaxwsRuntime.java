@@ -37,7 +37,7 @@ import org.openrewrite.xml.tree.Xml;
 import java.time.Duration;
 import java.util.*;
 
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class AddJaxwsRuntime extends Recipe {
 
     private static final String JAKARTA_JAXWS_API_GROUP = "jakarta.xml.ws";
@@ -84,7 +84,7 @@ public class AddJaxwsRuntime extends Recipe {
     }
 
     @Value
-    @EqualsAndHashCode(callSuper = true)
+    @EqualsAndHashCode(callSuper = false)
     public static class AddJaxwsRuntimeGradle extends Recipe {
         @Override
         public String getDisplayName() {
@@ -175,7 +175,7 @@ public class AddJaxwsRuntime extends Recipe {
     }
 
     @Value
-    @EqualsAndHashCode(callSuper = true)
+    @EqualsAndHashCode(callSuper = false)
     public static class AddJaxwsRuntimeMaven extends Recipe {
         @Override
         public String getDisplayName() {

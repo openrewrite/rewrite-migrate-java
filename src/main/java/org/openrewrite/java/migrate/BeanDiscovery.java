@@ -29,7 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class BeanDiscovery extends Recipe {
 
     private static final XPathMatcher BEANS_MATCHER = new XPathMatcher("/beans");
