@@ -10,4 +10,4 @@ on:
 # Since this pull request receives untrusted code, we should **NOT** have any secrets in the environment.
 jobs:
   upload-patch:
-    uses: openrewrite/gh-automation/.github/workflows/receive-pr.yml@review-prs
+    uses: openrewrite/gh-automation/.github/workflows/receive-pr.yml@main

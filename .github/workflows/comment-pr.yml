@@ -11,4 +11,4 @@ on:
 # Since this pull request has write permissions on the target repo, we should **NOT** execute any untrusted code.
 jobs:
   post-suggestions:
-    uses: openrewrite/gh-automation/.github/workflows/comment-pr.yml@review-prs
+    uses: openrewrite/gh-automation/.github/workflows/comment-pr.yml@main
