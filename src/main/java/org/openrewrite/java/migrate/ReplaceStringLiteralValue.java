@@ -29,7 +29,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class ReplaceStringLiteralValue extends Recipe {
 
     @Option(displayName = "Old literal `String` value",

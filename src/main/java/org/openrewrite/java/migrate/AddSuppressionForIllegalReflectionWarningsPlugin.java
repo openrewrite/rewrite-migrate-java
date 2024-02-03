@@ -32,7 +32,7 @@ import org.openrewrite.xml.tree.Xml;
 @Incubating(since = "0.2.0")
 @Getter
 @RequiredArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class AddSuppressionForIllegalReflectionWarningsPlugin extends Recipe {
 
     private static final XPathMatcher PACKAGING_MATCHER = new XPathMatcher("/project/packaging");

@@ -26,7 +26,7 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.staticanalysis.RemoveMethodCallVisitor;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class RemoveMethodInvocation extends Recipe {
     @Option(displayName = "Method Pattern",
             description = "A method pattern for matching required method definition.",

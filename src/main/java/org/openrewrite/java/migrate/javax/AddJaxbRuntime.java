@@ -150,16 +150,15 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                     }
 
                     if ("sun".equals(runtime)) {
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, "runtimeOnly", null, null, null, null)
+                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, "runtimeOnly", null, null, null)
                                 .visitNonNull(g, ctx);
                     } else {
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, "runtimeOnly", null, null, null, null)
+                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, "runtimeOnly", null, null, null)
                                 .visitNonNull(g, ctx);
                     }
                     return g;
                 }
             });
-
 
             final TreeVisitor<?, ExecutionContext> mavenVisitor = new MavenIsoVisitor<ExecutionContext>() {
                 @SuppressWarnings("ConstantConditions")
@@ -200,10 +199,6 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
             };
         };
     }
-
-
-
-
 
     private Xml.Document jaxbDependencySwap(ExecutionContext ctx, Xml.Document d, String sunJaxbRuntimeGroup, String sunJaxbRuntimeArtifact, String glassfishJaxbRuntimeGroup, String glassfishJaxbRuntimeArtifact) {
         d = (Xml.Document) new org.openrewrite.maven.UpgradeDependencyVersion(sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x", null, null, null)
