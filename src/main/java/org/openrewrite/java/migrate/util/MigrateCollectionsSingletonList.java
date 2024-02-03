@@ -15,16 +15,18 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.*;
+import org.openrewrite.*;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.NoMissingTypes;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.JavaType.ShallowClass;
+import org.openrewrite.java.tree.Space;
 
-import static java.util.Collections.nCopies;
+import java.util.Collections;
 
 public class MigrateCollectionsSingletonList extends Recipe {
     private static final MethodMatcher SINGLETON_LIST = new MethodMatcher("java.util.Collections singletonList(..)", true);
@@ -50,12 +52,16 @@ public class MigrateCollectionsSingletonList extends Recipe {
                 if (SINGLETON_LIST.matches(method)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.List");
-                    String argsPlaceHolders = String.join(", ", nCopies(m.getArguments().size(), "#{any()}"));
-                    J.MethodInvocation listOf = JavaTemplate.builder("List.of(" + argsPlaceHolders + ')')
-                            .imports("java.util.List")
-                            .build()
-                            .apply(getCursor(), m.getCoordinates().replace(), m.getArguments().toArray());
-                    return listOf; // TODO MethodInvocation type is missing or malformed
+
+                    JavaType.Class classType = ShallowClass.build("java.util.List");
+                    JavaType.Method methodType = m.getMethodType().withName("of").withDeclaringType(classType);
+                    m = m.withName(m.getName().withSimpleName("of").withType(methodType));
+                    if (m.getSelect() instanceof J.Identifier) {
+                        return m.withSelect(((J.Identifier) m.getSelect()).withSimpleName("List").withType(classType));
+                    }
+                    return m.withSelect(new J.Identifier(
+                                    Tree.randomId(), m.getPrefix(), m.getMarkers(), Collections.emptyList(), "List", classType, null))
+                            .withPrefix(Space.EMPTY);
                 }
                 return m;
             }
