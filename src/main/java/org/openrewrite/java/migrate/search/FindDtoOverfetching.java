@@ -35,7 +35,8 @@ import static org.openrewrite.internal.StringUtils.uncapitalize;
 @EqualsAndHashCode(callSuper = false)
 public class FindDtoOverfetching extends Recipe {
     @Option(displayName = "DTO type",
-            description = "The fully qualified name of the DTO.")
+            description = "The fully qualified name of the DTO.",
+            example = "com.example.dto.*")
     String dtoType;
 
     @Override
