@@ -17,10 +17,11 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class DontOverfetchDtoTest implements RewriteTest {
+class DontOverfetchDtoTest implements RewriteTest {
 
     @SuppressWarnings("LombokGetterMayBeUsed")
     @Test
@@ -35,11 +36,9 @@ public class DontOverfetchDtoTest implements RewriteTest {
               public class Dog {
                   String name;
                   String breed;
-                  
                   public String getName() {
                       return name;
                   }
-                  
                   public String getBreed() {
                       return breed;
                   }
@@ -50,7 +49,7 @@ public class DontOverfetchDtoTest implements RewriteTest {
           java(
             """
               import animals.Dog;
-                            
+              
               class Test {
                   boolean test(Dog dog, int age) {
                       if(dog.getName() != null) {
@@ -61,7 +60,7 @@ public class DontOverfetchDtoTest implements RewriteTest {
               """,
             """
               import animals.Dog;
-                            
+              
               class Test {
                   boolean test(java.lang.String name, int age) {
                       if(name != null) {
