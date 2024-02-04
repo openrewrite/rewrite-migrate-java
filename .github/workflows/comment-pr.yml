@@ -12,3 +12,5 @@ on:
 jobs:
   post-suggestions:
     uses: openrewrite/gh-automation/.github/workflows/comment-pr.yml@main
+    secrets:
+      GH_PAT_ACTIONS_READ: ${{ secrets.GH_PAT_ACTIONS_READ }}
