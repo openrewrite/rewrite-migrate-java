@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -31,6 +32,7 @@ class ApplicationPathWildcardNoLongerAcceptedTest implements RewriteTest {
           .recipe(new ApplicationPathWildcardNoLongerAccepted());
     }
 
+    @DocumentExample
     @Test
     void updateAnnotation() {
         rewriteRun(

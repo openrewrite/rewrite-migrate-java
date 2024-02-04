@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
@@ -26,6 +27,7 @@ import static org.openrewrite.java.Assertions.java;
 
 class FacesManagedBeansRemovedTest implements RewriteTest {
 
+    @DocumentExample
     @Test
     void updateFacesManagedBeanFromEE8() {
         rewriteRun(
