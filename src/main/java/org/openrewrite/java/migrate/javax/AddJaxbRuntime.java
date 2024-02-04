@@ -160,7 +160,6 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                 }
             });
 
-
             final TreeVisitor<?, ExecutionContext> mavenVisitor = new MavenIsoVisitor<ExecutionContext>() {
                 @SuppressWarnings("ConstantConditions")
                 @Override
@@ -200,10 +199,6 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
             };
         };
     }
-
-
-
-
 
     private Xml.Document jaxbDependencySwap(ExecutionContext ctx, Xml.Document d, String sunJaxbRuntimeGroup, String sunJaxbRuntimeArtifact, String glassfishJaxbRuntimeGroup, String glassfishJaxbRuntimeArtifact) {
         d = (Xml.Document) new org.openrewrite.maven.UpgradeDependencyVersion(sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x", null, null, null)

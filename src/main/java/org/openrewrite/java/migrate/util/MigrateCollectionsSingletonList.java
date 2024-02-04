@@ -15,23 +15,21 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.*;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.NoMissingTypes;
-import org.openrewrite.java.PartProvider;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.JavaType.ShallowClass;
+import org.openrewrite.java.tree.Space;
+
+import java.util.Collections;
 
 public class MigrateCollectionsSingletonList extends Recipe {
     private static final MethodMatcher SINGLETON_LIST = new MethodMatcher("java.util.Collections singletonList(..)", true);
-    @Nullable
-    private static J.MethodInvocation listOfTemplate;
 
     @Override
     public String getDisplayName() {
@@ -47,29 +45,26 @@ public class MigrateCollectionsSingletonList extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
                 new UsesMethod<>(SINGLETON_LIST), new NoMissingTypes());
-        return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
                 if (SINGLETON_LIST.matches(method)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.List");
-                    return getListOfTemplate().withArguments(m.getArguments()).withPrefix(m.getPrefix());
-                }
 
+                    JavaType.Class classType = ShallowClass.build("java.util.List");
+                    JavaType.Method methodType = m.getMethodType().withName("of").withDeclaringType(classType);
+                    m = m.withName(m.getName().withSimpleName("of").withType(methodType));
+                    if (m.getSelect() instanceof J.Identifier) {
+                        return m.withSelect(((J.Identifier) m.getSelect()).withSimpleName("List").withType(classType));
+                    }
+                    return m.withSelect(new J.Identifier(
+                                    Tree.randomId(), m.getPrefix(), m.getMarkers(), Collections.emptyList(), "List", classType, null))
+                            .withPrefix(Space.EMPTY);
+                }
                 return m;
             }
         });
-    }
-
-    private static J.MethodInvocation getListOfTemplate() {
-        if (listOfTemplate == null) {
-            listOfTemplate = PartProvider.buildPart("import java.util.List;" +
-                                                    "class A {\n" +
-                                                    "    Object a=List.of(\"X\");" +
-                                                    "\n}", J.MethodInvocation.class);
-        }
-
-        return listOfTemplate;
     }
 }

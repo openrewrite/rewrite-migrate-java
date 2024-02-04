@@ -35,7 +35,7 @@ import java.util.Collections;
 import java.util.Set;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class ReplaceFileInOrOutputStreamFinalizeWithClose extends Recipe {
 
     private static final String JAVA_IO_FILE_INPUT_STREAM = "java.io.FileInputStream";

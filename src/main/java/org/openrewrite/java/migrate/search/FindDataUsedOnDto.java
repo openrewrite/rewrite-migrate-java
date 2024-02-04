@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.search;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
-import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.migrate.table.DtoDataUses;
@@ -33,7 +32,8 @@ public class FindDataUsedOnDto extends Recipe {
     transient DtoDataUses dtoDataUses = new DtoDataUses(this);
 
     @Option(displayName = "DTO type",
-            description = "The fully qualified name of the DTO.")
+            description = "The fully qualified name of the DTO.",
+            example = "com.example.dto.*")
     String dtoType;
 
     @Override
