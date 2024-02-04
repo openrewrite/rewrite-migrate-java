@@ -52,8 +52,8 @@ public class CastArraysAsListToList extends Recipe {
 
     private static class CastArraysAsListToListVisitor extends JavaVisitor<ExecutionContext> {
         @Override
-        public J visitTypeCast(J.TypeCast typeCast, ExecutionContext executionContext) {
-            J j = super.visitTypeCast(typeCast, executionContext);
+        public J visitTypeCast(J.TypeCast typeCast, ExecutionContext ctx) {
+            J j = super.visitTypeCast(typeCast, ctx);
             if (!(j instanceof J.TypeCast) || !(((J.TypeCast) j).getType() instanceof JavaType.Array)) {
                 return j;
             }

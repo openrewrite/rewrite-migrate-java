@@ -45,8 +45,8 @@ public class BeanValidationMessages extends Recipe {
         return Preconditions.check(new UsesType<>("javax.validation.constraints..*", true),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext executionContext) {
-                        J.Annotation a = super.visitAnnotation(annotation, executionContext);
+                    public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
+                        J.Annotation a = super.visitAnnotation(annotation, ctx);
                         if (!JAVAX_MATCHER.matches(a)) {
                             return a;
                         }

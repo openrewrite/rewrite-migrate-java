@@ -42,11 +42,11 @@ public class UpdateBeanManagerMethods extends Recipe {
             private final MethodMatcher createInjectionTargetMatcher = new MethodMatcher("*.enterprise.inject.spi.BeanManager createInjectionTarget(..)", false);
 
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
-                J.MethodInvocation mi = super.visitMethodInvocation(method, ec);
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
                 if (fireEventMatcher.matches(method)) {
                     return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getEvent().fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})")
-                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ec, "jakarta.enterprise.cdi-api-3.0.0-M4"))
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
                             .build()
                             .apply(updateCursor(mi),
                                     mi.getCoordinates().replace(),
@@ -54,7 +54,7 @@ public class UpdateBeanManagerMethods extends Recipe {
                                     mi.getArguments().get(0));
                 } else if (createInjectionTargetMatcher.matches(method)) {
                     return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getInjectionTargetFactory(#{any(jakarta.enterprise.inject.spi.AnnotatedType)}).createInjectionTarget(null)")
-                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ec, "jakarta.enterprise.cdi-api-3.0.0-M4"))
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
                             .build()
                             .apply(updateCursor(mi),
                                     mi.getCoordinates().replace(),
