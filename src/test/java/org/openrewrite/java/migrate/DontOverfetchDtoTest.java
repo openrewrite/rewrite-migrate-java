@@ -59,8 +59,6 @@ class DontOverfetchDtoTest implements RewriteTest {
               }
               """,
             """
-              import animals.Dog;
-              
               class Test {
                   boolean test(java.lang.String name, int age) {
                       if(name != null) {

@@ -95,7 +95,7 @@ public class DontOverfetchDto extends Recipe {
                                                             .withVariables(ListUtils.map(v.getVariables(), nv -> {
                                                                 JavaType.Variable fieldType = nv.getName().getFieldType();
                                                                 return nv
-                                                                        .withName(nv.getName().withSimpleName(dtoDataElement))
+                                                                        .withName(nv.getName().withSimpleName(dtoDataElement).withType(memberType))
                                                                         .withType(memberType)
                                                                         .withVariableType(fieldType
                                                                                 .withName(dtoDataElement).withOwner(memberType));
