@@ -42,10 +42,10 @@ public class UpdateGetRealPath extends Recipe {
             private final MethodMatcher METHOD_PATTERN = new MethodMatcher("jakarta.servlet.ServletRequest* getRealPath(String)", false);
 
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (METHOD_PATTERN.matches(method)) {
                     return JavaTemplate.builder("#{any()}.getServletContext().getRealPath(#{any(String)})")
-                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ec, "jakarta.servlet-api-6.0.0"))
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.servlet-api-6.0.0"))
                             .build()
                             .apply(updateCursor(method),
                                     method.getCoordinates().replace(),
