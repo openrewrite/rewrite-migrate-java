@@ -26,7 +26,8 @@ public class DontOverfetchDtoTest implements RewriteTest {
     @Test
     void findDtoOverfetching() {
         rewriteRun(
-          spec -> spec.recipe(new DontOverfetchDto("animals.Dog", "name")),
+          spec -> spec.recipe(new DontOverfetchDto("animals.Dog", "name"))
+            .typeValidationOptions(TypeValidation.none()),
           //language=java
           java(
             """
@@ -52,16 +53,18 @@ public class DontOverfetchDtoTest implements RewriteTest {
                             
               class Test {
                   boolean test(Dog dog, int age) {
-                      if (dog.getName() != null) {
+                      if(dog.getName() != null) {
                           return true;
                       }
                   }
               }
               """,
             """
+              import animals.Dog;
+                            
               class Test {
                   boolean test(java.lang.String name, int age) {
-                      if (name != null) {
+                      if(name != null) {
                           return true;
                       }
                   }

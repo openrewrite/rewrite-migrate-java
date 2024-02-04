@@ -41,13 +41,11 @@ import static org.openrewrite.internal.StringUtils.uncapitalize;
 public class DontOverfetchDto extends Recipe {
 
     @Option(displayName = "DTO type",
-            description = "The fully qualified name of the DTO.",
-            example = "animals.Dog")
+            description = "The fully qualified name of the DTO.")
     String dtoType;
 
     @Option(displayName = "Data element",
-            description = "Replace the DTO as a method parameter when only this data element is used.",
-            example = "name")
+            description = "Replace the DTO as a method parameter when only this data element is used.")
     String dtoDataElement;
 
     @Override
@@ -93,12 +91,12 @@ public class DontOverfetchDto extends Recipe {
                                                             .withType(memberType)
                                                             .withTypeExpression(TypeTree.build(memberType.getFullyQualifiedName()))
                                                             .withVariables(ListUtils.map(v.getVariables(), nv -> {
-                                                                JavaType.Variable fieldType = nv.getName().getFieldType()
-                                                                        .withName(dtoDataElement).withOwner(memberType);
+                                                                JavaType.Variable fieldType = nv.getName().getFieldType();
                                                                 return nv
-                                                                        .withName(nv.getName().withSimpleName(dtoDataElement).withType(fieldType))
+                                                                        .withName(nv.getName().withSimpleName(dtoDataElement))
                                                                         .withType(memberType)
-                                                                        .withVariableType(fieldType);
+                                                                        .withVariableType(fieldType
+                                                                                .withName(dtoDataElement).withOwner(memberType));
                                                             }));
                                                 }
                                             }
