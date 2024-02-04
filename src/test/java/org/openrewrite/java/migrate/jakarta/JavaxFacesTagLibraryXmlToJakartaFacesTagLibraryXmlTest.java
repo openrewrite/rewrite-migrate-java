@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -30,6 +31,7 @@ class JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXmlTest implements RewriteT
           .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXml"));
     }
 
+    @DocumentExample
     @Test
     void migrateSun() {
         rewriteRun(
