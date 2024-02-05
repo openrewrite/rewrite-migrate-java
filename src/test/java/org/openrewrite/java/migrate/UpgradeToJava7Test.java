@@ -37,7 +37,7 @@ class UpgradeToJava7Test implements RewriteTest {
 
     @DocumentExample
     @Test
-    void testCallableStatement() {
+    void callableStatement() {
         rewriteRun(
           //language=java
           java(
@@ -2029,7 +2029,7 @@ class UpgradeToJava7Test implements RewriteTest {
     }
 
     @Test
-    void testConnectionPoolDataSource() {
+    void connectionPoolDataSource() {
         rewriteRun(
           //language=java
           java(
@@ -2119,7 +2119,7 @@ class UpgradeToJava7Test implements RewriteTest {
     }
 
     @Test
-    void testCommonDataSource() {
+    void commonDataSource() {
         rewriteRun(
           //language=java
           java(
@@ -2195,7 +2195,7 @@ class UpgradeToJava7Test implements RewriteTest {
     }
 
     @Test
-    void testCommonDataSourceSub() {
+    void commonDataSourceSub() {
         rewriteRun(
           //language=java
           java(
@@ -2267,7 +2267,7 @@ class UpgradeToJava7Test implements RewriteTest {
     }
 
     @Test
-    void testOnAbstractClassWithMissingMethod() {
+    void onAbstractClassWithMissingMethod() {
         rewriteRun(
           //language=java
           java(
@@ -2307,7 +2307,7 @@ class UpgradeToJava7Test implements RewriteTest {
     }
 
     @Test
-    void testConnection() {
+    void connection() {
         rewriteRun(
           spec -> spec.cycles(1).expectedCyclesThatMakeChanges(1),
           //language=java
@@ -2791,7 +2791,7 @@ class UpgradeToJava7Test implements RewriteTest {
     }
 
     @Test
-    void testDataSource() {
+    void dataSource() {
         rewriteRun(
           //language=java
           java(
@@ -2905,7 +2905,7 @@ class UpgradeToJava7Test implements RewriteTest {
     }
 
     @Test
-    void testJRE7JdbcDriver() {
+    void jre7JdbcDriver() {
         rewriteRun(
           //language=java
           java(
@@ -2997,7 +2997,7 @@ class UpgradeToJava7Test implements RewriteTest {
     }
 
     @Test
-    void testPreparedStatement() {
+    void preparedStatement() {
         rewriteRun(
           //language=java
           java(

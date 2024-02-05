@@ -397,7 +397,7 @@ class UpgradeToJava17Test implements RewriteTest {
     }
 
     @Test
-    void testAgentMainPreMainPublicApp() {
+    void agentMainPreMainPublicApp() {
         rewriteRun(
           version(
             //language=java

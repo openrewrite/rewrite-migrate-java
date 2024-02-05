@@ -33,7 +33,7 @@ class UpgradeToJava6Test implements RewriteTest {
 
     @DocumentExample
     @Test
-    void testDataSource() {
+    void dataSource() {
         rewriteRun(
           //language=java
           java(

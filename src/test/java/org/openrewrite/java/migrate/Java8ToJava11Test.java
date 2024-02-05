@@ -24,7 +24,6 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
 
 class Java8ToJava11Test implements RewriteTest {
     @Override
