@@ -17,6 +17,7 @@
 package org.openrewrite.java.migrate.javaee;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
@@ -35,6 +36,7 @@ class JavaEE7OpenJPATests implements RewriteTest {
             .activateRecipes("org.openrewrite.java.migrate.javaee7.openJPA"));
     }
 
+    @DocumentExample
     @Test
     void generatedValueExample() {
         rewriteRun(
