@@ -35,6 +35,7 @@ class AddTableGeneratorTest implements RewriteTest {
           .recipe(new AddTableGenerator());
     }
 
+    @DocumentExample
     @Test
     void generatedValueExample() {
         rewriteRun(
