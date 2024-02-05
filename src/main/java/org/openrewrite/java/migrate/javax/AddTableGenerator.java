@@ -49,24 +49,21 @@ public class AddTableGenerator extends Recipe {
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 Set<J.Annotation> generatedValueAnnotations = FindAnnotations.find(multiVariable, "@javax.persistence.GeneratedValue");
-                boolean addAnnotation = false;
-                if (!generatedValueAnnotations.isEmpty()) {
-                    J.Annotation generatedValueAnnotation = generatedValueAnnotations.iterator().next();
-                    List<Expression> args = generatedValueAnnotation.getArguments();
-                    addAnnotation = args == null || args.isEmpty() || GENERATED_VALUE_AUTO.matches(generatedValueAnnotation);
+                if (generatedValueAnnotations.isEmpty()) {
+                    return multiVariable;
                 }
 
-                if (addAnnotation) {
-                    J.VariableDeclarations updatedVariable = JavaTemplate.apply(
-                            "@javax.persistence.TableGenerator(name = \"OPENJPA_SEQUENCE_TABLE\", table = \"OPENJPA_SEQUENCE_TABLE\", pkColumnName = \"ID\", valueColumnName = \"SEQUENCE_VALUE\", pkColumnValue = \"0\")",
-                            getCursor(),
-                            multiVariable.getCoordinates().addAnnotation(Comparator.comparing(
-                                    J.Annotation::getSimpleName)
-                            )
-                    );
-                    return super.visitVariableDeclarations(updatedVariable, ctx);
+                J.Annotation generatedValueAnnotation = generatedValueAnnotations.iterator().next();
+                List<Expression> args = generatedValueAnnotation.getArguments();
+                if (!(args == null || args.isEmpty() || GENERATED_VALUE_AUTO.matches(generatedValueAnnotation))) {
+                    return multiVariable;
                 }
-                return multiVariable;
+
+                J.VariableDeclarations updatedVariable = JavaTemplate.apply(
+                        "@javax.persistence.TableGenerator(name = \"OPENJPA_SEQUENCE_TABLE\", table = \"OPENJPA_SEQUENCE_TABLE\", pkColumnName = \"ID\", valueColumnName = \"SEQUENCE_VALUE\", pkColumnValue = \"0\")",
+                        getCursor(),
+                        multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+                return super.visitVariableDeclarations(updatedVariable, ctx);
             }
 
             @Override
