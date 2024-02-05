@@ -16,7 +16,10 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.openrewrite.*;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
+import org.openrewrite.ScanningRecipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.maven.AddDependency;
 import org.openrewrite.maven.search.DoesNotIncludeDependency;
 

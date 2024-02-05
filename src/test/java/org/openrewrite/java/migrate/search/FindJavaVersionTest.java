@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.Tree;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.migrate.table.JavaVersionTable;
 import org.openrewrite.test.RecipeSpec;

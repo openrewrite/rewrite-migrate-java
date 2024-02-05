@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.openrewrite.java.migrate.search.FindDataUsedOnDto;
 import org.openrewrite.java.migrate.table.DtoDataUses;
 import org.openrewrite.test.RewriteTest;
 
