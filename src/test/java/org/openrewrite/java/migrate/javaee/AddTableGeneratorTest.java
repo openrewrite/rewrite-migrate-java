@@ -17,26 +17,24 @@
 package org.openrewrite.java.migrate.javaee;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.migrate.jakarta.UpdateGetRealPath;
+import org.openrewrite.java.migrate.javax.AddTableGenerator;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class JavaEE7OpenJPATests implements RewriteTest {
+class AddTableGeneratorTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "javax.persistence-api-2.2")).
-          recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.javaee7")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.javaee7.openJPA"));
+            .classpathFromResources(new InMemoryExecutionContext(), "javax.persistence-api-2.2"))
+          .recipe(new AddTableGenerator());
     }
 
-    @DocumentExample
     @Test
     void generatedValueExample() {
         rewriteRun(
@@ -113,38 +111,30 @@ class JavaEE7OpenJPATests implements RewriteTest {
           java(
             """
                package com.ibm.test;
-               
                import javax.persistence.Entity;
                import javax.persistence.GeneratedValue;
                import javax.persistence.Id;
                
                @Entity
-               public class GeneratedValueName  {
-               
+               class GeneratedValueName  {
                	// flag it
                	@Id
                	@GeneratedValue
                	private String name;
-               	
-               
                }
                """, """
                        package com.ibm.test;
-                       
                        import javax.persistence.Entity;
                        import javax.persistence.GeneratedValue;
                        import javax.persistence.Id;
                        
                        @Entity
-                       public class GeneratedValueName  {
-                       
+                       class GeneratedValueName  {
                            // flag it
                            @Id
                            @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
                            @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
                            private String name;
-                       
-                       
                        }
                        """
           )
@@ -158,7 +148,6 @@ class JavaEE7OpenJPATests implements RewriteTest {
           java(
             """
                package com.ibm.test;
-               
                import javax.persistence.Entity;
                import javax.persistence.GeneratedValue;
                import javax.persistence.GenerationType;
@@ -166,15 +155,12 @@ class JavaEE7OpenJPATests implements RewriteTest {
                import javax.persistence.TableGenerator;
                
                @Entity
-               public class GeneratedValueQuickFixApplied  {
-               
+               class GeneratedValueQuickFixApplied  {
                	// not flagged since GeneratedValue is not default or AUTO
                	@Id
                	@TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
                	@GeneratedValue(strategy = GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
                	private int id;
-               	
-               
                }
                """
           )
@@ -188,41 +174,33 @@ class JavaEE7OpenJPATests implements RewriteTest {
           java(
             """
                package com.ibm.test;
-               
                import javax.persistence.Entity;
                import javax.persistence.GeneratedValue;
                import javax.persistence.GenerationType;
                import javax.persistence.Id;
                
                @Entity
-               public class GeneratedValueStrategySpaces  {
-               
+               class GeneratedValueStrategySpaces  {
                	// flag it
                	@Id
                	@GeneratedValue( strategy = GenerationType.AUTO )
                	private int id;
-               	
-               
                }
                """,
             """
                package com.ibm.test;
-               
                import javax.persistence.Entity;
                import javax.persistence.GeneratedValue;
                import javax.persistence.GenerationType;
                import javax.persistence.Id;
                
                @Entity
-               public class GeneratedValueStrategySpaces  {
-               
+               class GeneratedValueStrategySpaces  {
                    // flag it
                    @Id
                    @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
                    @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
                    private int id;
-               
-               
                }
                """
           )
