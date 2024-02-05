@@ -23,11 +23,11 @@ import org.openrewrite.test.RewriteTest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.maven.Assertions.pomXml;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("LanguageMismatch")
 class AddJaxbDependenciesTest implements RewriteTest {
