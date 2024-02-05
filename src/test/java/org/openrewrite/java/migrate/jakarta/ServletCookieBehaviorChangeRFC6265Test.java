@@ -37,7 +37,7 @@ public class ServletCookieBehaviorChangeRFC6265Test implements RewriteTest {
 
     @DocumentExample
     @Test
-    public void removeMethodsJakarta() {
+    void removeMethodsJakarta() {
         rewriteRun(
           //language=java
           java(

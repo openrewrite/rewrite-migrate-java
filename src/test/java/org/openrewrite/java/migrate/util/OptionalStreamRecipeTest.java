@@ -32,7 +32,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
 
     @DocumentExample
     @Test
-    public void basic_case() {
+    void basic_case() {
         rewriteRun(
           //language=java
           java(
@@ -63,7 +63,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
     }
 
     @Test
-    public void twice() {
+    void twice() {
         rewriteRun(
           //language=java
           java(
@@ -101,7 +101,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
     }
 
     @Test
-    public void without_assignment() {
+    void without_assignment() {
         rewriteRun(
           //language=java
           java(
@@ -132,7 +132,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
     }
 
     @Test
-    public void oneliner() {
+    void oneliner() {
         rewriteRun(
           //language=java
           java(
@@ -156,7 +156,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
     }
 
     @Test
-    public void with_toList() {
+    void with_toList() {
         rewriteRun(
           //language=java
           java(
@@ -192,7 +192,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
     }
 
     @Test
-    public void with_toList2() {
+    void with_toList2() {
         rewriteRun(
           //language=java
           java(
@@ -227,7 +227,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
     }
 
     @Test
-    public void with_comment() {
+    void with_comment() {
         rewriteRun(
           //language=java
           java(
@@ -264,7 +264,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
     }
 
     @Test
-    public void with_comment_after() {
+    void with_comment_after() {
         rewriteRun(
           //language=java
           java(
@@ -301,7 +301,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
     }
 
     @Test
-    public void with_comment_in_the_middle() {
+    void with_comment_in_the_middle() {
         rewriteRun(
           //language=java
           java(
@@ -338,7 +338,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
     }
 
     @Test
-    public void with_multiple_coments() {
+    void with_multiple_coments() {
         rewriteRun(
           //language=java
           java(
@@ -372,7 +372,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
     }
 
     @Test
-    public void with_block_comment() {
+    void with_block_comment() {
         rewriteRun(
           //language=java
           java(
@@ -409,7 +409,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
     }
 
     @Test
-    public void dont_match_different_optional() {
+    void dont_match_different_optional() {
         rewriteRun(
           //language=java
           java(

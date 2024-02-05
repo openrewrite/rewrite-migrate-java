@@ -24,7 +24,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 
-public class FindDataUsedOnDtoTest implements RewriteTest {
+class FindDataUsedOnDtoTest implements RewriteTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @ParameterizedTest
