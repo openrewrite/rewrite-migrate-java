@@ -37,7 +37,7 @@ public class AddTableGenerator extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Adds missing configuration for attributes with automatically generated values.";
+        return "Adds missing `@TableGenerator` annotation and updates the `@GeneratedValue` annotation values when it uses automatically generated values.";
     }
 
     @Override
