@@ -27,35 +27,69 @@ import static org.openrewrite.java.Assertions.java;
 public class HttpSessionInvalidateMethodTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "javax.servlet-3.0"))
-          .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.javaee6")
-            .build().activateRecipes("org.openrewrite.java.migrate.javaee6.HttpSessionInvalidateMethod"));
+        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.servlet-3.0")).recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.javaee6").build().activateRecipes("org.openrewrite.java.migrate.javaee6.HttpSessionInvalidateMethod"));
     }
 
     @Test
-    void invalidateHttpSession() {
+    void noChangeNeeded() {
+        rewriteRun(java("""
+            import javax.servlet.http.HttpServletResponse;
+            import javax.servlet.http.HttpServletRequest;
+            import javax.servlet.http.HttpSession;
+            
+            class Foo {
+                void logOut(HttpServletRequest req, HttpServletResponse res) {
+                    HttpSession session = req.getSession();
+                    req.logout();
+                    res.sendRedirect("login.html");
+                }
+            }
+          """));
+    }
+
+    @Test
+    void noChangeCannotFindServletRequest() {
+        rewriteRun(java("""
+            import javax.servlet.http.HttpServletResponse;
+            import javax.servlet.http.HttpSession;
+            
+            class Foo {
+                void logOut(HttpSession session, HttpServletResponse res) {
+                    session.logout();
+                    res.sendRedirect("login.html");
+                }
+            }
+          """));
+    }
+
+    @Test
+    void useLogoutWhenHttpServletRequestExistsInScope() {
         rewriteRun(
           //language=java
-          java(
-            """
-              import javax.servlet.http.HttpSession;
+          java("""
+            import javax.servlet.http.HttpServletResponse;
+            import javax.servlet.http.HttpServletRequest;
+            import javax.servlet.http.HttpSession;
 
-              class Foo {
-                  void bar(HttpSession foo) {
-                      foo.invalidate();
-                  }
-              }
-              """, """
-              import javax.servlet.http.HttpServletRequest;
+            class Foo {
+                void logOut(HttpServletRequest req, HttpServletResponse res) {
+                    HttpSession session = req.getSession(false);
+                    session.invalidate();
+                    res.sendRedirect("login.html");
+                }
+            }
+            """, """
+            import javax.servlet.http.HttpServletResponse;
+            import javax.servlet.http.HttpServletRequest;
+            import javax.servlet.http.HttpSession;
 
-              class Foo {
-                  void bar(HttpServletRequest foo) {
-                      foo.logout();
-                  }
-              }
-              """
-          )
-        );
+            class Foo {
+                void logOut(HttpServletRequest req, HttpServletResponse res) {
+                    HttpSession session = req.getSession(false);
+                    req.logout();
+                    res.sendRedirect("login.html");
+                }
+            }
+            """));
     }
 }
