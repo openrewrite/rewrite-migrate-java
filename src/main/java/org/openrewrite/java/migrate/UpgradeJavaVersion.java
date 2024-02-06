@@ -65,7 +65,7 @@ public class UpgradeJavaVersion extends Recipe {
                 SourceFile source = (SourceFile) tree;
 
                 if (source instanceof G.CompilationUnit && new IsBuildGradle<ExecutionContext>().visit(source, ctx) != source) {
-                    source = (SourceFile) new UpdateJavaCompatibility(version, null, null, false).getVisitor().visitNonNull(source, ctx);
+                    source = (SourceFile) new UpdateJavaCompatibility(version, null, null, false, null, null).getVisitor().visitNonNull(source, ctx);
                 } else if (source instanceof Xml.Document) {
                     source = (SourceFile) new MavenUpdateJavaVersionVisitor().visitNonNull(source, ctx);
                 }
