@@ -14,3 +14,4 @@ jobs:
     uses: openrewrite/gh-automation/.github/workflows/comment-pr.yml@main
     secrets:
       GH_PAT_ACTIONS_READ: ${{ secrets.GH_PAT_ACTIONS_READ }}
+      GH_PAT_PULL_REQUESTS_WRITE: ${{ secrets.TEAM_MODERNE_ACTION_PAT }}
