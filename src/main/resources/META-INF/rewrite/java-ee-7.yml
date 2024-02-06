@@ -26,7 +26,6 @@ recipeList:
   - org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
   - org.openrewrite.java.migrate.JpaCacheProperties
   - org.openrewrite.java.migrate.BeansXmlNamespace
-
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
