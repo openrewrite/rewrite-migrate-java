@@ -22,6 +22,7 @@ tags:
   - javaee7
   - deprecated
 recipeList:
+  - org.openrewrite.java.migrate.javaee6
   - org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
   - org.openrewrite.java.migrate.JpaCacheProperties
   - org.openrewrite.java.migrate.BeansXmlNamespace
