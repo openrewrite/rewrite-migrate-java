@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.config.CompositeRecipe;
@@ -31,304 +32,313 @@ import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class UpgradeJavaVersionTest implements RewriteTest {
-    @DocumentExample
-    @Test
-    void mavenUpgradeFromJava8ToJava17ViaProperties() {
-        rewriteRun(
-          spec -> spec.recipe(new UpgradeJavaVersion(17)),
-          pomXml(
-            //language=xml
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                 
-                <properties>
-                  <java.version>1.8</java.version>
-                  <maven.compiler.source>1.8</maven.compiler.source>
-                  <maven.compiler.target>1.8</maven.compiler.target>
-                </properties>
-                
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-              </project>
-              """,
-            //language=xml
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                 
-                <properties>
-                  <java.version>17</java.version>
-                  <maven.compiler.source>17</maven.compiler.source>
-                  <maven.compiler.target>17</maven.compiler.target>
-                </properties>
-                
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-              </project>
-              """,
-            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
-          )
-        );
-    }
-
-    @Test
-    void mavenUpgradeFromJava8ToJava17ViaConfiguration() {
-        rewriteRun(
-          spec -> spec.recipe(new UpgradeJavaVersion(17)),
-          //language=xml
-          pomXml(
-            //language=xml
-            """
-              <project>
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-                <build>
-                  <plugins>
-                    <plugin>
-                      <groupId>org.apache.maven.plugins</groupId>
-                      <artifactId>maven-compiler-plugin</artifactId>
-                      <version>3.8.0</version>
-                      <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                      </configuration>
-                    </plugin>
-                  </plugins>
-                </build>
-              </project>
-              """,
-            //language=xml
-            """
-              <project>
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-                <build>
-                  <plugins>
-                    <plugin>
-                      <groupId>org.apache.maven.plugins</groupId>
-                      <artifactId>maven-compiler-plugin</artifactId>
-                      <version>3.8.0</version>
-                      <configuration>
-                        <source>17</source>
-                        <target>17</target>
-                      </configuration>
-                    </plugin>
-                  </plugins>
-                </build>
-              </project>
-              """,
-            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
-          )
-        );
-    }
-
-    @Test
-    void gradleUpgradeFromJava11ToJava17() {
-        rewriteRun(
-          spec -> spec.recipe(new UpgradeJavaVersion(17)),
-          //language=groovy
-          buildGradle(
-            """
-              java {
-                toolchain {
-                  languageVersion = JavaLanguageVersion.of(11)
-                }
-              }
-              """,
-            """
-              java {
-                toolchain {
-                  languageVersion = JavaLanguageVersion.of(17)
-                }
-              }
-              """,
-            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
-          )
-        );
-    }
-
-    @Test
-    void gradleSourceTargetFromJava11ToJava17() {
-        rewriteRun(
-          spec -> spec.recipe(new UpgradeJavaVersion(17)),
-          buildGradle(
-            """
-              java {
-                sourceCompatibility = 11
-                targetCompatibility = 11
-              }
-              """,
-            """
-              java {
-                sourceCompatibility = 17
-                targetCompatibility = 17
-              }
-              """,
-            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
-          )
-        );
-    }
-
-    @Test
-    void gradleNoChangeIfUpgradeFromJava11ToJava8() {
-        rewriteRun(
-          spec -> spec.recipe(new UpgradeJavaVersion(8)),
-          //language=groovy
-          buildGradle(
-            """
-              java {
-                toolchain {
-                  languageVersion = JavaLanguageVersion.of(11)
-                }
-              }
-              """,
-            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
-          )
-        );
-    }
-
-    @Test
-    void upgradeJavaVersionTo17From11() {
-        rewriteRun(
-          spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(17), new AboutJavaVersion(null)))),
-          //language=java
-          java(
-            """
-              class Test {
-              }
-              """,
-            """
-              /*~~(Java version: 17)~~>*/class Test {
-              }
-              """,
-            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
-          )
-        );
-    }
-
-    @Test
-    void upgradeJavaVersionTo11From8() {
-        rewriteRun(
-          spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(11), new AboutJavaVersion(null)))),
-          //language=java
-          java(
-            """
-              class Test {
-              }
-              """,
-            """
-              /*~~(Java version: 11)~~>*/class Test {
-              }
-              """,
-            spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "1.8.0+x", ""))
-          )
-        );
-    }
-
-    @Test
-    void upgradeAllThatNeedUpgrading() {
-        rewriteRun(
-          spec -> spec.recipes(new UpgradeJavaVersion(11), new AboutJavaVersion(null)),
-          version(
-            java(
-              //language=java
-              """
-                class Test {
-                }
-                """,
-              //language=java
-              """
-                /*~~(Java version: 11)~~>*/class Test {
-                }
+    @Nested
+    class Maven {
+        @DocumentExample
+        @Test
+        void mavenUpgradeFromJava8ToJava17ViaProperties() {
+            rewriteRun(
+              spec -> spec.recipe(new UpgradeJavaVersion(17)),
+              pomXml(
+                //language=xml
                 """
-            ),
-            8
-          ),
-          version(
-            java(
-              //language=java
-              """
-                class Test2 {
-                }
-                """,
-              """
-                /*~~(Java version: 11)~~>*/class Test2 {
-                }
+                  <project>
+                    <modelVersion>4.0.0</modelVersion>
+                     
+                    <properties>
+                      <java.version>1.8</java.version>
+                      <maven.compiler.source>1.8</maven.compiler.source>
+                      <maven.compiler.target>1.8</maven.compiler.target>
+                    </properties>
+                    
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                  </project>
+                  """,
+                //language=xml
                 """
-            ),
-            11
-          ),
-          version(
-            java(
-              //language=java
-              """
-                class Test3 {
-                }
-                """,
-              //language=java
-              """
-                /*~~(Java version: 17)~~>*/class Test3 {
-                }
+                  <project>
+                    <modelVersion>4.0.0</modelVersion>
+                     
+                    <properties>
+                      <java.version>17</java.version>
+                      <maven.compiler.source>17</maven.compiler.source>
+                      <maven.compiler.target>17</maven.compiler.target>
+                    </properties>
+                    
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                  </project>
+                  """,
+                spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
+              )
+            );
+        }
+
+        @Test
+        void mavenUpgradeFromJava8ToJava17ViaConfiguration() {
+            rewriteRun(
+              spec -> spec.recipe(new UpgradeJavaVersion(17)),
+              //language=xml
+              pomXml(
+                //language=xml
                 """
-            ),
-            17
-          )
-        );
+                  <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                      <plugins>
+                        <plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-compiler-plugin</artifactId>
+                          <version>3.8.0</version>
+                          <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                          </configuration>
+                        </plugin>
+                      </plugins>
+                    </build>
+                  </project>
+                  """,
+                //language=xml
+                """
+                  <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                      <plugins>
+                        <plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-compiler-plugin</artifactId>
+                          <version>3.8.0</version>
+                          <configuration>
+                            <source>17</source>
+                            <target>17</target>
+                          </configuration>
+                        </plugin>
+                      </plugins>
+                    </build>
+                  </project>
+                  """,
+                spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
+              )
+            );
+        }
     }
 
-    @Test
-    void upgradeAllThatNeedUpgradingNewestFirst() {
-        rewriteRun(
-          spec -> spec.recipes(new UpgradeJavaVersion(11), new AboutJavaVersion(null)),
-          version(
-            java(
-              //language=java
-              """
-                class Test {
-                }
-                """,
-              //language=java
-              """
-                /*~~(Java version: 17)~~>*/class Test {
-                }
+    @Nested
+    class Gradle {
+        @Test
+        void gradleUpgradeFromJava11ToJava17() {
+            rewriteRun(
+              spec -> spec.recipe(new UpgradeJavaVersion(17)),
+              //language=groovy
+              buildGradle(
                 """
-            ),
-            17
-          ),
-          version(
-            java(
-              //language=java
-              """
-                class Test2 {
-                }
-                """,
-              """
-                /*~~(Java version: 11)~~>*/class Test2 {
-                }
+                  java {
+                    toolchain {
+                      languageVersion = JavaLanguageVersion.of(11)
+                    }
+                  }
+                  """,
                 """
-            ),
-            11
-          ),
-          version(
-            java(
-              //language=java
-              """
-                class Test3 {
-                }
-                """,
-              //language=java
-              """
-                /*~~(Java version: 11)~~>*/class Test3 {
-                }
+                  java {
+                    toolchain {
+                      languageVersion = JavaLanguageVersion.of(17)
+                    }
+                  }
+                  """,
+                spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
+              )
+            );
+        }
+
+        @Test
+        void gradleSourceTargetFromJava11ToJava17() {
+            rewriteRun(
+              spec -> spec.recipe(new UpgradeJavaVersion(17)),
+              buildGradle(
                 """
-            ),
-            8
-          )
-        );
+                  java {
+                    sourceCompatibility = 11
+                    targetCompatibility = 11
+                  }
+                  """,
+                """
+                  java {
+                    sourceCompatibility = 17
+                    targetCompatibility = 17
+                  }
+                  """,
+                spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
+              )
+            );
+        }
+
+        @Test
+        void gradleNoChangeIfUpgradeFromJava11ToJava8() {
+            rewriteRun(
+              spec -> spec.recipe(new UpgradeJavaVersion(8)),
+              //language=groovy
+              buildGradle(
+                """
+                  java {
+                    toolchain {
+                      languageVersion = JavaLanguageVersion.of(11)
+                    }
+                  }
+                  """,
+                spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
+              )
+            );
+        }
+    }
+
+    @Nested
+    class Markers {
+        @Test
+        void upgradeJavaVersionTo17From11() {
+            rewriteRun(
+              spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(17), new AboutJavaVersion(null)))),
+              //language=java
+              java(
+                """
+                  class Test {
+                  }
+                  """,
+                """
+                  /*~~(Java version: 17)~~>*/class Test {
+                  }
+                  """,
+                spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
+              )
+            );
+        }
+
+        @Test
+        void upgradeJavaVersionTo11From8() {
+            rewriteRun(
+              spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(11), new AboutJavaVersion(null)))),
+              //language=java
+              java(
+                """
+                  class Test {
+                  }
+                  """,
+                """
+                  /*~~(Java version: 11)~~>*/class Test {
+                  }
+                  """,
+                spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "1.8.0+x", ""))
+              )
+            );
+        }
+
+        @Test
+        void upgradeAllThatNeedUpgrading() {
+            rewriteRun(
+              spec -> spec.recipes(new UpgradeJavaVersion(11), new AboutJavaVersion(null)),
+              version(
+                java(
+                  //language=java
+                  """
+                    class Test {
+                    }
+                    """,
+                  //language=java
+                  """
+                    /*~~(Java version: 11)~~>*/class Test {
+                    }
+                    """
+                ),
+                8
+              ),
+              version(
+                java(
+                  //language=java
+                  """
+                    class Test2 {
+                    }
+                    """,
+                  """
+                    /*~~(Java version: 11)~~>*/class Test2 {
+                    }
+                    """
+                ),
+                11
+              ),
+              version(
+                java(
+                  //language=java
+                  """
+                    class Test3 {
+                    }
+                    """,
+                  //language=java
+                  """
+                    /*~~(Java version: 17)~~>*/class Test3 {
+                    }
+                    """
+                ),
+                17
+              )
+            );
+        }
+
+        @Test
+        void upgradeAllThatNeedUpgradingNewestFirst() {
+            rewriteRun(
+              spec -> spec.recipes(new UpgradeJavaVersion(11), new AboutJavaVersion(null)),
+              version(
+                java(
+                  //language=java
+                  """
+                    class Test {
+                    }
+                    """,
+                  //language=java
+                  """
+                    /*~~(Java version: 17)~~>*/class Test {
+                    }
+                    """
+                ),
+                17
+              ),
+              version(
+                java(
+                  //language=java
+                  """
+                    class Test2 {
+                    }
+                    """,
+                  """
+                    /*~~(Java version: 11)~~>*/class Test2 {
+                    }
+                    """
+                ),
+                11
+              ),
+              version(
+                java(
+                  //language=java
+                  """
+                    class Test3 {
+                    }
+                    """,
+                  //language=java
+                  """
+                    /*~~(Java version: 11)~~>*/class Test3 {
+                    }
+                    """
+                ),
+                8
+              )
+            );
+        }
     }
 }
