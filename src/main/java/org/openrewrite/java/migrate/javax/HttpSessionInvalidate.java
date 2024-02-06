@@ -41,7 +41,6 @@ public class HttpSessionInvalidate extends Recipe {
         return "Do not rely on HttpSession `invalidate` method for programmatic security logout. Add the HttpServletRequest `logout` method which was introduced in Java EE 6 as part of the Servlet 3.0 specification.";
     }
 
-    private final MethodMatcher INVALIDATE_METHOD_PATTERN = new MethodMatcher("javax.servlet.http.HttpSession invalidate()", false);
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -49,6 +48,7 @@ public class HttpSessionInvalidate extends Recipe {
     }
 
     public class HttpSessionVisitor extends JavaIsoVisitor<ExecutionContext> {
+        final MethodMatcher INVALIDATE_METHOD_PATTERN = new MethodMatcher("javax.servlet.http.HttpSession invalidate()", false);
         final TypeMatcher HTTP_SERVLET_REQUEST_TYPE_MATCHER = new TypeMatcher("javax.servlet.http.HttpServletRequest");
 
         @Override
