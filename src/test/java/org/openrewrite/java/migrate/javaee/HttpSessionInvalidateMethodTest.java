@@ -17,22 +17,24 @@ package org.openrewrite.java.migrate.javaee;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class HttpSessionInvalidateMethodTest implements RewriteTest {
+class HttpSessionInvalidateMethodTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.servlet-3.0")).recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.javaee6").build().activateRecipes("org.openrewrite.java.migrate.javaee6.HttpSessionInvalidateMethod"));
+        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.servlet-3.0"))
+          .recipeFromResource("/META-INF/rewrite/java-ee-6.yml", "org.openrewrite.java.migrate.javaee6.HttpSessionInvalidateMethod");
     }
 
     @Test
     void noChangeNeeded() {
-        rewriteRun(java("""
+        rewriteRun(
+          //language=java
+          java("""
             import javax.servlet.http.HttpServletResponse;
             import javax.servlet.http.HttpServletRequest;
             import javax.servlet.http.HttpSession;
@@ -44,12 +46,16 @@ public class HttpSessionInvalidateMethodTest implements RewriteTest {
                     res.sendRedirect("login.html");
                 }
             }
-          """));
+          """
+          )
+        );
     }
 
     @Test
     void noChangeCannotFindServletRequest() {
-        rewriteRun(java("""
+        rewriteRun(
+          //language=java
+          java("""
             import javax.servlet.http.HttpServletResponse;
             import javax.servlet.http.HttpSession;
             
@@ -59,14 +65,17 @@ public class HttpSessionInvalidateMethodTest implements RewriteTest {
                     res.sendRedirect("login.html");
                 }
             }
-          """));
+          """
+          )
+        );
     }
 
     @Test
     void useLogoutWhenHttpServletRequestExistsInScope() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+            """
             import javax.servlet.http.HttpServletResponse;
             import javax.servlet.http.HttpServletRequest;
             import javax.servlet.http.HttpSession;
@@ -78,7 +87,8 @@ public class HttpSessionInvalidateMethodTest implements RewriteTest {
                     res.sendRedirect("login.html");
                 }
             }
-            """, """
+            """,
+            """
             import javax.servlet.http.HttpServletResponse;
             import javax.servlet.http.HttpServletRequest;
             import javax.servlet.http.HttpSession;
@@ -90,6 +100,8 @@ public class HttpSessionInvalidateMethodTest implements RewriteTest {
                     res.sendRedirect("login.html");
                 }
             }
-            """));
+            """
+          )
+        );
     }
 }
