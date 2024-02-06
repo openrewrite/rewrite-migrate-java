@@ -74,6 +74,7 @@ class HttpSessionInvalidateTest implements RewriteTest {
         );
     }
 
+    @DocumentExample
     @Test
     void useLogoutWhenHttpServletRequestExistsInScope() {
         rewriteRun(
