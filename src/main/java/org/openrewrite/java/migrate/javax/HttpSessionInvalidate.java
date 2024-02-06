@@ -58,7 +58,7 @@ public class HttpSessionInvalidate extends Recipe {
                 J.MethodDeclaration parentMethod = getCursor().dropParentUntil(parent -> parent instanceof J.MethodDeclaration).getValue();
                 Integer servletReqParamIndex = getServletRequestIndex(parentMethod);
 
-                // failed to find HttpServletRequest from parent MethodDeclaration
+                // Failed to find HttpServletRequest from parent MethodDeclaration
                 if (servletReqParamIndex == null) {
                     return method;
                 }
