@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.javaee;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.migrate.javax.HttpSessionInvalidate;
