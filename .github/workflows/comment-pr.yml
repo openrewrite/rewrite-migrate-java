@@ -11,6 +11,7 @@ on:
 # Since this pull request has write permissions on the target repo, we should **NOT** execute any untrusted code.
 jobs:
   post-suggestions:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: openrewrite/gh-automation/.github/workflows/comment-pr.yml@main
     secrets:
       GH_PAT_ACTIONS_READ: ${{ secrets.GH_PAT_ACTIONS_READ }}
