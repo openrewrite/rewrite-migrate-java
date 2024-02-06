@@ -17,9 +17,14 @@ package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.jetbrains.annotations.Nullable;
-import org.openrewrite.*;
-import org.openrewrite.java.*;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
@@ -48,7 +53,7 @@ public class HttpSessionInvalidate extends Recipe {
 
     public class HttpSessionVisitor extends JavaIsoVisitor<ExecutionContext> {
         @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ec) {
+        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             if (INVALIDATE_METHOD_PATTERN.matches(method)) {
                 // Get index of param for HttpServletRequest, from the encapsulating method declaration TODO: would like to make this cleaner...
                 J.MethodDeclaration parentMethod = getCursor().dropParentUntil(parent -> parent instanceof J.MethodDeclaration).getValue();
@@ -66,7 +71,7 @@ public class HttpSessionInvalidate extends Recipe {
                 final JavaTemplate logoutTemplate =
                         JavaTemplate.builder("#{any(javax.servlet.http.HttpServletRequest)}.logout()")
                                 .imports("javax.servlet.http.HttpServletRequest")
-                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ec, "javax.servlet-3.0"))
+                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.servlet-3.0"))
                                 .build();
                 maybeAddImport("javax.servlet.http.HttpServletRequest");
                 method = logoutTemplate.apply(
@@ -80,9 +85,7 @@ public class HttpSessionInvalidate extends Recipe {
         }
 
         /**
-         * Return the param index position of the HttpServletRequest parameter object
-         * @param parentMethod
-         * @return
+         * @return the param index position of the HttpServletRequest parameter object
          */
         @Nullable
         private Integer getServletRequestIndex(J.MethodDeclaration parentMethod) {
