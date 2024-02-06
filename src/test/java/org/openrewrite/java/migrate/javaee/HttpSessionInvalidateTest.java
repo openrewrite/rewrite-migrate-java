@@ -65,7 +65,7 @@ class HttpSessionInvalidateTest implements RewriteTest {
                               
               class Foo {
                   void logOut(HttpSession session, HttpServletResponse res) {
-                      session.logout();
+                      session.invalidate();
                       res.sendRedirect("login.html");
                   }
               }

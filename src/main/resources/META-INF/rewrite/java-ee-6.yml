@@ -22,12 +22,4 @@ tags:
   - javaee6
   - deprecated
 recipeList:
-  - org.openrewrite.java.migrate.javaee6.HttpSessionInvalidateMethod
-
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.javaee6.HttpSessionInvalidateMethod
-displayName: Use HttpServletRequest `logout` method for programmatic security logout in Servlet 3.0
-description: Do not rely on HttpSession `invalidate` method for programmatic security logout. Add the HttpServletRequest `logout` method which was introduced in Java EE 6 as part of the Servlet 3.0 specification.
-recipeList:
   - org.openrewrite.java.migrate.javax.HttpSessionInvalidate

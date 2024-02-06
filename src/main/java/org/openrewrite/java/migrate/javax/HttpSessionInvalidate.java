@@ -21,10 +21,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.*;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
@@ -36,12 +33,12 @@ public class HttpSessionInvalidate extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Updates `javax.servlet.http.HttpSession invalidate()` to `javax.servlet.http.HttpServletRequest logout()`";
+        return "Use HttpServletRequest `logout` method for programmatic security logout in Servlet 3.0";
     }
 
     @Override
     public String getDescription() {
-        return "Updates `javax.servlet.http.HttpSession invalidate()` to `javax.servlet.http.HttpServletRequest logout()`";
+        return "Do not rely on HttpSession `invalidate` method for programmatic security logout. Add the HttpServletRequest `logout` method which was introduced in Java EE 6 as part of the Servlet 3.0 specification.";
     }
 
     private final MethodMatcher INVALIDATE_METHOD_PATTERN = new MethodMatcher("javax.servlet.http.HttpSession invalidate()", false);
@@ -52,6 +49,8 @@ public class HttpSessionInvalidate extends Recipe {
     }
 
     public class HttpSessionVisitor extends JavaIsoVisitor<ExecutionContext> {
+        final TypeMatcher HTTP_SERVLET_REQUEST_TYPE_MATCHER = new TypeMatcher("javax.servlet.http.HttpServletRequest");
+
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             if (INVALIDATE_METHOD_PATTERN.matches(method)) {
@@ -73,15 +72,13 @@ public class HttpSessionInvalidate extends Recipe {
                                 .imports("javax.servlet.http.HttpServletRequest")
                                 .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.servlet-3.0"))
                                 .build();
-                maybeAddImport("javax.servlet.http.HttpServletRequest");
                 method = logoutTemplate.apply(
                         getCursor(),
                         method.getCoordinates().replace(),
                         httpServletRequestDeclaration.getVariables().get(0)
                 );
-                return method;
             }
-            return method;
+            return super.visitMethodInvocation(method, ctx);
         }
 
         /**
@@ -91,8 +88,7 @@ public class HttpSessionInvalidate extends Recipe {
         private Integer getServletRequestIndex(J.MethodDeclaration parentMethod) {
             List<JavaType> params = parentMethod.getMethodType().getParameterTypes();
             for (int i = 0; i < params.size(); ++i) {
-                String paramType = ((JavaType.Class) params.get(i)).getFullyQualifiedName();
-                if (paramType.equals("javax.servlet.http.HttpServletRequest")) {
+                if (HTTP_SERVLET_REQUEST_TYPE_MATCHER.matches(params.get(i))) {
                     return i;
                 }
             }
