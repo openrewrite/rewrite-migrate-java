@@ -38,22 +38,22 @@ class AddColumnAnnotationTest implements RewriteTest {
           //language=java
           java(
             """
-                    import java.util.List;
-                    import javax.persistence.ElementCollection;
-                    import javax.persistence.Entity;
-                    import javax.persistence.Id;
-                    import javax.persistence.Column;
-                     
-                    @Entity
-                    public class ElementCollectionEntity {
-                        @Id
-                        private int id;
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+               
+              @Entity
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
 
-                        @ElementCollection
-                        @Column(name = "element")
-                        private List<String> listofStrings;
-                    }
-                    """
+                  @ElementCollection
+                  @Column(name = "element")
+                  private List<String> listofStrings;
+              }
+              """
           )
         );
     }
@@ -64,22 +64,22 @@ class AddColumnAnnotationTest implements RewriteTest {
           //language=java
           java(
             """
-                    import java.util.List;
-                    import javax.persistence.ElementCollection;
-                    import javax.persistence.Entity;
-                    import javax.persistence.Id;
-                    import javax.persistence.Column;
-                     
-                    @Entity
-                    public class ElementCollectionEntity {
-                        @Id
-                        private int id;
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+               
+              @Entity
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
 
-                        @ElementCollection
-                        @Column(name = "test")
-                        private List<String> listofStrings;
-                    }
-                    """
+                  @ElementCollection
+                  @Column(name = "test")
+                  private List<String> listofStrings;
+              }
+              """
           )
         );
     }
@@ -90,38 +90,38 @@ class AddColumnAnnotationTest implements RewriteTest {
           //language=java
           java(
             """
-                    import java.util.List;
-                    import javax.persistence.ElementCollection;
-                    import javax.persistence.Entity;
-                    import javax.persistence.Id;
-                    import javax.persistence.Column;
-                     
-                    @Entity
-                    public class ElementCollectionEntity {
-                        @Id
-                        private int id;
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+               
+              @Entity
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
 
-                        @ElementCollection
-                        @Column
-                        private List<String> listofStrings;
-                    }
-                    """, """
-                    import java.util.List;
-                    import javax.persistence.ElementCollection;
-                    import javax.persistence.Entity;
-                    import javax.persistence.Id;
-                    import javax.persistence.Column;
-                     
-                    @Entity
-                    public class ElementCollectionEntity {
-                        @Id
-                        private int id;
+                  @ElementCollection
+                  @Column
+                  private List<String> listofStrings;
+              }
+              """, """
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+               
+              @Entity
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
 
-                        @ElementCollection
-                        @Column(name = "element")
-                        private List<String> listofStrings;
-                    }
-                    """
+                  @ElementCollection
+                  @Column(name = "element")
+                  private List<String> listofStrings;
+              }
+              """
           )
         );
     }
