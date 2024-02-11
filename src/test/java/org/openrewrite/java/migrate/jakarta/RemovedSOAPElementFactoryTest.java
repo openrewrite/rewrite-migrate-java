@@ -26,7 +26,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 
-public class RemovedSOAPElementFactoryTest implements RewriteTest {
+class RemovedSOAPElementFactoryTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
