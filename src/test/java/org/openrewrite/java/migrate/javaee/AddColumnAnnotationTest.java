@@ -126,6 +126,48 @@ class AddColumnAnnotationTest implements RewriteTest {
         );
     }
 
+    @Test
+    void updateColumnAnnotationWithExistingAttribute() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+               
+              @Entity
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
+
+                  @ElementCollection
+                  @Column(nullable = false)
+                  private List<String> listofStrings;
+              }
+              """, """
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+               
+              @Entity
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
+
+                  @ElementCollection
+                  @Column(nullable = false, name = "element")
+                  private List<String> listofStrings;
+              }
+              """
+          )
+        );
+    }
+
     @DocumentExample
     @Test
     void addColumnAnnotationWithNameEqualsElement() {
