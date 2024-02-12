@@ -17,10 +17,8 @@ package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
@@ -32,6 +30,7 @@ import org.openrewrite.java.tree.J;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -62,15 +61,18 @@ public class AddColumnAnnotation extends Recipe {
                             return multiVariable;
                         }
 
-                        // Check if var has @Column with `name` attribute
-                        Set<J.Annotation> columnAnnotations = FindAnnotations.find(multiVariable, "@javax.persistence.Column");
-                        if (!columnAnnotations.isEmpty()) {
-                            J.Annotation columnAnnotation = columnAnnotations.iterator().next();
-                            List<Expression> args = columnAnnotation.getArguments();
+                        // If @Column annotation exists, add name attribute if missing
+                        List<J.Annotation> existingColumnAnnos = multiVariable.getLeadingAnnotations()
+                                .stream()
+                                .filter(anno -> anno.getType().toString().equals("javax.persistence.Column"))
+                                .collect(Collectors.toList());
+                        if (!existingColumnAnnos.isEmpty()) {
+                            J.Annotation columnAnnotation = existingColumnAnnos.get(0);
+                            List<Expression> currentArgs = columnAnnotation.getArguments();
                             // Exit if @Column has "name" attribute already
-                            if (!(args == null || args.isEmpty())) {
+                            if (!(currentArgs == null || currentArgs.isEmpty())) {
                                 // @Column had attributes
-                                for (Expression arg : args) {
+                                for (Expression arg : currentArgs) {
                                     J.Assignment attribute = (J.Assignment) arg;
                                     if (attribute.getVariable().toString().equals("name")) {
                                         // @Column had "name" attribute
@@ -79,13 +81,24 @@ public class AddColumnAnnotation extends Recipe {
                                 }
                             }
 
-                            // Update @Column annotation with `name = "element"`
-                            return JavaTemplate.builder("name = \"element\"")
+                            // Create the name="element" assignment
+                            J.Assignment nameAttribute = (J.Assignment) ((J.Annotation) JavaTemplate.builder("name = \"element\"")
+                                    .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.persistence-api-2.2"))
                                     .contextSensitive()
                                     .build()
-                                    .apply(getCursor(), columnAnnotation.getCoordinates().replaceArguments());
+                                    .apply(new Cursor(getCursor(), columnAnnotation), columnAnnotation.getCoordinates().replaceArguments())
+                            ).getArguments().get(0);
+                            // Create new @Column with the combined existing attributes + name attribute
+                            List<Expression> newArgs = ListUtils.concat(currentArgs, nameAttribute);
+                            J.Annotation newColumnAnno = columnAnnotation.withArguments(newArgs);
+                            newColumnAnno = autoFormat(newColumnAnno, ctx);
+                            // Replace existing @Column with updated version
+                            return JavaTemplate.builder("#{}")
+                                    .build()
+                                    .apply(getCursor(), columnAnnotation.getCoordinates().replace(), newColumnAnno);
                         }
 
+                        // Create and add @Column annotation
                         maybeAddImport("javax.persistence.Column");
                         return JavaTemplate.builder("@Column(name = \"element\")")
                                 .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.persistence-api-2.2"))

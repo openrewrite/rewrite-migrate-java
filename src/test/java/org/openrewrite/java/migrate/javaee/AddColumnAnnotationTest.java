@@ -85,7 +85,7 @@ class AddColumnAnnotationTest implements RewriteTest {
     }
 
     @Test
-    void updateColumnAnnotationWithoutNameAttribute() {
+    void updateColumnAnnotationWithoutExistingAttributes() {
         rewriteRun(
           //language=java
           java(
@@ -127,7 +127,7 @@ class AddColumnAnnotationTest implements RewriteTest {
     }
 
     @Test
-    void updateColumnAnnotationWithExistingAttribute() {
+    void updateColumnAnnotationWithExistingAttributes() {
         rewriteRun(
           //language=java
           java(
@@ -144,7 +144,7 @@ class AddColumnAnnotationTest implements RewriteTest {
                   private int id;
 
                   @ElementCollection
-                  @Column(nullable = false)
+                  @Column(nullable = false, length = 512)
                   private List<String> listofStrings;
               }
               """, """
@@ -160,7 +160,7 @@ class AddColumnAnnotationTest implements RewriteTest {
                   private int id;
 
                   @ElementCollection
-                  @Column(nullable = false, name = "element")
+                  @Column(nullable = false, length = 512, name = "element")
                   private List<String> listofStrings;
               }
               """
