@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-public class JohnzonJavaxtoJakartaTest implements RewriteTest {
+class JohnzonJavaxtoJakartaTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {

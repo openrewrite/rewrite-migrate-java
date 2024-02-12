@@ -24,7 +24,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.*;
 
-public class UseVarForGenericsConstructorsTest implements RewriteTest {
+class UseVarForGenericsConstructorsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new UseVarForGenericsConstructors())
