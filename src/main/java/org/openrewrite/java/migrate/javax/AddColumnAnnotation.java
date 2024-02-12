@@ -52,7 +52,6 @@ public class AddColumnAnnotation extends Recipe {
 
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                //
                 new UsesType<>("javax.persistence.ElementCollection", true),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
@@ -81,14 +80,10 @@ public class AddColumnAnnotation extends Recipe {
                             }
 
                             // Update @Column annotation with `name = "element"`
-                            return JavaTemplate.builder("#{} = \"#{}\"")
+                            return JavaTemplate.builder("name = \"element\"")
                                     .contextSensitive()
                                     .build()
-                                    .apply(
-                                            getCursor(),
-                                            columnAnnotation.getCoordinates().replaceArguments(),
-                                            "name", "element"
-                                    );
+                                    .apply(getCursor(), columnAnnotation.getCoordinates().replaceArguments());
                         }
 
                         maybeAddImport("javax.persistence.Column");
