@@ -22,6 +22,7 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
@@ -31,7 +32,6 @@ import org.openrewrite.java.tree.J;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -91,12 +91,12 @@ public class AddColumnAnnotation extends Recipe {
                                     );
                         }
 
-                        J.VariableDeclarations updatedVariable = JavaTemplate.apply(
-                                "@javax.persistence.Column(name = \"element\"",
-                                getCursor(),
-                                multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName))
-                        );
-                        return updatedVariable;
+                        maybeAddImport("javax.persistence.Column");
+                        return JavaTemplate.builder("@Column(name = \"element\")")
+                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.persistence-api-2.2"))
+                                .imports("javax.persistence.Column")
+                                .build()
+                                .apply(getCursor(), multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
                     }
                 }
         );
