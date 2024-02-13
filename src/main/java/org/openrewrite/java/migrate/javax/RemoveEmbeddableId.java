@@ -17,11 +17,8 @@ package org.openrewrite.java.migrate.javax;
 
 import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.RemoveAnnotation;
 import org.openrewrite.java.search.FindAnnotations;
-import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -92,8 +89,8 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
                         J.ClassDeclaration classDeclaration = getCursor().dropParentUntil(parent -> parent instanceof J.ClassDeclaration).getValue();
                         // Exit if parent class does not have @Embeddable annotation,
                         // or was not tagged with @EmbeddedId in another class
-                        if (FindAnnotations.find(classDeclaration, "@javax.persistence.Embeddable").isEmpty() ||
-                            !acc.isEmbeddableClass(classDeclaration.getType())) {
+                        if (FindAnnotations.find(classDeclaration, "@javax.persistence.Embeddable").isEmpty()
+                            || !acc.isEmbeddableClass(classDeclaration.getType())) {
                             return multiVariable;
                         }
 
