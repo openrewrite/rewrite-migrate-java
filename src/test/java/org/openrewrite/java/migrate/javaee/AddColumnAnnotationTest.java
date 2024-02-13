@@ -137,30 +137,31 @@ class AddColumnAnnotationTest implements RewriteTest {
               import javax.persistence.Entity;
               import javax.persistence.Id;
               import javax.persistence.Column;
-               
+              
               @Entity
               public class ElementCollectionEntity {
                   @Id
                   private int id;
-
-                  @ElementCollection
+              
                   @Column(nullable = false, length = 512)
+                  @ElementCollection
                   private List<String> listofStrings;
               }
-              """, """
+              """,
+            """
               import java.util.List;
               import javax.persistence.ElementCollection;
               import javax.persistence.Entity;
               import javax.persistence.Id;
               import javax.persistence.Column;
-               
+              
               @Entity
               public class ElementCollectionEntity {
                   @Id
                   private int id;
-
+              
+                  @Column(name = "element", nullable = false, length = 512)
                   @ElementCollection
-                  @Column(nullable = false, length = 512, name = "element")
                   private List<String> listofStrings;
               }
               """
@@ -176,7 +177,7 @@ class AddColumnAnnotationTest implements RewriteTest {
           java(
             """
               import java.util.List;
-              
+                            
               import javax.persistence.ElementCollection;
               import javax.persistence.Entity;
               import javax.persistence.Id;
@@ -192,7 +193,7 @@ class AddColumnAnnotationTest implements RewriteTest {
               """,
             """
               import java.util.List;
-              
+                            
               import javax.persistence.Column;
               import javax.persistence.ElementCollection;
               import javax.persistence.Entity;
