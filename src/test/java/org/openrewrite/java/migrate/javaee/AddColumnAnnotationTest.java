@@ -33,6 +33,31 @@ class AddColumnAnnotationTest implements RewriteTest {
     }
 
     @Test
+    void columnWithoutSiblingElementCollection() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+               
+              @Entity
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
+
+                  @Column
+                  private List<String> listofStrings;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void columnNameIsElement() {
         rewriteRun(
           //language=java
