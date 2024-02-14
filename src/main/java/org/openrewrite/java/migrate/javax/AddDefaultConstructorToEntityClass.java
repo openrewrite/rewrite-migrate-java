@@ -46,7 +46,6 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        final JavaTemplate defaultConstructorTemplate = JavaTemplate.builder("public #{}(){}").contextSensitive().build();
         return Preconditions.check(
                 Preconditions.or(
                         new UsesType<>("javax.persistence.Entity", true),
@@ -75,11 +74,16 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
 
                         // Add default constructor with empty body
                         // For testing simplicity, adding as last statement in class body
-                        cd = cd.withBody(defaultConstructorTemplate.apply(
-                                new Cursor(getCursor(), cd.getBody()),
-                                cd.getBody().getCoordinates().lastStatement(),
-                                cd.getSimpleName()
-                        ));
+                        cd = cd.withBody(
+                                JavaTemplate.builder("public #{}(){}")
+                                        .contextSensitive()
+                                        .build()
+                                        .apply(
+                                                new Cursor(getCursor(), cd.getBody()),
+                                                cd.getBody().getCoordinates().lastStatement(),
+                                                cd.getSimpleName()
+                                        )
+                        );
                         cd = autoFormat(cd, ctx);
                         return cd;
                     }
