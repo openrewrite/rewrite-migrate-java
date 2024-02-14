@@ -169,7 +169,7 @@ public class AddDefaultConstructorToEntityClassTest implements RewriteTest {
                   @Id
                   private int id;
 
-                  public doNothing() {
+                  public void doNothing() {
                   }
 
                   public MissingNoArgConstructorEntity(int id) {
@@ -185,7 +185,7 @@ public class AddDefaultConstructorToEntityClassTest implements RewriteTest {
                   @Id
                   private int id;
 
-                  public doNothing() {
+                  public void doNothing() {
                   }
 
                   public MissingNoArgConstructorEntity(int id) {
