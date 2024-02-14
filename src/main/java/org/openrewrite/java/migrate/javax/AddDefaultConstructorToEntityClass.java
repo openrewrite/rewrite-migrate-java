@@ -17,22 +17,21 @@ package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.*;
+import org.openrewrite.Cursor;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Statement;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 // TODO: possibly rename to EntityNoArgConstructor?
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class AddDefaultConstructorToEntityClass extends Recipe {
-
     @Override
     public String getDisplayName() {
         return "@Entity objects with constructors must also have a default constructor";
@@ -52,13 +51,13 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
                 Preconditions.or(
                         new UsesType<>("javax.persistence.Entity", true),
                         new UsesType<>("javax.persistence.MappedSuperclass", true)
-                        ),
+                ),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
                         // Exit if class not annotated with either @Entity or @MappedSuperclass
                         if (FindAnnotations.find(cd, "javax.persistence.Entity").isEmpty()
-                        && FindAnnotations.find(cd, "javax.persistence.MappedSuperclass").isEmpty()) {
+                            && FindAnnotations.find(cd, "javax.persistence.MappedSuperclass").isEmpty()) {
                             return cd;
                         }
 
@@ -80,7 +79,7 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
                                 new Cursor(getCursor(), cd.getBody()),
                                 cd.getBody().getCoordinates().lastStatement(),
                                 cd.getSimpleName()
-                            ));
+                        ));
                         cd = autoFormat(cd, ctx);
                         return cd;
                     }
