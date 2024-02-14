@@ -46,7 +46,7 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        final JavaTemplate defaultConstructorTemplate = JavaTemplate.builder("public #{}(){}").build();
+        final JavaTemplate defaultConstructorTemplate = JavaTemplate.builder("public #{}(){}").contextSensitive().build();
         return Preconditions.check(
                 Preconditions.or(
                         new UsesType<>("javax.persistence.Entity", true),
