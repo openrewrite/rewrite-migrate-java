@@ -176,7 +176,8 @@ public class AddDefaultConstructorToEntityClassTest implements RewriteTest {
                       this.id = id;
                   }
               }
-              ""","""
+              """,
+              """
               import javax.persistence.Entity;
               import javax.persistence.Id;
 
