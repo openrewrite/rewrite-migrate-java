@@ -35,13 +35,13 @@ class RemoveEmbeddableIdTest implements RewriteTest {
     @DocumentExample
     @Test
     void removeIdFromEmbeddableObject() {
+        //language=java
         rewriteRun(
-          //language=java
           java(
             """
               import javax.persistence.EmbeddedId;
               import javax.persistence.Entity;
-                            
+              
               @Entity
               public class MainEntity {
                  @EmbeddedId
@@ -59,9 +59,10 @@ class RemoveEmbeddableIdTest implements RewriteTest {
                   @Id
                   private int field;
               }
-              """, """
+              """,
+              """
               import javax.persistence.Embeddable;
-
+              
               @Embeddable
               public class EmbeddableObject {
                   private int field;
@@ -73,13 +74,13 @@ class RemoveEmbeddableIdTest implements RewriteTest {
 
     @Test
     void noChangeIfNotEmbeddable() {
+        //language=java
         rewriteRun(
-          //language=java
           java(
             """
               import javax.persistence.EmbeddedId;
               import javax.persistence.Entity;
-                            
+              
               @Entity
               public class MainEntity {
                  @EmbeddedId
@@ -91,7 +92,7 @@ class RemoveEmbeddableIdTest implements RewriteTest {
             """
               import javax.persistence.Embeddable;
               import javax.persistence.Id;
-
+              
               public class EmbeddableObject {
                   @Id
                   private int field;
@@ -103,13 +104,13 @@ class RemoveEmbeddableIdTest implements RewriteTest {
 
     @Test
     void noChangeIfNoIdAnnotation() {
+        //language=java
         rewriteRun(
-          //language=java
           java(
             """
               import javax.persistence.EmbeddedId;
               import javax.persistence.Entity;
-                            
+              
               @Entity
               public class MainEntity {
                  @EmbeddedId
@@ -121,7 +122,7 @@ class RemoveEmbeddableIdTest implements RewriteTest {
             """
               import javax.persistence.Embeddable;
               import javax.persistence.Id;
-
+              
               @Embeddable
               public class EmbeddableObject {
                   private int field;
@@ -133,13 +134,13 @@ class RemoveEmbeddableIdTest implements RewriteTest {
 
     @Test
     void noChangeIfNotReferencedByEmbeddedId() {
+        //language=java
         rewriteRun(
-          //language=java
           java(
             """
               import javax.persistence.EmbeddedId;
               import javax.persistence.Entity;
-                            
+              
               @Entity
               public class MainEntity {
                  private EmbeddableObject eo;
@@ -150,7 +151,7 @@ class RemoveEmbeddableIdTest implements RewriteTest {
             """
               import javax.persistence.Embeddable;
               import javax.persistence.Id;
-
+              
               @Embeddable
               public class EmbeddableObject {
                   @Id

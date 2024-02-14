@@ -19,6 +19,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.RemoveAnnotation;
 import org.openrewrite.java.search.FindAnnotations;
@@ -33,15 +34,15 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
 
     @Override
     public String getDisplayName() {
-        return "Embeddable classes cannot have an Id annotation when referenced by an EmbeddedId annotation";
+        return "`@Embeddable` classes cannot have an `@Id` annotation when referenced by an `@EmbeddedId` annotation";
     }
 
     @Override
     public String getDescription() {
-        return "According to the Java Persistence API (JPA) specification, if an entity defines an attribute with an \n" +
-               "EmbeddedId annotation, the embeddable class cannot contain an attribute with an Id annotation. If both \n" +
-               "the EmbeddedId annotation and the Id annotation are defined, OpenJPA ignores the Id annotation, whereas \n" +
-               "EclipseLink throws an exception.";
+        return "According to the Java Persistence API (JPA) specification, if an entity defines an attribute with an " +
+               "`@EmbeddedId` annotation, the embeddable class cannot contain an attribute with an `@Id` annotation. " +
+               "If both the `@EmbeddedId` annotation and the `@Id` annotation are defined, " +
+               "OpenJPA ignores the `@Id` annotation, whereas EclipseLink throws an exception.";
     }
 
     @Override
@@ -92,15 +93,13 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
                         J.ClassDeclaration classDeclaration = getCursor().dropParentUntil(parent -> parent instanceof J.ClassDeclaration).getValue();
                         // Exit if parent class does not have @Embeddable annotation,
                         // or was not tagged with @EmbeddedId in another class
-                        if (FindAnnotations.find(classDeclaration, "@javax.persistence.Embeddable").isEmpty()
-                            || !acc.isEmbeddableClass(classDeclaration.getType())) {
+                        if (!acc.isEmbeddableClass(classDeclaration.getType()) ||
+                            FindAnnotations.find(classDeclaration, "@javax.persistence.Embeddable").isEmpty()) {
                             return multiVariable;
                         }
 
                         // Remove @Id annotation
-                        doAfterVisit(new RemoveAnnotation(
-                                "javax.persistence.Id").getVisitor()
-                        );
+                        doAfterVisit(new RemoveAnnotation("javax.persistence.Id").getVisitor());
 
                         return multiVariable;
                     }
@@ -115,7 +114,7 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
             definedEmbeddableClasses.add(type);
         }
 
-        public boolean isEmbeddableClass(JavaType type) {
+        public boolean isEmbeddableClass(@Nullable JavaType type) {
             return definedEmbeddableClasses.contains(type);
         }
     }
