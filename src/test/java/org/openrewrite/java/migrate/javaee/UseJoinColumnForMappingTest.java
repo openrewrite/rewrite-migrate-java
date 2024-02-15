@@ -151,4 +151,59 @@ public class UseJoinColumnForMappingTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void dropAttributesOnColumnChange() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Column;
+              import javax.persistence.Id;
+              import javax.persistence.ManyToOne;
+                            
+              @Entity
+              public class TransactionEntity {
+                  @Id
+                  private int id;
+
+                  private long transactionNumber;
+                  @Column(name="amount", length=512, precision=12, scale=2)
+                  private double amount;
+
+                  @ManyToOne
+                  @Column(name="account", length=512, precision=12, scale=2)
+                  private Account account;
+              }
+              """,
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.JoinColumn;
+              import javax.persistence.ManyToOne;
+                            
+              @Entity
+              public class TransactionEntity {
+                  @Id
+                  private int id;
+                  
+                  private long transactionNumber;
+                  @Column(name="amount", length=512, precision=12, scale=2)
+                  private double amount;
+                  
+                  @ManyToOne
+                  @JoinColumn(name="account")
+                  private Account account;
+              }
+              """
+          ),
+          java(
+            """
+              public class Account {
+              }
+              """
+          )
+        );
+    }
 }
