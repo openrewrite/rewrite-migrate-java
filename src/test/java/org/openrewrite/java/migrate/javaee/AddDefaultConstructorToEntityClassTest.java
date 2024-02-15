@@ -25,7 +25,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class AddDefaultConstructorToEntityClassTest implements RewriteTest {
+class AddDefaultConstructorToEntityClassTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.persistence-api-2.2"))
@@ -52,7 +52,7 @@ public class AddDefaultConstructorToEntityClassTest implements RewriteTest {
                   }
               }
               """,
-              """
+            """
               import javax.persistence.Entity;
               import javax.persistence.Id;
 
@@ -70,7 +70,7 @@ public class AddDefaultConstructorToEntityClassTest implements RewriteTest {
               }
               """
           )
-          );
+        );
     }
 
     @Test
@@ -180,7 +180,7 @@ public class AddDefaultConstructorToEntityClassTest implements RewriteTest {
                   }
               }
               """,
-              """
+            """
               import javax.persistence.Entity;
               import javax.persistence.Id;
 

@@ -15,19 +15,15 @@
  */
 package org.openrewrite.java.migrate.javax;
 
-import lombok.Value;
-import org.openrewrite.Cursor;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import lombok.EqualsAndHashCode;
+import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
-@Value
+@EqualsAndHashCode(callSuper = false)
 public class AddDefaultConstructorToEntityClass extends Recipe {
     @Override
     public String getDisplayName() {
@@ -46,8 +42,7 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
         return Preconditions.check(
                 Preconditions.or(
                         new UsesType<>("javax.persistence.Entity", true),
-                        new UsesType<>("javax.persistence.MappedSuperclass", true)
-                ),
+                        new UsesType<>("javax.persistence.MappedSuperclass", true)),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
@@ -57,32 +52,25 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
                             return classDecl;
                         }
 
-                        // Check if class has a default no-arg constructor
-                        boolean hasDefaultConstructor = classDecl.getBody().getStatements().stream()
+                        // Exit if class already has default no-arg constructor
+                        if (classDecl.getBody().getStatements().stream()
                                 .filter(statement -> statement instanceof J.MethodDeclaration)
                                 .map(J.MethodDeclaration.class::cast)
-                                .filter(methodDeclaration -> methodDeclaration.getMethodType().getName().equals("<constructor>"))
-                                .anyMatch(constructor -> constructor.getParameters().get(0).getClass().equals(J.Empty.class));
-
-                        // Exit if class already has default no-arg constructor
-                        if (hasDefaultConstructor) {
+                                .filter(J.MethodDeclaration::isConstructor)
+                                .anyMatch(constructor -> constructor.getParameters().get(0) instanceof J.Empty)) {
                             return classDecl;
                         }
 
                         // Add default constructor with empty body
                         // For testing simplicity, adding as last statement in class body
-                        classDecl = classDecl.withBody(
-                                JavaTemplate.builder("public #{}(){}")
-                                        .contextSensitive()
-                                        .build()
-                                        .apply(
-                                                new Cursor(getCursor(), classDecl.getBody()),
-                                                classDecl.getBody().getCoordinates().lastStatement(),
-                                                classDecl.getSimpleName()
-                                        )
+                        return classDecl.withBody(JavaTemplate.builder("public #{}(){}")
+                                .contextSensitive()
+                                .build()
+                                .apply(new Cursor(getCursor(), classDecl.getBody()),
+                                        classDecl.getBody().getCoordinates().lastStatement(),
+                                        classDecl.getSimpleName()
+                                )
                         );
-                        classDecl = autoFormat(classDecl, ctx);
-                        return classDecl;
                     }
                 }
         );
