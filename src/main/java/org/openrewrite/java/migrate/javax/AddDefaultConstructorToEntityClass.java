@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.javax;
 
-import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
@@ -30,7 +29,6 @@ import org.openrewrite.java.tree.J;
 
 // TODO: possibly rename to EntityNoArgConstructor?
 @Value
-@EqualsAndHashCode(callSuper = false)
 public class AddDefaultConstructorToEntityClass extends Recipe {
     @Override
     public String getDisplayName() {
@@ -53,15 +51,15 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
                 ),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
+                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                         // Exit if class not annotated with either @Entity or @MappedSuperclass
-                        if (FindAnnotations.find(cd, "javax.persistence.Entity").isEmpty()
-                            && FindAnnotations.find(cd, "javax.persistence.MappedSuperclass").isEmpty()) {
-                            return cd;
+                        if (FindAnnotations.find(classDecl, "javax.persistence.Entity").isEmpty()
+                            && FindAnnotations.find(classDecl, "javax.persistence.MappedSuperclass").isEmpty()) {
+                            return classDecl;
                         }
 
                         // Check if class has a default no-arg constructor
-                        boolean hasDefaultConstructor = cd.getBody().getStatements().stream()
+                        boolean hasDefaultConstructor = classDecl.getBody().getStatements().stream()
                                 .filter(statement -> statement instanceof J.MethodDeclaration)
                                 .map(J.MethodDeclaration.class::cast)
                                 .filter(methodDeclaration -> methodDeclaration.getMethodType().getName().equals("<constructor>"))
@@ -69,23 +67,23 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
 
                         // Exit if class already has default no-arg constructor
                         if (hasDefaultConstructor) {
-                            return cd;
+                            return classDecl;
                         }
 
                         // Add default constructor with empty body
                         // For testing simplicity, adding as last statement in class body
-                        cd = cd.withBody(
+                        classDecl = classDecl.withBody(
                                 JavaTemplate.builder("public #{}(){}")
                                         .contextSensitive()
                                         .build()
                                         .apply(
-                                                new Cursor(getCursor(), cd.getBody()),
-                                                cd.getBody().getCoordinates().lastStatement(),
-                                                cd.getSimpleName()
+                                                new Cursor(getCursor(), classDecl.getBody()),
+                                                classDecl.getBody().getCoordinates().lastStatement(),
+                                                classDecl.getSimpleName()
                                         )
                         );
-                        cd = autoFormat(cd, ctx);
-                        return cd;
+                        classDecl = autoFormat(classDecl, ctx);
+                        return classDecl;
                     }
                 }
         );
