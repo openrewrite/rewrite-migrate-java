@@ -27,12 +27,11 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
-// TODO: possibly rename to EntityNoArgConstructor?
 @Value
 public class AddDefaultConstructorToEntityClass extends Recipe {
     @Override
     public String getDisplayName() {
-        return "@Entity objects with constructors must also have a default constructor";
+        return "`@Entity` objects with constructors must also have a default constructor";
     }
 
     @Override
