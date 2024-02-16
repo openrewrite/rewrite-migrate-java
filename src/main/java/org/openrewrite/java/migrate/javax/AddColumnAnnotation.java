@@ -74,7 +74,7 @@ public class AddColumnAnnotation extends Recipe {
                                 "javax.persistence.Column", "name", "element", true)
                                 .getVisitor().visit(multiVariable, ctx);
 
-                        return multiVariable;
+                        return newVar;
                     }
                 }
         );
