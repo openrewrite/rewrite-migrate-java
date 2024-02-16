@@ -69,12 +69,14 @@ public class UseJoinColumnForMapping extends Recipe {
 
                         // Change @Column to @JoinColumn
                         // The javax.persistence.Column attributes length, precision, and scale are not copied.
-                        doAfterVisit(new ChangeType("javax.persistence.Column", "javax.persistence.JoinColumn", false).getVisitor());
-                        doAfterVisit(new RemoveAnnotationAttribute("javax.persistence.JoinColumn", "length").getVisitor());
-                        doAfterVisit(new RemoveAnnotationAttribute("javax.persistence.JoinColumn", "precision").getVisitor());
-                        doAfterVisit(new RemoveAnnotationAttribute("javax.persistence.JoinColumn", "scale").getVisitor());
+                        maybeRemoveImport("javax.persistence.Column");
+                        maybeAddImport("javax.persistence.JoinColumn"); // TODO: exceeding 5+ javax.persistence imports turns into wildcard import in tests
+                        J.VariableDeclarations joinColumn = (J.VariableDeclarations) new ChangeType("javax.persistence.Column", "javax.persistence.JoinColumn", false).getVisitor().visit(multiVariable, ctx);
+                        joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute("javax.persistence.JoinColumn", "length").getVisitor().visit(joinColumn, ctx);
+                        joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute("javax.persistence.JoinColumn", "precision").getVisitor().visit(joinColumn, ctx);
+                        joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute("javax.persistence.JoinColumn", "scale").getVisitor().visit(joinColumn, ctx);
 
-                        return multiVariable;
+                        return joinColumn;
                     }
                 }
         );
