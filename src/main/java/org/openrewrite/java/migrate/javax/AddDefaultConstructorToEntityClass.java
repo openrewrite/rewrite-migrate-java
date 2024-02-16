@@ -23,6 +23,8 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
+import java.util.Comparator;
+
 @EqualsAndHashCode(callSuper = false)
 public class AddDefaultConstructorToEntityClass extends Recipe {
     @Override
@@ -62,12 +64,11 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
                         }
 
                         // Add default constructor with empty body
-                        // For testing simplicity, adding as last statement in class body
                         return classDecl.withBody(JavaTemplate.builder("public #{}(){}")
                                 .contextSensitive()
                                 .build()
                                 .apply(new Cursor(getCursor(), classDecl.getBody()),
-                                        classDecl.getBody().getCoordinates().lastStatement(),
+                                        classDecl.getBody().getCoordinates().addMethodDeclaration(Comparator.comparing(J.MethodDeclaration::getSimpleName)),
                                         classDecl.getSimpleName()
                                 )
                         );

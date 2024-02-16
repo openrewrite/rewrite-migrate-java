@@ -172,11 +172,11 @@ class AddDefaultConstructorToEntityClassTest implements RewriteTest {
                   @Id
                   private int id;
 
-                  public void doNothing() {
-                  }
-
                   public MissingNoArgConstructorEntity(int id) {
                       this.id = id;
+                  }
+                  
+                  public void doNothing() {
                   }
               }
               """,
@@ -189,14 +189,96 @@ class AddDefaultConstructorToEntityClassTest implements RewriteTest {
                   @Id
                   private int id;
 
+                  public MissingNoArgConstructorEntity(int id) {
+                      this.id = id;
+                  }
+
+                  public MissingNoArgConstructorEntity() {
+                  }
+
                   public void doNothing() {
                   }
+              }
+              """)
+        );
+    }
+
+    @Test
+    void insertAfterExistingConstructors() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class MissingNoArgConstructorEntity {
+                  @Id
+                  private int id;
+
+                  public MissingNoArgConstructorEntity(int id) {
+                      this.id = id;
+                  }
+                  
+                  public void doNothing() {
+                  }
+              }
+              """,
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class MissingNoArgConstructorEntity {
+                  @Id
+                  private int id;
 
                   public MissingNoArgConstructorEntity(int id) {
                       this.id = id;
                   }
 
                   public MissingNoArgConstructorEntity() {
+                  }
+
+                  public void doNothing() {
+                  }
+              }
+              """)
+        );
+    }
+
+    @Test
+    void insertFirstIfNoExistingConstructors() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class MissingNoArgConstructorEntity {
+                  @Id
+                  private int id;
+
+                  public void doNothing() {
+                  }
+              }
+              """,
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class MissingNoArgConstructorEntity {
+
+                  public MissingNoArgConstructorEntity() {
+                  }
+                  @Id
+                  private int id;
+
+                  public void doNothing() {
                   }
               }
               """)
