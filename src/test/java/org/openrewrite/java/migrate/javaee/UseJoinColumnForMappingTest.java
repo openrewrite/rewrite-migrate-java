@@ -153,7 +153,7 @@ public class UseJoinColumnForMappingTest implements RewriteTest {
     }
 
     @Test
-    void dropAttributesOnColumnChange() {
+    void dropAttributesOnColumnChange() { // and avoid on unaffected @Column
         //language=java
         rewriteRun(
           java(
@@ -178,10 +178,7 @@ public class UseJoinColumnForMappingTest implements RewriteTest {
               }
               """,
             """
-              import javax.persistence.Entity;
-              import javax.persistence.Id;
-              import javax.persistence.JoinColumn;
-              import javax.persistence.ManyToOne;
+              import javax.persistence.*;
                             
               @Entity
               public class TransactionEntity {
