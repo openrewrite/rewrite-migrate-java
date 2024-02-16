@@ -58,6 +58,54 @@ class AddColumnAnnotationTest implements RewriteTest {
     }
 
     @Test
+    void avoidChangingColumnsWithoutElementCollection() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+               
+              @Entity
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
+
+                  @Column
+                  private List<Integer> listOfInts;
+                  
+                  @ElementCollection
+                  private List<String> listofStrings;
+              }
+              """,
+            """
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+               
+              @Entity
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
+
+                  @Column
+                  private List<Integer> listOfInts;
+
+                  @Column(name = "element")
+                  @ElementCollection
+                  private List<String> listofStrings;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void columnNameIsElement() {
         rewriteRun(
           //language=java
