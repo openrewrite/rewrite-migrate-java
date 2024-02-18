@@ -55,26 +55,26 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(11),
                 new UsesMethod<>(JAVA_UTIL_OPTIONAL_IS_PRESENT));
-        MethodMatcher optionalIsPresentMatcher = new MethodMatcher(JAVA_UTIL_OPTIONAL_IS_PRESENT);
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
-            public Statement visitStatement(Statement s, ExecutionContext ctx) {
-                Statement statement = (Statement) super.visitStatement(s, ctx);
-                if (statement instanceof J.Unary) {
-                    J.Unary unary = (J.Unary) statement;
+            public J visitStatement(Statement s, ExecutionContext ctx) {
+                J superReturn = super.visitStatement(s, ctx);
+                if (superReturn instanceof J.Unary) {
+                    J.Unary unary = (J.Unary) superReturn;
                     if (unary.getOperator() == Type.Not) {
                         Expression expression = unary.getExpression();
                         if (expression instanceof J.MethodInvocation) {
                             J.MethodInvocation methodInvocation = (J.MethodInvocation) expression;
+                            MethodMatcher optionalIsPresentMatcher = new MethodMatcher(JAVA_UTIL_OPTIONAL_IS_PRESENT);
                             if (optionalIsPresentMatcher.matches(methodInvocation)) {
                                 return JavaTemplate.builder("#{any(java.util.Optional)}.isEmpty()")
                                         .build()
-                                        .apply(getCursor(), statement.getCoordinates().replace(), methodInvocation.getSelect());
+                                        .apply(getCursor(), unary.getCoordinates().replace(), methodInvocation.getSelect());
                             }
                         }
                     }
                 }
-                return statement;
+                return superReturn;
             }
         });
     }
