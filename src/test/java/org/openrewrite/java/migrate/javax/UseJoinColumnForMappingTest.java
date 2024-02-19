@@ -19,16 +19,16 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.migrate.javax.UseJoinColumnForMapping;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class UseJoinColumnForMappingTest implements RewriteTest {
+class UseJoinColumnForMappingTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.persistence-api-2.2"))
+        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.persistence-api-2.2")
+            .dependsOn("public class Account {}"))
           .recipe(new UseJoinColumnForMapping());
     }
 
@@ -76,12 +76,6 @@ public class UseJoinColumnForMappingTest implements RewriteTest {
                   private Account account;
               }
               """
-          ),
-          java(
-            """
-              public class Account {
-              }
-              """
           )
         );
     }
@@ -109,12 +103,6 @@ public class UseJoinColumnForMappingTest implements RewriteTest {
                   private Account account;
               }
               """
-          ),
-          java(
-            """
-              public class Account {
-              }
-              """
           )
         );
     }
@@ -140,12 +128,6 @@ public class UseJoinColumnForMappingTest implements RewriteTest {
 
                   @ManyToOne
                   private Account account;
-              }
-              """
-          ),
-          java(
-            """
-              public class Account {
               }
               """
           )
@@ -192,12 +174,6 @@ public class UseJoinColumnForMappingTest implements RewriteTest {
                   @ManyToOne
                   @JoinColumn(name="account")
                   private Account account;
-              }
-              """
-          ),
-          java(
-            """
-              public class Account {
               }
               """
           )

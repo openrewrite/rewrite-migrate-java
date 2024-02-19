@@ -15,24 +15,19 @@
  */
 package org.openrewrite.java.migrate.javax;
 
-import lombok.Value;
+import lombok.EqualsAndHashCode;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.RemoveAnnotationAttribute;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-@Value
+@EqualsAndHashCode(callSuper = false)
 public class UseJoinColumnForMapping extends Recipe {
     @Override
     public String getDisplayName() {
