@@ -32,9 +32,6 @@ import org.openrewrite.java.tree.Statement;
 import java.time.Duration;
 
 public class OptionalNotEmptyToIsPresent extends Recipe {
-
-    private static final String JAVA_UTIL_OPTIONAL_IS_EMPTY = "java.util.Optional isEmpty()";
-
     @Override
     public String getDisplayName() {
         return "Prefer `Optional.isPresent()`";
@@ -52,32 +49,26 @@ public class OptionalNotEmptyToIsPresent extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
+        MethodMatcher optionalIsPresentMatcher = new MethodMatcher("java.util.Optional isEmpty()");
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(11),
-                new UsesMethod<>(JAVA_UTIL_OPTIONAL_IS_EMPTY));
+                new UsesMethod<>(optionalIsPresentMatcher));
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitStatement(Statement s, ExecutionContext ctx) {
-                J superReturn = super.visitStatement(s, ctx);
-                if (superReturn instanceof J.Unary) {
-                    J.Unary unary = (J.Unary) superReturn;
-                    if (unary.getOperator() == Type.Not) {
-                        Expression expression = unary.getExpression();
-                        if (expression instanceof J.MethodInvocation) {
-                            J.MethodInvocation m = (J.MethodInvocation) expression;
-                            MethodMatcher optionalIsPresentMatcher = new MethodMatcher(JAVA_UTIL_OPTIONAL_IS_EMPTY);
-                            if (optionalIsPresentMatcher.matches(m)) {
-                                return JavaTemplate.builder("#{any()}.isPresent()")
-                                        .contextSensitive()
-                                        .build()
-                                        .apply(getCursor(),
-                                                unary.getCoordinates().replace(),
-                                                m.getSelect());
-                            }
+                if (s instanceof J.Unary) {
+                    J.Unary unary = (J.Unary) s;
+                    Expression expression = unary.getExpression();
+                    if (unary.getOperator() == Type.Not && expression instanceof J.MethodInvocation) {
+                        J.MethodInvocation m = (J.MethodInvocation) expression;
+                        if (optionalIsPresentMatcher.matches(m)) {
+                            return JavaTemplate.builder("#{any(java.util.Optional)}.isPresent()")
+                                    .build()
+                                    .apply(getCursor(), unary.getCoordinates().replace(), m.getSelect());
                         }
                     }
                 }
-                return superReturn;
+                return super.visitStatement(s, ctx);
             }
         });
     }
