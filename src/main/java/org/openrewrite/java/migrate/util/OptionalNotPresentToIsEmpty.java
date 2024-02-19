@@ -24,7 +24,6 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.Unary.Type;
 import org.openrewrite.java.tree.Statement;
@@ -58,14 +57,11 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
             public J visitStatement(Statement s, ExecutionContext ctx) {
                 if (s instanceof J.Unary) {
                     J.Unary unary = (J.Unary) s;
-                    Expression expression = unary.getExpression();
-                    if (unary.getOperator() == Type.Not && expression instanceof J.MethodInvocation) {
-                        J.MethodInvocation methodInvocation = (J.MethodInvocation) expression;
-                        if (optionalIsPresentMatcher.matches(methodInvocation)) {
-                            return JavaTemplate.builder("#{any(java.util.Optional)}.isEmpty()")
-                                    .build()
-                                    .apply(getCursor(), unary.getCoordinates().replace(), methodInvocation.getSelect());
-                        }
+                    if (unary.getOperator() == Type.Not && optionalIsPresentMatcher.matches(unary.getExpression())) {
+                        return JavaTemplate.apply("#{any(java.util.Optional)}.isEmpty()",
+                                getCursor(),
+                                unary.getCoordinates().replace(),
+                                ((J.MethodInvocation) unary.getExpression()).getSelect());
                     }
                 }
                 return super.visitStatement(s, ctx);
