@@ -12,9 +12,13 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Value
 @EqualsAndHashCode(callSuper=false)
@@ -44,55 +48,55 @@ public class RemoveTemporalAnnotation extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         Pattern temporalPattern = Pattern.compile(".*TemporalType\\.(TIMESTAMP|DATE|TIME)");
+        final String JAVA_SQL_TIMESTAMP = "java.sql.Timestamp";
+        final String JAVA_SQL_TIME = "java.sql.Time";
+        final String JAVA_SQL_DATE = "java.sql.Date";
+
+        Set<String> javaSqlDateTimeTypes = Stream.of(
+                JAVA_SQL_TIMESTAMP,
+                JAVA_SQL_TIME,
+                JAVA_SQL_DATE
+                ).collect(Collectors.toSet());
+        // Combinations of TemporalType and java.sql classes that do not need removal
+        Map<String, String> doNotRemove = Stream.of(new String[][] {
+                {"DATE", JAVA_SQL_TIMESTAMP},
+                {"TIME", JAVA_SQL_TIMESTAMP},
+                {"TIMESTAMP", JAVA_SQL_DATE}
+        }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
+        // TODO: maybe future recipe to handle these by creating a converter class
+        // https://wiki.eclipse.org/EclipseLink/Examples/JPA/Migration/OpenJPA/Mappings#.40Temporal_on_java.sql.Date.2FTime.2FTimestamp_fields
+
         return Preconditions.check(
                 Preconditions.and(
                         new UsesType<>("javax.persistence.Temporal", true),
                         Preconditions.or(
-                                new UsesType<>("java.sql.Date", true),
-                                new UsesType<>("java.sql.Time", true),
-                                new UsesType<>("java.sql.Timestamp", true)
+                                new UsesType<>(JAVA_SQL_DATE, true),
+                                new UsesType<>(JAVA_SQL_TIME, true),
+                                new UsesType<>(JAVA_SQL_TIMESTAMP, true)
                         )
                 ),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                        // T && (A || B || C
-                        // !(T && (A || B || C)
-                        // !T || !(A || B || C)
-                        // !T || !A && !B && !C
                         // Exit if no @Temporal annotation, or var is not java.sql.Date/Time/Timestamp
                         String varClass = multiVariable.getType().toString();
                         Set<J.Annotation> temporalAnnos = FindAnnotations.find(multiVariable, "javax.persistence.Temporal");
-                        if (temporalAnnos.isEmpty()
-                            || !varClass.equals("java.sql.Date")
-                            && !varClass.equals("java.sql.Time")
-                            && !varClass.equals("java.sql.Timestamp")) {
+                        if (temporalAnnos.isEmpty() || !javaSqlDateTimeTypes.contains(varClass)) {
                             return multiVariable;
                         }
 
                         // Get TemporalType
                         J.Annotation temporal = temporalAnnos.iterator().next();
-                        String temporalDef = temporal.getArguments().iterator().next().toString();
-                        Matcher temporalMatch = temporalPattern.matcher(temporalDef);
+                        String temporalArg = temporal.getArguments().iterator().next().toString();
+                        Matcher temporalMatch = temporalPattern.matcher(temporalArg);
                         if (!temporalMatch.find()) {
                             return multiVariable;
                         }
                         String temporalType = temporalMatch.group(1);
 
                         // Check combination of attribute and var's class
-                        switch (varClass) {
-                            case "java.sql.Date":
-                                if (!temporalType.equals("DATE") && !temporalType.equals("TIME")) {
-                                    return multiVariable;
-                                }
-                                break;
-                            case "java.sql.Timestamp":
-                                if (!temporalType.equals("TIMESTAMP")) {
-                                    return multiVariable;
-                                }
-                                break;
-                            default: // TIME does not work with any
-                                break;
+                        if (doNotRemove.get(temporalType).equals(varClass)) {
+                            return multiVariable;
                         }
 
                         // Remove @Temporal annotation on this var
