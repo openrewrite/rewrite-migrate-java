@@ -12,7 +12,6 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -21,10 +20,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Value
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper = false)
 public class RemoveTemporalAnnotation extends Recipe {
     /*
-     *  This rule scans for the following annotation-attribute combinations where data does not need to be converted and the Temporal annotation must be removed to avoid an EclipseLink error:
+     * This rule scans for the following annotation-attribute combinations where data does not need to be converted
+     * and the Temporal annotation must be removed to avoid an EclipseLink error:
      *
      *     A javax.persistence.Temporal(TemporalType.DATE) annotation on a java.sql.Date attribute
      *     A the javax.persistence.Temporal(TemporalType.TIME) annotation on a java.sql.Date attribute
@@ -33,6 +33,7 @@ public class RemoveTemporalAnnotation extends Recipe {
      *     A the javax.persistence.Temporal(TemporalType.TIMESTAMP) annotation on a java.sql.Time
      *     A the javax.persistence.Temporal(TemporalType.TIMESTAMP) annotation on a java.sql.Timestamp attribute
      *
+     * NOTES: @Temporal has a required argument, which can only be TemporalType.DATE/TIME/TIMESTAMP
      */
 
     @Override
@@ -42,7 +43,8 @@ public class RemoveTemporalAnnotation extends Recipe {
 
     @Override
     public String getDescription() {
-        return "OpenJPA persists the fields of attributes of type `java.sql.Date`, `java.sql.Time`, or `java.sql.Timestamp` that have a `javax.persistence.Temporal` annotation, whereas EclipseLink throws an exception.";
+        return "OpenJPA persists the fields of attributes of type `java.sql.Date`, `java.sql.Time`, or `java.sql.Timestamp` " +
+               "that have a `javax.persistence.Temporal` annotation, whereas EclipseLink throws an exception.";
     }
 
     @Override
@@ -56,9 +58,9 @@ public class RemoveTemporalAnnotation extends Recipe {
                 JAVA_SQL_TIMESTAMP,
                 JAVA_SQL_TIME,
                 JAVA_SQL_DATE
-                ).collect(Collectors.toSet());
+        ).collect(Collectors.toSet());
         // Combinations of TemporalType and java.sql classes that do not need removal
-        Map<String, String> doNotRemove = Stream.of(new String[][] {
+        Map<String, String> doNotRemove = Stream.of(new String[][]{
                 {"DATE", JAVA_SQL_TIMESTAMP},
                 {"TIME", JAVA_SQL_TIMESTAMP},
                 {"TIMESTAMP", JAVA_SQL_DATE}
@@ -99,7 +101,7 @@ public class RemoveTemporalAnnotation extends Recipe {
                             return multiVariable;
                         }
 
-                        // Remove @Temporal annotation on this var
+                        // Remove @Temporal annotation
                         return (J.VariableDeclarations) new RemoveAnnotation("javax.persistence.Temporal").getVisitor().visit(multiVariable, ctx);
                     }
                 }
