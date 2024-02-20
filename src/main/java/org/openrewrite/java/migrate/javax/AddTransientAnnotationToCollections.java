@@ -25,6 +25,8 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.regex.Pattern;
 
 @Value
@@ -51,19 +53,27 @@ public class AddTransientAnnotationToCollections extends Recipe {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
+                // Exit if not Collection
                 if (!multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))) {
                     return multiVariable;
                 }
-                if (!multiVariable.getLeadingAnnotations().isEmpty()) {
-                    return multiVariable;
+                // Exit if already has JPA annotation
+                List<J.Annotation> annos = multiVariable.getLeadingAnnotations();
+                if (!annos.isEmpty()) {
+                    for (J.Annotation anno : annos) {
+                        if (anno.getType().toString().contains("javax.persistence")) {
+                            return multiVariable;
+                        }
+                    }
                 }
+                // Add @Transient annotation
                 maybeAddImport("javax.persistence.Transient");
                 return JavaTemplate.builder("@Transient")
                         .contextSensitive()
                         .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.persistence-api-2.2"))
                         .imports("javax.persistence.Transient")
                         .build()
-                        .apply(getCursor(), multiVariable.getCoordinates().replaceAnnotations());
+                        .apply(getCursor(), multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
             }
         };
     }

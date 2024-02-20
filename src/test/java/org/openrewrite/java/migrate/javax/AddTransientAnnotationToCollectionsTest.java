@@ -76,7 +76,7 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
     }
 
     @Test
-    void ignoreAlreadyAnnotatedCollection() {
+    void ignoreJpaAnnotatedCollection() {
         rewriteRun(
           java(
             """
@@ -110,6 +110,53 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
                   private int id;
 
                   @Id
+                  private Collection collectionField;
+                  @Transient
+                  private List listField;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void addTransientToNonJpaAnnotatedCollection() {
+        rewriteRun(
+          java(
+            """
+              import java.util.Collection;
+              import java.util.List;
+              import java.lang.annotation.Documented;
+                            
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+                            
+              @Entity
+              public class UnannotatedCollectionEntity {
+                  @Id
+                  private int id;
+
+                  @Documented
+                  private Collection collectionField;
+                  private List listField;
+              }
+              """,
+            """
+              import java.util.Collection;
+              import java.util.List;
+              import java.lang.annotation.Documented;
+                            
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Transient;
+                            
+              @Entity
+              public class UnannotatedCollectionEntity {
+                  @Id
+                  private int id;
+
+                  @Documented
+                  @Transient
                   private Collection collectionField;
                   @Transient
                   private List listField;
