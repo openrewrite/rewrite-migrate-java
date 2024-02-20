@@ -24,11 +24,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class AddTransientAnnotationTest implements RewriteTest {
+class AddTransientAnnotationToCollectionsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.persistence-api-2.2"))
-          .recipe(new AddTransientAnnotation());
+          .recipe(new AddTransientAnnotationToCollections());
     }
 
     @Test

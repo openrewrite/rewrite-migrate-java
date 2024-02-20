@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class AddTransientAnnotation extends Recipe {
+public class AddTransientAnnotationToCollections extends Recipe {
 
     @Override
     public String getDisplayName() {
