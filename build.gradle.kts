@@ -27,7 +27,6 @@ dependencies {
     implementation("org.openrewrite.recipe:rewrite-github-actions:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-java-dependencies:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-static-analysis:$rewriteVersion")
-    implementation("org.openrewrite.gradle.tooling:model:$rewriteVersion")
     implementation("org.openrewrite:rewrite-templating:$rewriteVersion")
 
     implementation("commons-io:commons-io:2.+")
