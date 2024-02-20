@@ -55,7 +55,6 @@ public class AddTransientAnnotation extends Recipe {
                 if (!multiVariable.getType().isAssignableFrom(collection)) {
                     return multiVariable;
                 }
-                System.out.println("Pass: " + multiVariable.getTypeAsFullyQualified());
                 if (!multiVariable.getLeadingAnnotations().isEmpty()) {
                     return multiVariable;
                 }

@@ -24,7 +24,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class AddTransientAnnotationTest implements RewriteTest {
+class AddTransientAnnotationTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.persistence-api-2.2"))
@@ -120,7 +120,7 @@ public class AddTransientAnnotationTest implements RewriteTest {
     }
 
     @Test
-    void testVariousCollections() {
+    void variousCollections() {
         rewriteRun(
           java(
             """
