@@ -48,11 +48,10 @@ public class AddTransientAnnotation extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        Pattern collection = Pattern.compile("java.util.Collection");
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                if (!multiVariable.getType().isAssignableFrom(collection)) {
+                if (!multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))) {
                     return multiVariable;
                 }
                 if (!multiVariable.getLeadingAnnotations().isEmpty()) {
