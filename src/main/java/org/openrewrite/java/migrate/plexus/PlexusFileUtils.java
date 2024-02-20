@@ -27,8 +27,8 @@ class PlexusFileUtils {
     // https://github.com/codehaus-plexus/plexus-utils/blob/master/src/main/java/org/codehaus/plexus/util/StringUtils.java
 
     @RecipeDescriptor(
-            name = "Replace `FileUtils.deleteDirectory(File)` with JDK internals",
-            description = "Replace Plexus `FileUtils.deleteDirectory(File directory)` with JDK internals.")
+            name = "Replace `FileUtils.deleteDirectory(File)` with JDK provided API",
+            description = "Replace Plexus `FileUtils.deleteDirectory(File directory)` with JDK provided API.")
     static class DeleteDirectoryFile {
         @BeforeTemplate
         void before(File dir) throws Exception {
@@ -42,8 +42,8 @@ class PlexusFileUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `FileUtils.deleteDirectory(String)` with JDK internals",
-            description = "Replace Plexus `FileUtils.deleteDirectory(String directory)` with JDK internals.")
+            name = "Replace `FileUtils.deleteDirectory(String)` with JDK provided API",
+            description = "Replace Plexus `FileUtils.deleteDirectory(String directory)` with JDK provided API.")
     static class DeleteDirectoryString {
         @BeforeTemplate
         void before(String dir) throws Exception {
@@ -57,8 +57,8 @@ class PlexusFileUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `FileUtils.fileExists(String)` with JDK internals",
-            description = "Replace Plexus `FileUtils.fileExists(String fileName)` with JDK internals.")
+            name = "Replace `FileUtils.fileExists(String)` with JDK provided API",
+            description = "Replace Plexus `FileUtils.fileExists(String fileName)` with JDK provided API.")
     static class FileExistsString {
         @BeforeTemplate
         boolean before(String fileName) throws Exception {
@@ -72,8 +72,8 @@ class PlexusFileUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `FileUtils.getFile(String)` with JDK internals",
-            description = "Replace Plexus `FileUtils.getFile(String fileName)` with JDK internals.")
+            name = "Replace `FileUtils.getFile(String)` with JDK provided API",
+            description = "Replace Plexus `FileUtils.getFile(String fileName)` with JDK provided API.")
     static class GetFile {
         @BeforeTemplate
         File before(String fileName) throws Exception {

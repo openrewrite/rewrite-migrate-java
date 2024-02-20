@@ -27,8 +27,8 @@ import java.util.Objects;
 @SuppressWarnings("ALL")
 public class MavenSharedStringUtils {
     @RecipeDescriptor(
-            name = "Replace `StringUtils.abbreviate(String, int)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.abbreviate(String str, int maxWidth)` with JDK internals.")
+            name = "Replace `StringUtils.abbreviate(String, int)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.abbreviate(String str, int maxWidth)` with JDK provided API.")
     public static class Abbreviate {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s1,
@@ -43,8 +43,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.capitalise(String)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.capitalise(String str)` with JDK internals.")
+            name = "Replace `StringUtils.capitalise(String)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.capitalise(String str)` with JDK provided API.")
     @SuppressWarnings("ConstantValue")
     public static class Capitalise {
         @BeforeTemplate
@@ -59,8 +59,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.defaultString(Object)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.defaultString(Object obj)` with JDK internals.")
+            name = "Replace `StringUtils.defaultString(Object)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.defaultString(Object obj)` with JDK provided API.")
     public static class DefaultString {
         @BeforeTemplate
         String before(String s) {
@@ -74,8 +74,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.defaultString(Object, String)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.defaultString(Object obj, String nullDefault)` with JDK internals.")
+            name = "Replace `StringUtils.defaultString(Object, String)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.defaultString(Object obj, String nullDefault)` with JDK provided API.")
     public static class DefaultStringFallback {
         @BeforeTemplate
         String before(String s, String nullDefault) {
@@ -89,8 +89,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.deleteWhitespace(String)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.deleteWhitespace(String str)` with JDK internals.")
+            name = "Replace `StringUtils.deleteWhitespace(String)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.deleteWhitespace(String str)` with JDK provided API.")
     public static class DeleteWhitespace {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -104,8 +104,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.equalsIgnoreCase(String, String)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.equalsIgnoreCase(String str1, String str2)` with JDK internals.")
+            name = "Replace `StringUtils.equalsIgnoreCase(String, String)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.equalsIgnoreCase(String str1, String str2)` with JDK provided API.")
     public static class EqualsIgnoreCase {
         @BeforeTemplate
         boolean before(@Matches(RepeatableArgumentMatcher.class) String s,
@@ -120,8 +120,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.equals(String, String)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.equals(String str1, String str2)` with JDK internals.")
+            name = "Replace `StringUtils.equals(String, String)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.equals(String str1, String str2)` with JDK provided API.")
     public static class Equals {
         @BeforeTemplate
         boolean before(String s, String other) {
@@ -135,8 +135,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.lowerCase(String)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.lowerCase(String str)` with JDK internals.")
+            name = "Replace `StringUtils.lowerCase(String)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.lowerCase(String str)` with JDK provided API.")
     public static class Lowercase {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -150,8 +150,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.replace(String, String, String)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.replace(String text, String searchString, String replacement)` with JDK internals.")
+            name = "Replace `StringUtils.replace(String, String, String)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.replace(String text, String searchString, String replacement)` with JDK provided API.")
     public static class Replace {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s,
@@ -167,8 +167,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.reverse(String)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.reverse(String str)` with JDK internals.")
+            name = "Replace `StringUtils.reverse(String)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.reverse(String str)` with JDK provided API.")
     public static class Reverse {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -182,8 +182,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.split(String)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.split(String str)` with JDK internals.")
+            name = "Replace `StringUtils.split(String)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.split(String str)` with JDK provided API.")
     public static class Split {
         @BeforeTemplate
         String[] before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -197,8 +197,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.strip(String)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.strip(String str)` with JDK internals.")
+            name = "Replace `StringUtils.strip(String)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.strip(String str)` with JDK provided API.")
     public static class Strip {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -212,8 +212,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.trim(String)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.trim(String str)` with JDK internals.")
+            name = "Replace `StringUtils.trim(String)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.trim(String str)` with JDK provided API.")
     public static class Trim {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
@@ -227,8 +227,8 @@ public class MavenSharedStringUtils {
     }
 
     @RecipeDescriptor(
-            name = "Replace `StringUtils.upperCase(String)` with JDK internals",
-            description = "Replace Maven Shared `StringUtils.upperCase(String str)` with JDK internals.")
+            name = "Replace `StringUtils.upperCase(String)` with JDK provided API",
+            description = "Replace Maven Shared `StringUtils.upperCase(String str)` with JDK provided API.")
     public static class Uppercase {
         @BeforeTemplate
         String before(@Matches(RepeatableArgumentMatcher.class) String s) {
