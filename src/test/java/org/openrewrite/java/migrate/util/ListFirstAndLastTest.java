@@ -65,6 +65,41 @@ class ListFirstAndLastTest implements RewriteTest {
         }
 
         @Test
+        void getFirstFromMethodInvocation() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      List<String> collection() {
+                          return new ArrayList<>();
+                      }
+                  
+                      String bar() {
+                          return collection().get(0);
+                      }
+                  }
+                  """,
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      List<String> collection() {
+                          return new ArrayList<>();
+                      }
+                  
+                      String bar() {
+                          return collection().getFirst();
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
         void addFirst() {
             rewriteRun(
               //language=java

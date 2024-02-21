@@ -15,10 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
@@ -27,6 +24,7 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
+import org.openrewrite.marker.Markers;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +66,21 @@ public class ListFirstAndLast extends Recipe {
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
             Expression select = mi.getSelect();
+
+            // Shortcut for `getList().get(0)` -> `getList().getFirst()`
+            if (GET_MATCHER.matches(mi) &&
+                select instanceof J.MethodInvocation &&
+                J.Literal.isLiteralValue(mi.getArguments().get(0), 0)) {
+                JavaType.Method newMethodType = mi.getMethodType()
+                        .withName("getFirst")
+                        .withParameterNames(null)
+                        .withParameterTypes(null);
+                return mi.withName(mi.getName().withSimpleName("getFirst").withType(newMethodType))
+                        .withArguments(Collections.singletonList(new J.Empty(Tree.randomId(), Space.EMPTY, Markers.EMPTY)))
+                        .withMethodType(newMethodType);
+            }
+
+            // limit ourselves to identifiers for now, as x.get(x.size() - 1) requires the same reference for x
             if (!(select instanceof J.Identifier)) {
                 return mi;
             }
