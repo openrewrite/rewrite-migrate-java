@@ -104,6 +104,7 @@ public class AddTransientAnnotationToEntity extends ScanningRecipe<AddTransientA
                         }
                     }
                 }
+                // Add @Transient annotation
                 maybeAddImport("javax.persistence.Transient");
                 return JavaTemplate.builder("@Transient")
                         .contextSensitive()

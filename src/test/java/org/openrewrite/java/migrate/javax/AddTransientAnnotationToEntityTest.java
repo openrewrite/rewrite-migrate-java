@@ -34,6 +34,7 @@ class AddTransientAnnotationToEntityTest implements RewriteTest {
     @Test
     @DocumentExample
     void addTransient() {
+        //language=java
         rewriteRun(
           java(
             """
@@ -80,6 +81,7 @@ class AddTransientAnnotationToEntityTest implements RewriteTest {
 
     @Test
     void ignoreJpaAnnotatedEntity() {
+        //language=java
         rewriteRun(
           java(
             """
@@ -113,6 +115,7 @@ class AddTransientAnnotationToEntityTest implements RewriteTest {
 
     @Test
     void addTransientOnNonJpaAnnotatedEntity() {
+        //language=java
         rewriteRun(
           java(
             """
@@ -165,6 +168,7 @@ class AddTransientAnnotationToEntityTest implements RewriteTest {
 
     @Test
     void ignoreNonEntity() {
+        //language=java
         rewriteRun(
           java(
             """
