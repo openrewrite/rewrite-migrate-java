@@ -32,6 +32,7 @@ import java.util.List;
 
 public class ListFirstAndLast extends Recipe {
 
+    // `List` has `get`, `add`, and `remove` methods that take an index, even if more SequencedCollections have `*First` and `*Last` methods
     private static final MethodMatcher ADD_MATCHER = new MethodMatcher("java.util.List add(int, ..)", true); // , * fails
     private static final MethodMatcher GET_MATCHER = new MethodMatcher("java.util.List get(int)", true);
     private static final MethodMatcher REMOVE_MATCHER = new MethodMatcher("java.util.List remove(int)", true);
