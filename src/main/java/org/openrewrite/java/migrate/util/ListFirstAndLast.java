@@ -66,26 +66,45 @@ public class ListFirstAndLast extends Recipe {
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
-            Expression select = mi.getSelect();
 
             // Shortcut for `getList().get(0)` -> `getList().getFirst()`
-            if (GET_MATCHER.matches(mi) &&
-                select instanceof J.MethodInvocation &&
-                J.Literal.isLiteralValue(mi.getArguments().get(0), 0)) {
-                JavaType.Method newMethodType = mi.getMethodType()
-                        .withName("getFirst")
-                        .withParameterNames(null)
-                        .withParameterTypes(null);
-                return mi.withName(mi.getName().withSimpleName("getFirst").withType(newMethodType))
-                        .withArguments(Collections.singletonList(new J.Empty(Tree.randomId(), Space.EMPTY, Markers.EMPTY)))
-                        .withMethodType(newMethodType);
+            if (mi.getSelect() instanceof J.MethodInvocation) {
+                return handleSelectMethodInvocation(mi);
+            }
+            // Limit ourselves to identifiers for now, as x.get(x.size() - 1) requires the same reference for x
+            if (mi.getSelect() instanceof J.Identifier) {
+                return handleSelectIdentifier(mi);
             }
 
-            // limit ourselves to identifiers for now, as x.get(x.size() - 1) requires the same reference for x
-            if (!(select instanceof J.Identifier)) {
+            return mi;
+        }
+
+        private static J.MethodInvocation handleSelectMethodInvocation(J.MethodInvocation mi) {
+            final String operation;
+            if (GET_MATCHER.matches(mi)) {
+                operation = "get";
+            } else if (REMOVE_MATCHER.matches(mi)) {
+                operation = "remove";
+            } else {
                 return mi;
             }
-            J.Identifier sequencedCollection = (J.Identifier) select;
+
+            if (!J.Literal.isLiteralValue(mi.getArguments().get(0), 0)) {
+                return mi;
+            }
+
+            JavaType.Method newMethodType = mi.getMethodType()
+                    .withName(operation + "First")
+                    .withParameterNames(null)
+                    .withParameterTypes(null);
+            return mi.withName(mi.getName().withSimpleName(operation + "First").withType(newMethodType))
+                    .withArguments(Collections.singletonList(new J.Empty(Tree.randomId(), Space.EMPTY, Markers.EMPTY)))
+                    .withMethodType(newMethodType);
+
+        }
+
+        private static J.MethodInvocation handleSelectIdentifier(J.MethodInvocation mi) {
+            J.Identifier sequencedCollection = (J.Identifier) mi.getSelect();
 
             final String operation;
             if (ADD_MATCHER.matches(mi)) {
@@ -137,8 +156,8 @@ public class ListFirstAndLast extends Recipe {
             if (expression instanceof J.Binary) {
                 J.Binary binary = (J.Binary) expression;
                 if (binary.getOperator() == J.Binary.Type.Subtraction
-                        && J.Literal.isLiteralValue(binary.getRight(), 1)
-                        && SIZE_MATCHER.matches(binary.getLeft())) {
+                    && J.Literal.isLiteralValue(binary.getRight(), 1)
+                    && SIZE_MATCHER.matches(binary.getLeft())) {
                     Expression sizeSelect = ((J.MethodInvocation) binary.getLeft()).getSelect();
                     if (sizeSelect instanceof J.Identifier) {
                         return sequencedCollection.getSimpleName().equals(((J.Identifier) sizeSelect).getSimpleName());
