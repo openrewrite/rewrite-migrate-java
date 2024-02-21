@@ -34,6 +34,7 @@ class RemoveTemporalAnnotationTest implements RewriteTest {
     @Test
     @DocumentExample
     void removeTemporalAnnotation() {
+        //language=java
         rewriteRun(
           java(
             """
@@ -90,6 +91,7 @@ class RemoveTemporalAnnotationTest implements RewriteTest {
 
     @Test
     void dontChangeOtherCombinations() {
+        //language=java
         rewriteRun(
           java(
             """
