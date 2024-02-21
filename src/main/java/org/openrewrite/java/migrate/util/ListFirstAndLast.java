@@ -15,7 +15,10 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.*;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
@@ -24,7 +27,6 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
-import org.openrewrite.marker.Markers;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,45 +69,6 @@ public class ListFirstAndLast extends Recipe {
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
 
-            // Shortcut for `getList().get(0)` -> `getList().getFirst()`
-            if (mi.getSelect() instanceof J.MethodInvocation) {
-                return handleSelectMethodInvocation(mi);
-            }
-            // Limit ourselves to identifiers for now, as x.get(x.size() - 1) requires the same reference for x
-            if (mi.getSelect() instanceof J.Identifier) {
-                return handleSelectIdentifier(mi);
-            }
-
-            return mi;
-        }
-
-        private static J.MethodInvocation handleSelectMethodInvocation(J.MethodInvocation mi) {
-            final String operation;
-            if (GET_MATCHER.matches(mi)) {
-                operation = "get";
-            } else if (REMOVE_MATCHER.matches(mi)) {
-                operation = "remove";
-            } else {
-                return mi;
-            }
-
-            if (!J.Literal.isLiteralValue(mi.getArguments().get(0), 0)) {
-                return mi;
-            }
-
-            JavaType.Method newMethodType = mi.getMethodType()
-                    .withName(operation + "First")
-                    .withParameterNames(null)
-                    .withParameterTypes(null);
-            return mi.withName(mi.getName().withSimpleName(operation + "First").withType(newMethodType))
-                    .withArguments(Collections.singletonList(new J.Empty(Tree.randomId(), Space.EMPTY, Markers.EMPTY)))
-                    .withMethodType(newMethodType);
-
-        }
-
-        private static J.MethodInvocation handleSelectIdentifier(J.MethodInvocation mi) {
-            J.Identifier sequencedCollection = (J.Identifier) mi.getSelect();
-
             final String operation;
             if (ADD_MATCHER.matches(mi)) {
                 operation = "add";
@@ -117,6 +80,23 @@ public class ListFirstAndLast extends Recipe {
                 return mi;
             }
 
+            // Limit ourselves to identifiers for now, as x.get(x.size() - 1) requires the same reference for x
+            if (mi.getSelect() instanceof J.Identifier) {
+                return handleSelectIdentifier((J.Identifier) mi.getSelect(), mi, operation);
+            }
+
+            // XXX Maybe handle J.FieldAccess explicitly as well?
+
+            // Support limit cases like `getList().get(0)` -> `getList().getFirst()`
+            // Only handle argument of zero for now, as we can't guarantee the same reference for the collection
+            if (J.Literal.isLiteralValue(mi.getArguments().get(0), 0)) {
+                return getMethodInvocation(mi, operation, "First");
+            }
+
+            return mi;
+        }
+
+        private static J.MethodInvocation handleSelectIdentifier(J.Identifier sequencedCollection, J.MethodInvocation mi, String operation) {
             final String firstOrLast;
             Expression expression = mi.getArguments().get(0);
             if (J.Literal.isLiteralValue(expression, 0)) {
@@ -126,7 +106,10 @@ public class ListFirstAndLast extends Recipe {
             } else {
                 return mi;
             }
+            return getMethodInvocation(mi, operation, firstOrLast);
+        }
 
+        private static J.MethodInvocation getMethodInvocation(J.MethodInvocation mi, String operation, String firstOrLast) {
             List<Expression> arguments = new ArrayList<>();
             final JavaType.Method newMethodType;
             JavaType.Method originalMethodType = mi.getMethodType();
