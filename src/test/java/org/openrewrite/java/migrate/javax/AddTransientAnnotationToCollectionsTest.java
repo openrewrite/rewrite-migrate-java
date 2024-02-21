@@ -34,6 +34,7 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
     @Test
     @DocumentExample
     void addTransient() {
+        //language=java
         rewriteRun(
           java(
             """
@@ -77,6 +78,7 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
 
     @Test
     void ignoreJpaAnnotatedCollection() {
+        //language=java
         rewriteRun(
           java(
             """
@@ -121,6 +123,7 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
 
     @Test
     void addTransientToNonJpaAnnotatedCollection() {
+        //language=java
         rewriteRun(
           java(
             """
@@ -168,6 +171,7 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
 
     @Test
     void variousCollections() {
+        //language=java
         rewriteRun(
           java(
             """

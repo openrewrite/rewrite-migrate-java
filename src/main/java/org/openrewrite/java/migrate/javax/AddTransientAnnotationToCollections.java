@@ -47,7 +47,6 @@ public class AddTransientAnnotationToCollections extends Recipe {
                "to these attributes in EclipseLink.";
     }
 
-
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
