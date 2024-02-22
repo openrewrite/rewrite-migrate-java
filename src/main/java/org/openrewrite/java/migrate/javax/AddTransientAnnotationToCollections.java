@@ -24,9 +24,11 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 @Value
@@ -58,8 +60,7 @@ public class AddTransientAnnotationToCollections extends Recipe {
                 }
                 // Exit if already has JPA annotation
                 if (multiVariable.getLeadingAnnotations().stream()
-                        .anyMatch(anno ->
-                                anno.getType().toString().contains("javax.persistence"))) {
+                        .anyMatch(anno -> anno.getType().toString().contains("javax.persistence"))) {
                     return multiVariable;
                 }
                 // Add @Transient annotation
