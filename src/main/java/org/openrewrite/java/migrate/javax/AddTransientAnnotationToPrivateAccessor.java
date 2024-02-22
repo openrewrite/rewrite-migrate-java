@@ -27,6 +27,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
 import java.util.Comparator;
 
@@ -62,7 +63,7 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                             return multiVariable;
                         }
                         // Exit if not private accessor method
-                        if (!isPrivateAccessorMethod(multiVariable)) {
+                        if (!isPrivateAccessorMethod(multiVariable, parentClass)) {
                             return multiVariable;
                         }
                         // Add @Transient annotation
@@ -80,15 +81,32 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
         );
     }
 
-    private boolean isPrivateAccessorMethod(J.MethodDeclaration method) {
-        // TODO: maybe one additional check to see if the returned value is a field in the class
+    private boolean isPrivateAccessorMethod(J.MethodDeclaration method, J.ClassDeclaration classDecl) {
         if (method.hasModifier(J.Modifier.Type.Private)
             && method.getParameters().get(0) instanceof J.Empty
             && !method.getReturnTypeExpression().toString().equals("void")
             && method.getBody().getStatements().size() == 1
-            && method.getBody().getStatements().get(0) instanceof J.Return) {
+            && method.getBody().getStatements().get(0) instanceof J.Return
+            && methodReturnsFieldFromClass(method, classDecl)) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Check if the given method returns a field defined in the given class
+     * @param method
+     * @param classDecl
+     * @return
+     */
+    private boolean methodReturnsFieldFromClass(J.MethodDeclaration method, J.ClassDeclaration classDecl) {
+        JavaType.Variable returnedVar = ((J.Identifier)((J.Return)method.getBody().getStatements().get(0)).getExpression()).getFieldType();
+        return classDecl.getBody().getStatements().stream()
+                .filter(statement -> statement instanceof J.VariableDeclarations)
+                .map(J.VariableDeclarations.class::cast)
+                .map(J.VariableDeclarations::getVariables)
+                .flatMap(vars -> vars.stream())
+                .map(var -> var.getName().getFieldType())
+                .anyMatch(var -> var.equals(returnedVar));
     }
 }
