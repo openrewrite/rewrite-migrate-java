@@ -17,23 +17,18 @@ package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.*;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.TreeVisitingPrinter;
 import org.openrewrite.java.search.FindAnnotations;
-import org.openrewrite.java.search.UsesField;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -59,32 +54,34 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                 new UsesType<>("javax.persistence.Entity", true),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+                    public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration multiVariable, ExecutionContext ctx) {
                         // TODO: is this needed to filter to JPA classes?
                         // Exit if parent class is not tagged for JPA
                         J.ClassDeclaration parentClass = getCursor().dropParentUntil(parent -> parent instanceof J.ClassDeclaration).getValue();
                         if (FindAnnotations.find(parentClass, "javax.persistence.Entity").isEmpty()) {
-                            return method;
+                            return multiVariable;
                         }
                         // Exit if not private accessor method
-                        if (!isPrivateAccessorMethod(method)) {
-                            return method;
+                        if (!isPrivateAccessorMethod(multiVariable)) {
+                            return multiVariable;
                         }
                         // Add @Transient annotation
                         // TODO: why is this running twice? I have the javaParser specifying the jar
                         maybeAddImport("javax.persistence.Transient");
-                        return JavaTemplate.builder("@Transient")
+                        multiVariable = JavaTemplate.builder("@Transient")
                                 .contextSensitive()
                                 .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.persistence-api-2.2"))
                                 .imports("javax.persistence.Transient")
                                 .build()
-                                .apply(getCursor(), method.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+                                .apply(getCursor(), multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+                        return multiVariable;
                     }
                 }
         );
     }
 
     private boolean isPrivateAccessorMethod(J.MethodDeclaration method) {
+        // TODO: maybe one additional check to see if the returned value is a field in the class
         if (method.hasModifier(J.Modifier.Type.Private)
             && method.getParameters().get(0) instanceof J.Empty
             && !method.getReturnTypeExpression().toString().equals("void")

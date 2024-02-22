@@ -100,4 +100,42 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void avoidPublicGetter() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package entities;
+
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class PrivateAccessor  {
+                private int id;
+                private int field;
+
+                @Id
+                public int getId() {
+                    return id;
+                }
+
+                public void setId(int id) {
+                    this.id = id;
+                }
+
+                public int getNonPersistentField() {
+                    return field;
+                }
+
+                private void setNonPersistentField(int value) {
+                    this.field = value;
+                }
+              }
+              """
+          )
+        );
+    }
 }
