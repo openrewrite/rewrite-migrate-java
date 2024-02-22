@@ -34,7 +34,7 @@ import java.util.List;
 
 public class ListFirstAndLast extends Recipe {
 
-    // `List` has `get`, `add`, and `remove` methods that take an index, even if more SequencedCollections have `*First` and `*Last` methods
+    // While more SequencedCollections have `*First` and `*Last` methods, only list has `get`, `add`, and `remove` methods that take an index
     private static final MethodMatcher ADD_MATCHER = new MethodMatcher("java.util.List add(int, ..)", true); // , * fails
     private static final MethodMatcher GET_MATCHER = new MethodMatcher("java.util.List get(int)", true);
     private static final MethodMatcher REMOVE_MATCHER = new MethodMatcher("java.util.List remove(int)", true);
@@ -42,7 +42,7 @@ public class ListFirstAndLast extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Replace `List` `get`, `add`, and `remove` with `SequencedCollection` `*First` and `*Last` methods";
+        return "Replace `List.get(int)`, `add(int, Object)`, and `remove(int)` with `SequencedCollection` `*First` and `*Last` methods";
     }
 
     @Override
@@ -80,15 +80,14 @@ public class ListFirstAndLast extends Recipe {
                 return mi;
             }
 
-            // Limit ourselves to identifiers for now, as x.get(x.size() - 1) requires the same reference for x
+            // Limit *Last to identifiers for now, as x.get(x.size() - 1) requires the same reference for x
             if (mi.getSelect() instanceof J.Identifier) {
                 return handleSelectIdentifier((J.Identifier) mi.getSelect(), mi, operation);
             }
 
-            // XXX Maybe handle J.FieldAccess explicitly as well?
+            // XXX Maybe handle J.FieldAccess explicitly as well to support *Last on fields too
 
-            // Support limit cases like `getList().get(0)` -> `getList().getFirst()`
-            // Only handle argument of zero for now, as we can't guarantee the same reference for the collection
+            // For anything else support limited cases, as we can't guarantee the same reference for the collection
             if (J.Literal.isLiteralValue(mi.getArguments().get(0), 0)) {
                 return getMethodInvocation(mi, operation, "First");
             }
