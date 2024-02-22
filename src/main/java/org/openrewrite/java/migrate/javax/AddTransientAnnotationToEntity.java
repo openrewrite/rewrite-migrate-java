@@ -97,8 +97,7 @@ public class AddTransientAnnotationToEntity extends ScanningRecipe<AddTransientA
                 }
                 // Exit if attribute is already JPA annotated
                 if (multiVariable.getLeadingAnnotations().stream()
-                        .anyMatch(anno ->
-                                anno.getType().toString().contains("javax.persistence"))) {
+                        .anyMatch(anno -> anno.getType().toString().contains("javax.persistence"))) {
                     return multiVariable;
                 }
                 // Add @Transient annotation
