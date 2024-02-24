@@ -55,58 +55,52 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                 new UsesType<>("javax.persistence.Entity", true),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration multiVariable, ExecutionContext ctx) {
-                        // TODO: is this needed to filter to JPA classes?
+                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                        if (!FindAnnotations.find(classDecl, "javax.persistence.Entity").isEmpty()){
+                            return super.visitClassDeclaration(classDecl, ctx);
+                        }
                         // Exit if parent class is not tagged for JPA
-                        J.ClassDeclaration parentClass = getCursor().dropParentUntil(parent -> parent instanceof J.ClassDeclaration).getValue();
-                        if (FindAnnotations.find(parentClass, "javax.persistence.Entity").isEmpty()) {
-                            return multiVariable;
+                        return classDecl;
+                    }
+
+                    @Override
+                    public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration md, ExecutionContext ctx) {
+                        if (isPrivateAccessorMethodWithoutTransientAnnotation(md)) {// Add @Transient annotation
+                            maybeAddImport("javax.persistence.Transient");
+                            return JavaTemplate.builder("@Transient")
+                                    .contextSensitive()
+                                    .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.persistence-api-2.2"))
+                                    .imports("javax.persistence.Transient")
+                                    .build()
+                                    .apply(getCursor(), md.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
                         }
-                        // Exit if not private accessor method
-                        if (!isPrivateAccessorMethod(multiVariable, parentClass)) {
-                            return multiVariable;
-                        }
-                        // Add @Transient annotation
-                        // TODO: why is this running twice? I have the javaParser specifying the jar
-                        maybeAddImport("javax.persistence.Transient");
-                        multiVariable = JavaTemplate.builder("@Transient")
-                                .contextSensitive()
-                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.persistence-api-2.2"))
-                                .imports("javax.persistence.Transient")
-                                .build()
-                                .apply(getCursor(), multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
-                        return multiVariable;
+                        return md;
+                    }
+
+                    private boolean isPrivateAccessorMethodWithoutTransientAnnotation(J.MethodDeclaration method) {
+                        return method.hasModifier(J.Modifier.Type.Private)
+                               && method.getParameters().get(0) instanceof J.Empty
+                               && method.getReturnTypeExpression().getType() != JavaType.Primitive.Void
+                               && FindAnnotations.find(method, "javax.persistence.Transient").isEmpty()
+                               && method.getBody().getStatements().get(0) instanceof J.Return
+                               && methodReturnsFieldFromClass((J.Return) method.getBody().getStatements().get(0));
+                    }
+
+                    /**
+                     * Check if the given method returns a field defined in the given class
+                     */
+                    private boolean methodReturnsFieldFromClass(J.Return returnStatement) {
+                        J.ClassDeclaration classDecl = getCursor().dropParentUntil(parent -> parent instanceof J.ClassDeclaration).getValue();
+                        JavaType.Variable returnedVar = ((J.Identifier)returnStatement.getExpression()).getFieldType();
+                        return classDecl.getBody().getStatements().stream()
+                                .filter(statement -> statement instanceof J.VariableDeclarations)
+                                .map(J.VariableDeclarations.class::cast)
+                                .map(J.VariableDeclarations::getVariables)
+                                .flatMap(vars -> vars.stream())
+                                .map(var -> var.getName().getFieldType())
+                                .anyMatch(var -> var.equals(returnedVar));
                     }
                 }
         );
-    }
-
-    private boolean isPrivateAccessorMethod(J.MethodDeclaration method, J.ClassDeclaration classDecl) {
-        if (method.hasModifier(J.Modifier.Type.Private)
-            && method.getParameters().get(0) instanceof J.Empty
-            && !method.getReturnTypeExpression().toString().equals("void")
-            && method.getBody().getStatements().size() == 1
-            && method.getBody().getStatements().get(0) instanceof J.Return
-            && methodReturnsFieldFromClass(method, classDecl)) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Check if the given method returns a field defined in the given class
-     * @param method
-     * @param classDecl
-     * @return
-     */
-    private boolean methodReturnsFieldFromClass(J.MethodDeclaration method, J.ClassDeclaration classDecl) {
-        JavaType.Variable returnedVar = ((J.Identifier)((J.Return)method.getBody().getStatements().get(0)).getExpression()).getFieldType();
-        return classDecl.getBody().getStatements().stream()
-                .filter(statement -> statement instanceof J.VariableDeclarations)
-                .map(J.VariableDeclarations.class::cast)
-                .map(J.VariableDeclarations::getVariables)
-                .flatMap(vars -> vars.stream())
-                .map(var -> var.getName().getFieldType())
-                .anyMatch(var -> var.equals(returnedVar));
     }
 }

@@ -33,7 +33,7 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
 
     @DocumentExample
     @Test
-    void addTransient() {
+    void addTransientToMethodReturningIdentifier() {
         //language=java
         rewriteRun(
           java(
@@ -45,25 +45,17 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
 
               @Entity
               public class PrivateAccessor  {
-                private int id;
-                private int field;
+                  private int id;
+                  private int nonPersistentField;
 
-                @Id
-                public int getId() {
-                    return id;
-                }
+                  @Id
+                  public int getId() {
+                      return id;
+                  }
 
-                public void setId(int id) {
-                    this.id = id;
-                }
-
-                private int getNonPersistentField() {
-                    return field;
-                }
-
-                private void setNonPersistentField(int value) {
-                    this.field = value;
-                }
+                  private int getNonPersistentField() {
+                      return nonPersistentField;
+                  }
               }
               """,
             """
@@ -75,26 +67,18 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
 
               @Entity
               public class PrivateAccessor  {
-                private int id;
-                private int field;
+                  private int id;
+                  private int nonPersistentField;
 
-                @Id
-                public int getId() {
-                    return id;
-                }
+                  @Id
+                  public int getId() {
+                      return id;
+                  }
 
-                public void setId(int id) {
-                    this.id = id;
-                }
-
-                @Transient
-                private int getNonPersistentField() {
-                    return field;
-                }
-
-                private void setNonPersistentField(int value) {
-                    this.field = value;
-                }
+                  @Transient
+                  private int getNonPersistentField() {
+                      return nonPersistentField;
+                  }
               }
               """
           )
@@ -102,7 +86,60 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
     }
 
     @Test
-    void avoidPublicGetter() {
+    void addTransientToMethodReturningFieldAccess() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package entities;
+
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class PrivateAccessor  {
+                  private int id;
+                  private int nonPersistentField;
+
+                  @Id
+                  public int getId() {
+                      return id;
+                  }
+
+                  private int getNonPersistentField() {
+                      return this.nonPersistentField;
+                  }
+              }
+              """,
+            """
+              package entities;
+
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Transient;
+
+              @Entity
+              public class PrivateAccessor  {
+                  private int id;
+                  private int nonPersistentField;
+
+                  @Id
+                  public int getId() {
+                      return id;
+                  }
+
+                  @Transient
+                  private int getNonPersistentField() {
+                      return this.nonPersistentField;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotChangePublicGetter() {
         //language=java
         rewriteRun(
           java(
@@ -119,20 +156,43 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
 
                 @Id
                 public int getId() {
+                  return id;
+                }
+              
+                public int getField() {
+                  return field; // Public method
+                }
+              }
+              """
+          )
+        );
+    }
+
+
+    @Test
+    void doNotChangeVoidReturnType() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package entities;
+
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class PrivateAccessor  {
+                  private int id;
+                  private int field;
+
+                  @Id
+                  public int getId() {
                     return id;
-                }
+                  }
 
-                public void setId(int id) {
-                    this.id = id;
-                }
-
-                public int getNonPersistentField() {
-                    return field;
-                }
-
-                private void setNonPersistentField(int value) {
-                    this.field = value;
-                }
+                  private void getField() {
+                    // void return type
+                  }
               }
               """
           )
