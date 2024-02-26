@@ -57,7 +57,7 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-                        if (!FindAnnotations.find(classDecl, "javax.persistence.Entity").isEmpty()){
+                        if (!FindAnnotations.find(classDecl, "javax.persistence.Entity").isEmpty()) {
                             return super.visitClassDeclaration(classDecl, ctx);
                         }
                         // Exit if parent class is not tagged for JPA
@@ -98,7 +98,6 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                         }
 
                         final JavaType.Variable returnedVar;
-                        // TODO: handle J.Literal (hardcoded)
                         if (expression instanceof J.FieldAccess) {
                             returnedVar = ((J.FieldAccess) expression).getName().getFieldType();
                         } else if (expression instanceof J.Identifier) { //
