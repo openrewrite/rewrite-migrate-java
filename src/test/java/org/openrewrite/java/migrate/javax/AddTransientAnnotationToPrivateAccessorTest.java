@@ -230,4 +230,38 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void doNotChangeHardcodedReturn() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package entities;
+
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class PrivateAccessor  {
+                  private int id;
+                  private int field;
+
+                  @Id
+                  public int getId() {
+                    return id;
+                  }
+
+                  private int getField() {
+                    return 0;
+                  }
+
+                  private String getHello() {
+                    return "Hello";
+                  }
+              }
+              """
+          )
+        );
+    }
 }

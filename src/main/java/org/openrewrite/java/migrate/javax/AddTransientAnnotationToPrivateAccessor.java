@@ -26,6 +26,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
@@ -91,7 +92,21 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                      */
                     private boolean methodReturnsFieldFromClass(J.Return returnStatement) {
                         J.ClassDeclaration classDecl = getCursor().dropParentUntil(parent -> parent instanceof J.ClassDeclaration).getValue();
-                        JavaType.Variable returnedVar = ((J.Identifier)returnStatement.getExpression()).getFieldType();
+                        Expression expression = returnStatement.getExpression();
+                        if (expression == null) {
+                            return false;
+                        }
+
+                        final JavaType.Variable returnedVar;
+                        // TODO: handle J.Literal (hardcoded)
+                        if (expression instanceof J.FieldAccess) {
+                            returnedVar = ((J.FieldAccess) expression).getName().getFieldType();
+                        } else if (expression instanceof J.Identifier) { //
+                            returnedVar = ((J.Identifier) expression).getFieldType();
+                        } else { // instanceof J.Literal (hardcoded value), or something else not a field
+                            return false;
+                        }
+
                         return classDecl.getBody().getStatements().stream()
                                 .filter(statement -> statement instanceof J.VariableDeclarations)
                                 .map(J.VariableDeclarations.class::cast)
