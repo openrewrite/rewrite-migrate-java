@@ -92,13 +92,12 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                        // Ensure class has @Embeddable annotation, and was tagged with @EmbeddedId from another class
                         if (!FindAnnotations.find(classDecl, "@javax.persistence.Embeddable").isEmpty() &&
                             acc.isEmbeddableClass(classDecl.getType())) {
                             // Remove @Id annotation from anything in the class (only applies to VariableDeclarations)
                             doAfterVisit(new RemoveAnnotation("javax.persistence.Id").getVisitor());
                         }
-                        // Exit if class does not have @Embeddable annotation,
-                        // or was not tagged with @EmbeddedId in another class
                         return classDecl;
                     }
                 }
