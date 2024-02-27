@@ -56,6 +56,15 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
                 new UsesType<>("javax.persistence.EmbeddedId", true),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
+                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
+                        if (!FindAnnotations.find(cd, "@javax.persistence.Entity").isEmpty()) {
+                            return super.visitClassDeclaration(cd, ctx);
+                        }
+                        // Exit if class is not Entity
+                        return cd;
+                    }
+
+                    @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         // Exit if var does not have @EmbeddedId
                         if (FindAnnotations.find(multiVariable, "@javax.persistence.EmbeddedId").isEmpty()) {
@@ -81,6 +90,15 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
                         new UsesType<>("javax.persistence.Id", true)
                 ),
                 new JavaIsoVisitor<ExecutionContext>() {
+                    @Override
+                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
+                        if (!FindAnnotations.find(cd, "@javax.persistence.Embeddable").isEmpty()) {
+                            return super.visitClassDeclaration(cd, ctx);
+                        }
+                        // Exit if Embeddable is not found on class
+                        return cd;
+                    }
+
                     // If var has @Id, and its parent class has @Embeddable, and it was defined previously by @EmbeddedId
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
@@ -93,8 +111,7 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
                         J.ClassDeclaration classDeclaration = getCursor().dropParentUntil(parent -> parent instanceof J.ClassDeclaration).getValue();
                         // Exit if parent class does not have @Embeddable annotation,
                         // or was not tagged with @EmbeddedId in another class
-                        if (!acc.isEmbeddableClass(classDeclaration.getType()) ||
-                            FindAnnotations.find(classDeclaration, "@javax.persistence.Embeddable").isEmpty()) {
+                        if (!acc.isEmbeddableClass(classDeclaration.getType())) {
                             return multiVariable;
                         }
 
