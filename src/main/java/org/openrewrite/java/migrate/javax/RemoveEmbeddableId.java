@@ -91,34 +91,15 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
                 ),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
-                        if (!FindAnnotations.find(cd, "@javax.persistence.Embeddable").isEmpty()) {
-                            return super.visitClassDeclaration(cd, ctx);
+                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                        if (!FindAnnotations.find(classDecl, "@javax.persistence.Embeddable").isEmpty() &&
+                            acc.isEmbeddableClass(classDecl.getType())) {
+                            // Remove @Id annotation from anything in the class (only applies to VariableDeclarations)
+                            doAfterVisit(new RemoveAnnotation("javax.persistence.Id").getVisitor());
                         }
-                        // Exit if Embeddable is not found on class
-                        return cd;
-                    }
-
-                    // If var has @Id, and its parent class has @Embeddable, and it was defined previously by @EmbeddedId
-                    @Override
-                    public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                        // Exit if var does not have @Id
-                        if (FindAnnotations.find(multiVariable, "@javax.persistence.Id").isEmpty()) {
-                            return multiVariable;
-                        }
-
-                        // Get parent class
-                        J.ClassDeclaration classDeclaration = getCursor().dropParentUntil(parent -> parent instanceof J.ClassDeclaration).getValue();
-                        // Exit if parent class does not have @Embeddable annotation,
+                        // Exit if class does not have @Embeddable annotation,
                         // or was not tagged with @EmbeddedId in another class
-                        if (!acc.isEmbeddableClass(classDeclaration.getType())) {
-                            return multiVariable;
-                        }
-
-                        // Remove @Id annotation
-                        doAfterVisit(new RemoveAnnotation("javax.persistence.Id").getVisitor());
-
-                        return multiVariable;
+                        return classDecl;
                     }
                 }
         );
