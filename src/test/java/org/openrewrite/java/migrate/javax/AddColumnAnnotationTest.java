@@ -32,124 +32,43 @@ class AddColumnAnnotationTest implements RewriteTest {
           .recipe(new AddColumnAnnotation());
     }
 
+    @DocumentExample
     @Test
-    void columnWithoutSiblingElementCollection() {
+    void addColumnAnnotationAlongElementCollection() {
         rewriteRun(
           //language=java
           java(
             """
               import java.util.List;
+
               import javax.persistence.ElementCollection;
               import javax.persistence.Entity;
               import javax.persistence.Id;
-              import javax.persistence.Column;
-               
+
               @Entity
               public class ElementCollectionEntity {
                   @Id
                   private int id;
 
-                  @Column
-                  private List<String> listofStrings;
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void avoidChangingColumnsWithoutElementCollection() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.List;
-              import javax.persistence.ElementCollection;
-              import javax.persistence.Entity;
-              import javax.persistence.Id;
-              import javax.persistence.Column;
-               
-              @Entity
-              public class ElementCollectionEntity {
-                  @Id
-                  private int id;
-
-                  @Column
-                  private List<Integer> listOfInts;
-                  
                   @ElementCollection
                   private List<String> listofStrings;
               }
               """,
             """
               import java.util.List;
+
+              import javax.persistence.Column;
               import javax.persistence.ElementCollection;
               import javax.persistence.Entity;
               import javax.persistence.Id;
-              import javax.persistence.Column;
-               
+
               @Entity
               public class ElementCollectionEntity {
                   @Id
                   private int id;
-
-                  @Column
-                  private List<Integer> listOfInts;
 
                   @Column(name = "element")
                   @ElementCollection
-                  private List<String> listofStrings;
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void columnNameIsElement() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.List;
-              import javax.persistence.ElementCollection;
-              import javax.persistence.Entity;
-              import javax.persistence.Id;
-              import javax.persistence.Column;
-
-              @Entity
-              public class ElementCollectionEntity {
-                  @Id
-                  private int id;
-
-                  @ElementCollection
-                  @Column(name = "element")
-                  private List<String> listofStrings;
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void columnHasExistingNameAttribute() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.List;
-              import javax.persistence.ElementCollection;
-              import javax.persistence.Entity;
-              import javax.persistence.Id;
-              import javax.persistence.Column;
-
-              @Entity
-              public class ElementCollectionEntity {
-                  @Id
-                  private int id;
-
-                  @ElementCollection
-                  @Column(name = "test")
                   private List<String> listofStrings;
               }
               """
@@ -227,7 +146,7 @@ class AddColumnAnnotationTest implements RewriteTest {
               import javax.persistence.Entity;
               import javax.persistence.Id;
               import javax.persistence.Column;
-              
+
               @Entity
               public class ElementCollectionEntity {
                   @Id
@@ -242,23 +161,25 @@ class AddColumnAnnotationTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
-    void addColumnAnnotationWithNameEqualsElement() {
+    void addColumnToApplicableFieldWhileAvoidingOthers() {
         rewriteRun(
           //language=java
           java(
             """
               import java.util.List;
-
               import javax.persistence.ElementCollection;
               import javax.persistence.Entity;
               import javax.persistence.Id;
+              import javax.persistence.Column;
 
               @Entity
               public class ElementCollectionEntity {
                   @Id
                   private int id;
+
+                  @Column
+                  private List<Integer> listOfInts;
 
                   @ElementCollection
                   private List<String> listofStrings;
@@ -266,19 +187,72 @@ class AddColumnAnnotationTest implements RewriteTest {
               """,
             """
               import java.util.List;
-
-              import javax.persistence.Column;
               import javax.persistence.ElementCollection;
               import javax.persistence.Entity;
               import javax.persistence.Id;
+              import javax.persistence.Column;
 
               @Entity
               public class ElementCollectionEntity {
                   @Id
                   private int id;
 
+                  @Column
+                  private List<Integer> listOfInts;
+
                   @Column(name = "element")
                   @ElementCollection
+                  private List<String> listofStrings;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeColumnWithoutSiblingElementCollection() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+
+              @Entity
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
+
+                  @Column
+                  private List<String> listofStrings;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeColumnWithExistingNameAttribute() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+
+              @Entity
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
+
+                  @ElementCollection
+                  @Column(name = "test")
                   private List<String> listofStrings;
               }
               """
