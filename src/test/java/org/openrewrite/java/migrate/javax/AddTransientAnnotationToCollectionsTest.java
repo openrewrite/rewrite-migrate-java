@@ -40,10 +40,10 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
             """
               import java.util.Collection;
               import java.util.List;
-                            
+
               import javax.persistence.Entity;
               import javax.persistence.Id;
-                            
+
               @Entity
               public class UnannotatedCollectionEntity {
                   @Id
@@ -56,11 +56,11 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
             """
               import java.util.Collection;
               import java.util.List;
-                            
+
               import javax.persistence.Entity;
               import javax.persistence.Id;
               import javax.persistence.Transient;
-                            
+
               @Entity
               public class UnannotatedCollectionEntity {
                   @Id
@@ -84,10 +84,10 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
             """
               import java.util.Collection;
               import java.util.List;
-                            
+
               import javax.persistence.Entity;
               import javax.persistence.Id;
-                            
+
               @Entity
               public class UnannotatedCollectionEntity {
                   @Id
@@ -101,11 +101,11 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
             """
               import java.util.Collection;
               import java.util.List;
-                            
+
               import javax.persistence.Entity;
               import javax.persistence.Id;
               import javax.persistence.Transient;
-                            
+
               @Entity
               public class UnannotatedCollectionEntity {
                   @Id
@@ -130,10 +130,10 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
               import java.util.Collection;
               import java.util.List;
               import java.lang.annotation.Documented;
-                            
+
               import javax.persistence.Entity;
               import javax.persistence.Id;
-                            
+
               @Entity
               public class UnannotatedCollectionEntity {
                   @Id
@@ -148,11 +148,11 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
               import java.util.Collection;
               import java.util.List;
               import java.lang.annotation.Documented;
-                            
+
               import javax.persistence.Entity;
               import javax.persistence.Id;
               import javax.persistence.Transient;
-                            
+
               @Entity
               public class UnannotatedCollectionEntity {
                   @Id
@@ -177,10 +177,10 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
             """
               import java.util.Collection;
               import java.util.List;
-                            
+
               import javax.persistence.Entity;
               import javax.persistence.Id;
-                            
+
               @Entity
               public class UnannotatedCollectionEntity {
                   @Id
@@ -206,11 +206,11 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
             """
               import java.util.Collection;
               import java.util.List;
-                            
+
               import javax.persistence.Entity;
               import javax.persistence.Id;
               import javax.persistence.Transient;
-                            
+
               @Entity
               public class UnannotatedCollectionEntity {
                   @Id

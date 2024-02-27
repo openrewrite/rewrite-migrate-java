@@ -18,17 +18,16 @@ package org.openrewrite.java.migrate.javax;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 
 import java.util.Comparator;
-import java.util.List;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 @Value
@@ -51,27 +50,35 @@ public class AddTransientAnnotationToCollections extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                // Exit if not Collection
-                if (!multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))) {
-                    return multiVariable;
+        return Preconditions.check(
+                // Only apply to JPA classes
+                Preconditions.or(
+                        new UsesType<>("javax.persistence.Entity", true),
+                        new UsesType<>("javax.persistence.MappedSuperclass", true),
+                        new UsesType<>("javax.persistence.Embeddable", true)
+                ),
+                new JavaIsoVisitor<ExecutionContext>() {
+                    @Override
+                    public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
+                        // Exit if not Collection
+                        if (!multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))) {
+                            return multiVariable;
+                        }
+                        // Exit if already has JPA annotation
+                        if (multiVariable.getLeadingAnnotations().stream()
+                                .anyMatch(anno -> anno.getType().toString().contains("javax.persistence"))) {
+                            return multiVariable;
+                        }
+                        // Add @Transient annotation
+                        maybeAddImport("javax.persistence.Transient");
+                        return JavaTemplate.builder("@Transient")
+                                .contextSensitive()
+                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.persistence-api-2.2"))
+                                .imports("javax.persistence.Transient")
+                                .build()
+                                .apply(getCursor(), multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+                    }
                 }
-                // Exit if already has JPA annotation
-                if (multiVariable.getLeadingAnnotations().stream()
-                        .anyMatch(anno -> anno.getType().toString().contains("javax.persistence"))) {
-                    return multiVariable;
-                }
-                // Add @Transient annotation
-                maybeAddImport("javax.persistence.Transient");
-                return JavaTemplate.builder("@Transient")
-                        .contextSensitive()
-                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.persistence-api-2.2"))
-                        .imports("javax.persistence.Transient")
-                        .build()
-                        .apply(getCursor(), multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
-            }
-        };
+        );
     }
 }
