@@ -55,7 +55,7 @@ public class UseJoinColumnForMapping extends Recipe {
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                        // Exit if class not annotated with @Column and a relationship mapping annotation
+                        // Exit if not annotated with @Column and a relationship mapping annotation
                         if (FindAnnotations.find(multiVariable, "javax.persistence.Column").isEmpty()
                             || (FindAnnotations.find(multiVariable, "javax.persistence.OneToOne").isEmpty()
                                 && FindAnnotations.find(multiVariable, "javax.persistence.ManyToOne").isEmpty())) {
@@ -63,7 +63,7 @@ public class UseJoinColumnForMapping extends Recipe {
                         }
 
                         // Change @Column to @JoinColumn
-                        // The javax.persistence.Column attributes length, precision, and scale are not copied.
+                        // The javax.persistence.Column attributes length, precision, and scale are not kept.
                         maybeRemoveImport("javax.persistence.Column");
                         maybeAddImport("javax.persistence.JoinColumn");
                         J.VariableDeclarations joinColumn = (J.VariableDeclarations) new ChangeType("javax.persistence.Column", "javax.persistence.JoinColumn", false).getVisitor().visit(multiVariable, ctx);

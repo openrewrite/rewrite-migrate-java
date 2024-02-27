@@ -43,7 +43,7 @@ class UseJoinColumnForMappingTest implements RewriteTest {
               import javax.persistence.Column;
               import javax.persistence.Id;
               import javax.persistence.ManyToOne;
-                            
+
               @Entity
               public class TransactionEntity {
                   @Id
@@ -62,15 +62,15 @@ class UseJoinColumnForMappingTest implements RewriteTest {
               import javax.persistence.Id;
               import javax.persistence.JoinColumn;
               import javax.persistence.ManyToOne;
-                            
+
               @Entity
               public class TransactionEntity {
                   @Id
                   private int id;
-                  
+
                   private long transactionNumber;
                   private double amount;
-                  
+
                   @ManyToOne
                   @JoinColumn(name="account")
                   private Account account;
@@ -81,7 +81,7 @@ class UseJoinColumnForMappingTest implements RewriteTest {
     }
 
     @Test
-    void noMapping() {
+    void doNotChangeIfNoMapping() {
         //language=java
         rewriteRun(
           java(
@@ -90,7 +90,7 @@ class UseJoinColumnForMappingTest implements RewriteTest {
               import javax.persistence.Column;
               import javax.persistence.Id;
               import javax.persistence.ManyToOne;
-                            
+
               @Entity
               public class TransactionEntity {
                   @Id
@@ -108,7 +108,7 @@ class UseJoinColumnForMappingTest implements RewriteTest {
     }
 
     @Test
-    void noColumn() {
+    void doNotChangeIfNoColumn() {
         //language=java
         rewriteRun(
           java(
@@ -117,7 +117,7 @@ class UseJoinColumnForMappingTest implements RewriteTest {
               import javax.persistence.Column;
               import javax.persistence.Id;
               import javax.persistence.ManyToOne;
-                            
+
               @Entity
               public class TransactionEntity {
                   @Id
@@ -144,7 +144,7 @@ class UseJoinColumnForMappingTest implements RewriteTest {
               import javax.persistence.Column;
               import javax.persistence.Id;
               import javax.persistence.ManyToOne;
-                            
+
               @Entity
               public class TransactionEntity {
                   @Id
@@ -161,16 +161,16 @@ class UseJoinColumnForMappingTest implements RewriteTest {
               """,
             """
               import javax.persistence.*;
-                            
+
               @Entity
               public class TransactionEntity {
                   @Id
                   private int id;
-                  
+
                   private long transactionNumber;
                   @Column(name="amount", length=512, precision=12, scale=2)
                   private double amount;
-                  
+
                   @ManyToOne
                   @JoinColumn(name="account")
                   private Account account;
