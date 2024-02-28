@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import org.jetbrains.annotations.NotNull;
 import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -89,7 +88,6 @@ public class UseVarForGenericsConstructors extends Recipe {
             return transformToVar(vd, leftTypes, rightTypes);
         }
 
-        @NotNull
         private static Boolean anyTypeHasBounds(List<JavaType> leftTypes) {
             for (JavaType type : leftTypes) {
                 if (hasBounds(type))
