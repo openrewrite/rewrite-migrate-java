@@ -30,7 +30,9 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -91,27 +93,28 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                      * Check if the given method returns a field defined in the given class
                      */
                     private boolean methodReturnsFieldFromClass(J.Return returnStatement) {
-                        J.ClassDeclaration classDecl = getCursor().dropParentUntil(parent -> parent instanceof J.ClassDeclaration).getValue();
+                        J.ClassDeclaration classDecl = getCursor().dropParentUntil(J.ClassDeclaration.class::isInstance).getValue();
                         Expression expression = returnStatement.getExpression();
                         if (expression == null) {
                             return false;
                         }
 
                         final JavaType.Variable returnedVar;
-                        if (expression instanceof J.FieldAccess) {
+                        if (expression instanceof J.FieldAccess) { // ie: return this.field;
                             returnedVar = ((J.FieldAccess) expression).getName().getFieldType();
-                        } else if (expression instanceof J.Identifier) { //
+                        } else if (expression instanceof J.Identifier) { // ie: return field;
                             returnedVar = ((J.Identifier) expression).getFieldType();
-                        } else { // instanceof J.Literal (hardcoded value), or something else not a field
+                        } else { // instanceof J.Literal (hardcoded value), or something else not a field. ie: return "hello";
                             return false;
                         }
 
                         return classDecl.getBody().getStatements().stream()
-                                .filter(statement -> statement instanceof J.VariableDeclarations)
+                                .filter(J.VariableDeclarations.class::isInstance)
                                 .map(J.VariableDeclarations.class::cast)
                                 .map(J.VariableDeclarations::getVariables)
-                                .flatMap(vars -> vars.stream())
+                                .flatMap(Collection::stream)
                                 .map(var -> var.getName().getFieldType())
+                                .filter(Objects::nonNull)
                                 .anyMatch(var -> var.equals(returnedVar));
                     }
                 }
