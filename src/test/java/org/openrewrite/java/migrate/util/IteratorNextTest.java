@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.util;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -34,6 +35,7 @@ class IteratorNextTest implements RewriteTest {
           .allSources(src -> src.markers(javaVersion(21)));
     }
 
+    @DocumentExample
     @Test
     void listIteratorNextToGetFirst() {
         rewriteRun(
@@ -80,7 +82,7 @@ class IteratorNextTest implements RewriteTest {
     }
 
     @Test
-    void nextCommentRetained() {
+    void nextCommentLost() {
         rewriteRun(
           //language=java
           java(
@@ -102,7 +104,6 @@ class IteratorNextTest implements RewriteTest {
               class Foo {
                   void bar(List<String> collection) {
                       String first = collection
-                        // Next comment
                         .getFirst();
                   }
               }
@@ -112,7 +113,7 @@ class IteratorNextTest implements RewriteTest {
     }
 
     @Test
-    void iteratorCommentLost() {
+    void iteratorCommentRetained() {
         rewriteRun(
           //language=java
           java(
@@ -134,6 +135,7 @@ class IteratorNextTest implements RewriteTest {
               class Foo {
                   void bar(List<String> collection) {
                       String first = collection
+                        // Iterator comment
                         .getFirst();
                   }
               }

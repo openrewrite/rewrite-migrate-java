@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
@@ -25,7 +26,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 
-public class RemovedStateManagerMethodsTest implements RewriteTest {
+class RemovedStateManagerMethodsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
@@ -35,6 +36,7 @@ public class RemovedStateManagerMethodsTest implements RewriteTest {
             .activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods"));
     }
 
+    @DocumentExample
     @Test
     void stateManagerReplacement() {
         rewriteRun(

@@ -34,6 +34,7 @@ import java.util.List;
 
 public class ListFirstAndLast extends Recipe {
 
+    // While more SequencedCollections have `*First` and `*Last` methods, only list has `get`, `add`, and `remove` methods that take an index
     private static final MethodMatcher ADD_MATCHER = new MethodMatcher("java.util.List add(int, ..)", true); // , * fails
     private static final MethodMatcher GET_MATCHER = new MethodMatcher("java.util.List get(int)", true);
     private static final MethodMatcher REMOVE_MATCHER = new MethodMatcher("java.util.List remove(int)", true);
@@ -41,7 +42,7 @@ public class ListFirstAndLast extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Replace `List` `get`, `add`, and `remove` with `SequencedCollection` `*First` and `*Last` methods";
+        return "Replace `List.get(int)`, `add(int, Object)`, and `remove(int)` with `SequencedCollection` `*First` and `*Last` methods";
     }
 
     @Override
@@ -67,11 +68,6 @@ public class ListFirstAndLast extends Recipe {
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
-            Expression select = mi.getSelect();
-            if (!(select instanceof J.Identifier)) {
-                return mi;
-            }
-            J.Identifier sequencedCollection = (J.Identifier) select;
 
             final String operation;
             if (ADD_MATCHER.matches(mi)) {
@@ -84,6 +80,22 @@ public class ListFirstAndLast extends Recipe {
                 return mi;
             }
 
+            // Limit *Last to identifiers for now, as x.get(x.size() - 1) requires the same reference for x
+            if (mi.getSelect() instanceof J.Identifier) {
+                return handleSelectIdentifier((J.Identifier) mi.getSelect(), mi, operation);
+            }
+
+            // XXX Maybe handle J.FieldAccess explicitly as well to support *Last on fields too
+
+            // For anything else support limited cases, as we can't guarantee the same reference for the collection
+            if (J.Literal.isLiteralValue(mi.getArguments().get(0), 0)) {
+                return getMethodInvocation(mi, operation, "First");
+            }
+
+            return mi;
+        }
+
+        private static J.MethodInvocation handleSelectIdentifier(J.Identifier sequencedCollection, J.MethodInvocation mi, String operation) {
             final String firstOrLast;
             Expression expression = mi.getArguments().get(0);
             if (J.Literal.isLiteralValue(expression, 0)) {
@@ -93,7 +105,10 @@ public class ListFirstAndLast extends Recipe {
             } else {
                 return mi;
             }
+            return getMethodInvocation(mi, operation, firstOrLast);
+        }
 
+        private static J.MethodInvocation getMethodInvocation(J.MethodInvocation mi, String operation, String firstOrLast) {
             List<Expression> arguments = new ArrayList<>();
             final JavaType.Method newMethodType;
             JavaType.Method originalMethodType = mi.getMethodType();
@@ -109,7 +124,7 @@ public class ListFirstAndLast extends Recipe {
                         .withParameterNames(null)
                         .withParameterTypes(null);
             }
-            return mi.withName(mi.getName().withSimpleName(operation + firstOrLast))
+            return mi.withName(mi.getName().withSimpleName(operation + firstOrLast).withType(newMethodType))
                     .withArguments(arguments)
                     .withMethodType(newMethodType);
         }
@@ -123,8 +138,8 @@ public class ListFirstAndLast extends Recipe {
             if (expression instanceof J.Binary) {
                 J.Binary binary = (J.Binary) expression;
                 if (binary.getOperator() == J.Binary.Type.Subtraction
-                        && J.Literal.isLiteralValue(binary.getRight(), 1)
-                        && SIZE_MATCHER.matches(binary.getLeft())) {
+                    && J.Literal.isLiteralValue(binary.getRight(), 1)
+                    && SIZE_MATCHER.matches(binary.getLeft())) {
                     Expression sizeSelect = ((J.MethodInvocation) binary.getLeft()).getSelect();
                     if (sizeSelect instanceof J.Identifier) {
                         return sequencedCollection.getSimpleName().equals(((J.Identifier) sizeSelect).getSimpleName());

@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
@@ -24,7 +25,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class RemovedJakartaFacesResourceResolverTest implements RewriteTest {
+class RemovedJakartaFacesResourceResolverTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion().
@@ -34,6 +35,7 @@ public class RemovedJakartaFacesResourceResolverTest implements RewriteTest {
             .activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesResourceResolver"));
     }
 
+    @DocumentExample
     @Test
     void removedJakartaFacesResourceResolver_1() {
         rewriteRun(

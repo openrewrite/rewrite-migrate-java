@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
@@ -24,7 +25,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class ServletCookieBehaviorChangeRFC6265Test implements RewriteTest {
+class ServletCookieBehaviorChangeRFC6265Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion().
@@ -33,8 +34,10 @@ public class ServletCookieBehaviorChangeRFC6265Test implements RewriteTest {
             .build()
             .activateRecipes("org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265"));
     }
+
+    @DocumentExample
     @Test
-    public void removeMethodsJakarta(){
+    void removeMethodsJakarta() {
         rewriteRun(
           //language=java
           java(

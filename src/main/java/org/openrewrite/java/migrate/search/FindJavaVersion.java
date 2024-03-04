@@ -30,7 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class FindJavaVersion extends Recipe {
 
     transient JavaVersionTable table = new JavaVersionTable(this);

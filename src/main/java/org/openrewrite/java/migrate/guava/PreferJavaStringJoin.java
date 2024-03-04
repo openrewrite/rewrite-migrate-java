@@ -15,14 +15,15 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import java.util.Collections;
-import java.util.Set;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
+
+import java.util.Collections;
+import java.util.Set;
 
 public class PreferJavaStringJoin extends Recipe {
 

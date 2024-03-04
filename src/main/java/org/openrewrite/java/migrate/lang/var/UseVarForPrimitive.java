@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import static java.lang.String.format;
-
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -29,8 +29,7 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import static java.lang.String.format;
 
 @Value
 @EqualsAndHashCode(callSuper = false)

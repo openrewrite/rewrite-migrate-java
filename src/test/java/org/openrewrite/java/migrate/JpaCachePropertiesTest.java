@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -29,6 +30,7 @@ class JpaCachePropertiesTest implements RewriteTest {
         spec.recipe(new JpaCacheProperties());
     }
 
+    @DocumentExample
     @Test
     void set_set_set1() {
         rewriteRun(

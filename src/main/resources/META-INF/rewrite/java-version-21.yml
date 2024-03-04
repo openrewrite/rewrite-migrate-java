@@ -26,6 +26,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.JavaVersion21
+  - org.openrewrite.java.migrate.RemoveIllegalSemicolons
   - org.openrewrite.java.migrate.lang.ThreadStopUnsupported
   - org.openrewrite.java.migrate.net.URLConstructorsToURIRecipes
   - org.openrewrite.java.migrate.util.SequencedCollection
@@ -35,6 +36,7 @@ recipeList:
   # GitHub Actions bump needs Gradle Wrapper bump too https://docs.gradle.org/current/userguide/compatibility.html#java
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 8.5
+      addIfMissing: false
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.jacoco
       artifactId: jacoco-maven-plugin
@@ -78,6 +80,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.util.ListFirstAndLast
   - org.openrewrite.java.migrate.util.IteratorNext
+  - org.openrewrite.java.migrate.util.StreamFindFirst
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.SortedSet first()
       newMethodName: getFirst

@@ -439,7 +439,8 @@ class UseVarKeywordTest implements RewriteTest {
             void forChar() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -492,7 +493,8 @@ class UseVarKeywordTest implements RewriteTest {
             void forFloat() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -546,7 +548,8 @@ class UseVarKeywordTest implements RewriteTest {
             void forDoubleWithTypNotation() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -572,7 +575,8 @@ class UseVarKeywordTest implements RewriteTest {
             void forFloatWithTypNotation() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -598,7 +602,8 @@ class UseVarKeywordTest implements RewriteTest {
             void forLongWithTypNotation() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                    """
                       package com.example.app;
                                 
                       class A {
@@ -632,15 +637,15 @@ class UseVarKeywordTest implements RewriteTest {
                 rewriteRun(
                   java(
                     """
-                        package com.example.app;
-                        
-                        import java.util.List;
-                        
-                        class A {
-                          void m() {
-                              List<String> strs = List.of();
-                          }
+                      package com.example.app;
+                      
+                      import java.util.List;
+                      
+                      class A {
+                        void m() {
+                            List<String> strs = List.of();
                         }
+                      }
                       """
                   )
                 );
@@ -652,16 +657,16 @@ class UseVarKeywordTest implements RewriteTest {
                 rewriteRun(
                   java(
                     """
-                        package com.example.app;
-                        
-                        import java.util.ArrayList;
-                        import java.util.List;
-                        
-                        class A {
-                          void m() {
-                              List strs = new ArrayList<>();
-                          }
+                      package com.example.app;
+                      
+                      import java.util.ArrayList;
+                      import java.util.List;
+                      
+                      class A {
+                        void m() {
+                            List strs = new ArrayList<>();
                         }
+                      }
                       """
                   )
                 );
@@ -671,19 +676,19 @@ class UseVarKeywordTest implements RewriteTest {
             void withDiamondOperatorOnRaw() {
                 //language=java
                 rewriteRun(
-                  java("""
-                    package com.example.app;
-                                      
-                    import java.util.List;
-                    import java.util.ArrayList;
-                                      
-                    class A {
-                      void m() {
-                          List<String> strs = new ArrayList();
-                      }
-                    }
+                  java(
                     """
-
+                      package com.example.app;
+                      
+                      import java.util.List;
+                      import java.util.ArrayList;
+                      
+                      class A {
+                        void m() {
+                            List<String> strs = new ArrayList();
+                        }
+                      }
+                      """
                   )
                 );
             }
@@ -695,7 +700,8 @@ class UseVarKeywordTest implements RewriteTest {
             void ifWelldefined() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                    """
                       package com.example.app;
                                         
                       import java.util.List;
@@ -728,27 +734,27 @@ class UseVarKeywordTest implements RewriteTest {
                 rewriteRun(
                   java(
                     """
-                        package com.example.app;
-                        
-                        import java.util.ArrayList;
-                        import java.util.List;
-                        
-                        class A {
-                          void m() {
-                              List strs = new ArrayList();
-                          }
+                      package com.example.app;
+                      
+                      import java.util.ArrayList;
+                      import java.util.List;
+                      
+                      class A {
+                        void m() {
+                            List strs = new ArrayList();
                         }
+                      }
                       """,
                     """
-                        package com.example.app;
-                        
-                        import java.util.ArrayList;
-                        
-                        class A {
-                          void m() {
-                              var strs = new ArrayList();
-                          }
+                      package com.example.app;
+                      
+                      import java.util.ArrayList;
+                      
+                      class A {
+                        void m() {
+                            var strs = new ArrayList();
                         }
+                      }
                       """
                   )
                 );
@@ -759,7 +765,8 @@ class UseVarKeywordTest implements RewriteTest {
             void withDiamondOperator() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                    """
                       package com.example.app;
                                         
                       import java.util.List;
@@ -790,7 +797,8 @@ class UseVarKeywordTest implements RewriteTest {
             void withFactoryMethods() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                    """
                       package com.example.app;
                                           
                       import java.util.List;

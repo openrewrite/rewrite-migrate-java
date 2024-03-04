@@ -34,7 +34,7 @@ import org.openrewrite.java.tree.TypeUtils;
 import java.util.List;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class RemoveFinalizerFromZip extends Recipe {
 
     private static final String JAVA_UTIL_ZIP_DEFLATER = "java.util.zip.Deflater";
