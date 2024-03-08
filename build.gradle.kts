@@ -16,7 +16,7 @@ dependencies {
     testImplementation("org.projectlombok:lombok:latest.release")
 
     annotationProcessor("org.openrewrite:rewrite-templating:$rewriteVersion")
-    compileOnly("com.google.errorprone:error_prone_core:2.19.1:with-dependencies") {
+    compileOnly("com.google.errorprone:error_prone_core:2.19.1") {
         exclude("com.google.auto.service", "auto-service-annotations")
     }
 
@@ -45,7 +45,7 @@ dependencies {
 
     testImplementation("org.assertj:assertj-core:latest.release")
 
-    testImplementation("com.google.guava:guava:29.0-jre")
+    testImplementation("com.google.guava:guava:33.0.0-jre")
 
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
