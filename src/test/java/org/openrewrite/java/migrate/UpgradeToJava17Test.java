@@ -543,32 +543,28 @@ class UpgradeToJava17Test implements RewriteTest {
             import javax.net.ssl.SSLSession;
             public class RemovedSSLSessionGetPeerCertificateChainMethodImplApp {
                     public void test() throws Exception {
-                        SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
-                        SSLSession session = sslEngine.getHandshakeSession();
+                         SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
+                         SSLSession session = sslEngine.getHandshakeSession();
                          session.getPeerCertificateChain(); //This should trigger
                          Certificate[] certs = session.getPeerCertificates(); //This should not trigger
-                     }
-             }
+                    }
+            }
             """,
             """
              package com.test;
-
              import java.security.cert.Certificate;
-
              import javax.net.ssl.SSLContext;
              import javax.net.ssl.SSLEngine;
              import javax.net.ssl.SSLSession;
-
              public class RemovedSSLSessionGetPeerCertificateChainMethodImplApp {
-
                      public void test() throws Exception {
-                         SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
-                         SSLSession session = sslEngine.getHandshakeSession();
-                         session.getPeerCertificates(); //This should trigger
-                         Certificate[] certs = session.getPeerCertificates(); //This should not trigger
+                          SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
+                          SSLSession session = sslEngine.getHandshakeSession();
+                          session.getPeerCertificates(); //This should trigger
+                          Certificate[] certs = session.getPeerCertificates(); //This should not trigger
                      }
              }
-              """
+             """
           )
         );
     }
