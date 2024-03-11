@@ -169,7 +169,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.SunNetSslPackageUnavailable
 displayName: Remove `com.sun.net.ssl` package
 description: >
-  The internal API `com.sun.net.ssl` is removed. The package was intended for internal use only and replacement APIs can be found in the javax.net.ssl package.
+  The internal API `com.sun.net.ssl` is removed. The package was intended for internal use only and replacement APIs can be found in the `javax.net.ssl` package.
 tags:
   - java17
 recipeList:
