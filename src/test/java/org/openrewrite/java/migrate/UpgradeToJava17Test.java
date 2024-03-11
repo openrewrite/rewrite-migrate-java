@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
@@ -291,7 +292,6 @@ class UpgradeToJava17Test implements RewriteTest {
             ), 17)
         );
     }
-
     @Test
     void needToUpgradeMavenCompilerPluginToSupportReleaseTag() {
         rewriteRun(
@@ -527,4 +527,54 @@ class UpgradeToJava17Test implements RewriteTest {
           )
         );
     }
+
+
+
+    @Test
+    void removedSSLSessionGetPeerCertificateChainMethodImplTest(){
+        rewriteRun(
+          //language=java
+          java(
+            """
+             package com.test;
+
+             import java.security.cert.Certificate;
+
+             import javax.net.ssl.SSLContext;
+             import javax.net.ssl.SSLEngine;
+             import javax.net.ssl.SSLSession;
+
+             public class RemovedSSLSessionGetPeerCertificateChainMethodImplApp {
+
+                     public void test() throws Exception {
+                         SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
+                         SSLSession session = sslEngine.getHandshakeSession();
+                         session.getPeerCertificateChain(); //This should trigger
+                         Certificate[] certs = session.getPeerCertificates(); //This should not trigger
+                     }
+             }
+            """,
+            """
+             package com.test;
+
+             import java.security.cert.Certificate;
+
+             import javax.net.ssl.SSLContext;
+             import javax.net.ssl.SSLEngine;
+             import javax.net.ssl.SSLSession;
+
+             public class RemovedSSLSessionGetPeerCertificateChainMethodImplApp {
+
+                     public void test() throws Exception {
+                         SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
+                         SSLSession session = sslEngine.getHandshakeSession();
+                         session.getPeerCertificates(); //This should trigger
+                         Certificate[] certs = session.getPeerCertificates(); //This should not trigger
+                     }
+             }
+              """
+          )
+        );
+    }
+
 }

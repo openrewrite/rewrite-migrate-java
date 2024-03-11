@@ -49,7 +49,10 @@ recipeList:
       groupId: com.sonatype.clm
       artifactId: clm-maven-plugin
       newVersion: 2.47.6-01
-
+  - org.openrewrite.java.migrate.RemovedZipFinalizeMethods
+  - org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
+  - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
+  - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaVersion17
@@ -122,3 +125,72 @@ recipeList:
   - org.openrewrite.java.ChangeMethodAccessLevel:
       methodPattern: "*..* premain(java.lang.String, java.lang.instrument.Instrumentation)"
       newAccessLevel: public
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedZipFinalizeMethods
+displayName: Remove `finalize` method in `java.util.zip.Zipfile`, `java.util.zip.Inflater` and  `java.util.zip.Deflater`
+description: >
+  The `finalize` methods in `java.util.zip.ZipFile` is replaced with `close` method and is replaced by `end` method in 
+   `java.util.zip.Inflater` and `java.util.zip.Deflater` as it is no longer available in Java SE 12 and later.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "java.util.zip.Inflater finalize()"
+      newMethodName: end
+      ignoreDefinition: true
+      matchOverrides: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "java.util.zip.Deflater finalize()"
+      newMethodName: end
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "java.util.ZipFile finalize()"
+      newMethodName: close
+      ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
+displayName: Remove `SSLSession.getPeerCertificateChain()` method
+description: >
+  The `javax.net.ssl.SSLSession.getPeerCertificateChain()` method implementation was removed from the SunJSSE provider and HTTP client implementation in Java SE 15. 
+  The default implementation will now throw an `UnsupportedOperationException`. 
+  Applications using this method should be updated to use the `javax.net.ssl.SSLSession.getPeerCertificates()` method instead.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "*.net.ssl.SSLSession getPeerCertificateChain()"
+      newMethodName: getPeerCertificates
+      ignoreDefinition: true
+      matchOverrides: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.SunNetSslPackageUnavailable
+displayName: Remove `com.sun.net.ssl` package
+description: >
+  The internal API `com.sun.net.ssl` is removed. The package was intended for internal use only and replacement APIs can be found in the javax.net.ssl package.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: com.sun.net.ssl
+      newPackageName: javax.net.ssl
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
+displayName: Remove `RMIConnectorServer.CREDENTIAL_TYPES` constant
+description: >
+  This recipe  replaces `RMIConnectorServer.CREDENTIAL_TYPES` constant with the `RMIConnectorServer.CREDENTIALS_FILTER_PATTERN` constant and a filter pattern
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: javax.management.remote.rmi.RMIConnectorServer.CREDENTIAL_TYPES
+      fullyQualifiedConstantName:  javax.management.remote.rmi.RMIConnectorServer.CREDENTIALS_FILTER_PATTERN
+
+
+
+
+
+
