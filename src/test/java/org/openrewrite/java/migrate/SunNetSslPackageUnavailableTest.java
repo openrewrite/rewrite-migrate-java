@@ -27,7 +27,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.*;
 
 
-public class SunNetSslPackageUnavailableTest implements RewriteTest {
+class SunNetSslPackageUnavailableTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
