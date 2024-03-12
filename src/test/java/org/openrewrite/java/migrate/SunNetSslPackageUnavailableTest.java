@@ -45,8 +45,8 @@ class SunNetSslPackageUnavailableTest implements RewriteTest {
               """
               import com.sun.net.ssl.HttpsURLConnection;
                 
-              public class TestSunNetSsl {
-                    public void useThePackages() {
+              class TestSunNetSsl {
+                    void useThePackages() {
                             HttpsURLConnection con; 
                     }
               }
