@@ -43,8 +43,6 @@ class SunNetSslPackageUnavailableTest implements RewriteTest {
             //language=java
             java(
               """
-              package testing.stuff;
-                
               import com.sun.net.ssl.HttpsURLConnection;
                 
               public class TestSunNetSsl {
