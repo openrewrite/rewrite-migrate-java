@@ -181,7 +181,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
 displayName: Remove `RMIConnectorServer.CREDENTIAL_TYPES` constant
 description: >
-  This recipe  replaces `RMIConnectorServer.CREDENTIAL_TYPES` constant with the `RMIConnectorServer.CREDENTIALS_FILTER_PATTERN` constant and a filter pattern
+  This recipe  replaces `RMIConnectorServer.CREDENTIAL_TYPES` constant with the `RMIConnectorServer.CREDENTIALS_FILTER_PATTERN` constant and a filter pattern.
 tags:
   - java17
 recipeList:
