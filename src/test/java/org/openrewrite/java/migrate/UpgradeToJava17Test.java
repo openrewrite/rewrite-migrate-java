@@ -540,8 +540,8 @@ class UpgradeToJava17Test implements RewriteTest {
             import javax.net.ssl.SSLContext;
             import javax.net.ssl.SSLEngine;
             import javax.net.ssl.SSLSession;
-            public class RemovedSSLSessionGetPeerCertificateChainMethodImplApp {
-                    public void test() throws Exception {
+            class RemovedSSLSessionGetPeerCertificateChainMethodImplApp {
+                    void test() throws Exception {
                          SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
                          SSLSession session = sslEngine.getHandshakeSession();
                          session.getPeerCertificateChain(); //This should trigger
