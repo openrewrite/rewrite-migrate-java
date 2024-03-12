@@ -36,6 +36,7 @@ class SunNetSslPackageUnavailableTest implements RewriteTest {
               "com.sun.net.ssl"))
           .recipeFromResource("/META-INF/rewrite/java-version-17.yml", "org.openrewrite.java.migrate.SunNetSslPackageUnavailable");
     }
+
     @Test
     void sunNetSslPackageUnavailableTest(){
         rewriteRun(
