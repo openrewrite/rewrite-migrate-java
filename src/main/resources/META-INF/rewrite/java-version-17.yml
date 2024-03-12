@@ -188,9 +188,3 @@ recipeList:
   - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
       existingFullyQualifiedConstantName: javax.management.remote.rmi.RMIConnectorServer.CREDENTIAL_TYPES
       fullyQualifiedConstantName:  javax.management.remote.rmi.RMIConnectorServer.CREDENTIALS_FILTER_PATTERN
-
-
-
-
-
-
