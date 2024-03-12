@@ -550,7 +550,6 @@ class UpgradeToJava17Test implements RewriteTest {
             }
             """,
             """
-             package com.test;
              import java.security.cert.Certificate;
              import javax.net.ssl.SSLContext;
              import javax.net.ssl.SSLEngine;
