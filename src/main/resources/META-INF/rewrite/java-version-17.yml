@@ -128,7 +128,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedZipFinalizeMethods
-displayName: Remove `finalize` method in `java.util.zip.Zipfile`, `java.util.zip.Inflater` and  `java.util.zip.Deflater`
+displayName: Remove `finalize` method in `java.util.zip.Zipfile`, `java.util.zip.Inflater` and `java.util.zip.Deflater`
 description: >
   The `finalize` methods in `java.util.zip.ZipFile` is replaced with `close` method and is replaced by `end` method in 
    `java.util.zip.Inflater` and `java.util.zip.Deflater` as it is no longer available in Java SE 12 and later.
