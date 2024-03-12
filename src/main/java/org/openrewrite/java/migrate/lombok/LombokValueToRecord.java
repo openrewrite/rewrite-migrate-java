@@ -48,6 +48,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
     @Nullable
     Boolean useExactToString;
 
+    @Override
     public String getDisplayName() {
         return "Convert `@lombok.Value` class to Record";
     }
