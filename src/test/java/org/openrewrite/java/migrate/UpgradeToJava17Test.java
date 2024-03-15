@@ -528,8 +528,6 @@ class UpgradeToJava17Test implements RewriteTest {
         );
     }
 
-
-
     @Test
     void removedSSLSessionGetPeerCertificateChainMethodImplTest(){
         rewriteRun(
