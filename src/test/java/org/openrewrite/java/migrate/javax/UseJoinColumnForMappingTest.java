@@ -34,7 +34,7 @@ class UseJoinColumnForMappingTest implements RewriteTest {
 
     @DocumentExample
     @Test
-    void changeColumnToJoinColumn() {
+    void useJoinColumnForManyToOne() {
         //language=java
         rewriteRun(
           java(
@@ -73,6 +73,146 @@ class UseJoinColumnForMappingTest implements RewriteTest {
 
                   @ManyToOne
                   @JoinColumn(name="account")
+                  private Account account;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void useJoinColumnForOneToOne() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Column;
+              import javax.persistence.Id;
+              import javax.persistence.OneToOne;
+
+              @Entity
+              public class TransactionEntity {
+                  @Id
+                  private int id;
+
+                  private long transactionNumber;
+                  private double amount;
+
+                  @OneToOne
+                  @Column(name="account")
+                  private Account account;
+              }
+              """,
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.JoinColumn;
+              import javax.persistence.OneToOne;
+
+              @Entity
+              public class TransactionEntity {
+                  @Id
+                  private int id;
+
+                  private long transactionNumber;
+                  private double amount;
+
+                  @OneToOne
+                  @JoinColumn(name="account")
+                  private Account account;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void useJoinColumnForManyToOneNoAttr() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Column;
+              import javax.persistence.Id;
+              import javax.persistence.ManyToOne;
+
+              @Entity
+              public class TransactionEntity {
+                  @Id
+                  private int id;
+
+                  private long transactionNumber;
+                  private double amount;
+
+                  @ManyToOne
+                  @Column
+                  private Account account;
+              }
+              """,
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.JoinColumn;
+              import javax.persistence.ManyToOne;
+
+              @Entity
+              public class TransactionEntity {
+                  @Id
+                  private int id;
+
+                  private long transactionNumber;
+                  private double amount;
+
+                  @ManyToOne
+                  @JoinColumn
+                  private Account account;
+              }
+              """
+          )
+        );
+    }
+    @Test
+    void useJoinColumnForOneToOneNoAttr() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Column;
+              import javax.persistence.Id;
+              import javax.persistence.OneToOne;
+
+              @Entity
+              public class TransactionEntity {
+                  @Id
+                  private int id;
+
+                  private long transactionNumber;
+                  private double amount;
+
+                  @OneToOne
+                  @Column
+                  private Account account;
+              }
+              """,
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.JoinColumn;
+              import javax.persistence.OneToOne;
+
+              @Entity
+              public class TransactionEntity {
+                  @Id
+                  private int id;
+
+                  private long transactionNumber;
+                  private double amount;
+
+                  @OneToOne
+                  @JoinColumn
                   private Account account;
               }
               """
