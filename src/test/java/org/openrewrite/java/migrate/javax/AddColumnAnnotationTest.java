@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.migrate.javax.AddColumnAnnotation;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -279,6 +278,29 @@ class AddColumnAnnotationTest implements RewriteTest {
                   private int id;
 
                   @Transient
+                  @ElementCollection
+                  private List<String> listofStrings;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotAddColumnMappingIfClassNotEntity() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
+
                   @ElementCollection
                   private List<String> listofStrings;
               }

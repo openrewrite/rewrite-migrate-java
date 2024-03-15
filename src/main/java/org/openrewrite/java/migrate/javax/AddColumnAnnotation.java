@@ -48,10 +48,20 @@ public class AddColumnAnnotation extends Recipe {
                "attribute set to element.";
     }
 
+    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 new UsesType<>("javax.persistence.ElementCollection", true),
                 new JavaIsoVisitor<ExecutionContext>() {
+                    @Override
+                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                        if (!FindAnnotations.find(classDecl, "javax.persistence.Entity").isEmpty()) {
+                            return super.visitClassDeclaration(classDecl, ctx);
+                        }
+                        // Exit if class is not @Entity
+                        return classDecl;
+                    };
+
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         // Exit if var does not have @ElementCollection or has @Transient
@@ -71,9 +81,10 @@ public class AddColumnAnnotation extends Recipe {
                         }
 
                         // Update existing @Column annotation
-                        return (J.VariableDeclarations) new AddOrUpdateAnnotationAttribute(
+                        J.VariableDeclarations updatedVariable = (J.VariableDeclarations) new AddOrUpdateAnnotationAttribute(
                                 "javax.persistence.Column", "name", "element", true)
                                 .getVisitor().visit(multiVariable, ctx, getCursor());
+                        return super.visitVariableDeclarations(updatedVariable, ctx);
                     }
                 }
         );
