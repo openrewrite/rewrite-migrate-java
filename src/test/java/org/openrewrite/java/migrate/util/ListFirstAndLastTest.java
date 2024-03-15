@@ -65,6 +65,42 @@ class ListFirstAndLastTest implements RewriteTest {
         }
 
         @Test
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/423")
+        void getFirstFromMethodInvocation() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      List<String> collection() {
+                          return new ArrayList<>();
+                      }
+                  
+                      String bar() {
+                          return collection().get(0);
+                      }
+                  }
+                  """,
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      List<String> collection() {
+                          return new ArrayList<>();
+                      }
+                  
+                      String bar() {
+                          return collection().getFirst();
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
         void addFirst() {
             rewriteRun(
               //language=java
@@ -92,6 +128,40 @@ class ListFirstAndLastTest implements RewriteTest {
         }
 
         @Test
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/423")
+        void addFirstFromMethodInvocation() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      List<String> collection() {
+                          return new ArrayList<>();
+                      }
+                      void bar() {
+                          collection().add(0, "first");
+                      }
+                  }
+                  """,
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      List<String> collection() {
+                          return new ArrayList<>();
+                      }
+                      void bar() {
+                          collection().addFirst("first");
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
         void removeFirst() {
             rewriteRun(
               //language=java
@@ -111,6 +181,42 @@ class ListFirstAndLastTest implements RewriteTest {
                   class Foo {
                       String bar(List<String> collection) {
                           return collection.removeFirst();
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/423")
+        void removeFirstFromMethodInvocation() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      List<String> collection() {
+                          return new ArrayList<>();
+                      }
+                  
+                      String bar() {
+                          return collection().remove(0);
+                      }
+                  }
+                  """,
+                """
+                  import java.util.*;
+                                
+                  class Foo {
+                      List<String> collection() {
+                          return new ArrayList<>();
+                      }
+                  
+                      String bar() {
+                          return collection().removeFirst();
                       }
                   }
                   """

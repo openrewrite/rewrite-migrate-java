@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import org.jetbrains.annotations.NotNull;
 import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -61,39 +60,50 @@ public class UseVarForGenericsConstructors extends Recipe {
             vd = super.visitVariableDeclarations(vd, ctx);
 
             boolean isGeneralApplicable = DeclarationCheck.isVarApplicable(this.getCursor(), vd);
-            if (!isGeneralApplicable) return vd;
+            if (!isGeneralApplicable) {
+                return vd;
+            }
 
             // recipe specific
             boolean isPrimitive = DeclarationCheck.isPrimitive(vd);
             boolean usesNoGenerics = !DeclarationCheck.useGenerics(vd);
             boolean usesTernary = DeclarationCheck.initializedByTernary(vd);
-            if (isPrimitive || usesTernary || usesNoGenerics) return vd;
+            if (isPrimitive || usesTernary || usesNoGenerics) {
+                return vd;
+            }
 
             //now we deal with generics
             J.VariableDeclarations.NamedVariable variable = vd.getVariables().get(0);
             List<JavaType> leftTypes = extractParameters(variable.getVariableType());
             List<JavaType> rightTypes = extractParameters(variable.getInitializer());
-            if (rightTypes == null || (leftTypes.isEmpty() && rightTypes.isEmpty())) return vd;
+            if (rightTypes == null || (leftTypes.isEmpty() && rightTypes.isEmpty())) {
+                return vd;
+            }
 
             // skip generics with type bounds, it's not yet implemented
             for (JavaType type : leftTypes) {
-                if (hasBounds(type))
+                if (hasBounds( type )) {
                     return vd;
+                }
             }
             boolean genericHasBounds = anyTypeHasBounds(leftTypes);
-            if (genericHasBounds) return vd;
+            if (genericHasBounds) {
+                return vd;
+            }
 
             // mark imports for removal if unused
-            if (vd.getType() instanceof JavaType.FullyQualified) maybeRemoveImport((JavaType.FullyQualified) vd.getType());
+            if (vd.getType() instanceof JavaType.FullyQualified) {
+                maybeRemoveImport( (JavaType.FullyQualified) vd.getType() );
+            }
 
             return transformToVar(vd, leftTypes, rightTypes);
         }
 
-        @NotNull
         private static Boolean anyTypeHasBounds(List<JavaType> leftTypes) {
             for (JavaType type : leftTypes) {
-                if (hasBounds(type))
+                if (hasBounds( type )) {
                     return true;
+                }
             }
             return false;
         }
