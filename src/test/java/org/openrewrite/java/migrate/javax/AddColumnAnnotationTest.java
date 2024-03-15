@@ -259,4 +259,31 @@ class AddColumnAnnotationTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void doNotAddColumnMappingToTransient() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+              import javax.persistence.Transient;
+
+              @Entity
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
+
+                  @Transient
+                  @ElementCollection
+                  private List<String> listofStrings;
+              }
+              """
+          )
+        );
+    }
 }
