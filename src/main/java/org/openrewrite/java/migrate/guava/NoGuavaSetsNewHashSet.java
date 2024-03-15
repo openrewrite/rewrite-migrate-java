@@ -56,7 +56,7 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                 if (NEW_HASH_SET.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.HashSet");
-                    if (method.getArguments().isEmpty() || (!method.getArguments().isEmpty() && method.getArguments().get(0) instanceof J.Empty)) {
+                    if (method.getArguments().isEmpty() || method.getArguments().get(0) instanceof J.Empty) {
                         return JavaTemplate.builder("new HashSet<>()")
                                 .contextSensitive()
                                 .imports("java.util.HashSet")
