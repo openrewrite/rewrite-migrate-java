@@ -292,6 +292,7 @@ class UpgradeToJava17Test implements RewriteTest {
             ), 17)
         );
     }
+
     @Test
     void needToUpgradeMavenCompilerPluginToSupportReleaseTag() {
         rewriteRun(
