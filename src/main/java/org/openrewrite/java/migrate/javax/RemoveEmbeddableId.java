@@ -29,6 +29,7 @@ import org.openrewrite.java.tree.JavaType;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumulator> {
 
@@ -112,7 +113,11 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
         }
 
         public boolean isEmbeddableClass(@Nullable JavaType type) {
-            return definedEmbeddableClasses.contains(type);
+            return definedEmbeddableClasses.stream()
+                    .anyMatch(emb -> {
+                        return type.equals(emb)
+                               || type.isAssignableFrom(Pattern.compile(((JavaType.Class) emb).getFullyQualifiedName()));
+                    });
         }
     }
 }
