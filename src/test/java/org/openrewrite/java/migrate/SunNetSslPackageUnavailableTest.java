@@ -26,7 +26,6 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.*;
 
-
 class SunNetSslPackageUnavailableTest implements RewriteTest {
 
     @Override
