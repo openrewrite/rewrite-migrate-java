@@ -201,6 +201,7 @@ recipeList:
       newParameterNames: [ str, in ]
       matchOverrides: true
 ---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
 displayName: Remove deprecated API's not supported in CDI4.0
 description: >

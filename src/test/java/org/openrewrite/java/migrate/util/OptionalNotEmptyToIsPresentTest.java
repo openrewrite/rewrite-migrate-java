@@ -43,7 +43,7 @@ class OptionalNotEmptyToIsPresentTest implements RewriteTest {
                 package com.example.app;
                 import java.util.Optional;
                 class App {
-                    boolean notPresent(Optional<String> bar){
+                    boolean notEmpty(Optional<String> bar){
                         return !bar.isEmpty();
                     }
                 }
@@ -52,8 +52,42 @@ class OptionalNotEmptyToIsPresentTest implements RewriteTest {
                 package com.example.app;
                 import java.util.Optional;
                 class App {
-                    boolean notPresent(Optional<String> bar){
+                    boolean notEmpty(Optional<String> bar){
                         return bar.isPresent();
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
+    void ifStatement() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                package com.example.app;
+                import java.util.Optional;
+                class App {
+                    void ifNotEmpty(Optional<String> bar){
+                        if (!bar.isEmpty()) {
+                            System.out.print("not empty");
+                        }
+                    }
+                }
+                """,
+              """
+                package com.example.app;
+                import java.util.Optional;
+                class App {
+                    void ifNotEmpty(Optional<String> bar){
+                        if (bar.isPresent()) {
+                            System.out.print("not empty");
+                        }
                     }
                 }
                 """
