@@ -31,7 +31,6 @@ import java.util.Set;
 public class NoGuavaMapsNewHashMap extends Recipe {
     private static final MethodMatcher NEW_HASH_MAP = new MethodMatcher("com.google.common.collect.Maps newHashMap()");
     private static final MethodMatcher NEW_HASH_MAP_WITH_MAP = new MethodMatcher("com.google.common.collect.Maps newHashMap(java.util.Map)");
-    private static final MethodMatcher NEW_HASH_MAP_CAPACITY = new MethodMatcher("com.google.common.collect.Maps newHashMapWithExpectedSize(int)");
 
     @Override
     public String getDisplayName() {
@@ -52,8 +51,7 @@ public class NoGuavaMapsNewHashMap extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(Preconditions.or(
                 new UsesMethod<>(NEW_HASH_MAP),
-                new UsesMethod<>(NEW_HASH_MAP_WITH_MAP),
-                new UsesMethod<>(NEW_HASH_MAP_CAPACITY)), new JavaVisitor<ExecutionContext>() {
+                new UsesMethod<>(NEW_HASH_MAP_WITH_MAP)), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_HASH_MAP.matches(method)) {
@@ -68,14 +66,6 @@ public class NoGuavaMapsNewHashMap extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.HashMap");
                     return JavaTemplate.builder("new HashMap<>(#{any(java.util.Map)})")
-                            .contextSensitive()
-                            .imports("java.util.HashMap")
-                            .build()
-                            .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
-                } else if (NEW_HASH_MAP_CAPACITY.matches(method)) {
-                    maybeRemoveImport("com.google.common.collect.Maps");
-                    maybeAddImport("java.util.HashMap");
-                    return JavaTemplate.builder("new HashMap<>(#{any(int)})")
                             .contextSensitive()
                             .imports("java.util.HashMap")
                             .build()

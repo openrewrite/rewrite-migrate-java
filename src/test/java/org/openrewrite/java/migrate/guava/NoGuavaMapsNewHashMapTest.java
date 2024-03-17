@@ -90,31 +90,4 @@ class NoGuavaMapsNewHashMapTest implements RewriteTest {
           )
         );
     }
-
-    @Test
-    void replaceWithNewHashMapWithCapacity() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import com.google.common.collect.*;
-                            
-              import java.util.HashMap;
-              import java.util.Map;
-                            
-              class Test {
-                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newHashMapWithExpectedSize(2);
-              }
-              """,
-            """
-              import java.util.HashMap;
-              import java.util.Map;
-                            
-              class Test {
-                  Map<Integer, Integer> cardinalsWorldSeries = new HashMap<>(2);
-              }
-              """
-          )
-        );
-    }
 }
