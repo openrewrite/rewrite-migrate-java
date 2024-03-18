@@ -139,7 +139,6 @@ recipeList:
       methodPattern: "java.util.zip.Inflater finalize()"
       newMethodName: end
       ignoreDefinition: true
-      matchOverrides: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "java.util.zip.Deflater finalize()"
       newMethodName: end
@@ -160,7 +159,7 @@ tags:
   - java17
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.net.ssl.SSLSession getPeerCertificateChain()"
+      methodPattern: "javax.net.ssl.SSLSession getPeerCertificateChain()"
       newMethodName: getPeerCertificates
       ignoreDefinition: true
 ---
