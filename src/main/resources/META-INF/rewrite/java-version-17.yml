@@ -128,9 +128,9 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedZipFinalizeMethods
-displayName: Remove `finalize` method in `java.util.zip.Zipfile`, `java.util.zip.Inflater` and `java.util.zip.Deflater`
+displayName: Replace `finalize` method in `java.util.zip.Zipfile`, `java.util.zip.Inflater` and `java.util.zip.Deflater`
 description: >
-  The `finalize` methods in `java.util.zip.ZipFile` is replaced with `close` method and is replaced by `end` method in 
+  The `finalize` method in `java.util.zip.ZipFile` is replaced with `close` method and is replaced by `end` method in 
    `java.util.zip.Inflater` and `java.util.zip.Deflater` as it is no longer available in Java SE 12 and later.
 tags:
   - java17
@@ -145,13 +145,13 @@ recipeList:
       newMethodName: end
       ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "java.util.ZipFile finalize()"
+      methodPattern: "java.util.zip.ZipFile finalize()"
       newMethodName: close
       ignoreDefinition: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
-displayName: Remove `SSLSession.getPeerCertificateChain()` method
+displayName: Replace `SSLSession.getPeerCertificateChain()` method
 description: >
   The `javax.net.ssl.SSLSession.getPeerCertificateChain()` method implementation was removed from the SunJSSE provider and HTTP client implementation in Java SE 15. 
   The default implementation will now throw an `UnsupportedOperationException`. 
@@ -163,11 +163,10 @@ recipeList:
       methodPattern: "*.net.ssl.SSLSession getPeerCertificateChain()"
       newMethodName: getPeerCertificates
       ignoreDefinition: true
-      matchOverrides: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.SunNetSslPackageUnavailable
-displayName: Remove `com.sun.net.ssl` package
+displayName: Replace `com.sun.net.ssl` package
 description: >
   The internal API `com.sun.net.ssl` is removed. The package was intended for internal use only and replacement APIs can be found in the `javax.net.ssl` package.
 tags:
@@ -179,9 +178,9 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
-displayName: Remove `RMIConnectorServer.CREDENTIAL_TYPES` constant
+displayName: Replace `RMIConnectorServer.CREDENTIAL_TYPES` constant
 description: >
-  This recipe  replaces `RMIConnectorServer.CREDENTIAL_TYPES` constant with the `RMIConnectorServer.CREDENTIALS_FILTER_PATTERN` constant and a filter pattern.
+  This recipe replaces the `RMIConnectorServer.CREDENTIAL_TYPES` constant with the `RMIConnectorServer.CREDENTIALS_FILTER_PATTERN` constant.
 tags:
   - java17
 recipeList:
