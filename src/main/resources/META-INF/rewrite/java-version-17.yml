@@ -64,8 +64,6 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 17
-  - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
-      releaseVersion: 17
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert

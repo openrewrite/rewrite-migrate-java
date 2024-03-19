@@ -117,8 +117,7 @@ class UpgradeJavaVersionTest implements RewriteTest {
                           <artifactId>maven-compiler-plugin</artifactId>
                           <version>3.8.0</version>
                           <configuration>
-                            <source>17</source>
-                            <target>17</target>
+                            <release>17</release>
                           </configuration>
                         </plugin>
                       </plugins>
