@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
@@ -527,4 +528,42 @@ class UpgradeToJava17Test implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void removedSSLSessionGetPeerCertificateChainMethodImplTest(){
+        rewriteRun(
+          //language=java
+          java(
+            """
+            import java.security.cert.Certificate;
+            import javax.net.ssl.SSLContext;
+            import javax.net.ssl.SSLEngine;
+            import javax.net.ssl.SSLSession;
+            class RemovedSSLSessionGetPeerCertificateChainMethodImplApp {
+                    void test() throws Exception {
+                         SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
+                         SSLSession session = sslEngine.getHandshakeSession();
+                         session.getPeerCertificateChain(); //This should trigger
+                         Certificate[] certs = session.getPeerCertificates(); //This should not trigger
+                    }
+            }
+            """,
+            """
+             import java.security.cert.Certificate;
+             import javax.net.ssl.SSLContext;
+             import javax.net.ssl.SSLEngine;
+             import javax.net.ssl.SSLSession;
+             class RemovedSSLSessionGetPeerCertificateChainMethodImplApp {
+                     void test() throws Exception {
+                          SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
+                          SSLSession session = sslEngine.getHandshakeSession();
+                          session.getPeerCertificates(); //This should trigger
+                          Certificate[] certs = session.getPeerCertificates(); //This should not trigger
+                     }
+             }
+             """
+          )
+        );
+    }
+
 }
