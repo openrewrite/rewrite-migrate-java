@@ -49,7 +49,7 @@ recipeList:
       groupId: com.sonatype.clm
       artifactId: clm-maven-plugin
       newVersion: 2.47.6-01
-  - org.openrewrite.java.DeprecatedCountStackFramesMethod
+  - org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaVersion17

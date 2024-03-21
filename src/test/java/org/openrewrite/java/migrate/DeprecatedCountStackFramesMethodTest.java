@@ -36,27 +36,27 @@ class DeprecatedCountStackFramesMethodTest implements RewriteTest {
           java(
             """
               import java.lang.Thread;
-              \s
+               
                  public class Test {
-               	        public static void main(String[] args) {
+               	        public static void main(String args[]) {
                		        Thread t1 = new Thread();
                		        Thread t2 = new Thread();	
                		        int x = t1.countStackFrames();
                		        int y = t2.countStackFrames();
-               	  }             \s
-              }          \s
+               	  }              
+              }           
               """,
             """
               import java.lang.Thread;
-              \s
+               
                  public class Test {
-               	        public static void main(String[] args) {
+               	        public static void main(String args[]) {
                		        Thread t1 = new Thread();
                		        Thread t2 = new Thread();	
                		        int x = Integer.valueOf("0");
                		        int y = Integer.valueOf("0");
-               	  }             \s
-              }   \s
+               	  }              
+              }    
               """
           )
         );
