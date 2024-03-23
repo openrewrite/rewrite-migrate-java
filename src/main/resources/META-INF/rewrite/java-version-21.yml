@@ -54,6 +54,10 @@ recipeList:
       groupId: net.bytebuddy
       artifactId: byte-buddy
       newVersion: 1.14.11
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.modelmapper
+      artifactId: modelmapper
+      newVersion: 3.2.0
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
