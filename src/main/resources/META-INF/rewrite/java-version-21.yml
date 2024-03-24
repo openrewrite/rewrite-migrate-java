@@ -57,7 +57,7 @@ recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.modelmapper
       artifactId: modelmapper
-      newVersion: 3.2.0
+      newVersion: 3.2.x
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
