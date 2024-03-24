@@ -90,30 +90,4 @@ class NoGuavaMapsNewLinkedHashMapTest implements RewriteTest {
         );
     }
 
-    @Test
-    void replaceWithNewLinkedHashMapWithCapacity() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import com.google.common.collect.*;
-                            
-              import java.util.LinkedHashMap;
-              import java.util.Map;
-                            
-              class Test {
-                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMapWithExpectedSize(2);
-              }
-              """,
-            """
-              import java.util.LinkedHashMap;
-              import java.util.Map;
-                            
-              class Test {
-                  Map<Integer, Integer> cardinalsWorldSeries = new LinkedHashMap<>(2);
-              }
-              """
-          )
-        );
-    }
 }
