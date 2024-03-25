@@ -49,6 +49,7 @@ recipeList:
       groupId: com.sonatype.clm
       artifactId: clm-maven-plugin
       newVersion: 2.47.6-01
+  - org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
   - org.openrewrite.java.migrate.RemovedZipFinalizeMethods
   - org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
   - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
