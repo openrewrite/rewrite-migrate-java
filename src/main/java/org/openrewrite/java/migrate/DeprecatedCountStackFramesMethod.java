@@ -35,7 +35,7 @@ public class DeprecatedCountStackFramesMethod extends Recipe {
     @Override
     public String getDescription() {
         return "`Thread.countStackFrames()` has been removed in Java SE 14." +
-                "It is now replaced by \"Integer.valueOf(\\\"0\\\")\" to return 0." +
+                "It is now replaced by \"Integer.valueOf(\"0\")\" to return 0." +
                 "The updated line is dead code and should be eventually removed.";
     }
 
