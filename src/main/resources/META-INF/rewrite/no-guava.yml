@@ -75,6 +75,7 @@ tags:
   - java11
 recipeList:
   - org.openrewrite.java.migrate.guava.NoGuava
+  - org.openrewrite.java.migrate.guava.NoGuavaByteStreamsRecipes
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNullElse
 ---
 type: specs.openrewrite.org/v1beta/recipe
