@@ -60,6 +60,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.ApplicationPathWildcardNoLongerAccepted
   - org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
   - org.openrewrite.java.migrate.javaee8
+  - org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxActivationMigrationToJakartaActivation
@@ -963,3 +964,20 @@ recipeList:
       oldPackageName: org.apache.ws.security.components.crypto
       newPackageName: org.apache.wss4j.common.crypto
       recursive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
+displayName: Migrate deprecated `javeee-api` dependencies to `jakarta.platform`
+description: >
+  Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax
+      oldArtifactId: javaee-api
+      newGroupId: jakarta.platform
+      newArtifactId: jakarta.jakartaee-api
+      newVersion: 9.0.0
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.platform
+      artifactId: "*"
+      newVersion: 9.0.0

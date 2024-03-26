@@ -33,6 +33,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.BeanValidationMessages
   - org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
   - org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
+  - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -219,4 +220,13 @@ recipeList:
   - org.openrewrite.RenameFile:
       fileMatcher: '**/javax.enterprise.inject.spi.Extension'
       fileName: jakarta.enterprise.inject.spi.Extension
-
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
+displayName: Update Jakarta EE Platform Dependencies to 10.0.0
+description: Update Jakarta EE Platform Dependencies to 10.0.0
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.platform
+      artifactId: "*"
+      newVersion: 10.0.0
