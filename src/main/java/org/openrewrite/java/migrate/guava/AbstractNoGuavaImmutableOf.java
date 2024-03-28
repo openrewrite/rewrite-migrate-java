@@ -64,11 +64,11 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
                 new UsesType<>(guavaType, false));
-        final MethodMatcher IMMUTABLE_MATCHER = new MethodMatcher(guavaType + " of(..)");
+        final MethodMatcher immutableMatcher = new MethodMatcher(guavaType + " of(..)");
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                if (IMMUTABLE_MATCHER.matches(method) && isParentTypeDownCast()) {
+                if (immutableMatcher.matches(method) && isParentTypeDownCast()) {
                     maybeRemoveImport(guavaType);
                     maybeAddImport(javaType);
 
@@ -141,7 +141,7 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                     if (m.getMethodType() != null) {
                         int index = 0;
                         for (Expression argument : m.getArguments()) {
-                            if (IMMUTABLE_MATCHER.matches(argument)) {
+                            if (immutableMatcher.matches(argument)) {
                                 break;
                             }
                             index++;
@@ -153,7 +153,7 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                     int index = 0;
                     if (c.getConstructorType() != null) {
                         for (Expression argument : c.getArguments()) {
-                            if (IMMUTABLE_MATCHER.matches(argument)) {
+                            if (immutableMatcher.matches(argument)) {
                                 break;
                             }
                             index++;

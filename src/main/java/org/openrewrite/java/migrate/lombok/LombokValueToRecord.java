@@ -143,10 +143,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             if (variableDeclarations.getModifiers().stream().anyMatch(modifier -> modifier.getType() == J.Modifier.Type.Static)) {
                 return false;
             }
-            if (!variableDeclarations.getAllAnnotations().isEmpty()) {
-                return false;
-            }
-            return true;
+            return !!variableDeclarations.getAllAnnotations().isEmpty();
         }
 
         private boolean hasMemberVariableAssignments(List<J.VariableDeclarations> memberVariables) {
