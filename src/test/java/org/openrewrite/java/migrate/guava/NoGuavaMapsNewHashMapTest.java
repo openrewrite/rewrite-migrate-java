@@ -42,9 +42,8 @@ class NoGuavaMapsNewHashMapTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
               import java.util.Map;
-                            
+              
               class Test {
                   Map<Integer, Integer> cardinalsWorldSeries = Maps.newHashMap();
               }
@@ -52,7 +51,7 @@ class NoGuavaMapsNewHashMapTest implements RewriteTest {
             """
               import java.util.HashMap;
               import java.util.Map;
-                            
+              
               class Test {
                   Map<Integer, Integer> cardinalsWorldSeries = new HashMap<>();
               }
@@ -68,7 +67,6 @@ class NoGuavaMapsNewHashMapTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
               import java.util.Collections;
               import java.util.Map;
                             
