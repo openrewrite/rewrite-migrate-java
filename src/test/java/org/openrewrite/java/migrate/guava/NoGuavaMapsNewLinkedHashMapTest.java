@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,8 @@ class NoGuavaMapsNewLinkedHashMapTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
               import java.util.Map;
-                            
+              
               class Test {
                   Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMap();
               }
@@ -51,7 +50,7 @@ class NoGuavaMapsNewLinkedHashMapTest implements RewriteTest {
             """
               import java.util.LinkedHashMap;
               import java.util.Map;
-                            
+              
               class Test {
                   Map<Integer, Integer> cardinalsWorldSeries = new LinkedHashMap<>();
               }
@@ -67,10 +66,9 @@ class NoGuavaMapsNewLinkedHashMapTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
               import java.util.Collections;
               import java.util.Map;
-                            
+              
               class Test {
                   Map<Integer, Integer> m = Collections.emptyMap();
                   Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMap(m);
