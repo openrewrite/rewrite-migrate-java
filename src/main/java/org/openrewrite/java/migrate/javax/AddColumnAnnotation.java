@@ -55,7 +55,7 @@ public class AddColumnAnnotation extends Recipe {
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-                        if (!FindAnnotations.find(classDecl, "javax.persistence.Entity").isEmpty()) {
+                        if (!FindAnnotations.find(classDecl, "@javax.persistence.Entity").isEmpty()) {
                             return super.visitClassDeclaration(classDecl, ctx);
                         }
                         // Exit if class is not @Entity
@@ -72,7 +72,8 @@ public class AddColumnAnnotation extends Recipe {
 
                         // Confirm direct parent class is @Entity
                         J.ClassDeclaration parentClass = getCursor().dropParentUntil(parent -> parent instanceof J.ClassDeclaration).getValue();
-                        if (FindAnnotations.find(parentClass, "javax.persistence.Entity").isEmpty()) {
+                        if (parentClass.getLeadingAnnotations().stream()
+                                .noneMatch(anno -> anno.getType().toString().equals("javax.persistence.Entity"))) {
                             return multiVariable;
                         }
 
