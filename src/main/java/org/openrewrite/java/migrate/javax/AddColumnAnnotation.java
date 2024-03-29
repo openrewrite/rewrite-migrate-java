@@ -70,6 +70,12 @@ public class AddColumnAnnotation extends Recipe {
                             return multiVariable;
                         }
 
+                        // Confirm direct parent class is @Entity
+                        J.ClassDeclaration parentClass = getCursor().dropParentUntil(parent -> parent instanceof J.ClassDeclaration).getValue();
+                        if (FindAnnotations.find(parentClass, "javax.persistence.Entity").isEmpty()) {
+                            return multiVariable;
+                        }
+
                         // Create and add @Column annotation
                         if (FindAnnotations.find(multiVariable, "@javax.persistence.Column").isEmpty()) {
                             maybeAddImport("javax.persistence.Column");
