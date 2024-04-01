@@ -31,7 +31,6 @@ import java.util.Set;
 public class NoGuavaMapsNewLinkedHashMap extends Recipe {
     private static final MethodMatcher NEW_LINKED_HASH_MAP = new MethodMatcher("com.google.common.collect.Maps newLinkedHashMap()");
     private static final MethodMatcher NEW_LINKED_HASH_MAP_WITH_MAP = new MethodMatcher("com.google.common.collect.Maps newLinkedHashMap(java.util.Map)");
-    private static final MethodMatcher NEW_LINKED_HASH_MAP_CAPACITY = new MethodMatcher("com.google.common.collect.Maps newLinkedHashMapWithExpectedSize(int)");
 
     @Override
     public String getDisplayName() {
@@ -52,8 +51,7 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(Preconditions.or(
                 new UsesMethod<>(NEW_LINKED_HASH_MAP),
-                new UsesMethod<>(NEW_LINKED_HASH_MAP_WITH_MAP),
-                new UsesMethod<>(NEW_LINKED_HASH_MAP_CAPACITY)), new JavaVisitor<ExecutionContext>() {
+                new UsesMethod<>(NEW_LINKED_HASH_MAP_WITH_MAP)), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_LINKED_HASH_MAP.matches(method)) {
@@ -68,14 +66,6 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.LinkedHashMap");
                     return JavaTemplate.builder("new LinkedHashMap<>(#{any(java.util.Map)})")
-                            .contextSensitive()
-                            .imports("java.util.LinkedHashMap")
-                            .build()
-                            .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
-                } else if (NEW_LINKED_HASH_MAP_CAPACITY.matches(method)) {
-                    maybeRemoveImport("com.google.common.collect.Maps");
-                    maybeAddImport("java.util.LinkedHashMap");
-                    return JavaTemplate.builder("new LinkedHashMap<>(#{any(int)})")
                             .contextSensitive()
                             .imports("java.util.LinkedHashMap")
                             .build()
