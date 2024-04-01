@@ -283,4 +283,54 @@ class AddDefaultConstructorToEntityClassTest implements RewriteTest {
               """)
         );
     }
+
+    @Test
+    void addMissingDefaultConstructorToEntityInnerclass() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              public class MissingNoArgConstructor {
+                  @Id
+                  private int id;
+
+                  public MissingNoArgConstructor(int id) {
+                      this.id = id;
+                  }
+
+                  @Entity
+                  class MissingNoArgConstructorEntity {
+                      @Id
+                      private int id2;
+                  }
+              }
+              """,
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              public class MissingNoArgConstructor {
+                  @Id
+                  private int id;
+
+                  public MissingNoArgConstructor(int id) {
+                      this.id = id;
+                  }
+
+                  @Entity
+                  class MissingNoArgConstructorEntity {
+                      @Id
+                      private int id2;
+                      
+                      public MissingNoArgConstructorEntity() {
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
 }
