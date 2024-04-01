@@ -59,7 +59,7 @@ class RemoveEmbeddableIdTest implements RewriteTest {
                   private int field;
               }
               """,
-              """
+            """
               import javax.persistence.Embeddable;
 
               @Embeddable
@@ -120,7 +120,6 @@ class RemoveEmbeddableIdTest implements RewriteTest {
           java(
             """
               import javax.persistence.Embeddable;
-              import javax.persistence.Id;
 
               @Embeddable
               public class EmbeddableObject {
@@ -162,7 +161,7 @@ class RemoveEmbeddableIdTest implements RewriteTest {
     }
 
     @Test
-    void removeEmbeddableIdFromSubClass() {
+    void removeEmbeddableIdFromInnerClass() {
         //language=java
         rewriteRun(
           java(
@@ -172,15 +171,56 @@ class RemoveEmbeddableIdTest implements RewriteTest {
 
               @Entity
               public class MainEntity {
-                 @EmbeddedId
-                 private EmbeddableObject eo;
+                  @EmbeddedId
+                  private OuterClass.EmbeddableObject eo;
               }
               """
           ),
           java(
-            """     
+            """
               import javax.persistence.Embeddable;
-              public class EmbeddableObject {
+              import javax.persistence.Id;
+
+              public class OuterClass {
+                  @Id
+                  private int test;
+                  @Embeddable
+                  class EmbeddableObject {
+                      @Id
+                      private int field;
+                  }
+              }
+              """,
+            """
+              import javax.persistence.Embeddable;
+              import javax.persistence.Id;
+
+              public class OuterClass {
+                  @Id
+                  private int test;
+                  @Embeddable
+                  class EmbeddableObject {
+                      private int field;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+//    @Test //unsure if needed or if feasible
+    void removeEmbeddableIdFromAffectedClassOnly() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.EmbeddedId;
+              import javax.persistence.Entity;
+
+              @Entity
+              public class MainEntity {
+                  @EmbeddedId
+                  private OuterClass eo;
               }
               """
           ),
@@ -190,17 +230,28 @@ class RemoveEmbeddableIdTest implements RewriteTest {
               import javax.persistence.Id;
 
               @Embeddable
-              public class EmbeddableObjectSubClass extends EmbeddableObject {
+              public class OuterClass {
                   @Id
-                  private int field;
+                  private int test;
+
+                  class NonEmbeddableObject {
+                      @Id
+                      private int field;
+                  }
               }
               """,
             """
               import javax.persistence.Embeddable;
+              import javax.persistence.Id;
 
               @Embeddable
-              public class EmbeddableObjectSubClass extends EmbeddableObject {
-                  private int field;
+              public class OuterClass {
+                  private int test;
+
+                  class NonEmbeddableObject {
+                      @Id
+                      private int field;
+                  }
               }
               """
           )
