@@ -366,4 +366,36 @@ class AddColumnAnnotationTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void handleInnerClassNoUpdate() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.List;
+              import javax.persistence.ElementCollection;
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Column;
+
+              public class ElementCollectionEntity {
+                  @Id
+                  private int id;
+
+                  @ElementCollection
+                  private List<String> listofStrings;
+                  
+                  @Entity
+                  class InnerEntity {
+                      @Id
+                      private int id;
+                      
+                      private List<String> listofStrings2;
+                  }
+              }
+              """
+          )
+        );
+    }
 }
