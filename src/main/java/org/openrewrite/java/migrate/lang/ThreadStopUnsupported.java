@@ -36,14 +36,14 @@ public class ThreadStopUnsupported extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Replace `Thread.stop()` with `throw new UnsupportedOperationException()`";
+        return "Replace `Thread.resume()`, `Thread.stop()`, and `Thread.suspend()` with `throw new UnsupportedOperationException()`";
     }
 
     @Override
     public String getDescription() {
-        return "`Thread.stop()` always throws a `new UnsupportedOperationException` in Java 21+. " +
-               "This recipe makes that explicit, as the migration is more complicated." +
-               "See https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html .";
+        return "`Thread.resume()`, `Thread.stop()`, and `Thread.suspend()` always throws a `new UnsupportedOperationException` in Java 21+. " +
+                "This recipe makes that explicit, as the migration is more complicated." +
+                "See https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html .";
     }
 
     @Override
@@ -52,7 +52,7 @@ public class ThreadStopUnsupported extends Recipe {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J j = super.visitMethodInvocation(method, ctx);
-                if (THREAD_STOP_MATCHER.matches(method) || THREAD_RESUME_MATCHER.matches(method) ||THREAD_SUSPEND_MATCHER.matches(method)) {
+                if (THREAD_STOP_MATCHER.matches(method) || THREAD_RESUME_MATCHER.matches(method) || THREAD_SUSPEND_MATCHER.matches(method)) {
                     if (usesJava21(ctx)) {
                         JavaTemplate template = JavaTemplate.builder("throw new UnsupportedOperationException()")
                                 .contextSensitive().build();
@@ -74,9 +74,9 @@ public class ThreadStopUnsupported extends Recipe {
                 String prefixWhitespace = j.getPrefix().getWhitespace();
                 String commentText =
                         prefixWhitespace + " * `Thread." + methodName + "()` always throws a `new UnsupportedOperationException()` in Java 21+." +
-                        prefixWhitespace + " * For detailed migration instructions see the migration guide available at" +
-                        prefixWhitespace + " * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html" +
-                        prefixWhitespace + " ";
+                                prefixWhitespace + " * For detailed migration instructions see the migration guide available at" +
+                                prefixWhitespace + " * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html" +
+                                prefixWhitespace + " ";
                 return j.withComments(Collections.singletonList(new TextComment(true, commentText, prefixWhitespace, Markers.EMPTY)));
             }
         };
