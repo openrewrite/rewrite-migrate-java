@@ -208,8 +208,8 @@ class RemoveEmbeddableIdTest implements RewriteTest {
         );
     }
 
-//    @Test //unsure if needed or if feasible
-    void removeEmbeddableIdFromAffectedClassOnly() {
+    @Test
+    void removeEmbeddableIdFromClassAndInnerClasses() {
         //language=java
         rewriteRun(
           java(
@@ -242,14 +242,12 @@ class RemoveEmbeddableIdTest implements RewriteTest {
               """,
             """
               import javax.persistence.Embeddable;
-              import javax.persistence.Id;
 
               @Embeddable
               public class OuterClass {
                   private int test;
 
                   class NonEmbeddableObject {
-                      @Id
                       private int field;
                   }
               }
