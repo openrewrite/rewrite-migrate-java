@@ -1,0 +1,13 @@
+try {
+   tools.getThread().getQueueManager().deleteDeferred(myStepPage.getString(".pxRefQueueKey"));
+
+} catch (DatabaseException de) {
+   // If we get an error, it could be because we couldn't lock the item.  That
+   // is okay, when the SLA agent eventually tries to process the queue item it
+   // will see that the assignment it is connected to is gone.
+   oLog.info(de.getMessage(), de);
+  tools.getStepStatus().backoutWorst();
+} catch (PRQueueException qe) {
+   oLog.info(qe.getMessage(), qe);
+  tools.getStepStatus().backoutWorst();
+}
