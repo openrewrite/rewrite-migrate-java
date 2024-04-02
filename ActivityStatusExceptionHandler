@@ -1,0 +1,29 @@
+Map diagnostics = (Map) (tools.getParameterPage().getObject("aExceptionDiagnosticInformation"));
+
+String sStatus = (String) (diagnostics.get(com.pega.pegarules.priv.context.web.WebTierConstants.ERROR_INFORMATION_STATUS));
+String sMessage = (String) (diagnostics.get(com.pega.pegarules.priv.context.web.WebTierConstants.ERROR_INFORMATION_MESSAGE));
+String sUserName = (String) (diagnostics.get(com.pega.pegarules.priv.context.web.WebTierConstants.ERROR_INFORMATION_USERNAME));
+String sRequestorID = (String) (diagnostics.get(com.pega.pegarules.priv.context.web.WebTierConstants.ERROR_INFORMATION_REQUESTOR_ID));
+String sETierVersion = (String) (diagnostics.get(com.pega.pegarules.priv.context.web.WebTierConstants.ERROR_INFORMATION_ETIER_VERSION_STRING));
+List alExceptions = (List) (diagnostics.get(com.pega.pegarules.priv.context.web.WebTierConstants.ERROR_INFORMATION_EXCEPTIONS));
+Boolean bNoOutput = (Boolean) (diagnostics.get(com.pega.pegarules.priv.context.web.WebTierConstants.ERROR_INFORMATION_NO_OUTPUT));
+
+myStepPage.putString("pyStatusLabel",sStatus);
+myStepPage.putString("pyMessageLabel",sMessage);
+myStepPage.putObject("ExceptionList", alExceptions);
+
+// Clear the portal page to fix the issue when running in a noiframe container
+ClipboardPage declare_pyDisplay = tools.findPage("Declare_pyDisplay");
+if(declare_pyDisplay!=null){
+ClipboardProperty cp_pyDisplay = declare_pyDisplay.getProperty("pyDisplay");
+  if(cp_pyDisplay!=null){
+String portalName = tools.findPage("pxThread").getString("pxPortal");
+     //SE-64470 to avoid invalid Parameter Exceptions - Begin
+if(portalName != null && !portalName.equals("")){
+ClipboardPage pg_portalDisplay = cp_pyDisplay.getPageValue(portalName);
+pg_portalDisplay.remove("pyLayout");
+}
+//BUG-317496 - Activty exception renders in new window, So in need of pega scripts
+((PegaAPI) tools).clearInitialOnlyOnce();
+  }
+}
