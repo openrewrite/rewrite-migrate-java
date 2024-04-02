@@ -50,30 +50,31 @@ public class AddColumnAnnotation extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
+
         return Preconditions.check(
                 new UsesType<>("javax.persistence.ElementCollection", true),
                 new JavaIsoVisitor<ExecutionContext>() {
+                    boolean visitedTopLevelClass = false;
+
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                        // if top-level class has already been checked, continue running recipe
+                        if (visitedTopLevelClass) {
+                            return super.visitClassDeclaration(classDecl, ctx);
+                        }
+                        visitedTopLevelClass = true;
                         if (!FindAnnotations.find(classDecl, "@javax.persistence.Entity").isEmpty()) {
                             return super.visitClassDeclaration(classDecl, ctx);
                         }
                         // Exit if class is not @Entity
                         return classDecl;
-                    };
+                    }
 
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         // Exit if var does not have @ElementCollection or has @Transient
                         if (FindAnnotations.find(multiVariable, "@javax.persistence.ElementCollection").isEmpty()
                             || !FindAnnotations.find(multiVariable, "@javax.persistence.Transient").isEmpty()) {
-                            return multiVariable;
-                        }
-
-                        // Confirm direct parent class is @Entity
-                        J.ClassDeclaration parentClass = getCursor().dropParentUntil(parent -> parent instanceof J.ClassDeclaration).getValue();
-                        if (parentClass.getLeadingAnnotations().stream()
-                                .noneMatch(anno -> anno.getType().toString().equals("javax.persistence.Entity"))) {
                             return multiVariable;
                         }
 

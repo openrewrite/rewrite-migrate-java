@@ -319,19 +319,18 @@ class AddColumnAnnotationTest implements RewriteTest {
               import javax.persistence.ElementCollection;
               import javax.persistence.Entity;
               import javax.persistence.Id;
-              import javax.persistence.Column;
 
+              @Entity
               public class ElementCollectionEntity {
                   @Id
                   private int id;
 
                   @ElementCollection
                   private List<String> listofStrings;
-                  
-                  @Entity
-                  class InnerEntity {
+
+                  class InnerClass {
                       @Id
-                      private int id;
+                      private int id2;
                       
                       @ElementCollection
                       private List<String> listofStrings2;
@@ -340,57 +339,27 @@ class AddColumnAnnotationTest implements RewriteTest {
               """,
             """
               import java.util.List;
+
+              import javax.persistence.Column;
               import javax.persistence.ElementCollection;
               import javax.persistence.Entity;
               import javax.persistence.Id;
-              import javax.persistence.Column;
 
+              @Entity
               public class ElementCollectionEntity {
                   @Id
                   private int id;
 
+                  @Column(name = "element")
                   @ElementCollection
                   private List<String> listofStrings;
                   
-                  @Entity
-                  class InnerEntity {
+                  class InnerClass {
                       @Id
-                      private int id;
-                      
+                      private int id2;
+
                       @Column(name = "element")
                       @ElementCollection
-                      private List<String> listofStrings2;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void handleInnerClassNoUpdate() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.List;
-              import javax.persistence.ElementCollection;
-              import javax.persistence.Entity;
-              import javax.persistence.Id;
-              import javax.persistence.Column;
-
-              public class ElementCollectionEntity {
-                  @Id
-                  private int id;
-
-                  @ElementCollection
-                  private List<String> listofStrings;
-                  
-                  @Entity
-                  class InnerEntity {
-                      @Id
-                      private int id;
-                      
                       private List<String> listofStrings2;
                   }
               }
