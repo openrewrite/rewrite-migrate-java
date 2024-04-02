@@ -1,5 +1,5 @@
 #
-# Copyright 2022 the original author or authors.
+# Copyright 2024 the original author or authors.
 # <p>
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,7 +49,11 @@ recipeList:
       groupId: com.sonatype.clm
       artifactId: clm-maven-plugin
       newVersion: 2.47.6-01
-
+  - org.openrewrite.java.migrate.RemovedZipFinalizeMethods
+  - org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
+  - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
+  - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
+  - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaVersion17
@@ -61,8 +65,6 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 17
-  - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
-      releaseVersion: 17
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
@@ -122,3 +124,81 @@ recipeList:
   - org.openrewrite.java.ChangeMethodAccessLevel:
       methodPattern: "*..* premain(java.lang.String, java.lang.instrument.Instrumentation)"
       newAccessLevel: public
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedZipFinalizeMethods
+displayName: Replace `finalize` method in `java.util.zip.Zipfile`, `java.util.zip.Inflater` and `java.util.zip.Deflater`
+description: >
+  The `finalize` method in `java.util.zip.ZipFile` is replaced with the `close` method and is replaced by the `end` method in 
+   `java.util.zip.Inflater` and `java.util.zip.Deflater` as it is no longer available in Java SE 12 and later.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "java.util.zip.Inflater finalize()"
+      newMethodName: end
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "java.util.zip.Deflater finalize()"
+      newMethodName: end
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "java.util.zip.ZipFile finalize()"
+      newMethodName: close
+      ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
+displayName: Replace `SSLSession.getPeerCertificateChain()` method
+description: >
+  The `javax.net.ssl.SSLSession.getPeerCertificateChain()` method implementation was removed from the SunJSSE provider and HTTP client implementation in Java SE 15. 
+  The default implementation will now throw an `UnsupportedOperationException`. 
+  Applications using this method should be updated to use the `javax.net.ssl.SSLSession.getPeerCertificates()` method instead.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "javax.net.ssl.SSLSession getPeerCertificateChain()"
+      newMethodName: getPeerCertificates
+      ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.SunNetSslPackageUnavailable
+displayName: Replace `com.sun.net.ssl` package
+description: >
+  The internal API `com.sun.net.ssl` is removed. The package was intended for internal use only and replacement APIs can be found in the `javax.net.ssl` package.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: com.sun.net.ssl
+      newPackageName: javax.net.ssl
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
+displayName: Replace `RMIConnectorServer.CREDENTIAL_TYPES` constant
+description: >
+  This recipe replaces the `RMIConnectorServer.CREDENTIAL_TYPES` constant with the `RMIConnectorServer.CREDENTIALS_FILTER_PATTERN` constant.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: javax.management.remote.rmi.RMIConnectorServer.CREDENTIAL_TYPES
+      fullyQualifiedConstantName:  javax.management.remote.rmi.RMIConnectorServer.CREDENTIALS_FILTER_PATTERN
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
+displayName: Replace `finalize` method in `java.io.FileInputStream`  and `java.io.FileOutputStream`
+description: >
+  The `finalize` method in `java.io.FileInputStream` and `java.io.FileOutputStream` is no longer available in Java SE 12 and later. The recipe replaces it with the `close` method.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "java.io.FileInputStream finalize()"
+      newMethodName: close
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "java.io.FileOutputStream finalize()"
+      newMethodName: close
+      ignoreDefinition: true
