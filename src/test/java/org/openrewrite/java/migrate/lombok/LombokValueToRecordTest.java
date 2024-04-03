@@ -404,5 +404,27 @@ class LombokValueToRecordTest implements RewriteTest {
               )
             );
         }
+
+        @Test
+        void classImplementingInterfaces() {
+            //language=java
+            rewriteRun(
+              java("""
+                   package example;
+                                   
+                   import lombok.Value;
+                                   
+                   interface I {
+                       String getTest();
+                   }
+                                   
+                   @Value
+                   public class A implements I {
+                       String test;
+                   }
+                   """)
+            );
+
+        }
     }
 }
