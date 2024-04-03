@@ -209,6 +209,38 @@ class LombokValueToRecordTest implements RewriteTest {
               """
           )
         );
+
+
+
+        }
+    @Test
+    void interfaceIsImplementedThatDoesNotDefineFieldGetter() {
+        //language=java
+        rewriteRun(
+          s -> s.typeValidationOptions(TypeValidation.none()),
+          java(
+            """
+              package example;
+              
+              import lombok.Value;
+              import java.io.Serializable;
+              
+              @Value
+              public class A implements Serializable {
+                String test;
+              }
+              """,
+            """
+              package example;
+              
+              import java.io.Serializable;
+               
+              public record A(
+                String test) implements Serializable {
+              }
+              """
+          )
+        );
     }
 
     @Nested
@@ -406,7 +438,7 @@ class LombokValueToRecordTest implements RewriteTest {
         }
 
         @Test
-        void classImplementingInterfaces() {
+        void classImplementingConflictingInterface() {
             //language=java
             rewriteRun(
               java("""
@@ -420,6 +452,31 @@ class LombokValueToRecordTest implements RewriteTest {
                                    
                    @Value
                    public class A implements I {
+                       String test;
+                   }
+                   """)
+            );
+
+        }
+        @Test
+        void classImplementingConflictingInterfaceWithInheritance() {
+            //language=java
+            rewriteRun(
+              java(
+                   """
+                   package example;
+                                   
+                   import lombok.Value;
+                    
+                   interface I {
+                       String getTest();
+                   }
+                   
+                   interface J extends I {
+                   }
+                                   
+                   @Value
+                   public class A implements J {
                        String test;
                    }
                    """)

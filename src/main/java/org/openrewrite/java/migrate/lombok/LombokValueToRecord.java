@@ -99,23 +99,28 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 return cd;
             }
 
-            assert cd.getType() != null : "Class type must not be null";
+            assert cd.getType() != null:"Class type must not be null";
+            Set<String> memberVariableNames = getMemberVariableNames(memberVariables);
+            if (implementsConflictingInterfaces(cd, memberVariableNames)) {
+                return cd;
+            }
+
             acc.putIfAbsent(
                     cd.getType().getFullyQualifiedName(),
-                    getMemberVariableNames(memberVariables));
+                    memberVariableNames);
 
             return cd;
         }
 
         private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
+            List<J.Annotation> allAnnotations = classDeclaration.getAllAnnotations();
             return classDeclaration.getType() != null
                     && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
-                    && classDeclaration.getAllAnnotations().stream()
-                    .allMatch(ann -> LOMBOK_VALUE_MATCHER.matches(ann) && (ann.getArguments() == null || ann.getArguments().isEmpty()))
+                    && !allAnnotations.isEmpty()
+                    && allAnnotations.stream().allMatch(ann -> LOMBOK_VALUE_MATCHER.matches(ann) && (ann.getArguments() == null || ann.getArguments().isEmpty()))
                     && !hasGenericTypeParameter(classDeclaration)
                     && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField)
-                    && !hasIncompatibleModifier(classDeclaration)
-                    && !implementsInterfaces(classDeclaration);
+                    && !hasIncompatibleModifier(classDeclaration);
         }
 
         /**
@@ -125,10 +130,36 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
          * @param classDeclaration
          * @return
          */
-        private boolean implementsInterfaces(J.ClassDeclaration classDeclaration) {
+        private boolean implementsConflictingInterfaces(J.ClassDeclaration classDeclaration, Set<String> memberVariableNames) {
             List<TypeTree> classDeclarationImplements = classDeclaration.getImplements();
-            return !(classDeclarationImplements == null || classDeclarationImplements.isEmpty());
+            if (classDeclarationImplements == null) {
+                return false;
+            }
+            return classDeclarationImplements.stream().anyMatch(implemented -> {
+                JavaType type = implemented.getType();
+                if (type instanceof JavaType.FullyQualified) {
+                    return isConflictingInterface((JavaType.FullyQualified) type, memberVariableNames);
+                } else {
+                    return false;
+                }
+            });
         }
+
+        private static boolean isConflictingInterface(JavaType.FullyQualified implemented, Set<String> memberVariableNames) {
+            boolean hasConflictingMethod = implemented.getMethods().stream()
+                    .map(JavaType.Method::getName)
+                    .map(LombokValueToRecordVisitor::getterMethodNameToFluentMethodName)
+                    .anyMatch(memberVariableNames::contains);
+            if (hasConflictingMethod) {
+                return true;
+            }
+            List<JavaType.FullyQualified> superInterfaces = implemented.getInterfaces();
+            if (superInterfaces != null) {
+                return superInterfaces.stream().anyMatch(i -> isConflictingInterface(i, memberVariableNames));
+            }
+            return false;
+        }
+
         private boolean hasGenericTypeParameter(J.ClassDeclaration classDeclaration) {
             List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
             return typeParameters != null && !typeParameters.isEmpty();
@@ -270,7 +301,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         }
 
         private static JavaType.Class buildRecordType(J.ClassDeclaration classDeclaration) {
-            assert classDeclaration.getType() != null : "Class type must not be null";
+            assert classDeclaration.getType() != null:"Class type must not be null";
             String className = classDeclaration.getType().getFullyQualifiedName();
 
             return JavaType.ShallowClass.build(className)
