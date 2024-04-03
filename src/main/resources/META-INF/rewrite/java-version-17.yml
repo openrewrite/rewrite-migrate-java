@@ -188,7 +188,6 @@ recipeList:
       fullyQualifiedConstantName:  javax.management.remote.rmi.RMIConnectorServer.CREDENTIALS_FILTER_PATTERN
 ---
 type: specs.openrewrite.org/v1beta/recipe
-recipe_deprecatedCountStackFramesMethod
 name: org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
 displayName: Remove  `Thread.countStackFrames()` method
 description: >

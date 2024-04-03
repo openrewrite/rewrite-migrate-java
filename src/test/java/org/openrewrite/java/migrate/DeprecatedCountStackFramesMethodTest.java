@@ -73,12 +73,10 @@ class DeprecatedCountStackFramesMethodTest implements RewriteTest {
                	        public static void main(String args[]) {
                		        Thread t1,t2 = new Thread();             
                		         int i = t1.countStackFrames();   
-               		       
                	  }              
               }           
               """
           )
         );
     }
-
 }
