@@ -36,13 +36,13 @@ public class RemovedToolProviderConstructor extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Converts method invocations to `javax.tools.ToolProvider()` to static calls ";
+        return "Converts method invocations to `javax.tools.ToolProvider()` to static calls";
     }
 
     @Override
     public String getDescription() {
         return "The `javax.tools.ToolProvider()` constructor has been removed in Java SE 16 since the class only contains Static methods." +
-                "The recipe converts javax.tools.ToolProvider getSystemJavaCompiler(), javax.tools.ToolProvider getSystemDocumentationTool() and javax.tools.ToolProvider getSystemToolClassLoader() to static methods";
+                "The recipe converts javax.tools.ToolProvider getSystemJavaCompiler(), javax.tools.ToolProvider getSystemDocumentationTool() and javax.tools.ToolProvider getSystemToolClassLoader() to static methods.";
 
     }
 
