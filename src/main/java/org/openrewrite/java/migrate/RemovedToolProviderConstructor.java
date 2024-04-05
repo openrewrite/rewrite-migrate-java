@@ -19,11 +19,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.tree.Flag;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.Space;
+import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
 import java.util.LinkedHashSet;
@@ -49,22 +45,23 @@ public class RemovedToolProviderConstructor extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
-            private final MethodMatcher COMPILER_METHODMATCHER = new MethodMatcher("javax.tools.ToolProvider getSystemJavaCompiler()", false);
-            private final MethodMatcher DOCUMENTATION_METHODMATCHER = new MethodMatcher("javax.tools.ToolProvider getSystemDocumentationTool()", false);
-            private final MethodMatcher CLASSLOADER_METHODMATCHER = new MethodMatcher("javax.tools.ToolProvider getSystemToolClassLoader()", false);
+
             private final JavaType.FullyQualified classType = JavaType.ShallowClass.build("javax.tools.ToolProvider");
+            private final String TOOLPROVIDER_CLASS_TYPE = "javax.tools.ToolProvider";
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                J.MethodInvocation m =  method;
-
-                if ( COMPILER_METHODMATCHER.matches(method, false)||(DOCUMENTATION_METHODMATCHER.matches(method, false)) ||(CLASSLOADER_METHODMATCHER.matches(method, false))) {
+                J.MethodInvocation m = method;
+                JavaType.Method methodType = method.getMethodType();
+                boolean isSameReceiverType = method.getSelect() != null &&
+                        TypeUtils.isOfClassType(method.getSelect().getType(), TOOLPROVIDER_CLASS_TYPE);
+                if (isSameReceiverType) {
                     JavaType.Method transformedType = null;
-                    if (method.getMethodType() != null) {
-                        maybeRemoveImport(method.getMethodType().getDeclaringType());
-                        transformedType = method.getMethodType().withDeclaringType(classType);
-                        if (!method.getMethodType().hasFlags(Flag.Static)) {
-                            Set<Flag> flags = new LinkedHashSet<>(method.getMethodType().getFlags());
+                    if (methodType != null) {
+                        maybeRemoveImport(methodType.getDeclaringType());
+                        transformedType = methodType.withDeclaringType(classType);
+                        if (!methodType.hasFlags(Flag.Static)) {
+                            Set<Flag> flags = new LinkedHashSet<>(methodType.getFlags());
                             flags.add(Flag.Static);
                             transformedType = transformedType.withFlags(flags);
                         }
