@@ -38,15 +38,18 @@ class RemovedToolProviderConstructorTest  implements RewriteTest {
                   package com.test;
                    
                   import javax.tools.ToolProvider;
-                   
+                  import javax.tools.JavaCompiler;
+                  import javax.tools.DocumentationTool;
+                  import java.lang.ClassLoader;
+                  
                   public class RemovedToolProviderConstructorApp {
                    
                        public void test() throws Exception {
                            ToolProvider tp = null;
-                           tp.getSystemJavaCompiler();     
-                           tp.getSystemDocumentationTool();
-                           tp.getSystemToolClassLoader();  
-                           System.out.println(ToolProvider.getSystemJavaCompiler());      
+                           JavaCompiler compiler = tp.getSystemJavaCompiler();     
+                           DocumentationTool dT = tp.getSystemDocumentationTool();
+                           ClassLoader cl = tp.getSystemToolClassLoader();  
+                           System.out.println(ToolProvider.getSystemJavaCompiler());                  
                        }
                   }          
                   """,
@@ -54,15 +57,18 @@ class RemovedToolProviderConstructorTest  implements RewriteTest {
                   package com.test;
                    
                   import javax.tools.ToolProvider;
+                  import javax.tools.JavaCompiler;
+                  import javax.tools.DocumentationTool;
+                  import java.lang.ClassLoader;
                    
                   public class RemovedToolProviderConstructorApp {
                    
                        public void test() throws Exception {
                            ToolProvider tp = null;
-                           ToolProvider.getSystemJavaCompiler();     
-                           ToolProvider.getSystemDocumentationTool();
-                           ToolProvider.getSystemToolClassLoader();  
-                           System.out.println(ToolProvider.getSystemJavaCompiler());              
+                           JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();     
+                           DocumentationTool dT = ToolProvider.getSystemDocumentationTool();
+                           ClassLoader cl = ToolProvider.getSystemToolClassLoader();  
+                           System.out.println(ToolProvider.getSystemJavaCompiler());                                           
                        }
                   }          
                   """
