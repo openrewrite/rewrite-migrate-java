@@ -84,7 +84,7 @@ class ThreadStopUnsupportedTest implements RewriteTest {
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/194")
     @DocumentExample
-    void replaceWithThrowsOnJava21() {
+    void replaceStopWithThrowsOnJava21() {
         rewriteRun(
           //language=java
           java(
@@ -100,6 +100,68 @@ class ThreadStopUnsupportedTest implements RewriteTest {
                   void bar() {
                       /*
                        * `Thread.stop()` always throws a `new UnsupportedOperationException()` in Java 21+.
+                       * For detailed migration instructions see the migration guide available at
+                       * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html
+                       */
+                      throw new UnsupportedOperationException();
+                  }
+              }
+              """,
+            src -> src.markers(javaVersion(21))
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/194")
+    @DocumentExample
+    void replaceResumeWithThrowsOnJava21() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  void bar() {
+                      Thread.currentThread().resume();
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void bar() {
+                      /*
+                       * `Thread.resume()` always throws a `new UnsupportedOperationException()` in Java 21+.
+                       * For detailed migration instructions see the migration guide available at
+                       * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html
+                       */
+                      throw new UnsupportedOperationException();
+                  }
+              }
+              """,
+            src -> src.markers(javaVersion(21))
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/194")
+    @DocumentExample
+    void replaceSuspendWithThrowsOnJava21() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  void bar() {
+                      Thread.currentThread().suspend();
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void bar() {
+                      /*
+                       * `Thread.suspend()` always throws a `new UnsupportedOperationException()` in Java 21+.
                        * For detailed migration instructions see the migration guide available at
                        * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html
                        */
