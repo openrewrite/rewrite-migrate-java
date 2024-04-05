@@ -17,60 +17,54 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-class RemovedToolProviderConstructorTest  implements RewriteTest {
-
-    @DocumentExample
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
 import static org.openrewrite.java.Assertions.java;
 
-public class RemovedToolProviderConstructorTest  implements RewriteTest {
+class RemovedToolProviderConstructorTest  implements RewriteTest {
 
-    @Override
-    public void defaults(RecipeSpec spec) {
+        @Override
+        public void defaults(RecipeSpec spec) {
             spec.expectedCyclesThatMakeChanges(2).recipe(new RemovedToolProviderConstructor());
-   }
-    @Test
-    void moveToStaticTest() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              package com.test;
-               
-              import javax.tools.ToolProvider;
-               
-              public class RemovedToolProviderConstructorApp {
-               
-                   public void test() throws Exception {
-                       ToolProvider tp = null;
-                       tp.getSystemJavaCompiler();     
-                       tp.getSystemDocumentationTool();
-                       tp.getSystemToolClassLoader();  
-                       System.out.println(ToolProvider.getSystemJavaCompiler());      
-                   }
-              }          
-              """,
-            """
-              package com.test;
-               
-              import javax.tools.ToolProvider;
-               
-              public class RemovedToolProviderConstructorApp {
-               
-                   public void test() throws Exception {
-                       ToolProvider tp = null;
-                       ToolProvider.getSystemJavaCompiler();     
-                       ToolProvider.getSystemDocumentationTool();
-                       ToolProvider.getSystemToolClassLoader();  
-                       System.out.println(ToolProvider.getSystemJavaCompiler());              
-                   }
-              }          
-              """
-          )
-        );
-    }
-
-
+        }
+        @Test
+        void moveToStaticTest() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  package com.test;
+                   
+                  import javax.tools.ToolProvider;
+                   
+                  public class RemovedToolProviderConstructorApp {
+                   
+                       public void test() throws Exception {
+                           ToolProvider tp = null;
+                           tp.getSystemJavaCompiler();     
+                           tp.getSystemDocumentationTool();
+                           tp.getSystemToolClassLoader();  
+                           System.out.println(ToolProvider.getSystemJavaCompiler());      
+                       }
+                  }          
+                  """,
+                """
+                  package com.test;
+                   
+                  import javax.tools.ToolProvider;
+                   
+                  public class RemovedToolProviderConstructorApp {
+                   
+                       public void test() throws Exception {
+                           ToolProvider tp = null;
+                           ToolProvider.getSystemJavaCompiler();     
+                           ToolProvider.getSystemDocumentationTool();
+                           ToolProvider.getSystemToolClassLoader();  
+                           System.out.println(ToolProvider.getSystemJavaCompiler());              
+                       }
+                  }          
+                  """
+              )
+            );
+        }
 }
