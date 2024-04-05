@@ -74,7 +74,7 @@ public class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
     }
 
     @Test
-    void overrideRemoteParent() {
+    void bringsDownExplicitlyUsedPropertyFromRemoteParent() {
         rewriteRun(
           //language=xml
           pomXml("""
@@ -111,6 +111,18 @@ public class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                     <artifactId>example-child</artifactId>
                     <version>1.0.0</version>
                     <modelVersion>4.0</modelVersion>
+                    <build>
+                      <plugins>
+                        <plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-compiler-plugin</artifactId>
+                          <version>3.8.0</version>
+                          <configuration>
+                            <release>${java.version}</release>
+                          </configuration>
+                        </plugin>
+                      </plugins>
+                    </build>
                 </project>
                 """,
                """
@@ -128,14 +140,19 @@ public class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                     <modelVersion>4.0</modelVersion>
                     <properties>
                         <java.version>17</java.version>
-                        <javaVersion>17</javaVersion>
-                        <jdk.version>17</jdk.version>
-                        <jdkVersion>17</jdkVersion>
-                        <maven.compiler.release>17</maven.compiler.release>
-                        <maven.compiler.source>17</maven.compiler.source>
-                        <maven.compiler.target>17</maven.compiler.target>
-                        <release.version>17</release.version>
                     </properties>
+                    <build>
+                      <plugins>
+                        <plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-compiler-plugin</artifactId>
+                          <version>3.8.0</version>
+                          <configuration>
+                            <release>${java.version}</release>
+                          </configuration>
+                        </plugin>
+                      </plugins>
+                    </build>
                 </project>
                 """)
           )

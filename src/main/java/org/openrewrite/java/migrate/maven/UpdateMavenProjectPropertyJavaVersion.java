@@ -76,6 +76,7 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MavenIsoVisitor<ExecutionContext>() {
+            final Set<String> propertiesExplicitlyReferenced = new HashSet<>();
 
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext executionContext) {
@@ -93,7 +94,7 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                 // Otherwise override remote parent's properties locally
                 Map<String, String> currentProperties = getResolutionResult().getPom().getRequested().getProperties();
                 for (String property : JAVA_VERSION_PROPERTIES) {
-                    if(currentProperties.containsKey(property)) {
+                    if(currentProperties.containsKey(property) || !propertiesExplicitlyReferenced.contains(property)) {
                         continue;
                     }
                     d = (Xml.Document) new AddProperty(property, String.valueOf(version), null, false)
@@ -107,8 +108,12 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 tag = super.visitTag(tag, ctx);
-
-                if (JAVA_VERSION_XPATH_MATCHERS.stream().anyMatch(matcher -> matcher.matches(getCursor()))) {
+                Optional<String> s = tag.getValue()
+                        .map(it -> it.replace("${", "").replace("}", "").trim())
+                        .filter(JAVA_VERSION_PROPERTIES::contains);
+                if(s.isPresent()) {
+                    propertiesExplicitlyReferenced.add(s.get());
+                } else if (JAVA_VERSION_XPATH_MATCHERS.stream().anyMatch(matcher -> matcher.matches(getCursor()))) {
                     Optional<Float> maybeVersion = tag.getValue().flatMap(
                             value -> {
                                 try {
