@@ -54,6 +54,8 @@ recipeList:
   - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
   - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
   - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
+  - org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
+  - org.openrewrite.java.migrate.RemovedToolProviderConstructor
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaVersion17
@@ -202,3 +204,4 @@ recipeList:
       methodPattern: "java.io.FileOutputStream finalize()"
       newMethodName: close
       ignoreDefinition: true
+
