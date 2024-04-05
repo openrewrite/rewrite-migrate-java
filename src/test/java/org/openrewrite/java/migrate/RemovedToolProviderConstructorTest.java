@@ -28,8 +28,10 @@ class RemovedToolProviderConstructorTest  implements RewriteTest {
         public void defaults(RecipeSpec spec) {
             spec.expectedCyclesThatMakeChanges(2).recipe(new RemovedToolProviderConstructor());
         }
-        @Test
-        void moveToStaticTest() {
+
+    @DocumentExample
+    @Test
+    void moveToStaticTest() {
             rewriteRun(
               //language=java
               java(
