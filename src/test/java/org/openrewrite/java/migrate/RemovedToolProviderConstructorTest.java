@@ -16,7 +16,10 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.config.Environment;
+import org.openrewrite.DocumentExample;
+class RemovedToolProviderConstructorTest  implements RewriteTest {
+
+    @DocumentExample
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
