@@ -23,10 +23,10 @@ import static org.openrewrite.java.Assertions.java;
 
 class RemovedToolProviderConstructorTest  implements RewriteTest {
 
-        @Override
-        public void defaults(RecipeSpec spec) {
+    @Override
+    public void defaults(RecipeSpec spec) {
             spec.expectedCyclesThatMakeChanges(2).recipe(new RemovedToolProviderConstructor());
-        }
+    }
 
     @DocumentExample
     @Test
