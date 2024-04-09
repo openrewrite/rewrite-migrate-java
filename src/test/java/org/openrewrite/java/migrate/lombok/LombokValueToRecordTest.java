@@ -441,7 +441,8 @@ class LombokValueToRecordTest implements RewriteTest {
         void classImplementingConflictingInterface() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                    package example;
                                    
                    import lombok.Value;
