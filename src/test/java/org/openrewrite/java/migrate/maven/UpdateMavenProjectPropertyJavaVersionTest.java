@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.maven;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.SourceSpec;
@@ -23,18 +24,20 @@ import org.openrewrite.test.SourceSpec;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-public class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
+class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new UpdateMavenProjectPropertyJavaVersion(17));
     }
 
+    @DocumentExample
     @Test
     void basic() {
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
             <project>
                 <groupId>com.example</groupId>
                 <artifactId>foo</artifactId>
@@ -77,7 +80,8 @@ public class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
     void bringsDownExplicitlyUsedPropertyFromRemoteParent() {
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
             <project>
                 <groupId>com.example</groupId>
                 <artifactId>example-parent</artifactId>

@@ -79,9 +79,9 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
             final Set<String> propertiesExplicitlyReferenced = new HashSet<>();
 
             @Override
-            public Xml.Document visitDocument(Xml.Document document, ExecutionContext executionContext) {
+            public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
                 // Update properties already defined in the current pom
-                Xml.Document d = super.visitDocument(document, executionContext);
+                Xml.Document d = super.visitDocument(document, ctx);
 
                 // Return early if the parent appears to be within the current repository, as properties defined there will be updated
                 Optional<String> pathToLocalParent = d.getRoot().getChild("parent")
@@ -99,7 +99,7 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                     }
                     d = (Xml.Document) new AddProperty(property, String.valueOf(version), null, false)
                             .getVisitor()
-                            .visitNonNull(d, executionContext);
+                            .visitNonNull(d, ctx);
                 }
 
                 return d;
