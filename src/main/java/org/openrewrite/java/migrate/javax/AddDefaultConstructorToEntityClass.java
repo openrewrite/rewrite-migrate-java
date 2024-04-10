@@ -49,13 +49,9 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                         // Exit if class not annotated with either @Entity or @MappedSuperclass
-//                        if (FindAnnotations.find(classDecl, "javax.persistence.Entity").isEmpty()
-//                            && FindAnnotations.find(classDecl, "javax.persistence.MappedSuperclass").isEmpty()) {
-                        if (classDecl.getLeadingAnnotations().stream()
-                                .noneMatch(anno ->
-                                    anno.getType().toString().equals("javax.persistence.Entity")
-                                    || anno.getType().toString().equals("javax.persistence.MappedSuperclass"))) {
-                            return super.visitClassDeclaration(classDecl, ctx);
+                        if (FindAnnotations.find(classDecl, "javax.persistence.Entity").isEmpty()
+                            && FindAnnotations.find(classDecl, "javax.persistence.MappedSuperclass").isEmpty()) {
+                            return classDecl;
                         }
 
                         // Exit if class already has default no-arg constructor
@@ -64,7 +60,7 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
                                 .map(J.MethodDeclaration.class::cast)
                                 .filter(J.MethodDeclaration::isConstructor)
                                 .anyMatch(constructor -> constructor.getParameters().get(0) instanceof J.Empty)) {
-                            return super.visitClassDeclaration(classDecl, ctx);
+                            return classDecl;
                         }
 
                         // Add default constructor with empty body
