@@ -60,15 +60,6 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                 new UsesType<>("javax.persistence.Entity", true),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-                        if (!FindAnnotations.find(classDecl, "javax.persistence.Entity").isEmpty()) {
-                            return super.visitClassDeclaration(classDecl, ctx);
-                        }
-                        // Exit if parent class is not tagged for JPA
-                        return classDecl;
-                    }
-
-                    @Override
                     public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration md, ExecutionContext ctx) {
                         if (isPrivateAccessorMethodWithoutTransientAnnotation(md)) {// Add @Transient annotation
                             maybeAddImport("javax.persistence.Transient");

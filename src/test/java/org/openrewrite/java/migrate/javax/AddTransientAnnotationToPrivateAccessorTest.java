@@ -158,7 +158,7 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
                 public int getId() {
                   return id;
                 }
-              
+                            
                 public int getField() {
                   return field; // Public method
                 }
@@ -293,6 +293,65 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
                   private String getHello() {
                     String test = "Hello";
                     return test;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void changeInInnerClass() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package entities;
+
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class PrivateAccessor  {
+                  private int id;
+                  private int nonPersistentField;
+
+                  @Id
+                  public int getId() {
+                      return id;
+                  }
+
+                  class InnerClass {
+                      private int test;
+                      private int getNonPersistentField() {
+                          return test;
+                      }
+                  }
+              }
+              ""","""
+              package entities;
+
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Transient;
+
+              @Entity
+              public class PrivateAccessor  {
+                  private int id;
+                  private int nonPersistentField;
+
+                  @Id
+                  public int getId() {
+                      return id;
+                  }
+
+                  class InnerClass {
+                      private int test;
+
+                      @Transient
+                      private int getNonPersistentField() {
+                          return test;
+                      }
                   }
               }
               """
