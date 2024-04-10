@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,13 @@ import org.openrewrite.java.tree.J;
 import java.util.Collections;
 import java.util.Set;
 
-public class NoGuavaMapsNewLinkedHashMap extends Recipe {
-    private static final MethodMatcher NEW_LINKED_HASH_MAP = new MethodMatcher("com.google.common.collect.Maps newLinkedHashMap()");
-    private static final MethodMatcher NEW_LINKED_HASH_MAP_WITH_MAP = new MethodMatcher("com.google.common.collect.Maps newLinkedHashMap(java.util.Map)");
+public class NoGuavaMapsNewHashMap extends Recipe {
+    private static final MethodMatcher NEW_HASH_MAP = new MethodMatcher("com.google.common.collect.Maps newHashMap()");
+    private static final MethodMatcher NEW_HASH_MAP_WITH_MAP = new MethodMatcher("com.google.common.collect.Maps newHashMap(java.util.Map)");
 
     @Override
     public String getDisplayName() {
-        return "Prefer `new LinkedHashMap<>()`";
+        return "Prefer `new HashMap<>()`";
     }
 
     @Override
@@ -50,24 +50,24 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(Preconditions.or(
-                new UsesMethod<>(NEW_LINKED_HASH_MAP),
-                new UsesMethod<>(NEW_LINKED_HASH_MAP_WITH_MAP)), new JavaVisitor<ExecutionContext>() {
+                new UsesMethod<>(NEW_HASH_MAP),
+                new UsesMethod<>(NEW_HASH_MAP_WITH_MAP)), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                if (NEW_LINKED_HASH_MAP.matches(method)) {
+                if (NEW_HASH_MAP.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Maps");
-                    maybeAddImport("java.util.LinkedHashMap");
-                    return JavaTemplate.builder("new LinkedHashMap<>()")
+                    maybeAddImport("java.util.HashMap");
+                    return JavaTemplate.builder("new HashMap<>()")
                             .contextSensitive()
-                            .imports("java.util.LinkedHashMap")
+                            .imports("java.util.HashMap")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace());
-                } else if (NEW_LINKED_HASH_MAP_WITH_MAP.matches(method)) {
+                } else if (NEW_HASH_MAP_WITH_MAP.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Maps");
-                    maybeAddImport("java.util.LinkedHashMap");
-                    return JavaTemplate.builder("new LinkedHashMap<>(#{any(java.util.Map)})")
+                    maybeAddImport("java.util.HashMap");
+                    return JavaTemplate.builder("new HashMap<>(#{any(java.util.Map)})")
                             .contextSensitive()
-                            .imports("java.util.LinkedHashMap")
+                            .imports("java.util.HashMap")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
                 }
