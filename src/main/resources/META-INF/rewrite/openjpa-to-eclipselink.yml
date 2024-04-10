@@ -23,4 +23,5 @@ tags:
   - deprecated
 recipeList:
   - org.openrewrite.java.migrate.javax.AddTableGenerator
+  - org.openrewrite.java.migrate.javax.AddColumnAnnotation
   - org.openrewrite.java.migrate.javax.RemoveEmbeddableId
