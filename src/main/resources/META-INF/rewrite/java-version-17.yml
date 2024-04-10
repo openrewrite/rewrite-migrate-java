@@ -53,6 +53,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
   - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
   - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
+  - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JavaVersion17
@@ -184,3 +185,20 @@ recipeList:
   - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
       existingFullyQualifiedConstantName: javax.management.remote.rmi.RMIConnectorServer.CREDENTIAL_TYPES
       fullyQualifiedConstantName:  javax.management.remote.rmi.RMIConnectorServer.CREDENTIALS_FILTER_PATTERN
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
+displayName: Replace `finalize` method in `java.io.FileInputStream`  and `java.io.FileOutputStream`
+description: >
+  The `finalize` method in `java.io.FileInputStream` and `java.io.FileOutputStream` is no longer available in Java SE 12 and later. The recipe replaces it with the `close` method.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "java.io.FileInputStream finalize()"
+      newMethodName: close
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: "java.io.FileOutputStream finalize()"
+      newMethodName: close
+      ignoreDefinition: true

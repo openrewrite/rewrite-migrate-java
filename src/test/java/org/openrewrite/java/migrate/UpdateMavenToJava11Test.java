@@ -44,11 +44,11 @@ class UpdateMavenToJava11Test implements RewriteTest {
               """
                 <project>
                   <modelVersion>4.0.0</modelVersion>
-
+                
                   <properties>
                     <java.version>1.8</java.version>
                   </properties>
-
+                
                   <groupId>com.mycompany.app</groupId>
                   <artifactId>my-app</artifactId>
                   <version>1</version>
@@ -57,11 +57,11 @@ class UpdateMavenToJava11Test implements RewriteTest {
               """
                 <project>
                   <modelVersion>4.0.0</modelVersion>
-
+                
                   <properties>
                     <java.version>11</java.version>
                   </properties>
-
+                
                   <groupId>com.mycompany.app</groupId>
                   <artifactId>my-app</artifactId>
                   <version>1</version>
@@ -82,12 +82,12 @@ class UpdateMavenToJava11Test implements RewriteTest {
               """
                 <project>
                   <modelVersion>4.0.0</modelVersion>
-
+                
                   <properties>
                     <maven.compiler.source>1.8</maven.compiler.source>
                     <maven.compiler.target>1.8</maven.compiler.target>
                   </properties>
-
+                
                   <groupId>com.mycompany.app</groupId>
                   <artifactId>my-app</artifactId>
                   <version>1</version>
@@ -96,12 +96,12 @@ class UpdateMavenToJava11Test implements RewriteTest {
               """
                 <project>
                   <modelVersion>4.0.0</modelVersion>
-
+                
                   <properties>
                     <maven.compiler.source>11</maven.compiler.source>
                     <maven.compiler.target>11</maven.compiler.target>
                   </properties>
-
+                
                   <groupId>com.mycompany.app</groupId>
                   <artifactId>my-app</artifactId>
                   <version>1</version>
@@ -118,16 +118,17 @@ class UpdateMavenToJava11Test implements RewriteTest {
     void noDowngrade() {
         rewriteRun(
           version(
+            //language=xml
             pomXml(
               """
                 <project>
                   <modelVersion>4.0.0</modelVersion>
-
+                
                   <properties>
                     <maven.compiler.source>17</maven.compiler.source>
                     <maven.compiler.target>17</maven.compiler.target>
                   </properties>
-
+                
                   <groupId>com.mycompany.app</groupId>
                   <artifactId>my-app</artifactId>
                   <version>1</version>
