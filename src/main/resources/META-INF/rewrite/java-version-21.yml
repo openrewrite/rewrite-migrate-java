@@ -66,9 +66,6 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 21
-  - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
-      releaseVersion: 21
-
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.util.SequencedCollection

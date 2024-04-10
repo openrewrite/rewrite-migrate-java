@@ -55,11 +55,15 @@ final class DeclarationCheck {
 
         boolean definesSingleVariable = vd.getVariables().size() == 1;
         boolean isPureAssigment = JavaType.Primitive.Null.equals(vd.getType());
-        if (!definesSingleVariable || isPureAssigment) return false;
+        if (!definesSingleVariable || isPureAssigment) {
+            return false;
+        }
 
         Expression initializer = vd.getVariables().get(0).getInitializer();
         boolean isDeclarationOnly = initializer == null;
-        if (isDeclarationOnly) return false;
+        if (isDeclarationOnly) {
+            return false;
+        }
 
         initializer = initializer.unwrap();
         boolean isNullAssigment = initializer instanceof J.Literal && ((J.Literal) initializer).getValue() == null;
@@ -99,10 +103,14 @@ final class DeclarationCheck {
     public static boolean useGenerics(J.VariableDeclarations vd) {
         TypeTree typeExpression = vd.getTypeExpression();
         boolean isGenericDefinition = typeExpression instanceof J.ParameterizedType;
-        if (isGenericDefinition) return true;
+        if (isGenericDefinition) {
+            return true;
+        }
 
         Expression initializer = vd.getVariables().get(0).getInitializer();
-        if (initializer == null) return false;
+        if (initializer == null) {
+            return false;
+        }
         initializer = initializer.unwrap();
 
         return initializer instanceof J.NewClass
@@ -166,20 +174,27 @@ final class DeclarationCheck {
      * @return true iff the courser is inside an instance or static initializer block
      */
     private static boolean isInsideInitializer(Cursor cursor, int nestedBlockLevel) {
-        if (Cursor.ROOT_VALUE.equals(cursor.getValue())) return false;
+        if (Cursor.ROOT_VALUE.equals( cursor.getValue() )) {
+            return false;
+        }
 
         Object currentStatement = cursor.getValue();
 
         // initializer blocks are blocks inside the class definition block, therefor a nesting of 2 is mandatory
         boolean isClassDeclaration = currentStatement instanceof J.ClassDeclaration;
         boolean followedByTwoBlock = nestedBlockLevel >= 2;
-        if (isClassDeclaration && followedByTwoBlock) return true;
+        if (isClassDeclaration && followedByTwoBlock) {
+            return true;
+        }
 
         // count direct block nesting (block containing a block), but ignore paddings
         boolean isBlock = currentStatement instanceof J.Block;
         boolean isNoPadding = !(currentStatement instanceof JRightPadded);
-        if (isBlock) nestedBlockLevel += 1;
-        else if (isNoPadding) nestedBlockLevel = 0;
+        if (isBlock) {
+            nestedBlockLevel += 1;
+        } else if (isNoPadding) {
+            nestedBlockLevel = 0;
+        }
 
         return isInsideInitializer(requireNonNull(cursor.getParent()), nestedBlockLevel);
     }

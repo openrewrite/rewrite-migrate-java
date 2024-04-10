@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import com.google.errorprone.refaster.Refaster;
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.openrewrite.java.template.RecipeDescriptor;
@@ -27,22 +28,12 @@ public class StringRules {
     @SuppressWarnings("StringOperationCanBeSimplified")
     public static class RedundantCall {
         @BeforeTemplate
-        public String start(String string) {
-            return string.substring(0, string.length());
-        }
-
-        @BeforeTemplate
-        public String startAndEnd(String string) {
-            return string.substring(0);
-        }
-
-        @BeforeTemplate
-        public String toString(String string) {
-            return string.toString();
+        public String before(String string) {
+            return Refaster.anyOf(string.substring(0, string.length()), string.substring(0), string.toString());
         }
 
         @AfterTemplate
-        public String self(String string) {
+        public String after(String string) {
             return string;
         }
     }

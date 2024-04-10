@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
@@ -24,36 +25,35 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 
-class NoGuavaMapsNewLinkedHashMapTest implements RewriteTest {
+class NoGuavaMapsNewHashMapTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new NoGuavaMapsNewLinkedHashMap())
+          .recipe(new NoGuavaMapsNewHashMap())
           .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @DocumentExample
     @Test
-    void replaceWithNewLinkedHashMap() {
+    void replaceWithNewHashMap() {
         //language=java
         rewriteRun(
           java(
             """
               import com.google.common.collect.*;
-                            
               import java.util.Map;
-                            
+              
               class Test {
-                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMap();
+                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newHashMap();
               }
               """,
             """
-              import java.util.LinkedHashMap;
+              import java.util.HashMap;
               import java.util.Map;
-                            
+              
               class Test {
-                  Map<Integer, Integer> cardinalsWorldSeries = new LinkedHashMap<>();
+                  Map<Integer, Integer> cardinalsWorldSeries = new HashMap<>();
               }
               """
           )
@@ -61,33 +61,31 @@ class NoGuavaMapsNewLinkedHashMapTest implements RewriteTest {
     }
 
     @Test
-    void replaceWithNewLinkedHashMapWithMap() {
+    void replaceWithNewHashMapWithMap() {
         //language=java
         rewriteRun(
           java(
             """
               import com.google.common.collect.*;
-                            
               import java.util.Collections;
               import java.util.Map;
                             
               class Test {
                   Map<Integer, Integer> m = Collections.emptyMap();
-                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMap(m);
+                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newHashMap(m);
               }
               """,
             """
               import java.util.Collections;
-              import java.util.LinkedHashMap;
+              import java.util.HashMap;
               import java.util.Map;
                             
               class Test {
                   Map<Integer, Integer> m = Collections.emptyMap();
-                  Map<Integer, Integer> cardinalsWorldSeries = new LinkedHashMap<>(m);
+                  Map<Integer, Integer> cardinalsWorldSeries = new HashMap<>(m);
               }
               """
           )
         );
     }
-
 }
