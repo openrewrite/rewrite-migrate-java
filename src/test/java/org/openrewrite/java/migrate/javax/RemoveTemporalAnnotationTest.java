@@ -91,6 +91,7 @@ class RemoveTemporalAnnotationTest implements RewriteTest {
 
     @Test
     void dontChangeOtherCombinations() {
+        // These combinations require a converter
         //language=java
         rewriteRun(
           java(
@@ -100,7 +101,7 @@ class RemoveTemporalAnnotationTest implements RewriteTest {
               import java.sql.Date;
               import java.sql.Time;
               import java.sql.Timestamp;
-                             
+
               public class TemporalDates {
                   @Temporal(TemporalType.TIMESTAMP)
                   private Date dateDate;
@@ -110,6 +111,29 @@ class RemoveTemporalAnnotationTest implements RewriteTest {
                   
                   @Temporal(TemporalType.TIME)
                   private java.sql.Timestamp timestampTimestamp;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void allowTemporalOnValidClasses() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.Temporal;
+              import javax.persistence.TemporalType;
+              import java.util.Date;
+              import java.util.Calendar;
+
+              public class TemporalDates {
+                  @Temporal(TemporalType.TIMESTAMP)
+                  private Date dateDate;
+
+                  @Temporal(TemporalType.DATE)
+                  private Calendar timestampTimestamp;
               }
               """
           )
