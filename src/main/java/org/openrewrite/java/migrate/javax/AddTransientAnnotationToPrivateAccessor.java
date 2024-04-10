@@ -29,9 +29,11 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Statement;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 @Value
@@ -85,29 +87,39 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                                && method.getParameters().get(0) instanceof J.Empty
                                && method.getReturnTypeExpression().getType() != JavaType.Primitive.Void
                                && FindAnnotations.find(method, "javax.persistence.Transient").isEmpty()
-                               && method.getBody().getStatements().get(0) instanceof J.Return
-                               && methodReturnsFieldFromClass((J.Return) method.getBody().getStatements().get(0));
+                               && methodReturnsFieldFromClass(method);
                     }
 
                     /**
-                     * Check if the given method returns a field defined in the given class
+                     * Check if the given method returns a field defined in the parent class
                      */
-                    private boolean methodReturnsFieldFromClass(J.Return returnStatement) {
+                    private boolean methodReturnsFieldFromClass(J.MethodDeclaration method) {
                         J.ClassDeclaration classDecl = getCursor().dropParentUntil(J.ClassDeclaration.class::isInstance).getValue();
-                        Expression expression = returnStatement.getExpression();
-                        if (expression == null) {
+                        // Check if last statement is return
+                        List<Statement> statements = method.getBody().getStatements();
+                        if (statements.isEmpty()) {
+                            return false;
+                        }
+                        Statement lastStatement = statements.get(statements.size() - 1);
+                        if (!(lastStatement instanceof J.Return)) {
                             return false;
                         }
 
+                        // Get return value
+                        Expression returnExpr = ((J.Return) lastStatement).getExpression();
+                        if (returnExpr == null) {
+                            return false;
+                        }
                         final JavaType.Variable returnedVar;
-                        if (expression instanceof J.FieldAccess) { // ie: return this.field;
-                            returnedVar = ((J.FieldAccess) expression).getName().getFieldType();
-                        } else if (expression instanceof J.Identifier) { // ie: return field;
-                            returnedVar = ((J.Identifier) expression).getFieldType();
+                        if (returnExpr instanceof J.FieldAccess) { // ie: return this.field;
+                            returnedVar = ((J.FieldAccess) returnExpr).getName().getFieldType();
+                        } else if (returnExpr instanceof J.Identifier) { // ie: return field;
+                            returnedVar = ((J.Identifier) returnExpr).getFieldType();
                         } else { // instanceof J.Literal (hardcoded value), or something else not a field. ie: return "hello";
                             return false;
                         }
 
+                        // Check if return value is a class field
                         return classDecl.getBody().getStatements().stream()
                                 .filter(J.VariableDeclarations.class::isInstance)
                                 .map(J.VariableDeclarations.class::cast)
