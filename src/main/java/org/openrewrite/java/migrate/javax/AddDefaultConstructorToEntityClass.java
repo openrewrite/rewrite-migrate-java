@@ -68,7 +68,7 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
                                 .contextSensitive()
                                 .build()
                                 .apply(new Cursor(getCursor(), classDecl.getBody()),
-                                        classDecl.getBody().getCoordinates().addMethodDeclaration(Comparator.comparing(J.MethodDeclaration::getSimpleName)),
+                                        classDecl.getBody().getCoordinates().firstStatement(),
                                         classDecl.getSimpleName()
                                 )
                         );
