@@ -50,6 +50,7 @@ public class AddTransientAnnotationToCollections extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
+        Pattern collection = Pattern.compile("java.util.Collection");
         return Preconditions.check(
                 // Only apply to JPA classes
                 Preconditions.or(
@@ -61,7 +62,7 @@ public class AddTransientAnnotationToCollections extends Recipe {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         // Exit if not Collection
-                        if (!multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))) {
+                        if (!multiVariable.getType().isAssignableFrom(collection)) {
                             return multiVariable;
                         }
                         // Exit if already has JPA annotation

@@ -249,4 +249,55 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void handleInnerClasses() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Collection;
+              import java.util.List;
+
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class UnannotatedCollectionEntity {
+                  @Id
+                  private int id;
+
+                  private Collection collectionField;
+                  private List listField;
+                  class InnerClass {
+                      private Collection collectionField;
+                  }
+              }
+              """,
+            """
+              import java.util.Collection;
+              import java.util.List;
+
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Transient;
+
+              @Entity
+              public class UnannotatedCollectionEntity {
+                  @Id
+                  private int id;
+
+                  @Transient
+                  private Collection collectionField;
+                  @Transient
+                  private List listField;
+                  class InnerClass {
+                      @Transient
+                      private Collection collectionField;
+                  }
+              }
+              """
+          )
+        );
+    }
 }
