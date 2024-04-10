@@ -36,6 +36,7 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = false)
 public class AboutJavaVersion extends Recipe {
     transient JavaVersionPerSourceSet javaVersionPerSourceSet = new JavaVersionPerSourceSet(this);
+    transient Set<ProjectSourceSet> seenSourceSets = new HashSet<>();
 
     @Option(required = false,
             description = "Only mark the Java version when this type is in use.",
@@ -56,7 +57,7 @@ public class AboutJavaVersion extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        Set<ProjectSourceSet> seenSourceSets = new HashSet<>();
+
 
         TreeVisitor<?, ExecutionContext> visitor = new TreeVisitor<Tree, ExecutionContext>() {
             @Override
@@ -66,13 +67,13 @@ public class AboutJavaVersion extends Recipe {
                 }
                 return cu.getMarkers().findFirst(JavaVersion.class)
                         .map(version -> {
-                            String projectName = cu.getMarkers().findFirst(JavaProject.class).map(JavaProject::getProjectName)
-                                    .orElse("");
+                            JavaProject project = cu.getMarkers().findFirst(JavaProject.class)
+                                    .orElse(null);
                             String sourceSet = cu.getMarkers().findFirst(JavaSourceSet.class).map(JavaSourceSet::getName)
                                     .orElse("");
-                            if (seenSourceSets.add(new ProjectSourceSet(projectName, sourceSet))) {
+                            if (seenSourceSets.add(new ProjectSourceSet(project, sourceSet))) {
                                 javaVersionPerSourceSet.insertRow(ctx, new JavaVersionRow(
-                                        projectName,
+                                        project == null ? "" : project.getProjectName(),
                                         sourceSet,
                                         version.getCreatedBy(),
                                         version.getVmVendor(),
@@ -94,7 +95,8 @@ public class AboutJavaVersion extends Recipe {
 
     @Value
     static class ProjectSourceSet {
-        String javaProject;
+        @Nullable
+        JavaProject javaProject;
         String javaSourceSet;
     }
 }
