@@ -49,22 +49,14 @@ public class UseJoinColumnForMapping extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 Preconditions.and(
+                        new UsesType<>("javax.persistence.Entity", true),
+                        new UsesType<>(COLUMN, true),
                         Preconditions.or(
                                 new UsesType<>("javax.persistence.OneToOne", true),
                                 new UsesType<>("javax.persistence.ManyToOne", true)
-                        ),
-                        new UsesType<>(COLUMN, true)
+                        )
                 ),
                 new JavaIsoVisitor<ExecutionContext>() {
-                    @Override
-                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-                        if (!FindAnnotations.find(classDecl, "javax.persistence.Entity").isEmpty()) {
-                            return super.visitClassDeclaration(classDecl, ctx);
-                        }
-                        // Exit if class is not @Entity
-                        return classDecl;
-                    };
-
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         // Exit if not annotated with @Column and a relationship mapping annotation

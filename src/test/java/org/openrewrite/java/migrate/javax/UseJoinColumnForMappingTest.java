@@ -319,4 +319,55 @@ class UseJoinColumnForMappingTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void handleInnerClass() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Column;
+              import javax.persistence.Id;
+              import javax.persistence.ManyToOne;
+
+              @Entity
+              public class TransactionEntity {
+                  @Id
+                  private int id;
+
+                  private long transactionNumber;
+                  private double amount;
+
+                  class InnerClass{
+                      @ManyToOne
+                      @Column(name="account")
+                      private Account account;
+                  }
+              }
+              """,
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.JoinColumn;
+              import javax.persistence.ManyToOne;
+
+              @Entity
+              public class TransactionEntity {
+                  @Id
+                  private int id;
+
+                  private long transactionNumber;
+                  private double amount;
+
+                  class InnerClass{
+                      @ManyToOne
+                      @JoinColumn(name="account")
+                      private Account account;
+                  }
+              }
+              """
+          )
+        );
+    }
 }
