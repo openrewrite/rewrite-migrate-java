@@ -130,14 +130,15 @@ class UpgradeJavaVersionTest implements RewriteTest {
         }
     }
 
+    @SuppressWarnings("GroovyAssignabilityCheck")
     @Nested
     class Gradle {
         @Test
         void gradleUpgradeFromJava11ToJava17() {
             rewriteRun(
               spec -> spec.recipe(new UpgradeJavaVersion(17)),
-              //language=groovy
               buildGradle(
+                //language=groovy
                 """
                   java {
                     toolchain {
@@ -145,6 +146,7 @@ class UpgradeJavaVersionTest implements RewriteTest {
                     }
                   }
                   """,
+                //language=groovy
                 """
                   java {
                     toolchain {
@@ -162,12 +164,14 @@ class UpgradeJavaVersionTest implements RewriteTest {
             rewriteRun(
               spec -> spec.recipe(new UpgradeJavaVersion(17)),
               buildGradle(
+                //language=groovy
                 """
                   java {
                     sourceCompatibility = 11
                     targetCompatibility = 11
                   }
                   """,
+                //language=groovy
                 """
                   java {
                     sourceCompatibility = 17
@@ -183,8 +187,8 @@ class UpgradeJavaVersionTest implements RewriteTest {
         void gradleNoChangeIfUpgradeFromJava11ToJava8() {
             rewriteRun(
               spec -> spec.recipe(new UpgradeJavaVersion(8)),
-              //language=groovy
               buildGradle(
+                //language=groovy
                 """
                   java {
                     toolchain {
@@ -204,12 +208,13 @@ class UpgradeJavaVersionTest implements RewriteTest {
         void upgradeJavaVersionTo17From11() {
             rewriteRun(
               spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(17), new AboutJavaVersion(null)))),
-              //language=java
               java(
+                //language=java
                 """
                   class Test {
                   }
                   """,
+                //language=java
                 """
                   /*~~(Java version: 17)~~>*/class Test {
                   }
@@ -223,12 +228,13 @@ class UpgradeJavaVersionTest implements RewriteTest {
         void upgradeJavaVersionTo11From8() {
             rewriteRun(
               spec -> spec.recipe(new CompositeRecipe(List.of(new UpgradeJavaVersion(11), new AboutJavaVersion(null)))),
-              //language=java
               java(
+                //language=java
                 """
                   class Test {
                   }
                   """,
+                //language=java
                 """
                   /*~~(Java version: 11)~~>*/class Test {
                   }
@@ -258,8 +264,8 @@ class UpgradeJavaVersionTest implements RewriteTest {
                 8
               ),
               version(
+                //language=java
                 java(
-                  //language=java
                   """
                     class Test2 {
                     }
