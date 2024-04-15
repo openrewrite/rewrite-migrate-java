@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.Preconditions;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -24,7 +24,6 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.Unary.Type;
 import org.openrewrite.java.tree.Statement;
@@ -32,9 +31,6 @@ import org.openrewrite.java.tree.Statement;
 import java.time.Duration;
 
 public class OptionalNotEmptyToIsPresent extends Recipe {
-
-    private static final String JAVA_UTIL_OPTIONAL_IS_EMPTY = "java.util.Optional isEmpty()";
-
     @Override
     public String getDisplayName() {
         return "Prefer `Optional.isPresent()`";
@@ -52,32 +48,23 @@ public class OptionalNotEmptyToIsPresent extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
+        MethodMatcher optionalIsPresentMatcher = new MethodMatcher("java.util.Optional isEmpty()");
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(11),
-                new UsesMethod<>(JAVA_UTIL_OPTIONAL_IS_EMPTY));
-        MethodMatcher optionalIsPresentMatcher = new MethodMatcher(JAVA_UTIL_OPTIONAL_IS_EMPTY);
+                new UsesMethod<>(optionalIsPresentMatcher));
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
-            public Statement visitStatement(Statement s, ExecutionContext ctx) {
-                Statement statement = (Statement) super.visitStatement(s, ctx);
-                if (statement instanceof J.Unary) {
-                    J.Unary unary = (J.Unary) statement;
-                    if (unary.getOperator() == Type.Not) {
-                        Expression expression = unary.getExpression();
-                        if (expression instanceof J.MethodInvocation) {
-                            J.MethodInvocation m = (J.MethodInvocation) expression;
-                            if (optionalIsPresentMatcher.matches(m)) {
-                                return JavaTemplate.builder("#{any()}.isPresent()")
-                                        .contextSensitive()
-                                        .build()
-                                        .apply(getCursor(),
-                                                statement.getCoordinates().replace(),
-                                                m.getSelect());
-                            }
-                        }
+            public J visitStatement(Statement s, ExecutionContext ctx) {
+                if (s instanceof J.Unary) {
+                    J.Unary unary = (J.Unary) s;
+                    if (unary.getOperator() == Type.Not && optionalIsPresentMatcher.matches(unary.getExpression())) {
+                        return JavaTemplate.apply("#{any(java.util.Optional)}.isPresent()",
+                                getCursor(),
+                                unary.getCoordinates().replace(),
+                                ((J.MethodInvocation) unary.getExpression()).getSelect());
                     }
                 }
-                return statement;
+                return super.visitStatement(s, ctx);
             }
         });
     }

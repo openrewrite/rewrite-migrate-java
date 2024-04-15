@@ -29,7 +29,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class ReplaceStringLiteralValue extends Recipe {
 
     @Option(displayName = "Old literal `String` value",
@@ -63,6 +63,7 @@ public class ReplaceStringLiteralValue extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
+            @Override
             public J.Literal visitLiteral(J.Literal literal, ExecutionContext ctx) {
                 J.Literal l = super.visitLiteral(literal, ctx);
                 if (l.getType() != JavaType.Primitive.String || !oldLiteralValue.equals(literal.getValue())) {

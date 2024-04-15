@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
@@ -24,7 +25,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
+class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -34,6 +35,7 @@ public class RemovedJakartaFacesExpressionLanguageClassesTest implements Rewrite
             .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build().activateRecipes("org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses"));
     }
 
+    @DocumentExample
     @Test
     void removedExpressionLanguageTestJakarta_1() {
         rewriteRun(

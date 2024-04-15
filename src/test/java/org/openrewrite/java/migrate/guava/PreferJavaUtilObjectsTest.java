@@ -114,7 +114,7 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
     @Test
     void moreObjectsFirstNonNullToObjectsRequireNonNullElse() {
         //language=java
-        rewriteRun((spec) -> {spec.recipes(Environment.builder()
+        rewriteRun(spec -> {spec.recipes(Environment.builder()
             .scanRuntimeClasspath("org.openrewrite.java.migrate.guava")
             .build()
             .activateRecipes("org.openrewrite.java.migrate.guava.NoGuavaJava11"));

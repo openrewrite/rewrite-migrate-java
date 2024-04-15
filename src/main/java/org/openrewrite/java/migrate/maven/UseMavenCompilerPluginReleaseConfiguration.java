@@ -32,7 +32,7 @@ import static org.openrewrite.xml.AddOrUpdateChild.addOrUpdateChild;
 import static org.openrewrite.xml.FilterTagChildrenVisitor.filterTagChildren;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
     private static final XPathMatcher PLUGINS_MATCHER = new XPathMatcher("/project/build//plugins");
 
@@ -41,17 +41,17 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
             description = "The new value for the release configuration. This recipe prefers ${java.version} if defined.",
             example = "11"
     )
-    String releaseVersion;
+    Integer releaseVersion;
 
     @Override
     public String getDisplayName() {
-        return "Use Maven Compiler Plugin Release Configuration";
+        return "Use Maven compiler plugin release configuration";
     }
 
     @Override
     public String getDescription() {
-        return "Replaces any explicit `source` or `target` configuration (if present) on the maven-compiler-plugin with " +
-                "`release`, and updates the `release` value if needed. Will not downgrade the java version if the current version is higher.";
+        return "Replaces any explicit `source` or `target` configuration (if present) on the `maven-compiler-plugin` with " +
+                "`release`, and updates the `release` value if needed. Will not downgrade the Java version if the current version is higher.";
     }
 
     @Override
@@ -93,7 +93,7 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
                             child -> !("configuration".equals(child.getName()) && child.getChildren().isEmpty()));
                 }
                 String releaseVersionValue = hasJavaVersionProperty(getCursor().firstEnclosingOrThrow(Xml.Document.class))
-                        ? "${java.version}" : releaseVersion;
+                        ? "${java.version}" : releaseVersion.toString();
                 updated = addOrUpdateChild(updated, compilerPluginConfig,
                         Xml.Tag.build("<release>" + releaseVersionValue + "</release>"), getCursor().getParentOrThrow());
                 return updated;
@@ -108,7 +108,7 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
         }
         try {
             float currentVersion = Float.parseFloat(maybeRelease.get());
-            float proposedVersion = Float.parseFloat(releaseVersion);
+            float proposedVersion = Float.parseFloat(releaseVersion.toString());
             return proposedVersion < currentVersion;
         } catch (NumberFormatException e) {
             return false;

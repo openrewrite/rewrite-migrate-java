@@ -17,14 +17,13 @@ package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.openrewrite.java.migrate.search.FindDataUsedOnDto;
 import org.openrewrite.java.migrate.table.DtoDataUses;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 
-public class FindDataUsedOnDtoTest implements RewriteTest {
+class FindDataUsedOnDtoTest implements RewriteTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @ParameterizedTest

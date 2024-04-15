@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -27,10 +26,7 @@ class JavaxXmlStreamAPIsTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder()
-          .scanRuntimeClasspath("org.openrewrite.java.migrate.javax")
-          .build()
-          .activateRecipes("org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs"));
+        spec.recipeFromResource("/META-INF/rewrite/javax-xml-stream.yml","org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs");
     }
 
     @DocumentExample

@@ -32,7 +32,7 @@ import org.openrewrite.marker.Markers;
 import static java.util.Collections.emptyList;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class ChangeMethodInvocationReturnType extends Recipe {
 
     @Option(displayName = "Method pattern",

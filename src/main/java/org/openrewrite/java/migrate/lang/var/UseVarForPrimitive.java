@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import static java.lang.String.format;
-
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -29,8 +29,7 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import static java.lang.String.format;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -72,13 +71,17 @@ public class UseVarForPrimitive extends Recipe {
             vd = super.visitVariableDeclarations(vd, ctx);
 
             boolean isGeneralApplicable = DeclarationCheck.isVarApplicable(this.getCursor(), vd);
-            if (!isGeneralApplicable) return vd;
+            if (!isGeneralApplicable) {
+                return vd;
+            }
 
             // recipe specific
             boolean isNoPrimitive = !DeclarationCheck.isPrimitive(vd);
             boolean isByteVariable = DeclarationCheck.declarationHasType(vd, BYTE_TYPE);
             boolean isShortVariable = DeclarationCheck.declarationHasType(vd, SHORT_TYPE);
-            if (isNoPrimitive || isByteVariable || isShortVariable) return vd;
+            if (isNoPrimitive || isByteVariable || isShortVariable) {
+                return vd;
+            }
 
             // no need to remove imports, because primitives are never imported
 
@@ -110,7 +113,9 @@ public class UseVarForPrimitive extends Recipe {
         private Expression expandWithPrimitivTypeHint(J.VariableDeclarations vd, Expression initializer) {
             String valueSource = ((J.Literal) initializer).getValueSource();
 
-            if (valueSource == null) return initializer;
+            if (valueSource == null) {
+                return initializer;
+            }
 
             boolean isLongLiteral = JavaType.Primitive.Long.equals(vd.getType());
             boolean inferredAsLong = valueSource.endsWith("l") || valueSource.endsWith("L");

@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -86,7 +85,6 @@ public class OptionalStreamRecipe extends Recipe {
                     .withPrefix(mapInvocation.getPrefix());
         }
 
-        @NotNull
         private static Space getFlatMapComments(JRightPadded<Expression> mapSelect, JRightPadded<Expression> filterSelect) {
             List<Comment> comments = new ArrayList<>();
             comments.addAll(filterSelect.getAfter().getComments());

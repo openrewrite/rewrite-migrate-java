@@ -27,7 +27,7 @@ import static org.openrewrite.maven.Assertions.pomXml;
 class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new UseMavenCompilerPluginReleaseConfiguration("11"));
+        spec.recipe(new UseMavenCompilerPluginReleaseConfiguration(11));
     }
 
     @DocumentExample

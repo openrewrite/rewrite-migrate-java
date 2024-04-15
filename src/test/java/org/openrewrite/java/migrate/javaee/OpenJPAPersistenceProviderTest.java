@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.javaee;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -31,6 +32,7 @@ class OpenJPAPersistenceProviderTest implements RewriteTest {
           .activateRecipes("org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider"));
     }
 
+    @DocumentExample
     @Test
     void openJPAPersistenceProvider() {
         rewriteRun(

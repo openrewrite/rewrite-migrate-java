@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.util;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -34,6 +35,7 @@ class IteratorNextTest implements RewriteTest {
           .allSources(src -> src.markers(javaVersion(21)));
     }
 
+    @DocumentExample
     @Test
     void listIteratorNextToGetFirst() {
         rewriteRun(

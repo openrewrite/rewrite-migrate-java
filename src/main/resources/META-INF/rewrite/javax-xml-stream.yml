@@ -30,7 +30,7 @@ displayName: Use `javax.xml.stream.XMLEventFactory#newFactory(String, ClassLoade
 description: Use `javax.xml.stream.XMLEventFactory#newFactory` instead of the deprecated `javax.xml.stream.XMLEventFactory#newInstance` in Java 7 or higher.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: javax.xml.stream.XMLEventFactory newInstance(String, ClassLoader)
+      methodPattern: javax.xml.stream.XMLEventFactory newInstance(String, java.lang.ClassLoader)
       newMethodName: newFactory
 
 ---
@@ -40,7 +40,7 @@ displayName: Use `javax.xml.stream.XMLInputFactory#newFactory(String, ClassLoade
 description: Use `javax.xml.stream.XMLInputFactory#newFactory` instead of the deprecated `javax.xml.stream.XMLInputFactory#newInstance` in Java 7 or higher.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: javax.xml.stream.XMLInputFactory newInstance(String, ClassLoader)
+      methodPattern: javax.xml.stream.XMLInputFactory newInstance(String, java.lang.ClassLoader)
       newMethodName: newFactory
 
 ---
@@ -50,5 +50,5 @@ displayName: Use `javax.xml.stream.XMLOutputFactory#newFactory(String, ClassLoad
 description: Use `javax.xml.stream.XMLOutputFactory#newFactory` instead of the deprecated `javax.xml.stream.XMLOutputFactory#newInstance` in Java 7 or higher.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: javax.xml.stream.XMLOutputFactory newInstance(String, ClassLoader)
+      methodPattern: javax.xml.stream.XMLOutputFactory newInstance(String, java.lang.ClassLoader)
       newMethodName: newFactory

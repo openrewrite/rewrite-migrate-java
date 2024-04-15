@@ -17,22 +17,29 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.*;
-import org.openrewrite.gradle.IsBuildGradle;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Option;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.UpdateJavaCompatibility;
-import org.openrewrite.groovy.tree.G;
-import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.marker.JavaVersion;
-import org.openrewrite.maven.MavenVisitor;
-import org.openrewrite.xml.XPathMatcher;
-import org.openrewrite.xml.tree.Xml;
+import org.openrewrite.java.migrate.maven.UpdateMavenProjectPropertyJavaVersion;
+import org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration;
+import org.openrewrite.java.tree.J;
 
+import java.time.Duration;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class UpgradeJavaVersion extends Recipe {
+
+    @Option(displayName = "Java version",
+            description = "The Java version to upgrade to.",
+            example = "11")
+    Integer version;
+
     @Override
     public String getDisplayName() {
         return "Upgrade Java version";
@@ -46,84 +53,39 @@ public class UpgradeJavaVersion extends Recipe {
                "Will not downgrade if the version is newer than the specified version.";
     }
 
-    @Option(displayName = "Java version",
-            description = "The Java version to upgrade to.",
-            example = "11")
-    Integer version;
+    @Override
+    public List<Recipe> getRecipeList() {
+        return Arrays.asList(
+                new UseMavenCompilerPluginReleaseConfiguration(version),
+                new UpdateMavenProjectPropertyJavaVersion(version),
+                new UpdateJavaCompatibility(version, null, null, false, null)
+        );
+    }
+
+    /**
+     * This recipe only updates markers, so it does not correspond to human manual effort.
+     *
+     * @return Zero estimated time.
+     */
+    @Override
+    public Duration getEstimatedEffortPerOccurrence() {
+        return Duration.ofMinutes(0);
+    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         String newVersion = version.toString();
         Map<JavaVersion, JavaVersion> updatedMarkers = new HashMap<>();
-
-        return new TreeVisitor<Tree, ExecutionContext>() {
+        return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
-                if (!(tree instanceof SourceFile)) {
-                    return tree;
-                }
-                SourceFile source = (SourceFile) tree;
-
-                if (source instanceof G.CompilationUnit && new IsBuildGradle<ExecutionContext>().visit(source, ctx) != source) {
-                    source = (SourceFile) new UpdateJavaCompatibility(version, null, null, false).getVisitor().visitNonNull(source, ctx);
-                } else if (source instanceof Xml.Document) {
-                    source = (SourceFile) new MavenUpdateJavaVersionVisitor().visitNonNull(source, ctx);
-                }
-
-                Optional<JavaVersion> maybeJavaVersion = source.getMarkers().findFirst(JavaVersion.class);
+            public J preVisit(J tree, ExecutionContext ctx) {
+                Optional<JavaVersion> maybeJavaVersion = tree.getMarkers().findFirst(JavaVersion.class);
                 if (maybeJavaVersion.isPresent() && maybeJavaVersion.get().getMajorVersion() < version) {
-                    source = source.withMarkers(source.getMarkers().setByType(updatedMarkers.computeIfAbsent(maybeJavaVersion.get(),
+                    return tree.withMarkers(tree.getMarkers().setByType(updatedMarkers.computeIfAbsent(maybeJavaVersion.get(),
                             m -> m.withSourceCompatibility(newVersion).withTargetCompatibility(newVersion))));
                 }
-                return source;
+                return tree;
             }
         };
-    }
-
-    private static final List<String> JAVA_VERSION_XPATHS = Arrays.asList(
-            "/project/properties/java.version",
-            "/project/properties/jdk.version",
-            "/project/properties/javaVersion",
-            "/project/properties/jdkVersion",
-            "/project/properties/maven.compiler.source",
-            "/project/properties/maven.compiler.target",
-            "/project/properties/maven.compiler.release",
-            "/project/properties/release.version",
-            "/project/build//plugins/plugin[artifactId='maven-compiler-plugin']/configuration/source",
-            "/project/build//plugins/plugin[artifactId='maven-compiler-plugin']/configuration/target",
-            "/project/build//plugins/plugin[artifactId='maven-compiler-plugin']/configuration/release");
-
-    private static final List<XPathMatcher> JAVA_VERSION_XPATH_MATCHERS =
-            JAVA_VERSION_XPATHS.stream().map(XPathMatcher::new).collect(Collectors.toList());
-
-
-    private class MavenUpdateJavaVersionVisitor extends MavenVisitor<ExecutionContext> {
-        @Override
-        public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
-            tag = (Xml.Tag) super.visitTag(tag, ctx);
-
-            if (JAVA_VERSION_XPATH_MATCHERS.stream().anyMatch(matcher -> matcher.matches(getCursor()))) {
-                Optional<Float> maybeVersion = tag.getValue().flatMap(
-                        value -> {
-                            try {
-                                return Optional.of(Float.parseFloat(value));
-                            } catch (NumberFormatException e) {
-                                return Optional.empty();
-                            }
-                        }
-                );
-
-                if (!maybeVersion.isPresent()) {
-                    return tag;
-                }
-                float currentVersion = maybeVersion.get();
-                if (currentVersion >= version) {
-                    return tag;
-                }
-                return tag.withValue(String.valueOf(version));
-            }
-
-            return tag;
-        }
     }
 }

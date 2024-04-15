@@ -26,6 +26,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.JavaVersion21
+  - org.openrewrite.java.migrate.RemoveIllegalSemicolons
   - org.openrewrite.java.migrate.lang.ThreadStopUnsupported
   - org.openrewrite.java.migrate.net.URLConstructorsToURIRecipes
   - org.openrewrite.java.migrate.util.SequencedCollection
@@ -53,6 +54,10 @@ recipeList:
       groupId: net.bytebuddy
       artifactId: byte-buddy
       newVersion: 1.14.11
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.modelmapper
+      artifactId: modelmapper
+      newVersion: 3.2.x
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -65,9 +70,6 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 21
-  - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
-      releaseVersion: 21
-
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.util.SequencedCollection

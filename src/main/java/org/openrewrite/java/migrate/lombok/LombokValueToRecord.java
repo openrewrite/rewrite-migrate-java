@@ -48,6 +48,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
     @Nullable
     Boolean useExactToString;
 
+    @Override
     public String getDisplayName() {
         return "Convert `@lombok.Value` class to Record";
     }
@@ -113,9 +114,21 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                     .allMatch(ann -> LOMBOK_VALUE_MATCHER.matches(ann) && (ann.getArguments() == null || ann.getArguments().isEmpty()))
                     && !hasGenericTypeParameter(classDeclaration)
                     && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField)
-                    && !hasIncompatibleModifier(classDeclaration);
+                    && !hasIncompatibleModifier(classDeclaration)
+                    && !implementsInterfaces(classDeclaration);
         }
 
+        /**
+         * If the class target class implements an interface, transforming it to a record will not work in general,
+         * because the record access methods do not have the "get" prefix.
+         *
+         * @param classDeclaration
+         * @return
+         */
+        private boolean implementsInterfaces(J.ClassDeclaration classDeclaration) {
+            List<TypeTree> classDeclarationImplements = classDeclaration.getImplements();
+            return !(classDeclarationImplements == null || classDeclarationImplements.isEmpty());
+        }
         private boolean hasGenericTypeParameter(J.ClassDeclaration classDeclaration) {
             List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
             return typeParameters != null && !typeParameters.isEmpty();

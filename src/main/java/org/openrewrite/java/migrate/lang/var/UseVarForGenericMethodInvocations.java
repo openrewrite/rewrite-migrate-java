@@ -15,9 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
@@ -25,6 +22,9 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Collections.emptyList;
 
@@ -58,26 +58,36 @@ public class UseVarForGenericMethodInvocations extends Recipe {
             vd = super.visitVariableDeclarations(vd, ctx);
 
             boolean isGeneralApplicable = DeclarationCheck.isVarApplicable(this.getCursor(), vd);
-            if (!isGeneralApplicable) return vd;
+            if (!isGeneralApplicable) {
+                return vd;
+            }
 
             // recipe specific
             boolean isPrimitive = DeclarationCheck.isPrimitive(vd);
             boolean usesNoGenerics = !DeclarationCheck.useGenerics(vd);
             boolean usesTernary = DeclarationCheck.initializedByTernary(vd);
-            if (isPrimitive || usesTernary || usesNoGenerics) return vd;
+            if (isPrimitive || usesTernary || usesNoGenerics) {
+                return vd;
+            }
 
             //now we deal with generics, check for method invocations
             Expression initializer = vd.getVariables().get(0).getInitializer();
             boolean isMethodInvocation = initializer != null && initializer.unwrap() instanceof J.MethodInvocation;
-            if (!isMethodInvocation) return vd;
+            if (!isMethodInvocation) {
+                return vd;
+            }
 
             //if no type paramters are present and no arguments we assume the type is hard to determine a needs manual action
             boolean hasNoTypeParams = ((J.MethodInvocation) initializer).getTypeParameters() == null;
             boolean argumentsEmpty = allArgumentsEmpty((J.MethodInvocation) initializer);
-            if (hasNoTypeParams && argumentsEmpty) return vd;
+            if (hasNoTypeParams && argumentsEmpty) {
+                return vd;
+            }
 
             // mark imports for removal if unused
-            if (vd.getType() instanceof JavaType.FullyQualified) maybeRemoveImport((JavaType.FullyQualified) vd.getType());
+            if (vd.getType() instanceof JavaType.FullyQualified) {
+                maybeRemoveImport( (JavaType.FullyQualified) vd.getType() );
+            }
 
             return transformToVar(vd, new ArrayList<>(), new ArrayList<>());
         }

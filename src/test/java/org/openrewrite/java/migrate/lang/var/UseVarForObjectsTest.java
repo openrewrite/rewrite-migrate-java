@@ -15,13 +15,13 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import static org.openrewrite.java.Assertions.*;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
+
+import static org.openrewrite.java.Assertions.*;
 
 class UseVarForObjectsTest extends VarBaseTest {
 

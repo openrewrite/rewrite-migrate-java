@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
+@SuppressWarnings({"removal", "ResultOfMethodCallIgnored", "RedundantThrows", "deprecation"})
 class UpgradeToJava17Test implements RewriteTest {
 
     @Override
@@ -49,13 +50,13 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-
+                  
                     <properties>
                       <java.version>1.8</java.version>
                       <maven.compiler.source>1.8</maven.compiler.source>
                       <maven.compiler.target>1.8</maven.compiler.target>
                     </properties>
-
+                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -64,13 +65,13 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-
+                  
                     <properties>
                       <java.version>17</java.version>
                       <maven.compiler.source>17</maven.compiler.source>
                       <maven.compiler.target>17</maven.compiler.target>
                     </properties>
-
+                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -82,7 +83,7 @@ class UpgradeToJava17Test implements RewriteTest {
                 java(
                   """
                     package com.abc;
-
+                    
                     class A {
                        public String test() {
                            return String.format("Hello %s", "world");
@@ -91,7 +92,7 @@ class UpgradeToJava17Test implements RewriteTest {
                     """,
                   """
                     package com.abc;
-
+                    
                     class A {
                        public String test() {
                            return "Hello %s".formatted("world");
@@ -115,13 +116,13 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-
+                  
                     <properties>
                       <java.version>1.8</java.version>
                       <maven.compiler.source>${java.version}</maven.compiler.source>
                       <maven.compiler.target>${java.version}</maven.compiler.target>
                     </properties>
-
+                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -130,13 +131,13 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-
+                  
                     <properties>
                       <java.version>17</java.version>
                       <maven.compiler.source>${java.version}</maven.compiler.source>
                       <maven.compiler.target>${java.version}</maven.compiler.target>
                     </properties>
-
+                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -148,7 +149,7 @@ class UpgradeToJava17Test implements RewriteTest {
                   //language=java
                   """
                     package com.abc;
-
+                    
                     class A {
                        public String test() {
                            return String.format("Hello %s", "world");
@@ -158,7 +159,7 @@ class UpgradeToJava17Test implements RewriteTest {
                   //language=java
                   """
                     package com.abc;
-
+                    
                     class A {
                        public String test() {
                            return "Hello %s".formatted("world");
@@ -166,8 +167,9 @@ class UpgradeToJava17Test implements RewriteTest {
                     }
                     """,
                   spec -> spec.afterRecipe(cu ->
-                    assertThat(cu.getMarkers().findFirst(JavaVersion.class).map(JavaVersion::getSourceCompatibility).get())
-                      .isEqualTo("17"))
+                    assertThat(cu.getMarkers().findFirst(JavaVersion.class))
+                      .map(JavaVersion::getSourceCompatibility)
+                      .hasValue("17"))
                 )
               )
             ),
@@ -397,7 +399,7 @@ class UpgradeToJava17Test implements RewriteTest {
     }
 
     @Test
-    void testAgentMainPreMainPublicApp() {
+    void agentMainPreMainPublicApp() {
         rewriteRun(
           version(
             //language=java
@@ -527,4 +529,42 @@ class UpgradeToJava17Test implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void removedSSLSessionGetPeerCertificateChainMethodImplTest(){
+        rewriteRun(
+          //language=java
+          java(
+            """
+            import java.security.cert.Certificate;
+            import javax.net.ssl.SSLContext;
+            import javax.net.ssl.SSLEngine;
+            import javax.net.ssl.SSLSession;
+            class RemovedSSLSessionGetPeerCertificateChainMethodImplApp {
+                    void test() throws Exception {
+                         SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
+                         SSLSession session = sslEngine.getHandshakeSession();
+                         session.getPeerCertificateChain(); //This should trigger
+                         Certificate[] certs = session.getPeerCertificates(); //This should not trigger
+                    }
+            }
+            """,
+            """
+             import java.security.cert.Certificate;
+             import javax.net.ssl.SSLContext;
+             import javax.net.ssl.SSLEngine;
+             import javax.net.ssl.SSLSession;
+             class RemovedSSLSessionGetPeerCertificateChainMethodImplApp {
+                     void test() throws Exception {
+                          SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
+                          SSLSession session = sslEngine.getHandshakeSession();
+                          session.getPeerCertificates(); //This should trigger
+                          Certificate[] certs = session.getPeerCertificates(); //This should not trigger
+                     }
+             }
+             """
+          )
+        );
+    }
+
 }

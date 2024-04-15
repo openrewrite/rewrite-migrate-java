@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -28,6 +29,7 @@ class StringRulesTest implements RewriteTest {
         spec.recipe(new StringRulesRecipes());
     }
 
+    @DocumentExample
     @Test
     @SuppressWarnings("StringOperationCanBeSimplified")
     void substring() {
