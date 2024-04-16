@@ -79,8 +79,6 @@ recipeList:
       groupId: org.apache.maven.plugins
       artifactId: maven-compiler-plugin
       newVersion: 3.6.2
-  - org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration:
-      releaseVersion: 11
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxbDependencies
