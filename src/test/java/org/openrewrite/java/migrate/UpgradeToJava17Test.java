@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
@@ -29,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
+@SuppressWarnings({"removal", "ResultOfMethodCallIgnored", "RedundantThrows", "deprecation"})
 class UpgradeToJava17Test implements RewriteTest {
 
     @Override
@@ -50,13 +50,13 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-
+                  
                     <properties>
                       <java.version>1.8</java.version>
                       <maven.compiler.source>1.8</maven.compiler.source>
                       <maven.compiler.target>1.8</maven.compiler.target>
                     </properties>
-
+                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -65,13 +65,13 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-
+                  
                     <properties>
                       <java.version>17</java.version>
                       <maven.compiler.source>17</maven.compiler.source>
                       <maven.compiler.target>17</maven.compiler.target>
                     </properties>
-
+                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -83,7 +83,7 @@ class UpgradeToJava17Test implements RewriteTest {
                 java(
                   """
                     package com.abc;
-
+                    
                     class A {
                        public String test() {
                            return String.format("Hello %s", "world");
@@ -92,7 +92,7 @@ class UpgradeToJava17Test implements RewriteTest {
                     """,
                   """
                     package com.abc;
-
+                    
                     class A {
                        public String test() {
                            return "Hello %s".formatted("world");
@@ -116,13 +116,13 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-
+                  
                     <properties>
                       <java.version>1.8</java.version>
                       <maven.compiler.source>${java.version}</maven.compiler.source>
                       <maven.compiler.target>${java.version}</maven.compiler.target>
                     </properties>
-
+                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -131,13 +131,13 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-
+                  
                     <properties>
                       <java.version>17</java.version>
                       <maven.compiler.source>${java.version}</maven.compiler.source>
                       <maven.compiler.target>${java.version}</maven.compiler.target>
                     </properties>
-
+                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -149,7 +149,7 @@ class UpgradeToJava17Test implements RewriteTest {
                   //language=java
                   """
                     package com.abc;
-
+                    
                     class A {
                        public String test() {
                            return String.format("Hello %s", "world");
@@ -159,7 +159,7 @@ class UpgradeToJava17Test implements RewriteTest {
                   //language=java
                   """
                     package com.abc;
-
+                    
                     class A {
                        public String test() {
                            return "Hello %s".formatted("world");
@@ -167,8 +167,9 @@ class UpgradeToJava17Test implements RewriteTest {
                     }
                     """,
                   spec -> spec.afterRecipe(cu ->
-                    assertThat(cu.getMarkers().findFirst(JavaVersion.class).map(JavaVersion::getSourceCompatibility).get())
-                      .isEqualTo("17"))
+                    assertThat(cu.getMarkers().findFirst(JavaVersion.class))
+                      .map(JavaVersion::getSourceCompatibility)
+                      .hasValue("17"))
                 )
               )
             ),
