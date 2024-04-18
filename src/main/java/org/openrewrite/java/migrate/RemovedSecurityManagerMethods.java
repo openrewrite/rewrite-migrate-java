@@ -30,7 +30,7 @@ public class RemovedSecurityManagerMethods extends Recipe {
     }
     @Override
     public String getDescription() {
-        return "This recipe replaces the methods deprecated in the `SecurityManager` class in Java SE 11." +
+        return "This recipe replaces methods returning `void` that are deprecated in the SecurityManager class in Java SE 11." +
                 "The methods `checkAwtEventQueueAccess()`,`checkSystemClipboardAccess()`,`checkMemberAccess()` and `checkTopLevelWindow()`" +
                 " are replaced by `checkPermission(new java.security.AllPermission())`.";
     }
