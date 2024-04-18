@@ -66,6 +66,7 @@ recipeList:
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 11
   - org.openrewrite.java.migrate.InternalBindContextFactory
+  - org.openrewrite.java.migrate.RemovedSecurityManagerMethods
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
