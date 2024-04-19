@@ -31,6 +31,7 @@ import org.openrewrite.java.tree.TypeUtils;
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class AddMissingMethodImplementation extends Recipe {
+
     @Option(displayName = "Fully Qualified Class Name",
             description = "A fully qualified class being implemented with missing method.",
             example = "com.yourorg.FooBar")
@@ -65,6 +66,7 @@ public class AddMissingMethodImplementation extends Recipe {
     }
 
     public class ClassImplementationVisitor extends JavaIsoVisitor<ExecutionContext> {
+
         private final JavaTemplate methodTemplate = JavaTemplate.builder(methodTemplateString).build();
         private final MethodMatcher methodMatcher = new MethodMatcher(methodPattern, true);
 

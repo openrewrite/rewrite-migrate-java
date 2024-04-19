@@ -28,8 +28,8 @@ public class AddMissingMethodImplementationTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(
-          new AddMissingMethodImplementation("I1", "*..* m1()",
-            "public void m1() { System.out.println(\"m1\"); }"))
+            new AddMissingMethodImplementation("I1", "*..* m1()",
+              "public void m1() { System.out.println(\"m1\"); }"))
           .allSources(src -> src.markers(javaVersion(21)));
     }
 
