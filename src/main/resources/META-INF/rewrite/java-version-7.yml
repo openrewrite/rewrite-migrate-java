@@ -15,6 +15,7 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
+
 name: org.openrewrite.java.migrate.UpgradeToJava7
 displayName: Migrate to Java 7
 description: >
@@ -45,7 +46,7 @@ recipeList:
       methodTemplateString: "public java.lang.String getSchema() { \n\t// TODO Auto-generated method stub\n return null; }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
-      methodPattern: "*..* setNetworkTimeout(java.util.concurrent.Executor)"
+      methodPattern: "*..* setNetworkTimeout(java.util.concurrent.Executor, int)"
       methodTemplateString: "public void setNetworkTimeout(java.util.concurrent.Executor executor, int milliseconds) { \n\t// TODO Auto-generated method stub\n }"
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection
