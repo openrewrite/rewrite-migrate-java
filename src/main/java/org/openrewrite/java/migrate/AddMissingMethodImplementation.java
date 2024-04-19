@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate;
 
+import static org.openrewrite.java.tree.J.ClassDeclaration.Kind.Type.Interface;
+
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
@@ -49,7 +51,7 @@ public class AddMissingMethodImplementation extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Adds missing method implementations.";
+        return "Adds missing method implementations";
     }
 
     @Override
@@ -71,8 +73,8 @@ public class AddMissingMethodImplementation extends Recipe {
             // need to make sure we handle sub-classes
             J.ClassDeclaration classDecl = super.visitClassDeclaration(cs, ctx);
 
-            // No need to make changes to abstract classes; only change concrete classes.
-            if (classDecl.hasModifier(J.Modifier.Type.Abstract)) {
+            // No need to make changes to abstract classes or interfaces; only change concrete classes.
+            if (classDecl.hasModifier(J.Modifier.Type.Abstract) || classDecl.getKind() == Interface) {
                 return classDecl;
             }
             // Don't make changes to classes that don't match the fully qualified name
