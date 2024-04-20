@@ -15,7 +15,6 @@
 #
 ---
 type: specs.openrewrite.org/v1beta/recipe
-
 name: org.openrewrite.java.migrate.UpgradeToJava7
 displayName: Migrate to Java 7
 description: >

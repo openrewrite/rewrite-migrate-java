@@ -2976,7 +2976,7 @@ class UpgradeToJava7Test implements RewriteTest {
                 }
                                   
                 public Blob createBlob() throws SQLException {
-              \s
+              
                   return null;
                 }
                                   
