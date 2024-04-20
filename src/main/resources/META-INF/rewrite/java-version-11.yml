@@ -183,8 +183,7 @@ recipeList:
       newGroupId: jakarta.xml.ws
       newArtifactId: jakarta.xml.ws-api
       newVersion: 2.3.x
-  # Add the jakarta JAXB artifact if it is missing but a project uses types in javax.jws and javax.xml.ws
-  # Unfortunately, onlyIfUsing does not support multiple patterns so we need to add two separate rules.
+  # Add the jakarta JAXB artifact if it is missing but a project uses types in either javax.jws or javax.xml.ws
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
