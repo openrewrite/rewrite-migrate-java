@@ -61,6 +61,7 @@ public class AddMissingMethodImplementationTest implements RewriteTest {
         );
     }
 
+    @DocumentExample
     @Test
     void happyPath() {
         //language=java
