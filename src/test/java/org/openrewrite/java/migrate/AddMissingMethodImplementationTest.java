@@ -16,15 +16,14 @@
 package org.openrewrite.java.migrate;
 
 import org.openrewrite.DocumentExample;
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.javaVersion;
-
-class AddMissingMethodImplementationTest implements RewriteTest {
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-public class AddMissingMethodImplementationTest implements RewriteTest {
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
+
+class AddMissingMethodImplementationTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
