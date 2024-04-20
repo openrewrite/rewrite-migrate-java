@@ -48,11 +48,11 @@ class AddJaxwsDependenciesTest implements RewriteTest {
               plugins {
                   id "java-library"
               }
-               
+              
               repositories {
                   mavenCentral()
               }
-               
+              
               dependencies {
                   implementation "jakarta.xml.ws:jakarta.xml.ws-api:2.3.2"
               }
@@ -68,16 +68,16 @@ class AddJaxwsDependenciesTest implements RewriteTest {
                   plugins {
                       id "java-library"
                   }
-                   
+                  
                   repositories {
                       mavenCentral()
                   }
-                   
+                  
                   dependencies {
                       compileOnly "com.sun.xml.ws:jaxws-rt:%s"
-                                    
+                  
                       implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
-                                    
+                  
                       testImplementation "com.sun.xml.ws:jaxws-rt:%s"
                   }
                   """.formatted(rtVersion, wsApiVersion, rtVersion);
@@ -141,16 +141,16 @@ class AddJaxwsDependenciesTest implements RewriteTest {
               plugins {
                   id "java-library"
               }
-                            
+              
               repositories {
                   mavenCentral()
               }
-                            
+              
               dependencies {
                   compileOnly "com.sun.xml.ws:jaxws-ri:2.3.2"
-                            
+              
                   implementation "javax.xml.ws:jaxws-api:2.3.1"
-                            
+              
                   testImplementation "com.sun.xml.ws:jaxws-ri:2.3.2"
               }
               """,
@@ -165,14 +165,14 @@ class AddJaxwsDependenciesTest implements RewriteTest {
                   plugins {
                       id "java-library"
                   }
-                                    
+                  
                   repositories {
                       mavenCentral()
                   }
-                                    
+                  
                   dependencies {
                       implementation "com.sun.xml.ws:jaxws-rt:%s"
-                                    
+                  
                       implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
                   }
                   """.formatted(rtVersion, wsApiVersion);
@@ -242,16 +242,16 @@ class AddJaxwsDependenciesTest implements RewriteTest {
               plugins {
                   id "java-library"
               }
-                            
+              
               repositories {
                   mavenCentral()
               }
-                            
+              
               dependencies {
                   compileOnly "com.sun.xml.ws:jaxws-ri:2.3.2"
-                            
+              
                   implementation "jakarta.xml.ws:jakarta.xml.ws-api:2.3.2"
-                            
+              
                   testImplementation "com.sun.xml.ws:jaxws-ri:2.3.2"
               }
               """,
@@ -266,14 +266,14 @@ class AddJaxwsDependenciesTest implements RewriteTest {
                   plugins {
                       id "java-library"
                   }
-                                    
+                  
                   repositories {
                       mavenCentral()
                   }
-                                    
+                  
                   dependencies {
                       implementation "com.sun.xml.ws:jaxws-rt:%s"
-                                    
+                  
                       implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
                   }
                   """.formatted(rtVersion, wsApiVersion);
@@ -343,11 +343,11 @@ class AddJaxwsDependenciesTest implements RewriteTest {
               plugins {
                   id "java-library"
               }
-                            
+              
               repositories {
                   mavenCentral()
               }
-                            
+              
               dependencies {
                   implementation "jakarta.xml.ws:jakarta.xml.ws-api:2.3.2"
               }
@@ -363,16 +363,16 @@ class AddJaxwsDependenciesTest implements RewriteTest {
                   plugins {
                       id "java-library"
                   }
-                                    
+                  
                   repositories {
                       mavenCentral()
                   }
-                                    
+                  
                   dependencies {
                       compileOnly "com.sun.xml.ws:jaxws-rt:%s"
-                                    
+                  
                       implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
-                                    
+                  
                       testImplementation "com.sun.xml.ws:jaxws-rt:%s"
                   }
                   """.formatted(rtVersion, wsApiVersion, rtVersion);
