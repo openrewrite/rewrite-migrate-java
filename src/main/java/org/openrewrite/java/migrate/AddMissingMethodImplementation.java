@@ -15,8 +15,6 @@
  */
 package org.openrewrite.java.migrate;
 
-import static org.openrewrite.java.tree.J.ClassDeclaration.Kind.Type.Interface;
-
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
@@ -27,6 +25,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
+
+import static org.openrewrite.java.tree.J.ClassDeclaration.Kind.Type.Interface;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
