@@ -30,9 +30,9 @@ public class RemovedSecurityManagerMethods extends Recipe {
     }
     @Override
     public String getDescription() {
-        return "This recipe replaces methods returning `void` that are deprecated in the SecurityManager class in Java SE 11." +
-                "The methods `checkAwtEventQueueAccess()`,`checkSystemClipboardAccess()`,`checkMemberAccess()` and `checkTopLevelWindow()`" +
-                " are replaced by `checkPermission(new java.security.AllPermission())`.";
+        return "Replace `SecurityManager` methods `checkAwtEventQueueAccess()`," +
+                " `checkSystemClipboardAccess()`, `checkMemberAccess()` " +
+                "and `checkTopLevelWindow()` deprecated in Java SE 11 by `checkPermission(new java.security.AllPermission())`.";
     }
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -43,7 +43,7 @@ public class RemovedSecurityManagerMethods extends Recipe {
             private final MethodMatcher METHOD_PATTERN_WINDOW = new MethodMatcher("java.lang.SecurityManager checkTopLevelWindow(..)", false);
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                if ((METHOD_PATTERN_QUE.matches(method) || (METHOD_PATTERN_CLIP).matches(method) || (METHOD_PATTERN_MEMBER).matches(method)) || (METHOD_PATTERN_WINDOW).matches(method)) {
+                if (METHOD_PATTERN_QUE.matches(method) || METHOD_PATTERN_CLIP.matches(method) || METHOD_PATTERN_MEMBER.matches(method) || METHOD_PATTERN_WINDOW.matches(method) ){
                     return JavaTemplate.builder("checkPermission(new java.security.AllPermission())")
                             .imports("java.security.AllPermission")
                             .build().apply(updateCursor(method),
