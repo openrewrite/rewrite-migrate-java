@@ -184,12 +184,18 @@ recipeList:
       newGroupId: jakarta.xml.ws
       newArtifactId: jakarta.xml.ws-api
       newVersion: 2.3.x
-  # Add the jakarta JAXB artifact if it is missing but a project uses types in java.xml.bind
+  # Add the jakarta JAXB artifact if it is missing but a project uses types in either javax.jws or javax.xml.ws
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       version: 2.3.x
       onlyIfUsing: javax.jws..*
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.xml.ws
+      artifactId: jakarta.xml.ws-api
+      version: 2.3.x
+      onlyIfUsing: javax.xml.ws..*
       acceptTransitive: true
   # If a project already had the jakarta api, make sure it is at the latest version.
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
