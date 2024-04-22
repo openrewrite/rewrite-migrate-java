@@ -37,6 +37,7 @@ recipeList:
   - org.openrewrite.java.migrate.javax.AddJaxbDependencies
   - org.openrewrite.java.migrate.javax.AddJaxwsDependencies
   - org.openrewrite.java.migrate.javax.AddInjectDependencies
+  - org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies
   # Remediate deprecations
   - org.openrewrite.staticanalysis.BigDecimalRoundingConstantsToEnums
   - org.openrewrite.staticanalysis.PrimitiveWrapperClassConstructorToValueOf
