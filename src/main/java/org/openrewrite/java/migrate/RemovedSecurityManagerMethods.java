@@ -28,12 +28,14 @@ public class RemovedSecurityManagerMethods extends Recipe {
     public String getDisplayName() {
         return "Replace deprecated methods in`SecurityManager`";
     }
+
     @Override
     public String getDescription() {
-        return "Replace `SecurityManager` methods `checkAwtEventQueueAccess()`," +
-                " `checkSystemClipboardAccess()`, `checkMemberAccess()` " +
-                "and `checkTopLevelWindow()` deprecated in Java SE 11 by `checkPermission(new java.security.AllPermission())`.";
+        return "Replace `SecurityManager` methods `checkAwtEventQueueAccess()`, `checkSystemClipboardAccess()`," +
+               " `checkMemberAccess()` and `checkTopLevelWindow()` deprecated in Java SE 11 by" +
+               " `checkPermission(new java.security.AllPermission())`.";
     }
+
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
@@ -41,9 +43,10 @@ public class RemovedSecurityManagerMethods extends Recipe {
             private final MethodMatcher METHOD_PATTERN_CLIP = new MethodMatcher("java.lang.SecurityManager checkSystemClipboardAccess()", false);
             private final MethodMatcher METHOD_PATTERN_MEMBER = new MethodMatcher("java.lang.SecurityManager checkMemberAccess(..)", false);
             private final MethodMatcher METHOD_PATTERN_WINDOW = new MethodMatcher("java.lang.SecurityManager checkTopLevelWindow(..)", false);
+
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                if (METHOD_PATTERN_QUE.matches(method) || METHOD_PATTERN_CLIP.matches(method) || METHOD_PATTERN_MEMBER.matches(method) || METHOD_PATTERN_WINDOW.matches(method) ){
+                if (METHOD_PATTERN_QUE.matches(method) || METHOD_PATTERN_CLIP.matches(method) || METHOD_PATTERN_MEMBER.matches(method) || METHOD_PATTERN_WINDOW.matches(method)) {
                     return JavaTemplate.builder("checkPermission(new java.security.AllPermission())")
                             .imports("java.security.AllPermission")
                             .build().apply(updateCursor(method),
