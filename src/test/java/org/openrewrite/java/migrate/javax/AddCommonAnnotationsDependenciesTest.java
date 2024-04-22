@@ -28,7 +28,6 @@ import static org.openrewrite.java.Assertions.srcMainJava;
 import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-@SuppressWarnings("LanguageMismatch")
 class AddCommonAnnotationsDependenciesTest implements RewriteTest {
 
     @Override

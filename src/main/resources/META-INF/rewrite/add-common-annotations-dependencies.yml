@@ -18,8 +18,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies
 displayName: Add explicit Common Annotations dependencies
 description: >
-  This recipe will add the necessary `annotation-api` dependency from Jakarta EE 8 to maintain compatibility with Java
-  version 11 or greater.
+  Add the necessary `annotation-api` dependency from Jakarta EE 8 to maintain compatibility with Java version 11 or greater.
 tags:
   - javax
   - java11
@@ -28,12 +27,6 @@ tags:
 recipeList:
   # Add or update the jakarta.annotation-api to a maven project. This artifact still uses the javax.annotation name space.
   - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: javax.annotation
-      oldArtifactId: javax.annotation-api
-      newGroupId: jakarta.annotation
-      newArtifactId: jakarta.annotation-api
-      newVersion: 1.3.x
-  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: javax.annotation
       oldArtifactId: javax.annotation-api
       newGroupId: jakarta.annotation
