@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -26,10 +25,7 @@ import static org.openrewrite.java.Assertions.java;
 class DeprecatedCountStackFramesMethodTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder()
-          .scanRuntimeClasspath("org.openrewrite.java.migrate.UpgradeToJava17")
-          .build()
-          .activateRecipes("org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod");
     }
 
     @Test
@@ -40,41 +36,41 @@ class DeprecatedCountStackFramesMethodTest implements RewriteTest {
           java(
             """
               import java.lang.Thread;
-               
+              
               public class Test {
-               	        public static void main(String args[]) {
-               		        Thread t1,t2 = new Thread();             
-               		        t1.countStackFrames();          
-               	  }              
-              }           
+                  public static void main(String args[]) {
+                      Thread t1,t2 = new Thread();
+                      t1.countStackFrames();
+                  }
+              }
               """,
             """
               import java.lang.Thread;
               
               public class Test {
-               	        public static void main(String args[]) {
-               		        Thread t1,t2 = new Thread();          
-               	  }
+                  public static void main(String args[]) {
+                      Thread t1,t2 = new Thread();
+                  }
               }
               """
           )
         );
     }
+
     @Test
-    @DocumentExample
     void deprecatedCountStackFrameNoRemoval() {
         rewriteRun(
           //language=java
           java(
             """
               import java.lang.Thread;
-               
+              
               public class Test {
-               	        public static void main(String args[]) {
-               		        Thread t1,t2 = new Thread();             
-               		         int i = t1.countStackFrames();   
-               	  }              
-              }           
+                  public static void main(String args[]) {
+                      Thread t1,t2 = new Thread();
+                     int i = t1.countStackFrames();
+                  }
+              }
               """
           )
         );
