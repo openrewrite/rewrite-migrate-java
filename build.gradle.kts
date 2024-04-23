@@ -51,6 +51,7 @@ dependencies {
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind")
     testRuntimeOnly("org.codehaus.groovy:groovy:latest.release")
+    testRuntimeOnly("jakarta.annotation:jakarta.annotation-api:1.3.5")
     testRuntimeOnly(gradleApi())
 }
 

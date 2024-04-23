@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.jakarta;
+package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.java.JavaParser;
@@ -23,67 +23,42 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-class MaybeAddJakartaServletApiTest implements RewriteTest {
+class AddCommonAnnotationsDependenciesTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new MaybeAddJakartaServletApi())
-          .parser(JavaParser.fromJavaVersion()
-            .dependsOn("package javax.servlet;\npublic class Filter {}"));
+        spec.recipeFromResource(
+          "/META-INF/rewrite/add-common-annotations-dependencies.yml",
+          "org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies")
+          .allSources(src -> src.markers(javaVersion(8)));
     }
 
     @Test
-    void hasSpringBootStarterWeb() {
+    void addDependencyIfAnnotationJsr250Present() {
         rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath("jakarta.annotation-api")),
           mavenProject("my-project",
-            srcMainJava(java("""
-              import javax.servlet.Filter;
-              class A {
-                  Filter foo = null;
-              }
-              """)),
-            pomXml("""
-              <?xml version="1.0" encoding="UTF-8"?>
-              <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>org.sample</groupId>
-                <artifactId>sample</artifactId>
-                <version>1.0.0</version>
-
-                <dependencies>
-                  <dependency>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-web</artifactId>
-                    <version>2.7.0</version>
-                  </dependency>
-                </dependencies>
-
-              </project>
-              """)
-          )
-        );
-    }
-
-    @Test
-    void doesNotHaveSpringBootStarterWeb() {
-        rewriteRun(
-          mavenProject("my-project",
-            srcMainJava(java("""
-              import javax.servlet.Filter;
-              class A {
-                  Filter foo = null;
-              }
-              """)),
-            pomXml("""
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import javax.annotation.Generated;
+                  
+                  @Generated("Hello")
+                  class A {
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                   <modelVersion>4.0.0</modelVersion>
                   <groupId>org.sample</groupId>
                   <artifactId>sample</artifactId>
                   <version>1.0.0</version>
-    
-                  <dependencies>
-                  </dependencies>
-    
                 </project>
                 """,
               """
@@ -93,17 +68,16 @@ class MaybeAddJakartaServletApiTest implements RewriteTest {
                   <groupId>org.sample</groupId>
                   <artifactId>sample</artifactId>
                   <version>1.0.0</version>
-
                   <dependencies>
                     <dependency>
-                      <groupId>jakarta.servlet</groupId>
-                      <artifactId>jakarta.servlet-api</artifactId>
-                      <version>6.0.0</version>
+                      <groupId>jakarta.annotation</groupId>
+                      <artifactId>jakarta.annotation-api</artifactId>
+                      <version>1.3.5</version>
                     </dependency>
                   </dependencies>
-
                 </project>
-                """)
+                """
+            )
           )
         );
     }
