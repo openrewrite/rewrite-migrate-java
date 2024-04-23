@@ -18,8 +18,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddInjectDependencies
 displayName: Add explicit Inject dependencies
 description: >
-  This recipe will add the necessary `inject-api` dependency from Jakarta EE 8 to maintain compatibility with Java
-  version 11 or greater.
+  Add the necessary `inject-api` dependency from Jakarta EE 8 to maintain compatibility with Java version 11 or greater.
 tags:
   - javax
   - java11
@@ -33,7 +32,6 @@ recipeList:
       version: 1.0.3
       onlyIfUsing: javax.inject.*
       acceptTransitive: true
-
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.inject
       artifactId: jakarta.inject-api

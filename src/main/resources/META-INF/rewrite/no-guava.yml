@@ -76,6 +76,11 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.guava.NoGuava
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNullElse
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: io.springfox
+      artifactId: springfox-swagger2
+      newVersion: 2.10.x
+      overrideManagedVersion: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaJava21
