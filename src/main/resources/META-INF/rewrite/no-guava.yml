@@ -76,6 +76,11 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.guava.NoGuava
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNullElse
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: io.springfox
+      artifactId: springfox-swagger2
+      newVersion: 2.10.x
+      overrideManagedVersion: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaJava21
@@ -109,7 +114,7 @@ displayName: Prefer `java.util.function.Function`
 description: Prefer `java.util.function.Function` instead of using `com.google.common.base.Function`.
 tags:
   - guava
-  - RSPEC-4738
+  - RSPEC-S4738
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Function
@@ -122,7 +127,7 @@ displayName: Prefer `java.util.Optional`
 description: Prefer `java.util.Optional` instead of using `com.google.common.base.Optional`.
 tags:
   - guava
-  - RSPEC-4738
+  - RSPEC-S4738
 recipeList:
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrSupplier
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrElseNull
@@ -154,7 +159,7 @@ displayName: Prefer `java.util.function.Predicate`
 description: Prefer `java.util.function.Predicate` instead of using `com.google.common.base.Predicate`.
 tags:
   - guava
-  - RSPEC-4738
+  - RSPEC-S4738
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Predicate
@@ -167,7 +172,7 @@ displayName: Prefer `java.util.function.Supplier`
 description: Prefer `java.util.function.Supplier` instead of using `com.google.common.base.Supplier`.
 tags:
   - guava
-  - RSPEC-4738
+  - RSPEC-S4738
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Supplier
