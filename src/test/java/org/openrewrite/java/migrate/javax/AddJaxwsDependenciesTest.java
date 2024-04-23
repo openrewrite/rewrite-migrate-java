@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.javax;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
@@ -29,7 +28,6 @@ import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-@Disabled
 class AddJaxwsDependenciesTest implements RewriteTest {
 
     @Override
@@ -173,13 +171,11 @@ class AddJaxwsDependenciesTest implements RewriteTest {
                   }
                   
                   dependencies {
-                      compileOnly "com.sun.xml.ws:jaxws-rt:%s"
+                      implementation "com.sun.xml.ws:jaxws-rt:%s"
                   
                       implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
-                  
-                      testImplementation "com.sun.xml.ws:jaxws-rt:%s"
                   }
-                  """.formatted(rtVersion, wsApiVersion, rtVersion);
+                  """.formatted(rtVersion, wsApiVersion);
             })
           ),
           pomXml(
@@ -276,13 +272,11 @@ class AddJaxwsDependenciesTest implements RewriteTest {
                   }
                   
                   dependencies {
-                      compileOnly "com.sun.xml.ws:jaxws-rt:%s"
+                      implementation "com.sun.xml.ws:jaxws-rt:%s"
                   
                       implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
-                  
-                      testImplementation "com.sun.xml.ws:jaxws-rt:%s"
                   }
-                  """.formatted(rtVersion, wsApiVersion, rtVersion);
+                  """.formatted(rtVersion, wsApiVersion);
             })
           ),
           pomXml(
