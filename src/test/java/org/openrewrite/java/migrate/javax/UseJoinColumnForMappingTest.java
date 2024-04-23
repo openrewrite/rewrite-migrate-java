@@ -81,6 +81,56 @@ class UseJoinColumnForMappingTest implements RewriteTest {
     }
 
     @Test
+    void onlyChangeAffectedFieldAnnotation() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Column;
+              import javax.persistence.Id;
+              import javax.persistence.ManyToOne;
+
+              @Entity
+              public class TransactionEntity {
+                  @Id
+                  private int id;
+
+                  private long transactionNumber;
+                  private double amount;
+
+                  @ManyToOne
+                  @Column(name="account")
+                  private Account account;
+
+                  @Column(name="parent")
+                  private Account parent;
+              }
+              """,
+            """
+              import javax.persistence.*;
+
+              @Entity
+              public class TransactionEntity {
+                  @Id
+                  private int id;
+
+                  private long transactionNumber;
+                  private double amount;
+
+                  @ManyToOne
+                  @JoinColumn(name="account")
+                  private Account account;
+
+                  @Column(name="parent")
+                  private Account parent;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void useJoinColumnForOneToOne() {
         //language=java
         rewriteRun(
