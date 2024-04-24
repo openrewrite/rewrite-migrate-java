@@ -99,7 +99,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 return cd;
             }
 
-            assert cd.getType() != null:"Class type must not be null";
+            assert cd.getType() != null : "Class type must not be null";
             Set<String> memberVariableNames = getMemberVariableNames(memberVariables);
             if (implementsConflictingInterfaces(cd, memberVariableNames)) {
                 return cd;
@@ -115,12 +115,12 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
             List<J.Annotation> allAnnotations = classDeclaration.getAllAnnotations();
             return classDeclaration.getType() != null
-                    && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
-                    && !allAnnotations.isEmpty()
-                    && allAnnotations.stream().allMatch(ann -> LOMBOK_VALUE_MATCHER.matches(ann) && (ann.getArguments() == null || ann.getArguments().isEmpty()))
-                    && !hasGenericTypeParameter(classDeclaration)
-                    && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField)
-                    && !hasIncompatibleModifier(classDeclaration);
+                   && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
+                   && !allAnnotations.isEmpty()
+                   && allAnnotations.stream().allMatch(ann -> LOMBOK_VALUE_MATCHER.matches(ann) && (ann.getArguments() == null || ann.getArguments().isEmpty()))
+                   && !hasGenericTypeParameter(classDeclaration)
+                   && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField)
+                   && !hasIncompatibleModifier(classDeclaration);
         }
 
         /**
@@ -251,8 +251,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             String classFqn = classType.getFullyQualifiedName();
 
             return recordTypeToMembers.containsKey(classFqn)
-                    && methodName.startsWith(STANDARD_GETTER_PREFIX)
-                    && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
+                   && methodName.startsWith(STANDARD_GETTER_PREFIX)
+                   && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
         }
 
         private static boolean isClassExpression(@Nullable Expression expression) {
@@ -301,7 +301,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         }
 
         private static JavaType.Class buildRecordType(J.ClassDeclaration classDeclaration) {
-            assert classDeclaration.getType() != null:"Class type must not be null";
+            assert classDeclaration.getType() != null : "Class type must not be null";
             String className = classDeclaration.getType().getFullyQualifiedName();
 
             return JavaType.ShallowClass.build(className)
