@@ -43,7 +43,7 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return new HashSet<>(Arrays.asList("RSPEC-4738", "guava"));
+        return new HashSet<>(Arrays.asList("RSPEC-S4738", "guava"));
     }
 
     @Override
