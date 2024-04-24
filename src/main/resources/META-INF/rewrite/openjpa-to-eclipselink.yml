@@ -26,4 +26,6 @@ recipeList:
   - org.openrewrite.java.migrate.javax.AddColumnAnnotation
   - org.openrewrite.java.migrate.javax.AddDefaultConstructorToEntityClass
   - org.openrewrite.java.migrate.javax.RemoveEmbeddableId
+  - org.openrewrite.java.migrate.javax.RemoveTemporalAnnotation
   - org.openrewrite.java.migrate.javax.UseJoinColumnForMapping
+  
