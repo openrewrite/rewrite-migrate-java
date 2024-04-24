@@ -99,7 +99,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 return cd;
             }
 
-            assert cd.getType() != null : "Class type must not be null";
+            assert cd.getType() != null : "Class type must not be null"; // Checked in isRelevantClass
             Set<String> memberVariableNames = getMemberVariableNames(memberVariables);
             if (implementsConflictingInterfaces(cd, memberVariableNames)) {
                 return cd;
@@ -128,7 +128,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
          * because the record access methods do not have the "get" prefix.
          *
          * @param classDeclaration
-         * @return
+         * @return true if the class implements an interface with a getter method based on a member variable
          */
         private boolean implementsConflictingInterfaces(J.ClassDeclaration classDeclaration, Set<String> memberVariableNames) {
             List<TypeTree> classDeclarationImplements = classDeclaration.getImplements();
@@ -213,10 +213,10 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         private static final String TO_STRING_MEMBER_DELIMITER = "\", \" +\n";
         private static final String STANDARD_GETTER_PREFIX = "get";
 
-        private final Boolean useExactToString;
+        private final @Nullable Boolean useExactToString;
         private final Map<String, Set<String>> recordTypeToMembers;
 
-        public LombokValueToRecordVisitor(Boolean useExactToString, Map<String, Set<String>> recordTypeToMembers) {
+        public LombokValueToRecordVisitor(@Nullable Boolean useExactToString, Map<String, Set<String>> recordTypeToMembers) {
             this.useExactToString = useExactToString;
             this.recordTypeToMembers = recordTypeToMembers;
         }
