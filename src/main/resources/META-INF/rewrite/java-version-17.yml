@@ -200,6 +200,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
        methodPattern: 'java.lang.Thread countStackFrames()'
 ---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
 displayName: Replace `finalize` method in `java.io.FileInputStream`  and `java.io.FileOutputStream`
 description: >
@@ -215,4 +216,3 @@ recipeList:
       methodPattern: "java.io.FileOutputStream finalize()"
       newMethodName: close
       ignoreDefinition: true
-
