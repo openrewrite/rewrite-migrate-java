@@ -66,7 +66,7 @@ public class ReplaceStreamCollectWithToList extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return new HashSet<>(Collections.singletonList("RSPEC-6204"));
+        return new HashSet<>(Collections.singletonList("RSPEC-S6204"));
     }
 
     @Override
