@@ -967,7 +967,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
-displayName: Migrate deprecated `javeee-api` dependencies to `jakarta.platform`
+displayName: Migrate deprecated `javaee-api` dependencies to `jakarta.platform`
 description: >
   Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
