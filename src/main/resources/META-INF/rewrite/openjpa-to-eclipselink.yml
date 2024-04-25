@@ -22,9 +22,11 @@ tags:
   - javaee7
   - deprecated
 recipeList:
-  - org.openrewrite.java.migrate.javax.AddTableGenerator
   - org.openrewrite.java.migrate.javax.AddColumnAnnotation
   - org.openrewrite.java.migrate.javax.AddDefaultConstructorToEntityClass
+  - org.openrewrite.java.migrate.javax.AddTableGenerator
+  - org.openrewrite.java.migrate.javax.AddTransientAnnotationToCollections
+  - org.openrewrite.java.migrate.javax.AddTransientAnnotationToEntity
   - org.openrewrite.java.migrate.javax.AddTransientAnnotationToPrivateAccessor
   - org.openrewrite.java.migrate.javax.RemoveEmbeddableId
   - org.openrewrite.java.migrate.javax.RemoveTemporalAnnotation

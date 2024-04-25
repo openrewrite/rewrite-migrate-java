@@ -135,4 +135,3 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
     }
 
 }
-
