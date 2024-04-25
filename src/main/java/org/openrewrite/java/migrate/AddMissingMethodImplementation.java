@@ -26,9 +26,12 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
+import static org.openrewrite.java.tree.J.ClassDeclaration.Kind.Type.Interface;
+
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class AddMissingMethodImplementation extends Recipe {
+
     @Option(displayName = "Fully Qualified Class Name",
             description = "A fully qualified class being implemented with missing method.",
             example = "com.yourorg.FooBar")
@@ -49,7 +52,7 @@ public class AddMissingMethodImplementation extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Adds missing method implementations.";
+        return "Adds missing method implementations";
     }
 
     @Override
@@ -63,6 +66,7 @@ public class AddMissingMethodImplementation extends Recipe {
     }
 
     public class ClassImplementationVisitor extends JavaIsoVisitor<ExecutionContext> {
+
         private final JavaTemplate methodTemplate = JavaTemplate.builder(methodTemplateString).build();
         private final MethodMatcher methodMatcher = new MethodMatcher(methodPattern, true);
 
@@ -71,8 +75,8 @@ public class AddMissingMethodImplementation extends Recipe {
             // need to make sure we handle sub-classes
             J.ClassDeclaration classDecl = super.visitClassDeclaration(cs, ctx);
 
-            // No need to make changes to abstract classes; only change concrete classes.
-            if (classDecl.hasModifier(J.Modifier.Type.Abstract)) {
+            // No need to make changes to abstract classes or interfaces; only change concrete classes.
+            if (classDecl.hasModifier(J.Modifier.Type.Abstract) || classDecl.getKind() == Interface) {
                 return classDecl;
             }
             // Don't make changes to classes that don't match the fully qualified name
