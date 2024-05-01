@@ -236,6 +236,28 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                     );
         }
 
+        @Override
+        public J.MemberReference visitMemberReference(J.MemberReference memberReference, ExecutionContext ctx) {
+            // when "memberReference" is "a::getTest"
+            // memberReference.getMethodType() == null
+            JavaType.Method methodType = memberReference.getMethodType();
+            if(methodType == null) {
+                return memberReference;
+            }
+
+            JavaType.FullyQualified declaringType = methodType.getDeclaringType();
+            String methodName = methodType.getName();
+            String classFqn = declaringType.getFullyQualifiedName();
+            if(recordTypeToMembers.containsKey(classFqn)
+                    && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName))
+                    && methodName.startsWith(STANDARD_GETTER_PREFIX)) {
+                return memberReference.withMethodType(methodType.withName(getterMethodNameToFluentMethodName(methodName)));
+            }
+
+            return memberReference;
+        }
+
+
         private boolean isMethodInvocationOnRecordTypeClassMember(J.MethodInvocation methodInvocation) {
             Expression expression = methodInvocation.getSelect();
             if (!isClassExpression(expression)) {
