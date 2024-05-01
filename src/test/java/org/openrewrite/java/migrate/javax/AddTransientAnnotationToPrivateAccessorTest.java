@@ -139,7 +139,7 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
     }
 
     @Test
-    void doNotChangePublicGetter() {
+    void doNotChangePublicOrProtectedGetter() {
         //language=java
         rewriteRun(
           java(
@@ -153,21 +153,24 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
               public class PrivateAccessor  {
                 private int id;
                 private int field;
+                private int field2;
 
                 @Id
                 public int getId() {
                   return id;
                 }
-                            
+
                 public int getField() {
                   return field; // Public method
+                }
+                protected int getField2() {
+                  return field2;
                 }
               }
               """
           )
         );
     }
-
 
     @Test
     void doNotChangeVoidReturnType() {
