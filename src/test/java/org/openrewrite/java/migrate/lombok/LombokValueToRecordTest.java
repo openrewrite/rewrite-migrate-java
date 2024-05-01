@@ -24,6 +24,8 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
 
+import java.util.function.Supplier;
+
 import static org.openrewrite.java.Assertions.*;
 
 class LombokValueToRecordTest implements RewriteTest {
@@ -241,6 +243,76 @@ class LombokValueToRecordTest implements RewriteTest {
               """
           )
         );
+    }
+
+    public static class A  {
+        String test;
+
+        public String getTest() {
+            return test;
+        }
+    }
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/449")
+    void methodReferences() {
+
+        var a = new A();
+
+        //language=java
+        rewriteRun(
+          s -> s.typeValidationOptions(TypeValidation.none()),
+          java(
+            """
+              package example;
+              
+              import lombok.Value;
+              import java.util.function.Supplier;
+              
+              @Value
+              public class A {
+                String test;
+                
+              }
+              
+              class B {
+              
+              
+                public static String classMethod() {
+                    return "foo";
+                }
+              
+              }
+              
+              class Using {
+                
+                 Supplier<String> usingMethodReference() {
+                    A a = new A("foo");
+                    return a::getTest;
+                }
+              
+              }
+              """,
+            """
+              package example;
+              
+              import java.util.function.Supplier;
+               
+              public record A(
+                String test) {
+              }
+              
+              class Using {
+                
+                 Supplier<String> usingMethodReference() {
+                    A a = new A("foo");
+                    return a::test;
+                }
+              
+              }
+              """
+          )
+        );
+
     }
 
     @Nested
