@@ -25,7 +25,8 @@ tags:
   - java21
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
-  - org.openrewrite.java.migrate.JavaVersion21
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 21
   - org.openrewrite.java.migrate.RemoveIllegalSemicolons
   - org.openrewrite.java.migrate.lang.ThreadStopUnsupported
   - org.openrewrite.java.migrate.net.URLConstructorsToURIRecipes
@@ -59,17 +60,6 @@ recipeList:
       artifactId: modelmapper
       newVersion: 3.2.x
 
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaVersion21
-displayName: Change Maven Java version property values to 21
-description: Change maven.compiler.source and maven.compiler.target values to 21.
-tags:
-  - java21
-  - compiler
-recipeList:
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 21
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.util.SequencedCollection

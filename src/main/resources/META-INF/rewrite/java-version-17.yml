@@ -27,7 +27,8 @@ tags:
   - java17
 recipeList:
   - org.openrewrite.java.migrate.Java8toJava11
-  - org.openrewrite.java.migrate.JavaVersion17
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 17
   - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 17
@@ -55,17 +56,6 @@ recipeList:
   - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
   - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
   - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaVersion17
-displayName: Change Maven Java version property values to 17
-description: Change maven.compiler.source and maven.compiler.target values to 17.
-tags:
-  - java17
-  - compiler
-recipeList:
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 17
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
