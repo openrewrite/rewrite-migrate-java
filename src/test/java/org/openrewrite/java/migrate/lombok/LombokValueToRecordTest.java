@@ -243,6 +243,39 @@ class LombokValueToRecordTest implements RewriteTest {
         );
     }
 
+    @Test
+    void plainLombokBuilder() {
+        //language=java
+        rewriteRun(
+          s -> s.typeValidationOptions(TypeValidation.none()),
+          java(
+            """
+              package example;
+              
+              import lombok.Value;
+              import lombok.Builder;
+              
+              @Value
+              @Builder
+              public class A implements Serializable {
+                String test;
+              }
+              """,
+            """
+              package example;
+              
+              import lombok.Builder;
+              
+              @Builder
+              public record A(
+                String test) implements Serializable {
+              }
+              """
+          )
+        );
+
+    }
+
     @Nested
     class Unchanged {
         @Test
