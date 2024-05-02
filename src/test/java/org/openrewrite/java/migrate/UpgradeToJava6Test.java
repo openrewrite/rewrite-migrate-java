@@ -27,7 +27,7 @@ class UpgradeToJava6Test implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResource("/META-INF/rewrite/java-version-6.yml", "org.openrewrite.java.migrate.UpgradeToJava6")
+        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava6")
           .allSources(src -> src.markers(javaVersion(6)));
     }
 
