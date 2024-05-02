@@ -31,6 +31,7 @@ import org.openrewrite.java.tree.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,6 +42,7 @@ import static java.util.stream.Collectors.toList;
 public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>> {
 
     private static final AnnotationMatcher LOMBOK_VALUE_MATCHER = new AnnotationMatcher("@lombok.Value()");
+    private static final AnnotationMatcher LOMBOK_BUILDER_MATCHER = new AnnotationMatcher("@lombok.Builder()");
 
     @Option(displayName = "Add a `toString()` implementation matching Lombok",
             description = "When set the `toString` format from Lombok is used in the migrated record.",
@@ -116,11 +118,27 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             List<J.Annotation> allAnnotations = classDeclaration.getAllAnnotations();
             return classDeclaration.getType() != null
                    && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
-                   && !allAnnotations.isEmpty()
-                   && allAnnotations.stream().allMatch(ann -> LOMBOK_VALUE_MATCHER.matches(ann) && (ann.getArguments() == null || ann.getArguments().isEmpty()))
+                   && hasMatchingAnnotations(classDeclaration)
                    && !hasGenericTypeParameter(classDeclaration)
                    && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField)
                    && !hasIncompatibleModifier(classDeclaration);
+        }
+
+        private static Predicate<J.Annotation> matchAnnotationWithNoArguments(AnnotationMatcher matcher) {
+            return ann -> matcher.matches(ann) && (ann.getArguments() == null || ann.getArguments().isEmpty());
+        }
+
+        private static boolean hasMatchingAnnotations(J.ClassDeclaration classDeclaration) {
+            List<J.Annotation> allAnnotations = classDeclaration.getAllAnnotations();
+            if (allAnnotations.stream().anyMatch(matchAnnotationWithNoArguments(LOMBOK_VALUE_MATCHER))) {
+                // Tolerate a limited set of other annotations like Builder, that work well with records too
+                return allAnnotations.stream().allMatch(
+                        matchAnnotationWithNoArguments(LOMBOK_VALUE_MATCHER)
+                                // compatible annotations can be added here
+                                .or(matchAnnotationWithNoArguments(LOMBOK_BUILDER_MATCHER))
+                );
+            }
+            return false;
         }
 
         /**
