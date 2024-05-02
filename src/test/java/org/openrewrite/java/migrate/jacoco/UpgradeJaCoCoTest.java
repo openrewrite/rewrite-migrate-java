@@ -20,11 +20,13 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.regex.Pattern;
+
 import static org.openrewrite.maven.Assertions.pomXml;
 
-
 class UpgradeJaCoCoTest implements RewriteTest {
-    private static final String LATEST_JACOCO_VERSION = "0.8.12";
+    private static final Pattern JACOCO_VERSION_PATTERN = Pattern.compile("<jacoco.version>(0\\.8\\.\\d\\d+)</jacoco.version>");
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResources("org.openrewrite.java.migrate.jacoco.UpgradeJaCoCo");
@@ -41,7 +43,6 @@ class UpgradeJaCoCoTest implements RewriteTest {
                 <properties>
                   <jacoco.version>0.8.1</jacoco.version>
                 </properties>
-                
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
@@ -56,12 +57,11 @@ class UpgradeJaCoCoTest implements RewriteTest {
                 </build>
               </project>
               """,
-            String.format("""
+            spec -> spec.after(pomXml -> String.format("""
               <project>
                 <properties>
                   <jacoco.version>%s</jacoco.version>
                 </properties>
-                
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
@@ -75,7 +75,7 @@ class UpgradeJaCoCoTest implements RewriteTest {
                   </plugins>
                 </build>
               </project>
-              """, LATEST_JACOCO_VERSION)
+              """, JACOCO_VERSION_PATTERN.matcher(pomXml).results().findFirst().get().group(1)))
           )
         );
     }
@@ -90,7 +90,7 @@ class UpgradeJaCoCoTest implements RewriteTest {
                 <properties>
                   <jacoco.version>0.8.1</jacoco.version>
                 </properties>
-                
+              
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
@@ -114,12 +114,12 @@ class UpgradeJaCoCoTest implements RewriteTest {
                 </build>
               </project>
               """,
-            String.format("""
+            spec -> spec.after(pomXml -> String.format("""
               <project>
                 <properties>
                   <jacoco.version>%s</jacoco.version>
                 </properties>
-                
+              
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
@@ -142,13 +142,15 @@ class UpgradeJaCoCoTest implements RewriteTest {
                   </plugins>
                 </build>
               </project>
-              """, LATEST_JACOCO_VERSION)
+              """, JACOCO_VERSION_PATTERN.matcher(pomXml).results().findFirst().get().group(1))
+            )
           )
         );
     }
 
     @Test
     void pluginAndDepAndDepMgmt() {
+        Pattern versionPattern = Pattern.compile("<version>(0\\.8\\.\\d\\d+)</version>");
         rewriteRun(
           //language=xml
           pomXml(
@@ -187,7 +189,7 @@ class UpgradeJaCoCoTest implements RewriteTest {
                 </build>
               </project>
               """,
-            String.format("""
+            spec -> spec.after(pomXml -> String.format("""
               <project>
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
@@ -221,7 +223,8 @@ class UpgradeJaCoCoTest implements RewriteTest {
                   </plugins>
                 </build>
               </project>
-              """, LATEST_JACOCO_VERSION)
+              """, versionPattern.matcher(pomXml).results().findFirst().get().group(1))
+            )
           )
         );
     }
@@ -236,7 +239,7 @@ class UpgradeJaCoCoTest implements RewriteTest {
                 <properties>
                   <jacoco.version>0.8.1</jacoco.version>
                 </properties>
-                
+              
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
@@ -270,12 +273,12 @@ class UpgradeJaCoCoTest implements RewriteTest {
                 </build>
               </project>
               """,
-            String.format("""
+            spec -> spec.after(pomXml -> String.format("""
               <project>
                 <properties>
                   <jacoco.version>%s</jacoco.version>
                 </properties>
-                
+              
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
@@ -308,7 +311,8 @@ class UpgradeJaCoCoTest implements RewriteTest {
                   </plugins>
                 </build>
               </project>
-              """, LATEST_JACOCO_VERSION)
+              """, JACOCO_VERSION_PATTERN.matcher(pomXml).results().findFirst().get().group(1))
+            )
           )
         );
     }
