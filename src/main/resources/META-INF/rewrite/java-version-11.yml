@@ -56,7 +56,6 @@ recipeList:
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
   - org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
   - org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion
-  - org.openrewrite.java.migrate.jacoco.UpgradeJaCoCoMavenPluginVersion
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 11
   - org.openrewrite.maven.UpgradePluginVersion:
