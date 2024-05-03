@@ -365,6 +365,42 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
     }
 
     @Test
+    void noFieldAccessInComplexReturnLogic() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package entities;
+
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class PrivateAccessor  {
+                  private int id;
+                  private int field;
+
+                  @Id
+                  public int getId() {
+                    return id;
+                  }
+
+                  private int getField() {
+                    if (id % 3 == 0) {
+                      return 0;
+                    } else if (id % 3 == 1) {
+                      return 1;
+                    } else {
+                      return null;
+                    }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void changeInInnerClass() {
         //language=java
         rewriteRun(
