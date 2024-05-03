@@ -289,13 +289,74 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
                     return id;
                   }
 
-                  private int getField() {
-                    return 0;
-                  }
-
                   private String getHello() {
                     String test = "Hello";
                     return test;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void catchComplexReturnLogic() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package entities;
+
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class PrivateAccessor  {
+                  private int id;
+                  private int field;
+
+                  @Id
+                  public int getId() {
+                    return id;
+                  }
+
+                  private int getField() {
+                    if (id % 3 == 0) {
+                      return field;
+                    } else if (id % 3 == 1) {
+                      return 1;
+                    } else {
+                      return null;
+                    }
+                  }
+              }
+              """,
+            """
+              package entities;
+
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+              import javax.persistence.Transient;
+
+              @Entity
+              public class PrivateAccessor  {
+                  private int id;
+                  private int field;
+
+                  @Id
+                  public int getId() {
+                    return id;
+                  }
+
+                  @Transient
+                  private int getField() {
+                    if (id % 3 == 0) {
+                      return field;
+                    } else if (id % 3 == 1) {
+                      return 1;
+                    } else {
+                      return null;
+                    }
                   }
               }
               """

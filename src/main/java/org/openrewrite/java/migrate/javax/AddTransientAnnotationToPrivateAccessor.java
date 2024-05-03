@@ -26,15 +26,12 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -85,32 +82,35 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                      * Check if the given method returns a field defined in the parent class
                      */
                     private boolean methodReturnsFieldFromClass(J.MethodDeclaration method) {
+                        // Get all return statements in method
+                        List<J.Return> returns = new ArrayList<>();
+                        JavaIsoVisitor<List<J.Return>> returnGetter = new JavaIsoVisitor<List<J.Return>>() {
+                            @Override
+                            public J.Return visitReturn(J.Return ret, List<J.Return> statements) {
+                                statements.add(ret);
+                                return super.visitReturn(ret, statements);
+                            }
+                        };
+                        returnGetter.visitBlock(method.getBody(), returns);
+
+                        // Get all return values
+                        List<?> returnValues = returns.stream()
+                                .map(J.Return::getExpression)
+                                .filter(Objects::nonNull)
+                                .map(expression -> {
+                                    if (expression instanceof J.FieldAccess) {
+                                        return ((J.FieldAccess) expression).getName().getFieldType();
+                                    } else if (expression instanceof J.Identifier) { // ie: return field;
+                                        return ((J.Identifier) expression).getFieldType();
+                                    } else {
+                                        return null;
+                                    }
+                                })
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList());
+
+                        // Check if any return values are a class field
                         J.ClassDeclaration classDecl = getCursor().dropParentUntil(J.ClassDeclaration.class::isInstance).getValue();
-                        // Check if last statement is return
-                        List<Statement> statements = method.getBody().getStatements();
-                        if (statements.isEmpty()) {
-                            return false;
-                        }
-                        Statement lastStatement = statements.get(statements.size() - 1);
-                        if (!(lastStatement instanceof J.Return)) {
-                            return false;
-                        }
-
-                        // Get return value
-                        Expression returnExpr = ((J.Return) lastStatement).getExpression();
-                        if (returnExpr == null) {
-                            return false;
-                        }
-                        final JavaType.Variable returnedVar;
-                        if (returnExpr instanceof J.FieldAccess) { // ie: return this.field;
-                            returnedVar = ((J.FieldAccess) returnExpr).getName().getFieldType();
-                        } else if (returnExpr instanceof J.Identifier) { // ie: return field;
-                            returnedVar = ((J.Identifier) returnExpr).getFieldType();
-                        } else { // instanceof J.Literal (hardcoded value), or something else not a field. ie: return "hello";
-                            return false;
-                        }
-
-                        // Check if return value is a class field
                         return classDecl.getBody().getStatements().stream()
                                 .filter(J.VariableDeclarations.class::isInstance)
                                 .map(J.VariableDeclarations.class::cast)
@@ -118,7 +118,7 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                                 .flatMap(Collection::stream)
                                 .map(var -> var.getName().getFieldType())
                                 .filter(Objects::nonNull)
-                                .anyMatch(var -> var.equals(returnedVar));
+                                .anyMatch(returnValues::contains);
                     }
                 }
         );
