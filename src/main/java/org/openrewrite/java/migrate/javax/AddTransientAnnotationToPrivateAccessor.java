@@ -26,9 +26,9 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.Statement;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,9 +56,25 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
         return Preconditions.check(
                 new UsesType<>("javax.persistence.Entity", true),
                 new JavaIsoVisitor<ExecutionContext>() {
+                    List<JavaType.Variable> classVars = new ArrayList<>();
+                    @Override
+                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                        // Collect all class variables
+                        classVars = classDecl.getBody().getStatements().stream()
+                                .filter(J.VariableDeclarations.class::isInstance)
+                                .map(J.VariableDeclarations.class::cast)
+                                .map(J.VariableDeclarations::getVariables)
+                                .flatMap(Collection::stream)
+                                .map(var -> var.getName().getFieldType())
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList());
+                        return super.visitClassDeclaration(classDecl, ctx);
+                    }
+
                     @Override
                     public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration md, ExecutionContext ctx) {
-                        if (isPrivateAccessorMethodWithoutTransientAnnotation(md)) {// Add @Transient annotation
+                        if (isPrivateAccessorMethodWithoutTransientAnnotation(md)) {
+                            // Add @Transient annotation
                             maybeAddImport("javax.persistence.Transient");
                             return JavaTemplate.builder("@Transient")
                                     .contextSensitive()
@@ -82,43 +98,27 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                      * Check if the given method returns a field defined in the parent class
                      */
                     private boolean methodReturnsFieldFromClass(J.MethodDeclaration method) {
-                        // Get all return statements in method
-                        List<J.Return> returns = new ArrayList<>();
-                        JavaIsoVisitor<List<J.Return>> returnGetter = new JavaIsoVisitor<List<J.Return>>() {
+                        // Get all return values from method
+                        List<JavaType.Variable> returns = new ArrayList<>();
+                        JavaIsoVisitor<List<JavaType.Variable>> returnValueCollector = new JavaIsoVisitor<List<JavaType.Variable>>() {
                             @Override
-                            public J.Return visitReturn(J.Return ret, List<J.Return> statements) {
-                                statements.add(ret);
-                                return super.visitReturn(ret, statements);
+                            public J.Return visitReturn(J.Return ret, List<JavaType.Variable> returnedVars) {
+                                Expression expression = ret.getExpression();
+                                JavaType.Variable returnedVar;
+                                if (expression instanceof J.FieldAccess) {
+                                    returnedVar = ((J.FieldAccess) expression).getName().getFieldType();
+                                    returnedVars.add(returnedVar);
+                                } else if (expression instanceof J.Identifier) { // ie: return field;
+                                    returnedVar = ((J.Identifier) expression).getFieldType();
+                                    returnedVars.add(returnedVar);
+                                }
+                                return super.visitReturn(ret, returnedVars);
                             }
                         };
-                        returnGetter.visitBlock(method.getBody(), returns);
-
-                        // Get all return values
-                        List<?> returnValues = returns.stream()
-                                .map(J.Return::getExpression)
-                                .filter(Objects::nonNull)
-                                .map(expression -> {
-                                    if (expression instanceof J.FieldAccess) {
-                                        return ((J.FieldAccess) expression).getName().getFieldType();
-                                    } else if (expression instanceof J.Identifier) { // ie: return field;
-                                        return ((J.Identifier) expression).getFieldType();
-                                    } else {
-                                        return null;
-                                    }
-                                })
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toList());
+                        returnValueCollector.visitBlock(method.getBody(), returns);
 
                         // Check if any return values are a class field
-                        J.ClassDeclaration classDecl = getCursor().dropParentUntil(J.ClassDeclaration.class::isInstance).getValue();
-                        return classDecl.getBody().getStatements().stream()
-                                .filter(J.VariableDeclarations.class::isInstance)
-                                .map(J.VariableDeclarations.class::cast)
-                                .map(J.VariableDeclarations::getVariables)
-                                .flatMap(Collection::stream)
-                                .map(var -> var.getName().getFieldType())
-                                .filter(Objects::nonNull)
-                                .anyMatch(returnValues::contains);
+                        return returns.stream().anyMatch(classVars::contains);
                     }
                 }
         );
