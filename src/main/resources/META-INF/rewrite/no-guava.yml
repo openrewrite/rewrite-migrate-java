@@ -161,6 +161,10 @@ tags:
   - guava
   - RSPEC-S4738
 recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.Predicate apply(..)
+      newMethodName: test
+      matchOverrides: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Predicate
       newFullyQualifiedTypeName: java.util.function.Predicate
