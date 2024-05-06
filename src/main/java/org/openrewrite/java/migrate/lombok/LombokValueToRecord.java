@@ -31,6 +31,7 @@ import org.openrewrite.java.tree.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,6 +42,7 @@ import static java.util.stream.Collectors.toList;
 public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>> {
 
     private static final AnnotationMatcher LOMBOK_VALUE_MATCHER = new AnnotationMatcher("@lombok.Value()");
+    private static final AnnotationMatcher LOMBOK_BUILDER_MATCHER = new AnnotationMatcher("@lombok.Builder()");
 
     @Option(displayName = "Add a `toString()` implementation matching Lombok",
             description = "When set the `toString` format from Lombok is used in the migrated record.",
@@ -99,23 +101,44 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 return cd;
             }
 
-            assert cd.getType() != null : "Class type must not be null";
+            assert cd.getType() != null : "Class type must not be null"; // Checked in isRelevantClass
+            Set<String> memberVariableNames = getMemberVariableNames(memberVariables);
+            if (implementsConflictingInterfaces(cd, memberVariableNames)) {
+                return cd;
+            }
+
             acc.putIfAbsent(
                     cd.getType().getFullyQualifiedName(),
-                    getMemberVariableNames(memberVariables));
+                    memberVariableNames);
 
             return cd;
         }
 
         private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
+            List<J.Annotation> allAnnotations = classDeclaration.getAllAnnotations();
             return classDeclaration.getType() != null
-                    && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
-                    && classDeclaration.getAllAnnotations().stream()
-                    .allMatch(ann -> LOMBOK_VALUE_MATCHER.matches(ann) && (ann.getArguments() == null || ann.getArguments().isEmpty()))
-                    && !hasGenericTypeParameter(classDeclaration)
-                    && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField)
-                    && !hasIncompatibleModifier(classDeclaration)
-                    && !implementsInterfaces(classDeclaration);
+                   && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
+                   && hasMatchingAnnotations(classDeclaration)
+                   && !hasGenericTypeParameter(classDeclaration)
+                   && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField)
+                   && !hasIncompatibleModifier(classDeclaration);
+        }
+
+        private static Predicate<J.Annotation> matchAnnotationWithNoArguments(AnnotationMatcher matcher) {
+            return ann -> matcher.matches(ann) && (ann.getArguments() == null || ann.getArguments().isEmpty());
+        }
+
+        private static boolean hasMatchingAnnotations(J.ClassDeclaration classDeclaration) {
+            List<J.Annotation> allAnnotations = classDeclaration.getAllAnnotations();
+            if (allAnnotations.stream().anyMatch(matchAnnotationWithNoArguments(LOMBOK_VALUE_MATCHER))) {
+                // Tolerate a limited set of other annotations like Builder, that work well with records too
+                return allAnnotations.stream().allMatch(
+                        matchAnnotationWithNoArguments(LOMBOK_VALUE_MATCHER)
+                                // compatible annotations can be added here
+                                .or(matchAnnotationWithNoArguments(LOMBOK_BUILDER_MATCHER))
+                );
+            }
+            return false;
         }
 
         /**
@@ -123,12 +146,38 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
          * because the record access methods do not have the "get" prefix.
          *
          * @param classDeclaration
-         * @return
+         * @return true if the class implements an interface with a getter method based on a member variable
          */
-        private boolean implementsInterfaces(J.ClassDeclaration classDeclaration) {
+        private boolean implementsConflictingInterfaces(J.ClassDeclaration classDeclaration, Set<String> memberVariableNames) {
             List<TypeTree> classDeclarationImplements = classDeclaration.getImplements();
-            return !(classDeclarationImplements == null || classDeclarationImplements.isEmpty());
+            if (classDeclarationImplements == null) {
+                return false;
+            }
+            return classDeclarationImplements.stream().anyMatch(implemented -> {
+                JavaType type = implemented.getType();
+                if (type instanceof JavaType.FullyQualified) {
+                    return isConflictingInterface((JavaType.FullyQualified) type, memberVariableNames);
+                } else {
+                    return false;
+                }
+            });
         }
+
+        private static boolean isConflictingInterface(JavaType.FullyQualified implemented, Set<String> memberVariableNames) {
+            boolean hasConflictingMethod = implemented.getMethods().stream()
+                    .map(JavaType.Method::getName)
+                    .map(LombokValueToRecordVisitor::getterMethodNameToFluentMethodName)
+                    .anyMatch(memberVariableNames::contains);
+            if (hasConflictingMethod) {
+                return true;
+            }
+            List<JavaType.FullyQualified> superInterfaces = implemented.getInterfaces();
+            if (superInterfaces != null) {
+                return superInterfaces.stream().anyMatch(i -> isConflictingInterface(i, memberVariableNames));
+            }
+            return false;
+        }
+
         private boolean hasGenericTypeParameter(J.ClassDeclaration classDeclaration) {
             List<J.TypeParameter> typeParameters = classDeclaration.getTypeParameters();
             return typeParameters != null && !typeParameters.isEmpty();
@@ -182,10 +231,10 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         private static final String TO_STRING_MEMBER_DELIMITER = "\", \" +\n";
         private static final String STANDARD_GETTER_PREFIX = "get";
 
-        private final Boolean useExactToString;
+        private final @Nullable Boolean useExactToString;
         private final Map<String, Set<String>> recordTypeToMembers;
 
-        public LombokValueToRecordVisitor(Boolean useExactToString, Map<String, Set<String>> recordTypeToMembers) {
+        public LombokValueToRecordVisitor(@Nullable Boolean useExactToString, Map<String, Set<String>> recordTypeToMembers) {
             this.useExactToString = useExactToString;
             this.recordTypeToMembers = recordTypeToMembers;
         }
@@ -220,8 +269,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             String classFqn = classType.getFullyQualifiedName();
 
             return recordTypeToMembers.containsKey(classFqn)
-                    && methodName.startsWith(STANDARD_GETTER_PREFIX)
-                    && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
+                   && methodName.startsWith(STANDARD_GETTER_PREFIX)
+                   && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
         }
 
         private static boolean isClassExpression(@Nullable Expression expression) {

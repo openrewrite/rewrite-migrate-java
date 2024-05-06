@@ -24,16 +24,16 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class AddDefaultConstructorToEntityClassTest implements RewriteTest {
+class AddTransientAnnotationToEntityTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.persistence-api-2.2"))
-          .recipe(new AddDefaultConstructorToEntityClass());
+          .recipe(new AddTransientAnnotationToEntity());
     }
 
+    @Test
     @DocumentExample
-    @Test
-    void addMissingDefaultConstructorToEntity() {
+    void addTransient() {
         //language=java
         rewriteRun(
           java(
@@ -42,30 +42,37 @@ class AddDefaultConstructorToEntityClassTest implements RewriteTest {
               import javax.persistence.Id;
 
               @Entity
-              public class MissingNoArgConstructorEntity {
+              public class EntityA {
                   @Id
                   private int id;
 
-                  public MissingNoArgConstructorEntity(int id) {
-                      this.id = id;
-                  }
+                  private EntityB entityReference;
               }
               """,
             """
               import javax.persistence.Entity;
               import javax.persistence.Id;
+              import javax.persistence.Transient;
 
               @Entity
-              public class MissingNoArgConstructorEntity {
-
-                  public MissingNoArgConstructorEntity() {
-                  }
+              public class EntityA {
                   @Id
                   private int id;
 
-                  public MissingNoArgConstructorEntity(int id) {
-                      this.id = id;
-                  }
+                  @Transient
+                  private EntityB entityReference;
+              }
+              """
+          ),
+          java(
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class EntityB {
+                  @Id
+                  private int id;
               }
               """
           )
@@ -73,38 +80,33 @@ class AddDefaultConstructorToEntityClassTest implements RewriteTest {
     }
 
     @Test
-    void addMissingDefaultConstructorToMappedSuperclass() {
+    void ignoreJpaAnnotatedEntity() {
         //language=java
         rewriteRun(
           java(
             """
-              import javax.persistence.MappedSuperclass;
+              import javax.persistence.Entity;
               import javax.persistence.Id;
 
-              @MappedSuperclass
-              public class MissingNoArgConstructorEntity {
+              @Entity
+              public class EntityA {
                   @Id
                   private int id;
 
-                  public MissingNoArgConstructorEntity(int id) {
-                      this.id = id;
-                  }
+                  @Id
+                  private EntityB entityReference;
               }
-              """, """
-              import javax.persistence.MappedSuperclass;
+              """
+          ),
+          java(
+            """
+              import javax.persistence.Entity;
               import javax.persistence.Id;
 
-              @MappedSuperclass
-              public class MissingNoArgConstructorEntity {
-    
-                  public MissingNoArgConstructorEntity() {
-                  }
+              @Entity
+              public class EntityB {
                   @Id
                   private int id;
-
-                  public MissingNoArgConstructorEntity(int id) {
-                      this.id = id;
-                  }
               }
               """
           )
@@ -112,93 +114,86 @@ class AddDefaultConstructorToEntityClassTest implements RewriteTest {
     }
 
     @Test
-    void alreadyHasDefaultConstructor() {
+    void addTransientOnNonJpaAnnotatedEntity() {
         //language=java
         rewriteRun(
           java(
             """
               import javax.persistence.Entity;
               import javax.persistence.Id;
+
+              import java.lang.annotation.Documented;
 
               @Entity
-              public class MissingNoArgConstructorEntity {
+              public class EntityA {
                   @Id
                   private int id;
 
-                  public MissingNoArgConstructorEntity() {
-                  }
-
-                  public MissingNoArgConstructorEntity(int id) {
-                      this.id = id;
-                  }
-              }
-              """)
-        );
-    }
-
-    @Test
-    void classIsNotEntity() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import javax.persistence.Entity;
-              import javax.persistence.Id;
-
-              public class MissingNoArgConstructorEntity {
-                  @Id
-                  private int id;
-
-                  public MissingNoArgConstructorEntity(int id) {
-                      this.id = id;
-                  }
-              }
-              """)
-        );
-    }
-
-    @Test
-    void hasNoArgMethodAndNoDefaultConstructor() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import javax.persistence.Entity;
-              import javax.persistence.Id;
-
-              @Entity
-              public class MissingNoArgConstructorEntity {
-                  @Id
-                  private int id;
-
-                  public MissingNoArgConstructorEntity(int id) {
-                      this.id = id;
-                  }
-                  
-                  public void doNothing() {
-                  }
+                  @Documented
+                  private EntityB entityReference;
               }
               """,
             """
               import javax.persistence.Entity;
               import javax.persistence.Id;
+              import javax.persistence.Transient;
+
+              import java.lang.annotation.Documented;
 
               @Entity
-              public class MissingNoArgConstructorEntity {
-
-                  public MissingNoArgConstructorEntity() {
-                  }
+              public class EntityA {
                   @Id
                   private int id;
 
-                  public MissingNoArgConstructorEntity(int id) {
-                      this.id = id;
-                  }
-
-                  public void doNothing() {
-                  }
+                  @Documented
+                  @Transient
+                  private EntityB entityReference;
               }
-              """)
+              """
+          ),
+          java(
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class EntityB {
+                  @Id
+                  private int id;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void ignoreNonEntity() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.Entity;
+              import javax.persistence.Id;
+
+              @Entity
+              public class EntityA {
+                  @Id
+                  private int id;
+
+                  private NotEntityB entityReference;
+              }
+              """
+          ),
+          java(
+            """
+              import javax.persistence.Id;
+
+              public class NotEntityB {
+                  @Id
+                  private int id;
+              }
+              """
+          )
         );
     }
 }

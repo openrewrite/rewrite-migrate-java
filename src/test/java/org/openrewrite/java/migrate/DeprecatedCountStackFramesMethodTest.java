@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,30 +22,34 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class ChangeMethodInvocationReturnTypeTest implements RewriteTest {
-
+class DeprecatedCountStackFramesMethodTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new ChangeMethodInvocationReturnType("java.lang.Integer parseInt(String)", "long"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod");
     }
 
     @Test
     @DocumentExample
-    void replaceVariableAssignment() {
+    void deprecatedCountStackFrameRemoveMethod() {
         rewriteRun(
           //language=java
           java(
             """
-              class Foo {
-                  void bar() {
-                      int one = Integer.parseInt("1");
+              import java.lang.Thread;
+              
+              public class Test {
+                  public static void main(String args[]) {
+                      Thread t1,t2 = new Thread();
+                      t1.countStackFrames();
                   }
               }
               """,
             """
-              class Foo {
-                  void bar() {
-                      long one = Integer.parseInt("1");
+              import java.lang.Thread;
+              
+              public class Test {
+                  public static void main(String args[]) {
+                      Thread t1,t2 = new Thread();
                   }
               }
               """
@@ -54,25 +58,17 @@ class ChangeMethodInvocationReturnTypeTest implements RewriteTest {
     }
 
     @Test
-    void shouldOnlyChangeTargetMethodAssignments() {
+    void deprecatedCountStackFrameNoRemoval() {
         rewriteRun(
           //language=java
           java(
             """
-              class Foo {
-                  void bar() {
-                      int zero = Integer.valueOf("0");
-                      int one = Integer.parseInt("1");
-                      int two = Integer.valueOf("2");
-                  }
-              }
-              """,
-            """
-              class Foo {
-                  void bar() {
-                      int zero = Integer.valueOf("0");
-                      long one = Integer.parseInt("1");
-                      int two = Integer.valueOf("2");
+              import java.lang.Thread;
+              
+              public class Test {
+                  public static void main(String args[]) {
+                      Thread t1,t2 = new Thread();
+                     int i = t1.countStackFrames();
                   }
               }
               """

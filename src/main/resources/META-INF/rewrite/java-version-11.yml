@@ -56,8 +56,12 @@ recipeList:
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
   - org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
   - org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion
-  - org.openrewrite.java.migrate.jacoco.UpgradeJaCoCoMavenPluginVersion
-  - org.openrewrite.java.migrate.JavaVersion11
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 11
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-compiler-plugin
+      newVersion: 3.6.2
 # Disabled due to null safety issues in the current implementation
 # https://github.com/openrewrite/rewrite-migrate-java/issues/250
 #  - org.openrewrite.java.migrate.util.JavaUtilAPIs
@@ -69,18 +73,6 @@ recipeList:
   - org.openrewrite.java.migrate.InternalBindContextFactory
   - org.openrewrite.java.migrate.RemovedSecurityManagerMethods
 
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaVersion11
-displayName: Change Maven Java version property values to 11
-description: Change maven.compiler.source and maven.compiler.target values to 11.
-recipeList:
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 11
-  - org.openrewrite.maven.UpgradePluginVersion:
-      groupId: org.apache.maven.plugins
-      artifactId: maven-compiler-plugin
-      newVersion: 3.6.2
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxbDependencies

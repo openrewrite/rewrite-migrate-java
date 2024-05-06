@@ -27,7 +27,8 @@ tags:
   - java17
 recipeList:
   - org.openrewrite.java.migrate.Java8toJava11
-  - org.openrewrite.java.migrate.JavaVersion17
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 17
   - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 17
@@ -49,23 +50,13 @@ recipeList:
       groupId: com.sonatype.clm
       artifactId: clm-maven-plugin
       newVersion: 2.47.6-01
+  - org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
   - org.openrewrite.java.migrate.RemovedZipFinalizeMethods
   - org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
   - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
   - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
   - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
   - org.openrewrite.java.migrate.RemovedToolProviderConstructor
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaVersion17
-displayName: Change Maven Java version property values to 17
-description: Change maven.compiler.source and maven.compiler.target values to 17.
-tags:
-  - java17
-  - compiler
-recipeList:
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 17
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
@@ -128,7 +119,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedZipFinalizeMethods
-displayName: Replace `finalize` method in `java.util.zip.Zipfile`, `java.util.zip.Inflater` and `java.util.zip.Deflater`
+displayName: Replace `finalize` method in `java.util.zip.ZipFile`, `java.util.zip.Inflater` and `java.util.zip.Deflater`
 description: >
   The `finalize` method in `java.util.zip.ZipFile` is replaced with the `close` method and is replaced by the `end` method in 
    `java.util.zip.Inflater` and `java.util.zip.Deflater` as it is no longer available in Java SE 12 and later.
@@ -186,6 +177,19 @@ recipeList:
   - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
       existingFullyQualifiedConstantName: javax.management.remote.rmi.RMIConnectorServer.CREDENTIAL_TYPES
       fullyQualifiedConstantName:  javax.management.remote.rmi.RMIConnectorServer.CREDENTIALS_FILTER_PATTERN
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
+displayName: Remove `Thread.countStackFrames()` method
+description: >
+   `Thread.countStackFrames()` has been removed in Java SE 14 and has been changed in this release to unconditionally throw `UnsupportedOperationException`
+    This recipe removes the usage of this method in your application as long as the method is not assigned to a variable.
+    For more information on the Java SE 14 deprecation of this method, see https://bugs.java.com/bugdatabase/view_bug?bug_id=8205132.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+       methodPattern: 'java.lang.Thread countStackFrames()'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
