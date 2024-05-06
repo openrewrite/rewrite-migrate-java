@@ -105,13 +105,13 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                             public J.Return visitReturn(J.Return ret, List<JavaType.Variable> returnedVars) {
                                 Expression expression = ret.getExpression();
                                 JavaType.Variable returnedVar;
-                                if (expression instanceof J.FieldAccess) {
+                                if (expression instanceof J.FieldAccess) { // ie: return this.field;
                                     returnedVar = ((J.FieldAccess) expression).getName().getFieldType();
                                     returnedVars.add(returnedVar);
                                 } else if (expression instanceof J.Identifier) { // ie: return field;
                                     returnedVar = ((J.Identifier) expression).getFieldType();
                                     returnedVars.add(returnedVar);
-                                }
+                                } // last case should be null: do nothing and continue
                                 return super.visitReturn(ret, returnedVars);
                             }
                         };
