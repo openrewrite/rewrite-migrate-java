@@ -22,6 +22,8 @@ import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.xml.Assertions.xml;
+
 class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
