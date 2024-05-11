@@ -96,6 +96,42 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
         );
     }
 
+    @Test
+    void migrateWithDatasource() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            version="4.0"
+                            xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                            xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_4_0.xsd">
+                  <resource-ref>
+                     <res-ref-name>myDataSource</res-ref-name>
+                     <res-type>javax.sql.DataSource</res-type>
+                     <res-auth>CONTAINER</res-auth>
+                  </resource-ref>
+              </web-fragment>   
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            version="5.0"
+                            xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_5_0.xsd">
+                  <resource-ref>
+                     <res-ref-name>myDataSource</res-ref-name>
+                     <res-type>javax.sql.DataSource</res-type>
+                     <res-auth>CONTAINER</res-auth>
+                  </resource-ref>
+              </web-fragment> 
+              """,
+            sourceSpecs -> sourceSpecs.path("web-fragment.xml")
+          )
+        );
+    }
+
     @Nested
     class NoChanges {
         @Test

@@ -192,6 +192,10 @@ recipeList:
       find: "javax."
       replace: "jakarta."
       filePattern: '**/web-fragment.xml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "jakarta.sql."
+      replace: "javax.sql."
+      filePattern: '**/web-fragment.xml'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxWebXmlToJakartaWebXml
@@ -217,6 +221,10 @@ recipeList:
   - org.openrewrite.text.FindAndReplace:
       find: "javax."
       replace: "jakarta."
+      filePattern: '**/web.xml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "jakarta.sql."
+      replace: "javax.sql."
       filePattern: '**/web.xml'
 ---
 type: specs.openrewrite.org/v1beta/recipe
