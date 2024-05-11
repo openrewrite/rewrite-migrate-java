@@ -32,6 +32,7 @@ recipeList:
   - org.openrewrite.java.migrate.BeanDiscovery
   - org.openrewrite.java.migrate.jakarta.BeanValidationMessages
   - org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
+  - org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml
   - org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
 ---
@@ -120,6 +121,34 @@ recipeList:
       attributeName: xsi:schemaLocation
       elementName: beans
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml
+displayName: Migrate xmlns entries and javax. packages in `ejb-jar.xml` files
+description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
+tags:
+  - jakarta
+  - ejb
+preconditions:
+  - org.openrewrite.FindSourceFiles:
+      filePattern: '**/ejb-jar.xml'
+recipeList:
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: version
+      elementName: ejb-jar
+      newValue: 4.0
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xmlns
+      elementName: ejb-jar
+      newValue: https://jakarta.ee/xml/ns/jakartaee
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xsi:schemaLocation
+      elementName: ejb-jar
+      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/ejb-jar_4_0.xsd
+  - org.openrewrite.text.FindAndReplace:
+      find: "javax."
+      replace: "jakarta."
+      filePattern: '**/ejb-jar.xml'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10
