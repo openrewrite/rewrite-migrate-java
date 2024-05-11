@@ -15,8 +15,6 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
-import static org.openrewrite.xml.Assertions.xml;
-
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
