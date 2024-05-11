@@ -144,7 +144,7 @@ class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
                       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
                   </beans> 
                   """,
-                sourceSpecs -> sourceSpecs.path("not-web.xml")
+                sourceSpecs -> sourceSpecs.path("not-ejb-jar.xml")
               )
             );
         }
