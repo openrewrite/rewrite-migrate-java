@@ -32,6 +32,9 @@ recipeList:
   - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 17
+  - org.openrewrite.gradle.UpdateGradleWrapper:
+      version: 7.3
+      addIfMissing: false
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: java.lang.Runtime traceInstructions(boolean)
