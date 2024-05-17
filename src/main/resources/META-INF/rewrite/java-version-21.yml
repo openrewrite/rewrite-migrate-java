@@ -1,5 +1,5 @@
 #
-# Copyright 2023 the original author or authors.
+# Copyright 2024 the original author or authors.
 # <p>
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,8 +25,7 @@ tags:
   - java21
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 21
+  - org.openrewrite.java.migrate.UpgradeBuildToJava21
   - org.openrewrite.java.migrate.RemoveIllegalSemicolons
   - org.openrewrite.java.migrate.lang.ThreadStopUnsupported
   - org.openrewrite.java.migrate.net.URLConstructorsToURIRecipes
@@ -34,6 +33,26 @@ recipeList:
   - org.openrewrite.java.migrate.util.UseLocaleOf
   - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion
+  - org.openrewrite.java.migrate.UpgradePluginsForJava21
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava21
+displayName: Upgrade build to Java 21
+description: Updates build files to use Java 21 as the target/source.
+tags:
+  - java21
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 21
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradePluginsForJava21
+displayName: Upgrade plugins to Java 21 compatible versions
+description: Updates plugins and dependencies to version compatible with Java 21.
+tags:
+  - java21
+recipeList:
   # GitHub Actions bump needs Gradle Wrapper bump too https://docs.gradle.org/current/userguide/compatibility.html#java
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 8.5
@@ -55,7 +74,6 @@ recipeList:
       groupId: org.modelmapper
       artifactId: modelmapper
       newVersion: 3.2.x
-
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.util.SequencedCollection
@@ -77,6 +95,21 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.NavigableSet descendingSet()
       newMethodName: reversed
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedSubjectMethods
+displayName: Adopt `javax.security.auth.Subject.current()` and `javax.security.auth.Subject.callAs()` methods`
+description: Replaces the `javax.security.auth.Subject.getSubject()` and `javax.security.auth.Subject.doAs()` methods 
+  with `javax.security.auth.Subject.current()` and `javax.security.auth.Subject.callAs()`.
+tags:
+  - java21
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: javax.security.auth.Subject getSubject()
+      newMethodName: current
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: javax.security.auth.Subject callAs()
+      newMethodName: doAs
   # XXX convert additional patterns to sequenced collections
   # list.listIterator() -> ???
   # list.listIterator(int) -> ???

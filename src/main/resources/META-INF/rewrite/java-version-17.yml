@@ -27,14 +27,8 @@ tags:
   - java17
 recipeList:
   - org.openrewrite.java.migrate.Java8toJava11
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 17
+  - org.openrewrite.java.migrate.UpgradeBuildToJava17
   - org.openrewrite.java.migrate.lang.StringFormatted
-  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
-      minimumJavaMajorVersion: 17
-  - org.openrewrite.gradle.UpdateGradleWrapper:
-      version: 7.3
-      addIfMissing: false
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: java.lang.Runtime traceInstructions(boolean)
@@ -45,6 +39,37 @@ recipeList:
   - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
   - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
   - org.openrewrite.java.migrate.Jre17AgentMainPreMainPublic
+  - org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
+  - org.openrewrite.java.migrate.RemovedZipFinalizeMethods
+  - org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
+  - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
+  - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
+  - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
+  - org.openrewrite.java.migrate.UpgradePluginsForJava17
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava17
+displayName: Upgrade build to Java 17
+description: Updates build files to use Java 17 as the target/source.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 17
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradePluginsForJava17
+displayName: Upgrade plugins to Java 17 compatible versions
+description: Updates plugins and dependencies to version compatible with Java 17.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
+      minimumJavaMajorVersion: 17
+  - org.openrewrite.gradle.UpdateGradleWrapper:
+      version: 7.3
+      addIfMissing: false
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
       artifactId: maven-checkstyle-plugin
@@ -53,12 +78,6 @@ recipeList:
       groupId: com.sonatype.clm
       artifactId: clm-maven-plugin
       newVersion: 2.47.6-01
-  - org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
-  - org.openrewrite.java.migrate.RemovedZipFinalizeMethods
-  - org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
-  - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
-  - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
-  - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
