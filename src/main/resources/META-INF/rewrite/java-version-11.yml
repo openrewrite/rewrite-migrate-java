@@ -65,6 +65,7 @@ recipeList:
   - org.openrewrite.java.migrate.util.OptionalStreamRecipe
   - org.openrewrite.java.migrate.InternalBindContextFactory
   - org.openrewrite.java.migrate.RemovedSecurityManagerMethods
+  - org.openrewrite.java.migrate.UpgradePluginsForJava11
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
