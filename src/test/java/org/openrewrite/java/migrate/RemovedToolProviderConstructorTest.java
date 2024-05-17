@@ -51,7 +51,7 @@ class RemovedToolProviderConstructorTest  implements RewriteTest {
                        DocumentationTool dT = tp.getSystemDocumentationTool();
                        ClassLoader cl = tp.getSystemToolClassLoader();  
                        System.out.println(ToolProvider.getSystemJavaCompiler());   
-                       ToolProvider.getSystemJavaCompiler().getSourceVersions();
+                       tp.getSystemJavaCompiler().getSourceVersions();
                    }
               }          
               """,
