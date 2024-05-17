@@ -110,6 +110,3 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: javax.security.auth.Subject callAs()
       newMethodName: doAs
-  # XXX convert additional patterns to sequenced collections
-  # list.listIterator() -> ???
-  # list.listIterator(int) -> ???
