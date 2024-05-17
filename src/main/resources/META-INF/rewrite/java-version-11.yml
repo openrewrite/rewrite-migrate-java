@@ -81,7 +81,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradePluginsForJava11
 displayName: Upgrade plugins to Java 11 compatible versions
-description: Updates plugins and dependencies to version compatible with Java 11.
+description: Updates plugins to version compatible with Java 11.
 tags:
   - java11
 recipeList:
