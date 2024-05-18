@@ -271,6 +271,13 @@ recipeList:
       oldPackageName: javax.validation
       newPackageName: jakarta.validation
       recursive: true
+  - org.openrewrite.RenameFile:
+      fileMatcher: '**/javax.validation.ConstraintValidator'
+      fileName: jakarta.validation.ConstraintValidator
+  - org.openrewrite.text.FindAndReplace:
+      find: "javax."
+      replace: "jakarta."
+      filePattern: '**/ValidationMessages*.properties'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxDecoratorToJakartaDecorator
