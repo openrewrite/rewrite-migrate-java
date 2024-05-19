@@ -56,23 +56,41 @@ recipeList:
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
   - org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
   - org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 11
-  - org.openrewrite.maven.UpgradePluginVersion:
-      groupId: org.apache.maven.plugins
-      artifactId: maven-compiler-plugin
-      newVersion: 3.6.2
+  - org.openrewrite.java.migrate.UpgradeBuildToJava11
 # Disabled due to null safety issues in the current implementation
 # https://github.com/openrewrite/rewrite-migrate-java/issues/250
 #  - org.openrewrite.java.migrate.util.JavaUtilAPIs
   - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
   - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
   - org.openrewrite.java.migrate.util.OptionalStreamRecipe
-  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
-      minimumJavaMajorVersion: 11
   - org.openrewrite.java.migrate.InternalBindContextFactory
   - org.openrewrite.java.migrate.RemovedSecurityManagerMethods
+  - org.openrewrite.java.migrate.UpgradePluginsForJava11
 
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava11
+displayName: Upgrade build to Java 11
+description: Updates build files to use Java 11 as the target/source.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 11
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradePluginsForJava11
+displayName: Upgrade plugins to Java 11 compatible versions
+description: Updates plugins to version compatible with Java 11.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-compiler-plugin
+      newVersion: 3.6.2
+  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
+      minimumJavaMajorVersion: 11
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxbDependencies
