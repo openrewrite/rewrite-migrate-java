@@ -26,7 +26,7 @@ class RemovedToolProviderConstructorTest  implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.expectedCyclesThatMakeChanges(2).recipe(new RemovedToolProviderConstructor());
+        spec.recipeFromResource("/META-INF/rewrite/java-version-17.yml", "org.openrewrite.java.migrate.RemovedToolProviderConstructor");
     }
 
     @DocumentExample
@@ -36,16 +36,13 @@ class RemovedToolProviderConstructorTest  implements RewriteTest {
           //language=java
           java(
             """
-              package com.test;
-               
               import javax.tools.ToolProvider;
               import javax.tools.JavaCompiler;
               import javax.tools.DocumentationTool;
               import java.lang.ClassLoader;
               
-              public class RemovedToolProviderConstructorApp {
-               
-                   public void test() throws Exception {
+              class RemovedToolProviderConstructorApp {
+                   void test() throws Exception {
                        ToolProvider tp = null;
                        JavaCompiler compiler = tp.getSystemJavaCompiler();     
                        DocumentationTool dT = tp.getSystemDocumentationTool();
@@ -56,16 +53,13 @@ class RemovedToolProviderConstructorTest  implements RewriteTest {
               }          
               """,
             """
-              package com.test;
-               
               import javax.tools.ToolProvider;
               import javax.tools.JavaCompiler;
               import javax.tools.DocumentationTool;
               import java.lang.ClassLoader;
-               
-              public class RemovedToolProviderConstructorApp {
-               
-                   public void test() throws Exception {
+              
+              class RemovedToolProviderConstructorApp {
+                   void test() throws Exception {
                        ToolProvider tp = null;
                        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();     
                        DocumentationTool dT = ToolProvider.getSystemDocumentationTool();

@@ -40,6 +40,7 @@ recipeList:
       methodPattern: java.lang.Runtime traceInstructions(boolean)
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: java.lang.System traceMethodCalls(boolean)
+  - org.openrewrite.java.migrate.RemovedToolProviderConstructor
   - org.openrewrite.java.migrate.lang.UseTextBlocks
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
   - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
@@ -59,7 +60,6 @@ recipeList:
   - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
   - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
   - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
-  - org.openrewrite.java.migrate.RemovedToolProviderConstructor
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
@@ -210,3 +210,14 @@ recipeList:
       methodPattern: "java.io.FileOutputStream finalize()"
       newMethodName: close
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedToolProviderConstructor
+displayName: Change `javax.tools.ToolProvider` methods calls to static
+description: >
+  The `javax.tools.ToolProvider()` constructor has been removed in Java SE 16 since the class only contains static methods.
+  The recipe converts `javax.tools.ToolProvider getSystemJavaCompiler()`, `javax.tools.ToolProvider getSystemDocumentationTool()` and `javax.tools.ToolProvider getSystemToolClassLoader()` to static methods.
+recipeList:
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: javax.tools.ToolProvider *()
+      fullyQualifiedTargetTypeName: javax.tools.ToolProvider
