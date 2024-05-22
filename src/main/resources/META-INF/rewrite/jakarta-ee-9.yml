@@ -61,6 +61,8 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
   - org.openrewrite.java.migrate.javaee8
   - org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
+  - org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependency
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxActivationMigrationToJakartaActivation
@@ -988,3 +990,15 @@ recipeList:
       groupId: jakarta.platform
       artifactId: "*"
       newVersion: 9.0.0
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependency
+displayName: Remove jakarta.annotation-api dependency if already manage by other dependency
+description: This recipe mainly revert the jakarta.annotation-api added by org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies
+recipeList:
+  - org.openrewrite.java.dependencies.DependencyInsight:
+      groupIdPattern: jakarta.annotation
+      artifactIdPattern: jakarta.annotation-api
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
