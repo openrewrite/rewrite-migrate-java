@@ -35,6 +35,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: java.lang.System traceMethodCalls(boolean)
   - org.openrewrite.java.migrate.RemovedToolProviderConstructor
+  - org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
   - org.openrewrite.java.migrate.lang.UseTextBlocks
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
   - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
@@ -240,3 +241,18 @@ recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: javax.tools.ToolProvider *()
       fullyQualifiedTargetTypeName: javax.tools.ToolProvider
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
+displayName: Change `java.lang.reflect.Modifier` and ` java.lang.invoke.ConstantBootstraps` method calls to static
+description: >
+  The `java.lang.reflect.Modifier()` and `java.lang.invoke.ConstantBootstraps()` constructors have been removed in Java SE 15 because both classes only contain static methods.
+  This recipe converts the usage of all methods in the two classes to be  static.
+  For more information on these changes, see https://docs.oracle.com/en/java/javase/15/migrate/index.html#GUID-233853B8-0782-429E-BEF7-7532EE610E63
+recipeList:
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: java.lang.reflect.Modifier *(..)
+      fullyQualifiedTargetTypeName: java.lang.reflect.Modifier
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: java.lang.invoke.ConstantBootstraps *(..)
+      fullyQualifiedTargetTypeName: java.lang.invoke.ConstantBootstraps
