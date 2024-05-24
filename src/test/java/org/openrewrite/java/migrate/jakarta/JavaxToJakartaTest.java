@@ -437,47 +437,48 @@ class JavaxToJakartaTest implements RewriteTest {
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javaxServlet)),
           mavenProject(
             "Sample",
+            //language=xml
             pomXml(
               """
-                    <?xml version="1.0" encoding="UTF-8"?>
-                    <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-                        <modelVersion>4.0.0</modelVersion>
-                        <parent>
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-parent</artifactId>
+                        <version>2.7.6</version>
+                        <relativePath/> <!-- lookup parent from repository -->
+                    </parent>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <name>demo</name>
+                    <description>Demo project for Spring Boot</description>
+                    <properties>
+                        <java.version>17</java.version>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                             <groupId>jakarta.servlet</groupId>
+                         <artifactId>jakarta.servlet-api</artifactId>
+                         </dependency>
+                        <dependency>
                             <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-starter-parent</artifactId>
-                            <version>2.7.6</version>
-                            <relativePath/> <!-- lookup parent from repository -->
-                        </parent>
-                        <groupId>com.example</groupId>
-                        <artifactId>demo</artifactId>
-                        <version>0.0.1-SNAPSHOT</version>
-                        <name>demo</name>
-                        <description>Demo project for Spring Boot</description>
-                        <properties>
-                            <java.version>17</java.version>
-                        </properties>
-                        <dependencies>
-                            <dependency>
-                                 <groupId>jakarta.servlet</groupId>
-                             <artifactId>jakarta.servlet-api</artifactId>
-                             </dependency>
-                            <dependency>
+                            <artifactId>spring-boot-starter-web</artifactId>
+                        </dependency>
+                    </dependencies>
+
+                    <build>
+                        <plugins>
+                            <plugin>
                                 <groupId>org.springframework.boot</groupId>
-                                <artifactId>spring-boot-starter-web</artifactId>
-                            </dependency>
-                        </dependencies>
+                                <artifactId>spring-boot-maven-plugin</artifactId>
+                            </plugin>
+                        </plugins>
+                    </build>
 
-                        <build>
-                            <plugins>
-                                <plugin>
-                                    <groupId>org.springframework.boot</groupId>
-                                    <artifactId>spring-boot-maven-plugin</artifactId>
-                                </plugin>
-                            </plugins>
-                        </build>
-
-                    </project>
+                </project>
                 """
             ),
             srcMainJava(
@@ -494,6 +495,117 @@ class JavaxToJakartaTest implements RewriteTest {
                   }
                   """
               )
+            )
+          )
+        );
+    }
+
+    @Test
+    void projectWithSpringBoot3StarterWebShouldRemoveJakartaDependency() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javaxServlet)),
+          mavenProject(
+            "Sample",
+            //language=xml
+            pomXml(
+              """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-parent</artifactId>
+                        <version>3.2.5</version>
+                        <relativePath/> <!-- lookup parent from repository -->
+                    </parent>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.annotation</groupId>
+                            <artifactId>jakarta.annotation-api</artifactId>
+                            <version>1.3.5</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-web</artifactId>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-parent</artifactId>
+                        <version>3.2.5</version>
+                        <relativePath/> <!-- lookup parent from repository -->
+                    </parent>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-web</artifactId>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            ),
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import jakarta.servlet.A;
+                  public class TestApplication {
+                  }
+                  """
+              )
+            )
+          )
+        );
+    }
+
+    @Test
+    void doNothingIfNotFoundTransitiveDependency() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javaxServlet)),
+          mavenProject(
+            "Sample",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import jakarta.servlet.A;
+                  public class TestApplication {
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>jakarta.annotation</groupId>
+                      <artifactId>jakarta.annotation-api</artifactId>
+                      <version>1.3.5</version>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """
             )
           )
         );
