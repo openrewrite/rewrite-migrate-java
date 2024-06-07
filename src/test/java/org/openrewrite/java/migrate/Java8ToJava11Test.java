@@ -40,11 +40,10 @@ class Java8ToJava11Test implements RewriteTest {
     String Krb5LoginModuleClass = """
       
        package com.ibm.security.auth.module;
-       
+
        public class Krb5LoginModule {
 
         public void login() {
-           
         }
 
        }
