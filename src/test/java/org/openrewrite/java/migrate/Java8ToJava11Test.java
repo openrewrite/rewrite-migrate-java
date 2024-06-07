@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.Parser;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -35,13 +34,6 @@ class Java8ToJava11Test implements RewriteTest {
             .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.new"))
           .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate").build()
             .activateRecipes("org.openrewrite.java.migrate.Java8toJava11"));
-
-//        Parser.Builder javaParser = null;
-//        JavaParserReset.reset(javaParser);
-//        spec.parser(javaParser);
-
-
-
     }
 
     //language=java
