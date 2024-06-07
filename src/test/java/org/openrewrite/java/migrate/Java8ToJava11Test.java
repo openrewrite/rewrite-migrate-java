@@ -18,10 +18,12 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.Parser;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
 
 import static org.openrewrite.java.Assertions.java;
 
@@ -33,7 +35,28 @@ class Java8ToJava11Test implements RewriteTest {
             .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.new"))
           .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate").build()
             .activateRecipes("org.openrewrite.java.migrate.Java8toJava11"));
+
+//        Parser.Builder javaParser = null;
+//        JavaParserReset.reset(javaParser);
+//        spec.parser(javaParser);
+
+
+
     }
+
+    //language=java
+    String Krb5LoginModuleClass = """
+      
+       package com.ibm.security.auth.module;
+       
+       public class Krb5LoginModule {
+
+        public void login() {
+           
+        }
+
+       }
+      """;
 
     @DocumentExample
     @Test
@@ -61,7 +84,7 @@ class Java8ToJava11Test implements RewriteTest {
           java(
             """
               import com.sun.xml.internal.bind.v2.ContextFactory;
-                 
+
               class Foo2 {
                 void bar() {
                     ContextFactory factory = null;
@@ -71,7 +94,7 @@ class Java8ToJava11Test implements RewriteTest {
               """,
             """
               import com.sun.xml.bind.v2.ContextFactory;
-                 
+
               class Foo2 {
                 void bar() {
                     ContextFactory factory = null;
@@ -83,27 +106,67 @@ class Java8ToJava11Test implements RewriteTest {
           java(
             """
               import com.sun.xml.internal.bind.v2.*;
-                
+
               class Foo3 {
                 void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
-                
+
               }
               """,
             """
               import com.sun.xml.bind.v2.ContextFactory;
               import com.sun.xml.internal.bind.v2.*;
-                
+
               class Foo3 {
                 void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
-                
+
               }
               """
           )
         );
-    }}
+    }
+
+    @DocumentExample
+    @Test
+    void Krb5LoginModuleTest() {
+        //language=java
+        rewriteRun(
+          java(Krb5LoginModuleClass),
+          java(
+            """
+              package com.ibm.test;
+              
+              import com.ibm.security.auth.module.Krb5LoginModule;
+              
+              public class TestClass {
+              
+                public void testClass() {
+                   Krb5LoginModule krb = new Krb5LoginModule();
+                   krb.login();
+                }
+                
+              }
+            """,
+            """
+                    package com.ibm.test;
+
+                    import com.sun.security.auth.module.Krb5LoginModule;
+
+                    public class TestClass {
+
+                      public void testClass() {
+                         Krb5LoginModule krb = new Krb5LoginModule();
+                         krb.login();
+                      }
+
+                    }
+                    """
+          )
+        );
+    }
+}
