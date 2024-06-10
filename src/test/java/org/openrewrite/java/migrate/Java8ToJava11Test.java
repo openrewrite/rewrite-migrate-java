@@ -33,7 +33,7 @@ class Java8ToJava11Test implements RewriteTest {
           .parser(JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.new"))
           .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate").build()
-            .activateRecipes("org.openrewrite.java.migrate.Java8toJava11","org.openrewrite.java.migrate.IBMJDKtoOracleJDK"));
+            .activateRecipes("org.openrewrite.java.migrate.Java8toJava11", "org.openrewrite.java.migrate.IBMJDKtoOracleJDK"));
     }
 
     //language=java
@@ -122,7 +122,6 @@ class Java8ToJava11Test implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void Krb5LoginModuleTest() {
         //language=java
