@@ -139,8 +139,7 @@ class Java8ToJava11Test implements RewriteTest {
                 public void testClass() {
                    Krb5LoginModule krb = new Krb5LoginModule();
                    krb.login();
-                }
-                
+                }   
               }
             """,
             """
@@ -154,7 +153,6 @@ class Java8ToJava11Test implements RewriteTest {
                          Krb5LoginModule krb = new Krb5LoginModule();
                          krb.login();
                       }
-
                     }
                     """
           )
