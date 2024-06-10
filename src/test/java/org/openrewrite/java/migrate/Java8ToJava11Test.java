@@ -131,30 +131,30 @@ class Java8ToJava11Test implements RewriteTest {
           java(
             """
               package com.ibm.test;
-              
+                
               import com.ibm.security.auth.module.Krb5LoginModule;
-              
+                
               public class TestClass {
-              
-                public void testClass() {
-                   Krb5LoginModule krb = new Krb5LoginModule();
-                   krb.login();
-                }   
+                
+                 public void testClass() {
+                    Krb5LoginModule krb = new Krb5LoginModule();
+                    krb.login();
+                 }   
               }
-            """,
+              """,
             """
-                    package com.ibm.test;
+              package com.ibm.test;
 
-                    import com.sun.security.auth.module.Krb5LoginModule;
+              import com.sun.security.auth.module.Krb5LoginModule;
 
-                    public class TestClass {
+              public class TestClass {
 
-                      public void testClass() {
-                         Krb5LoginModule krb = new Krb5LoginModule();
-                         krb.login();
-                      }
-                    }
-                    """
+                 public void testClass() {
+                    Krb5LoginModule krb = new Krb5LoginModule();
+                    krb.login();
+                 }
+              }
+              """
           )
         );
     }
