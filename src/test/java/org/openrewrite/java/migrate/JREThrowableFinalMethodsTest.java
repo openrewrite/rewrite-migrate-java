@@ -8,7 +8,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class JREThrowableFinalMethodsTest implements RewriteTest {
+class JREThrowableFinalMethodsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new JREThrowableFinalMethods() );
