@@ -25,7 +25,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava6
   - org.openrewrite.java.migrate.JREJdbcInterfaceNewMethods
-  - - org.openrewrite.java.migrate.JREThrowableFinalMethods
+  - org.openrewrite.java.migrate.JREThrowableFinalMethods
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JREJdbcInterfaceNewMethods
