@@ -24,7 +24,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
 
-public class JREThrowableFinalMethods extends Recipe {
+class JREThrowableFinalMethods extends Recipe {
     @Override
     public String getDisplayName() {
         return "Rename final method declarations `getSuppressed()` and `addSuppressed(Throwable exception)` in classes that extend `Throwable`";
