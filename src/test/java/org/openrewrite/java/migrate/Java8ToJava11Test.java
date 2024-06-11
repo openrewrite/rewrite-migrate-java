@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -32,7 +33,8 @@ class Java8ToJava11Test implements RewriteTest {
           .parser(JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.new"))
           .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate").build()
-            .activateRecipes("org.openrewrite.java.migrate.Java8toJava11", "org.openrewrite.java.migrate.IBMJDKtoOracleJDK"));
+            .activateRecipes("org.openrewrite.java.migrate.Java8toJava11",
+              "org.openrewrite.java.migrate.IBMJDKtoOracleJDK"));
     }
 
     //language=java
@@ -74,7 +76,7 @@ class Java8ToJava11Test implements RewriteTest {
           java(
             """
               import com.sun.xml.internal.bind.v2.ContextFactory;
-            
+              
               class Foo2 {
                 void bar() {
                     ContextFactory factory = null;
@@ -84,7 +86,7 @@ class Java8ToJava11Test implements RewriteTest {
               """,
             """
               import com.sun.xml.bind.v2.ContextFactory;
-            
+              
               class Foo2 {
                 void bar() {
                     ContextFactory factory = null;
@@ -96,24 +98,25 @@ class Java8ToJava11Test implements RewriteTest {
           java(
             """
               import com.sun.xml.internal.bind.v2.*;
-
+              
               class Foo3 {
                 void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
+              
               }
               """,
             """
               import com.sun.xml.bind.v2.ContextFactory;
               import com.sun.xml.internal.bind.v2.*;
-
+              
               class Foo3 {
                 void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
-
+              
               }
               """
           )
