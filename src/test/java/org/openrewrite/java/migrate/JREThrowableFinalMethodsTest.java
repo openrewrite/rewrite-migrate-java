@@ -25,14 +25,17 @@ import static org.openrewrite.java.Assertions.java;
 class JREThrowableFinalMethodsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new JREThrowableFinalMethods());
     }
 
     @DocumentExample
     @Test
     void renameMethodDeclarationsAndUsagesElsewhere() {
-        //language=java
         rewriteRun(
+          // Override method patterns as test examples would not compile otherwise
+          spec -> spec.recipe(new JREThrowableFinalMethods(
+            "*..* add1Suppressed(Throwable)",
+            "*..* get1Suppressed()")),
+          //language=java
           java(
             """
               package com.test;
@@ -57,6 +60,7 @@ class JREThrowableFinalMethodsTest implements RewriteTest {
               }
               """
           ),
+          //language=java
           java(
             """
               import com.test.ThrowableWithIllegalOverrrides;
@@ -84,11 +88,12 @@ class JREThrowableFinalMethodsTest implements RewriteTest {
     void shouldNotTouchOtherThrowables() {
         //language=java
         rewriteRun(
+          spec -> spec.recipe(new JREThrowableFinalMethods()),
           java(
             """
               class ClassUsingThrowable {
                   void methodUsingRenamedMethodsAlready(Throwable t1) {
-                      t1.addSuppressed(null);
+                      t1.addSuppressed(new Throwable());
                       t1.getSuppressed();
                   }
               }
