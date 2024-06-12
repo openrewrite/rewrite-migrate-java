@@ -23,6 +23,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -63,7 +64,10 @@ class JREThrowableFinalMethods extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                Preconditions.or(new UsesType<>("java.lang.Throwable", true)),
+                Preconditions.and(
+                        new UsesJavaVersion<>(1, 6),
+                        new UsesType<>("java.lang.Throwable", true)
+                ),
                 new JavaIsoVisitor<ExecutionContext>() {
                     private final MethodMatcher METHOD_ADDSUPPRESSED = new MethodMatcher(methodPatternAddSuppressed, false);
                     private final MethodMatcher METHOD_GETSUPPRESSED = new MethodMatcher(methodPatternGetSuppressed, false);

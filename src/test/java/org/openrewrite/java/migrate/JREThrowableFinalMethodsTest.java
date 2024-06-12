@@ -21,6 +21,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class JREThrowableFinalMethodsTest implements RewriteTest {
     @Override
@@ -58,7 +59,8 @@ class JREThrowableFinalMethodsTest implements RewriteTest {
                       return null;
                   }
               }
-              """
+              """,
+            spec -> spec.markers(javaVersion(6))
           ),
           //language=java
           java(
@@ -79,13 +81,14 @@ class JREThrowableFinalMethodsTest implements RewriteTest {
                       t1.myGetSuppressed();
                   }
               }
-              """
+              """,
+            spec -> spec.markers(javaVersion(6))
           )
         );
     }
 
     @Test
-    void shouldNotTouchOtherThrowables() {
+    void shouldRenameOnJava6() {
         //language=java
         rewriteRun(
           spec -> spec.recipe(new JREThrowableFinalMethods()),
@@ -97,7 +100,35 @@ class JREThrowableFinalMethodsTest implements RewriteTest {
                       t1.getSuppressed();
                   }
               }
-              """
+              """,
+            """
+              class ClassUsingThrowable {
+                  void methodUsingRenamedMethodsAlready(Throwable t1) {
+                      t1.myAddSuppressed(new Throwable());
+                      t1.myGetSuppressed();
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(6))
+          )
+        );
+    }
+
+    @Test
+    void shouldNotRenameOnJava7() {
+        //language=java
+        rewriteRun(
+          spec -> spec.recipe(new JREThrowableFinalMethods()),
+          java(
+            """
+              class ClassUsingThrowable {
+                  void methodUsingRenamedMethodsAlready(Throwable t1) {
+                      t1.addSuppressed(new Throwable());
+                      t1.getSuppressed();
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(7))
           )
         );
     }
