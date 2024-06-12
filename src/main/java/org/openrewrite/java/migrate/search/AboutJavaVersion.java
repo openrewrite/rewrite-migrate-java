@@ -97,6 +97,7 @@ public class AboutJavaVersion extends Recipe {
     static class ProjectSourceSet {
         @Nullable
         JavaProject javaProject;
+
         String javaSourceSet;
     }
 }
