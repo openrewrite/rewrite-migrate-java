@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -23,7 +25,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-
+@Value
+@EqualsAndHashCode(callSuper = false)
 class JREThrowableFinalMethods extends Recipe {
     @Override
     public String getDisplayName() {
@@ -33,8 +36,8 @@ class JREThrowableFinalMethods extends Recipe {
     @Override
     public String getDescription() {
         return "The recipe renames  `getSuppressed()` and `addSuppressed(Throwable exception)` methods  in classes "
-                + "that extend `java.lang.Throwable` to `myGetSuppressed` and `myAddSuppressed(Throwable)`."
-                + "These methods were added to Throwable in Java 7 and are marked final which cannot be overridden.";
+               + "that extend `java.lang.Throwable` to `myGetSuppressed` and `myAddSuppressed(Throwable)`."
+               + "These methods were added to Throwable in Java 7 and are marked final which cannot be overridden.";
     }
 
     @Override

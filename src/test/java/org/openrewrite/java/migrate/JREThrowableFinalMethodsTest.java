@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -26,40 +25,74 @@ import static org.openrewrite.java.Assertions.java;
 class JREThrowableFinalMethodsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new JREThrowableFinalMethods() );
+        spec.recipe(new JREThrowableFinalMethods());
+    }
+
+    @DocumentExample
+    @Test
+    void renameMethodDeclarationsAndUsagesElsewhere() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package com.test;
+              public class ThrowableWithIllegalOverrrides extends Throwable {
+                  public void add1Suppressed(Throwable exception) {
+                  }
+
+                  public Throwable[] get1Suppressed() {
+                      return null;
+                  }
+              }
+              """,
+            """
+              package com.test;
+              public class ThrowableWithIllegalOverrrides extends Throwable {
+                  public void myAddSuppressed(Throwable exception) {
+                  }
+
+                  public Throwable[] myGetSuppressed() {
+                      return null;
+                  }
+              }
+              """
+          ),
+          java(
+            """
+              import com.test.ThrowableWithIllegalOverrrides;
+              class ClassUsingException {
+                  void methodUsingException(ThrowableWithIllegalOverrrides t1) {
+                      t1.add1Suppressed(null);
+                      t1.get1Suppressed();
+                  }
+              }
+              """,
+            """
+              import com.test.ThrowableWithIllegalOverrrides;
+              class ClassUsingException {
+                  void methodUsingException(ThrowableWithIllegalOverrrides t1) {
+                      t1.myAddSuppressed(null);
+                      t1.myGetSuppressed();
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test
-    void renameOverRideMethods() {
+    void shouldNotTouchOtherThrowables() {
+        //language=java
         rewriteRun(
-          //language=java
           java(
-            """     
-             package com.test;
-
-             public class MyBadThrowableExceptionAddGet extends Throwable{
-                public void add1Suppressed(Throwable exception) {  }
-                public Throwable[] get1Suppressed() { return null;}
-                public static void main(String args[]) {
-                   MyBadThrowableExceptionAddGet t1;
-                   t1.add1Suppressed(null);
-                   t1.get1Suppressed();
-                }
-             }
-             """,
             """
-             package com.test;
-
-             public class MyBadThrowableExceptionAddGet extends Throwable{
-                public void myAddSuppressed(Throwable exception) {  }
-                public Throwable[] myGetSuppressed() { return null;}
-                public static void main(String args[]) {
-                   MyBadThrowableExceptionAddGet t1;
-                   t1.myAddSuppressed(null);
-                   t1.myGetSuppressed();
-                }
-             }     
-             """
+              class ClassUsingThrowable {
+                  void methodUsingRenamedMethodsAlready(Throwable t1) {
+                      t1.addSuppressed(null);
+                      t1.getSuppressed();
+                  }
+              }
+              """
           )
         );
     }
