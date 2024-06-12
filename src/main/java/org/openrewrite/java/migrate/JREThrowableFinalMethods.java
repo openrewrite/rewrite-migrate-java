@@ -20,10 +20,11 @@ import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -42,44 +43,48 @@ class JREThrowableFinalMethods extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return new JavaIsoVisitor<ExecutionContext>() {
             private final MethodMatcher METHOD_GETSUPPRESSED = new MethodMatcher("*..*  get1Suppressed()", false);
             private final MethodMatcher METHOD_ADDSUPPRESSED = new MethodMatcher("*..*  add1Suppressed(Throwable)", false);
             private final String JAVA_THROWABLE_CLASS = "java.lang.Throwable";
 
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                if (method.getMethodType() != null && method.getReturnTypeExpression() != null) {
-                    String sn = method.getSimpleName();
-                    JavaType rte = method.getReturnTypeExpression().getType();
-                    JavaType.Method t = method.getMethodType();
+            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration methodDecl, ExecutionContext ctx) {
+                J.MethodDeclaration md = super.visitMethodDeclaration(methodDecl, ctx);
+                if (md.getMethodType() == null || !TypeUtils.isAssignableTo(JAVA_THROWABLE_CLASS, md.getMethodType().getDeclaringType())) {
+                    return md;
+                }
+
+                if (md.getMethodType() != null && md.getReturnTypeExpression() != null) {
+                    String sn = md.getSimpleName();
+                    JavaType rte = md.getReturnTypeExpression().getType();
+                    JavaType.Method t = md.getMethodType();
                     JavaType returnElementType = null;
                     if (rte instanceof JavaType.Array) {
                         returnElementType = ((JavaType.Array) rte).getElemType();
                     }
-                    String superClass = method.getMethodType().getDeclaringType().getSupertype().getFullyQualifiedName();
-                    if ("add1Suppressed".equals(sn) && JavaType.Primitive.Void.equals(rte) && JAVA_THROWABLE_CLASS.equals(superClass)) {
-                        method = method.withName(method.getName().withSimpleName("myAddSuppressed")).withMethodType(t.withName("myAddSuppressed"));
+                    if ("add1Suppressed".equals(sn) && JavaType.Primitive.Void.equals(rte)) {
+                        md = md.withName(md.getName().withSimpleName("myAddSuppressed")).withMethodType(t.withName("myAddSuppressed"));
                     }
-
-                    if ("get1Suppressed".equals(sn) && JAVA_THROWABLE_CLASS.equals(returnElementType.toString()) && JAVA_THROWABLE_CLASS.equals(superClass)) {
-                        method = method.withName(method.getName().withSimpleName("myGetSuppressed")).withMethodType(t.withName("myGetSuppressed"));
+                    if ("get1Suppressed".equals(sn) && JAVA_THROWABLE_CLASS.equals(returnElementType.toString())) {
+                        md = md.withName(md.getName().withSimpleName("myGetSuppressed")).withMethodType(t.withName("myGetSuppressed"));
                     }
                 }
-                return (J.MethodDeclaration) super.visitMethodDeclaration(method, ctx);
+                return md;
             }
 
             @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                if (method.getMethodType() != null) {
-                    String superClass = method.getMethodType().getDeclaringType().getSupertype().getFullyQualifiedName();
-                    if (METHOD_ADDSUPPRESSED.matches(method) && "java.lang.Throwable".equals(superClass)) {
-                        method = method.withName(method.getName().withSimpleName("myAddSuppressed"));
-                    } else if (METHOD_GETSUPPRESSED.matches(method) && "java.lang.Throwable".equals(superClass)) {
-                        method = method.withName(method.getName().withSimpleName("myGetSuppressed"));
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation methodInv, ExecutionContext ctx) {
+                J.MethodInvocation mi = super.visitMethodInvocation(methodInv, ctx);
+                if (mi.getMethodType() != null) {
+                    String superClass = mi.getMethodType().getDeclaringType().getSupertype().getFullyQualifiedName();
+                    if (METHOD_ADDSUPPRESSED.matches(mi) && "java.lang.Throwable".equals(superClass)) {
+                        mi = mi.withName(mi.getName().withSimpleName("myAddSuppressed"));
+                    } else if (METHOD_GETSUPPRESSED.matches(mi) && "java.lang.Throwable".equals(superClass)) {
+                        mi = mi.withName(mi.getName().withSimpleName("myGetSuppressed"));
                     }
                 }
-                return super.visitMethodInvocation(method, ctx);
+                return mi;
             }
         };
     }
