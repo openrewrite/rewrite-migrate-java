@@ -54,10 +54,15 @@ public class JpaCacheProperties extends Recipe {
 class SharedDataHolder {
     boolean sharedCacheModePropertyUnspecified;
     boolean sharedCacheModeElementUnspecified;
+
     @Nullable Xml.Tag sharedCacheModeElement;
+
     @Nullable Xml.Tag propertiesElement;
+
     @Nullable Xml.Tag sharedCacheModeProperty;
+
     @Nullable Xml.Tag openJPACacheProperty;
+
     @Nullable Xml.Tag eclipselinkCacheProperty;
 
     // Flag in the following conditions:
