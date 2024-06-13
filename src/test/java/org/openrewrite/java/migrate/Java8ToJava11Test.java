@@ -23,7 +23,6 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-
 import static org.openrewrite.java.Assertions.java;
 
 class Java8ToJava11Test implements RewriteTest {
@@ -36,19 +35,6 @@ class Java8ToJava11Test implements RewriteTest {
             .activateRecipes("org.openrewrite.java.migrate.Java8toJava11",
               "org.openrewrite.java.migrate.IBMJDKtoOracleJDK"));
     }
-
-    //language=java
-    String Krb5LoginModuleClass = """
-      
-       package com.ibm.security.auth.module;
-
-       public class Krb5LoginModule {
-
-        public void login() {
-        }
-
-       }
-      """;
 
     @DocumentExample
     @Test
@@ -127,32 +113,32 @@ class Java8ToJava11Test implements RewriteTest {
     void Krb5LoginModuleTest() {
         //language=java
         rewriteRun(
-          java(Krb5LoginModuleClass),
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn("""
+            package com.ibm.security.auth.module;
+            public class Krb5LoginModule {
+                public void login() {
+                }
+            }
+            """)),
           java(
             """
-              package com.ibm.test;
-                
               import com.ibm.security.auth.module.Krb5LoginModule;
-                
-              public class TestClass {
-                
-                 public void testClass() {
-                    Krb5LoginModule krb = new Krb5LoginModule();
-                    krb.login();
-                 }   
+
+              class TestClass {
+                  public void testClass() {
+                      Krb5LoginModule krb = new Krb5LoginModule();
+                      krb.login();
+                  }
               }
               """,
             """
-              package com.ibm.test;
-
               import com.sun.security.auth.module.Krb5LoginModule;
 
-              public class TestClass {
-
-                 public void testClass() {
-                    Krb5LoginModule krb = new Krb5LoginModule();
-                    krb.login();
-                 }
+              class TestClass {
+                  public void testClass() {
+                      Krb5LoginModule krb = new Krb5LoginModule();
+                      krb.login();
+                  }
               }
               """
           )
