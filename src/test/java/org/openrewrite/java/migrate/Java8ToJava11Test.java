@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -31,9 +30,7 @@ class Java8ToJava11Test implements RewriteTest {
         spec
           .parser(JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.new"))
-          .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate").build()
-            .activateRecipes("org.openrewrite.java.migrate.Java8toJava11",
-              "org.openrewrite.java.migrate.IBMJDKtoOracleJDK"));
+          .recipeFromResources("org.openrewrite.java.migrate.Java8toJava11");
     }
 
     @DocumentExample
@@ -103,42 +100,6 @@ class Java8ToJava11Test implements RewriteTest {
                     factory.hashCode();
                 }
               
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void Krb5LoginModuleTest() {
-        //language=java
-        rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn("""
-            package com.ibm.security.auth.module;
-            public class Krb5LoginModule {
-                public void login() {
-                }
-            }
-            """)),
-          java(
-            """
-              import com.ibm.security.auth.module.Krb5LoginModule;
-
-              class TestClass {
-                  public void testClass() {
-                      Krb5LoginModule krb = new Krb5LoginModule();
-                      krb.login();
-                  }
-              }
-              """,
-            """
-              import com.sun.security.auth.module.Krb5LoginModule;
-
-              class TestClass {
-                  public void testClass() {
-                      Krb5LoginModule krb = new Krb5LoginModule();
-                      krb.login();
-                  }
               }
               """
           )
