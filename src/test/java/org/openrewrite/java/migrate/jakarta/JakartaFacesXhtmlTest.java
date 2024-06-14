@@ -72,8 +72,8 @@ class JakartaFacesXhtmlTest implements RewriteTest {
                       xmlns:h="jakarta.faces.html"
                       xmlns:ui="jakarta.faces.facelets"
                       xmlns:c="jakarta.tags.core"
-                      xmlns:p="http://primefaces.org/ui"
-                      xmlns:pe="http://primefaces.org/ui/extensions">
+                      xmlns:p="primefaces"
+                      xmlns:pe="primefaces.extensions">
               <script src="https://www.gstatic.com/charts/loader.js"></script>
               <p:outputPanel id="container" layout="block">
                   <h:panelGrid columns="4">
@@ -144,8 +144,8 @@ class JakartaFacesXhtmlTest implements RewriteTest {
                       xmlns:pt="jakarta.faces.passthrough"
                       xmlns:fn="jakarta.tags.functions"
                       xmlns:cc="jakarta.faces.composite"
-                      xmlns:p="http://primefaces.org/ui"
-                      xmlns:pe="http://primefaces.org/ui/extensions">
+                      xmlns:p="primefaces"
+                      xmlns:pe="primefaces.extensions">
               <script src="https://www.gstatic.com/charts/loader.js"></script>
               <div pt:id="container">
                   <h:panelGrid columns="4">
