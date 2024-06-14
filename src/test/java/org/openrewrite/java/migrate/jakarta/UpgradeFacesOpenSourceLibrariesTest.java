@@ -51,7 +51,7 @@ class UpgradeFacesOpenSourceLibrariesTest implements RewriteTest {
               </project>
               """,
             spec -> spec.after(actual -> {
-                String version = Pattern.compile("<version>(13\\.0\\.\\d+)</version>")
+                String version = Pattern.compile("<version>(14\\.0\\.\\d+)</version>")
                   .matcher(actual).results().reduce((a, b) -> b).orElseThrow().group(1);
                 return """
                   <?xml version="1.0" encoding="UTF-8"?>
