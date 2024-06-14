@@ -1,5 +1,5 @@
 #
-# Copyright 2022 the original author or authors.
+# Copyright 2024 the original author or authors.
 # <p>
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -66,6 +66,7 @@ recipeList:
   - org.openrewrite.java.migrate.InternalBindContextFactory
   - org.openrewrite.java.migrate.RemovedSecurityManagerMethods
   - org.openrewrite.java.migrate.UpgradePluginsForJava11
+  - org.openrewrite.java.migrate.RemovedPolicy
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -235,4 +236,16 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.sun.xml.internal.bind.v2.ContextFactory
       newFullyQualifiedTypeName: com.sun.xml.bind.v2.ContextFactory
+      ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedPolicy
+displayName: Replace `javax.security.auth.Policy` with `java.security.Policy`
+description: The `javax.security.auth.Policy` class is not available from Java SE 11 onwards.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.security.auth.Policy
+      newFullyQualifiedTypeName: java.security.Policy
       ignoreDefinition: true
