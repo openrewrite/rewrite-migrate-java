@@ -29,6 +29,12 @@ develocity {
             fileFingerprints = true
         }
 
+        publishing {
+            onlyIf {
+                authenticated
+            }
+        }
+
         uploadInBackground = !isCiServer
     }
 }
