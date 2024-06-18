@@ -27,7 +27,6 @@ import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
-import org.openrewrite.java.dependencies.RemoveDependency;
 
 
 class IBMSemeruTest implements RewriteTest {
@@ -416,12 +415,10 @@ class IBMSemeruTest implements RewriteTest {
             """
               plugins {
                   id 'java-library'
-              }
-                            
+              }                       
               repositories {
                   mavenCentral()
-              }
-                            
+              }                           
               dependencies {
                   implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
                       exclude group: "junit"
@@ -433,12 +430,10 @@ class IBMSemeruTest implements RewriteTest {
             """
               plugins {
                   id 'java-library'
-              }
-                            
+              }                           
               repositories {
                   mavenCentral()
-              }
-                            
+              }                          
               dependencies {
                   implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
                       exclude group: "junit"
@@ -579,12 +574,10 @@ class IBMSemeruTest implements RewriteTest {
             """
               plugins {
                   id 'java-library'
-              }
-                            
+              }                         
               repositories {
                   mavenCentral()
-              }
-                            
+              }                        
               dependencies {
                   implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
                       exclude group: "junit"
@@ -597,12 +590,10 @@ class IBMSemeruTest implements RewriteTest {
             """
               plugins {
                   id 'java-library'
-              }
-                            
+              }                           
               repositories {
                   mavenCentral()
-              }
-                            
+              }                         
               dependencies {
                   implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
                       exclude group: "junit"
@@ -655,12 +646,10 @@ class IBMSemeruTest implements RewriteTest {
             """
               plugins {
                   id 'java-library'
-              }
-                            
+              }                          
               repositories {
                   mavenCentral()
-              }
-                            
+              }                            
               dependencies {
                   implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
                       exclude group: "junit"
