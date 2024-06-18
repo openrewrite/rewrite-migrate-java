@@ -116,12 +116,10 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedJavaXMLWSModuleProvided
-displayName: Do not use `java.xml.ws` module in application
-description: The `java.xml.ws` module was removed in Java11.
-  Applications packaging their own JAX-WS implementation will need to update their packaged JAX-WS implementation with a Java 11 compatible version that packages the removed APIs along with the implementation.
-  Another solution is to switch to the Liberty default JAX-WS implementation. This can be done by adding the jaxws-2.2 feature to the Liberty server.xml configuration file and remove any JAX-WS 
-  implementations previously packaged  to avoid class-loading issues.
-  This recipe removes the module from the application by removing groupId:`javax.xml.ws` and artifactId 'jaxws-api` from both the maven and gradle build files.
+displayName: Do not use `java.xml.ws` module in WebSphere Liberty
+description:
+  The `java.xml.ws` module was removed in Java11. Websphere Liberty provides its own implementation of the module, which can be used by specifying the `jaxws-2.2` feature in the server.xml file.
+  This recipe removes the `javax.xml.ws` module from the application's build dependency in favor of the Websphere Liberty implementation to avoid class loading issues.
 tags:
   - java11
 recipeList:
@@ -131,13 +129,11 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedJaxBModuleProvided
-displayName: Do not use `java.xml.bind` and `java.activation` module in application
+displayName: Do not use `java.xml.bind` and `java.activation` modules in WebSphere Liberty
 description:
   The `java.xml.bind` and `java.activation` module were removed in Java11.
-  Applications packaging their own JAXB implementation will need to update their packaged JAXB implementation with a Java 11 compatible version that packages the removed APIs along with the implementation.
-  Another solution is to switch to the Liberty default JAXB implementation. This can be done by adding the jaxb-2.2 feature to the Liberty server.xml 
-  configuration file and remove any JAXB implementation previously packaged to avoid class-loading issues.
-  This recipe removes the module from the application by removing groupId:`javax.xml.bind` and artifactId 'jaxb-api` and groupId:`javax.activation` and artifactId 'activation` from both the maven and gradle build files.
+  Websphere Liberty provides its own implementation of the module, which can be used by specifying the `jaxws-2.2` feature in the server.xml file.
+  This recipe removes the `javax.xml.bind` and `javax.activation` modules from the application's build dependency in favor of the Websphere Liberty implementation to avoid class loading issues.
 tags:
   - java11
 recipeList:
