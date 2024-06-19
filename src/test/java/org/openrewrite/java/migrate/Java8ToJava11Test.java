@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+
 import static org.openrewrite.java.Assertions.java;
 
 class Java8ToJava11Test implements RewriteTest {
@@ -32,8 +33,22 @@ class Java8ToJava11Test implements RewriteTest {
           .parser(JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.new"))
           .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate").build()
-            .activateRecipes("org.openrewrite.java.migrate.Java8toJava11"));
+            .activateRecipes("org.openrewrite.java.migrate.Java8toJava11",
+              "org.openrewrite.java.migrate.IBMJDKtoOracleJDK"));
     }
+
+    //language=java
+    String Krb5LoginModuleClass = """
+      
+       package com.ibm.security.auth.module;
+
+       public class Krb5LoginModule {
+
+        public void login() {
+        }
+
+       }
+      """;
 
     @DocumentExample
     @Test
@@ -61,7 +76,7 @@ class Java8ToJava11Test implements RewriteTest {
           java(
             """
               import com.sun.xml.internal.bind.v2.ContextFactory;
-                 
+              
               class Foo2 {
                 void bar() {
                     ContextFactory factory = null;
@@ -71,7 +86,7 @@ class Java8ToJava11Test implements RewriteTest {
               """,
             """
               import com.sun.xml.bind.v2.ContextFactory;
-                 
+              
               class Foo2 {
                 void bar() {
                     ContextFactory factory = null;
@@ -83,27 +98,64 @@ class Java8ToJava11Test implements RewriteTest {
           java(
             """
               import com.sun.xml.internal.bind.v2.*;
-                
+              
               class Foo3 {
                 void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
-                
+              
               }
               """,
             """
               import com.sun.xml.bind.v2.ContextFactory;
               import com.sun.xml.internal.bind.v2.*;
-                
+              
               class Foo3 {
                 void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
-                
+              
               }
               """
           )
         );
-    }}
+    }
+
+    @Test
+    void Krb5LoginModuleTest() {
+        //language=java
+        rewriteRun(
+          java(Krb5LoginModuleClass),
+          java(
+            """
+              package com.ibm.test;
+                
+              import com.ibm.security.auth.module.Krb5LoginModule;
+                
+              public class TestClass {
+                
+                 public void testClass() {
+                    Krb5LoginModule krb = new Krb5LoginModule();
+                    krb.login();
+                 }   
+              }
+              """,
+            """
+              package com.ibm.test;
+
+              import com.sun.security.auth.module.Krb5LoginModule;
+
+              public class TestClass {
+
+                 public void testClass() {
+                    Krb5LoginModule krb = new Krb5LoginModule();
+                    krb.login();
+                 }
+              }
+              """
+          )
+        );
+    }
+}

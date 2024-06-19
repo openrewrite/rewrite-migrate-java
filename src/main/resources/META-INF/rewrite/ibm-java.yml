@@ -1,5 +1,5 @@
 #
-# Copyright 2023 the original author or authors.
+# Copyright 2024 the original author or authors.
 # <p>
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,18 @@ recipeList:
   - org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocol
   - org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalSslProvider
   - org.openrewrite.java.migrate.JREDoNotUseSunNetSslAPIs
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.IBMJDKtoOracleJDK
+displayName: Migrate from IBM Runtimes to Oracle Runtimes
+description: >
+  This recipe will apply changes commonly needed when upgrading Java versions. The solutions provided in this list are
+  solutions necessary for migrating from IBM Runtimes to Oracle Runtimes.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.migrate.Krb5LoginModuleClass
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -87,3 +99,15 @@ recipeList:
       oldPackageName: com.sun.net.ssl
       newPackageName: javax.net.ssl
       recursive: false
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.Krb5LoginModuleClass
+displayName: Use `com.sun.security.auth.module.Krb5LoginModule` instead of `com.ibm.security.auth.module.Krb5LoginModule`
+description: Do not use the `com.ibm.security.auth.module.Krb5LoginModule` class.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.ibm.security.auth.module.Krb5LoginModule
+      newFullyQualifiedTypeName: com.sun.security.auth.module.Krb5LoginModule
+      ignoreDefinition: true
