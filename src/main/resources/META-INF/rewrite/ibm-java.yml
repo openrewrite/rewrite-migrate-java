@@ -27,6 +27,8 @@ recipeList:
   - org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocol
   - org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalSslProvider
   - org.openrewrite.java.migrate.JREDoNotUseSunNetSslAPIs
+  - org.openrewrite.java.migrate.RemovedJavaXMLWSModuleProvided
+  - org.openrewrite.java.migrate.RemovedJaxBModuleProvided
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -111,3 +113,33 @@ recipeList:
       oldFullyQualifiedTypeName: com.ibm.security.auth.module.Krb5LoginModule
       newFullyQualifiedTypeName: com.sun.security.auth.module.Krb5LoginModule
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedJavaXMLWSModuleProvided
+displayName: Do not use `java.xml.ws` module in WebSphere Liberty
+description:
+  The `java.xml.ws` module was removed in Java11. Websphere Liberty provides its own implementation of the module, which can be used by specifying the `jaxws-2.2` feature in the server.xml file.
+  This recipe removes the `javax.xml.ws` module from the application's build dependency in favor of the Websphere Liberty implementation to avoid class loading issues.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: javax.xml.ws
+      artifactId: jaxws-api
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedJaxBModuleProvided
+displayName: Do not use `java.xml.bind` and `java.activation` modules in WebSphere Liberty
+description:
+  The `java.xml.bind` and `java.activation` modules were removed in Java11.
+  Websphere Liberty provides its own implementation of the modules, which can be used by specifying the `jaxb-2.2` feature in the server.xml file.
+  This recipe removes the `javax.xml.bind` and `javax.activation` modules from the application's build dependency in favor of the Websphere Liberty implementation to avoid class loading issues.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: javax.xml.bind
+      artifactId: jaxb-api
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: javax.activation
+      artifactId: activation
