@@ -480,4 +480,60 @@ class AddJaxbDependenciesTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void dontAddWhenTransientPresent() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          java(XML_ELEMENT_STUB),
+          java(CLASS_USING_XML_BIND),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+
+              repositories {
+                  mavenCentral()
+              }
+              
+              dependencies {
+                  implementation("jakarta.xml.bind:jakarta.xml.bind-api:2.3.3")
+                  implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.3'
+              }
+              """
+          ),
+          pomXml(
+            //language=xml
+            """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.springframework.samples</groupId>
+                  <artifactId>spring-petclinic</artifactId>
+                  <version>2.7.3</version>
+
+                  <parent>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-parent</artifactId>
+                    <version>2.7.3</version>
+                  </parent>
+                  <name>petclinic</name>
+
+                  <properties>
+                    <java.version>11</java.version>
+                  </properties>
+
+                  <dependencies>
+                    <dependency>
+                      <groupId>org.springframework.boot</groupId>
+                      <artifactId>spring-boot-starter-data-jpa</artifactId>
+                    </dependency>
+                  </dependencies>
+                </project>
+              """
+          )
+        );
+    }
+
 }
