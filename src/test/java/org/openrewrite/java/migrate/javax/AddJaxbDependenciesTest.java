@@ -507,27 +507,27 @@ class AddJaxbDependenciesTest implements RewriteTest {
           pomXml(
             //language=xml
             """
-                <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>org.springframework.samples</groupId>
-                  <artifactId>spring-petclinic</artifactId>
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>org.springframework.samples</groupId>
+                <artifactId>spring-petclinic</artifactId>
+                <version>2.7.3</version>
+                <parent>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-parent</artifactId>
                   <version>2.7.3</version>
-
-                  <parent>
+                </parent>
+                <name>petclinic</name>
+                <properties>
+                  <java.version>11</java.version>
+                </properties>
+                <dependencies>
+                  <dependency>
                     <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-parent</artifactId>
-                    <version>2.7.3</version>
-                  </parent>
-                  <name>petclinic</name>
-
-                  <properties>
-                    <java.version>11</java.version>
-                  </properties>
-
-                  <dependencies>
-                    <dependency>
-                      <groupId>org.springframework.boot</groupId>
-                      <artifactId>spring-boot-starter-data-jpa</artifactId>
+                    <artifactId>spring-boot-starter-data-jpa</artifactId>
+                  </dependency>
+                </dependencies>
+              </project>
                     </dependency>
                   </dependencies>
                 </project>
