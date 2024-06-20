@@ -94,7 +94,7 @@ class AddJaxbDependenciesTest implements RewriteTest {
                   
                   dependencies {
                       implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
-                    
+                  
                       runtimeOnly "org.glassfish.jaxb:jaxb-runtime:%s"
                   }
                   """.formatted(bindApiVersion, runtimeVersion);
@@ -528,12 +528,8 @@ class AddJaxbDependenciesTest implements RewriteTest {
                   </dependency>
                 </dependencies>
               </project>
-                    </dependency>
-                  </dependencies>
-                </project>
               """
           )
         );
     }
-
 }
