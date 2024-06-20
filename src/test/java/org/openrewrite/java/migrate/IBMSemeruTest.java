@@ -167,6 +167,7 @@ class IBMSemeruTest implements RewriteTest {
           )
         );
     }
+
     @Test
     void fullyQualifiedPackage() {
         rewriteRun(
@@ -292,119 +293,121 @@ class IBMSemeruTest implements RewriteTest {
             ), 6)
         );
     }
+
     @Test
     void removeMavenXMLWSModuleDependency() {
         rewriteRun(
-            //language=xml
+          //language=xml
           pomXml(
-            """           
-             <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-               <modelVersion>4.0.0</modelVersion>
-               <groupId>com.mycom.myapp</groupId>
-               <artifactId>myapp</artifactId>
-               <version>2.0.0</version>
-               <packaging>war</packaging>
-               <name>MyApp</name>
-               <properties>
-                 <maven.compiler.target>1.8</maven.compiler.target>
-                 <maven.compiler.source>1.8</maven.compiler.source>
-                 <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                 <project.version>2.0.0</project.version>
-                 <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-               </properties>
-               <dependencies>
-                 <dependency>
-                   <groupId>javax</groupId>
-                   <artifactId>javaee-api</artifactId>
-                   <version>7.0</version>
-                   <scope>provided</scope>
-                 </dependency>
-                 <dependency>
-                   <groupId>com.google.code.gson</groupId>
-                   <artifactId>gson</artifactId>
-                   <version>2.10.1</version>
-                 </dependency>
-                 <dependency>
-                       <groupId>javax.xml.ws</groupId>
-                       <artifactId>jaxws-api</artifactId>
-                       <version>2.2</version>
-                 </dependency>            
-               </dependencies>
-               <build>
-                 <plugins>
-                   <plugin>
-                     <artifactId>maven-war-plugin</artifactId>
-                     <version>3.1.0</version>
-                     <configuration>
-                       <failOnMissingWebXml>false</failOnMissingWebXml>
-                       <packagingExcludes>pom.xml, src/, target/, WebContent/</packagingExcludes>
-                       <warSourceDirectory>WebContent</warSourceDirectory>
-                       <webResources>
-                         <resource>
-                           <directory>src/main/resources</directory>
-                           <targetPath>WEB-INF/classes</targetPath>
-                         </resource>
-                       </webResources>
-                     </configuration>
-                   </plugin>
-                 </plugins>
-               </build>        
-             </project>            
+            """
+              <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycom.myapp</groupId>
+                <artifactId>myapp</artifactId>
+                <version>2.0.0</version>
+                <packaging>war</packaging>
+                <name>MyApp</name>
+                <properties>
+                  <maven.compiler.target>1.8</maven.compiler.target>
+                  <maven.compiler.source>1.8</maven.compiler.source>
+                  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                  <project.version>2.0.0</project.version>
+                  <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+                </properties>
+                <dependencies>
+                  <dependency>
+                    <groupId>javax</groupId>
+                    <artifactId>javaee-api</artifactId>
+                    <version>7.0</version>
+                    <scope>provided</scope>
+                  </dependency>
+                  <dependency>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                    <version>2.10.1</version>
+                  </dependency>
+                  <dependency>
+                        <groupId>javax.xml.ws</groupId>
+                        <artifactId>jaxws-api</artifactId>
+                        <version>2.2</version>
+                  </dependency>
+                </dependencies>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <artifactId>maven-war-plugin</artifactId>
+                      <version>3.1.0</version>
+                      <configuration>
+                        <failOnMissingWebXml>false</failOnMissingWebXml>
+                        <packagingExcludes>pom.xml, src/, target/, WebContent/</packagingExcludes>
+                        <warSourceDirectory>WebContent</warSourceDirectory>
+                        <webResources>
+                          <resource>
+                            <directory>src/main/resources</directory>
+                            <targetPath>WEB-INF/classes</targetPath>
+                          </resource>
+                        </webResources>
+                      </configuration>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
               """,
             """
-             <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-               <modelVersion>4.0.0</modelVersion>
-               <groupId>com.mycom.myapp</groupId>
-               <artifactId>myapp</artifactId>
-               <version>2.0.0</version>
-               <packaging>war</packaging>
-               <name>MyApp</name>
-               <properties>
-                 <maven.compiler.target>1.8</maven.compiler.target>
-                 <maven.compiler.source>1.8</maven.compiler.source>
-                 <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                 <project.version>2.0.0</project.version>
-                 <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-               </properties>
-               <dependencies>
-                 <dependency>
-                   <groupId>javax</groupId>
-                   <artifactId>javaee-api</artifactId>
-                   <version>7.0</version>
-                   <scope>provided</scope>
-                 </dependency>
-                 <dependency>
-                   <groupId>com.google.code.gson</groupId>
-                   <artifactId>gson</artifactId>
-                   <version>2.10.1</version>
-                 </dependency>
-               </dependencies>
-               <build>
-                 <plugins>
-                   <plugin>
-                     <artifactId>maven-war-plugin</artifactId>
-                     <version>3.1.0</version>
-                     <configuration>
-                       <failOnMissingWebXml>false</failOnMissingWebXml>
-                       <packagingExcludes>pom.xml, src/, target/, WebContent/</packagingExcludes>
-                       <warSourceDirectory>WebContent</warSourceDirectory>
-                       <webResources>
-                         <resource>
-                           <directory>src/main/resources</directory>
-                           <targetPath>WEB-INF/classes</targetPath>
-                         </resource>
-                       </webResources>
-                     </configuration>
-                   </plugin>
-                 </plugins>
-               </build>        
-             </project>   
+              <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycom.myapp</groupId>
+                <artifactId>myapp</artifactId>
+                <version>2.0.0</version>
+                <packaging>war</packaging>
+                <name>MyApp</name>
+                <properties>
+                  <maven.compiler.target>1.8</maven.compiler.target>
+                  <maven.compiler.source>1.8</maven.compiler.source>
+                  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                  <project.version>2.0.0</project.version>
+                  <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+                </properties>
+                <dependencies>
+                  <dependency>
+                    <groupId>javax</groupId>
+                    <artifactId>javaee-api</artifactId>
+                    <version>7.0</version>
+                    <scope>provided</scope>
+                  </dependency>
+                  <dependency>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                    <version>2.10.1</version>
+                  </dependency>
+                </dependencies>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <artifactId>maven-war-plugin</artifactId>
+                      <version>3.1.0</version>
+                      <configuration>
+                        <failOnMissingWebXml>false</failOnMissingWebXml>
+                        <packagingExcludes>pom.xml, src/, target/, WebContent/</packagingExcludes>
+                        <warSourceDirectory>WebContent</warSourceDirectory>
+                        <webResources>
+                          <resource>
+                            <directory>src/main/resources</directory>
+                            <targetPath>WEB-INF/classes</targetPath>
+                          </resource>
+                        </webResources>
+                      </configuration>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
               """
           )
         );
     }
+
     @Test
     void gradleDependencyXMLWSModuleExclusion() {
         rewriteRun(
@@ -415,10 +418,10 @@ class IBMSemeruTest implements RewriteTest {
             """
               plugins {
                   id 'java-library'
-              }                       
+              }
               repositories {
                   mavenCentral()
-              }                           
+              }
               dependencies {
                   implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
                       exclude group: "junit"
@@ -430,10 +433,10 @@ class IBMSemeruTest implements RewriteTest {
             """
               plugins {
                   id 'java-library'
-              }                           
+              }
               repositories {
                   mavenCentral()
-              }                          
+              }
               dependencies {
                   implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
                       exclude group: "junit"
@@ -450,115 +453,115 @@ class IBMSemeruTest implements RewriteTest {
         rewriteRun(
           //language=xml
           pomXml(
-            """           
-             <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-               <modelVersion>4.0.0</modelVersion>
-               <groupId>com.mycom.myapp</groupId>
-               <artifactId>myapp</artifactId>
-               <version>2.0.0</version>
-               <packaging>war</packaging>
-               <name>MyApp</name>
-               <properties>
-                 <maven.compiler.target>1.8</maven.compiler.target>
-                 <maven.compiler.source>1.8</maven.compiler.source>
-                 <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                 <project.version>2.0.0</project.version>
-                 <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-               </properties>
-               <dependencies>
-                 <dependency>
-                   <groupId>javax</groupId>
-                   <artifactId>javaee-api</artifactId>
-                   <version>7.0</version>
-                   <scope>provided</scope>
-                 </dependency>
-                 <dependency>
-                   <groupId>com.google.code.gson</groupId>
-                   <artifactId>gson</artifactId>
-                   <version>2.10.1</version>
-                 </dependency>
-                 <dependency>
-                       <groupId>javax.xml.bind</groupId>
-                       <artifactId>jaxb-api</artifactId>
-                        <version>2.3.1</version>
-                 </dependency>            
-                 <dependency>
-                       <groupId>javax.activation</groupId>
-                       <artifactId>activation</artifactId>
-                        <version>1.1.1</version>
-                 </dependency>            
-               </dependencies>
-               <build>
-                 <plugins>
-                   <plugin>
-                     <artifactId>maven-war-plugin</artifactId>
-                     <version>3.1.0</version>
-                     <configuration>
-                       <failOnMissingWebXml>false</failOnMissingWebXml>
-                       <packagingExcludes>pom.xml, src/, target/, WebContent/</packagingExcludes>
-                       <warSourceDirectory>WebContent</warSourceDirectory>
-                       <webResources>
-                         <resource>
-                           <directory>src/main/resources</directory>
-                           <targetPath>WEB-INF/classes</targetPath>
-                         </resource>
-                       </webResources>
-                     </configuration>
-                   </plugin>
-                 </plugins>
-               </build>        
-             </project>            
+            """
+              <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycom.myapp</groupId>
+                <artifactId>myapp</artifactId>
+                <version>2.0.0</version>
+                <packaging>war</packaging>
+                <name>MyApp</name>
+                <properties>
+                  <maven.compiler.target>1.8</maven.compiler.target>
+                  <maven.compiler.source>1.8</maven.compiler.source>
+                  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                  <project.version>2.0.0</project.version>
+                  <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+                </properties>
+                <dependencies>
+                  <dependency>
+                    <groupId>javax</groupId>
+                    <artifactId>javaee-api</artifactId>
+                    <version>7.0</version>
+                    <scope>provided</scope>
+                  </dependency>
+                  <dependency>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                    <version>2.10.1</version>
+                  </dependency>
+                  <dependency>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                         <version>2.3.1</version>
+                  </dependency>
+                  <dependency>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>activation</artifactId>
+                         <version>1.1.1</version>
+                  </dependency>
+                </dependencies>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <artifactId>maven-war-plugin</artifactId>
+                      <version>3.1.0</version>
+                      <configuration>
+                        <failOnMissingWebXml>false</failOnMissingWebXml>
+                        <packagingExcludes>pom.xml, src/, target/, WebContent/</packagingExcludes>
+                        <warSourceDirectory>WebContent</warSourceDirectory>
+                        <webResources>
+                          <resource>
+                            <directory>src/main/resources</directory>
+                            <targetPath>WEB-INF/classes</targetPath>
+                          </resource>
+                        </webResources>
+                      </configuration>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
               """,
             """
-             <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-               <modelVersion>4.0.0</modelVersion>
-               <groupId>com.mycom.myapp</groupId>
-               <artifactId>myapp</artifactId>
-               <version>2.0.0</version>
-               <packaging>war</packaging>
-               <name>MyApp</name>
-               <properties>
-                 <maven.compiler.target>1.8</maven.compiler.target>
-                 <maven.compiler.source>1.8</maven.compiler.source>
-                 <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                 <project.version>2.0.0</project.version>
-                 <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-               </properties>
-               <dependencies>
-                 <dependency>
-                   <groupId>javax</groupId>
-                   <artifactId>javaee-api</artifactId>
-                   <version>7.0</version>
-                   <scope>provided</scope>
-                 </dependency>
-                 <dependency>
-                   <groupId>com.google.code.gson</groupId>
-                   <artifactId>gson</artifactId>
-                   <version>2.10.1</version>
-                 </dependency>
-               </dependencies>
-               <build>
-                 <plugins>
-                   <plugin>
-                     <artifactId>maven-war-plugin</artifactId>
-                     <version>3.1.0</version>
-                     <configuration>
-                       <failOnMissingWebXml>false</failOnMissingWebXml>
-                       <packagingExcludes>pom.xml, src/, target/, WebContent/</packagingExcludes>
-                       <warSourceDirectory>WebContent</warSourceDirectory>
-                       <webResources>
-                         <resource>
-                           <directory>src/main/resources</directory>
-                           <targetPath>WEB-INF/classes</targetPath>
-                         </resource>
-                       </webResources>
-                     </configuration>
-                   </plugin>
-                 </plugins>
-               </build>        
-             </project>   
+              <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycom.myapp</groupId>
+                <artifactId>myapp</artifactId>
+                <version>2.0.0</version>
+                <packaging>war</packaging>
+                <name>MyApp</name>
+                <properties>
+                  <maven.compiler.target>1.8</maven.compiler.target>
+                  <maven.compiler.source>1.8</maven.compiler.source>
+                  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                  <project.version>2.0.0</project.version>
+                  <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+                </properties>
+                <dependencies>
+                  <dependency>
+                    <groupId>javax</groupId>
+                    <artifactId>javaee-api</artifactId>
+                    <version>7.0</version>
+                    <scope>provided</scope>
+                  </dependency>
+                  <dependency>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                    <version>2.10.1</version>
+                  </dependency>
+                </dependencies>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <artifactId>maven-war-plugin</artifactId>
+                      <version>3.1.0</version>
+                      <configuration>
+                        <failOnMissingWebXml>false</failOnMissingWebXml>
+                        <packagingExcludes>pom.xml, src/, target/, WebContent/</packagingExcludes>
+                        <warSourceDirectory>WebContent</warSourceDirectory>
+                        <webResources>
+                          <resource>
+                            <directory>src/main/resources</directory>
+                            <targetPath>WEB-INF/classes</targetPath>
+                          </resource>
+                        </webResources>
+                      </configuration>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
               """
           )
         );
@@ -574,10 +577,10 @@ class IBMSemeruTest implements RewriteTest {
             """
               plugins {
                   id 'java-library'
-              }                         
+              }
               repositories {
                   mavenCentral()
-              }                        
+              }
               dependencies {
                   implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
                       exclude group: "junit"
@@ -590,10 +593,10 @@ class IBMSemeruTest implements RewriteTest {
             """
               plugins {
                   id 'java-library'
-              }                           
+              }
               repositories {
                   mavenCentral()
-              }                         
+              }
               dependencies {
                   implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
                       exclude group: "junit"
@@ -613,10 +616,10 @@ class IBMSemeruTest implements RewriteTest {
             """
               <project>
                 <modelVersion>4.0.0</modelVersion>
-                
+              
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
-                <version>1</version>                
+                <version>1</version>
                 <dependencies>
                   <dependency>
                     <groupId>com.google.guava</groupId>
@@ -646,10 +649,10 @@ class IBMSemeruTest implements RewriteTest {
             """
               plugins {
                   id 'java-library'
-              }                          
+              }
               repositories {
                   mavenCentral()
-              }                            
+              }
               dependencies {
                   implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
                       exclude group: "junit"
@@ -660,5 +663,4 @@ class IBMSemeruTest implements RewriteTest {
           )
         );
     }
-
 }
