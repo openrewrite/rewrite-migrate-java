@@ -242,8 +242,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedPolicy
-displayName: Use `java.security.Policy` instead of `javax.security.auth.Policy`
-description: Do not use the `javax.security.auth.Policy` class.
+displayName: Replace `javax.security.auth.Policy` with `java.security.Policy`
+description: The `javax.security.auth.Policy` class is not available from Java SE 11 onwards.
 tags:
   - java11
 recipeList:

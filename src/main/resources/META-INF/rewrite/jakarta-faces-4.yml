@@ -111,6 +111,14 @@ recipeList:
       replace: "jakarta.faces"
       filePattern: '**/*.xhtml'
   - org.openrewrite.text.FindAndReplace:
+      find: "http://primefaces.org/ui/extensions"
+      replace: "primefaces.extensions"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
+      find: "http://primefaces.org/ui"
+      replace: "primefaces"
+      filePattern: '**/*.xhtml'
+  - org.openrewrite.text.FindAndReplace:
       find: javax.
       replace: jakarta.
       filePattern: '**/*.xhtml'
@@ -477,7 +485,7 @@ recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.primefaces
       artifactId: primefaces
-      newVersion: 13.0.x
+      newVersion: 14.0.x
   - org.openrewrite.maven.ChangeDependencyClassifier:
       groupId: org.primefaces.extensions
       artifactId: primefaces-extensions
@@ -485,7 +493,7 @@ recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.primefaces.extensions
       artifactId: primefaces-extensions
-      newVersion: 13.0.x
+      newVersion: 14.0.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.omnifaces
       artifactId: omnifaces
