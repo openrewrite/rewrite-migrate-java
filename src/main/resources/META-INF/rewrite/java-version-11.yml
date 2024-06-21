@@ -266,3 +266,15 @@ recipeList:
       oldFullyQualifiedTypeName: sun.misc.BASE64Decoder
       newFullyQualifiedTypeName: java.util.Base64.Decoder
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.ThreadStopDestroy
+displayName: Replace `java.util.Base64.Encoder/Decoder` with `sun.misc.BASE64Encoder/Decoder`
+description: Replace usages of `sun.misc.BASE64Encoder/Decoder` with `java.util.Base64.Encoder/Decoder`.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: java.lang.Thread destroy()
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: java.lang.Thread stop(java.lang.Throwable)
