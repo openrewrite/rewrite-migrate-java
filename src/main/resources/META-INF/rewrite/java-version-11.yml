@@ -269,8 +269,9 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.ThreadStopDestroy
-displayName: Replace `java.util.Base64.Encoder/Decoder` with `sun.misc.BASE64Encoder/Decoder`
-description: Replace usages of `sun.misc.BASE64Encoder/Decoder` with `java.util.Base64.Encoder/Decoder`.
+displayName: Remove `java.lang.Thread.destroy()` and `java.lang.Thread.stop(java.lang.Throwable)` methods
+description: `java.lang.Thread.destroy()` method was never implemented, and the `java.lang.Thread.stop(java.lang.Throwable)` method has been unusable since Java SE 8.
+              This recipe removes the usage of this methods in your application.
 tags:
   - java11
 recipeList:
