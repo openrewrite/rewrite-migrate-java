@@ -29,6 +29,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -46,7 +47,7 @@ import static org.openrewrite.Tree.randomId;
 public class UseTextBlocks extends Recipe {
     @Option(displayName = "Whether to convert strings without newlines (the default value is true).",
             description = "Whether or not strings without newlines should be converted to text block when processing code. " +
-                    "The default value is true.",
+                          "The default value is true.",
             example = "true",
             required = false)
     @Nullable
@@ -77,7 +78,11 @@ public class UseTextBlocks extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new HasJavaVersion("17", true), new JavaVisitor<ExecutionContext>() {
+        TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
+                Preconditions.not(new KotlinFileChecker<>()),
+                new HasJavaVersion("17", true).getVisitor()
+        );
+        return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitBinary(J.Binary binary, ExecutionContext ctx) {
                 List<J.Literal> stringLiterals = new ArrayList<>();
@@ -177,8 +182,8 @@ public class UseTextBlocks extends Recipe {
 
     private static boolean allLiterals(Expression exp) {
         return isRegularStringLiteral(exp) || exp instanceof J.Binary
-                && ((J.Binary) exp).getOperator() == J.Binary.Type.Addition
-                && allLiterals(((J.Binary) exp).getLeft()) && allLiterals(((J.Binary) exp).getRight());
+                                              && ((J.Binary) exp).getOperator() == J.Binary.Type.Addition
+                                              && allLiterals(((J.Binary) exp).getLeft()) && allLiterals(((J.Binary) exp).getRight());
     }
 
     private static boolean flatAdditiveStringLiterals(Expression expression,
@@ -193,7 +198,7 @@ public class UseTextBlocks extends Recipe {
             concatenationSb.append(b.getPrefix().getWhitespace()).append("-");
             concatenationSb.append(b.getPadding().getOperator().getBefore().getWhitespace()).append("-");
             return flatAdditiveStringLiterals(b.getLeft(), stringLiterals, contentSb, concatenationSb)
-                    && flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
+                   && flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
         } else if (isRegularStringLiteral(expression)) {
             J.Literal l = (J.Literal) expression;
             stringLiterals.add(l);
@@ -209,8 +214,8 @@ public class UseTextBlocks extends Recipe {
         if (expr instanceof J.Literal) {
             J.Literal l = (J.Literal) expr;
             return TypeUtils.isString(l.getType()) &&
-                    l.getValueSource() != null &&
-                    !l.getValueSource().startsWith("\"\"\"");
+                   l.getValueSource() != null &&
+                   !l.getValueSource().startsWith("\"\"\"");
         }
         return false;
     }
@@ -232,7 +237,7 @@ public class UseTextBlocks extends Recipe {
         int spaceCount = tabAndSpaceCounts[1];
         if (useTabCharacter) {
             return StringUtils.repeat("\t", tabCount) +
-                    StringUtils.repeat(" ", spaceCount);
+                   StringUtils.repeat(" ", spaceCount);
         } else {
             // replace tab with spaces if the style is using spaces
             return StringUtils.repeat(" ", tabCount * tabSize + spaceCount);
