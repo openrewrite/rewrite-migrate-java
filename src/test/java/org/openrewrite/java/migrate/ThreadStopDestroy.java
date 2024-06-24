@@ -39,7 +39,6 @@ class ThreadStopDestroy implements RewriteTest {
             """
               class Foo {
                   void bar() {
-                      // I know, I know, but it's a legacy codebase and we're not ready to migrate yet
                       Thread.currentThread().stop();
                   }
               }
