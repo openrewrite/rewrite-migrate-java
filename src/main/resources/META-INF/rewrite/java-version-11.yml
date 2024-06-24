@@ -67,6 +67,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedSecurityManagerMethods
   - org.openrewrite.java.migrate.UpgradePluginsForJava11
   - org.openrewrite.java.migrate.RemovedPolicy
+  - org.openrewrite.java.migrate.ThreadStopDestroy
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -249,3 +250,16 @@ recipeList:
       oldFullyQualifiedTypeName: javax.security.auth.Policy
       newFullyQualifiedTypeName: java.security.Policy
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.ThreadStopDestroy
+displayName: Remove `java.lang.Thread.destroy()` and `java.lang.Thread.stop(java.lang.Throwable)` methods
+description: The `java.lang.Thread.destroy()` method was never implemented, and the `java.lang.Thread.stop(java.lang.Throwable)` method has been unusable since Java SE 8.
+  This recipe removes the usage of this methods in your application.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: java.lang.Thread destroy()
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: java.lang.Thread stop(java.lang.Throwable)
