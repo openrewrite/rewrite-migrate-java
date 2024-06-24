@@ -29,6 +29,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -77,7 +78,11 @@ public class UseTextBlocks extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new HasJavaVersion("17", true), new JavaVisitor<ExecutionContext>() {
+        TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
+                Preconditions.not(new KotlinFileChecker<>()),
+                new HasJavaVersion("17", true).getVisitor()
+        );
+        return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitBinary(J.Binary binary, ExecutionContext ctx) {
                 List<J.Literal> stringLiterals = new ArrayList<>();
