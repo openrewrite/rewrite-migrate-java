@@ -23,7 +23,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
-class ThreadStopDestroy implements RewriteTest {
+class ThreadStopDestroyTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResources("org.openrewrite.java.migrate.ThreadStopDestroy")
@@ -32,7 +32,7 @@ class ThreadStopDestroy implements RewriteTest {
 
     @Test
     @DocumentExample
-    void retainCommentIfPresent() {
+    void retainThreadStop() {
         rewriteRun(
           //language=java
           java(
@@ -40,6 +40,7 @@ class ThreadStopDestroy implements RewriteTest {
               class Foo {
                   void bar() {
                       Thread.currentThread().stop();
+                      // We can't test removal of Thread.destroy() or stop(Throwable) on Java 17
                   }
               }
               """
