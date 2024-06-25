@@ -56,3 +56,9 @@ dependencies {
     testRuntimeOnly("jakarta.annotation:jakarta.annotation-api:1.3.5")
     testRuntimeOnly(gradleApi())
 }
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
