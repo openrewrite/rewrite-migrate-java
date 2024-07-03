@@ -125,5 +125,3 @@ recipeList:
       methodPattern: java.awt.image.ColorModel finalize()
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: java.awt.image.IndexColorModel finalize()
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
-      methodPattern: com.test.Test foo()
