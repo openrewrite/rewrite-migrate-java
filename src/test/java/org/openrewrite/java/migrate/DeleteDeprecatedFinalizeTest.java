@@ -90,4 +90,3 @@ public class DeleteDeprecatedFinalizeTest implements RewriteTest {
                """));
     }
 }
-
