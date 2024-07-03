@@ -115,7 +115,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeleteDeprecatedFinalize
 displayName: Avoid using the deprecated empty `finalize()` method in `java.desktop`
-description: The java.desktop module had a few implementations of finalize() that did nothing and has been removed. This recipe will remove these methods.
+description: The java.desktop module had a few implementations of finalize() that did nothing and have been removed. This recipe will remove these methods.
 tags:
   - java21
 recipeList:

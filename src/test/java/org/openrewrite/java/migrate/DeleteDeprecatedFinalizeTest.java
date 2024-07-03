@@ -27,7 +27,6 @@ public class DeleteDeprecatedFinalizeTest implements RewriteTest {
                
                public class Test {
                	public static void main(String[] args) {
-               		// flag
                		byte ff = (byte) 0xff;
                		byte[] r = { ff, 0, 0, ff, 0 };
                		byte[] g = { 0, ff, 0, ff, 0 };
@@ -58,7 +57,6 @@ public class DeleteDeprecatedFinalizeTest implements RewriteTest {
                
                public class Test {
                	public static void main(String[] args) {
-               		// flag
                		byte ff = (byte) 0xff;
                		byte[] r = { ff, 0, 0, ff, 0 };
                		byte[] g = { 0, ff, 0, ff, 0 };
@@ -75,3 +73,4 @@ public class DeleteDeprecatedFinalizeTest implements RewriteTest {
                """));
     }
 }
+
