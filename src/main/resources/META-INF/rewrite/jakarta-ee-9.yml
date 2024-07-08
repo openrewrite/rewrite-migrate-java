@@ -652,7 +652,7 @@ recipeList:
       oldArtifactId: javax.ws.rs-api
       newGroupId: jakarta.ws.rs
       newArtifactId: jakarta.ws.rs-api
-      version: latest.release
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
