@@ -57,9 +57,9 @@ recipeList:
   - org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
   - org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion
   - org.openrewrite.java.migrate.UpgradeBuildToJava11
-# Disabled due to null safety issues in the current implementation
-# https://github.com/openrewrite/rewrite-migrate-java/issues/250
-#  - org.openrewrite.java.migrate.util.JavaUtilAPIs
+  # Disabled due to null safety issues in the current implementation
+  # https://github.com/openrewrite/rewrite-migrate-java/issues/250
+  #  - org.openrewrite.java.migrate.util.JavaUtilAPIs
   - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
   - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
   - org.openrewrite.java.migrate.util.OptionalStreamRecipe
@@ -68,6 +68,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradePluginsForJava11
   - org.openrewrite.java.migrate.RemovedPolicy
   - org.openrewrite.java.migrate.ThreadStopDestroy
+  - org.openrewrite.java.migrate.InternalBindPackages
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -263,3 +264,15 @@ recipeList:
       methodPattern: java.lang.Thread destroy()
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: java.lang.Thread stop(java.lang.Throwable)
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.InternalBindPackages
+displayName: Use `com.sun.xml.bind.*` instead of `com.sun.xml.internal.bind.*`
+description: Do not use APIs from `com.sun.xml.internal.bind.*` packages.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: com.sun.xml.internal.bind
+      newPackageName: com.sun.xml.bind
+      recursive: true
