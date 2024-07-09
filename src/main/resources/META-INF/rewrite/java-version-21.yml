@@ -34,6 +34,7 @@ recipeList:
   - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion
   - org.openrewrite.java.migrate.UpgradePluginsForJava21
+  - org.openrewrite.java.migrate.DeleteDeprecatedFinalize
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -110,3 +111,17 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: javax.security.auth.Subject callAs()
       newMethodName: doAs
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.DeleteDeprecatedFinalize
+displayName: Avoid using the deprecated empty `finalize()` method in `java.desktop`
+description: The java.desktop module had a few implementations of finalize() that did nothing and have been removed. This recipe will remove these methods.
+tags:
+  - java21
+recipeList:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: java.awt.color.ICC_Profile finalize()
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: java.awt.image.ColorModel finalize()
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: java.awt.image.IndexColorModel finalize()

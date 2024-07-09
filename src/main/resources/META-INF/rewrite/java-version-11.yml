@@ -254,9 +254,10 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.ThreadStopDestroy
-displayName: Remove `java.lang.Thread.destroy()` and `java.lang.Thread.stop(java.lang.Throwable)` methods
-description: The `java.lang.Thread.destroy()` method was never implemented, and the `java.lang.Thread.stop(java.lang.Throwable)` method has been unusable since Java SE 8.
-  This recipe removes the usage of this methods in your application.
+displayName: Remove `Thread.destroy()` and `Thread.stop(Throwable)`
+description: |
+  The `java.lang.Thread.destroy()` method was never implemented, and the `java.lang.Thread.stop(java.lang.Throwable)`
+  method has been unusable since Java SE 8. This recipe removes any usage of these methods from your application.
 tags:
   - java11
 recipeList:
