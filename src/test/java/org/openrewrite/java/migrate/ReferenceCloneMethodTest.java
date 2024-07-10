@@ -28,6 +28,7 @@ class ReferenceCloneMethodTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
     }
 
+    @DocumentExample
     @Test
     void referenceCloneRemoval() {
         rewriteRun(
