@@ -54,14 +54,14 @@ class ReferenceCloneMethodTest implements RewriteTest {
               import java.lang.ref.SoftReference;
               import java.lang.ref.PhantomReference;
               
-              public class TestReference<T>{      \s
+              public class TestReference<T>{      
                   public static void main(String[] args)throws InterruptedException,CloneNotSupportedException{
                       WeakReference<Object> ref = new WeakReference<Object>(null);
                       WeakReference<Object> ref1 = (WeakReference<Object>) new java.lang.ref.WeakReference<java.lang.Object>(ref, new ReferenceQueue<>());
                       SoftReference<Object> ref3 = new SoftReference<Object>(null);
                       SoftReference<Object> ref4 = (SoftReference<Object>) new java.lang.ref.SoftReference<java.lang.Object>(ref3, new ReferenceQueue<>());
                       PhantomReference<Object> ref5 = new PhantomReference<Object>(null,null);
-                      PhantomReference<Object> ref6 = new PhantomReference<Object>(ref5, new ReferenceQueue<>());
+                      PhantomReference<Object> ref6 = (PhantomReference<Object>) new java.lang.ref.PhantomReference<java.lang.Object>(ref5, new ReferenceQueue<>());
                   }
                }
               """
