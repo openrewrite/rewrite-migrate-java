@@ -223,7 +223,7 @@ recipeList:
       methodPattern: jakarta.servlet.http.HttpServletResponse encodeRedirectUrl(String)
       newMethodName: encodeRedirectURL
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: jakarta.servlet.http.HttpServletResponseWrapper encodeRedirectUrl(String)"
+      methodPattern: jakarta.servlet.http.HttpServletResponseWrapper encodeRedirectUrl(String)
       newMethodName: encodeRedirectURL
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.servlet.http.HttpSession getValue(String)
