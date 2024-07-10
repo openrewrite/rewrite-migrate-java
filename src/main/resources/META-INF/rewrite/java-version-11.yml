@@ -67,7 +67,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedSecurityManagerMethods
   - org.openrewrite.java.migrate.UpgradePluginsForJava11
   - org.openrewrite.java.migrate.RemovedPolicy
-
+  - org.openrewrite.java.migrate.ReferenceCloneMethod
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11
@@ -249,3 +249,4 @@ recipeList:
       oldFullyQualifiedTypeName: javax.security.auth.Policy
       newFullyQualifiedTypeName: java.security.Policy
       ignoreDefinition: true
+
