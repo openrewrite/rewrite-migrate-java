@@ -35,13 +35,13 @@ class ReferenceCloneMethodTest implements RewriteTest {
           spec -> spec.recipe(new ReferenceCloneMethod()),
           //language=java
           java(
-            """         
+            """
               import java.lang.ref.WeakReference;
               import java.lang.ref.SoftReference;
               import java.lang.ref.PhantomReference;
-                           
-              public class TestReference<T>{       
-                  public static void main(String[] args)throws InterruptedException,CloneNotSupportedException{
+
+              class Foo {
+                  void foo() throws Exception{
                       WeakReference<Object> ref = new WeakReference<Object>(null);
                       WeakReference<Object> ref1 = (WeakReference<Object>) ref.clone();
                       SoftReference<Object> ref3 = new SoftReference<Object>(null);
@@ -51,13 +51,13 @@ class ReferenceCloneMethodTest implements RewriteTest {
                   }
                }
               """,
-            """           
+            """
               import java.lang.ref.WeakReference;
               import java.lang.ref.SoftReference;
               import java.lang.ref.PhantomReference;
-              
-              public class TestReference<T>{      
-                  public static void main(String[] args)throws InterruptedException,CloneNotSupportedException{
+
+              class Foo {
+                  void foo() throws Exception{
                       WeakReference<Object> ref = new WeakReference<Object>(null);
                       WeakReference<Object> ref1 = (WeakReference<Object>) new java.lang.ref.WeakReference<java.lang.Object>(ref, new ReferenceQueue<>());
                       SoftReference<Object> ref3 = new SoftReference<Object>(null);
@@ -77,15 +77,16 @@ class ReferenceCloneMethodTest implements RewriteTest {
           spec -> spec.recipe(new ReferenceCloneMethod()),
           //language=java
           java(
-            """                   
-              public class ClonableClass implements Cloneable {
-                	public ClonableClass(int id) {      		
-                	}         
-                	@Override
-                	public Object clone() throws CloneNotSupportedException {
-                		return super.clone();
-                	}
-              }                
+            """
+              class ClonableClass implements Cloneable {
+                public ClonableClass(int id) {
+                }
+
+                @Override
+                public Object clone() throws CloneNotSupportedException {
+                  return super.clone();
+                }
+              }
               """
           )
         );
