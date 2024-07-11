@@ -26,13 +26,13 @@ class ReferenceCloneMethodTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
+        spec.recipe(new ReferenceCloneMethod());
     }
 
     @DocumentExample
     @Test
     void referenceCloneRemoval() {
         rewriteRun(
-          spec -> spec.recipe(new ReferenceCloneMethod()),
           //language=java
           java(
             """
@@ -59,11 +59,11 @@ class ReferenceCloneMethodTest implements RewriteTest {
               class Foo {
                   void foo() throws Exception{
                       WeakReference<Object> ref = new WeakReference<Object>(null);
-                      WeakReference<Object> ref1 = (WeakReference<Object>) new java.lang.ref.WeakReference<java.lang.Object>(ref, new ReferenceQueue<>());
+                      WeakReference<Object> ref1 = new WeakReference<Object>(ref, new ReferenceQueue<>());
                       SoftReference<Object> ref3 = new SoftReference<Object>(null);
-                      SoftReference<Object> ref4 = (SoftReference<Object>) new java.lang.ref.SoftReference<java.lang.Object>(ref3, new ReferenceQueue<>());
+                      SoftReference<Object> ref4 = new SoftReference<Object>(ref3, new ReferenceQueue<>());
                       PhantomReference<Object> ref5 = new PhantomReference<Object>(null,null);
-                      PhantomReference<Object> ref6 = (PhantomReference<Object>) new java.lang.ref.PhantomReference<java.lang.Object>(ref5, new ReferenceQueue<>());
+                      PhantomReference<Object> ref6 = new PhantomReference<Object>(ref5, new ReferenceQueue<>());
                   }
                }
               """
@@ -74,7 +74,6 @@ class ReferenceCloneMethodTest implements RewriteTest {
     @Test
     void noCloneRemoval() {
         rewriteRun(
-          spec -> spec.recipe(new ReferenceCloneMethod()),
           //language=java
           java(
             """
