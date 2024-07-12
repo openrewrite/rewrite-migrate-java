@@ -33,9 +33,80 @@ class InternalBindPackagesTest implements RewriteTest {
           .recipeFromResources("org.openrewrite.java.migrate.InternalBindPackages");
     }
 
-    @Test
     @DocumentExample
-    void internalBindPackages() {
+    @Test
+    void contextFactoryImportVariants() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              class Foo {
+                  void bar() {
+                      com.sun.xml.internal.bind.v2.ContextFactory contextFactory = null;
+                      contextFactory.hashCode();
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void bar() {
+                      com.sun.xml.bind.v2.ContextFactory contextFactory = null;
+                      contextFactory.hashCode();
+                  }
+              }
+              """
+          ),
+          java(
+            """
+              import com.sun.xml.internal.bind.v2.ContextFactory;
+              
+              class Foo2 {
+                void bar() {
+                    ContextFactory factory = null;
+                    factory.hashCode();
+                }
+              }
+              """,
+            """
+              import com.sun.xml.bind.v2.ContextFactory;
+              
+              class Foo2 {
+                void bar() {
+                    ContextFactory factory = null;
+                    factory.hashCode();
+                }
+              }
+              """
+          ),
+          java(
+            """
+              import com.sun.xml.internal.bind.v2.*;
+              
+              class Foo3 {
+                void bar() {
+                    ContextFactory factory = null;
+                    factory.hashCode();
+                }
+              
+              }
+              """,
+            """
+              import com.sun.xml.bind.v2.*;
+              
+              class Foo3 {
+                void bar() {
+                    ContextFactory factory = null;
+                    factory.hashCode();
+                }
+              
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void wellKnownNamespace() {
         rewriteRun(
           //language=java
           java(
@@ -44,9 +115,7 @@ class InternalBindPackagesTest implements RewriteTest {
               public class TestInternalBindPackages {
                   public void testInternalBindPackages() {
                       com.sun.xml.internal.bind.v2.WellKnownNamespace namespace = null;
-                namespace.hashCode();
-                      com.sun.xml.internal.bind.v2.ContextFactory contextFactory = null;
-                      contextFactory.hashCode();
+                      namespace.hashCode();
                   }
               }
               """,
@@ -55,9 +124,7 @@ class InternalBindPackagesTest implements RewriteTest {
               public class TestInternalBindPackages {
                   public void testInternalBindPackages() {
                       com.sun.xml.bind.v2.WellKnownNamespace namespace = null;
-                namespace.hashCode();
-                      com.sun.xml.bind.v2.ContextFactory contextFactory = null;
-                      contextFactory.hashCode();
+                      namespace.hashCode();
                   }
               }
               """
