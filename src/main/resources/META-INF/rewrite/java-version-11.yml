@@ -63,12 +63,13 @@ recipeList:
   - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
   - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
   - org.openrewrite.java.migrate.util.OptionalStreamRecipe
-  - org.openrewrite.java.migrate.InternalBindContextFactory
+  - org.openrewrite.java.migrate.InternalBindPackages
   - org.openrewrite.java.migrate.RemovedSecurityManagerMethods
   - org.openrewrite.java.migrate.UpgradePluginsForJava11
   - org.openrewrite.java.migrate.RemovedPolicy
   - org.openrewrite.java.migrate.ReferenceCloneMethod
   - org.openrewrite.java.migrate.ThreadStopDestroy
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11
@@ -228,16 +229,16 @@ recipeList:
       onlyIfVersionsMatch: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.InternalBindContextFactory
-displayName: Use `com.sun.xml.bind.v2.ContextFactory` instead of `com.sun.xml.internal.bind.v2.ContextFactory`
-description: Do not use the `com.sun.xml.internal.bind.v2.ContextFactory` class.
+name: org.openrewrite.java.migrate.InternalBindPackages
+displayName: Use `com.sun.xml.bind.*` instead of `com.sun.xml.internal.bind.*`
+description: Do not use APIs from `com.sun.xml.internal.bind.*` packages.
 tags:
   - java11
 recipeList:
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: com.sun.xml.internal.bind.v2.ContextFactory
-      newFullyQualifiedTypeName: com.sun.xml.bind.v2.ContextFactory
-      ignoreDefinition: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: com.sun.xml.internal.bind
+      newPackageName: com.sun.xml.bind
+      recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedPolicy

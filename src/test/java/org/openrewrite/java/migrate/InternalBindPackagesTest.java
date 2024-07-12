@@ -24,18 +24,18 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class Java8ToJava11Test implements RewriteTest {
+class InternalBindPackagesTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
           .parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.new"))
-          .recipeFromResources("org.openrewrite.java.migrate.Java8toJava11");
+            .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.newClass"))
+          .recipeFromResources("org.openrewrite.java.migrate.InternalBindPackages");
     }
 
     @DocumentExample
     @Test
-    void internalBindContextFactory() {
+    void contextFactoryImportVariants() {
         //language=java
         rewriteRun(
           java(
@@ -91,8 +91,7 @@ class Java8ToJava11Test implements RewriteTest {
               }
               """,
             """
-              import com.sun.xml.bind.v2.ContextFactory;
-              import com.sun.xml.internal.bind.v2.*;
+              import com.sun.xml.bind.v2.*;
               
               class Foo3 {
                 void bar() {
@@ -100,6 +99,33 @@ class Java8ToJava11Test implements RewriteTest {
                     factory.hashCode();
                 }
               
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void wellKnownNamespace() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package com.ibm.test;
+              public class TestInternalBindPackages {
+                  public void testInternalBindPackages() {
+                      com.sun.xml.internal.bind.v2.WellKnownNamespace namespace = null;
+                      namespace.hashCode();
+                  }
+              }
+              """,
+            """
+              package com.ibm.test;
+              public class TestInternalBindPackages {
+                  public void testInternalBindPackages() {
+                      com.sun.xml.bind.v2.WellKnownNamespace namespace = null;
+                      namespace.hashCode();
+                  }
               }
               """
           )
