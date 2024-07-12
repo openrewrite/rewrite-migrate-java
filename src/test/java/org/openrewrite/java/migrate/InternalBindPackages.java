@@ -23,7 +23,6 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.javaVersion;
 
 class InternalBindPackages implements RewriteTest {
     @Override
@@ -49,7 +48,7 @@ class InternalBindPackages implements RewriteTest {
                       contextFactory.hashCode();
                   }
               }
-                  """,
+              """,
             """
               package com.ibm.test;
               public class TestInternalBindPackages {
