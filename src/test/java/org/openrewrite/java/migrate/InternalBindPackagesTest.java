@@ -24,7 +24,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class InternalBindPackages implements RewriteTest {
+class InternalBindPackagesTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
@@ -38,7 +38,8 @@ class InternalBindPackages implements RewriteTest {
     void internalBindPackages() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+            """
               package com.ibm.test;
               public class TestInternalBindPackages {
                   public void testInternalBindPackages() {
