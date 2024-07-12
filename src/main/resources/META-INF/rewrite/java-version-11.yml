@@ -67,6 +67,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedSecurityManagerMethods
   - org.openrewrite.java.migrate.UpgradePluginsForJava11
   - org.openrewrite.java.migrate.RemovedPolicy
+  - org.openrewrite.java.migrate.ReferenceCloneMethod
   - org.openrewrite.java.migrate.ThreadStopDestroy
   - org.openrewrite.java.migrate.InternalBindPackages
 
