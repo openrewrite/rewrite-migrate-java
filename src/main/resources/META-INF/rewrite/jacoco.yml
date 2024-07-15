@@ -19,14 +19,17 @@ name: 'JaCoCo'
 packageName: org.openrewrite.java.migrate.jacoco
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jacoco.UpgradeJaCoCoMavenPluginVersion
-displayName: Upgrade JaCoCo Maven plugin version
-description: This recipe will upgrade the JaCoCo Maven plugin to a more recent version compatible with Java 11.
+name: org.openrewrite.java.migrate.jacoco.UpgradeJaCoCo
+displayName: Upgrade JaCoCo
+description: This recipe will upgrade JaCoCo to the latest patch version, which traditionally advertises full backwards compatibility for older Java versions.
 tags:
-  - java11
   - jacoco
 recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.jacoco
+      artifactId: "*"
+      newVersion: 0.8.x
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.jacoco
       artifactId: jacoco-maven-plugin
-      newVersion: 0.8.8
+      newVersion: 0.8.x

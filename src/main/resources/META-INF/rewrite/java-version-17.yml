@@ -27,20 +27,51 @@ tags:
   - java17
 recipeList:
   - org.openrewrite.java.migrate.Java8toJava11
-  - org.openrewrite.java.migrate.JavaVersion17
+  - org.openrewrite.java.migrate.UpgradeBuildToJava17
   - org.openrewrite.java.migrate.lang.StringFormatted
-  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
-      minimumJavaMajorVersion: 17
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: java.lang.Runtime traceInstructions(boolean)
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: java.lang.System traceMethodCalls(boolean)
+  - org.openrewrite.java.migrate.RemovedToolProviderConstructor
+  - org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
   - org.openrewrite.java.migrate.lang.UseTextBlocks
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
   - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
   - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
   - org.openrewrite.java.migrate.Jre17AgentMainPreMainPublic
+  - org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
+  - org.openrewrite.java.migrate.RemovedZipFinalizeMethods
+  - org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
+  - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
+  - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
+  - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
+  - org.openrewrite.java.migrate.UpgradePluginsForJava17
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava17
+displayName: Upgrade build to Java 17
+description: Updates build files to use Java 17 as the target/source.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 17
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradePluginsForJava17
+displayName: Upgrade plugins to Java 17 compatible versions
+description: Updates plugins to version compatible with Java 17.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
+      minimumJavaMajorVersion: 17
+  - org.openrewrite.gradle.UpdateGradleWrapper:
+      version: 7.3
+      addIfMissing: false
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
       artifactId: maven-checkstyle-plugin
@@ -49,22 +80,6 @@ recipeList:
       groupId: com.sonatype.clm
       artifactId: clm-maven-plugin
       newVersion: 2.47.6-01
-  - org.openrewrite.java.migrate.RemovedZipFinalizeMethods
-  - org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
-  - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
-  - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
-  - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.JavaVersion17
-displayName: Change Maven Java version property values to 17
-description: Change maven.compiler.source and maven.compiler.target values to 17.
-tags:
-  - java17
-  - compiler
-recipeList:
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 17
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
@@ -127,7 +142,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedZipFinalizeMethods
-displayName: Replace `finalize` method in `java.util.zip.Zipfile`, `java.util.zip.Inflater` and `java.util.zip.Deflater`
+displayName: Replace `finalize` method in `java.util.zip.ZipFile`, `java.util.zip.Inflater` and `java.util.zip.Deflater`
 description: >
   The `finalize` method in `java.util.zip.ZipFile` is replaced with the `close` method and is replaced by the `end` method in 
    `java.util.zip.Inflater` and `java.util.zip.Deflater` as it is no longer available in Java SE 12 and later.
@@ -187,6 +202,19 @@ recipeList:
       fullyQualifiedConstantName:  javax.management.remote.rmi.RMIConnectorServer.CREDENTIALS_FILTER_PATTERN
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
+displayName: Remove `Thread.countStackFrames()` method
+description: >
+  `Thread.countStackFrames()` has been removed in Java SE 14 and has been changed in this release to unconditionally throw `UnsupportedOperationException`
+   This recipe removes the usage of this method in your application as long as the method is not assigned to a variable.
+   For more information on the Java SE 14 deprecation of this method, see https://bugs.java.com/bugdatabase/view_bug?bug_id=8205132.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: 'java.lang.Thread countStackFrames()'
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
 displayName: Replace `finalize` method in `java.io.FileInputStream`  and `java.io.FileOutputStream`
 description: >
@@ -202,3 +230,29 @@ recipeList:
       methodPattern: "java.io.FileOutputStream finalize()"
       newMethodName: close
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedToolProviderConstructor
+displayName: Change `javax.tools.ToolProvider` methods calls to static
+description: >
+  The `javax.tools.ToolProvider()` constructor has been removed in Java SE 16 since the class only contains static methods.
+  The recipe converts `javax.tools.ToolProvider getSystemJavaCompiler()`, `javax.tools.ToolProvider getSystemDocumentationTool()` and `javax.tools.ToolProvider getSystemToolClassLoader()` to static methods.
+recipeList:
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: javax.tools.ToolProvider *()
+      fullyQualifiedTargetTypeName: javax.tools.ToolProvider
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
+displayName: Change `java.lang.reflect.Modifier` and ` java.lang.invoke.ConstantBootstraps` method calls to static
+description: >
+  The `java.lang.reflect.Modifier()` and `java.lang.invoke.ConstantBootstraps()` constructors have been removed in Java SE 15 because both classes only contain static methods.
+  This recipe converts the usage of all methods in the two classes to be  static.
+  For more information on these changes, see https://docs.oracle.com/en/java/javase/15/migrate/index.html#GUID-233853B8-0782-429E-BEF7-7532EE610E63
+recipeList:
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: java.lang.reflect.Modifier *(..)
+      fullyQualifiedTargetTypeName: java.lang.reflect.Modifier
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: java.lang.invoke.ConstantBootstraps *(..)
+      fullyQualifiedTargetTypeName: java.lang.invoke.ConstantBootstraps

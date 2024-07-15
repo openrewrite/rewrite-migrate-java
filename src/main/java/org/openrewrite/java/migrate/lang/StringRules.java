@@ -20,6 +20,10 @@ import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.openrewrite.java.template.RecipeDescriptor;
 
+@RecipeDescriptor(
+        name = "A collection of `String` rules",
+        description = "A collection of rules for refactoring methods called on `String` instances in Java code."
+)
 public class StringRules {
     @RecipeDescriptor(
             name = "Replace redundant `String` method calls with self",

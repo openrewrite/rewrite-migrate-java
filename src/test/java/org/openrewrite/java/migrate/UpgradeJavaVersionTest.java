@@ -44,13 +44,13 @@ class UpgradeJavaVersionTest implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-                     
+                  
                     <properties>
                       <java.version>1.8</java.version>
                       <maven.compiler.source>1.8</maven.compiler.source>
                       <maven.compiler.target>1.8</maven.compiler.target>
                     </properties>
-                    
+                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -60,13 +60,13 @@ class UpgradeJavaVersionTest implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-                     
+                  
                     <properties>
                       <java.version>17</java.version>
                       <maven.compiler.source>17</maven.compiler.source>
                       <maven.compiler.target>17</maven.compiler.target>
                     </properties>
-                    
+                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -176,6 +176,30 @@ class UpgradeJavaVersionTest implements RewriteTest {
                   java {
                     sourceCompatibility = 17
                     targetCompatibility = 17
+                  }
+                  """,
+                spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
+              )
+            );
+        }
+
+        @Test
+        void gradleSourceTargetFromJava11ToJava21ThroughEnum() {
+            rewriteRun(
+              spec -> spec.recipe(new UpgradeJavaVersion(21)),
+              buildGradle(
+                //language=groovy
+                """
+                  java {
+                    sourceCompatibility = JavaVersion.VERSION_11
+                    targetCompatibility = JavaVersion.VERSION_11
+                  }
+                  """,
+                //language=groovy
+                """
+                  java {
+                    sourceCompatibility = JavaVersion.VERSION_21
+                    targetCompatibility = JavaVersion.VERSION_21
                   }
                   """,
                 spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))

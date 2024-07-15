@@ -34,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
+import static org.openrewrite.kotlin.Assertions.kotlin;
 
 class UseTextBlocksTest implements RewriteTest {
 
@@ -813,6 +814,21 @@ class UseTextBlocksTest implements RewriteTest {
                           "AFTER the variable. ";
                   }
               }
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/501")
+    void shouldNotUpdateKotlinCode() {
+        rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(0),
+          kotlin(
+            """
+              const val MULTI_LINE_MESSAGE =
+                 \s"This is a multi-line message and should not be updated. " +
+                         \s"This is the second sentence of such message."
               """
           )
         );

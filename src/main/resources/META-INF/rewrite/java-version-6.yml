@@ -30,6 +30,7 @@ name: org.openrewrite.java.migrate.JREWrapperInterface
 displayName: Add missing `isWrapperFor` and `unwrap` methods.
 description: Add method implementations stubs to classes that implement `java.sql.Wrapper`.
 recipeList:
+  - org.openrewrite.java.migrate.jacoco.UpgradeJaCoCo
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Wrapper
       methodPattern: "*..* isWrapperFor(..)"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,24 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class Java8ToJava11Test implements RewriteTest {
+class InternalBindPackagesTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
           .parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.new"))
-          .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate").build()
-            .activateRecipes("org.openrewrite.java.migrate.Java8toJava11"));
+            .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.newClass"))
+          .recipeFromResources("org.openrewrite.java.migrate.InternalBindPackages");
     }
 
     @DocumentExample
     @Test
-    void internalBindContextFactory() {
+    void contextFactoryImportVariants() {
         //language=java
         rewriteRun(
           java(
@@ -61,7 +59,7 @@ class Java8ToJava11Test implements RewriteTest {
           java(
             """
               import com.sun.xml.internal.bind.v2.ContextFactory;
-                 
+              
               class Foo2 {
                 void bar() {
                     ContextFactory factory = null;
@@ -71,7 +69,7 @@ class Java8ToJava11Test implements RewriteTest {
               """,
             """
               import com.sun.xml.bind.v2.ContextFactory;
-                 
+              
               class Foo2 {
                 void bar() {
                     ContextFactory factory = null;
@@ -83,27 +81,54 @@ class Java8ToJava11Test implements RewriteTest {
           java(
             """
               import com.sun.xml.internal.bind.v2.*;
-                
+              
               class Foo3 {
                 void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
-                
+              
               }
               """,
             """
-              import com.sun.xml.bind.v2.ContextFactory;
-              import com.sun.xml.internal.bind.v2.*;
-                
+              import com.sun.xml.bind.v2.*;
+              
               class Foo3 {
                 void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
-                
+              
               }
               """
           )
         );
-    }}
+    }
+
+    @Test
+    void wellKnownNamespace() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package com.ibm.test;
+              public class TestInternalBindPackages {
+                  public void testInternalBindPackages() {
+                      com.sun.xml.internal.bind.v2.WellKnownNamespace namespace = null;
+                      namespace.hashCode();
+                  }
+              }
+              """,
+            """
+              package com.ibm.test;
+              public class TestInternalBindPackages {
+                  public void testInternalBindPackages() {
+                      com.sun.xml.bind.v2.WellKnownNamespace namespace = null;
+                      namespace.hashCode();
+                  }
+              }
+              """
+          )
+        );
+    }
+}

@@ -41,6 +41,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxJsonToJakartaJson
   - org.openrewrite.java.migrate.jakarta.JavaxJwsToJakartaJws
   - org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail
+  - org.openrewrite.java.migrate.jakarta.JavaxOrmXmlToJakartaOrmXml
   - org.openrewrite.java.migrate.jakarta.JavaxPersistenceToJakartaPersistence
   - org.openrewrite.java.migrate.jakarta.JavaxPersistenceXmlToJakartaPersistenceXml
   - org.openrewrite.java.migrate.jakarta.JavaxResourceToJakartaResource
@@ -61,6 +62,8 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
   - org.openrewrite.java.migrate.javaee8
   - org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
+  - org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependency
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxActivationMigrationToJakartaActivation
@@ -271,6 +274,13 @@ recipeList:
       oldPackageName: javax.validation
       newPackageName: jakarta.validation
       recursive: true
+  - org.openrewrite.RenameFile:
+      fileMatcher: '**/javax.validation.ConstraintValidator'
+      fileName: jakarta.validation.ConstraintValidator
+  - org.openrewrite.text.FindAndReplace:
+      find: "javax."
+      replace: "jakarta."
+      filePattern: '**/ValidationMessages*.properties'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxDecoratorToJakartaDecorator
@@ -393,6 +403,12 @@ recipeList:
       newGroupId: jakarta.inject
       newArtifactId: jakarta.inject-api
       newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.inject
+      oldArtifactId: javax.inject
+      newGroupId: jakarta.inject
+      newArtifactId: jakarta.inject-api
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.inject
       artifactId: jakarta.inject-api
@@ -412,7 +428,7 @@ recipeList:
       oldArtifactId: javax.interceptor-api
       newGroupId: jakarta.interceptor
       newArtifactId: jakarta.interceptor-api
-      version: latest.release
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.interceptor
       artifactId: jakarta.interceptor-api
@@ -642,7 +658,7 @@ recipeList:
       oldArtifactId: javax.ws.rs-api
       newGroupId: jakarta.ws.rs
       newArtifactId: jakarta.ws.rs-api
-      version: latest.release
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
@@ -676,7 +692,7 @@ recipeList:
       oldArtifactId: jaxb-impl
       newGroupId: org.glassfish.jaxb
       newArtifactId: jaxb-runtime
-      version: latest.release
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.glassfish.jaxb
       artifactId: jaxb-runtime
@@ -748,6 +764,31 @@ recipeList:
       oldPackageName: javax.xml.ws
       newPackageName: jakarta.xml.ws
       recursive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxOrmXmlToJakartaOrmXml
+displayName: Migrate xmlns entries in `orm.xml` files
+description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
+tags:
+  - jakarta
+  - persistence
+  - orm
+preconditions:
+  - org.openrewrite.FindSourceFiles:
+      filePattern: '**/*orm.xml'
+recipeList:
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: version
+      elementName: entity-mappings
+      newValue: 3.0
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xmlns
+      elementName: entity-mappings
+      newValue: https://jakarta.ee/xml/ns/persistence/orm
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: xsi:schemaLocation
+      elementName: entity-mappings
+      newValue: https://jakarta.ee/xml/ns/persistence/orm https://jakarta.ee/xml/ns/persistence/orm/orm_3_0.xsd
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxPersistenceXmlToJakartaPersistenceXml
@@ -967,7 +1008,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
-displayName: Migrate deprecated `javeee-api` dependencies to `jakarta.platform`
+displayName: Migrate deprecated `javaee-api` dependencies to `jakarta.platform`
 description: >
   Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
@@ -981,3 +1022,16 @@ recipeList:
       groupId: jakarta.platform
       artifactId: "*"
       newVersion: 9.0.0
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependency
+displayName: Remove `jakarta.annotation-api` dependency when managed by Spring Boot
+description: Counteract the `jakarta.annotation-api` added by `org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies` for Spring Boot applications.
+preconditions:
+  - org.openrewrite.java.dependencies.DependencyInsight:
+      groupIdPattern: org.springframework.boot
+      artifactIdPattern: spring-boot-starter
+recipeList:
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
