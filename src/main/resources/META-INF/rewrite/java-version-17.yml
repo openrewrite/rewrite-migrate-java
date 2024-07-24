@@ -106,7 +106,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
 displayName: Adopt `setLongThreadID` in `java.util.logging.LogRecord`
-description: Avoid using the deprecated methods in `java.util.logging.LogRecord`
+description: Avoid using the deprecated methods in `java.util.logging.LogRecord`.
 tags:
   - java17
 recipeList:

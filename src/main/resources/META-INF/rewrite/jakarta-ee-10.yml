@@ -283,7 +283,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
 displayName: Update Jakarta EE Platform Dependencies to 10.0.0
-description: Update Jakarta EE Platform Dependencies to 10.0.0
+description: Update Jakarta EE Platform Dependencies to 10.0.0.
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.platform

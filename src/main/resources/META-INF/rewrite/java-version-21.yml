@@ -100,7 +100,8 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedSubjectMethods
 displayName: Adopt `javax.security.auth.Subject.current()` and `javax.security.auth.Subject.callAs()` methods`
-description: Replaces the `javax.security.auth.Subject.getSubject()` and `javax.security.auth.Subject.doAs()` methods 
+description: >-
+  Replaces the `javax.security.auth.Subject.getSubject()` and `javax.security.auth.Subject.doAs()` methods 
   with `javax.security.auth.Subject.current()` and `javax.security.auth.Subject.callAs()`.
 tags:
   - java21

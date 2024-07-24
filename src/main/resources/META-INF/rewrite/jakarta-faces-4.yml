@@ -238,7 +238,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaFacesEcmaScript
 displayName: Migrate JSF values inside EcmaScript files
-description: Convert JSF to Faces values inside JavaScript,TypeScript, and Properties files
+description: Convert JSF to Faces values inside JavaScript,TypeScript, and Properties files.
 tags:
   - jakarta
   - faces
