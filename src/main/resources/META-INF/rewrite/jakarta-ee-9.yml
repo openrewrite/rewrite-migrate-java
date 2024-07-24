@@ -825,7 +825,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
 displayName: Migrate Jackson from javax to jakarta namespace
-description: >
+description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Jackson dependencies with their counterparts
   that are compatible with Jakarta EE 9.
 recipeList:
@@ -942,7 +942,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
 displayName: Migrate Ehcache from javax to jakarta namespace
-description: >
+description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Ehcache dependencies with their counterparts
   that are compatible with Jakarta EE 9.
 recipeList:
@@ -964,7 +964,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta
 displayName: Migrate Johnzon from javax to jakarta namespace
-description: >
+description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Johnzon dependencies with their counterparts
   that are compatible with Jakarta EE 9.
 recipeList:
@@ -982,7 +982,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RestAssuredJavaxToJakarta
 displayName: Migrate RestAssured from javax to jakarta namespace by upgrading to a version compatible with J2EE9
-description: >
+description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing RestAssured dependencies with their
   counterparts that are compatible with Jakarta EE 9.
 recipeList:
@@ -994,7 +994,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
 displayName: Migrate `org.apache.ws.security` and `org.apache.ws.security.components.crypto` packages to  `org.apache.wss4j.common.ext` and `org.apache.wss4j.common.crypto` packages
-description: >
+description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces Apache security packages to migrate to Apache `wss4j`
 recipeList:
   - org.openrewrite.java.ChangePackage:
@@ -1009,7 +1009,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
 displayName: Migrate deprecated `javaee-api` dependencies to `jakarta.platform`
-description: >
+description: >-
   Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:

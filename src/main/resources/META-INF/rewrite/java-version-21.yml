@@ -17,7 +17,7 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeToJava21
 displayName: Migrate to Java 21
-description: >
+description: >-
   This recipe will apply changes commonly needed when migrating to Java 21. This recipe will also replace deprecated API
   with equivalents when there is a clear migration strategy. Build files will also be updated to use Java 21 as the
   target/source and plugins will be also be upgraded to versions that are compatible with Java 21.
