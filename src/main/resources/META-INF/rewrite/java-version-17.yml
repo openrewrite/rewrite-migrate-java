@@ -248,7 +248,7 @@ displayName: Change `java.lang.reflect.Modifier` and ` java.lang.invoke.Constant
 description: >-
   The `java.lang.reflect.Modifier()` and `java.lang.invoke.ConstantBootstraps()` constructors have been removed in Java SE 15 because both classes only contain static methods.
   This recipe converts the usage of all methods in the two classes to be  static.
-  For more information on these changes, see https://docs.oracle.com/en/java/javase/15/migrate/index.html#GUID-233853B8-0782-429E-BEF7-7532EE610E63
+  See https://docs.oracle.com/en/java/javase/15/migrate/index.html#GUID-233853B8-0782-429E-BEF7-7532EE610E63 for more information on these changes.
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: java.lang.reflect.Modifier *(..)
