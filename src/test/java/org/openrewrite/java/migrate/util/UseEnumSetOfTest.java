@@ -39,7 +39,7 @@ class UseEnumSetOfTest implements RewriteTest {
             java(
               """
                 import java.util.Set;
-                                
+
                 class Test {
                     public enum Color {
                         RED, GREEN, BLUE
@@ -52,7 +52,7 @@ class UseEnumSetOfTest implements RewriteTest {
               """
                 import java.util.EnumSet;
                 import java.util.Set;
-                                
+
                 class Test {
                     public enum Color {
                         RED, GREEN, BLUE
@@ -76,7 +76,7 @@ class UseEnumSetOfTest implements RewriteTest {
             java(
               """
                 import java.util.Set;
-                                
+
                 class Test {
                     public enum Color {
                         RED, GREEN, BLUE
@@ -90,7 +90,7 @@ class UseEnumSetOfTest implements RewriteTest {
               """
                 import java.util.EnumSet;
                 import java.util.Set;
-                                
+
                 class Test {
                     public enum Color {
                         RED, GREEN, BLUE
@@ -122,7 +122,7 @@ class UseEnumSetOfTest implements RewriteTest {
                         RED, GREEN, BLUE
                     }
                     public void method(final Color... colors) {
-                        final Set<Color> s = Set.of(colors);
+                        Set<Color> s = Set.of(colors);
                     }
                 }
                 """
@@ -147,8 +147,8 @@ class UseEnumSetOfTest implements RewriteTest {
                         RED, GREEN, BLUE
                     }
                     public void method() {
-                        final Color[] colors = {};
-                        final Set<Color> s = Set.of(colors);
+                        Color[] colors = {};
+                        Set<Color> s = Set.of(colors);
                     }
                 }
                 """
