@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -97,6 +98,57 @@ class UseEnumSetOfTest implements RewriteTest {
                     public void method() {
                         Set<Color> warm;
                         warm = EnumSet.of(Color.RED);
+                    }
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/516")
+    void dontChangeVarargs() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.Set;
+
+                class Test {
+                    public enum Color {
+                        RED, GREEN, BLUE
+                    }
+                    public void method(final Color... colors) {
+                        final Set<Color> s = Set.of(colors);
+                    }
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/516")
+    void dontChangeArray() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.Set;
+
+                class Test {
+                    public enum Color {
+                        RED, GREEN, BLUE
+                    }
+                    public void method() {
+                        final Color[] colors = {};
+                        final Set<Color> s = Set.of(colors);
                     }
                 }
                 """
