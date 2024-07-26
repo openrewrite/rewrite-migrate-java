@@ -104,6 +104,12 @@ recipeList:
       newGroupId: jakarta.annotation
       newArtifactId: jakarta.annotation-api
       newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.annotation
+      newGroupId: jakarta.annotation
+      newArtifactId: jakarta.annotation-api
+      newVersion: latest.release
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.Generated
       newFullyQualifiedTypeName: jakarta.annotation.Generated
@@ -192,6 +198,12 @@ recipeList:
       newGroupId: jakarta.authentication
       newArtifactId: jakarta.authentication-api
       newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.security.auth.message
+      newGroupId: jakarta.authentication
+      newArtifactId: jakarta.authentication-api
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.authentication
       artifactId: jakarta.authentication-api
@@ -215,6 +227,12 @@ recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.security.jacc
       oldArtifactId: javax.security.jacc-api
+      newGroupId: jakarta.authorization
+      newArtifactId: jakarta.authorization-api
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.security.jacc
       newGroupId: jakarta.authorization
       newArtifactId: jakarta.authorization-api
       newVersion: latest.release
@@ -319,7 +337,12 @@ recipeList:
       newGroupId: jakarta.ejb
       newArtifactId: jakarta.ejb-api
       newVersion: latest.release
-
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.ejb
+      newGroupId: jakarta.ejb
+      newArtifactId: jakarta.ejb-api
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.ejb
       artifactId: jakarta.ejb-api
@@ -377,12 +400,6 @@ recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.faces
       oldArtifactId: javax.faces-api
-      newGroupId: jakarta.faces
-      newArtifactId: jakarta.faces-api
-      newVersion: latest.release
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.glassfish
-      oldArtifactId: javax.faces
       newGroupId: jakarta.faces
       newArtifactId: jakarta.faces-api
       newVersion: latest.release
@@ -456,6 +473,12 @@ recipeList:
       newGroupId: jakarta.jms
       newArtifactId: jakarta.jms-api
       newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.jms
+      newGroupId: jakarta.jms
+      newArtifactId: jakarta.jms-api
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.jms
       artifactId: jakarta.jms-api
@@ -493,6 +516,12 @@ recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.jws
       oldArtifactId: javax.jws-api
+      newGroupId: jakarta.jws
+      newArtifactId: jakarta.jws-api
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.jws
       newGroupId: jakarta.jws
       newArtifactId: jakarta.jws-api
       newVersion: latest.release
@@ -562,6 +591,12 @@ recipeList:
       newGroupId: jakarta.resource
       newArtifactId: jakarta.resource-api
       newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.resource
+      newGroupId: jakarta.resource
+      newArtifactId: jakarta.resource-api
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.resource
       artifactId: jakarta.resource-api
@@ -623,6 +658,12 @@ recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.transaction
       oldArtifactId: javax.transaction-api
+      newGroupId: jakarta.transaction
+      newArtifactId: jakarta.transaction-api
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.transaction
       newGroupId: jakarta.transaction
       newArtifactId: jakarta.transaction-api
       newVersion: latest.release
