@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.maven;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.SourceSpec;
@@ -160,6 +161,33 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                 </project>
                 """)
           )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/514")
+    void addReleaseIfNoOtherChangeIsMade() {
+        rewriteRun(
+          //language=xml
+          pomXml("""
+             <project>
+                 <groupId>com.example</groupId>
+                 <artifactId>example-child</artifactId>
+                 <version>1.0.0</version>
+                 <modelVersion>4.0</modelVersion>
+             </project>
+             """,
+            """
+             <project>
+                 <groupId>com.example</groupId>
+                 <artifactId>example-child</artifactId>
+                 <version>1.0.0</version>
+                 <modelVersion>4.0</modelVersion>
+                 <properties>
+                     <maven.compiler.release>17</maven.compiler.release>
+                 </properties>
+             </project>
+             """)
         );
     }
 }
