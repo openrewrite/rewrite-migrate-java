@@ -238,7 +238,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaFacesEcmaScript
 displayName: Migrate JSF values inside EcmaScript files
-description: Convert JSF to Faces values inside JavaScript,TypeScript, and Properties files
+description: Convert JSF to Faces values inside JavaScript,TypeScript, and Properties files.
 tags:
   - jakarta
   - faces
@@ -259,10 +259,13 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
-displayName:   JNDI name `jsf/ClientSideSecretKey` has been renamed to `faces/ClientSideSecretKey`, and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.
-description: >
+displayName: >-
+  JNDI name `jsf/ClientSideSecretKey` has been renamed to `faces/ClientSideSecretKey`,
+  and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`
+description: >-
   The `jsf/ClientSideSecretKey` JNDI name has been renamed to `faces/ClientSideSecretKey`, 
-  and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.  The JNDI keys that have been renamed are updated to allow use of the keys.
+  and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.
+  The JNDI keys that have been renamed are updated to allow use of the keys.
 recipeList:
   - org.openrewrite.xml.ChangeTagValue:
       elementName: //env-entry-name
@@ -276,7 +279,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesResourceResolver
 displayName: Replace `ResourceResolver` with `ResourceHandler`
-description: >
+description: >-
   The `ResourceResolver` class was removed in Jakarta Faces 4.0. 
   The functionality provided by that class can be replaced by using the `jakarta.faces.application.ResourceHandler` class.
 recipeList:
@@ -292,9 +295,9 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
 displayName: Replace `CURRENT_COMPONENT` and `CURRENT_COMPOSITE_COMPONENT` with `getCurrentComponent()` and `getCurrentCompositeComponent()`
-description: >
-  Replace `jakarta.faces.component.UIComponent.CURRENT_COMPONENT` and `CURRENT_COMPOSITE_COMPONENT` constants with `jakarta.faces.component.UIComponent.getCurrentComponent()` and `getCurrentCompositeComponent()`
-  that were added in JSF 2.0
+description: >-
+  Replace `jakarta.faces.component.UIComponent.CURRENT_COMPONENT` and `CURRENT_COMPOSITE_COMPONENT` constants with `jakarta.faces.component.UIComponent.getCurrentComponent()` and `getCurrentCompositeComponent()`.
+  that were added in JSF 2.0.
 recipeList:
   - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
       existingFullyQualifiedConstantName: jakarta.faces.component.UIComponent.CURRENT_COMPONENT
@@ -306,9 +309,9 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
 displayName: Use `StateManagementStrategy`
-description: >
+description: >-
   Methods that were removed from the `jakarta.faces.application.StateManager` and `javax.faces.application.StateManager` classes in Jakarta Faces 4.0 are replaced
-  by `jakarta.faces.view.StateManagementStrategy` or `javax.faces.view.StateManagementStrategy` based on Jakarta10 migration in Faces 4.0
+  by `jakarta.faces.view.StateManagementStrategy` or `javax.faces.view.StateManagementStrategy` based on Jakarta10 migration in Faces 4.0.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
@@ -342,7 +345,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
 displayName: Use `jakarta.el` instead of `jakarta.faces.el` and `javax.faces.el`
-description: >
+description: >-
   Several classes were removed and replaced in Jakarta Faces 4.0.
   The only Object definition not removed in the `jakarta.faces.el` package is the CompositeComponentExpressionHolder interface.
 recipeList:
@@ -414,7 +417,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
 displayName: Substitute deprecated Faces Managed Beans
-description: >
+description: >-
   This recipe substitutes Faces Managed Beans, which were deprecated in JavaServer Faces 2.3 and have been removed from Jakarta Faces 4.0.
 recipeList:
   - org.openrewrite.java.ChangeType:

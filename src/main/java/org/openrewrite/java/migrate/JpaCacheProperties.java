@@ -218,8 +218,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
         return sdh;
     }
 
-    @Nullable
-    private String getAttributeValue(String attrName, Xml.Tag node) {
+    private @Nullable String getAttributeValue(String attrName, Xml.Tag node) {
         for (Xml.Attribute attribute : node.getAttributes()) {
             if (attribute.getKeyAsString().equals(attrName)) {
                 return attribute.getValue().getValue();
@@ -272,8 +271,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
         }
     }
 
-    @Nullable
-    private String getTextContent(@Nullable Xml.Tag node) {
+    private @Nullable String getTextContent(@Nullable Xml.Tag node) {
         if (node != null) {
             String textContent = null;
             Optional<String> optionalValue = node.getValue();
@@ -285,8 +283,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
         return null;
     }
 
-    @Nullable
-    private String interpretOpenJPAPropertyValue(@Nullable String propVal) {
+    private @Nullable String interpretOpenJPAPropertyValue(@Nullable String propVal) {
         if (propVal != null) {
             if ("false".equalsIgnoreCase(propVal)) {
                 return "NONE";
@@ -303,8 +300,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
 
     // convert the scmValue to either true or false.
     // return null for complex values.
-    @Nullable
-    private String convertScmValue(String scmValue) {
+    private @Nullable String convertScmValue(String scmValue) {
         if ("NONE".equals(scmValue)) {
             return "false";
         } else if ("ALL".equals(scmValue)) {

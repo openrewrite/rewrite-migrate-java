@@ -67,6 +67,10 @@ public class UseEnumSetOf extends Recipe {
                             maybeAddImport("java.util.EnumSet");
 
                             List<Expression> args = m.getArguments();
+                            if (isArrayParameter(args)) {
+                                return m;
+                            }
+
                             StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
                             args.forEach(o -> setOf.add("#{any()}"));
 
@@ -92,6 +96,14 @@ public class UseEnumSetOf extends Recipe {
                     }
                 }
                 return false;
+            }
+
+            private boolean isArrayParameter(final List<Expression> args) {
+                if (args.size() != 1) {
+                    return false;
+                }
+                JavaType type = args.get(0).getType();
+                return TypeUtils.asArray(type) != null;
             }
         });
     }

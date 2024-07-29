@@ -85,8 +85,7 @@ public class HttpSessionInvalidate extends Recipe {
                     /**
                      * @return the param index position of the HttpServletRequest parameter object
                      */
-                    @Nullable
-                    private Integer getServletRequestIndex(J.MethodDeclaration parentMethod) {
+                    private @Nullable Integer getServletRequestIndex(J.MethodDeclaration parentMethod) {
                         List<JavaType> params = parentMethod.getMethodType().getParameterTypes();
                         for (int i = 0; i < params.size(); ++i) {
                             if (httpServletRequestTypeMatcher.matches(params.get(i))) {

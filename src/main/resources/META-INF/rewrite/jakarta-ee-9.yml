@@ -104,6 +104,12 @@ recipeList:
       newGroupId: jakarta.annotation
       newArtifactId: jakarta.annotation-api
       newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.annotation
+      newGroupId: jakarta.annotation
+      newArtifactId: jakarta.annotation-api
+      newVersion: latest.release
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.Generated
       newFullyQualifiedTypeName: jakarta.annotation.Generated
@@ -192,6 +198,12 @@ recipeList:
       newGroupId: jakarta.authentication
       newArtifactId: jakarta.authentication-api
       newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.security.auth.message
+      newGroupId: jakarta.authentication
+      newArtifactId: jakarta.authentication-api
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.authentication
       artifactId: jakarta.authentication-api
@@ -215,6 +227,12 @@ recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.security.jacc
       oldArtifactId: javax.security.jacc-api
+      newGroupId: jakarta.authorization
+      newArtifactId: jakarta.authorization-api
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.security.jacc
       newGroupId: jakarta.authorization
       newArtifactId: jakarta.authorization-api
       newVersion: latest.release
@@ -313,6 +331,12 @@ recipeList:
       newGroupId: jakarta.ejb
       newArtifactId: jakarta.ejb-api
       newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.ejb
+      newGroupId: jakarta.ejb
+      newArtifactId: jakarta.ejb-api
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.ejb
       artifactId: jakarta.ejb-api
@@ -370,12 +394,6 @@ recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.faces
       oldArtifactId: javax.faces-api
-      newGroupId: jakarta.faces
-      newArtifactId: jakarta.faces-api
-      newVersion: latest.release
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.glassfish
-      oldArtifactId: javax.faces
       newGroupId: jakarta.faces
       newArtifactId: jakarta.faces-api
       newVersion: latest.release
@@ -449,6 +467,12 @@ recipeList:
       newGroupId: jakarta.jms
       newArtifactId: jakarta.jms-api
       newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.jms
+      newGroupId: jakarta.jms
+      newArtifactId: jakarta.jms-api
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.jms
       artifactId: jakarta.jms-api
@@ -489,6 +513,12 @@ recipeList:
       newGroupId: jakarta.jws
       newArtifactId: jakarta.jws-api
       newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.jws
+      newGroupId: jakarta.jws
+      newArtifactId: jakarta.jws-api
+      newVersion: latest.release
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.jws
       artifactId: jakarta.jws-api
@@ -521,7 +551,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxPersistenceToJakartaPersistence
 displayName: Migrate deprecated `javax.persistence` packages to `jakarta.persistence`
-description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation
+description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.persistence
@@ -552,6 +582,12 @@ recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.resource
       oldArtifactId: javax.resource-api
+      newGroupId: jakarta.resource
+      newArtifactId: jakarta.resource-api
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.resource
       newGroupId: jakarta.resource
       newArtifactId: jakarta.resource-api
       newVersion: latest.release
@@ -616,6 +652,12 @@ recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.transaction
       oldArtifactId: javax.transaction-api
+      newGroupId: jakarta.transaction
+      newArtifactId: jakarta.transaction-api
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish.main
+      oldArtifactId: javax.transaction
       newGroupId: jakarta.transaction
       newArtifactId: jakarta.transaction-api
       newVersion: latest.release
@@ -825,7 +867,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
 displayName: Migrate Jackson from javax to jakarta namespace
-description: >
+description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Jackson dependencies with their counterparts
   that are compatible with Jakarta EE 9.
 recipeList:
@@ -942,7 +984,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
 displayName: Migrate Ehcache from javax to jakarta namespace
-description: >
+description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Ehcache dependencies with their counterparts
   that are compatible with Jakarta EE 9.
 recipeList:
@@ -964,7 +1006,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta
 displayName: Migrate Johnzon from javax to jakarta namespace
-description: >
+description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Johnzon dependencies with their counterparts
   that are compatible with Jakarta EE 9.
 recipeList:
@@ -982,7 +1024,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RestAssuredJavaxToJakarta
 displayName: Migrate RestAssured from javax to jakarta namespace by upgrading to a version compatible with J2EE9
-description: >
+description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing RestAssured dependencies with their
   counterparts that are compatible with Jakarta EE 9.
 recipeList:
@@ -994,8 +1036,8 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
 displayName: Migrate `org.apache.ws.security` and `org.apache.ws.security.components.crypto` packages to  `org.apache.wss4j.common.ext` and `org.apache.wss4j.common.crypto` packages
-description: >
-  Java EE has been rebranded to Jakarta EE.  This recipe replaces Apache security packages to migrate to Apache `wss4j`
+description: >-
+  Java EE has been rebranded to Jakarta EE.  This recipe replaces Apache security packages to migrate to Apache `wss4j`.
 recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.ws.security
@@ -1009,7 +1051,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
 displayName: Migrate deprecated `javaee-api` dependencies to `jakarta.platform`
-description: >
+description: >-
   Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:

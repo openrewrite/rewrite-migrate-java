@@ -225,8 +225,7 @@ public class AddJaxwsRuntime extends Recipe {
          * @param artifactId The artifact ID of the dependency
          * @return The highest scope of the given dependency or null if the dependency does not exist.
          */
-        @Nullable
-        private Scope getTransitiveDependencyScope(MavenResolutionResult mavenModel, String groupId, String artifactId) {
+        private @Nullable Scope getTransitiveDependencyScope(MavenResolutionResult mavenModel, String groupId, String artifactId) {
             Scope maxScope = null;
             for (Map.Entry<Scope, List<ResolvedDependency>> entry : mavenModel.getDependencies().entrySet()) {
                 for (ResolvedDependency dependency : entry.getValue()) {

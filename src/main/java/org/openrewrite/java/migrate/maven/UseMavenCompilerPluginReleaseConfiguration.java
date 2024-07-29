@@ -37,7 +37,7 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
     private static final XPathMatcher PLUGINS_MATCHER = new XPathMatcher("/project/build//plugins");
 
     @Option(
-            displayName = "Release Version",
+            displayName = "Release version",
             description = "The new value for the release configuration. This recipe prefers ${java.version} if defined.",
             example = "11"
     )
@@ -86,12 +86,6 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
                 }
                 Xml.Tag updated = filterTagChildren(t, compilerPluginConfig,
                         child -> !("source".equals(child.getName()) || "target".equals(child.getName())));
-                if (updated != t
-                        && source.map("${maven.compiler.source}"::equals).orElse(true)
-                        && target.map("${maven.compiler.target}"::equals).orElse(true)) {
-                    return filterTagChildren(updated, maybeCompilerPlugin.get(),
-                            child -> !("configuration".equals(child.getName()) && child.getChildren().isEmpty()));
-                }
                 String releaseVersionValue = hasJavaVersionProperty(getCursor().firstEnclosingOrThrow(Xml.Document.class))
                         ? "${java.version}" : releaseVersion.toString();
                 updated = addOrUpdateChild(updated, compilerPluginConfig,

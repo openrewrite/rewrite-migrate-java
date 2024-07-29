@@ -17,7 +17,8 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.UseVar
 displayName: Use local variable type inference
-description: Apply local variable type inference (`var`) for primitives and objects. These recipes can cause unused
+description: >-
+  Apply local variable type inference (`var`) for primitives and objects. These recipes can cause unused
   imports, be advised to run `org.openrewrite.java.RemoveUnusedImports afterwards.
 tags:
   - refactoring
