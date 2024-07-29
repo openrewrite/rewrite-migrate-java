@@ -332,12 +332,6 @@ recipeList:
       newArtifactId: jakarta.ejb-api
       newVersion: latest.release
   - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: javax.ejb
-      oldArtifactId: javax.ejb
-      newGroupId: jakarta.ejb
-      newArtifactId: jakarta.ejb-api
-      newVersion: latest.release
-  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.glassfish.main
       oldArtifactId: javax.ejb
       newGroupId: jakarta.ejb
