@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -73,6 +74,48 @@ class ChangeMethodInvocationReturnTypeTest implements RewriteTest {
                       int zero = Integer.valueOf("0");
                       long one = Integer.parseInt("1");
                       int two = Integer.valueOf("2");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceVariableAssignmentFullyQualified() {
+        rewriteRun(
+          spec -> spec.recipe(new ChangeMethodInvocationReturnType("bar.Bar bar()", "java.math.BigInteger"))
+            .parser(JavaParser.fromJavaVersion()
+              //language=java
+              .dependsOn(
+                """
+                  package bar;
+                  public class Bar {
+                      public static Integer bar() {
+                          return null;
+                      }
+                  }
+                  """
+              )
+            ),
+          //language=java
+          java(
+            """
+              import bar.Bar;
+              class Foo {
+                  void foo() {
+                      Integer one = Bar.bar();
+                  }
+              }
+              """,
+            """
+              import bar.Bar;
+
+              import java.math.BigInteger;
+
+              class Foo {
+                  void foo() {
+                      BigInteger one = Bar.bar();
                   }
               }
               """
