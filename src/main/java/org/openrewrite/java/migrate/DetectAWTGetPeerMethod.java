@@ -28,7 +28,7 @@ import org.openrewrite.java.tree.*;
 
 
 
-public class DetectAWTGetPeerMethod extends Recipe {
+class DetectAWTGetPeerMethod extends Recipe {
     private final String methodPatternGetPeer ;
     private final String methodUpdateIsDisplayable;
     private final String className;
@@ -42,9 +42,9 @@ public class DetectAWTGetPeerMethod extends Recipe {
     public String getDescription() {
         return " All methods that refer to types defined in the java.awt.peer package are removed in Java 11. "
                 + "This recipe replaces the use of getPeer() method in the java.awt.Component, java.awt.Font, and java.awt.MenuComponent classes and direct known subclasse."
-                + "The occurrence of  `if (component.getPeer() != null) { .. }` is replaced with `if (component.isDisplayable())` "
-                + "and the occurrence of `if (component.getPeer() instanceof LightweightPeer)` "
-                + "is replaced with `if (component.isLightweight())`.";
+                + "The occurrence of  `(component.getPeer() != null) { .. }` is replaced with `(component.isDisplayable())` "
+                + "and the occurrence of `(component.getPeer() instanceof LightweightPeer)` "
+                + "is replaced with `(component.isLightweight())`.";
     }
     @JsonCreator
     public DetectAWTGetPeerMethod() {
@@ -89,7 +89,7 @@ public class DetectAWTGetPeerMethod extends Recipe {
                     J.InstanceOf instanceOfVar = (J.InstanceOf) ifCExp;
                     if((instanceOfVar.getExpression() instanceof J.MethodInvocation)) {
                         J.MethodInvocation mi = ((J.MethodInvocation) instanceOfVar.getExpression());
-                        if (mi.getName().getSimpleName().equals("getPeer") && checkClassNameIsEqualFQCN(instanceOfVar)) {
+                        if (mi.getName().getSimpleName().equals("getPeer") && checkClassNameIsEqualToFQCN(instanceOfVar)) {
                             mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isLightweight", true, null
                             ).getVisitor().visit(mi, ctx);
                             mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsLightweight, "boolean").getVisitor().visit(mi, ctx);
@@ -101,7 +101,7 @@ public class DetectAWTGetPeerMethod extends Recipe {
             }
           });
     }
-    private boolean checkClassNameIsEqualFQCN(J.InstanceOf instOf){
+    private boolean checkClassNameIsEqualToFQCN(J.InstanceOf instOf){
         if(instOf.getClazz() instanceof J.Identifier){
             J.Identifier id = (J.Identifier) instOf.getClazz();
             return ((JavaType.Class) id.getType()).getFullyQualifiedName().toString().equals(className);
