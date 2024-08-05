@@ -17,9 +17,9 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
 displayName: Use modernized `java.util.concurrent` APIs
-description: >
-  The Java concurrent APIs were updated in Java 9 and those changes resulted in certain APIs being deprecated. This
-  recipe update an application to replace the deprecated APIs with their modern alternatives. 
+description: >-
+  The Java concurrent APIs were updated in Java 9 and those changes resulted in certain APIs being deprecated.
+  This recipe update an application to replace the deprecated APIs with their modern alternatives.
 recipeList:
   - org.openrewrite.java.migrate.concurrent.MigrateAtomicBooleanWeakCompareAndSetToWeakCompareAndSetPlain
   - org.openrewrite.java.migrate.concurrent.MigrateAtomicIntegerWeakCompareAndSetToWeakCompareAndSetPlain

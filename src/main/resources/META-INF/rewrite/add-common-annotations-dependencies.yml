@@ -17,7 +17,7 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies
 displayName: Add explicit Common Annotations dependencies
-description: >
+description: >-
   Add the necessary `annotation-api` dependency from Jakarta EE 8 to maintain compatibility with Java version 11 or greater.
 tags:
   - javax

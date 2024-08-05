@@ -40,7 +40,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
 displayName: Remove `getComment` and `getVersion` methods
-description: >
+description: >-
   Jakarta Servlet methods have been deprecated for removal in Jakarta Servlet 6.0 to align with RFC 6265. 
   In addition, the behavior of these methods has been changed so the setters no longer have any effect, the getComment methods return null, and the getVersion method returns 0.
   The deprecated methods are removed.
@@ -73,7 +73,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
 displayName: Use `isParametersProvided()`
-description: >
+description: >-
   Expression Language prior to 5.0 provides the deprecated MethodExpression.isParmetersProvided() method, with the word 'parameter' misspelled in the method name. 
   This method is unavailable in Jakarta Expression Language 5.0. Use the correctly spelled MethodExpression.isParametersProvided() method instead.
 recipeList:
@@ -84,7 +84,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
 displayName: Use `jakarta.xml.soap.SOAPFactory` to create `SOAPElements`
-description: >
+description: >-
   XML Web Services prior to 4.0 provides the deprecated SOAPElementFactory class, 
   which is removed in XML Web Services 4.0. The recommended replacement is to use jakarta.xml.soap.SOAPFactory to create SOAPElements.
 recipeList:
@@ -183,8 +183,8 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10
 displayName: Replace  deprecated Jakarta Servlet methods and classes
-description: >
-  This recipe replaces the classes and methods deprecated in Jakarta Servlet 6.0
+description: >-
+  This recipe replaces the classes and methods deprecated in Jakarta Servlet 6.0.
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.servlet.http.HttpServletRequest
@@ -264,7 +264,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
 displayName: Remove deprecated API's not supported in CDI4.0
-description: >
+description: >-
   Deprecated APIs have been removed in CDI 4.0. This recipe removes and updates the corresponding deprecated methods.
 recipeList:
   - org.openrewrite.java.migrate.jakarta.RemoveBeanIsNullable
@@ -283,7 +283,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
 displayName: Update Jakarta EE Platform Dependencies to 10.0.0
-description: Update Jakarta EE Platform Dependencies to 10.0.0
+description: Update Jakarta EE Platform Dependencies to 10.0.0.
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.platform

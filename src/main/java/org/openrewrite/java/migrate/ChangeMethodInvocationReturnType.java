@@ -41,7 +41,7 @@ public class ChangeMethodInvocationReturnType extends Recipe {
     String methodPattern;
 
     @Option(displayName = "New method invocation return type",
-            description = "The return return type of method invocation.",
+            description = "The fully qualified new return type of method invocation.",
             example = "long")
     String newReturnType;
 
@@ -96,7 +96,7 @@ public class ChangeMethodInvocationReturnType extends Recipe {
                                     mv.getTypeExpression().getPrefix(),
                                     Markers.EMPTY,
                                     emptyList(),
-                                    newReturnType,
+                                    newReturnType.substring(newReturnType.lastIndexOf('.') + 1),
                                     newType,
                                     null
                             )

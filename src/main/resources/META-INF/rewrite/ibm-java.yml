@@ -17,7 +17,7 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.IBMSemeru
 displayName: Migrate to IBM Semeru Runtimes
-description: >
+description: >-
   This recipe will apply changes commonly needed when upgrading Java versions. The solutions provided in this list are
   solutions only available in IBM Semeru Runtimes.
 tags:
@@ -34,7 +34,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.IBMJDKtoOracleJDK
 displayName: Migrate from IBM Runtimes to Oracle Runtimes
-description: >
+description: >-
   This recipe will apply changes commonly needed when upgrading Java versions. The solutions provided in this list are
   solutions necessary for migrating from IBM Runtimes to Oracle Runtimes.
 tags:

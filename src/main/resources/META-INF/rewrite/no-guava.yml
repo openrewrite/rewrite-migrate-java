@@ -17,7 +17,7 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuava
 displayName: Prefer the Java standard library instead of Guava
-description: >
+description: >-
   Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface
   area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they
   migrate to standard library for these functions.
@@ -29,6 +29,7 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet
@@ -66,7 +67,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaJava11
 displayName: Prefer the Java 11 standard library instead of Guava
-description: >
+description: >-
   Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface
   area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they
   migrate to standard library for these functions.
@@ -85,7 +86,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaJava21
 displayName: Prefer the Java 21 standard library instead of Guava
-description: >
+description: >-
   Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface
   area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they
   migrate to standard library for these functions.
@@ -319,7 +320,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerCompareUnsigned
 displayName: Prefer `Integer#compareUnsigned`
-description: >
+description: >-
   Prefer `java.lang.Integer#compareUnsigned` instead of using `com.google.common.primitives.UnsignedInts#compare` or
   `com.google.common.primitives.UnsignedInts#compareUnsigned`.
 tags:
@@ -336,7 +337,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerDivideUnsigned
 displayName: Prefer `Integer#divideUnsigned`
-description: >
+description: >-
   Prefer `java.lang.Integer#divideUnsigned` instead of using `com.google.common.primitives.UnsignedInts#divide` or
   `com.google.common.primitives.UnsignedInts#divideUnsigned`.
 tags:
@@ -377,7 +378,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongCompareUnsigned
 displayName: Prefer `Long#compareUnsigned`
-description: >
+description: >-
   Prefer `java.lang.Long#compareUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#compare` or
   `com.google.common.primitives.UnsignedLongs#compareUnsigned`.
 tags:
@@ -393,7 +394,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongDivideUnsigned
 displayName: Prefer `Long#divideUnsigned`
-description: >
+description: >-
   Prefer `java.lang.Long#divideUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#divide` or
   `com.google.common.primitives.UnsignedLongs#divideUnsigned`.
 tags:
@@ -434,7 +435,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathAddExact
 displayName: Prefer `Math#addExact`
-description: Prefer `java.lang.Math#addExact` instead of using `com.google.common.math.IntMath#checkedAdd` or `com.google.common.math.IntMath#addExact`
+description: Prefer `java.lang.Math#addExact` instead of using `com.google.common.math.IntMath#checkedAdd` or `com.google.common.math.IntMath#addExact`.
 tags:
   - guava
 recipeList:
@@ -449,7 +450,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathSubtractExact
 displayName: Prefer `Math#subtractExact`
-description: >
+description: >-
   Prefer `java.lang.Math#subtractExact` instead of using `com.google.common.primitives.IntMath#checkedSubtract`
   or `com.google.common.primitives.IntMath#subtractExact`.
 tags:
@@ -466,7 +467,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
 displayName: Prefer `Math#multiplyExact`
-description: >
+description: >-
   Prefer `java.lang.Math#multiplyExact` instead of using `com.google.common.primitives.IntMath#checkedMultiply`
   or `com.google.common.primitives.IntMath#multiplyExact`.
 tags:

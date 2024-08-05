@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.maven;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.SourceSpec;
@@ -37,42 +38,42 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
         rewriteRun(
           //language=xml
           pomXml(
-                """
-            <project>
-                <groupId>com.example</groupId>
-                <artifactId>foo</artifactId>
-                <version>1.0.0</version>
-                <modelVersion>4.0</modelVersion>
-                <properties>
-                    <java.version>11</java.version>
-                    <jdk.version>11</jdk.version>
-                    <javaVersion>11</javaVersion>
-                    <jdkVersion>11</jdkVersion>
-                    <maven.compiler.source>11</maven.compiler.source>
-                    <maven.compiler.target>11</maven.compiler.target>
-                    <maven.compiler.release>11</maven.compiler.release>
-                    <release.version>11</release.version>
-                </properties>
-            </project>
-            """,
             """
-            <project>
-                <groupId>com.example</groupId>
-                <artifactId>foo</artifactId>
-                <version>1.0.0</version>
-                <modelVersion>4.0</modelVersion>
-                <properties>
-                    <java.version>17</java.version>
-                    <jdk.version>17</jdk.version>
-                    <javaVersion>17</javaVersion>
-                    <jdkVersion>17</jdkVersion>
-                    <maven.compiler.source>17</maven.compiler.source>
-                    <maven.compiler.target>17</maven.compiler.target>
-                    <maven.compiler.release>17</maven.compiler.release>
-                    <release.version>17</release.version>
-                </properties>
-            </project>
-            """)
+              <project>
+                  <groupId>com.example</groupId>
+                  <artifactId>foo</artifactId>
+                  <version>1.0.0</version>
+                  <modelVersion>4.0</modelVersion>
+                  <properties>
+                      <java.version>11</java.version>
+                      <jdk.version>11</jdk.version>
+                      <javaVersion>11</javaVersion>
+                      <jdkVersion>11</jdkVersion>
+                      <maven.compiler.source>11</maven.compiler.source>
+                      <maven.compiler.target>11</maven.compiler.target>
+                      <maven.compiler.release>11</maven.compiler.release>
+                      <release.version>11</release.version>
+                  </properties>
+              </project>
+              """,
+            """
+              <project>
+                  <groupId>com.example</groupId>
+                  <artifactId>foo</artifactId>
+                  <version>1.0.0</version>
+                  <modelVersion>4.0</modelVersion>
+                  <properties>
+                      <java.version>17</java.version>
+                      <jdk.version>17</jdk.version>
+                      <javaVersion>17</javaVersion>
+                      <jdkVersion>17</jdkVersion>
+                      <maven.compiler.source>17</maven.compiler.source>
+                      <maven.compiler.target>17</maven.compiler.target>
+                      <maven.compiler.release>17</maven.compiler.release>
+                      <release.version>17</release.version>
+                  </properties>
+              </project>
+              """)
         );
     }
 
@@ -81,24 +82,24 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
         rewriteRun(
           //language=xml
           pomXml(
-                """
-            <project>
-                <groupId>com.example</groupId>
-                <artifactId>example-parent</artifactId>
-                <version>1.0.0</version>
-                <modelVersion>4.0</modelVersion>
-                <properties>
-                    <java.version>11</java.version>
-                    <jdk.version>11</jdk.version>
-                    <javaVersion>11</javaVersion>
-                    <jdkVersion>11</jdkVersion>
-                    <maven.compiler.source>11</maven.compiler.source>
-                    <maven.compiler.target>11</maven.compiler.target>
-                    <maven.compiler.release>11</maven.compiler.release>
-                    <release.version>11</release.version>
-                </properties>
-            </project>
-            """,
+            """
+              <project>
+                  <groupId>com.example</groupId>
+                  <artifactId>example-parent</artifactId>
+                  <version>1.0.0</version>
+                  <modelVersion>4.0</modelVersion>
+                  <properties>
+                      <java.version>11</java.version>
+                      <jdk.version>11</jdk.version>
+                      <javaVersion>11</javaVersion>
+                      <jdkVersion>11</jdkVersion>
+                      <maven.compiler.source>11</maven.compiler.source>
+                      <maven.compiler.target>11</maven.compiler.target>
+                      <maven.compiler.release>11</maven.compiler.release>
+                      <release.version>11</release.version>
+                  </properties>
+              </project>
+              """,
             SourceSpec::skip),
           mavenProject("example-child",
             //language=xml
@@ -129,7 +130,7 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                     </build>
                 </project>
                 """,
-               """
+              """
                 <project>
                     <parent>
                         <groupId>com.example</groupId>
@@ -159,6 +160,35 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                     </build>
                 </project>
                 """)
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/514")
+    void addReleaseIfNoOtherChangeIsMade() {
+        rewriteRun(
+          //language=xml
+          pomXml(
+            """
+              <project>
+                  <groupId>com.example</groupId>
+                  <artifactId>example-child</artifactId>
+                  <version>1.0.0</version>
+                  <modelVersion>4.0</modelVersion>
+              </project>
+              """,
+            """
+              <project>
+                  <groupId>com.example</groupId>
+                  <artifactId>example-child</artifactId>
+                  <version>1.0.0</version>
+                  <modelVersion>4.0</modelVersion>
+                  <properties>
+                      <maven.compiler.release>17</maven.compiler.release>
+                  </properties>
+              </project>
+              """
           )
         );
     }

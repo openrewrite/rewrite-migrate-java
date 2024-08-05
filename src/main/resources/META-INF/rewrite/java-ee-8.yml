@@ -29,8 +29,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8.ServletIsRequestedSessionIdFromURL
-displayName: Replace `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` with `HttpServletRequestWrapper.isRequestedSessionIdFromURL()`
-description: The  method `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` is deprecated in JavaEE8 and is replaced by `HttpServletRequestWrapper.isRequestedSessionIdFromURL()`
+displayName: Replace `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` with `isRequestedSessionIdFromURL()`
+description: The  method `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` is deprecated in JavaEE8 and is replaced by `HttpServletRequestWrapper.isRequestedSessionIdFromURL()`.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: javax.servlet.http.HttpServletRequestWrapper isRequestedSessionIdFromUrl()
@@ -40,10 +40,10 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8.ApacheDefaultProvider
 displayName: Flags any `org.apache.bval.jsr*` (bval 1.1) and `org.apache.bval.jsr303*` (bval 1.0) package references
-description: >
+description: >-
   This recipe flags any `org.apache.bval.jsr*` (bval 1.1) and `org.apache.bval.jsr303*` (bval 1.0) package references in validation.xml deployment descriptors. 
   Bean Validation 2.0 and later use the Hibernate Validator implementation instead of the 
-  Apache BVal implementation which was used for Bean Validation 1.0 and 1.1
+  Apache BVal implementation which was used for Bean Validation 1.0 and 1.1.
 recipeList:
   - org.openrewrite.xml.ChangeTagValue:
       elementName: /validation-config/default-provider
