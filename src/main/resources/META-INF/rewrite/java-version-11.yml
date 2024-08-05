@@ -69,7 +69,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedPolicy
   - org.openrewrite.java.migrate.ReferenceCloneMethod
   - org.openrewrite.java.migrate.ThreadStopDestroy
-
+  - org.openrewrite.java.migrate.DetectAWTGetPeerMethod
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11
@@ -265,3 +265,4 @@ recipeList:
       methodPattern: java.lang.Thread destroy()
   - org.openrewrite.java.migrate.RemoveMethodInvocation:
       methodPattern: java.lang.Thread stop(java.lang.Throwable)
+---

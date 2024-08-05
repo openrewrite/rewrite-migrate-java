@@ -25,54 +25,71 @@ import static org.openrewrite.java.Assertions.java;
 class DetectAWTGetPeerMethodTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new DetectAWTGetPeerMethod());
+        spec.recipe(new DetectAWTGetPeerMethod("com.test.Component1 getPeer()","com.test.Component1 isDisplayable()", "com.test.TestDummy","com.test.Component1 isLightweight()"));
     }
     //language=java
     String componentClass = """
       package com.test;
       public class Component1 {
 
-         public String getPeer(){
-           return "x";
-         } 
-         public boolean getPeer1(){
-           return true;
-         }   
-         public boolean isDisplayable(){
-           return true;
-         }     
+             public String getPeer(){
+               return "x";
+             } 
+             public boolean getPeer1(){
+               return true;
+             }   
+             public boolean isDisplayable(){
+               return true;
+             }
+            public boolean isLightweight(){
+              return true;
+            }
+      }
+     """;
+    String instantOfDummyClass = """
+      package com.test;
+      public class TestDummy {
       }
      """;
     @DocumentExample
     @Test
-    void testMethod(){
+    void testInstanceAndGetPeerMethod(){
         rewriteRun(
           //language=java
           java(componentClass),
+          java(instantOfDummyClass),
           java(
             """
               package com.test;
 
-              public class Test {
+              public class Test extends TestDummy{
                       
-                    public void doX() {
-                         Component1 y = new Component1();             
-                         if (y.getPeer() != null){}         
+                    public static void main(String args[]) {
+                      Test t1 = new Test();
+                      Component1 c = new Component1();
+                      if(c.getPeer() instanceof com.test.TestDummy){};
+                      if(c.getPeer() instanceof TestDummy){};
+                      Component1 y = new Component1();             
+                      if (y.getPeer() != null){}         
                     }
               }
               """,
             """
               package com.test;
 
-              public class Test {
+              public class Test extends TestDummy{
                       
-                    public void doX() {
-                         Component1 y = new Component1();             
-                         if( y.isDisplayable()){}        
+                    public static void main(String args[]) {
+                      Test t1 = new Test();
+                      Component1 c = new Component1();
+                      if(c.isLightweight()){};
+                      if(c.isLightweight()){};
+                      Component1 y = new Component1();             
+                      if (y.isDisplayable()){}     
                     }
               }
               """
-             )
-         );
-     }
+          )
+        );
+    }
 }
