@@ -26,8 +26,6 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.*;
 
-
-
 class DetectAWTGetPeerMethod extends Recipe {
     private final String methodPatternGetPeer ;
     private final String methodUpdateIsDisplayable;
