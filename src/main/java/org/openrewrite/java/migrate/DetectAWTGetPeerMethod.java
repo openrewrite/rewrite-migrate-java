@@ -65,6 +65,7 @@ class DetectAWTGetPeerMethod extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesMethod<>(methodPatternGetPeer), new JavaVisitor<ExecutionContext>() {
+            @Override
             public <T extends J> J.ControlParentheses<T> visitControlParentheses(J.ControlParentheses<T> cp, ExecutionContext ctx) {
                 Expression ifCExp = (Expression) cp.getTree();
                 //Check if there is a Binary or an instanceOf inside the paranthesis
