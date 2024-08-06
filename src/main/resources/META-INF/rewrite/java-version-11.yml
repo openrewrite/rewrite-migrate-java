@@ -282,4 +282,3 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.nio.file.Path get(..)
       newMethodName: of
-

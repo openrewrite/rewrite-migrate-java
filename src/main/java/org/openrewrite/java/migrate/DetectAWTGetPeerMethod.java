@@ -17,6 +17,10 @@
 package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -24,13 +28,19 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
+@Value
+@EqualsAndHashCode(callSuper = false)
+@AllArgsConstructor(access = AccessLevel.PACKAGE) // For tests
 class DetectAWTGetPeerMethod extends Recipe {
-    private final String methodPatternGetPeer ;
-    private final String methodUpdateIsDisplayable;
-    private final String className;
-    private final String methodUpdateIsLightweight;
+    String methodPatternGetPeer;
+    String methodUpdateIsDisplayable;
+    String className;
+    String methodUpdateIsLightweight;
+
     @Override
     public String getDisplayName() {
         return "Replace `getPeer()` method";
@@ -39,11 +49,12 @@ class DetectAWTGetPeerMethod extends Recipe {
     @Override
     public String getDescription() {
         return " All methods that refer to types defined in the java.awt.peer package are removed in Java 11. "
-                + "This recipe replaces the use of getPeer() method in the java.awt.Component, java.awt.Font, and java.awt.MenuComponent classes and direct known subclasse."
-                + "The occurrence of  `(component.getPeer() != null) { .. }` is replaced with `(component.isDisplayable())` "
-                + "and the occurrence of `(component.getPeer() instanceof LightweightPeer)` "
-                + "is replaced with `(component.isLightweight())`.";
+               + "This recipe replaces the use of getPeer() method in the java.awt.Component, java.awt.Font, and java.awt.MenuComponent classes and direct known subclasse."
+               + "The occurrence of  `(component.getPeer() != null) { .. }` is replaced with `(component.isDisplayable())` "
+               + "and the occurrence of `(component.getPeer() instanceof LightweightPeer)` "
+               + "is replaced with `(component.isLightweight())`.";
     }
+
     @JsonCreator
     public DetectAWTGetPeerMethod() {
         this.methodPatternGetPeer = "java.awt.* getPeer()";
@@ -51,15 +62,7 @@ class DetectAWTGetPeerMethod extends Recipe {
         this.className = "java.awt.peer.LightweightPeer";
         this.methodUpdateIsLightweight = "java.awt.*  isLightweight()";
     }
-    /**
-     * Overload constructor to allow for custom method patterns used in tests only.
-     */
-    DetectAWTGetPeerMethod(String methodPatternGetPeer, String methodUpdatedIsDisplayable, String className, String methodUpdateIsLightweight ) {
-        this.methodPatternGetPeer = methodPatternGetPeer;
-        this.methodUpdateIsDisplayable = methodUpdatedIsDisplayable;
-        this.className = className;
-        this.methodUpdateIsLightweight = methodUpdateIsLightweight;
-    }
+
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesMethod<>(methodPatternGetPeer), new JavaVisitor<ExecutionContext>() {
@@ -79,14 +82,13 @@ class DetectAWTGetPeerMethod extends Recipe {
                         if (mi.getName().getSimpleName().equals("getPeer") && lt.getValueSource().equals("null")) {
                             mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isDisplayable", true, null
                             ).getVisitor().visit(mi, ctx);
-                            mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsDisplayable,"boolean").getVisitor().visit(mi, ctx);
+                            mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsDisplayable, "boolean").getVisitor().visit(mi, ctx);
                             return cp.withTree((T) mi);
                         }
                     }
-                }
-                else if (ifCExp instanceof J.InstanceOf){
+                } else if (ifCExp instanceof J.InstanceOf) {
                     J.InstanceOf instanceOfVar = (J.InstanceOf) ifCExp;
-                    if((instanceOfVar.getExpression() instanceof J.MethodInvocation)) {
+                    if ((instanceOfVar.getExpression() instanceof J.MethodInvocation)) {
                         J.MethodInvocation mi = ((J.MethodInvocation) instanceOfVar.getExpression());
                         if (mi.getName().getSimpleName().equals("getPeer") && checkClassNameIsEqualToFQCN(instanceOfVar)) {
                             mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isLightweight", true, null
@@ -98,18 +100,17 @@ class DetectAWTGetPeerMethod extends Recipe {
                 }
                 return cp;
             }
-          });
+        });
     }
-    private boolean checkClassNameIsEqualToFQCN(J.InstanceOf instOf){
-        if(instOf.getClazz() instanceof J.Identifier){
+
+    private boolean checkClassNameIsEqualToFQCN(J.InstanceOf instOf) {
+        if (instOf.getClazz() instanceof J.Identifier) {
             J.Identifier id = (J.Identifier) instOf.getClazz();
             return ((JavaType.Class) id.getType()).getFullyQualifiedName().toString().equals(className);
-        }
-        else if (instOf.getClazz() instanceof J.FieldAccess){
+        } else if (instOf.getClazz() instanceof J.FieldAccess) {
             J.FieldAccess fid = (J.FieldAccess) instOf.getClazz();
             return ((JavaType.Class) fid.getType()).getFullyQualifiedName().toString().equals(className);
-        }
-        else{
+        } else {
             return false;
         }
     }

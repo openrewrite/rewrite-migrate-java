@@ -15,79 +15,87 @@
  */
 package org.openrewrite.java.migrate;
 
-import org.openrewrite.java.JavaParser;
-import org.openrewrite.test.RewriteTest;
-
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
+import org.openrewrite.test.RewriteTest;
+
 import static org.openrewrite.java.Assertions.java;
 
 class DetectAWTGetPeerMethodTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new DetectAWTGetPeerMethod("com.test.Component1 getPeer()","com.test.Component1 isDisplayable()", "com.test.TestDummy","com.test.Component1 isLightweight()"));
+        spec.recipe(new DetectAWTGetPeerMethod(
+            "com.test.Component1 getPeer()",
+            "com.test.Component1 isDisplayable()",
+            "com.test.TestDummy",
+            "com.test.Component1 isLightweight()"))
+          .parser(JavaParser.fromJavaVersion()
+            //language=java
+            .dependsOn(
+              """
+                package com.test;
+                public class Component1 {
+                    public String getPeer() {
+                        return "x";
+                    }
+                    public boolean getPeer1() {
+                        return true;
+                    }
+                    public boolean isDisplayable() {
+                        return true;
+                    }
+                    public boolean isLightweight() {
+                        return true;
+                    }
+                }
+                """,
+              """
+                 package com.test;
+                 public class TestDummy {
+                 }
+                """
+            ));
     }
-    //language=java
-    String componentClass = """
-      package com.test;
-      public class Component1 {
 
-             public String getPeer(){
-               return "x";
-             } 
-             public boolean getPeer1(){
-               return true;
-             }   
-             public boolean isDisplayable(){
-               return true;
-             }
-            public boolean isLightweight(){
-              return true;
-            }
-      }
-     """;
-    String instantOfDummyClass = """
-      package com.test;
-      public class TestDummy {
-      }
-     """;
+
     @DocumentExample
     @Test
-    void instanceAndGetPeerMethod(){
+    void instanceAndGetPeerMethod() {
         rewriteRun(
           //language=java
-          java(componentClass),
-          java(instantOfDummyClass),
           java(
             """
               package com.test;
-
-              public class Test extends TestDummy{
-                      
-                    public static void main(String args[]) {
+              class Test extends TestDummy {
+                  public void foo() {
                       Test t1 = new Test();
                       Component1 c = new Component1();
-                      if(c.getPeer() instanceof com.test.TestDummy){};
-                      if(c.getPeer() instanceof TestDummy){};
-                      Component1 y = new Component1();             
-                      if (y.getPeer() != null){}         
-                    }
+                      if (c.getPeer() instanceof com.test.TestDummy) {
+                      }
+                      if (c.getPeer() instanceof TestDummy) {
+                      }
+                      Component1 y = new Component1();
+                      if (y.getPeer() != null) {
+                      }
+                  }
               }
               """,
             """
               package com.test;
-
-              public class Test extends TestDummy{
-                      
-                    public static void main(String args[]) {
+              public class Test extends TestDummy {
+                  public static void main(String args[]) {
                       Test t1 = new Test();
                       Component1 c = new Component1();
-                      if(c.isLightweight()){};
-                      if(c.isLightweight()){};
-                      Component1 y = new Component1();             
-                      if (y.isDisplayable()){}     
-                    }
+                      if (c.isLightweight()) {
+                      }
+                      if (c.isLightweight()) {
+                      }
+                      Component1 y = new Component1();
+                      if (y.isDisplayable()) {
+                      }
+                  }
               }
               """
           )
