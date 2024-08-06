@@ -23,10 +23,10 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class DetectAWTGetPeerMethodTest implements RewriteTest {
+class ReplaceAWTGetPeerMethodTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new DetectAWTGetPeerMethod(
+        spec.recipe(new ReplaceAWTGetPeerMethod(
             "com.test.Component1 getPeer()",
             "com.test.Component1 isDisplayable()",
             "com.test.TestDummy",
@@ -114,10 +114,10 @@ class DetectAWTGetPeerMethodTest implements RewriteTest {
               class Test {
                   void foo() { 
                       Component1 y = new Component1(); 
-                      boolean instance = (y.getPeer() instanceof TestDummy);
+                      boolean instance = y.getPeer() instanceof TestDummy;
                       if (instance){
                       }
-                      boolean instance1 = (y.getPeer() != null);
+                      boolean instance1 = y.getPeer() != null;
                       if (instance1){
                       }
                   }
