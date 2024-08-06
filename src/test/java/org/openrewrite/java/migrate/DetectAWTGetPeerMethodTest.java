@@ -69,7 +69,7 @@ class DetectAWTGetPeerMethodTest implements RewriteTest {
             """
               package com.test;
               class Test extends TestDummy {
-                  public void foo() {
+                  void foo() {
                       Test t1 = new Test();
                       Component1 c = new Component1();
                       if (c.getPeer() instanceof com.test.TestDummy) {
@@ -84,8 +84,8 @@ class DetectAWTGetPeerMethodTest implements RewriteTest {
               """,
             """
               package com.test;
-              public class Test extends TestDummy {
-                  public static void main(String args[]) {
+              class Test extends TestDummy {
+                  void foo() {
                       Test t1 = new Test();
                       Component1 c = new Component1();
                       if (c.isLightweight()) {
