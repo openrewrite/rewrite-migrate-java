@@ -62,7 +62,7 @@ class DetectAWTGetPeerMethodTest implements RewriteTest {
 
     @DocumentExample
     @Test
-    void instanceAndGetPeerMethod() {
+    void instanceAndGetPeerMethodControlParentheses() {
         rewriteRun(
           //language=java
           java(
@@ -71,14 +71,14 @@ class DetectAWTGetPeerMethodTest implements RewriteTest {
               class Test extends TestDummy {
                   void foo() {
                       Test t1 = new Test();
-                      Component1 c = new Component1();
+                      Component1 c = new Component1();              
                       if (c.getPeer() instanceof com.test.TestDummy) {
                       }
                       if (c.getPeer() instanceof TestDummy) {
                       }
                       Component1 y = new Component1();
                       if (y.getPeer() != null) {
-                      }
+                      }              
                   }
               }
               """,
@@ -94,6 +94,46 @@ class DetectAWTGetPeerMethodTest implements RewriteTest {
                       }
                       Component1 y = new Component1();
                       if (y.isDisplayable()) {
+                      }             
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void instanceAndGetPeerMethodNoParenthesis() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package com.test;
+
+              class Test {
+                  void foo() { 
+                      Component1 y = new Component1(); 
+                      boolean instance = (y.getPeer() instanceof TestDummy);
+                      if (instance){
+                      }
+                      boolean instance1 = (y.getPeer() != null);
+                      if (instance1){
+                      }
+                  }
+              }
+              """,
+            """
+              package com.test;
+
+              class Test {
+                  void foo() {             
+                      Component1 y = new Component1(); 
+                      boolean instance = y.isLightweight();
+                      if (instance){
+                      }
+                      boolean instance1 = isDisplayable();
+                      if (instance1){
                       }
                   }
               }

@@ -70,7 +70,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedPolicy
   - org.openrewrite.java.migrate.ReferenceCloneMethod
   - org.openrewrite.java.migrate.ThreadStopDestroy
-  - org.openrewrite.java.migrate.DetectAWTGetPeerMethod
+  - org.openrewrite.java.migrate.ReplaceAWTGetPeerMethod
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11
