@@ -132,7 +132,7 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
                       boolean instance = y.isLightweight();
                       if (instance){
                       }
-                      boolean instance1 = isDisplayable();
+                      boolean instance1 = y.isDisplayable();
                       if (instance1){
                       }
                   }

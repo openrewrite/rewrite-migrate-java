@@ -78,7 +78,7 @@ class ReplaceAWTGetPeerMethod extends Recipe {
                 if (ifCExp instanceof J.Binary) {
                     J.Binary binaryCondition = (J.Binary) ifCExp;
                     //check if(x.getPeer() != null)
-                    //Not sure if we need to check if (null != getPeer())
+                    //Not checking (null != getPeer())
                     if (checkMethodInvocationNotEqualLiteralInBinary(binaryCondition)) {
                         J.MethodInvocation mi = (J.MethodInvocation) binaryCondition.getLeft();
                         J.Literal lt = (J.Literal) binaryCondition.getRight();
@@ -106,6 +106,7 @@ class ReplaceAWTGetPeerMethod extends Recipe {
                 }
                 return cp;
             }
+            //Placeholders
 //            @Override
 //            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration md, ExecutionContext ctx){
 //                return md;
