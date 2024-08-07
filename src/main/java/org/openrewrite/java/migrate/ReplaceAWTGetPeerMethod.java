@@ -66,60 +66,45 @@ class ReplaceAWTGetPeerMethod extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesMethod<>(methodPatternGetPeer), new JavaVisitor<ExecutionContext>() {
+        MethodMatcher methodMatcherGetPeer = new MethodMatcher(methodPatternGetPeer);
+        return Preconditions.check(new UsesMethod<>(methodMatcherGetPeer), new JavaVisitor<ExecutionContext>() {
             @Override
-            public <T extends J> J.ControlParentheses<T> visitControlParentheses(J.ControlParentheses<T> cp, ExecutionContext ctx) {
-                MethodMatcher methodMatcherGetPeer = new MethodMatcher(methodPatternGetPeer);
-                Expression ifCExp = (Expression) cp.getTree();
-                //Check if there is a Binary or an instanceOf inside the Parentheses
-                if (!(ifCExp instanceof J.Binary) && !(ifCExp instanceof J.InstanceOf)) {
-                    return cp;
-                }
-                if (ifCExp instanceof J.Binary) {
-                    J.Binary binaryCondition = (J.Binary) ifCExp;
-                    //check if(x.getPeer() != null)
-                    //Not checking (null != getPeer())
-                    if (checkMethodInvocationNotEqualLiteralInBinary(binaryCondition)) {
-                        J.MethodInvocation mi = (J.MethodInvocation) binaryCondition.getLeft();
-                        J.Literal lt = (J.Literal) binaryCondition.getRight();
-                        if (methodMatcherGetPeer.matches(mi.getMethodType())) {
-                            assert lt.getValueSource() != null;
-                            if (lt.getValueSource().equals("null")) {
-                                mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isDisplayable", true, null
-                                ).getVisitor().visit(mi, ctx);
-                                mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsDisplayable, "boolean").getVisitor().visit(mi, ctx);
-                                return cp.withTree((T) mi);
-                            }
-                        }
-                    }
-                } else {
-                    J.InstanceOf instanceOfVar = (J.InstanceOf) ifCExp;
-                    if (instanceOfVar.getExpression() instanceof J.MethodInvocation) {
-                        J.MethodInvocation mi = ((J.MethodInvocation) instanceOfVar.getExpression());
-                        if (methodMatcherGetPeer.matches(mi.getMethodType()) && checkClassNameIsEqualToFQCN(instanceOfVar)) {
-                            mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isLightweight", true, null
+            public J visitBinary(J.Binary binary, ExecutionContext ctx){
+                J.Binary binaryCondition = (J.Binary) super.visitBinary(binary, ctx);
+
+                //check if(x.getPeer() != null)
+                //Not checking (null != getPeer())
+                if (checkMethodInvocationNotEqualLiteralInBinary(binaryCondition)) {
+                    J.MethodInvocation mi = (J.MethodInvocation) binaryCondition.getLeft();
+                    J.Literal lt = (J.Literal) binaryCondition.getRight();
+                    if (methodMatcherGetPeer.matches(mi.getMethodType())) {
+                        assert lt.getValueSource() != null;
+                        if (lt.getValueSource().equals("null")) {
+                            mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isDisplayable", true, null
                             ).getVisitor().visit(mi, ctx);
-                            mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsLightweight, "boolean").getVisitor().visit(mi, ctx);
-                            return cp.withTree((T) mi);
+                            mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsDisplayable, "boolean").getVisitor().visit(mi, ctx);
+                            return mi.withPrefix(binaryCondition.getPrefix());
                         }
                     }
                 }
-                return (J.ControlParentheses<T>) super.visitControlParentheses(cp, ctx);
-            }
-            //Placeholders
-//            @Override
-//            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration md, ExecutionContext ctx){
-//                return md;
-//            }
-            @Override
-            public J.Binary visitBinary(J.Binary binary, ExecutionContext ctx){
-                //TODO handle binary outside of control parentheses
-                return (J.Binary) super.visitBinary(binary, ctx);
+
+                return binaryCondition;
             }
             @Override
-            public J.InstanceOf visitInstanceOf(J.InstanceOf instOf, ExecutionContext ctx){
-                //TODO handle instanceOf outside of control parentheses
-                return (J.InstanceOf) super.visitInstanceOf(instOf, ctx);
+            public J visitInstanceOf(J.InstanceOf instOf, ExecutionContext ctx){
+                J.InstanceOf instanceOfVar = (J.InstanceOf) super.visitInstanceOf(instOf, ctx);
+
+                if (instanceOfVar.getExpression() instanceof J.MethodInvocation) {
+                    J.MethodInvocation mi = ((J.MethodInvocation) instanceOfVar.getExpression());
+                    if (methodMatcherGetPeer.matches(mi.getMethodType()) && checkClassNameIsEqualToFQCN(instanceOfVar)) {
+                        mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isLightweight", true, null
+                        ).getVisitor().visit(mi, ctx);
+                        mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsLightweight, "boolean").getVisitor().visit(mi, ctx);
+                        return mi.withPrefix(instanceOfVar.getPrefix());
+                    }
+                }
+
+                return instanceOfVar;
             }
         });
     }
