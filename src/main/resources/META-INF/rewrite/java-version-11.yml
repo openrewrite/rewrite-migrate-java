@@ -70,6 +70,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedPolicy
   - org.openrewrite.java.migrate.ReferenceCloneMethod
   - org.openrewrite.java.migrate.ThreadStopDestroy
+  - org.openrewrite.java.migrate.RemovedLogManagerPropertyChangeListenerMethods
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -282,3 +283,19 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.nio.file.Path get(..)
       newMethodName: of
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedLogManagerPropertyChangeListenerMethods
+displayName: Replace `addPropertyListener` with `addConfigurationListener` and `removePropertyListener` with `removeConfigurationListener`
+description: >-
+  The `addPropertyChangeListener` and `removePropertyChangeListener` methods of `java.util.logging.LogManager` have been deprecated and removed in favor of `addConfigurationListener` and `removeConfigurationListener`.
+  This recipe updates the method calls to use the new methods.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.logging.LogManager addPropertyChangeListener(..)
+      newMethodName: addConfigurationListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.logging.LogManager removePropertyChangeListener(..)
+      newMethodName: removeConfigurationListener
