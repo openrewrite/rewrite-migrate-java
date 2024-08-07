@@ -110,76 +110,14 @@ recipeList:
       newGroupId: jakarta.annotation
       newArtifactId: jakarta.annotation-api
       newVersion: latest.release
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Generated
-      newFullyQualifiedTypeName: jakarta.annotation.Generated
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.ManagedBean
-      newFullyQualifiedTypeName: jakarta.annotation.ManagedBean
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Nonnull
-      newFullyQualifiedTypeName: jakarta.annotation.Nonnull
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Nullable
-      newFullyQualifiedTypeName: jakarta.annotation.Nullable
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.PostConstruct
-      newFullyQualifiedTypeName: jakarta.annotation.PostConstruct
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.PreDestroy
-      newFullyQualifiedTypeName: jakarta.annotation.PreDestroy
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Priority
-      newFullyQualifiedTypeName: jakarta.annotation.Priority
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Resource
-      newFullyQualifiedTypeName: jakarta.annotation.Resource
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Resources
-      newFullyQualifiedTypeName: jakarta.annotation.Resources
-  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationSecurityPackageToJakarta
-  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationSqlPackageToJakarta
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.annotation
+      newPackageName: jakarta.annotation
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: jakarta.annotation.processing
+      newPackageName: javax.annotation.processing
 
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationSecurityPackageToJakarta
-displayName: Migrate deprecated `javax.annotation.security` packages to `jakarta.annotation.security`
-description: Change type of classes in the `javax.annotation.security` package to jakarta.
-tags:
-  - javax
-  - jakarta
-recipeList:
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.security.DeclareRoles
-      newFullyQualifiedTypeName: jakarta.annotation.security.DeclareRoles
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.security.DenyAll
-      newFullyQualifiedTypeName: jakarta.annotation.security.DenyAll
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.security.PermitAll
-      newFullyQualifiedTypeName: jakarta.annotation.security.PermitAll
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.security.RolesAllowed
-      newFullyQualifiedTypeName: jakarta.annotation.security.RolesAllowed
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.security.RunAs
-      newFullyQualifiedTypeName: jakarta.annotation.security.RunAs
-
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationSqlPackageToJakarta
-displayName: Migrate deprecated `javax.annotation.sql` packages to `jakarta.annotation.sql`
-description: Change type of classes in the `javax.annotation.sql` package to jakarta.
-tags:
-  - javax
-  - jakarta
-recipeList:
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.sql.DataSourceDefinition
-      newFullyQualifiedTypeName: jakarta.annotation.sql.DataSourceDefinition
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.sql.DataSourceDefinitions
-      newFullyQualifiedTypeName: jakarta.annotation.sql.DataSourceDefinitions
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
