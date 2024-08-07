@@ -104,21 +104,23 @@ class ReplaceAWTGetPeerMethod extends Recipe {
                         }
                     }
                 }
-                return cp;
+                return (J.ControlParentheses<T>) super.visitControlParentheses(cp, ctx);
             }
             //Placeholders
 //            @Override
 //            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration md, ExecutionContext ctx){
 //                return md;
 //            }
-//            @Override
-//            public J.Binary visitBinary(J.Binary binary, ExecutionContext ctx){
-//                return binary;
-//            }
-//            @Override
-//            public J.InstanceOf visitInstanceOf(J.InstanceOf instOf, ExecutionContext ctx){
-//                return instOf;
-//            }
+            @Override
+            public J.Binary visitBinary(J.Binary binary, ExecutionContext ctx){
+                //TODO handle binary outside of control parentheses
+                return (J.Binary) super.visitBinary(binary, ctx);
+            }
+            @Override
+            public J.InstanceOf visitInstanceOf(J.InstanceOf instOf, ExecutionContext ctx){
+                //TODO handle instanceOf outside of control parentheses
+                return (J.InstanceOf) super.visitInstanceOf(instOf, ctx);
+            }
         });
     }
 

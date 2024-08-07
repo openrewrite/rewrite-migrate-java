@@ -59,8 +59,6 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
             ));
     }
 
-
-    @DocumentExample
     @Test
     void instanceAndGetPeerMethodControlParentheses() {
         rewriteRun(
@@ -71,14 +69,14 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
               class Test extends TestDummy {
                   void foo() {
                       Test t1 = new Test();
-                      Component1 c = new Component1();              
+                      Component1 c = new Component1();
                       if (c.getPeer() instanceof com.test.TestDummy) {
                       }
                       if (c.getPeer() instanceof TestDummy) {
                       }
                       Component1 y = new Component1();
                       if (y.getPeer() != null) {
-                      }              
+                      }
                   }
               }
               """,
@@ -94,7 +92,7 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
                       }
                       Component1 y = new Component1();
                       if (y.isDisplayable()) {
-                      }             
+                      }
                   }
               }
               """
@@ -102,7 +100,6 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void instanceAndGetPeerMethodNoParenthesis() {
         rewriteRun(
@@ -112,8 +109,8 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
               package com.test;
 
               class Test {
-                  void foo() { 
-                      Component1 y = new Component1(); 
+                  void foo() {
+                      Component1 y = new Component1();
                       boolean instance = y.getPeer() instanceof TestDummy;
                       if (instance){
                       }
@@ -127,8 +124,8 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
               package com.test;
 
               class Test {
-                  void foo() {             
-                      Component1 y = new Component1(); 
+                  void foo() {
+                      Component1 y = new Component1();
                       boolean instance = y.isLightweight();
                       if (instance){
                       }
