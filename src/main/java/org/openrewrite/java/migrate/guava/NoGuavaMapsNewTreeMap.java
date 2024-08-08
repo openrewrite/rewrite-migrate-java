@@ -30,6 +30,7 @@ import java.util.Set;
 
 public class NoGuavaMapsNewTreeMap extends Recipe {
     private static final MethodMatcher NEW_TREE_MAP = new MethodMatcher("com.google.common.collect.Maps newTreeMap()");
+    private static final MethodMatcher NEW_TREE_MAP_WITH_COMPARATOR = new MethodMatcher("com.google.common.collect.Maps newTreeMap(java.util.Comparator)");
     private static final MethodMatcher NEW_TREE_MAP_WITH_MAP = new MethodMatcher("com.google.common.collect.Maps newTreeMap(java.util.SortedMap)");
 
     @Override
@@ -51,6 +52,7 @@ public class NoGuavaMapsNewTreeMap extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(Preconditions.or(
                 new UsesMethod<>(NEW_TREE_MAP),
+                new UsesMethod<>(NEW_TREE_MAP_WITH_COMPARATOR),
                 new UsesMethod<>(NEW_TREE_MAP_WITH_MAP)), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -62,6 +64,14 @@ public class NoGuavaMapsNewTreeMap extends Recipe {
                             .imports("java.util.TreeMap")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace());
+                } else if (NEW_TREE_MAP_WITH_COMPARATOR.matches(method)) {
+                    maybeRemoveImport("com.google.common.collect.Maps");
+                    maybeAddImport("java.util.TreeMap");
+                    return JavaTemplate.builder("new TreeMap<>(#{any(java.util.Comparator)})")
+                            .contextSensitive()
+                            .imports("java.util.TreeMap")
+                            .build()
+                            .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
                 } else if (NEW_TREE_MAP_WITH_MAP.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.TreeMap");

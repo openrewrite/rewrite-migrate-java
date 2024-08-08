@@ -61,6 +61,35 @@ class NoGuavaMapsNewTreeMapTest implements RewriteTest {
     }
 
     @Test
+    void replaceWithNewTreeMapWithComparator() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Comparator;
+              import com.google.common.collect.*;
+              import java.util.Map;
+
+              class Test {
+                  Comparator<Integer> comparator = (o1, o2) -> 0;
+                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newTreeMap(comparator);
+              }
+              """,
+            """
+              import java.util.Comparator;
+              import java.util.Map;
+              import java.util.TreeMap;
+
+              class Test {
+                  Comparator<Integer> comparator = (o1, o2) -> 0;
+                  Map<Integer, Integer> cardinalsWorldSeries = new TreeMap<>(comparator);
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void replaceWithNewTreeMapWithMap() {
         //language=java
         rewriteRun(
