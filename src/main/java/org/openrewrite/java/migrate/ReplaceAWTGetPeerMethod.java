@@ -29,7 +29,6 @@ import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
@@ -83,6 +82,7 @@ class ReplaceAWTGetPeerMethod extends Recipe {
                             mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isDisplayable", true, null
                             ).getVisitor().visit(mi, ctx);
                             mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsDisplayable, "boolean").getVisitor().visit(mi, ctx);
+                            assert mi != null;
                             return mi.withPrefix(binaryCondition.getPrefix());
                         }
                     }
@@ -100,6 +100,7 @@ class ReplaceAWTGetPeerMethod extends Recipe {
                         mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isLightweight", true, null
                         ).getVisitor().visit(mi, ctx);
                         mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsLightweight, "boolean").getVisitor().visit(mi, ctx);
+                        assert mi != null;
                         return mi.withPrefix(instanceOfVar.getPrefix());
                     }
                 }
