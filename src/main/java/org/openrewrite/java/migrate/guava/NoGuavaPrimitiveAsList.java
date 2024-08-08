@@ -33,12 +33,12 @@ public class NoGuavaPrimitiveAsList extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "`com.google.common.primitives asList` to `Arrays.asList`";
+        return "Prefer `Arrays.asList(..)` over Guava primitives";
     }
 
     @Override
     public String getDescription() {
-        return "Migrate from Guava `com.google.common.primitives asList` to `Arrays.asList`.";
+        return "Migrate from Guava `com.google.common.primitives.* asList(..)` to `Arrays.asList(..)`.";
     }
 
     @Override
