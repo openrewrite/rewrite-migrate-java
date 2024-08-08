@@ -41,7 +41,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import com.google.common.primitives.Booleans;
               import java.util.List;
-              
+
               class Test {
                   List<Boolean> bools = Booleans.asList(true, false);
               }
@@ -49,7 +49,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-              
+
               class Test {
                   List<Boolean> bools = Arrays.asList(true, false);
               }
@@ -66,7 +66,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import com.google.common.primitives.Chars;
               import java.util.List;
-              
+
               class Test {
                   List<Character> chars = Chars.asList('a', 'b');
               }
@@ -74,7 +74,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-              
+
               class Test {
                   List<Character> chars = Arrays.asList('a', 'b');
               }
@@ -91,7 +91,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import com.google.common.primitives.Doubles;
               import java.util.List;
-              
+
               class Test {
                   List<Double> doubles = Doubles.asList(1d, 2d);
               }
@@ -99,7 +99,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-              
+
               class Test {
                   List<Double> doubles = Arrays.asList(1d, 2d);
               }
@@ -116,7 +116,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import com.google.common.primitives.Floats;
               import java.util.List;
-              
+
               class Test {
                   List<Float> floats = Floats.asList(1f, 2f);
               }
@@ -124,7 +124,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-              
+
               class Test {
                   List<Float> floats = Arrays.asList(1f, 2f);
               }
@@ -141,7 +141,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import com.google.common.primitives.Longs;
               import java.util.List;
-              
+
               class Test {
                   List<Long> longs = Longs.asList(1L, 2L);
               }
@@ -149,7 +149,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-              
+
               class Test {
                   List<Long> longs = Arrays.asList(1L, 2L);
               }
@@ -166,7 +166,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import com.google.common.primitives.Ints;
               import java.util.List;
-              
+
               class Test {
                   List<Integer> ints = Ints.asList(1, 2);
               }
@@ -174,7 +174,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-              
+
               class Test {
                   List<Integer> ints = Arrays.asList(1, 2);
               }
@@ -191,7 +191,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import com.google.common.primitives.Shorts;
               import java.util.List;
-              
+
               class Test {
                   List<Short> shorts = Shorts.asList((short) 1, (short) 2);
               }
@@ -199,7 +199,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-              
+
               class Test {
                   List<Short> shorts = Arrays.asList((short) 1, (short) 2);
               }
@@ -216,7 +216,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import com.google.common.primitives.Bytes;
               import java.util.List;
-              
+
               class Test {
                   List<Byte> shorts = Bytes.asList((byte) 1, (byte) 2);
               }
@@ -224,7 +224,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-              
+
               class Test {
                   List<Byte> shorts = Arrays.asList((byte) 1, (byte) 2);
               }
