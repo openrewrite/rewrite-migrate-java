@@ -70,7 +70,11 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedPolicy
   - org.openrewrite.java.migrate.ReferenceCloneMethod
   - org.openrewrite.java.migrate.ThreadStopDestroy
-  - org.openrewrite.java.migrate.ReplaceAWTGetPeerMethod
+  - org.openrewrite.java.migrate.ReplaceAWTGetPeerMethod:
+      methodPatternGetPeer: java.awt.* getPeer()
+      methodUpdateIsDisplayable: java.awt.* isDisplayable()
+      className: java.awt.peer.LightweightPeer
+      methodUpdateIsLightweight: java.awt.*  isLightweight()
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11
@@ -283,19 +287,3 @@ recipeList:
       methodPattern: java.nio.file.Path get(..)
       newMethodName: of
 ---
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.ReplaceAWTGetPeerMethod
-displayName: Replace `getPeer()` method
-description:
-  All methods that refer to types defined in the java.awt.peer package are removed in Java 11.
-  This recipe replaces the use of getPeer() method in the java.awt.Component, java.awt.Font, and java.awt.MenuComponent classes and direct known subclasse.
-  The occurrence of  `(component.getPeer() != null) { .. }` is replaced with `(component.isDisplayable())`
-  and the occurrence of `(component.getPeer() instanceof LightweightPeer)` is replaced with `(component.isLightweight())`.
-tags:
-  - java11
-recipeList:
-  - org.openrewrite.java.migrate.ReplaceAWTGetPeerMethod:
-      methodPatternGetPeer: java.awt.* getPeer()
-      methodUpdateIsDisplayable: java.awt.* isDisplayable()
-      className: java.awt.peer.LightweightPeer
-      methodUpdateIsLightweight: java.awt.*  isLightweight()
