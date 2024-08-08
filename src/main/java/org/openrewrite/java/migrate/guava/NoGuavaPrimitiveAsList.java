@@ -23,9 +23,10 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.template.internal.AbstractRefasterJavaVisitor;
 import org.openrewrite.java.tree.J;
+
+import java.util.Collections;
 
 public class NoGuavaPrimitiveAsList extends Recipe {
 
@@ -48,7 +49,6 @@ public class NoGuavaPrimitiveAsList extends Recipe {
             @Override
             public J visitMethodInvocation(J.MethodInvocation elem, ExecutionContext ctx) {
                 if (METHOD_MATCHER.matches(elem)) {
-                    maybeRemoveImport("com.google.common.primitives.*");
                     maybeRemoveImport("com.google.common.primitives.Booleans");
                     maybeRemoveImport("com.google.common.primitives.Chars");
                     maybeRemoveImport("com.google.common.primitives.Doubles");
@@ -58,17 +58,13 @@ public class NoGuavaPrimitiveAsList extends Recipe {
                     maybeRemoveImport("com.google.common.primitives.Shorts");
                     maybeRemoveImport("com.google.common.primitives.Bytes");
                     maybeAddImport("java.util.Arrays");
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Arrays.asList(");
-                    for (int i = 0; i < elem.getArguments().size(); i++) {
-                        sb.append("#{any()}");
-                        if (i != elem.getArguments().size() - 1) {
-                            sb.append(", ");
-                        }
-                    }
-                    sb.append(")");
+
+                    String sb = "Arrays.asList(" +
+                            String.join(",", Collections.nCopies(elem.getArguments().size(), "#{any()}")) +
+                            ")";
+
                     return JavaTemplate
-                            .builder(sb.toString())
+                            .builder(sb)
                             .imports("java.util.Arrays")
                             .build()
                             .apply(getCursor(), elem.getCoordinates().replace(), elem.getArguments().toArray());
@@ -78,10 +74,7 @@ public class NoGuavaPrimitiveAsList extends Recipe {
 
         };
         return Preconditions.check(
-                Preconditions.and(
-                        new UsesType<>("java.util.List", true),
-                        new UsesMethod<>("com.google.common.primitives.* asList(..)")
-                ),
+                new UsesMethod<>("com.google.common.primitives.* asList(..)"),
                 javaVisitor
         );
     }

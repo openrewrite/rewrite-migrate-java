@@ -49,7 +49,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-
+              
               class Test {
                   List<Boolean> bools = Arrays.asList(true, false);
               }
@@ -58,7 +58,6 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void replaceChar() {
         //language=java
@@ -75,7 +74,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-
+              
               class Test {
                   List<Character> chars = Arrays.asList('a', 'b');
               }
@@ -84,7 +83,6 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void replaceDouble() {
         //language=java
@@ -101,7 +99,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-
+              
               class Test {
                   List<Double> doubles = Arrays.asList(1d, 2d);
               }
@@ -110,7 +108,6 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void replaceFloat() {
         //language=java
@@ -127,7 +124,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-
+              
               class Test {
                   List<Float> floats = Arrays.asList(1f, 2f);
               }
@@ -136,7 +133,6 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void replaceLong() {
         //language=java
@@ -153,7 +149,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-
+              
               class Test {
                   List<Long> longs = Arrays.asList(1L, 2L);
               }
@@ -162,7 +158,6 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void replaceInt() {
         //language=java
@@ -179,7 +174,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-
+              
               class Test {
                   List<Integer> ints = Arrays.asList(1, 2);
               }
@@ -188,7 +183,6 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void replaceShort() {
         //language=java
@@ -205,7 +199,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-
+              
               class Test {
                   List<Short> shorts = Arrays.asList((short) 1, (short) 2);
               }
@@ -214,7 +208,6 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void replaceByte() {
         //language=java
@@ -231,7 +224,7 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.List;
-
+              
               class Test {
                   List<Byte> shorts = Arrays.asList((byte) 1, (byte) 2);
               }
