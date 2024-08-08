@@ -115,4 +115,31 @@ class NoGuavaListsNewArrayListTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void replaceWithNewArrayListWithExpectedSize() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.*;
+                            
+              import java.util.ArrayList;
+              import java.util.List;
+                            
+              class Test {
+                  List<Integer> cardinalsWorldSeries = Lists.newArrayListWithExpectedSize(2);
+              }
+              """,
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+                            
+              class Test {
+                  List<Integer> cardinalsWorldSeries = new ArrayList<>(2);
+              }
+              """
+          )
+        );
+    }
 }

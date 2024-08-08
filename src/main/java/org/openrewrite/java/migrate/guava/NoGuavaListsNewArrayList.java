@@ -33,6 +33,7 @@ public class NoGuavaListsNewArrayList extends Recipe {
     private static final MethodMatcher NEW_ARRAY_LIST = new MethodMatcher("com.google.common.collect.Lists newArrayList()");
     private static final MethodMatcher NEW_ARRAY_LIST_ITERABLE = new MethodMatcher("com.google.common.collect.Lists newArrayList(java.lang.Iterable)");
     private static final MethodMatcher NEW_ARRAY_LIST_CAPACITY = new MethodMatcher("com.google.common.collect.Lists newArrayListWithCapacity(int)");
+    private static final MethodMatcher NEW_ARRAY_LIST_EXPECTED = new MethodMatcher("com.google.common.collect.Lists newArrayListWithExpectedSize(int)");
 
     @Override
     public String getDisplayName() {
@@ -54,7 +55,8 @@ public class NoGuavaListsNewArrayList extends Recipe {
         return Preconditions.check(Preconditions.or(
                 new UsesMethod<>(NEW_ARRAY_LIST),
                 new UsesMethod<>(NEW_ARRAY_LIST_ITERABLE),
-                new UsesMethod<>(NEW_ARRAY_LIST_CAPACITY)), new JavaVisitor<ExecutionContext>() {
+                new UsesMethod<>(NEW_ARRAY_LIST_CAPACITY),
+                new UsesMethod<>(NEW_ARRAY_LIST_EXPECTED)), new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newArrayList = JavaTemplate.builder("new ArrayList<>()")
                     .contextSensitive()
                     .imports("java.util.ArrayList")
@@ -83,6 +85,11 @@ public class NoGuavaListsNewArrayList extends Recipe {
                     return newArrayListCollection.apply(getCursor(), method.getCoordinates().replace(),
                             method.getArguments().get(0));
                 } else if (NEW_ARRAY_LIST_CAPACITY.matches(method)) {
+                    maybeRemoveImport("com.google.common.collect.Lists");
+                    maybeAddImport("java.util.ArrayList");
+                    return newArrayListCapacity.apply(getCursor(), method.getCoordinates().replace(),
+                            method.getArguments().get(0));
+                } else if (NEW_ARRAY_LIST_EXPECTED.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.ArrayList");
                     return newArrayListCapacity.apply(getCursor(), method.getCoordinates().replace(),
