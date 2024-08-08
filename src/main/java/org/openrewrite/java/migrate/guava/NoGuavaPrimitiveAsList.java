@@ -19,18 +19,17 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.template.internal.AbstractRefasterJavaVisitor;
 import org.openrewrite.java.tree.J;
 
 import java.util.Collections;
 
 public class NoGuavaPrimitiveAsList extends Recipe {
 
-    static final MethodMatcher METHOD_MATCHER = new MethodMatcher("com.google.common.primitives.* asList(..)");
+    private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("com.google.common.primitives.* asList(..)");
 
     @Override
     public String getDisplayName() {
@@ -44,38 +43,32 @@ public class NoGuavaPrimitiveAsList extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        JavaVisitor<ExecutionContext> javaVisitor = new AbstractRefasterJavaVisitor() {
-
-            @Override
-            public J visitMethodInvocation(J.MethodInvocation elem, ExecutionContext ctx) {
-                if (METHOD_MATCHER.matches(elem)) {
-                    maybeRemoveImport("com.google.common.primitives.Booleans");
-                    maybeRemoveImport("com.google.common.primitives.Chars");
-                    maybeRemoveImport("com.google.common.primitives.Doubles");
-                    maybeRemoveImport("com.google.common.primitives.Floats");
-                    maybeRemoveImport("com.google.common.primitives.Longs");
-                    maybeRemoveImport("com.google.common.primitives.Ints");
-                    maybeRemoveImport("com.google.common.primitives.Shorts");
-                    maybeRemoveImport("com.google.common.primitives.Bytes");
-                    maybeAddImport("java.util.Arrays");
-
-                    String sb = "Arrays.asList(" +
-                            String.join(",", Collections.nCopies(elem.getArguments().size(), "#{any()}")) +
-                            ")";
-
-                    return JavaTemplate
-                            .builder(sb)
-                            .imports("java.util.Arrays")
-                            .build()
-                            .apply(getCursor(), elem.getCoordinates().replace(), elem.getArguments().toArray());
-                }
-                return super.visitMethodInvocation(elem, ctx);
-            }
-
-        };
         return Preconditions.check(
                 new UsesMethod<>("com.google.common.primitives.* asList(..)"),
-                javaVisitor
+                new JavaIsoVisitor<ExecutionContext>() {
+                    @Override
+                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation elem, ExecutionContext ctx) {
+                        if (METHOD_MATCHER.matches(elem)) {
+                            maybeRemoveImport("com.google.common.primitives.Booleans");
+                            maybeRemoveImport("com.google.common.primitives.Chars");
+                            maybeRemoveImport("com.google.common.primitives.Doubles");
+                            maybeRemoveImport("com.google.common.primitives.Floats");
+                            maybeRemoveImport("com.google.common.primitives.Longs");
+                            maybeRemoveImport("com.google.common.primitives.Ints");
+                            maybeRemoveImport("com.google.common.primitives.Shorts");
+                            maybeRemoveImport("com.google.common.primitives.Bytes");
+                            maybeAddImport("java.util.Arrays");
+
+                            String args = String.join(",", Collections.nCopies(elem.getArguments().size(), "#{any()}"));
+                            return JavaTemplate
+                                    .builder("Arrays.asList(" + args + ')')
+                                    .imports("java.util.Arrays")
+                                    .build()
+                                    .apply(getCursor(), elem.getCoordinates().replace(), elem.getArguments().toArray());
+                        }
+                        return super.visitMethodInvocation(elem, ctx);
+                    }
+                }
         );
     }
 }
