@@ -49,7 +49,7 @@ class UseVarKeywordTest implements RewriteTest {
               java(
                 """
                   package com.example.app;
-                            
+
                   class A {
                     void m() {
                       String str = null;
@@ -67,7 +67,7 @@ class UseVarKeywordTest implements RewriteTest {
               java(
                 """
                   package com.example.app;
-                            
+
                   class A {
                     void m() {
                         String str;
@@ -85,7 +85,7 @@ class UseVarKeywordTest implements RewriteTest {
               java(
                 """
                   package com.example.app;
-                            
+
                   class A {
                     void m() {
                       String str1, str2 = "Hello World!";
@@ -103,7 +103,7 @@ class UseVarKeywordTest implements RewriteTest {
               java(
                 """
                   package com.example.app;
-                            
+
                   class A {
                     void m() {
                         String str1;
@@ -122,7 +122,7 @@ class UseVarKeywordTest implements RewriteTest {
               java(
                 """
                   package com.example.app;
-                        
+
                   class A {
                     void m() {
                         var str1 = "Hello World!";
@@ -140,7 +140,7 @@ class UseVarKeywordTest implements RewriteTest {
               java(
                 """
                   package com.example.app;
-                                    
+
                   class A {
                     void m() {
                         String o = true ? "isTrue" : "Test";
@@ -164,7 +164,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                        
+
                       class A {
                         void m() {
                             Object o = new Object();
@@ -173,7 +173,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                        
+
                       class A {
                         void m() {
                             var o = new Object();
@@ -191,7 +191,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                        
+
                       class A {
                         Object o = new Object();
                         void m() {
@@ -201,7 +201,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                        
+
                       class A {
                         Object o = new Object();
                         void m() {
@@ -221,7 +221,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                        
+
                       class A {
                         void m() {
                             String o = true ? "isTrue" : "Test";
@@ -230,7 +230,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                        
+
                       class A {
                         void m() {
                             var o = true ? "isTrue" : "Test";
@@ -248,7 +248,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                        
+
                       class A {
                         static {
                             Object o = new Object();
@@ -257,7 +257,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                        
+
                       class A {
                         static {
                             var o = new Object();
@@ -275,7 +275,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                        
+
                       class A {
                         {
                             Object o = new Object();
@@ -284,7 +284,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                        
+
                       class A {
                         {
                             var o = new Object();
@@ -305,7 +305,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                        
+
                       class A {
                         Object m(Object o) {
                             return o;
@@ -323,7 +323,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                        
+
                       class A {
                         Object o = new Object();
                         Object m() {
@@ -348,7 +348,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             short mask = 0x7fff;
@@ -366,7 +366,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             byte flags = 0;
@@ -388,7 +388,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             String str = "I am a value";
@@ -397,7 +397,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             var str = "I am a value";
@@ -415,7 +415,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             boolean b = true;
@@ -424,7 +424,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             var b = true;
@@ -442,7 +442,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             char ch = '\ufffd';
@@ -451,7 +451,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             var ch = '\ufffd';
@@ -469,7 +469,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             double d = 2.0;
@@ -478,7 +478,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             var d = 2.0;
@@ -496,7 +496,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             float f = 2.0F;
@@ -505,7 +505,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             var f = 2.0F;
@@ -523,7 +523,7 @@ class UseVarKeywordTest implements RewriteTest {
                   version(
                     java("""
                         package com.example.app;
-                                  
+
                         class A {
                           void m() {
                               long l = 2;
@@ -532,7 +532,7 @@ class UseVarKeywordTest implements RewriteTest {
                         """,
                       """
                         package com.example.app;
-                                  
+
                         class A {
                           void m() {
                               var l = 2L;
@@ -551,7 +551,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             double d = 2.0D;
@@ -560,7 +560,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             var d = 2.0D;
@@ -578,7 +578,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             float f = 2.0F;
@@ -587,7 +587,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             var f = 2.0F;
@@ -605,7 +605,7 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             long l = 2L;
@@ -614,7 +614,7 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                
+
                       class A {
                         void m() {
                             var l = 2L;
@@ -638,9 +638,9 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                      
+
                       import java.util.List;
-                      
+
                       class A {
                         void m() {
                             List<String> strs = List.of();
@@ -658,10 +658,10 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                      
+
                       import java.util.ArrayList;
                       import java.util.List;
-                      
+
                       class A {
                         void m() {
                             List strs = new ArrayList<>();
@@ -679,10 +679,10 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                      
+
                       import java.util.List;
                       import java.util.ArrayList;
-                      
+
                       class A {
                         void m() {
                             List<String> strs = new ArrayList();
@@ -703,10 +703,10 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                        
+
                       import java.util.List;
                       import java.util.ArrayList;
-                                        
+
                       class A {
                         void m() {
                             List<String> strs = new ArrayList<String>();
@@ -715,9 +715,9 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                        
+
                       import java.util.ArrayList;
-                                        
+
                       class A {
                         void m() {
                             var strs = new ArrayList<String>();
@@ -735,10 +735,10 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                      
+
                       import java.util.ArrayList;
                       import java.util.List;
-                      
+
                       class A {
                         void m() {
                             List strs = new ArrayList();
@@ -747,9 +747,9 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                      
+
                       import java.util.ArrayList;
-                      
+
                       class A {
                         void m() {
                             var strs = new ArrayList();
@@ -768,10 +768,10 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                        
+
                       import java.util.List;
                       import java.util.ArrayList;
-                                        
+
                       class A {
                         void m() {
                             List<String> strs = new ArrayList<>();
@@ -779,10 +779,10 @@ class UseVarKeywordTest implements RewriteTest {
                       }
                       """,
                     """
-                      package com.example.app;         
-                                        
+                      package com.example.app;
+
                       import java.util.ArrayList;
-                                        
+
                       class A {
                         void m() {
                             var strs = new ArrayList<String>();
@@ -800,9 +800,9 @@ class UseVarKeywordTest implements RewriteTest {
                   java(
                     """
                       package com.example.app;
-                                          
+
                       import java.util.List;
-                                          
+
                       class A {
                         void m() {
                             List<String> strs = List.of("one", "two");
@@ -811,9 +811,9 @@ class UseVarKeywordTest implements RewriteTest {
                       """,
                     """
                       package com.example.app;
-                                          
+
                       import java.util.List;
-                                          
+
                       class A {
                         void m() {
                             var strs = List.of("one", "two");

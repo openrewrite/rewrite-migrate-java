@@ -42,13 +42,13 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
         rewriteRun(
           //language=java
           java(
-            """             
+            """
               import jakarta.faces.application.StateManager;
               import jakarta.faces.component.UIViewRoot;
               import jakarta.faces.context.FacesContext;
-                          
+
               class StateManagerParent extends StateManager {
-                          
+
                   @Override
                   public UIViewRoot restoreView(FacesContext arg0, String arg1, String arg2) {
                       UIViewRoot uv = null;
@@ -57,16 +57,16 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
                       super.restoreComponentState(arg0, uv, arg2);
                       super.restoreTreeStructure(arg0, arg1, arg2);
                       return null;
-                  }            
+                  }
               }
               """,
             """
               import jakarta.faces.component.UIViewRoot;
               import jakarta.faces.context.FacesContext;
               import jakarta.faces.view.StateManagementStrategy;
-                          
+
               class StateManagerParent extends StateManagementStrategy {
-                          
+
                   @Override
                   public UIViewRoot restoreView(FacesContext arg0, String arg1, String arg2) {
                       UIViewRoot uv = null;
@@ -75,7 +75,7 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
                       super.restoreView(arg0, uv, arg2);
                       super.restoreView(arg0, arg1, arg2);
                       return null;
-                  }            
+                  }
               }
               """
           )
@@ -87,15 +87,15 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
         rewriteRun(
           //language=java
           java(
-            """             
-              import jakarta.faces.application.StateManager;            
+            """
+              import jakarta.faces.application.StateManager;
               import jakarta.faces.context.FacesContext;
               import java.io.IOException;
-               
+
                class StateMgrTest {
-               
+
                    public void test() throws IOException {
-               
+
                        StateManager st = null;
                        FacesContext fc = null;
                        String var1 = null;
@@ -109,15 +109,15 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
                }
               """,
             """
-              import jakarta.faces.context.FacesContext;            
+              import jakarta.faces.context.FacesContext;
               import jakarta.faces.view.StateManagementStrategy;
-                          
+
               import java.io.IOException;
-                        
+
               class StateMgrTest {
-               
+
                    public void test() throws IOException {
-               
+
                        StateManagementStrategy st = null;
                        FacesContext fc = null;
                        String var1 = null;

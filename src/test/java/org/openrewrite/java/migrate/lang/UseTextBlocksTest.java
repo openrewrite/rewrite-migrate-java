@@ -180,7 +180,7 @@ class UseTextBlocksTest implements RewriteTest {
                   String query = \"""
                          SELECT * FROM
                          my_table
-                         \""" + 
+                         \""" +
                          "WHERE something = 1;";
               }
               """
@@ -463,9 +463,9 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Disabled("""
-            This test is to demonstrate that the text block conversion is correct.
-            In this test, s1, s2, and s3 are equivalent, and we translate s1 to s2.
-            """)
+      This test is to demonstrate that the text block conversion is correct.
+      In this test, s1, s2, and s3 are equivalent, and we translate s1 to s2.
+      """)
     @Test
     void textBlockDemo() {
         String s1 = "\n========================================================="
@@ -477,26 +477,26 @@ class UseTextBlocksTest implements RewriteTest {
                     + "\n                                                         "
                     + "\n=========================================================";
         String s2 = """
-                    
-                    =========================================================
-                                                                            \s
-                              Welcome to Spring Integration!                \s
-                                                                            \s
-                        For more information please visit:                  \s
-                        https://www.springsource.org/spring-integration     \s
-                                                                            \s
-                    =========================================================\
-                    """;
+
+          =========================================================
+                                                                  \s
+                    Welcome to Spring Integration!                \s
+                                                                  \s
+              For more information please visit:                  \s
+              https://www.springsource.org/spring-integration     \s
+                                                                  \s
+          =========================================================\
+          """;
         String s3 = """
-                    \n=========================================================\
-                    \n                                                         \
-                    \n          Welcome to Spring Integration!                 \
-                    \n                                                         \
-                    \n    For more information please visit:                   \
-                    \n    https://www.springsource.org/spring-integration      \
-                    \n                                                         \
-                    \n=========================================================\
-                    """;
+          \n=========================================================\
+          \n                                                         \
+          \n          Welcome to Spring Integration!                 \
+          \n                                                         \
+          \n    For more information please visit:                   \
+          \n    https://www.springsource.org/spring-integration      \
+          \n                                                         \
+          \n=========================================================\
+          """;
         assertThat(s1).isEqualTo(s2).isEqualTo(s3);
     }
 
@@ -551,7 +551,7 @@ class UseTextBlocksTest implements RewriteTest {
             """
               class Test {
                   String s1 = "line1\\n\\n" +
-                              "line3\\n\\n\\n" + 
+                              "line3\\n\\n\\n" +
                               "line6\\n";
               }
               """,

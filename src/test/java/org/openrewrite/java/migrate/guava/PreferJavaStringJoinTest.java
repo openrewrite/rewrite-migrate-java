@@ -39,7 +39,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
           java(
             """
               import com.google.common.base.Joiner;
-                            
+
               class Test {
                   String s = Joiner.on(", ").join("a", "b");
               }
@@ -60,7 +60,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
           java(
             """
               import com.google.common.base.Joiner;
-                            
+
               class Test {
                   String s = Joiner.on(", ").join(new String[] {"a"});
               }
@@ -82,7 +82,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
             """
               import com.google.common.base.Joiner;
               import java.util.Set;
-                            
+
               class Test {
                   String s = Joiner.on(", ").join(Set.of("a"));
               }
@@ -105,15 +105,15 @@ class PreferJavaStringJoinTest implements RewriteTest {
           java(
             """
               import com.google.common.base.Joiner;
-                            
+
               class Test {
                   String s = Joiner.on(", ").join("a", new StringBuilder("b"));
               }
               """,
-            """                    
-             class Test {
-                 String s = String.join(", ", "a", new StringBuilder("b"));
-             }
+            """
+              class Test {
+                  String s = String.join(", ", "a", new StringBuilder("b"));
+              }
               """
           )
         );
@@ -127,7 +127,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
             """
               import com.google.common.base.Joiner;
               import java.util.HashSet;
-                            
+
               class Test {
                   String s = Joiner.on(", ").join(new HashSet<String>());
               }
@@ -150,7 +150,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
           java(
             """
               import com.google.common.base.Joiner;
-                            
+
               class Test {
                   String s = Joiner.on(", ")
                                    .join("a", "b");
@@ -173,7 +173,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
             """
               import com.google.common.base.Joiner;
               import java.util.Set;
-                            
+
               class Test {
                   String s1 = Joiner.on(", ").join("a", 1);
                   String s2 = Joiner.on(", ").skipNulls().join("a", "b");
@@ -193,7 +193,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
           java(
             """
               import com.google.common.base.Joiner;
-                            
+
               class Test {
                   Joiner j = Joiner.on(", ");
                   String s1 = j.join("a", "b");

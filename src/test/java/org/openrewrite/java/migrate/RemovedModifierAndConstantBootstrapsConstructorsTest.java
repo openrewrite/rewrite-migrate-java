@@ -22,7 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class RemovedModifierAndConstantBootstrapsConstructorsTest  implements RewriteTest {
+class RemovedModifierAndConstantBootstrapsConstructorsTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -38,44 +38,44 @@ class RemovedModifierAndConstantBootstrapsConstructorsTest  implements RewriteTe
             """
               import java.lang.invoke.ConstantBootstraps;
               import java.lang.reflect.Modifier;
-              
+
               class RemovedModifierAndConstantBootstrapsConstructorsApp {
                    public void testModifier() throws Exception {
-                       Modifier modifier = new Modifier(); 
+                       Modifier modifier = new Modifier();
                        modifier.classModifiers();
                        modifier.fieldModifiers();
                        modifier.isFinal(1);
                        modifier.isStatic(1);
-                       Modifier.isPublic(0); 
-                   }             
+                       Modifier.isPublic(0);
+                   }
                    public void testConstantBootstraps() throws Exception {
-                       ConstantBootstraps constantBootstraps = new ConstantBootstraps(); 
+                       ConstantBootstraps constantBootstraps = new ConstantBootstraps();
                        constantBootstraps.enumConstant(null,null,null);
                        constantBootstraps.primitiveClass(null,null,null);
-                       ConstantBootstraps.nullConstant(null, null, null); 
+                       ConstantBootstraps.nullConstant(null, null, null);
                    }
-              }          
+              }
               """,
             """
               import java.lang.invoke.ConstantBootstraps;
               import java.lang.reflect.Modifier;
-              
+
               class RemovedModifierAndConstantBootstrapsConstructorsApp {
                    public void testModifier() throws Exception {
-                       Modifier modifier = new Modifier(); 
+                       Modifier modifier = new Modifier();
                        Modifier.classModifiers();
                        Modifier.fieldModifiers();
                        Modifier.isFinal(1);
                        Modifier.isStatic(1);
-                       Modifier.isPublic(0); 
-                   }             
+                       Modifier.isPublic(0);
+                   }
                    public void testConstantBootstraps() throws Exception {
-                       ConstantBootstraps constantBootstraps = new ConstantBootstraps(); 
+                       ConstantBootstraps constantBootstraps = new ConstantBootstraps();
                        ConstantBootstraps.enumConstant(null,null,null);
                        ConstantBootstraps.primitiveClass(null,null,null);
-                       ConstantBootstraps.nullConstant(null, null, null); 
+                       ConstantBootstraps.nullConstant(null, null, null);
                    }
-              }          
+              }
               """
           )
         );

@@ -38,24 +38,24 @@ class UseLocaleOfTest implements RewriteTest {
           spec -> spec.typeValidationOptions(TypeValidation.none()),
           version(
             java(
-            """
-              import java.util.Locale;
-                            
-              class Test {
-                  Locale locale1 = new Locale("english");
-                  Locale locale2 = new Locale("english", "us");
-                  Locale locale3 = new Locale("english", "us", "");
-              }
-              """,
-            """
-              import java.util.Locale;
-                            
-              class Test {
-                  Locale locale1 = Locale.of("english");
-                  Locale locale2 = Locale.of("english", "us");
-                  Locale locale3 = Locale.of("english", "us", "");
-              }
               """
+                import java.util.Locale;
+
+                class Test {
+                    Locale locale1 = new Locale("english");
+                    Locale locale2 = new Locale("english", "us");
+                    Locale locale3 = new Locale("english", "us", "");
+                }
+                """,
+              """
+                import java.util.Locale;
+
+                class Test {
+                    Locale locale1 = Locale.of("english");
+                    Locale locale2 = Locale.of("english", "us");
+                    Locale locale3 = Locale.of("english", "us", "");
+                }
+                """
             ), 19)
         );
     }

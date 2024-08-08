@@ -34,11 +34,11 @@ class BeanValidationMessagesTest implements RewriteTest {
             .dependsOn(
               """
                 package javax.validation.constraints;
-                                
+
                 import java.lang.annotation.*;
                 import static java.lang.annotation.ElementType.*;
                 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-                                
+
                 @Target(value={METHOD,FIELD,ANNOTATION_TYPE,CONSTRUCTOR,PARAMETER})
                 @Retention(value=RUNTIME)
                 public @interface NotNull {
@@ -47,11 +47,11 @@ class BeanValidationMessagesTest implements RewriteTest {
                 """,
               """
                 package jakarta.validation.constraints;
-                                
+
                 import java.lang.annotation.*;
                 import static java.lang.annotation.ElementType.*;
                 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-                                
+
                 @Target(value={METHOD,FIELD,ANNOTATION_TYPE,CONSTRUCTOR,PARAMETER,TYPE_USE})
                 @Retention(value=RUNTIME)
                 public @interface NotNull {
@@ -71,7 +71,7 @@ class BeanValidationMessagesTest implements RewriteTest {
           java(
             """
               import javax.validation.constraints.*;
-              
+
               class Test {
                  @NotNull(message = "Resource Code {javax.validation.constraints.NotNull.message}")
                  private String resourceCode;
@@ -79,7 +79,7 @@ class BeanValidationMessagesTest implements RewriteTest {
               """,
             """
               import javax.validation.constraints.*;
-              
+
               class Test {
                  @NotNull(message = "Resource Code {jakarta.validation.constraints.NotNull.message}")
                  private String resourceCode;

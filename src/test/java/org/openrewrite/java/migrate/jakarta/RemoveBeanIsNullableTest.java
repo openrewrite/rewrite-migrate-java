@@ -40,7 +40,7 @@ class RemoveBeanIsNullableTest implements RewriteTest {
           java(
             """
               import jakarta.enterprise.inject.spi.Bean;
-              
+
               class Test {
                   void test(Bean<?> bean) {
                       if (bean.isNullable()) {
@@ -53,7 +53,7 @@ class RemoveBeanIsNullableTest implements RewriteTest {
               """,
             """
               import jakarta.enterprise.inject.spi.Bean;
-              
+
               class Test {
                   void test(Bean<?> bean) {
                       System.out.println("not null");

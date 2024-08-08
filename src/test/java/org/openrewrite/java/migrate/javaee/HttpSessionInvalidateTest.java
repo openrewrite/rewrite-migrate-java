@@ -41,7 +41,7 @@ class HttpSessionInvalidateTest implements RewriteTest {
               import javax.servlet.http.HttpServletResponse;
               import javax.servlet.http.HttpServletRequest;
               import javax.servlet.http.HttpSession;
-              
+
               class Foo {
                   void logOut(HttpServletRequest req, HttpServletResponse res) {
                       HttpSession session = req.getSession();
@@ -62,7 +62,7 @@ class HttpSessionInvalidateTest implements RewriteTest {
             """
               import javax.servlet.http.HttpServletResponse;
               import javax.servlet.http.HttpSession;
-              
+
               class Foo {
                   void logOut(HttpSession session, HttpServletResponse res) {
                       session.invalidate();

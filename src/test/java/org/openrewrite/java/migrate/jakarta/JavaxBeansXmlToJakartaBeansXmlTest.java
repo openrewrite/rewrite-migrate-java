@@ -69,17 +69,17 @@ class JavaxBeansXmlToJakartaBeansXmlTest implements RewriteTest {
           xml(
             """
               <?xml version="1.0" encoding="UTF-8"?>
-              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
+              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xsi:schemaLocation="http://xmlns.jcp.org/DDDDxml/ns/javaee22 http://xmlns.jcp.org11/xml/ns/javaee777/beans_1_1.xsd">
-              </beans> 
+              </beans>
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
-              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee" 
+              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd">
-              </beans> 
+              </beans>
               """,
             sourceSpecs -> sourceSpecs.path("beans.xml")
           )

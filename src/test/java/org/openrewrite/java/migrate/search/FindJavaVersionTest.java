@@ -43,17 +43,17 @@ class FindJavaVersionTest implements RewriteTest {
           }),
           //language=java
           java(
-                """
-            class A {
-            }
-            """,
+            """
+              class A {
+              }
+              """,
             spec -> spec.markers(jv)),
           //language=java
           java(
-                """
-            class B {
-            }
-            """,
+            """
+              class B {
+              }
+              """,
             spec -> spec.markers(jv))
         );
     }

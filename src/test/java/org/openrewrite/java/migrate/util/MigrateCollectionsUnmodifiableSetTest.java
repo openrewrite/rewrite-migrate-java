@@ -39,14 +39,14 @@ class MigrateCollectionsUnmodifiableSetTest implements RewriteTest {
             java(
               """
                 import java.util.*;
-                                
+
                 class Test {
                     Set<Integer> s = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(1, 2, 3)));
                 }
                 """,
               """
                 import java.util.Set;
-                                
+
                 class Test {
                     Set<Integer> s = Set.of(1, 2, 3);
                 }
@@ -67,7 +67,7 @@ class MigrateCollectionsUnmodifiableSetTest implements RewriteTest {
               """
                 import java.util.*;
                 import java.time.LocalDate;
-                                
+
                 class Test {
                     Set<LocalDate> s = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now())));
                 }
@@ -75,7 +75,7 @@ class MigrateCollectionsUnmodifiableSetTest implements RewriteTest {
               """
                 import java.util.Set;
                 import java.time.LocalDate;
-                                
+
                 class Test {
                     Set<LocalDate> s = Set.of(LocalDate.of(2010, 1, 1), LocalDate.now());
                 }
