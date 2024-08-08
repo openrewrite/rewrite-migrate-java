@@ -66,11 +66,12 @@ class NoGuavaMapsNewTreeMapTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              import com.google.common.collect.*;
+              import com.google.common.collect.Maps;
+              
               import java.util.Collections;
               import java.util.Map;
               import java.util.SortedMap;
-                            
+              
               class Test {
                   SortedMap<Integer, Integer> m = Collections.emptySortedMap();
                   Map<Integer, Integer> cardinalsWorldSeries = Maps.newTreeMap(m);
@@ -81,7 +82,7 @@ class NoGuavaMapsNewTreeMapTest implements RewriteTest {
               import java.util.Map;
               import java.util.SortedMap;
               import java.util.TreeMap;
-                            
+              
               class Test {
                   SortedMap<Integer, Integer> m = Collections.emptySortedMap();
                   Map<Integer, Integer> cardinalsWorldSeries = new TreeMap<>(m);
