@@ -50,7 +50,7 @@ class ReplaceAWTGetPeerMethod extends Recipe {
     @Override
     public String getDescription() {
         return "This recipe replaces the use of `getPeer()` method in `java.awt.*` classes. " +
-               "`component.getPeer() != nul` is replaced with `component.isDisplayable()` and " +
+               "`component.getPeer() != null` is replaced with `component.isDisplayable()` and " +
                "`component.getPeer() instanceof LightweightPeer` is replaced with `component.isLightweight()`.";
     }
 
