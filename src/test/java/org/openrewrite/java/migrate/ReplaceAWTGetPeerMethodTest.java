@@ -23,6 +23,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@SuppressWarnings("StatementWithEmptyBody")
 class ReplaceAWTGetPeerMethodTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {

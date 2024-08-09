@@ -31,7 +31,8 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.java.tree.TypedTree;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -109,7 +110,7 @@ class ReplaceAWTGetPeerMethod extends Recipe {
 
                 if (instanceOfVar.getExpression() instanceof J.MethodInvocation) {
                     J.MethodInvocation mi = ((J.MethodInvocation) instanceOfVar.getExpression());
-                    if (methodMatcherGetPeer.matches(mi.getMethodType()) && checkClassNameIsEqualToFQCN(instanceOfVar)) {
+                    if (methodMatcherGetPeer.matches(mi) && TypeUtils.isAssignableTo(className, ((TypedTree) instanceOfVar.getClazz()).getType())) {
                         mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isLightweight", true, null)
                                 .getVisitor().visit(mi, ctx);
                         mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsLightweight, "boolean")
@@ -121,20 +122,6 @@ class ReplaceAWTGetPeerMethod extends Recipe {
                 }
 
                 return instanceOfVar;
-            }
-
-            private boolean checkClassNameIsEqualToFQCN(J.InstanceOf instOf) {
-                if (instOf.getClazz() instanceof J.Identifier) {
-                    J.Identifier id = (J.Identifier) instOf.getClazz();
-                    assert id.getType() != null;
-                    return ((JavaType.Class) id.getType()).getFullyQualifiedName().equals(className);
-                } else if (instOf.getClazz() instanceof J.FieldAccess) {
-                    J.FieldAccess fid = (J.FieldAccess) instOf.getClazz();
-                    assert fid.getType() != null;
-                    return ((JavaType.Class) fid.getType()).getFullyQualifiedName().equals(className);
-                } else {
-                    return false;
-                }
             }
         });
     }
