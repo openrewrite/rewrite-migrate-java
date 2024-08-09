@@ -27,11 +27,7 @@ import static org.openrewrite.java.Assertions.java;
 class ReplaceAWTGetPeerMethodTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new ReplaceAWTGetPeerMethod(
-            "com.test.Component1 getPeer()",
-            "com.test.Component1 isDisplayable()",
-            "com.test.TestDummy",
-            "com.test.Component1 isLightweight()"))
+        spec.recipe(new ReplaceAWTGetPeerMethod("com.test.Component1 getPeer()", "com.test.TestDummy"))
           .parser(JavaParser.fromJavaVersion()
             //language=java
             .dependsOn(

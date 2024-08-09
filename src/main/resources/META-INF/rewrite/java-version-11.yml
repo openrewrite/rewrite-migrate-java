@@ -71,10 +71,8 @@ recipeList:
   - org.openrewrite.java.migrate.ReferenceCloneMethod
   - org.openrewrite.java.migrate.ThreadStopDestroy
   - org.openrewrite.java.migrate.ReplaceAWTGetPeerMethod:
-      methodPatternGetPeer: java.awt.* getPeer()
-      methodUpdateIsDisplayable: java.awt.* isDisplayable()
-      className: java.awt.peer.LightweightPeer
-      methodUpdateIsLightweight: java.awt.*  isLightweight()
+      getPeerMethodPattern: java.awt.* getPeer()
+      lightweightPeerFQCN: java.awt.peer.LightweightPeer
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11

@@ -16,9 +16,6 @@
 
 package org.openrewrite.java.migrate;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -36,20 +33,11 @@ import org.openrewrite.java.tree.TypedTree;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-@AllArgsConstructor(access = AccessLevel.PACKAGE) // For tests
 class ReplaceAWTGetPeerMethod extends Recipe {
-    String methodPatternGetPeer;
-    String methodUpdateIsDisplayable;
-    String className;
-    String methodUpdateIsLightweight;
 
-    @JsonCreator
-    public ReplaceAWTGetPeerMethod() {
-        this.methodPatternGetPeer = "java.awt.* getPeer()";
-        this.methodUpdateIsDisplayable = "java.awt.* isDisplayable()";
-        this.className = "java.awt.peer.LightweightPeer";
-        this.methodUpdateIsLightweight = "java.awt.*  isLightweight()";
-    }
+    // Fields configurable for tests
+    String getPeerMethodPattern;
+    String lightweightPeerFQCN;
 
     @Override
     public String getDisplayName() {
@@ -67,7 +55,7 @@ class ReplaceAWTGetPeerMethod extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        MethodMatcher methodMatcherGetPeer = new MethodMatcher(methodPatternGetPeer);
+        MethodMatcher methodMatcherGetPeer = new MethodMatcher(getPeerMethodPattern);
         return Preconditions.check(new UsesMethod<>(methodMatcherGetPeer), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitBinary(J.Binary binary, ExecutionContext ctx) {
@@ -76,9 +64,10 @@ class ReplaceAWTGetPeerMethod extends Recipe {
                 J.MethodInvocation mi = findMatchingMethodInvocation(bi);
                 if (mi != null) {
                     mi = (J.MethodInvocation) new ChangeMethodName(
-                            methodPatternGetPeer, "isDisplayable", true, null)
+                            getPeerMethodPattern, "isDisplayable", true, null)
                             .getVisitor().visit(mi, ctx);
-                    mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsDisplayable, "boolean")
+                    mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(
+                            getPeerMethodPattern.split(" ")[0] + " isDisplayable()", "boolean")
                             .getVisitor().visit(mi, ctx);
                     assert mi != null;
                     return mi.withPrefix(bi.getPrefix());
@@ -110,13 +99,14 @@ class ReplaceAWTGetPeerMethod extends Recipe {
 
                 if (instanceOfVar.getExpression() instanceof J.MethodInvocation) {
                     J.MethodInvocation mi = ((J.MethodInvocation) instanceOfVar.getExpression());
-                    if (methodMatcherGetPeer.matches(mi) && TypeUtils.isAssignableTo(className, ((TypedTree) instanceOfVar.getClazz()).getType())) {
-                        mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isLightweight", true, null)
+                    if (methodMatcherGetPeer.matches(mi) && TypeUtils.isAssignableTo(lightweightPeerFQCN, ((TypedTree) instanceOfVar.getClazz()).getType())) {
+                        mi = (J.MethodInvocation) new ChangeMethodName(getPeerMethodPattern, "isLightweight", true, null)
                                 .getVisitor().visit(mi, ctx);
-                        mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsLightweight, "boolean")
+                        mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(
+                                getPeerMethodPattern.split(" ")[0] + " isLightweight()", "boolean")
                                 .getVisitor().visit(mi, ctx);
                         assert mi != null;
-                        maybeRemoveImport(className);
+                        maybeRemoveImport(lightweightPeerFQCN);
                         return mi.withPrefix(instanceOfVar.getPrefix());
                     }
                 }
