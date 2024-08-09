@@ -39,14 +39,14 @@ class MigrateCollectionsSingletonSetTest implements RewriteTest {
             java(
               """
                 import java.util.*;
-                                
+
                 class Test {
                     Set<String> set = Collections.singleton("Hello");
                 }
                 """,
               """
                 import java.util.Set;
-                                
+
                 class Test {
                     Set<String> set = Set.of("Hello");
                 }
@@ -67,7 +67,7 @@ class MigrateCollectionsSingletonSetTest implements RewriteTest {
               """
                 import java.util.*;
                 import java.time.LocalDate;
-                                
+
                 class Test {
                     Set<LocalDate> set = Collections.singleton(LocalDate.now());
                 }
@@ -75,7 +75,7 @@ class MigrateCollectionsSingletonSetTest implements RewriteTest {
               """
                 import java.util.Set;
                 import java.time.LocalDate;
-                                
+
                 class Test {
                     Set<LocalDate> set = Set.of(LocalDate.now());
                 }

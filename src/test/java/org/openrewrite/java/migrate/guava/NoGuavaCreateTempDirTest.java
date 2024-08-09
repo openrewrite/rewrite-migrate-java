@@ -42,7 +42,7 @@ class NoGuavaCreateTempDirTest implements RewriteTest {
               import java.io.File;
               import java.io.IOException;
               import com.google.common.io.Files;
-                            
+
               class A {
                   void doSomething() throws IOException {
                       File dir = Files.createTempDir();
@@ -58,7 +58,7 @@ class NoGuavaCreateTempDirTest implements RewriteTest {
               import java.io.File;
               import java.io.IOException;
               import java.nio.file.Files;
-                            
+
               class A {
                   void doSomething() throws IOException {
                       File dir = Files.createTempDirectory(null).toFile();
@@ -82,7 +82,7 @@ class NoGuavaCreateTempDirTest implements RewriteTest {
             """
               import java.io.File;
               import com.google.common.io.Files;
-              
+
               class A {
                   File gDir = Files.createTempDir();
               }
@@ -100,7 +100,7 @@ class NoGuavaCreateTempDirTest implements RewriteTest {
               import java.io.File;
               import java.io.IOException;
               import com.google.common.io.Files;
-              
+
               class A {
                   public void doSomething() {
                       try {
@@ -122,7 +122,7 @@ class NoGuavaCreateTempDirTest implements RewriteTest {
               import java.io.File;
               import java.io.IOException;
               import java.nio.file.Files;
-              
+
               class A {
                   public void doSomething() {
                       try {
@@ -152,7 +152,7 @@ class NoGuavaCreateTempDirTest implements RewriteTest {
             """
               import java.io.File;
               import com.google.common.io.Files;
-              
+
               class A {
                   void doSomething() {
                       File gDir = Files.createTempDir();
@@ -171,7 +171,7 @@ class NoGuavaCreateTempDirTest implements RewriteTest {
             """
               import java.io.File;
               import com.google.common.io.Files;
-              
+
               class Test {
                   void someTest() {
                       doSomething(Files.createTempDir(), "some text");

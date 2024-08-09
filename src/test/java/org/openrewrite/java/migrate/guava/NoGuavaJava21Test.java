@@ -44,7 +44,7 @@ class NoGuavaJava21Test implements RewriteTest {
             java(
               """   
                 import com.google.common.primitives.Doubles;
-  
+
                 class Test {
                     public double testMethod() {
                         return Doubles.constrainToRange(20D, 10D, 100D);
@@ -71,7 +71,7 @@ class NoGuavaJava21Test implements RewriteTest {
             java(
               """   
                 import com.google.common.primitives.Longs;
-  
+
                 class Test {
                     public long testMethod() {
                         return Longs.constrainToRange(20L, 10L, 100L);
@@ -98,7 +98,7 @@ class NoGuavaJava21Test implements RewriteTest {
             java(
               """   
                 import com.google.common.primitives.Floats;
-  
+
                 class Test {
                     public float testMethod() {
                         return Floats.constrainToRange(20F, 10F, 100F);

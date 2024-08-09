@@ -52,7 +52,7 @@ class NoGuavaDirectExecutorTest implements RewriteTest {
                   Executor executor = Runnable::run;
               }
               """
-)
-);
+          )
+        );
     }
 }

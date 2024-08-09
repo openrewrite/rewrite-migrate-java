@@ -40,7 +40,7 @@ class UseMapOfTest implements RewriteTest {
             """
               import java.util.HashMap;
               import java.util.Map;
-                            
+
               class Test {
                   Map<String, String> m = new HashMap<>() {{
                       put("stru", "menta");
@@ -50,7 +50,7 @@ class UseMapOfTest implements RewriteTest {
               """,
             """
               import java.util.Map;
-                            
+
               class Test {
                   Map<String, String> m = Map.of("stru", "menta", "mod", "erne");
               }

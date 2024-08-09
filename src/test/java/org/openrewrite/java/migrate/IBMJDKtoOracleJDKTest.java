@@ -28,12 +28,12 @@ class IBMJDKtoOracleJDKTest implements RewriteTest {
     void Krb5LoginModuleTest() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn("""
-            package com.ibm.security.auth.module;
-            public class Krb5LoginModule {
-                public void login() {
-                }
-            }
-            """))
+              package com.ibm.security.auth.module;
+              public class Krb5LoginModule {
+                  public void login() {
+                  }
+              }
+              """))
             .recipeFromResources("org.openrewrite.java.migrate.IBMJDKtoOracleJDK"),
           //language=java
           java(

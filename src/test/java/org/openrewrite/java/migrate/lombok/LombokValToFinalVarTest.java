@@ -99,7 +99,7 @@ class LombokValToFinalVarTest implements RewriteTest {
                 import lombok.val;
                 import java.util.List;
                 import java.util.ArrayList;
-                                
+
                 class A {
                     void bar() {
                         List<String> lst = new ArrayList<>();
@@ -110,7 +110,7 @@ class LombokValToFinalVarTest implements RewriteTest {
               """
                 import java.util.List;
                 import java.util.ArrayList;
-                                
+
                 class A {
                     void bar() {
                         List<String> lst = new ArrayList<>();

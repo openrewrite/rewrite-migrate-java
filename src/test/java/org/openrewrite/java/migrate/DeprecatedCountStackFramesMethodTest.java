@@ -36,7 +36,7 @@ class DeprecatedCountStackFramesMethodTest implements RewriteTest {
           java(
             """
               import java.lang.Thread;
-              
+
               public class Test {
                   public static void main(String args[]) {
                       Thread t1,t2 = new Thread();
@@ -46,7 +46,7 @@ class DeprecatedCountStackFramesMethodTest implements RewriteTest {
               """,
             """
               import java.lang.Thread;
-              
+
               public class Test {
                   public static void main(String args[]) {
                       Thread t1,t2 = new Thread();
@@ -64,7 +64,7 @@ class DeprecatedCountStackFramesMethodTest implements RewriteTest {
           java(
             """
               import java.lang.Thread;
-              
+
               public class Test {
                   public static void main(String args[]) {
                       Thread t1,t2 = new Thread();

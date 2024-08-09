@@ -41,47 +41,47 @@ class ServletCookieBehaviorChangeRFC6265Test implements RewriteTest {
         rewriteRun(
           //language=java
           java(
-                """
-            package com.test;
-            import jakarta.servlet.ServletContext;
-            import jakarta.servlet.SessionCookieConfig;
-            import jakarta.servlet.http.HttpServlet;
-              
-            import jakarta.servlet.http.Cookie;
-              
-            public class TestJakarta extends HttpServlet {
-                            
-                public void test() {
-                      Cookie cookie = new Cookie("test", "cookie");
-                      cookie.setComment("comment");
-                      cookie.getComment();
-                      cookie.setVersion(1);
-                      cookie.getVersion();
-                        
-                      ServletContext servletContext = getServletContext();
-                      SessionCookieConfig config = servletContext.getSessionCookieConfig();
-                      config.getComment();
-                      config.setComment("comment");
-                }
-            }     
-            """, """
-            package com.test;
-            import jakarta.servlet.ServletContext;
-            import jakarta.servlet.SessionCookieConfig;
-            import jakarta.servlet.http.HttpServlet;
-                                                        
-            import jakarta.servlet.http.Cookie;
-             
-            public class TestJakarta extends HttpServlet {
-                            
-                public void test() {
-                      Cookie cookie = new Cookie("test", "cookie");            
-                        
-                      ServletContext servletContext = getServletContext();
-                      SessionCookieConfig config = servletContext.getSessionCookieConfig();          
-                }
-            }     
-            """));
+            """
+              package com.test;
+              import jakarta.servlet.ServletContext;
+              import jakarta.servlet.SessionCookieConfig;
+              import jakarta.servlet.http.HttpServlet;
+
+              import jakarta.servlet.http.Cookie;
+
+              public class TestJakarta extends HttpServlet {
+
+                  public void test() {
+                        Cookie cookie = new Cookie("test", "cookie");
+                        cookie.setComment("comment");
+                        cookie.getComment();
+                        cookie.setVersion(1);
+                        cookie.getVersion();
+
+                        ServletContext servletContext = getServletContext();
+                        SessionCookieConfig config = servletContext.getSessionCookieConfig();
+                        config.getComment();
+                        config.setComment("comment");
+                  }
+              }
+              """, """
+              package com.test;
+              import jakarta.servlet.ServletContext;
+              import jakarta.servlet.SessionCookieConfig;
+              import jakarta.servlet.http.HttpServlet;
+
+              import jakarta.servlet.http.Cookie;
+
+              public class TestJakarta extends HttpServlet {
+
+                  public void test() {
+                        Cookie cookie = new Cookie("test", "cookie");
+
+                        ServletContext servletContext = getServletContext();
+                        SessionCookieConfig config = servletContext.getSessionCookieConfig();
+                  }
+              }
+              """));
     }
 
 }

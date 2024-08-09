@@ -56,41 +56,41 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.http.HttpSession;
               import jakarta.servlet.http.HttpSessionContext;
               import jakarta.servlet.http.HttpUtils;
-                            
+
               class TestJakarta extends HttpServlet implements SingleThreadModel {
                   protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                       req.isRequestedSessionIdFromUrl();
-                         
+
                       res.encodeUrl("");
                       res.encodeRedirectUrl("");
-                     
+
                       res.setStatus(0,  "");
-                         
+
                       res.setStatus(0);
-                        
+
                       HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
                       reqWrapper.isRequestedSessionIdFromUrl();
-                         
+
                       HttpServletResponseWrapper resWrapper = new HttpServletResponseWrapper(res);
-                  
+
                       resWrapper.encodeUrl("");
                       resWrapper.encodeRedirectUrl("");
-                 
+
                       resWrapper.setStatus(0,  "");
-                
+
                       HttpSession httpSession = req.getSession();
                       httpSession.getSessionContext();
                       httpSession.getValue("");
                       httpSession.getValueNames();
                       httpSession.putValue("", null);
                       httpSession.removeValue("");
-                  
+
                       ServletContext servletContext = getServletContext();
-               
+
                       servletContext.getServlet("");
                       servletContext.getServlets();
                       servletContext.getServletNames();
-                
+
                       servletContext.log(null, "");
                   }
               }
@@ -110,41 +110,41 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.http.HttpSession;
               import jakarta.servlet.http.HttpSessionContext;
               import jakarta.servlet.http.HttpUtils;
-                            
+
               class TestJakarta extends HttpServlet implements SingleThreadModel {
                   protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                       req.isRequestedSessionIdFromURL();
-                         
+
                       res.encodeURL("");
                       res.encodeRedirectURL("");
-                
+
                       res.setStatus(0);
-                         
+
                       res.setStatus(0);
-                       
+
                       HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
                       reqWrapper.isRequestedSessionIdFromURL();
-                         
+
                       HttpServletResponseWrapper resWrapper = new HttpServletResponseWrapper(res);
-                
+
                       resWrapper.encodeURL("");
                       resWrapper.encodeRedirectURL("");
-                
+
                       resWrapper.setStatus(0);
-               
+
                       HttpSession httpSession = req.getSession();
                       httpSession.getSessionContext();
                       httpSession.getAttribute("");
                       httpSession.getAttributeNames();
                       httpSession.setAttribute("", null);
                       httpSession.removeAttribute("");
-                     
+
                       ServletContext servletContext = getServletContext();
-               
+
                       servletContext.getServlet("");
                       servletContext.getServlets();
                       servletContext.getServletNames();
-                 
+
                       servletContext.log("", null);
                   }
               }
@@ -162,7 +162,7 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.UnavailableException;
               import jakarta.servlet.http.HttpServletRequest;
               import jakarta.servlet.http.HttpServletResponse;
-                
+
               class Test {
                   void doGet(HttpServletRequest req, HttpServletResponse res) throws Exception {
                       jakarta.servlet.Servlet servlet ;
@@ -176,7 +176,7 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.UnavailableException;
               import jakarta.servlet.http.HttpServletRequest;
               import jakarta.servlet.http.HttpServletResponse;
-                
+
               class Test {
                   void doGet(HttpServletRequest req, HttpServletResponse res) throws Exception {
                       jakarta.servlet.Servlet servlet ;

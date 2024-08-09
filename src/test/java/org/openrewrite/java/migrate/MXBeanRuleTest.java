@@ -38,11 +38,11 @@ class MXBeanRuleTest implements RewriteTest {
           java(
             """
               import javax.management.MXBean;
-              
+
               class TestClassAndNonPublicInterface {
                   class NonPublic implements NonPublicMBean {
                   }
-              
+
                   @MXBean
                   private interface NonPublicMBean {
                   }
@@ -50,11 +50,11 @@ class MXBeanRuleTest implements RewriteTest {
               """,
             """
               import javax.management.MXBean;
-                             
+
               class TestClassAndNonPublicInterface {
                   class NonPublic implements NonPublicMBean {
                   }
-              
+
                   @MXBean
                   public interface NonPublicMBean {
                   }
@@ -71,14 +71,14 @@ class MXBeanRuleTest implements RewriteTest {
           java(
             """
               import javax.management.MXBean;
-              
+
               @MXBean
               interface Foo {
               }
               """,
             """
               import javax.management.MXBean;
-              
+
               @MXBean
               public
               interface Foo {
@@ -95,14 +95,14 @@ class MXBeanRuleTest implements RewriteTest {
           java(
             """
               import javax.management.MXBean;
-                                
+
               @MXBean(true)
               interface Foo {
               }
               """,
             """
               import javax.management.MXBean;
-                             
+
               @MXBean(true)
               public
               interface Foo {
@@ -188,7 +188,7 @@ class MXBeanRuleTest implements RewriteTest {
               java(
                 """
                   import javax.management.MXBean;
-                  
+
                   @MXBean(false)
                   interface Foo {
                   }
@@ -204,7 +204,7 @@ class MXBeanRuleTest implements RewriteTest {
               java(
                 """
                   import javax.management.MXBean;
-                  
+
                   @MXBean(value=false)
                   interface Foo {
                   }
@@ -220,7 +220,7 @@ class MXBeanRuleTest implements RewriteTest {
               java(
                 """
                   import javax.management.MXBean;
-                  
+
                   @MXBean(true)
                   public interface Foo {
                   }
@@ -236,7 +236,7 @@ class MXBeanRuleTest implements RewriteTest {
               java(
                 """
                   import javax.management.MXBean;
-                  
+
                   @MXBean(value=true)
                   public interface Foo {
                   }

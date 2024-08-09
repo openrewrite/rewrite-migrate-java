@@ -39,14 +39,14 @@ class MigrateCollectionsUnmodifiableListTest implements RewriteTest {
             java(
               """
                 import java.util.*;
-                                
+
                 class Test {
                     List<Integer> l = Collections.unmodifiableList(Arrays.asList(1, 2, 3));
                 }
                 """,
               """
                 import java.util.List;
-                                
+
                 class Test {
                     List<Integer> l = List.of(1, 2, 3);
                 }
@@ -67,7 +67,7 @@ class MigrateCollectionsUnmodifiableListTest implements RewriteTest {
               """
                 import java.util.*;
                 import java.time.LocalDate;
-                                
+
                 class Test {
                     List<LocalDate> s = Collections.unmodifiableList(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now()));
                 }
@@ -75,7 +75,7 @@ class MigrateCollectionsUnmodifiableListTest implements RewriteTest {
               """
                 import java.util.List;
                 import java.time.LocalDate;
-                                
+
                 class Test {
                     List<LocalDate> s = List.of(LocalDate.of(2010, 1, 1), LocalDate.now());
                 }

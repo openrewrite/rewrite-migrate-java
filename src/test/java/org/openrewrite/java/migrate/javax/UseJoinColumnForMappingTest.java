@@ -223,6 +223,7 @@ class UseJoinColumnForMappingTest implements RewriteTest {
           )
         );
     }
+
     @Test
     void useJoinColumnForOneToOneNoAttr() {
         //language=java

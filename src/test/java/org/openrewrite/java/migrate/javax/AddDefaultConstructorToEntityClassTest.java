@@ -96,7 +96,7 @@ class AddDefaultConstructorToEntityClassTest implements RewriteTest {
 
               @MappedSuperclass
               public class MissingNoArgConstructorEntity {
-    
+
                   public MissingNoArgConstructorEntity() {
                   }
                   @Id
@@ -174,7 +174,7 @@ class AddDefaultConstructorToEntityClassTest implements RewriteTest {
                   public MissingNoArgConstructorEntity(int id) {
                       this.id = id;
                   }
-                  
+
                   public void doNothing() {
                   }
               }

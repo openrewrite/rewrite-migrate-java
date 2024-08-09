@@ -22,7 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class RemovedToolProviderConstructorTest  implements RewriteTest {
+class RemovedToolProviderConstructorTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -40,34 +40,34 @@ class RemovedToolProviderConstructorTest  implements RewriteTest {
               import javax.tools.JavaCompiler;
               import javax.tools.DocumentationTool;
               import java.lang.ClassLoader;
-              
+
               class RemovedToolProviderConstructorApp {
                    void test() throws Exception {
                        ToolProvider tp = null;
-                       JavaCompiler compiler = tp.getSystemJavaCompiler();     
+                       JavaCompiler compiler = tp.getSystemJavaCompiler();
                        DocumentationTool dT = tp.getSystemDocumentationTool();
-                       ClassLoader cl = tp.getSystemToolClassLoader();  
-                       System.out.println(ToolProvider.getSystemJavaCompiler());   
+                       ClassLoader cl = tp.getSystemToolClassLoader();
+                       System.out.println(ToolProvider.getSystemJavaCompiler());
                        tp.getSystemJavaCompiler().getSourceVersions();
                    }
-              }          
+              }
               """,
             """
               import javax.tools.ToolProvider;
               import javax.tools.JavaCompiler;
               import javax.tools.DocumentationTool;
               import java.lang.ClassLoader;
-              
+
               class RemovedToolProviderConstructorApp {
                    void test() throws Exception {
                        ToolProvider tp = null;
-                       JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();     
+                       JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
                        DocumentationTool dT = ToolProvider.getSystemDocumentationTool();
-                       ClassLoader cl = ToolProvider.getSystemToolClassLoader();  
-                       System.out.println(ToolProvider.getSystemJavaCompiler());  
+                       ClassLoader cl = ToolProvider.getSystemToolClassLoader();
+                       System.out.println(ToolProvider.getSystemJavaCompiler());
                        ToolProvider.getSystemJavaCompiler().getSourceVersions();
                    }
-              }          
+              }
               """
           )
         );

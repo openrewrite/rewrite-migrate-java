@@ -59,7 +59,7 @@ class InternalBindPackagesTest implements RewriteTest {
           java(
             """
               import com.sun.xml.internal.bind.v2.ContextFactory;
-              
+
               class Foo2 {
                 void bar() {
                     ContextFactory factory = null;
@@ -69,7 +69,7 @@ class InternalBindPackagesTest implements RewriteTest {
               """,
             """
               import com.sun.xml.bind.v2.ContextFactory;
-              
+
               class Foo2 {
                 void bar() {
                     ContextFactory factory = null;
@@ -81,24 +81,24 @@ class InternalBindPackagesTest implements RewriteTest {
           java(
             """
               import com.sun.xml.internal.bind.v2.*;
-              
+
               class Foo3 {
                 void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
-              
+
               }
               """,
             """
               import com.sun.xml.bind.v2.*;
-              
+
               class Foo3 {
                 void bar() {
                     ContextFactory factory = null;
                     factory.hashCode();
                 }
-              
+
               }
               """
           )
