@@ -40,9 +40,6 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
                     public String getPeer() {
                         return "x";
                     }
-                    public boolean getPeer1() {
-                        return true;
-                    }
                     public boolean isDisplayable() {
                         return true;
                     }
@@ -56,7 +53,8 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
                  public class TestDummy {
                  }
                 """
-            ));
+            )
+          );
     }
 
     @Test
@@ -66,8 +64,9 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
           //language=java
           java(
             """
-              package com.test;
-              class Test extends TestDummy {
+              import com.test.Component1;
+              import com.test.TestDummy;
+              class Test {
                   void foo() {
                       Test t1 = new Test();
                       Component1 c = new Component1();
@@ -82,8 +81,8 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
               }
               """,
             """
-              package com.test;
-              class Test extends TestDummy {
+              import com.test.Component1;
+              class Test {
                   void foo() {
                       Test t1 = new Test();
                       Component1 c = new Component1();
@@ -107,8 +106,8 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
           //language=java
           java(
             """
-              package com.test;
-
+              import com.test.Component1;
+              import com.test.TestDummy;
               class Test {
                   void foo() {
                       Component1 y = new Component1();
@@ -122,8 +121,7 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
               }
               """,
             """
-              package com.test;
-
+              import com.test.Component1;
               class Test {
                   void foo() {
                       Component1 y = new Component1();

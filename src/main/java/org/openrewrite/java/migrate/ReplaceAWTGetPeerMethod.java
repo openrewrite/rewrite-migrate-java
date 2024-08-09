@@ -101,6 +101,7 @@ class ReplaceAWTGetPeerMethod extends Recipe {
                         ).getVisitor().visit(mi, ctx);
                         mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsLightweight, "boolean").getVisitor().visit(mi, ctx);
                         assert mi != null;
+                        maybeRemoveImport(className);
                         return mi.withPrefix(instanceOfVar.getPrefix());
                     }
                 }
