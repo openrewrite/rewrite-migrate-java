@@ -81,7 +81,7 @@ class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
                       </assembly-descriptor>
                   </enterprise-beans>
               </ejb-jar>
-                 """,
+              """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <ejb-jar xmlns="https://jakarta.ee/xml/ns/jakartaee"
@@ -126,7 +126,7 @@ class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
                       </assembly-descriptor>
                   </enterprise-beans>
               </ejb-jar>
-                 """,
+              """,
             sourceSpecs -> sourceSpecs.path("ejb-jar.xml")
           )
         );
@@ -140,10 +140,10 @@ class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee" 
+                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans> 
+                  </beans>
                   """,
                 sourceSpecs -> sourceSpecs.path("not-ejb-jar.xml")
               )

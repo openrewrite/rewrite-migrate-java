@@ -90,7 +90,7 @@ class UpgradeJaCoCoTest implements RewriteTest {
                 <properties>
                   <jacoco.version>0.8.1</jacoco.version>
                 </properties>
-              
+
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
@@ -119,7 +119,7 @@ class UpgradeJaCoCoTest implements RewriteTest {
                 <properties>
                   <jacoco.version>%s</jacoco.version>
                 </properties>
-              
+
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
@@ -239,7 +239,7 @@ class UpgradeJaCoCoTest implements RewriteTest {
                 <properties>
                   <jacoco.version>0.8.1</jacoco.version>
                 </properties>
-              
+
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
@@ -278,7 +278,7 @@ class UpgradeJaCoCoTest implements RewriteTest {
                 <properties>
                   <jacoco.version>%s</jacoco.version>
                 </properties>
-              
+
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>

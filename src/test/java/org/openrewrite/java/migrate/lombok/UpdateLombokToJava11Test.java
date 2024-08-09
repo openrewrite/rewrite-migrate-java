@@ -44,22 +44,22 @@ class UpdateLombokToJava11Test implements RewriteTest {
             JavaParser.fromJavaVersion().dependsOn(
               """
                 package lombok.experimental;
-                  
+
                 import java.lang.annotation.ElementType;
                 import java.lang.annotation.Retention;
                 import java.lang.annotation.RetentionPolicy;
                 import java.lang.annotation.Target;
-                  
+
                 @Target({ElementType.FIELD, ElementType.TYPE})
                 @Retention(RetentionPolicy.SOURCE)
                 public @interface Wither {
                 }
-                              
+
                 @Target(ElementType.TYPE)
                 @Retention(RetentionPolicy.SOURCE)
                 public @interface Value {
                 }
-                              
+
                 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR})
                 @Retention(RetentionPolicy.SOURCE)
                 public @interface Builder {
@@ -117,7 +117,7 @@ class UpdateLombokToJava11Test implements RewriteTest {
               import lombok.experimental.Wither;
               import lombok.experimental.Builder;
               import lombok.experimental.Value;
-                            
+
               @Wither
               @Builder
               @Value
@@ -130,7 +130,7 @@ class UpdateLombokToJava11Test implements RewriteTest {
               import lombok.Value;
               import lombok.With;
               import lombok.Builder;
-                            
+
               @With
               @Builder
               @Value

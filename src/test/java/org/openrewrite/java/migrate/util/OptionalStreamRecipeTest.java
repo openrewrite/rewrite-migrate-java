@@ -39,7 +39,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
             """
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   var x = Stream.of(Optional.empty())
@@ -51,7 +51,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
             """
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   var x = Stream.of(Optional.empty())
@@ -70,7 +70,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
             """
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   var x = Stream.of(Optional.empty())
@@ -86,7 +86,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
             """
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   var x = Stream.of(Optional.empty())
@@ -108,7 +108,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
             """
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   Stream.of(Optional.empty())
@@ -120,7 +120,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
             """
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   Stream.of(Optional.empty())
@@ -139,7 +139,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
             """
               import java.util.Optional;
               import java.util.stream.Stream;
-              
+
               class Scratch {
                 public void foo() {Stream.of(Optional.empty()).filter(Optional::isPresent).map(Optional::get);}
               }
@@ -147,7 +147,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
             """
               import java.util.Optional;
               import java.util.stream.Stream;
-              
+
               class Scratch {
                 public void foo() {Stream.of(Optional.empty()).flatMap(Optional::stream);}
               }
@@ -164,7 +164,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Integer> list = Stream.of(17)
@@ -179,7 +179,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Integer> list = Stream.of(17)
@@ -200,7 +200,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
@@ -214,7 +214,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
@@ -235,7 +235,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
@@ -250,7 +250,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
@@ -272,7 +272,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
@@ -287,7 +287,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
@@ -309,7 +309,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
@@ -324,7 +324,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
@@ -346,7 +346,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
@@ -359,7 +359,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
@@ -380,7 +380,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
@@ -395,7 +395,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
               import java.util.List;
               import java.util.Optional;
               import java.util.stream.Stream;
-                                      
+
               class Scratch {
                 public void foo() {
                   final List<Object> list = Stream.of(Optional.empty())
@@ -415,7 +415,7 @@ class OptionalStreamRecipeTest implements RewriteTest {
           java(
             """
               import java.util.stream.Stream;
-              
+
               class Scratch {
                 public void foo() {
                   var x = Stream.of(Optional.empty())

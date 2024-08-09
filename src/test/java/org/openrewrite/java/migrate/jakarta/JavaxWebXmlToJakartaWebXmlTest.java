@@ -47,8 +47,8 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>javax.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment> 
-                 """,
+              </web-fragment>
+              """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
@@ -59,8 +59,8 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>jakarta.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment> 
-                 """,
+              </web-fragment>
+              """,
             sourceSpecs -> sourceSpecs.path("web.xml")
           )
         );
@@ -81,8 +81,8 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>javax.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment> 
-                 """,
+              </web-fragment>
+              """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
@@ -93,8 +93,8 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>jakarta.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment> 
-                 """,
+              </web-fragment>
+              """,
             sourceSpecs -> sourceSpecs.path("web.xml")
           )
         );
@@ -121,8 +121,8 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                      <res-type>javax.sql.DataSource</res-type>
                      <res-auth>CONTAINER</res-auth>
                   </resource-ref>
-              </web-fragment> 
-                 """,
+              </web-fragment>
+              """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
@@ -138,12 +138,13 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                      <res-type>javax.sql.DataSource</res-type>
                      <res-auth>CONTAINER</res-auth>
                   </resource-ref>
-              </web-fragment> 
-                 """,
+              </web-fragment>
+              """,
             sourceSpecs -> sourceSpecs.path("web.xml")
           )
         );
     }
+
     @Nested
     class NoChanges {
         @Test
@@ -152,10 +153,10 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee" 
+                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans> 
+                  </beans>
                   """,
                 sourceSpecs -> sourceSpecs.path("not-web.xml")
               )

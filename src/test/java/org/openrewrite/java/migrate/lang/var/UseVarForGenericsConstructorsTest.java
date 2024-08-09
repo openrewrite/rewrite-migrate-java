@@ -41,21 +41,22 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-                      package com.example.app;
-                                  
-                      import java.util.List;
-                      import java.util.ArrayList;
-                                        
-                      class A {
-                          void generic() {
-                              List<? extends String> lst = new ArrayList<>();
-                          }
+                  package com.example.app;
+
+                  import java.util.List;
+                  import java.util.ArrayList;
+
+                  class A {
+                      void generic() {
+                          List<? extends String> lst = new ArrayList<>();
                       }
-                      """),
+                  }
+                  """),
                 10
               )
             );
         }
+
         @Test
         void forEmptyFactoryMethod() {
             //language=java
@@ -64,9 +65,9 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                 java(
                   """
                       package com.example.app;
-                      
+
                       import java.util.List;
-                      
+
                       class A {
                         void m() {
                             List<String> strs = List.of();
@@ -77,6 +78,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
               )
             );
         }
+
         @Test
         void withFactoryMethods() {
             // this one is handled by UseVarForMethodInvocations
@@ -84,20 +86,21 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  void m() {
-                      List<String> strs = List.of("one", "two");
+                  package com.example.app;
+
+                  import java.util.List;
+
+                  class A {
+                    void m() {
+                        List<String> strs = List.of("one", "two");
+                    }
                   }
-                }
-                """),
+                  """),
                 10
               )
             );
         }
+
         @Test
         void forEmptyDiamondOperators() {
             //language=java
@@ -106,10 +109,10 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                 java(
                   """
                       package com.example.app;
-                      
+
                       import java.util.List;
                       import java.util.ArrayList;
-                      
+
                       class A {
                         void m() {
                             List strs = new ArrayList<>();
@@ -120,6 +123,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
               )
             );
         }
+
         @Test
         void withDiamondOperatorOnRaw() {
             //todo check if this may be possible!, We could transform ArrayList into ArrayList<String>
@@ -128,10 +132,10 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
               version(
                 java("""
                   package com.example.app;
-                  
+
                   import java.util.List;
                   import java.util.ArrayList;
-                                    
+
                   class A {
                     void m() {
                         List<String> strs = new ArrayList();
@@ -142,6 +146,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
               )
             );
         }
+
         @Test
         void forNoDiamondOperators() {
             // this one fails for generics because it's covered by UseVarForObjects
@@ -151,10 +156,10 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                 java(
                   """
                       package com.example.app;
-                      
+
                       import java.util.List;
                       import java.util.ArrayList;
-                      
+
                       class A {
                         void m() {
                             List strs = new ArrayList();
@@ -179,63 +184,63 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                 rewriteRun(
                   version(
                     java("""
-                  package com.example.app;
-                              
-                  import java.util.List;
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                      static <T> void generic() {
-                          List<T> lst = new ArrayList<>();
-                      }
-                  }
-                  """, """
-                  package com.example.app;
+                      package com.example.app;
 
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                      static <T> void generic() {
-                          var lst = new ArrayList<T>();
-                      }
-                  }
-                  """),
-                10
-              )
-            );
-        }
+                      import java.util.List;
+                      import java.util.ArrayList;
 
-        @Test
-        void unboundedGenerics() {
-            //language=java
-            rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-                              
-                  import java.util.List;
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                      void generic() {
-                          List<?> lst = new ArrayList<>();
+                      class A {
+                          static <T> void generic() {
+                              List<T> lst = new ArrayList<>();
+                          }
                       }
-                  }
-                  """, """
-                  package com.example.app;
-                                                
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                      void generic() {
-                          var lst = new ArrayList<?>();
+                      """, """
+                      package com.example.app;
+
+                      import java.util.ArrayList;
+
+                      class A {
+                          static <T> void generic() {
+                              var lst = new ArrayList<T>();
+                          }
                       }
-                  }
-                  """),
-                10
-              )
-            );
-        }
+                      """),
+                    10
+                  )
+                );
+            }
+
+            @Test
+            void unboundedGenerics() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+
+                      import java.util.List;
+                      import java.util.ArrayList;
+
+                      class A {
+                          void generic() {
+                              List<?> lst = new ArrayList<>();
+                          }
+                      }
+                      """, """
+                      package com.example.app;
+
+                      import java.util.ArrayList;
+
+                      class A {
+                          void generic() {
+                              var lst = new ArrayList<?>();
+                          }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
 
             @Test
             void boundedGenerics() {
@@ -244,17 +249,17 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                 rewriteRun(
                   version(
                     java("""
-                  package com.example.app;
-                              
-                  import java.util.List;
-                  import java.util.ArrayList;
-                                    
-                  class A {
-                      void generic() {
-                          List<? extends String> lst = new ArrayList<>();
+                      package com.example.app;
+
+                      import java.util.List;
+                      import java.util.ArrayList;
+
+                      class A {
+                          void generic() {
+                              List<? extends String> lst = new ArrayList<>();
+                          }
                       }
-                  }
-                  """),
+                      """),
                     10
                   )
                 );
@@ -267,10 +272,10 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                   version(
                     java("""
                       package com.example.app;
-                                  
+
                       import java.util.List;
                       import java.util.ArrayList;
-                                        
+
                       class A {
                           void generic() {
                               List<List<Object>> lst = new ArrayList<>();
@@ -281,7 +286,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
 
                       import java.util.List;
                       import java.util.ArrayList;
-                                        
+
                       class A {
                           void generic() {
                               var lst = new ArrayList<List<Object>>();
@@ -299,27 +304,27 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                 rewriteRun(
                   version(
                     java("""
-                  package com.example.app;
-                              
-                  import java.util.Map;
-                  import java.util.HashMap;
-                                    
-                  class A {
-                      void twoParams() {
-                          Map<String, Object> map = new HashMap<>();
-                      }
-                  }
-                  """, """
-                  package com.example.app;
+                      package com.example.app;
 
-                  import java.util.HashMap;
-                                    
-                  class A {
-                      void twoParams() {
-                          var map = new HashMap<String, Object>();
+                      import java.util.Map;
+                      import java.util.HashMap;
+
+                      class A {
+                          void twoParams() {
+                              Map<String, Object> map = new HashMap<>();
+                          }
                       }
-                  }
-                  """),
+                      """, """
+                      package com.example.app;
+
+                      import java.util.HashMap;
+
+                      class A {
+                          void twoParams() {
+                              var map = new HashMap<String, Object>();
+                          }
+                      }
+                      """),
                     10
                   )
                 );
@@ -333,10 +338,10 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
               version(
                 java("""
                   package com.example.app;
-                              
+
                   import java.util.List;
                   import java.util.ArrayList;
-                                    
+
                   class A {
                     void m() {
                         List<String> strs = new ArrayList<String>();
@@ -346,7 +351,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                   package com.example.app;
 
                   import java.util.ArrayList;
-                                    
+
                   class A {
                     void m() {
                         var strs = new ArrayList<String>();
@@ -365,10 +370,10 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
               version(
                 java("""
                   package com.example.app;
-                              
+
                   import java.util.List;
                   import java.util.ArrayList;
-                                    
+
                   class A {
                     void m() {
                         List<char[]> strs = new ArrayList<>();
@@ -378,7 +383,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                   package com.example.app;
 
                   import java.util.ArrayList;
-                                    
+
                   class A {
                     void m() {
                         var strs = new ArrayList<char[]>();
@@ -397,12 +402,12 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
               version(
                 java("""
                   package com.example.app;
-                              
+
                   import java.util.Map;
                   import java.util.LinkedHashMap;
-                                    
+
                   class AbstractOAuth2Configurer {}
-                                    
+
                   class A {
                       void twoParams() {
                           Map<Class<? extends AbstractOAuth2Configurer>, AbstractOAuth2Configurer> configurers = new LinkedHashMap<>();
@@ -422,10 +427,10 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
               version(
                 java("""
                   package com.example.app;
-                                    
+
                   import java.util.List;
                   import java.util.ArrayList;
-                                    
+
                   class A {
                     void m() {
                         List<String> strs = new ArrayList<>();
@@ -435,7 +440,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                   package com.example.app;
 
                   import java.util.ArrayList;
-                                    
+
                   class A {
                     void m() {
                         var strs = new ArrayList<String>();

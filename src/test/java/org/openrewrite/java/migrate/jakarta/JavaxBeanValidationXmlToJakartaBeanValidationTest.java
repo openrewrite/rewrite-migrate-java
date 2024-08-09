@@ -45,16 +45,16 @@ class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTes
                    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/validation/configuration
                    http://xmlns.jcp.org/xml/ns/validation/configuration/validation-configuration2.0.xsd"
                    version="2.0">
-              
+
                   <default-provider>javax.acme.ValidationProvider</default-provider>
-              
+
                   <message-interpolator>javax.acme.MessageInterpolator</message-interpolator>
                   <traversable-resolver>javax.acme.TraversableResolver</traversable-resolver>
                   <constraint-validator-factory>
                       javax.acme.ConstraintValidatorFactory
                   </constraint-validator-factory>
                   <parameter-name-provider>javax.acme.ParameterNameProvider</parameter-name-provider>
-              
+
                   <executable-validation enabled="true">
                       <default-validated-executable-types>
                           <executable-type>CONSTRUCTORS</executable-type>
@@ -62,12 +62,12 @@ class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTes
                           <executable-type>GETTER_METHODS</executable-type>
                       </default-validated-executable-types>
                   </executable-validation>
-              
+
                   <constraint-mapping>META-INF/validation/constraints-car.xml</constraint-mapping>
-              
+
                   <property name="javax.validator.fail_fast">false</property>
               </validation-config>
-                 """,
+              """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <validation-config
@@ -75,16 +75,16 @@ class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTes
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/validation/configuration/validation-configuration-3.0.xsd"
                    version="3.0">
-              
+
                   <default-provider>jakarta.acme.ValidationProvider</default-provider>
-              
+
                   <message-interpolator>jakarta.acme.MessageInterpolator</message-interpolator>
                   <traversable-resolver>jakarta.acme.TraversableResolver</traversable-resolver>
                   <constraint-validator-factory>
                       jakarta.acme.ConstraintValidatorFactory
                   </constraint-validator-factory>
                   <parameter-name-provider>jakarta.acme.ParameterNameProvider</parameter-name-provider>
-              
+
                   <executable-validation enabled="true">
                       <default-validated-executable-types>
                           <executable-type>CONSTRUCTORS</executable-type>
@@ -92,12 +92,12 @@ class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTes
                           <executable-type>GETTER_METHODS</executable-type>
                       </default-validated-executable-types>
                   </executable-validation>
-              
+
                   <constraint-mapping>META-INF/validation/constraints-car.xml</constraint-mapping>
-              
+
                   <property name="jakarta.validator.fail_fast">false</property>
               </validation-config>
-                 """,
+              """,
             sourceSpecs -> sourceSpecs.path("validation.xml")
           )
         );
@@ -111,10 +111,10 @@ class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTes
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee" 
+                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans> 
+                  </beans>
                   """,
                 sourceSpecs -> sourceSpecs.path("not-validation.xml")
               )

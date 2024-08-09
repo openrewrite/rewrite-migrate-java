@@ -45,7 +45,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   obj.finalize();
               }
           }
-           """, """
+          """, """
           import java.util.zip.Inflater;
 
           class FooInflater extends Inflater {
@@ -53,7 +53,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   FooInflater obj = new FooInflater();
               }
           }
-           """));
+          """));
     }
 
     @Test
@@ -67,14 +67,14 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   finalize();
               }
           }
-           """, """
+          """, """
           import java.util.zip.Inflater;
 
           class FooBar extends Inflater {
               public void test() {
               }
           }
-           """));
+          """));
     }
 
     @Test
@@ -88,14 +88,14 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   this.finalize();
               }
           }
-           """, """
+          """, """
           import java.util.zip.Inflater;
 
           class FooBar extends Inflater {
               public void test() {
               }
           }
-           """));
+          """));
     }
 
     @Test
@@ -109,7 +109,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   new FooBar().finalize();
               }
           }
-           """, """
+          """, """
           import java.util.zip.Inflater;
 
           class FooBar extends Inflater {
@@ -117,7 +117,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   new FooBar();
               }
           }
-           """));
+          """));
     }
 
     @Test
@@ -131,7 +131,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   new Object().finalize();
               }
           }
-           """));
+          """));
     }
 
     @Test
@@ -145,7 +145,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   FooBar obj = new FooBar();
               }
           }
-           """));
+          """));
     }
 
     @Test
@@ -160,7 +160,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   obj.finalize();
               }
           }
-           """, """
+          """, """
           import java.util.zip.Deflater;
 
           class FooBar extends Deflater {
@@ -168,7 +168,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   FooBar obj = new FooBar();
               }
           }
-           """));
+          """));
     }
 
     @Test
@@ -182,7 +182,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   FooBar obj = new FooBar();
               }
           }
-           """));
+          """));
     }
 
     @Test
@@ -200,7 +200,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   obj.finalize();
               }
           }
-           """, """
+          """, """
           import java.util.zip.ZipFile;
 
           class FooBar extends ZipFile {
@@ -211,7 +211,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   FooBar obj = new FooBar();
               }
           }
-           """));
+          """));
     }
 
     @Test
@@ -228,7 +228,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   FooBar obj = new FooBar();
               }
           }
-           """));
+          """));
     }
 
     @Test
@@ -240,7 +240,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   new Object().finalize();
               }
           }
-           """));
+          """));
     }
 
     @Test
@@ -252,7 +252,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   finalize();
               }
           }
-           """));
+          """));
     }
 
     @Test
@@ -260,7 +260,7 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
         //language=java
         rewriteRun(version(java("""
           import java.util.zip.ZipFile;
-                    
+
           class FooBar extends ZipFile {
               FooBar(){
                   super("");
@@ -269,6 +269,6 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   finalize();
               }
           }
-           """), 11));
+          """), 11));
     }
 }

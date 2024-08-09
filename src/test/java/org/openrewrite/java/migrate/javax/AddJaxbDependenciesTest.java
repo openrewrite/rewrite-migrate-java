@@ -49,7 +49,7 @@ class AddJaxbDependenciesTest implements RewriteTest {
     // language=java
     private static final String CLASS_USING_XML_BIND = """
       import javax.xml.bind.annotation.XmlElement;
-      
+
       public class Test {
           @XmlElement
           private String name;
@@ -68,11 +68,11 @@ class AddJaxbDependenciesTest implements RewriteTest {
               plugins {
                   id "java-library"
               }
-              
+
               repositories {
                   mavenCentral()
               }
-              
+
               dependencies {
                   implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
               }
@@ -87,14 +87,14 @@ class AddJaxbDependenciesTest implements RewriteTest {
                   plugins {
                       id "java-library"
                   }
-                  
+
                   repositories {
                       mavenCentral()
                   }
-                  
+
                   dependencies {
                       implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
-                  
+
                       runtimeOnly "org.glassfish.jaxb:jaxb-runtime:%s"
                   }
                   """.formatted(bindApiVersion, runtimeVersion);
@@ -160,16 +160,16 @@ class AddJaxbDependenciesTest implements RewriteTest {
               plugins {
                   id "java-library"
               }
-              
+
               repositories {
                   mavenCentral()
               }
-              
+
               dependencies {
                   implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3"
-              
+
                   compileOnly "com.sun.xml.bind:jaxb-impl:2.3.3"
-              
+
                   testImplementation "com.sun.xml.bind:jaxb-impl:2.3.3"
               }
               """,
@@ -183,18 +183,18 @@ class AddJaxbDependenciesTest implements RewriteTest {
                   plugins {
                       id "java-library"
                   }
-                  
+
                   repositories {
                       mavenCentral()
                   }
-                  
+
                   dependencies {
                       implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
-                  
+
                       runtimeOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-                  
+
                       compileOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-                  
+
                       testImplementation "org.glassfish.jaxb:jaxb-runtime:%s"
                   }
                   """.formatted(bindApiVersion, runtimeVersion, runtimeVersion, runtimeVersion);
@@ -266,16 +266,16 @@ class AddJaxbDependenciesTest implements RewriteTest {
               plugins {
                   id "java-library"
               }
-              
+
               repositories {
                   mavenCentral()
               }
-              
+
               dependencies {
                   implementation "javax.xml.bind:jaxb-api:2.3.1"
-              
+
                   compileOnly "org.glassfish.jaxb:jaxb-runtime:2.3.1"
-              
+
                   testImplementation "org.glassfish.jaxb:jaxb-runtime:2.3.1"
               }
               """,
@@ -289,18 +289,18 @@ class AddJaxbDependenciesTest implements RewriteTest {
                   plugins {
                       id "java-library"
                   }
-                  
+
                   repositories {
                       mavenCentral()
                   }
-                  
+
                   dependencies {
                       implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
-                  
+
                       runtimeOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-                  
+
                       compileOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-                  
+
                       testImplementation "org.glassfish.jaxb:jaxb-runtime:%s"
                   }
                   """.formatted(bindApiVersion, runtimeVersion, runtimeVersion, runtimeVersion);
@@ -451,11 +451,11 @@ class AddJaxbDependenciesTest implements RewriteTest {
               plugins {
                   id "java-library"
               }
-              
+
               repositories {
                   mavenCentral()
               }
-              
+
               dependencies {
                   api("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.16.0")
               }
@@ -497,7 +497,7 @@ class AddJaxbDependenciesTest implements RewriteTest {
               repositories {
                   mavenCentral()
               }
-              
+
               dependencies {
                   implementation("jakarta.xml.bind:jakarta.xml.bind-api:2.3.3")
                   implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.3'

@@ -37,57 +37,59 @@ class DeleteDeprecatedFinalizeTest implements RewriteTest {
           //language=java
           java(
             """
-               package java.awt.color;
-               
-               import java.awt.color.ICC_Profile;
-               import java.awt.image.ColorModel;
-               import java.awt.image.IndexColorModel;
-               
-               public class Test {
-               	public static void main(String[] args) {
-               		byte ff = (byte) 0xff;
-               		byte[] r = { ff, 0, 0, ff, 0 };
-               		byte[] g = { 0, ff, 0, ff, 0 };
-               		byte[] b = { 0, 0, ff, ff, 0 };
-               
-               		ICC_Profile profile = ICC_Profile.getInstance(ICC_Profile.CLASS_COLORSPACECONVERSION);
-               		// flag
-               		profile.finalize();
-               
-               		ColorModel cm = new IndexColorModel(3, 5, r, g, b);
-               
-               		// flag
-               		cm.finalize();
-               
-               		IndexColorModel icm = new IndexColorModel(3, 5, r, g, b);
-               		// flag
-               		icm.finalize();
-               
-               	}
-               }
-               """,
+              package java.awt.color;
+
+              import java.awt.color.ICC_Profile;
+              import java.awt.image.ColorModel;
+              import java.awt.image.IndexColorModel;
+
+              public class Test {
+              	public static void main(String[] args) {
+              		byte ff = (byte) 0xff;
+              		byte[] r = { ff, 0, 0, ff, 0 };
+              		byte[] g = { 0, ff, 0, ff, 0 };
+              		byte[] b = { 0, 0, ff, ff, 0 };
+
+              		ICC_Profile profile = ICC_Profile.getInstance(ICC_Profile.CLASS_COLORSPACECONVERSION);
+              		// flag
+              		profile.finalize();
+
+              		ColorModel cm = new IndexColorModel(3, 5, r, g, b);
+
+              		// flag
+              		cm.finalize();
+
+              		IndexColorModel icm = new IndexColorModel(3, 5, r, g, b);
+              		// flag
+              		icm.finalize();
+
+              	}
+              }
+              """,
             """
-               package java.awt.color;
-               
-               import java.awt.color.ICC_Profile;
-               import java.awt.image.ColorModel;
-               import java.awt.image.IndexColorModel;
-               
-               public class Test {
-               	public static void main(String[] args) {
-               		byte ff = (byte) 0xff;
-               		byte[] r = { ff, 0, 0, ff, 0 };
-               		byte[] g = { 0, ff, 0, ff, 0 };
-               		byte[] b = { 0, 0, ff, ff, 0 };
-               
-               		ICC_Profile profile = ICC_Profile.getInstance(ICC_Profile.CLASS_COLORSPACECONVERSION);
-               
-               		ColorModel cm = new IndexColorModel(3, 5, r, g, b);
-               
-               		IndexColorModel icm = new IndexColorModel(3, 5, r, g, b);
-               
-               	}
-               }
-               """));
+              package java.awt.color;
+
+              import java.awt.color.ICC_Profile;
+              import java.awt.image.ColorModel;
+              import java.awt.image.IndexColorModel;
+
+              public class Test {
+              	public static void main(String[] args) {
+              		byte ff = (byte) 0xff;
+              		byte[] r = { ff, 0, 0, ff, 0 };
+              		byte[] g = { 0, ff, 0, ff, 0 };
+              		byte[] b = { 0, 0, ff, ff, 0 };
+
+              		ICC_Profile profile = ICC_Profile.getInstance(ICC_Profile.CLASS_COLORSPACECONVERSION);
+
+              		ColorModel cm = new IndexColorModel(3, 5, r, g, b);
+
+              		IndexColorModel icm = new IndexColorModel(3, 5, r, g, b);
+
+              	}
+              }
+              """
+          )
+        );
     }
 }

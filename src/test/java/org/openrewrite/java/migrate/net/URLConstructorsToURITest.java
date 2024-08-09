@@ -38,7 +38,7 @@ class URLConstructorsToURITest implements RewriteTest {
           java(
             """
               import java.net.URL;
-              
+
               class Test {
                   void urlConstructor(String spec) throws Exception {
                       URL url1 = new URL(spec);
@@ -50,7 +50,7 @@ class URLConstructorsToURITest implements RewriteTest {
             """
               import java.net.URI;
               import java.net.URL;
-              
+
               class Test {
                   void urlConstructor(String spec) throws Exception {
                       URL url1 = URI.create(spec).toURL();

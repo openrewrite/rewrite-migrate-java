@@ -138,7 +138,7 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
                       </dependency>
                   </dependencies>
               </project>
-                """
+              """
           )
         );
     }
@@ -249,7 +249,7 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
                       </dependencies>
                   </dependencyManagement>
               </project>
-                            """
+              """
           )
         );
     }
@@ -267,11 +267,11 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
               import com.fasterxml.jackson.databind.ObjectMapper;
               import com.fasterxml.jackson.databind.json.JsonMapper;
               import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
-                            
+
               public class JacksonTest {
                   ObjectMapper mapper = JsonMapper.builder().addModule(new JSR353Module()).build();
                   ObjectMapper mapper2 = JsonMapper.builder().addModule(getModule()).build();
-                
+
                   private JSR353Module getModule() {
                       return new JSR353Module();
                   }
@@ -281,11 +281,11 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
               import com.fasterxml.jackson.databind.ObjectMapper;
               import com.fasterxml.jackson.databind.json.JsonMapper;
               import com.fasterxml.jackson.datatype.jsonp.JSONPModule;
-                            
+
               public class JacksonTest {
                   ObjectMapper mapper = JsonMapper.builder().addModule(new JSONPModule()).build();
                   ObjectMapper mapper2 = JsonMapper.builder().addModule(getModule()).build();
-                
+
                   private JSONPModule getModule() {
                       return new JSONPModule();
                   }

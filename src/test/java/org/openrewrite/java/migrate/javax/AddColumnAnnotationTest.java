@@ -331,7 +331,7 @@ class AddColumnAnnotationTest implements RewriteTest {
                   class InnerClass {
                       @Id
                       private int id2;
-                      
+
                       @ElementCollection
                       private List<String> listofStrings2;
                   }
@@ -353,7 +353,7 @@ class AddColumnAnnotationTest implements RewriteTest {
                   @Column(name = "element")
                   @ElementCollection
                   private List<String> listofStrings;
-                  
+
                   class InnerClass {
                       @Id
                       private int id2;
