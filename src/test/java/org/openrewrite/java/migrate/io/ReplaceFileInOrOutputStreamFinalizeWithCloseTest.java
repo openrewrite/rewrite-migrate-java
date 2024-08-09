@@ -207,7 +207,7 @@ class ReplaceFileInOrOutputStreamFinalizeWithCloseTest implements RewriteTest {
                  public void test() throws IOException {
                      FileOutputStream obj = new FileOutputStream("foo");
                      obj.finalize();
-                 }                    
+                 }
               }
               """,
             """

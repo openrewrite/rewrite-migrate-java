@@ -69,7 +69,7 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
               class A {
                   public void setConnectionListeners(List<? extends ConnectionListener> listeners) {
                   }
-              
+
                   public void test() {
                       setConnectionListeners(List.of(new ConnectionListener() {
                           @Override
@@ -91,14 +91,14 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
           java(
             """
               import java.util.*;
-              
+
               class Test {
                   List<String> list = Collections.singletonList("ABC");
               }
               """,
             """
               import java.util.List;
-              
+
               class Test {
                   List<String> list = List.of("ABC");
               }
@@ -116,14 +116,14 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
             """
               import java.util.*;
               import static java.util.Collections.singletonList;
-              
+
               class Test {
                   List<String> list = singletonList("ABC");
               }
               """,
             """
               import java.util.List;
-              
+
               class Test {
                   List<String> list = List.of("ABC");
               }
@@ -141,7 +141,7 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
             """
               import java.util.*;
               import java.time.LocalDate;
-              
+
               class Test {
                   List<LocalDate> list = Collections.singletonList(LocalDate.now());
               }
@@ -149,7 +149,7 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
             """
               import java.util.List;
               import java.time.LocalDate;
-              
+
               class Test {
                   List<LocalDate> list = List.of(LocalDate.now());
               }
@@ -169,16 +169,16 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
             """
               import lombok.AllArgsConstructor;
               import java.util.List;
-              
+
               import static java.util.Collections.singletonList;
-              
+
               enum FooEnum {
                   FOO, BAR;
-              
+
                   @AllArgsConstructor
                   public enum BarEnum {
                       foobar(singletonList(FOO));
-                              
+
                       private final List<FooEnum> expectedStates;
                   }
               }

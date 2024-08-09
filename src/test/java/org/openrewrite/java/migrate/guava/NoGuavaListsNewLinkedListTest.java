@@ -40,9 +40,9 @@ class NoGuavaListsNewLinkedListTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.List;
-                            
+
               class Test {
                   List<Integer> cardinalsWorldSeries = Lists.newLinkedList();
               }
@@ -50,7 +50,7 @@ class NoGuavaListsNewLinkedListTest implements RewriteTest {
             """
               import java.util.LinkedList;
               import java.util.List;
-                            
+
               class Test {
                   List<Integer> cardinalsWorldSeries = new LinkedList<>();
               }
@@ -66,11 +66,11 @@ class NoGuavaListsNewLinkedListTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.Collections;
               import java.util.LinkedList;
               import java.util.List;
-                            
+
               class Test {
                   List<Integer> l = Collections.emptyList();
                   List<Integer> cardinalsWorldSeries = Lists.newLinkedList(l);
@@ -80,7 +80,7 @@ class NoGuavaListsNewLinkedListTest implements RewriteTest {
               import java.util.Collections;
               import java.util.LinkedList;
               import java.util.List;
-                            
+
               class Test {
                   List<Integer> l = Collections.emptyList();
                   List<Integer> cardinalsWorldSeries = new LinkedList<>(l);

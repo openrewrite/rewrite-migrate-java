@@ -43,7 +43,7 @@ class IteratorNextTest implements RewriteTest {
           java(
             """
               import java.util.*;
-                            
+
               class Foo {
                   String bar(List<String> collection) {
                       return collection.iterator().next();
@@ -52,7 +52,7 @@ class IteratorNextTest implements RewriteTest {
               """,
             """
               import java.util.*;
-                            
+
               class Foo {
                   String bar(List<String> collection) {
                       return collection.getFirst();
@@ -70,7 +70,7 @@ class IteratorNextTest implements RewriteTest {
           java(
             """
               import java.util.*;
-                  
+
               class Foo {
                   void bar(Collection<String> collection) {
                       String first = collection.iterator().next();
@@ -88,7 +88,7 @@ class IteratorNextTest implements RewriteTest {
           java(
             """
               import java.util.*;
-                  
+
               class Foo {
                   void bar(List<String> collection) {
                       String first = collection
@@ -100,7 +100,7 @@ class IteratorNextTest implements RewriteTest {
               """,
             """
               import java.util.*;
-                  
+
               class Foo {
                   void bar(List<String> collection) {
                       String first = collection
@@ -119,7 +119,7 @@ class IteratorNextTest implements RewriteTest {
           java(
             """
               import java.util.*;
-                  
+
               class Foo {
                   void bar(List<String> collection) {
                       String first = collection
@@ -131,7 +131,7 @@ class IteratorNextTest implements RewriteTest {
               """,
             """
               import java.util.*;
-                  
+
               class Foo {
                   void bar(List<String> collection) {
                       String first = collection

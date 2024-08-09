@@ -62,7 +62,7 @@ class ApacheDefaultProviderTest implements RewriteTest {
                   <default-provider>org.hibernate.validator.HibernateValidator</default-provider>
                   <message-interpolator>org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator</message-interpolator>
                   <traversable-resolver>org.hibernate.validator.engine.resolver.DefaultTraversableResolver</traversable-resolver>
-                  <constraint-validator-factory>org.hibernate.validator.engine.ConstraintValidatorFactoryImpl</constraint-validator-factory>                                                                                                                 
+                  <constraint-validator-factory>org.hibernate.validator.engine.ConstraintValidatorFactoryImpl</constraint-validator-factory>
               </validation-config>
               """
           )

@@ -42,12 +42,12 @@ class JavaxLangModelUtilTest implements RewriteTest {
           java(
             """
               import javax.lang.model.util.AbstractAnnotationValueVisitor6;
-                            
+
               abstract class Test extends AbstractAnnotationValueVisitor6 {}
               """,
             """
               import javax.lang.model.util.AbstractAnnotationValueVisitor9;
-                            
+
               abstract class Test extends AbstractAnnotationValueVisitor9 {}
               """
           )
@@ -61,12 +61,12 @@ class JavaxLangModelUtilTest implements RewriteTest {
           java(
             """
               import javax.lang.model.util.AbstractElementVisitor6;
-              
+
               abstract class Test extends AbstractElementVisitor6 {}
               """,
             """
               import javax.lang.model.util.AbstractElementVisitor9;
-              
+
               abstract class Test extends AbstractElementVisitor9 {}
               """
           )
@@ -80,12 +80,12 @@ class JavaxLangModelUtilTest implements RewriteTest {
           java(
             """
               import javax.lang.model.util.AbstractTypeVisitor6;
-                            
+
               abstract class Test extends AbstractTypeVisitor6 {}
               """,
             """
               import javax.lang.model.util.AbstractTypeVisitor9;
-                            
+
               abstract class Test extends AbstractTypeVisitor9 {}
               """
           )
@@ -99,12 +99,12 @@ class JavaxLangModelUtilTest implements RewriteTest {
           java(
             """
               import javax.lang.model.util.ElementKindVisitor6;
-                            
+
               public class Test extends ElementKindVisitor6 {}
               """,
             """
               import javax.lang.model.util.ElementKindVisitor9;
-                            
+
               public class Test extends ElementKindVisitor9 {}
               """
           )
@@ -118,12 +118,12 @@ class JavaxLangModelUtilTest implements RewriteTest {
           java(
             """
               import javax.lang.model.util.ElementScanner6;
-                           
+
               public class Test extends ElementScanner6 {}
               """,
             """
               import javax.lang.model.util.ElementScanner9;
-                      
+
               public class Test extends ElementScanner9 {}
               """
           )

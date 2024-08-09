@@ -26,7 +26,7 @@ class JavaxXmlStreamAPIsTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResource("/META-INF/rewrite/javax-xml-stream.yml","org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs");
+        spec.recipeFromResource("/META-INF/rewrite/javax-xml-stream.yml", "org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs");
     }
 
     @DocumentExample

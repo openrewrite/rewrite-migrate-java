@@ -65,23 +65,23 @@ class JohnzonJavaxtoJakartaTest implements RewriteTest {
                   .matcher(actual);
                 assertThat(version.find()).isTrue();
                 return """
-                <project>
-                    <groupId>com.example.ehcache</groupId>
-                    <artifactId>johnzon-legacy</artifactId>
-                    <version>1.0.0</version>
-                    <properties>
-                        <johnzon.version>%s</johnzon.version>
-                    </properties>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.apache.johnzon</groupId>
-                            <artifactId>johnzon-core</artifactId>
-                            <version>${johnzon.version}</version>
-                            <classifier>jakarta</classifier>
-                        </dependency>
-                    </dependencies>
-                </project>
-                """.formatted(version.group(1));
+                  <project>
+                      <groupId>com.example.ehcache</groupId>
+                      <artifactId>johnzon-legacy</artifactId>
+                      <version>1.0.0</version>
+                      <properties>
+                          <johnzon.version>%s</johnzon.version>
+                      </properties>
+                      <dependencies>
+                          <dependency>
+                              <groupId>org.apache.johnzon</groupId>
+                              <artifactId>johnzon-core</artifactId>
+                              <version>${johnzon.version}</version>
+                              <classifier>jakarta</classifier>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """.formatted(version.group(1));
             })
           )
         );

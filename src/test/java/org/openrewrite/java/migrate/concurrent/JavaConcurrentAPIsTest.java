@@ -58,8 +58,8 @@ class JavaConcurrentAPIsTest implements RewriteTest {
                   }
               }
               """
-)
-);
+          )
+        );
     }
 
     @Test
@@ -85,8 +85,8 @@ class JavaConcurrentAPIsTest implements RewriteTest {
                   }
               }
               """
-)
-);
+          )
+        );
     }
 
     @Test

@@ -44,7 +44,7 @@ class FindDataUsedOnDtoTest implements RewriteTest {
           java(
             """
               import java.time.LocalDate;
-              
+
               class Test {
                   void test(LocalDate date) {
                         date.getDayOfMonth();
@@ -54,7 +54,7 @@ class FindDataUsedOnDtoTest implements RewriteTest {
               """,
             """
               import java.time.LocalDate;
-              
+
               class Test {
                   void test(LocalDate date) {
                         /*~~>*/date.getDayOfMonth();

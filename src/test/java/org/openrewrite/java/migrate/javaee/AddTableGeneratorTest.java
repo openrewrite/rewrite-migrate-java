@@ -45,18 +45,18 @@ class AddTableGeneratorTest implements RewriteTest {
               import javax.persistence.GenerationType;
               import javax.persistence.Id;
               import javax.persistence.TableGenerator;
-                             
+
               @Entity
               public class GeneratedValueExample  {
                   // flag it
                   @Id
                   @GeneratedValue(strategy=GenerationType.AUTO)
                   private int id;
-              
+
                   // flag it.  Does not require @Id
                   @GeneratedValue
                   private int id2;
-              
+
                   // flag it even though it has a TableGenerator since GeneratedValue is default
                   // A second TableGenerator will be created.
                   @TableGenerator(name = "SOME_TABLE", table = "SOME_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
@@ -69,7 +69,7 @@ class AddTableGeneratorTest implements RewriteTest {
               import javax.persistence.GenerationType;
               import javax.persistence.Id;
               import javax.persistence.TableGenerator;
-                                     
+
               @Entity
               public class GeneratedValueExample  {
                   // flag it
@@ -77,12 +77,12 @@ class AddTableGeneratorTest implements RewriteTest {
                   @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
                   @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
                   private int id;
-              
+
                   // flag it.  Does not require @Id
                   @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
                   @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
                   private int id2;
-              
+
                   // flag it even though it has a TableGenerator since GeneratedValue is default
                   // A second TableGenerator will be created.
                   @TableGenerator(name = "SOME_TABLE", table = "SOME_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
@@ -104,7 +104,7 @@ class AddTableGeneratorTest implements RewriteTest {
               import javax.persistence.Entity;
               import javax.persistence.GeneratedValue;
               import javax.persistence.Id;
-                             
+
               @Entity
               class GeneratedValueName  {
                   @Id
@@ -116,7 +116,7 @@ class AddTableGeneratorTest implements RewriteTest {
               import javax.persistence.Entity;
               import javax.persistence.GeneratedValue;
               import javax.persistence.Id;
-                                     
+
               @Entity
               class GeneratedValueName  {
                   @Id
@@ -140,7 +140,7 @@ class AddTableGeneratorTest implements RewriteTest {
               import javax.persistence.GenerationType;
               import javax.persistence.Id;
               import javax.persistence.TableGenerator;
-              
+
               @Entity
               class GeneratedValueQuickFixApplied  {
                   // not flagged since GeneratedValue is not default or AUTO
@@ -164,7 +164,7 @@ class AddTableGeneratorTest implements RewriteTest {
               import javax.persistence.GeneratedValue;
               import javax.persistence.GenerationType;
               import javax.persistence.Id;
-              
+
               @Entity
               class GeneratedValueStrategySpaces  {
                   @Id
@@ -177,7 +177,7 @@ class AddTableGeneratorTest implements RewriteTest {
               import javax.persistence.GeneratedValue;
               import javax.persistence.GenerationType;
               import javax.persistence.Id;
-                             
+
               @Entity
               class GeneratedValueStrategySpaces  {
                   @Id

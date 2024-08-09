@@ -39,14 +39,14 @@ class MigrateCollectionsSingletonMapTest implements RewriteTest {
             java(
               """
                 import java.util.*;
-                                
+
                 class Test {
                     Map<String,String> set = Collections.singletonMap("hello", "world");
                 }
                 """,
               """
                 import java.util.Map;
-                                
+
                 class Test {
                     Map<String,String> set = Map.of("hello", "world");
                 }
@@ -67,7 +67,7 @@ class MigrateCollectionsSingletonMapTest implements RewriteTest {
               """
                 import java.util.*;
                 import java.time.LocalDate;
-                                
+
                 class Test {
                     Map<String,LocalDate> map = Collections.singletonMap("date", LocalDate.now());
                 }
@@ -75,7 +75,7 @@ class MigrateCollectionsSingletonMapTest implements RewriteTest {
               """
                 import java.util.Map;
                 import java.time.LocalDate;
-                                
+
                 class Test {
                     Map<String,LocalDate> map = Map.of("date", LocalDate.now());
                 }

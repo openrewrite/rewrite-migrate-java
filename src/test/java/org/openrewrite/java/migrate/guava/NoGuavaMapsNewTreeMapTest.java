@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
@@ -23,36 +24,36 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class NoGuavaSetsNewLinkedHashSetTest implements RewriteTest {
+
+class NoGuavaMapsNewTreeMapTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new NoGuavaSetsNewLinkedHashSet())
+          .recipe(new NoGuavaMapsNewTreeMap())
           .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
     @DocumentExample
     @Test
-    void replaceWithNewLinkedHashSet() {
+    void replaceWithNewTreeMap() {
         //language=java
         rewriteRun(
           java(
             """
               import com.google.common.collect.*;
-
-              import java.util.Set;
+              import java.util.Map;
 
               class Test {
-                  Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSet();
+                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newTreeMap();
               }
               """,
             """
-              import java.util.LinkedHashSet;
-              import java.util.Set;
+              import java.util.Map;
+              import java.util.TreeMap;
 
               class Test {
-                  Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>();
+                  Map<Integer, Integer> cardinalsWorldSeries = new TreeMap<>();
               }
               """
           )
@@ -60,29 +61,28 @@ class NoGuavaSetsNewLinkedHashSetTest implements RewriteTest {
     }
 
     @Test
-    void replaceWithNewLinkedHashSetCollection() {
+    void replaceWithNewTreeMapWithComparator() {
         //language=java
         rewriteRun(
           java(
             """
+              import java.util.Comparator;
               import com.google.common.collect.*;
-
-              import java.util.Collections;
-              import java.util.Set;
+              import java.util.Map;
 
               class Test {
-                  Set<Integer> l = Collections.emptySet();
-                  Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSet(l);
+                  Comparator<Integer> comparator = (o1, o2) -> 0;
+                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newTreeMap(comparator);
               }
               """,
             """
-              import java.util.Collections;
-              import java.util.LinkedHashSet;
-              import java.util.Set;
+              import java.util.Comparator;
+              import java.util.Map;
+              import java.util.TreeMap;
 
               class Test {
-                  Set<Integer> l = Collections.emptySet();
-                  Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>(l);
+                  Comparator<Integer> comparator = (o1, o2) -> 0;
+                  Map<Integer, Integer> cardinalsWorldSeries = new TreeMap<>(comparator);
               }
               """
           )
@@ -90,25 +90,31 @@ class NoGuavaSetsNewLinkedHashSetTest implements RewriteTest {
     }
 
     @Test
-    void replaceWithNewLinkedHashSetWithCapacity() {
+    void replaceWithNewTreeMapWithMap() {
         //language=java
         rewriteRun(
           java(
             """
-              import com.google.common.collect.*;
+              import com.google.common.collect.Maps;
 
-              import java.util.Set;
+              import java.util.Collections;
+              import java.util.Map;
+              import java.util.SortedMap;
 
               class Test {
-                  Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSetWithExpectedSize(2);
+                  SortedMap<Integer, Integer> m = Collections.emptySortedMap();
+                  Map<Integer, Integer> cardinalsWorldSeries = Maps.newTreeMap(m);
               }
               """,
             """
-              import java.util.LinkedHashSet;
-              import java.util.Set;
+              import java.util.Collections;
+              import java.util.Map;
+              import java.util.SortedMap;
+              import java.util.TreeMap;
 
               class Test {
-                  Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>(2);
+                  SortedMap<Integer, Integer> m = Collections.emptySortedMap();
+                  Map<Integer, Integer> cardinalsWorldSeries = new TreeMap<>(m);
               }
               """
           )

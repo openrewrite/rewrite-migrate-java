@@ -36,13 +36,13 @@ class FindDtoOverfetchingTest implements RewriteTest {
           java(
             """
               import java.time.LocalDate;
-              
+
               class Test {
                   void test(LocalDate date) {
                         date.getDayOfMonth();
                         date.getDayOfYear();
                   }
-                  
+
                   void test2(LocalDate date) {
                         date.getDayOfMonth();
                   }
@@ -50,13 +50,13 @@ class FindDtoOverfetchingTest implements RewriteTest {
               """,
             """
               import java.time.LocalDate;
-              
+
               class Test {
                   void test(LocalDate date) {
                         date.getDayOfMonth();
                         date.getDayOfYear();
                   }
-                  
+
                   /*~~(dayOfMonth)~~>*/void test2(LocalDate date) {
                         date.getDayOfMonth();
                   }
@@ -74,15 +74,15 @@ class FindDtoOverfetchingTest implements RewriteTest {
           java(
             """
               package animals;
-              
+
               public class Dog {
                   String name;
                   String breed;
-                  
+
                   public String getName() {
                       return getBreed();
                   }
-                  
+
                   public String getBreed() {
                       return breed;
                   }
@@ -100,15 +100,15 @@ class FindDtoOverfetchingTest implements RewriteTest {
           java(
             """
               package animals;
-              
+
               public class Dog {
                   String name;
                   String breed;
-                  
+
                   public String getName() {
                       return new Dog().getBreed();
                   }
-                  
+
                   public String getBreed() {
                       return breed;
                   }
