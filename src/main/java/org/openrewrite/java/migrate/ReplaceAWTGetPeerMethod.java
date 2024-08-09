@@ -18,10 +18,7 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaVisitor;
@@ -35,8 +32,14 @@ import org.openrewrite.java.tree.TypedTree;
 @EqualsAndHashCode(callSuper = false)
 class ReplaceAWTGetPeerMethod extends Recipe {
 
-    // Fields configurable for tests
+    @Option(displayName = "Method pattern to replace",
+            description = "The method pattern to match and replace.",
+            example = "java.awt.* getPeer()")
     String getPeerMethodPattern;
+
+    @Option(displayName = "The LightweightPeer interface FQCN",
+            description = "The fully qualified class name of the LightweightPeer interface to replace in `instanceof`.",
+            example = "java.awt.peer.LightweightPeer")
     String lightweightPeerFQCN;
 
     @Override
@@ -46,11 +49,9 @@ class ReplaceAWTGetPeerMethod extends Recipe {
 
     @Override
     public String getDescription() {
-        return "All methods that refer to types defined in the java.awt.peer package are removed in Java 11. " +
-               "This recipe replaces the use of getPeer() method in the java.awt.Component, java.awt.Font, and java.awt.MenuComponent classes and direct known subclasses. " +
-               "The occurrence of  `(component.getPeer() != null) { .. }` is replaced with `(component.isDisplayable())` " +
-               "and the occurrence of `(component.getPeer() instanceof LightweightPeer)` " +
-               "is replaced with `(component.isLightweight())`.";
+        return "This recipe replaces the use of `getPeer()` method in `java.awt.*` classes. " +
+               "`component.getPeer() != nul` is replaced with `component.isDisplayable()` and " +
+               "`component.getPeer() instanceof LightweightPeer` is replaced with `component.isLightweight()`.";
     }
 
     @Override
