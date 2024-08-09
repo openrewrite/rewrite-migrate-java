@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -34,6 +35,7 @@ class SunNetSslPackageUnavailableTest implements RewriteTest {
     }
 
     @Test
+    @DocumentExample
     void sunNetSslPackageUnavailableTest() {
         rewriteRun(
           //language=java
@@ -59,5 +61,4 @@ class SunNetSslPackageUnavailableTest implements RewriteTest {
           )
         );
     }
-
 }
