@@ -25,6 +25,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -51,16 +52,16 @@ class ReplaceAWTGetPeerMethod extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Replace `getPeer()` method";
+        return "Replace AWT `getPeer()` method";
     }
 
     @Override
     public String getDescription() {
-        return " All methods that refer to types defined in the java.awt.peer package are removed in Java 11. "
-                + "This recipe replaces the use of getPeer() method in the java.awt.Component, java.awt.Font, and java.awt.MenuComponent classes and direct known subclasse."
-                + "The occurrence of  `(component.getPeer() != null) { .. }` is replaced with `(component.isDisplayable())` "
-                + "and the occurrence of `(component.getPeer() instanceof LightweightPeer)` "
-                + "is replaced with `(component.isLightweight())`.";
+        return "All methods that refer to types defined in the java.awt.peer package are removed in Java 11. " +
+               "This recipe replaces the use of getPeer() method in the java.awt.Component, java.awt.Font, and java.awt.MenuComponent classes and direct known subclasses. " +
+               "The occurrence of  `(component.getPeer() != null) { .. }` is replaced with `(component.isDisplayable())` " +
+               "and the occurrence of `(component.getPeer() instanceof LightweightPeer)` " +
+               "is replaced with `(component.isLightweight())`.";
     }
 
     @Override
@@ -68,38 +69,51 @@ class ReplaceAWTGetPeerMethod extends Recipe {
         MethodMatcher methodMatcherGetPeer = new MethodMatcher(methodPatternGetPeer);
         return Preconditions.check(new UsesMethod<>(methodMatcherGetPeer), new JavaVisitor<ExecutionContext>() {
             @Override
-            public J visitBinary(J.Binary binary, ExecutionContext ctx){
-                J.Binary binaryCondition = (J.Binary) super.visitBinary(binary, ctx);
+            public J visitBinary(J.Binary binary, ExecutionContext ctx) {
+                J.Binary bi = (J.Binary) super.visitBinary(binary, ctx);
 
-                //check if(x.getPeer() != null)
-                //Not checking (null != getPeer())
-                if (checkMethodInvocationNotEqualLiteralInBinary(binaryCondition)) {
-                    J.MethodInvocation mi = (J.MethodInvocation) binaryCondition.getLeft();
-                    J.Literal lt = (J.Literal) binaryCondition.getRight();
-                    if (methodMatcherGetPeer.matches(mi.getMethodType())) {
-                        assert lt.getValueSource() != null;
-                        if (lt.getValueSource().equals("null")) {
-                            mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isDisplayable", true, null
-                            ).getVisitor().visit(mi, ctx);
-                            mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsDisplayable, "boolean").getVisitor().visit(mi, ctx);
-                            assert mi != null;
-                            return mi.withPrefix(binaryCondition.getPrefix());
-                        }
-                    }
+                J.MethodInvocation mi = findMatchingMethodInvocation(bi);
+                if (mi != null) {
+                    mi = (J.MethodInvocation) new ChangeMethodName(
+                            methodPatternGetPeer, "isDisplayable", true, null)
+                            .getVisitor().visit(mi, ctx);
+                    mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsDisplayable, "boolean")
+                            .getVisitor().visit(mi, ctx);
+                    assert mi != null;
+                    return mi.withPrefix(bi.getPrefix());
                 }
 
-                return binaryCondition;
+                return bi;
             }
+
+            private @Nullable J.MethodInvocation findMatchingMethodInvocation(J.Binary binaryCondition) {
+                J.MethodInvocation mi = null;
+                if (binaryCondition.getOperator() == J.Binary.Type.NotEqual) {
+                    if (binaryCondition.getLeft() instanceof J.MethodInvocation &&
+                        binaryCondition.getRight() instanceof J.Literal) {
+                        mi = (J.MethodInvocation) binaryCondition.getLeft();
+                    } else if (binaryCondition.getLeft() instanceof J.Literal &&
+                               binaryCondition.getRight() instanceof J.MethodInvocation) {
+                        mi = (J.MethodInvocation) binaryCondition.getRight();
+                    }
+                }
+                if (methodMatcherGetPeer.matches(mi)) {
+                    return mi;
+                }
+                return null;
+            }
+
             @Override
-            public J visitInstanceOf(J.InstanceOf instOf, ExecutionContext ctx){
+            public J visitInstanceOf(J.InstanceOf instOf, ExecutionContext ctx) {
                 J.InstanceOf instanceOfVar = (J.InstanceOf) super.visitInstanceOf(instOf, ctx);
 
                 if (instanceOfVar.getExpression() instanceof J.MethodInvocation) {
                     J.MethodInvocation mi = ((J.MethodInvocation) instanceOfVar.getExpression());
                     if (methodMatcherGetPeer.matches(mi.getMethodType()) && checkClassNameIsEqualToFQCN(instanceOfVar)) {
-                        mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isLightweight", true, null
-                        ).getVisitor().visit(mi, ctx);
-                        mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsLightweight, "boolean").getVisitor().visit(mi, ctx);
+                        mi = (J.MethodInvocation) new ChangeMethodName(methodPatternGetPeer, "isLightweight", true, null)
+                                .getVisitor().visit(mi, ctx);
+                        mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(methodUpdateIsLightweight, "boolean")
+                                .getVisitor().visit(mi, ctx);
                         assert mi != null;
                         maybeRemoveImport(className);
                         return mi.withPrefix(instanceOfVar.getPrefix());
@@ -108,31 +122,20 @@ class ReplaceAWTGetPeerMethod extends Recipe {
 
                 return instanceOfVar;
             }
+
+            private boolean checkClassNameIsEqualToFQCN(J.InstanceOf instOf) {
+                if (instOf.getClazz() instanceof J.Identifier) {
+                    J.Identifier id = (J.Identifier) instOf.getClazz();
+                    assert id.getType() != null;
+                    return ((JavaType.Class) id.getType()).getFullyQualifiedName().equals(className);
+                } else if (instOf.getClazz() instanceof J.FieldAccess) {
+                    J.FieldAccess fid = (J.FieldAccess) instOf.getClazz();
+                    assert fid.getType() != null;
+                    return ((JavaType.Class) fid.getType()).getFullyQualifiedName().equals(className);
+                } else {
+                    return false;
+                }
+            }
         });
     }
-
-    private boolean checkClassNameIsEqualToFQCN(J.InstanceOf instOf) {
-        if (instOf.getClazz() instanceof J.Identifier) {
-            J.Identifier id = (J.Identifier) instOf.getClazz();
-            assert id.getType() != null;
-            return ((JavaType.Class) id.getType()).getFullyQualifiedName().equals(className);
-        } else if (instOf.getClazz() instanceof J.FieldAccess) {
-            J.FieldAccess fid = (J.FieldAccess) instOf.getClazz();
-            assert fid.getType() != null;
-            return ((JavaType.Class) fid.getType()).getFullyQualifiedName().equals(className);
-        } else {
-            return false;
-        }
-    }
-
-    private boolean checkMethodInvocationNotEqualLiteralInBinary(J.Binary binaryCondition) {
-        if (binaryCondition.getLeft() instanceof J.MethodInvocation) {
-            return (binaryCondition.getRight() instanceof J.Literal && binaryCondition.getOperator() == J.Binary.Type.NotEqual);
-        }
-        if (binaryCondition.getRight() instanceof J.MethodInvocation) {
-            return (binaryCondition.getLeft() instanceof J.Literal && binaryCondition.getOperator() == J.Binary.Type.NotEqual);
-        }
-        return false;
-    }
-
 }

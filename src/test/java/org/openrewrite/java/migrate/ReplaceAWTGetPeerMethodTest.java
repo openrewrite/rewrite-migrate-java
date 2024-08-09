@@ -77,6 +77,8 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
                       Component1 y = new Component1();
                       if (y.getPeer() != null) {
                       }
+                      if (null != y.getPeer()) {
+                      }
                   }
               }
               """,
@@ -91,6 +93,8 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
                       if (c.isLightweight()) {
                       }
                       Component1 y = new Component1();
+                      if (y.isDisplayable()) {
+                      }
                       if (y.isDisplayable()) {
                       }
                   }
