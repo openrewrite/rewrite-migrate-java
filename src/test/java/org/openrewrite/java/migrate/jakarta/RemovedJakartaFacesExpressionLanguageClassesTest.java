@@ -78,7 +78,8 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
     void removedExpressionLanguageTestJakarta_2() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
             package com.test;
 
             import jakarta.faces.el.VariableResolver;
@@ -160,7 +161,8 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
     void removedExpressionLanguageTestJavax_2() {
         rewriteRun(
           //language=java
-          java("""
+          java(
+                """
             package com.test;
 
             import javax.faces.el.VariableResolver;

@@ -36,7 +36,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     @DocumentExample
     void removeFinalizerForInflater() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import java.util.zip.Inflater;
 
           class FooInflater extends Inflater {
@@ -59,7 +60,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     @Test
     void removeCallsToSelfFinalize() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import java.util.zip.Inflater;
 
           class FooBar extends Inflater {
@@ -80,7 +82,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     @Test
     void removeCallsToThisFinalize() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import java.util.zip.Inflater;
 
           class FooBar extends Inflater {
@@ -101,7 +104,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     @Test
     void removeWhileKeepingSideEffects() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import java.util.zip.Inflater;
 
           class FooBar extends Inflater {
@@ -123,7 +127,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     @Test
     void noChangeWithFinalizeOnObject() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import java.util.zip.Inflater;
 
           class FooBar extends Inflater {
@@ -137,7 +142,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     @Test
     void noChangeWithoutFinalizerForInflater() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import java.util.zip.Inflater;
 
           class FooBar extends Inflater {
@@ -151,7 +157,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     @Test
     void removeFinalizerForDeflater() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import java.util.zip.Deflater;
 
           class FooBar extends Deflater {
@@ -174,7 +181,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     @Test
     void noChangeWithoutFinalizerForDeflater() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import java.util.zip.Deflater;
 
           class FooBar extends Deflater {
@@ -188,7 +196,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     @Test
     void removeFinalizerForZipFile() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import java.util.zip.ZipFile;
 
           class FooBar extends ZipFile {
@@ -217,7 +226,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     @Test
     void noChangeWithoutFinalizerForZipFile() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           import java.util.zip.ZipFile;
 
           class FooBar extends ZipFile {
@@ -234,7 +244,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     @Test
     void noChangeWithoutExtends() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           class FooBar {
               public void test() {
                   new Object().finalize();
@@ -246,7 +257,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
     @Test
     void noChangeWithoutExtendsOrSelect() {
         //language=java
-        rewriteRun(java("""
+        rewriteRun(java(
+                """
           class FooBar {
               public void test() {
                   finalize();
