@@ -30,10 +30,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeBuildToJava17
   - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
-      methodPattern: java.lang.Runtime traceInstructions(boolean)
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
-      methodPattern: java.lang.System traceMethodCalls(boolean)
+  - org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
   - org.openrewrite.java.migrate.RemovedToolProviderConstructor
   - org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
   - org.openrewrite.java.migrate.lang.UseTextBlocks
@@ -260,3 +257,17 @@ recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: java.lang.invoke.ConstantBootstraps *(..)
       fullyQualifiedTargetTypeName: java.lang.invoke.ConstantBootstraps
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
+displayName: Remove `Runtime.traceInstructions(boolean)` and `Runtime.traceMethodCalls` methods
+description: >-
+  The `traceInstructions` and `traceMethodCalls` methods in `java.lang.Runtime` were deprecated in Java SE 9 and are no longer available in Java SE 13 and later. 
+  The recipe removes the invocations of these methods since the method invocations do nothing functionally.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: 'java.lang.Runtime traceInstructions(boolean)'
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: 'java.lang.Runtime traceMethodCalls(boolean)'
