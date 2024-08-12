@@ -72,6 +72,7 @@ recipeList:
   - org.openrewrite.java.migrate.ReplaceAWTGetPeerMethod:
       getPeerMethodPattern: java.awt.* getPeer()
       lightweightPeerFQCN: java.awt.peer.LightweightPeer
+  - org.openrewrite.scala.migrate.UpgradeScala_2_12
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11
