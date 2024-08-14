@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.migrate.table.JavaVersionTable;
 import org.openrewrite.test.RecipeSpec;
@@ -33,7 +34,8 @@ class FindJavaVersionTest implements RewriteTest {
     }
 
     @Test
-    void test() {
+    @DocumentExample
+    void twoClassesWithSameMarkerLeadToOneRow() {
         JavaVersion jv = new JavaVersion(randomId(), "Sam", "Shelter", "17", "8");
         rewriteRun(
           spec -> spec.dataTable(JavaVersionTable.Row.class, rows -> {
