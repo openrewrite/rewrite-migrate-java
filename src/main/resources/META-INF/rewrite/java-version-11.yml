@@ -73,9 +73,7 @@ recipeList:
       getPeerMethodPattern: java.awt.* getPeer()
       lightweightPeerFQCN: java.awt.peer.LightweightPeer
   - org.openrewrite.scala.migrate.UpgradeScala_2_12
-  - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods:
-      localizedInputStreamMethodMatcher: java.lang.Runtime getLocalizedInputStream(java.io.InputStream)
-      localizedOutputStreamMethodMatcher: java.lang.Runtime getLocalizedOutputStream(java.io.OutputStream)
+  - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
