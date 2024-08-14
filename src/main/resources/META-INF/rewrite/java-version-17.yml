@@ -33,7 +33,8 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
   - org.openrewrite.java.migrate.RemovedToolProviderConstructor
   - org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
-  - org.openrewrite.java.migrate.lang.UseTextBlocks
+  - org.openrewrite.java.migrate.lang.UseTextBlocks:
+      convertStringsWithoutNewlines: false
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
   - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
   - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
