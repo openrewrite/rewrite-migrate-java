@@ -71,9 +71,7 @@ public class ReplaceLocalizedStreamMethods extends Recipe {
             @Override
             public J visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx) {
                 if (LocalizedInputStreamMethod.matches(mi) || localizedOutputStreamMethod.matches(mi)) {
-                    Expression parameter = mi.getArguments().get(0);
-                    parameter = parameter.withPrefix(Space.SINGLE_SPACE);
-                    return parameter;
+                    return mi.getArguments().get(0).withPrefix(mi.getPrefix());
                 }
                 return super.visitMethodInvocation(mi, ctx);
             }

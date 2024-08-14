@@ -60,8 +60,7 @@ class ReplaceLocalizedStreamMethodsTest implements RewriteTest {
               import java.io.InputStream;
 
               class Test {
-                  void exampleMethod(InputStream in) {
-                      Runtime1 rt = null;
+                  void exampleMethod(Runtime1 rt, InputStream in) {
                       InputStream newStream = rt.getLocalizedInputStream1(in);
                   }
               }
@@ -71,8 +70,7 @@ class ReplaceLocalizedStreamMethodsTest implements RewriteTest {
               import java.io.InputStream;
 
               class Test {
-                  void exampleMethod(InputStream in) {
-                      Runtime1 rt = null;
+                  void exampleMethod(Runtime1 rt, InputStream in) {
                       InputStream newStream = in;
                   }
               }
@@ -91,8 +89,7 @@ class ReplaceLocalizedStreamMethodsTest implements RewriteTest {
               import java.io.OutputStream;
 
               class Test {
-                  void exampleMethod(OutputStream out) {
-                      Runtime1 rt = null;
+                  void exampleMethod(Runtime1 rt, OutputStream out) {
                       OutputStream newStream = rt.getLocalizedOutputStream1(out);
                   }
               }
@@ -102,8 +99,7 @@ class ReplaceLocalizedStreamMethodsTest implements RewriteTest {
               import java.io.OutputStream;
 
               class Test {
-                  void exampleMethod(OutputStream out) {
-                      Runtime1 rt = null;
+                  void exampleMethod(Runtime1 rt, OutputStream out) {
                       OutputStream newStream = out;
                   }
               }
