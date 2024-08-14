@@ -55,12 +55,12 @@ public class ReplaceLocalizedStreamMethods extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Replace getLocalizedInputStream with direct assignment";
+        return "Replace getLocalizedInputStream and getLocalizedOutputStream with direct assignment";
     }
 
     @Override
     public String getDescription() {
-        return "Replaces `InputStream new = rt.getLocalizedInputStream(in);` with `InputStream new = in;`.";
+        return "Replaces `InputStream new = rt.getLocalizedInputStream(in);` with `InputStream new = in;` and `OutputStream new = rt.getLocalizedOutputStream(out);` with `OutputStream new = out;`.";
     }
 
     @Override
