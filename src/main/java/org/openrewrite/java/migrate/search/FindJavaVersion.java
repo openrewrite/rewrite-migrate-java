@@ -26,7 +26,6 @@ import org.openrewrite.java.migrate.table.JavaVersionTable;
 import org.openrewrite.java.tree.J;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 @Value
@@ -34,7 +33,8 @@ import java.util.Set;
 public class FindJavaVersion extends Recipe {
 
     transient JavaVersionTable table = new JavaVersionTable(this);
-    private static Set<JavaVersion> seen = new HashSet<>();
+    transient Set<JavaVersion> seen = new HashSet<>();
+
     @Override
     public String getDisplayName() {
         return "Find Java versions in use";
@@ -50,15 +50,10 @@ public class FindJavaVersion extends Recipe {
         return new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-                Optional<JavaVersion> maybeJv = cu.getMarkers().findFirst(JavaVersion.class);
-                if(!maybeJv.isPresent()) {
-                    return cu;
-                }
-                JavaVersion jv = maybeJv.get();
-                if(!seen.add(jv)) {
-                    return cu;
-                }
-                table.insertRow(ctx, new JavaVersionTable.Row(jv.getSourceCompatibility(), jv.getTargetCompatibility()));
+                cu.getMarkers().findFirst(JavaVersion.class)
+                        .filter(seen::add)
+                        .map(jv -> new JavaVersionTable.Row(jv.getSourceCompatibility(), jv.getTargetCompatibility()))
+                        .ifPresent(row -> table.insertRow(ctx, row));
                 return cu;
             }
         };
