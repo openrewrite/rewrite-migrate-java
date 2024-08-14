@@ -63,6 +63,7 @@ public class ReplaceLocalizedStreamMethods extends Recipe {
         return "Replaces `InputStream new = rt.getLocalizedInputStream(in);` with `InputStream new = in;`.";
     }
 
+    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             private final MethodMatcher LocalizedInputStreamMethod = new MethodMatcher(localizedInputStreamMethodMatcher, false);
