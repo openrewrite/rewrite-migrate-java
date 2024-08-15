@@ -154,11 +154,11 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
               }
               """,
             """
-              import static java.util.Objects.requireNonNull;
+              import java.util.Objects;
 
               class A {
                   Object foo(Object obj) {
-                      return requireNonNull(obj);
+                      return Objects.requireNonNull(obj);
                   }
               }
               """
@@ -168,6 +168,7 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
 
     @Test
     void preconditionsCheckNotNullWithTemplateArgument() {
+        // There's no direct replacement for this three arg lenient format variant
         rewriteRun(
           //language=java
           java(
