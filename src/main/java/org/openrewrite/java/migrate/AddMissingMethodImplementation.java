@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
-import org.openrewrite.internal.lang.NonNull;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
@@ -35,19 +34,16 @@ public class AddMissingMethodImplementation extends Recipe {
     @Option(displayName = "Fully Qualified Class Name",
             description = "A fully qualified class being implemented with missing method.",
             example = "com.yourorg.FooBar")
-    @NonNull
     String fullyQualifiedClassName;
 
     @Option(displayName = "Method Pattern",
             description = "A method pattern for matching required method definition.",
             example = "*..* hello(..)")
-    @NonNull
     String methodPattern;
 
     @Option(displayName = "Method Template",
             description = "Template of method to add",
             example = "public String hello() { return \\\"Hello from #{}!\\\"; }")
-    @NonNull
     String methodTemplateString;
 
     @Override

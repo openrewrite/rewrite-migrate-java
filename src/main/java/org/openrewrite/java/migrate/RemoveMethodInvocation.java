@@ -21,7 +21,6 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.lang.NonNull;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.staticanalysis.RemoveMethodCallVisitor;
 
@@ -31,7 +30,6 @@ public class RemoveMethodInvocation extends Recipe {
     @Option(displayName = "Method Pattern",
             description = "A method pattern for matching required method definition.",
             example = "*..* hello(..)")
-    @NonNull
     String methodPattern;
 
     @Override
