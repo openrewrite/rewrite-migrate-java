@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.jspecify.annotations.NonNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
@@ -31,7 +30,6 @@ public class RemoveMethodInvocation extends Recipe {
     @Option(displayName = "Method Pattern",
             description = "A method pattern for matching required method definition.",
             example = "*..* hello(..)")
-    @NonNull
     String methodPattern;
 
     @Override
