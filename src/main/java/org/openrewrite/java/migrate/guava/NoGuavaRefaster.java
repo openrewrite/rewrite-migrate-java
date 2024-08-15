@@ -63,6 +63,7 @@ public class NoGuavaRefaster {
     )
     public static class StringValueOfString {
         @BeforeTemplate
+        @SuppressWarnings("UnnecessaryCallToStringValueOf")
         String before(String string) {
             return String.valueOf(string);
         }
