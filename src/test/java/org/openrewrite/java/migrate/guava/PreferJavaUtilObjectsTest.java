@@ -59,6 +59,33 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
     }
 
     @Test
+    void preconditionsCheckNotNullToObjectsRequireNonNullStringArgument() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Preconditions;
+
+              class A {
+                  String foo(String str) {
+                      return Preconditions.checkNotNull(str);
+                  }
+              }
+              """,
+            """
+              import java.util.Objects;
+
+              class A {
+                  String foo(String str) {
+                      return Objects.requireNonNull(str);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void preconditionsCheckNotNullToObjectsRequireNonNullTwoArguments() {
         rewriteRun(
           //language=java
@@ -132,6 +159,24 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
               class A {
                   Object foo(Object obj) {
                       return requireNonNull(obj);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void preconditionsCheckNotNullWithTemplateArgument() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Preconditions;
+
+              class A {
+                  Object foo(Object obj) {
+                      return Preconditions.checkNotNull(obj, "%s", "foo");
                   }
               }
               """

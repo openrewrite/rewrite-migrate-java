@@ -31,6 +31,22 @@ public class NoGuavaRefaster {
     )
     public static class PreconditionsCheckNotNullToObjectsRequireNonNull {
         @BeforeTemplate
+        Object before(Object object) {
+            return com.google.common.base.Preconditions.checkNotNull(object);
+        }
+
+        @AfterTemplate
+        Object after(Object object) {
+            return java.util.Objects.requireNonNull(object);
+        }
+    }
+
+    @RecipeDescriptor(
+            name = "`Preconditions.checkNotNull` to `Objects.requireNonNull`",
+            description = "Migrate from Guava `Preconditions.checkNotNull` to Java 8 `java.util.Objects.requireNonNull`."
+    )
+    public static class PreconditionsCheckNotNullWithMessageToObjectsRequireNonNull {
+        @BeforeTemplate
         Object before(Object object, Object message) {
             return com.google.common.base.Preconditions.checkNotNull(object, message);
         }
