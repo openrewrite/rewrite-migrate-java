@@ -26,7 +26,7 @@ import static org.openrewrite.java.Assertions.java;
 class PreferJavaUtilObjectsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResource("/META-INF/rewrite/no-guava.yml", "org.openrewrite.java.migrate.guava.NoGuava")
+        spec.recipe(new NoGuavaRefasterRecipes())
           .parser(JavaParser.fromJavaVersion().classpath("rewrite-java", "guava"));
     }
 
@@ -51,6 +51,33 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
               class A {
                   Object foo(Object obj) {
                       return Objects.requireNonNull(obj);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void preconditionsCheckNotNullToObjectsRequireNonNullStringArgument() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Preconditions;
+
+              class A {
+                  String foo(String str) {
+                      return Preconditions.checkNotNull(str);
+                  }
+              }
+              """,
+            """
+              import java.util.Objects;
+
+              class A {
+                  String foo(String str) {
+                      return Objects.requireNonNull(str);
                   }
               }
               """
@@ -127,11 +154,30 @@ class PreferJavaUtilObjectsTest implements RewriteTest {
               }
               """,
             """
-              import static java.util.Objects.requireNonNull;
+              import java.util.Objects;
 
               class A {
                   Object foo(Object obj) {
-                      return requireNonNull(obj);
+                      return Objects.requireNonNull(obj);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void preconditionsCheckNotNullWithTemplateArgument() {
+        // There's no direct replacement for this three arg lenient format variant
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Preconditions;
+
+              class A {
+                  Object foo(Object obj) {
+                      return Preconditions.checkNotNull(obj, "%s", "foo");
                   }
               }
               """
