@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
@@ -84,7 +84,7 @@ public class NoGuavaCreateTempDir extends Recipe {
             return mi;
         }
 
-        private boolean isIOExceptionOrException(@Nullable JavaType.FullyQualified fqCatch) {
+        private boolean isIOExceptionOrException(JavaType.@Nullable FullyQualified fqCatch) {
             return fqCatch != null &&
                     ("java.io.IOException".matches(fqCatch.getFullyQualifiedName())
                             || "java.lang.Exception".matches(fqCatch.getFullyQualifiedName()));
