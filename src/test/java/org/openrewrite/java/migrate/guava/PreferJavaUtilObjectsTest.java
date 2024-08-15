@@ -26,7 +26,7 @@ import static org.openrewrite.java.Assertions.java;
 class PreferJavaUtilObjectsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResource("/META-INF/rewrite/no-guava.yml", "org.openrewrite.java.migrate.guava.NoGuava")
+        spec.recipe(new NoGuavaRefasterRecipes())
           .parser(JavaParser.fromJavaVersion().classpath("rewrite-java", "guava"));
     }
 
