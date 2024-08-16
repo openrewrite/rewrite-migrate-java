@@ -1,5 +1,5 @@
 #
-# Copyright 2021 the original author or authors.
+# Copyright 2024 the original author or authors.
 # <p>
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# As per: https://docs.scala-lang.org/overviews/jdk-compatibility/overview.html
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion
-displayName: Upgrade Wro4j plugin version
-description: This recipe will upgrade Wro4j to a more recent version compatible with Java 11.
+name: org.openrewrite.scala.migrate.UpgradeScala_2_12
+displayName: Migrate to Scala 2.12.+
+description: >-
+  Upgrade the Scala version for compatibility with newer Java versions.
 tags:
-  - java11
-  - wro4j
+  - scala
 recipeList:
-  - org.openrewrite.maven.UpgradePluginVersion:
-      groupId: ro.isdc.wro4j
-      artifactId: wro4j-maven-plugin
-      newVersion: 1.10.1
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.scala-lang
+      artifactId: scala-*
+      newVersion: 2.12.x

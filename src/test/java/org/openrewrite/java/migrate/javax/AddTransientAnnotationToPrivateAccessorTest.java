@@ -429,7 +429,7 @@ class AddTransientAnnotationToPrivateAccessorTest implements RewriteTest {
                   }
               }
               """,
-                """
+            """
               package entities;
 
               import javax.persistence.Entity;

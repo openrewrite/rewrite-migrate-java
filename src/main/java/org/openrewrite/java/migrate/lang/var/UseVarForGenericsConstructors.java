@@ -15,8 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
@@ -150,7 +150,7 @@ public class UseVarForGenericsConstructors extends Recipe {
          * @param variable to extract from
          * @return may be empty list of type parameters
          */
-        private List<JavaType> extractParameters(@Nullable JavaType.Variable variable) {
+        private List<JavaType> extractParameters(JavaType.@Nullable Variable variable) {
             if (variable != null && variable.getType() instanceof JavaType.Parameterized) {
                 return ((JavaType.Parameterized) variable.getType()).getTypeParameters();
             } else {

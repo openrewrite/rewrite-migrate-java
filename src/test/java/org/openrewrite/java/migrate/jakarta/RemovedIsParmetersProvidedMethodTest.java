@@ -43,30 +43,30 @@ class RemovedIsParmetersProvidedMethodTest implements RewriteTest {
         rewriteRun(
           //language=java
           java(
-                """
-            package com.test;
-             
-            import jakarta.el.MethodExpression;
-                        
-            public class Test {
-                void test(MethodExpression methodExpression){
-                    if(methodExpression.isParmetersProvided()){
-                        System.out.println("test");
-                    }
-                }
-            }
-            """, """
-            package com.test;
-             
-            import jakarta.el.MethodExpression;
-                        
-            public class Test {
-                void test(MethodExpression methodExpression){
-                    if(methodExpression.isParametersProvided()){
-                        System.out.println("test");
-                    }
-                }
-            }
-            """));
+            """
+              package com.test;
+
+              import jakarta.el.MethodExpression;
+
+              public class Test {
+                  void test(MethodExpression methodExpression){
+                      if(methodExpression.isParmetersProvided()){
+                          System.out.println("test");
+                      }
+                  }
+              }
+              """, """
+              package com.test;
+
+              import jakarta.el.MethodExpression;
+
+              public class Test {
+                  void test(MethodExpression methodExpression){
+                      if(methodExpression.isParametersProvided()){
+                          System.out.println("test");
+                      }
+                  }
+              }
+              """));
     }
 }

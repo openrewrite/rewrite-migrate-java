@@ -46,7 +46,7 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
                      <listener>
                          <listener-class>javax.faces.UploadedFileCleanerListener</listener-class>
                      </listener>
-              </web-fragment>   
+              </web-fragment>
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
@@ -57,7 +57,7 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
                      <listener>
                          <listener-class>jakarta.faces.UploadedFileCleanerListener</listener-class>
                      </listener>
-              </web-fragment> 
+              </web-fragment>
               """,
             sourceSpecs -> sourceSpecs.path("web-fragment.xml")
           )
@@ -78,7 +78,7 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
                      <listener>
                          <listener-class>javax.faces.UploadedFileCleanerListener</listener-class>
                      </listener>
-              </web-fragment>   
+              </web-fragment>
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
@@ -89,7 +89,7 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
                      <listener>
                          <listener-class>jakarta.faces.UploadedFileCleanerListener</listener-class>
                      </listener>
-              </web-fragment> 
+              </web-fragment>
               """,
             sourceSpecs -> sourceSpecs.path("web-fragment.xml")
           )
@@ -112,7 +112,7 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
                      <res-type>javax.sql.DataSource</res-type>
                      <res-auth>CONTAINER</res-auth>
                   </resource-ref>
-              </web-fragment>   
+              </web-fragment>
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
@@ -125,7 +125,7 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
                      <res-type>javax.sql.DataSource</res-type>
                      <res-auth>CONTAINER</res-auth>
                   </resource-ref>
-              </web-fragment> 
+              </web-fragment>
               """,
             sourceSpecs -> sourceSpecs.path("web-fragment.xml")
           )
@@ -140,10 +140,10 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee" 
+                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans> 
+                  </beans>
                   """,
                 sourceSpecs -> sourceSpecs.path("not-web-fragment.xml")
               )

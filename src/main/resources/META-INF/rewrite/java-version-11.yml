@@ -56,7 +56,6 @@ recipeList:
   - org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
   - org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
-  - org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion
   - org.openrewrite.java.migrate.UpgradeBuildToJava11
 # Disabled due to null safety issues in the current implementation
 # https://github.com/openrewrite/rewrite-migrate-java/issues/250
@@ -70,7 +69,10 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedPolicy
   - org.openrewrite.java.migrate.ReferenceCloneMethod
   - org.openrewrite.java.migrate.ThreadStopDestroy
-
+  - org.openrewrite.java.migrate.ReplaceAWTGetPeerMethod:
+      getPeerMethodPattern: java.awt.* getPeer()
+      lightweightPeerFQCN: java.awt.peer.LightweightPeer
+  - org.openrewrite.scala.migrate.UpgradeScala_2_12
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11
@@ -95,6 +97,10 @@ recipeList:
       newVersion: 3.6.2
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 11
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: ro.isdc.wro4j
+      artifactId: wro4j-maven-plugin
+      newVersion: 1.10.1
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxbDependencies

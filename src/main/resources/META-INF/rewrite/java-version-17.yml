@@ -30,13 +30,11 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeBuildToJava17
   - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
-      methodPattern: java.lang.Runtime traceInstructions(boolean)
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
-      methodPattern: java.lang.System traceMethodCalls(boolean)
+  - org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
   - org.openrewrite.java.migrate.RemovedToolProviderConstructor
   - org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
-  - org.openrewrite.java.migrate.lang.UseTextBlocks
+  - org.openrewrite.java.migrate.lang.UseTextBlocks:
+      convertStringsWithoutNewlines: false
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
   - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
   - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
@@ -80,6 +78,10 @@ recipeList:
       groupId: com.sonatype.clm
       artifactId: clm-maven-plugin
       newVersion: 2.47.6-01
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: ro.isdc.wro4j
+      artifactId: wro4j-maven-plugin
+      newVersion: 2.1.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
@@ -256,3 +258,17 @@ recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: java.lang.invoke.ConstantBootstraps *(..)
       fullyQualifiedTargetTypeName: java.lang.invoke.ConstantBootstraps
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
+displayName: Remove `Runtime.traceInstructions(boolean)` and `Runtime.traceMethodCalls` methods
+description: >-
+  The `traceInstructions` and `traceMethodCalls` methods in `java.lang.Runtime` were deprecated in Java SE 9 and are no longer available in Java SE 13 and later. 
+  The recipe removes the invocations of these methods since the method invocations do nothing functionally.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: 'java.lang.Runtime traceInstructions(boolean)'
+  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+      methodPattern: 'java.lang.Runtime traceMethodCalls(boolean)'

@@ -40,9 +40,9 @@ class NoGuavaSetsNewLinkedHashSetTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.Set;
-                            
+
               class Test {
                   Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSet();
               }
@@ -50,7 +50,7 @@ class NoGuavaSetsNewLinkedHashSetTest implements RewriteTest {
             """
               import java.util.LinkedHashSet;
               import java.util.Set;
-                            
+
               class Test {
                   Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>();
               }
@@ -66,10 +66,10 @@ class NoGuavaSetsNewLinkedHashSetTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.Collections;
               import java.util.Set;
-                            
+
               class Test {
                   Set<Integer> l = Collections.emptySet();
                   Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSet(l);
@@ -79,7 +79,7 @@ class NoGuavaSetsNewLinkedHashSetTest implements RewriteTest {
               import java.util.Collections;
               import java.util.LinkedHashSet;
               import java.util.Set;
-                            
+
               class Test {
                   Set<Integer> l = Collections.emptySet();
                   Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>(l);
@@ -96,9 +96,9 @@ class NoGuavaSetsNewLinkedHashSetTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.Set;
-                            
+
               class Test {
                   Set<Integer> cardinalsWorldSeries = Sets.newLinkedHashSetWithExpectedSize(2);
               }
@@ -106,7 +106,7 @@ class NoGuavaSetsNewLinkedHashSetTest implements RewriteTest {
             """
               import java.util.LinkedHashSet;
               import java.util.Set;
-                            
+
               class Test {
                   Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>(2);
               }

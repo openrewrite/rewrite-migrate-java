@@ -36,7 +36,7 @@ class CastArraysAsListToListTest implements RewriteTest {
           java(
             """
               import java.util.Arrays;
-              
+
               class Foo {
                   void bar() {
                       Integer[] array1 = (Integer[]) Arrays.asList(1, 2, 3).toArray();
@@ -47,7 +47,7 @@ class CastArraysAsListToListTest implements RewriteTest {
               """,
             """
               import java.util.Arrays;
-              
+
               class Foo {
                   void bar() {
                       Integer[] array1 = Arrays.asList(1, 2, 3).toArray(new Integer[0]);
@@ -68,7 +68,7 @@ class CastArraysAsListToListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.Collections;
-              
+
               class Foo {
                   void bar() {
                       Object[] array1 = (Object[]) Arrays.asList("a","b").toArray();

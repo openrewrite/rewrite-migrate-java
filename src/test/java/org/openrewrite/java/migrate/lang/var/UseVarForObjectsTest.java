@@ -39,23 +39,23 @@ class UseVarForObjectsTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                                  
-                class A {
-                  void m() {
-                      Object o = new Object();
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        Object o = new Object();
+                    }
                   }
-                }
-                """, """
-                package com.example.app;
-                                  
-                class A {
-                  void m() {
-                      var o = new Object();
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var o = new Object();
+                    }
                   }
-                }
-                """)
+                  """)
             );
         }
 
@@ -64,25 +64,25 @@ class UseVarForObjectsTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                                  
-                class A {
-                  Object o = new Object();
-                  void m() {
-                      Object innerO = o;
-                  }
-                }
-                """, """
-                package com.example.app;
-                                  
-                class A {
-                  Object o = new Object();
-                  void m() {
-                      var innerO = o;
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    Object o = new Object();
+                    void m() {
+                        Object innerO = o;
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    Object o = new Object();
+                    void m() {
+                        var innerO = o;
+                    }
+                  }
+                  """
               )
             );
         }
@@ -93,19 +93,19 @@ class UseVarForObjectsTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                class A {
-                  void m() {
-                      final Object o = new Object();
-                  }
-                }
-                """, """
-                class A {
-                  void m() {
-                      final var o = new Object();
-                  }
-                }
                 """
+                  class A {
+                    void m() {
+                        final Object o = new Object();
+                    }
+                  }
+                  """, """
+                  class A {
+                    void m() {
+                        final var o = new Object();
+                    }
+                  }
+                  """
               )
             );
         }
@@ -116,23 +116,23 @@ class UseVarForObjectsTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                                  
-                class A {
-                  void m() {
-                      String o = true ? "isTrue" : "Test";
-                  }
-                }
-                """, """
-                package com.example.app;
-                                  
-                class A {
-                  void m() {
-                      var o = true ? "isTrue" : "Test";
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        String o = true ? "isTrue" : "Test";
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var o = true ? "isTrue" : "Test";
+                    }
+                  }
+                  """
               )
             );
         }
@@ -142,23 +142,23 @@ class UseVarForObjectsTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                                      
-                class A {
-                  static {
-                      Object o = new Object();
-                  }
-                }
-                """, """
-                package com.example.app;
-                                      
-                class A {
-                  static {
-                      var o = new Object();
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    static {
+                        Object o = new Object();
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    static {
+                        var o = new Object();
+                    }
+                  }
+                  """
               )
             );
         }
@@ -168,23 +168,23 @@ class UseVarForObjectsTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                                  
-                class A {
-                  {
-                      Object o = new Object();
-                  }
-                }
-                """, """
-                package com.example.app;
-                                  
-                class A {
-                  {
-                      var o = new Object();
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    {
+                        Object o = new Object();
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    {
+                        var o = new Object();
+                    }
+                  }
+                  """
               )
             );
         }
@@ -198,7 +198,7 @@ class UseVarForObjectsTest extends VarBaseTest {
                   version(
                     java("""
                       package com.example.app;
-                                        
+
                       class A {
                         String getHello() {
                             return "Hello";
@@ -209,7 +209,7 @@ class UseVarForObjectsTest extends VarBaseTest {
                       }
                       """, """
                       package com.example.app;
-                                        
+
                       class A {
                         String getHello() {
                             return "Hello";
@@ -231,7 +231,7 @@ class UseVarForObjectsTest extends VarBaseTest {
                   version(
                     java("""
                       package com.example.app;
-                                        
+
                       class A {
                         class CustomTokenizer extends java.util.StringTokenizer {
                             CustomTokenizer() {
@@ -247,7 +247,7 @@ class UseVarForObjectsTest extends VarBaseTest {
                       }
                       """, """
                       package com.example.app;
-                                        
+
                       class A {
                         class CustomTokenizer extends java.util.StringTokenizer {
                             CustomTokenizer() {
@@ -273,34 +273,34 @@ class UseVarForObjectsTest extends VarBaseTest {
                 rewriteRun(
                   version(
                     java("""
-                  package com.example.app;
-                                    
-                  class A {
-                    static class B {
-                        private B() {}
-                        static B newInstance() {
-                            return new B();
+                      package com.example.app;
+
+                      class A {
+                        static class B {
+                            private B() {}
+                            static B newInstance() {
+                                return new B();
+                            }
                         }
-                    }
-                    void m() {
-                        B b = B.newInstance();
-                    }
-                  }
-                  """, """
-                  package com.example.app;
-                                    
-                  class A {
-                    static class B {
-                        private B() {}
-                        static B newInstance() {
-                            return new B();
+                        void m() {
+                            B b = B.newInstance();
                         }
-                    }
-                    void m() {
-                        var b = B.newInstance();
-                    }
-                  }
-                  """),
+                      }
+                      """, """
+                      package com.example.app;
+
+                      class A {
+                        static class B {
+                            private B() {}
+                            static B newInstance() {
+                                return new B();
+                            }
+                        }
+                        void m() {
+                            var b = B.newInstance();
+                        }
+                      }
+                      """),
                     10
                   )
                 );
@@ -315,15 +315,15 @@ class UseVarForObjectsTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                class A {
-                    void m() {
-                        new Object() {
-                            private final Object o1 = new Object();
-                        };
-                    }
-                }
                 """
+                  class A {
+                      void m() {
+                          new Object() {
+                              private final Object o1 = new Object();
+                          };
+                      }
+                  }
+                  """
               )
             );
         }
@@ -333,15 +333,15 @@ class UseVarForObjectsTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                                  
-                class A {
-                  Object m(Object o) {
-                      return o;
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    Object m(Object o) {
+                        return o;
+                    }
+                  }
+                  """
               )
             );
         }
@@ -351,16 +351,16 @@ class UseVarForObjectsTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                                  
-                class A {
-                  Object o = new Object();
-                  Object m() {
-                      return o;
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    Object o = new Object();
+                    Object m() {
+                        return o;
+                    }
+                  }
+                  """
               )
             );
         }

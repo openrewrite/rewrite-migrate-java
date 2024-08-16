@@ -28,8 +28,8 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResource(
-          "/META-INF/rewrite/add-common-annotations-dependencies.yml",
-          "org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies")
+            "/META-INF/rewrite/add-common-annotations-dependencies.yml",
+            "org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies")
           .allSources(src -> src.markers(javaVersion(8)));
     }
 
@@ -43,7 +43,7 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
               java(
                 """
                   import javax.annotation.Generated;
-                  
+
                   @Generated("Hello")
                   class A {
                   }

@@ -108,7 +108,7 @@ class RemoveTemporalAnnotationTest implements RewriteTest {
 
                   @Temporal(TemporalType.DATE)
                   private java.sql.Timestamp timestampTimestamp;
-                  
+
                   @Temporal(TemporalType.TIME)
                   private java.sql.Timestamp timestampTimestamp;
               }

@@ -40,9 +40,9 @@ class NoGuavaListsNewCopyOnWriteArrayListTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.List;
-                            
+
               class Test {
                   List<Integer> cardinalsWorldSeries = Lists.newCopyOnWriteArrayList();
               }
@@ -50,13 +50,13 @@ class NoGuavaListsNewCopyOnWriteArrayListTest implements RewriteTest {
             """
               import java.util.List;
               import java.util.concurrent.CopyOnWriteArrayList;
-                            
+
               class Test {
                   List<Integer> cardinalsWorldSeries = new CopyOnWriteArrayList<>();
               }
               """
-)
-);
+          )
+        );
     }
 
     @Test
@@ -66,10 +66,10 @@ class NoGuavaListsNewCopyOnWriteArrayListTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.Collections;
               import java.util.List;
-                            
+
               class Test {
                   List<Integer> l = Collections.emptyList();
                   List<Integer> cardinalsWorldSeries = Lists.newCopyOnWriteArrayList(l);
@@ -79,7 +79,7 @@ class NoGuavaListsNewCopyOnWriteArrayListTest implements RewriteTest {
               import java.util.Collections;
               import java.util.List;
               import java.util.concurrent.CopyOnWriteArrayList;
-                            
+
               class Test {
                   List<Integer> l = Collections.emptyList();
                   List<Integer> cardinalsWorldSeries = new CopyOnWriteArrayList<>(l);

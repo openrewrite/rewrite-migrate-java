@@ -40,9 +40,9 @@ class NoGuavaSetsNewConcurrentHashSetTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.Set;
-                            
+
               class Test {
                   Set<Integer> cardinalsWorldSeries = Sets.newConcurrentHashSet();
               }
@@ -51,7 +51,7 @@ class NoGuavaSetsNewConcurrentHashSetTest implements RewriteTest {
               import java.util.Collections;
               import java.util.Set;
               import java.util.concurrent.ConcurrentHashMap;
-                            
+
               class Test {
                   Set<Integer> cardinalsWorldSeries = Collections.newSetFromMap(new ConcurrentHashMap<>());
               }

@@ -45,7 +45,7 @@ class UpdateBeanManagerMethodsTest implements RewriteTest {
               import jakarta.enterprise.inject.spi.BeanManager;
               import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
               import java.util.Set;
-              
+
               class Foo {
                   void bar(BeanManager beanManager, BeforeBeanDiscovery beforeBeanDiscovery) {
                       beanManager.fireEvent(beforeBeanDiscovery);
@@ -56,7 +56,7 @@ class UpdateBeanManagerMethodsTest implements RewriteTest {
               import jakarta.enterprise.inject.spi.BeanManager;
               import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
               import java.util.Set;
-              
+
               class Foo {
                   void bar(BeanManager beanManager, BeforeBeanDiscovery beforeBeanDiscovery) {
                       beanManager.getEvent().fire(beforeBeanDiscovery);
@@ -75,7 +75,7 @@ class UpdateBeanManagerMethodsTest implements RewriteTest {
             """
               import jakarta.enterprise.inject.spi.AnnotatedType;
               import jakarta.enterprise.inject.spi.BeanManager;
-              
+
               class Foo {
                   void bar(BeanManager beanManager) {
                       AnnotatedType<String> producerType = beanManager.createAnnotatedType(String.class);
@@ -86,7 +86,7 @@ class UpdateBeanManagerMethodsTest implements RewriteTest {
             """
               import jakarta.enterprise.inject.spi.AnnotatedType;
               import jakarta.enterprise.inject.spi.BeanManager;
-              
+
               class Foo {
                   void bar(BeanManager beanManager) {
                       AnnotatedType<String> producerType = beanManager.createAnnotatedType(String.class);

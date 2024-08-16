@@ -40,9 +40,9 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.Set;
-                            
+
               class Test {
                   Set<Integer> cardinalsWorldSeries = Sets.newHashSet();
               }
@@ -50,7 +50,7 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
             """
               import java.util.HashSet;
               import java.util.Set;
-                            
+
               class Test {
                   Set<Integer> cardinalsWorldSeries = new HashSet<>();
               }
@@ -66,11 +66,11 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.Collections;
               import java.util.List;
               import java.util.Set;
-                            
+
               class Test {
                   List<Integer> l = Collections.emptyList();
                   Set<Integer> cardinalsWorldSeries = Sets.newHashSet(l);
@@ -81,7 +81,7 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
               import java.util.HashSet;
               import java.util.List;
               import java.util.Set;
-                            
+
               class Test {
                   List<Integer> l = Collections.emptyList();
                   Set<Integer> cardinalsWorldSeries = new HashSet<>(l);
@@ -98,9 +98,9 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.Set;
-                            
+
               class Test {
                   Set<Integer> cardinalsWorldSeries = Sets.newHashSet(2006, 2011);
               }
@@ -109,7 +109,7 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
               import java.util.Arrays;
               import java.util.HashSet;
               import java.util.Set;
-                            
+
               class Test {
                   Set<Integer> cardinalsWorldSeries = new HashSet<>(Arrays.asList(2006, 2011));
               }

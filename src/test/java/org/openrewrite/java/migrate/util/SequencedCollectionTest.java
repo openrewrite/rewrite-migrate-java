@@ -43,7 +43,7 @@ class SequencedCollectionTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                      
+
                   class Foo {
                       void bar(SortedSet<String> collection) {
                           String first = collection.first();
@@ -53,7 +53,7 @@ class SequencedCollectionTest implements RewriteTest {
                   """,
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       void bar(SortedSet<String> collection) {
                           String first = collection.getFirst();
@@ -75,7 +75,7 @@ class SequencedCollectionTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                      
+
                   class Foo {
                       void bar(NavigableSet<String> collection) {
                           NavigableSet<String> reversed = collection.descendingSet();
@@ -84,7 +84,7 @@ class SequencedCollectionTest implements RewriteTest {
                   """,
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       void bar(NavigableSet<String> collection) {
                           NavigableSet<String> reversed = collection.reversed();

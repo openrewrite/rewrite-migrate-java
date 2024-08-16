@@ -17,9 +17,9 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Content;
@@ -55,15 +55,15 @@ class SharedDataHolder {
     boolean sharedCacheModePropertyUnspecified;
     boolean sharedCacheModeElementUnspecified;
 
-    @Nullable Xml.Tag sharedCacheModeElement;
+    Xml.@Nullable Tag sharedCacheModeElement;
 
-    @Nullable Xml.Tag propertiesElement;
+    Xml.@Nullable Tag propertiesElement;
 
-    @Nullable Xml.Tag sharedCacheModeProperty;
+    Xml.@Nullable Tag sharedCacheModeProperty;
 
-    @Nullable Xml.Tag openJPACacheProperty;
+    Xml.@Nullable Tag openJPACacheProperty;
 
-    @Nullable Xml.Tag eclipselinkCacheProperty;
+    Xml.@Nullable Tag eclipselinkCacheProperty;
 
     // Flag in the following conditions:
     //   an openjpa.DataCache property is present
@@ -271,7 +271,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
         }
     }
 
-    private @Nullable String getTextContent(@Nullable Xml.Tag node) {
+    private @Nullable String getTextContent(Xml.@Nullable Tag node) {
         if (node != null) {
             String textContent = null;
             Optional<String> optionalValue = node.getValue();

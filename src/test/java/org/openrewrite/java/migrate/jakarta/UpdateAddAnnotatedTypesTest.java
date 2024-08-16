@@ -43,7 +43,7 @@ class UpdateAddAnnotatedTypesTest implements RewriteTest {
               import jakarta.enterprise.inject.spi.AnnotatedType;
               import jakarta.enterprise.inject.spi.BeanManager;
               import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
-              
+
               class Foo {
                 void bar(BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
                   AnnotatedType<String> producerType = beanManager.createAnnotatedType(String.class);
@@ -57,7 +57,7 @@ class UpdateAddAnnotatedTypesTest implements RewriteTest {
               import jakarta.enterprise.inject.spi.AnnotatedType;
               import jakarta.enterprise.inject.spi.BeanManager;
               import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
-              
+
               class Foo {
                 void bar(BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
                   AnnotatedType<String> producerType = beanManager.createAnnotatedType(String.class);

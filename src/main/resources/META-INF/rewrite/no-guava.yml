@@ -29,6 +29,9 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList
+  - org.openrewrite.java.migrate.guava.NoGuavaMapsNewTreeMap
+  - org.openrewrite.java.migrate.guava.NoGuavaPrimitiveAsList
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet
@@ -39,7 +42,6 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsEquals
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsHashCode
-  - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNull
   - org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsUnmodifiableNavigableMap
   - org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsSynchronizedNavigableMap
   - org.openrewrite.java.migrate.guava.PreferCharCompare
@@ -210,21 +212,6 @@ recipeList:
       newMethodName: hash
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.base.Objects hash(..)
-      fullyQualifiedTargetTypeName: java.util.Objects
-
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNull
-displayName: Prefer `java.util.Objects#requireNonNull`
-description: Prefer `java.util.Objects#requireNonNull` instead of using `com.google.common.base.Preconditions#checkNotNull`.
-tags:
-  - guava
-recipeList:
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: com.google.common.base.Preconditions checkNotNull(Object)
-      newMethodName: requireNonNull
-  - org.openrewrite.java.ChangeMethodTargetToStatic:
-      methodPattern: com.google.common.base.Preconditions requireNonNull(Object)
       fullyQualifiedTargetTypeName: java.util.Objects
 
 ---

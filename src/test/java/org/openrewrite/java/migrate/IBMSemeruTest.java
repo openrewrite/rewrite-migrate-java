@@ -46,7 +46,7 @@ class IBMSemeruTest implements RewriteTest {
           java(
             """
               import com.sun.net.ssl.internal.www.protocol.https.*;  //do NOT flag this
-              
+
               class Foo{
                 void bar() {
                     com.sun.net.ssl.internal.www.protocol.https.Handler handler_1 =           //flag
@@ -57,12 +57,12 @@ class IBMSemeruTest implements RewriteTest {
                     if (handler_1 instanceof com.sun.net.ssl.internal.www.protocol.https.Handler){ //flag
                         //do nothing
                     }
-              
+
                     if (handler_1 instanceof Handler){ //flag
                         //do nothing
                     }
                 }
-              
+
                 public static com.sun.net.ssl.internal.www.protocol.https.Handler testMethod(Handler handler){ //flag (2)
                     return handler;
                 }
@@ -71,7 +71,7 @@ class IBMSemeruTest implements RewriteTest {
             """
               import com.ibm.net.ssl.www2.protocol.https.Handler;
               import com.sun.net.ssl.internal.www.protocol.https.*;  //do NOT flag this
-              
+
               class Foo{
                 void bar() {
                     com.ibm.net.ssl.www2.protocol.https.Handler handler_1 =           //flag
@@ -82,12 +82,12 @@ class IBMSemeruTest implements RewriteTest {
                     if (handler_1 instanceof com.ibm.net.ssl.www2.protocol.https.Handler){ //flag
                         //do nothing
                     }
-              
+
                     if (handler_1 instanceof Handler){ //flag
                         //do nothing
                     }
                 }
-              
+
                 public static com.ibm.net.ssl.www2.protocol.https.Handler testMethod(Handler handler){ //flag (2)
                     return handler;
                 }
@@ -105,7 +105,7 @@ class IBMSemeruTest implements RewriteTest {
             """
               class Foo{
                 private String flagMe = "com.sun.net.ssl.internal.www.protocol"; //flag this
-              
+
                 void bar() {
                     System.setProperty("java.protocol.handler.pkgs", "com.sun.net.ssl.internal.www.protocol"); //flag this
                     String s1 = "com.sun.net.ssl";                              //DO NOT FLAG
@@ -120,7 +120,7 @@ class IBMSemeruTest implements RewriteTest {
             """
               class Foo{
                 private String flagMe = "com.ibm.net.ssl.www2.protocol"; //flag this
-              
+
                 void bar() {
                     System.setProperty("java.protocol.handler.pkgs", "com.ibm.net.ssl.www2.protocol"); //flag this
                     String s1 = "com.sun.net.ssl";                              //DO NOT FLAG
@@ -143,24 +143,24 @@ class IBMSemeruTest implements RewriteTest {
           java(
             """
               import com.sun.net.ssl.internal.ssl.*;  // do NOT flag, handled by other rule
-              
+
               class TestClass_2{
                 void bar() {
                     Provider provider_4 = new Provider();  // flag (2)
                 }
-              
+
                 private void fdsa( Provider p1 ){} // flag
               }
               """,
             """
               import com.ibm.jsse2.IBMJSSEProvider2;
               import com.sun.net.ssl.internal.ssl.*;  // do NOT flag, handled by other rule
-              
+
               class TestClass_2{
                 void bar() {
                     IBMJSSEProvider2 provider_4 = new IBMJSSEProvider2();  // flag (2)
                 }
-              
+
                 private void fdsa( IBMJSSEProvider2 p1 ){} // flag
               }
               """
@@ -187,7 +187,7 @@ class IBMSemeruTest implements RewriteTest {
                 import com.sun.net.ssl.TrustManagerFactorySpi;
                 import com.sun.net.ssl.X509KeyManager;
                 import com.sun.net.ssl.X509TrustManager;
-                
+
                 class TestFullyQualifiedPackage {
                     com.sun.net.ssl.HostnameVerifier hv;
                     com.sun.net.ssl.HttpsURLConnection huc;
@@ -202,7 +202,7 @@ class IBMSemeruTest implements RewriteTest {
                     com.sun.net.ssl.TrustManagerFactorySpi tmfs;
                     com.sun.net.ssl.X509KeyManager x509km;
                     com.sun.net.ssl.X509TrustManager xtm;
-                
+
                     HostnameVerifier hv2;
                     HttpsURLConnection huc2;
                     KeyManager km2;
@@ -232,7 +232,7 @@ class IBMSemeruTest implements RewriteTest {
                 import javax.net.ssl.TrustManagerFactorySpi;
                 import javax.net.ssl.X509KeyManager;
                 import javax.net.ssl.X509TrustManager;
-                
+
                 class TestFullyQualifiedPackage {
                     javax.net.ssl.HostnameVerifier hv;
                     javax.net.ssl.HttpsURLConnection huc;
@@ -247,7 +247,7 @@ class IBMSemeruTest implements RewriteTest {
                     javax.net.ssl.TrustManagerFactorySpi tmfs;
                     javax.net.ssl.X509KeyManager x509km;
                     javax.net.ssl.X509TrustManager xtm;
-                
+
                     HostnameVerifier hv2;
                     HttpsURLConnection huc2;
                     KeyManager km2;
@@ -274,7 +274,7 @@ class IBMSemeruTest implements RewriteTest {
             //language=java
             java("""
                 import com.sun.net.ssl.HostnameVerifier;
-                
+
                 class TestHostnameVerifier implements HostnameVerifier {
                     public boolean verify(String arg0, String arg1) {
                         return false;
@@ -283,7 +283,7 @@ class IBMSemeruTest implements RewriteTest {
                 """,
               """
                 import javax.net.ssl.HostnameVerifier;
-                
+
                 class TestHostnameVerifier implements HostnameVerifier {
                     public boolean verify(String arg0, String arg1) {
                         return false;

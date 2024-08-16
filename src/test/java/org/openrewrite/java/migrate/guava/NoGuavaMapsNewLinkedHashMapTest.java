@@ -41,9 +41,9 @@ class NoGuavaMapsNewLinkedHashMapTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.Map;
-                            
+
               class Test {
                   Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMap();
               }
@@ -51,7 +51,7 @@ class NoGuavaMapsNewLinkedHashMapTest implements RewriteTest {
             """
               import java.util.LinkedHashMap;
               import java.util.Map;
-                            
+
               class Test {
                   Map<Integer, Integer> cardinalsWorldSeries = new LinkedHashMap<>();
               }
@@ -67,10 +67,10 @@ class NoGuavaMapsNewLinkedHashMapTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.*;
-                            
+
               import java.util.Collections;
               import java.util.Map;
-                            
+
               class Test {
                   Map<Integer, Integer> m = Collections.emptyMap();
                   Map<Integer, Integer> cardinalsWorldSeries = Maps.newLinkedHashMap(m);
@@ -80,7 +80,7 @@ class NoGuavaMapsNewLinkedHashMapTest implements RewriteTest {
               import java.util.Collections;
               import java.util.LinkedHashMap;
               import java.util.Map;
-                            
+
               class Test {
                   Map<Integer, Integer> m = Collections.emptyMap();
                   Map<Integer, Integer> cardinalsWorldSeries = new LinkedHashMap<>(m);

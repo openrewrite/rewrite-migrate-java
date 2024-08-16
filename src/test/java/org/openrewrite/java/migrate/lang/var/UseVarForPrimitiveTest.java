@@ -37,15 +37,15 @@ class UseVarForPrimitiveTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      short mask = 0x7fff;
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        short mask = 0x7fff;
+                    }
+                  }
+                  """
               )
             );
         }
@@ -55,15 +55,15 @@ class UseVarForPrimitiveTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      byte flags = 0;
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        byte flags = 0;
+                    }
+                  }
+                  """
               )
             );
         }
@@ -77,23 +77,23 @@ class UseVarForPrimitiveTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      boolean b = true;
-                  }
-                }
-                """, """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      var b = true;
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        boolean b = true;
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var b = true;
+                    }
+                  }
+                  """
               )
             );
         }
@@ -104,23 +104,23 @@ class UseVarForPrimitiveTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      char ch = '\ufffd';
-                  }
-                }
-                """, """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      var ch = '\ufffd';
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        char ch = '\ufffd';
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var ch = '\ufffd';
+                    }
+                  }
+                  """
               )
             );
         }
@@ -130,23 +130,23 @@ class UseVarForPrimitiveTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      double d = 2.0;
-                  }
-                }
-                """, """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      var d = 2.0;
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        double d = 2.0;
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var d = 2.0;
+                    }
+                  }
+                  """
               )
             );
         }
@@ -156,23 +156,23 @@ class UseVarForPrimitiveTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      float f = 2.0;
-                  }
-                }
-                """, """
-                package com.example.app;
-                          
-                class A {                      
-                  void m() {
-                      var f = 2.0F;
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        float f = 2.0;
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var f = 2.0F;
+                    }
+                  }
+                  """
               )
             );
         }
@@ -182,23 +182,23 @@ class UseVarForPrimitiveTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      long l = 2;
-                  }
-                }
-                """, """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      var l = 2L;
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        long l = 2;
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var l = 2L;
+                    }
+                  }
+                  """
               )
             );
         }
@@ -208,23 +208,23 @@ class UseVarForPrimitiveTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      double d = 2.0D;
-                  }
-                }
-                """, """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      var d = 2.0D;
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        double d = 2.0D;
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var d = 2.0D;
+                    }
+                  }
+                  """
               )
             );
         }
@@ -234,23 +234,23 @@ class UseVarForPrimitiveTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      float f = 2.0F;
-                  }
-                }
-                """, """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      var f = 2.0F;
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        float f = 2.0F;
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var f = 2.0F;
+                    }
+                  }
+                  """
               )
             );
         }
@@ -260,23 +260,23 @@ class UseVarForPrimitiveTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      long l = 2L;
-                  }
-                }
-                """, """
-                package com.example.app;
-                          
-                class A {
-                  void m() {
-                      var l = 2L;
-                  }
-                }
                 """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        long l = 2L;
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var l = 2L;
+                    }
+                  }
+                  """
               )
             );
         }
@@ -286,19 +286,19 @@ class UseVarForPrimitiveTest extends VarBaseTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                class A {
-                  void m() {
-                      final int i = 42;
-                  }
-                }
-                """, """
-                class A {
-                  void m() {
-                      final var i = 42;
-                  }
-                }
                 """
+                  class A {
+                    void m() {
+                        final int i = 42;
+                    }
+                  }
+                  """, """
+                  class A {
+                    void m() {
+                        final var i = 42;
+                    }
+                  }
+                  """
               )
             );
         }

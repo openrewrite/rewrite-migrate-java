@@ -44,7 +44,7 @@ class StreamFindFirstTest implements RewriteTest {
           java(
             """
               import java.util.*;
-              
+
               class Foo {
                   void bar(SequencedCollection<String> collection) {
                       String first = collection.stream().findFirst().orElseThrow();
@@ -53,7 +53,7 @@ class StreamFindFirstTest implements RewriteTest {
               """,
             """
               import java.util.*;
-              
+
               class Foo {
                   void bar(SequencedCollection<String> collection) {
                       String first = collection.getFirst();
@@ -71,7 +71,7 @@ class StreamFindFirstTest implements RewriteTest {
           java(
             """
               import java.util.*;
-              
+
               class Foo {
                   void bar(Collection<String> collection) {
                       String first = collection.stream().findFirst().orElseThrow();
