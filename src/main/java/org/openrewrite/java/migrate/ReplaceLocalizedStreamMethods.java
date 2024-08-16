@@ -60,7 +60,8 @@ public class ReplaceLocalizedStreamMethods extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Replace `Runtime.getLocalizedInputStream(InputStream)` and `Runtime.getLocalizedOutputStream(with the argument)` with their direct arguments.";
+        return "Replaces `Runtime.getLocalizedInputStream(InputStream)` and `Runtime.getLocalizedOutputStream(OutputStream)` with their direct arguments." +
+                "This modification is made because the previous implementation of `getLocalizedInputStream` and `getLocalizedOutputStream` merely returned the arguments provided";
     }
 
     @Override
