@@ -116,10 +116,8 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
 
         public boolean isEmbeddableClass(@Nullable JavaType type) {
             return definedEmbeddableClasses.stream()
-                    .anyMatch(emb -> {
-                        return type.equals(emb)
-                               || type.isAssignableFrom(Pattern.compile(((JavaType.Class) emb).getFullyQualifiedName()));
-                    });
+                    .anyMatch(emb -> type.equals(emb)
+                               || type.isAssignableFrom(Pattern.compile(((JavaType.Class) emb).getFullyQualifiedName())));
         }
     }
 }
