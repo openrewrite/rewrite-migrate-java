@@ -22,6 +22,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.RemoveImport;
 import org.openrewrite.java.search.MaybeUsesImport;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
@@ -67,10 +68,18 @@ public class LombokValToFinalVar extends Recipe {
 
     private static class LombokValToFinalVarVisitor extends JavaIsoVisitor<ExecutionContext> {
         @Override
+        public J.CompilationUnit visitCompilationUnit(J.CompilationUnit compilationUnit, ExecutionContext ctx) {
+            // Force remove `lombok.var` import; as the parser does not recognize `var` as coming from Lombok
+            RemoveImport<ExecutionContext> op = new RemoveImport<>(LOMBOK_VAR, true);
+            if (!getAfterVisit().contains(op)) {
+                doAfterVisit(op);
+            }
+            return super.visitCompilationUnit(compilationUnit, ctx);
+        }
+
+        @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations mv, ExecutionContext ctx) {
             J.VariableDeclarations varDecls = super.visitVariableDeclarations(mv, ctx);
-            // Always remove `lombok.var` import; no further code change needed
-            maybeRemoveImport(LOMBOK_VAR);
             if (TypeUtils.isOfClassType(varDecls.getType(), LOMBOK_VAL)) {
                 maybeRemoveImport(LOMBOK_VAL);
 
