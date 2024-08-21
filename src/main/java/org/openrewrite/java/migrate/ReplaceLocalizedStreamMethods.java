@@ -25,9 +25,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Space;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
