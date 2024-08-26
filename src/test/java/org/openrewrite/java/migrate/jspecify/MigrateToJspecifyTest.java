@@ -132,24 +132,24 @@ class MigrateToJspecifyTest implements RewriteTest {
               """,
             //language=xml
             """
-              <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>com.example.foobar</groupId>
-                  <artifactId>foobar-core</artifactId>
-                  <version>1.0.0</version>
-                  <dependencies>
-                      <dependency>
-                          <groupId>jakarta.annotation</groupId>
-                          <artifactId>jakarta.annotation-api</artifactId>
-                          <version>3.0.0</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.jspecify</groupId>
-                          <artifactId>jspecify</artifactId>
-                          <version>1.0.0</version>
-                      </dependency>
-                  </dependencies>
-              </project>
+           <project>
+               <modelVersion>4.0.0</modelVersion>
+               <groupId>com.example.foobar</groupId>
+               <artifactId>foobar-core</artifactId>
+               <version>1.0.0</version>
+               <dependencies>
+                   <dependency>
+                       <groupId>jakarta.annotation</groupId>
+                       <artifactId>jakarta.annotation-api</artifactId>
+                       <version>3.0.0</version>
+                   </dependency>
+                   <dependency>
+                       <groupId>org.jspecify</groupId>
+                       <artifactId>jspecify</artifactId>
+                       <version>1.0.0</version>
+                   </dependency>
+               </dependencies>
+           </project>
            """),
           java(
             """
