@@ -40,6 +40,7 @@ class MigrateToJspecifyTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jakarta.annotation-api"));
     }
 
+    @DocumentExample
     @Test
     void migrateFromJavaxAnnotationApiToJspecify() {
         //language=java
