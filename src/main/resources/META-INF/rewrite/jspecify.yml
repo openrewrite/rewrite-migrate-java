@@ -44,7 +44,7 @@ recipeList:
       groupId: org.jspecify
       artifactId: jspecify
       version: latest.release
-      onlyIfUsing: org.jspecify.annotations.*
+      onlyIfUsing: org.jspecify.annotations..*
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
       annotationType: org.jspecify.annotations.*
 
@@ -66,6 +66,6 @@ recipeList:
       groupId: org.jspecify
       artifactId: jspecify
       version: latest.release
-      onlyIfUsing: org.jspecify.annotations.*
+      onlyIfUsing: org.jspecify.annotations..*
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
       annotationType: org.jspecify.annotations.*
