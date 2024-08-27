@@ -89,6 +89,15 @@ class MigrateToJspecifyTest implements RewriteTest {
                   public String field1;
                   @Nullable
                   public String field2;
+                  @Nullable
+                  public Foo.Bar foobar;
+              }
+
+              interface Foo {
+                class Bar {
+                  @Nonnull
+                  public String barField;
+                }
               }
               """,
             """
@@ -100,6 +109,15 @@ class MigrateToJspecifyTest implements RewriteTest {
                   public String field1;
                   @Nullable
                   public String field2;
+
+                  public Foo.@Nullable Bar foobar;
+              }
+
+              interface Foo {
+                class Bar {
+                  @NonNull
+                  public String barField;
+                }
               }
               """
           )
@@ -160,6 +178,15 @@ class MigrateToJspecifyTest implements RewriteTest {
                   public String field1;
                   @Nullable
                   public String field2;
+                  @Nullable
+                  public Foo.Bar foobar;
+              }
+
+              interface Foo {
+                class Bar {
+                  @Nonnull
+                  public String barField;
+                }
               }
               """,
             """
@@ -171,6 +198,15 @@ class MigrateToJspecifyTest implements RewriteTest {
                   public String field1;
                   @Nullable
                   public String field2;
+
+                  public Foo.@Nullable Bar foobar;
+              }
+
+              interface Foo {
+                class Bar {
+                  @NonNull
+                  public String barField;
+                }
               }
               """
           )
