@@ -29,8 +29,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJavaxAnnotationApi
-displayName: Migrate to JSpecify
-description: Migrate from javax Annotation API to JSpecify.
+displayName: Migrate from javax annotation API to jspecify
+description: Migrate from javax annotation API to jspecify.
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.Nullable
@@ -51,8 +51,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
-displayName: Migrate to JSpecify
-description: Migrate from Jakarta Annotation API to JSpecify.
+displayName: Migrate from jakarta annotation API to jspecify
+description: Migrate from jakarta annotation API to jspecify.
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.annotation.Nullable
