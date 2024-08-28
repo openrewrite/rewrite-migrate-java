@@ -17,9 +17,9 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateToJspecify
-displayName: Migrate to jspecify
+displayName: Migrate to JSpecify
 description: >-
-  This recipe will migrate to jspecify annotations.
+  This recipe will migrate to JSpecify annotations.
 tags:
   - java
 recipeList:
@@ -30,8 +30,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJavaxAnnotationApi
-displayName: Migrate from javax annotation API to jspecify
-description: Migrate from javax annotation API to jspecify.
+displayName: Migrate from javax annotation API to JSpecify
+description: Migrate from javax annotation API to JSpecify.
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.Nullable
@@ -51,8 +51,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
-displayName: Migrate from jakarta annotation API to jspecify
-description: Migrate from jakarta annotation API to jspecify.
+displayName: Migrate from jakarta annotation API to JSpecify
+description: Migrate from jakarta annotation API to JSpecify.
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.annotation.Nullable
@@ -72,8 +72,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJetbrainsAnnotations
-displayName: Migrate from jetbrains annotations to jspecify
-description: Migrate from jetbrains annotations to jspecify.
+displayName: Migrate from jetbrains annotations to JSpecify
+description: Migrate from jetbrains annotations to JSpecify.
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.jetbrains.annotations.Nullable
