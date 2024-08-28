@@ -31,7 +31,7 @@ class MigrateToJspecifyTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipeFromResource("/META-INF/rewrite/jspecify.yml", "org.openrewrite.java.jspecify.MigrateToJspecify")
-          .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jakarta.annotation-api"));
+          .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jakarta.annotation-api", "annotations"));
     }
 
     @DocumentExample
@@ -185,6 +185,95 @@ class MigrateToJspecifyTest implements RewriteTest {
               interface Foo {
                 class Bar {
                   @Nonnull
+                  public String barField;
+                }
+              }
+              """,
+            """
+              import org.jspecify.annotations.NonNull;
+              import org.jspecify.annotations.Nullable;
+              
+              public class Test {
+                  @NonNull
+                  public String field1;
+                  @Nullable
+                  public String field2;
+
+                  public Foo.@Nullable Bar foobar;
+              }
+
+              interface Foo {
+                class Bar {
+                  @NonNull
+                  public String barField;
+                }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void migrateFromJetbrainsAnnotationsToJspecify() {
+        //language=java
+        rewriteRun(
+          pomXml(
+            //language=xml
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example.foobar</groupId>
+                  <artifactId>foobar-core</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.jetbrains</groupId>
+                          <artifactId>annotations</artifactId>
+                          <version>24.1.0</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            //language=xml
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example.foobar</groupId>
+                  <artifactId>foobar-core</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.jetbrains</groupId>
+                          <artifactId>annotations</artifactId>
+                          <version>24.1.0</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.jspecify</groupId>
+                          <artifactId>jspecify</artifactId>
+                          <version>1.0.0</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """
+          ),
+          //language=java
+          java(
+            """
+              import org.jetbrains.annotations.NotNull;
+              import org.jetbrains.annotations.Nullable;
+              
+              public class Test {
+                  @NotNull
+                  public String field1;
+                  @Nullable
+                  public String field2;
+                  @Nullable
+                  public Foo.Bar foobar;
+              }
+
+              interface Foo {
+                class Bar {
+                  @NotNull
                   public String barField;
                 }
               }

@@ -25,6 +25,7 @@ tags:
 recipeList:
   - org.openrewrite.java.jspecify.MigrateFromJavaxAnnotationApi
   - org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
+  - org.openrewrite.java.jspecify.MigrateFromJetbrainsAnnotations
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -47,7 +48,6 @@ recipeList:
       onlyIfUsing: org.jspecify.annotations..*
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
       annotationType: org.jspecify.annotations.*
-
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
@@ -60,6 +60,27 @@ recipeList:
       ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.annotation.Nonnull
+      newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
+      ignoreDefinition: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.jspecify
+      artifactId: jspecify
+      version: latest.release
+      onlyIfUsing: org.jspecify.annotations..*
+  - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
+      annotationType: org.jspecify.annotations.*
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.jspecify.MigrateFromJetbrainsAnnotations
+displayName: Migrate from jetbrains annotations to jspecify
+description: Migrate from jetbrains annotations to jspecify.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.jetbrains.annotations.Nullable
+      newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.jetbrains.annotations.NotNull
       newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
       ignoreDefinition: true
   - org.openrewrite.java.dependencies.AddDependency:
