@@ -24,6 +24,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
+@SuppressWarnings("NotNullFieldNotInitialized")
 class MigrateToJspecifyTest implements RewriteTest {
 
     @Override
