@@ -19,7 +19,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateToJspecify
 displayName: Migrate to JSpecify
 description: >-
-  This recipe will migrate to JSpecify annotations.
+  This recipe will migrate to JSpecify annotations from various other nullability annotation standards.
 tags:
   - java
 recipeList:
@@ -51,8 +51,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
-displayName: Migrate from jakarta annotation API to JSpecify
-description: Migrate from jakarta annotation API to JSpecify.
+displayName: Migrate from Jakarta annotation API to JSpecify
+description: Migrate from Jakarta annotation API to JSpecify.
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: org.jspecify
@@ -72,8 +72,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJetbrainsAnnotations
-displayName: Migrate from jetbrains annotations to JSpecify
-description: Migrate from jetbrains annotations to JSpecify.
+displayName: Migrate from JetBrains annotations to JSpecify
+description: Migrate from JetBrains annotations to JSpecify.
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: org.jspecify
