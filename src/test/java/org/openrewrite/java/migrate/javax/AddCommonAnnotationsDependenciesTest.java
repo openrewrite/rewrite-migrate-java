@@ -36,14 +36,14 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
     @Test
     void addDependencyIfAnnotationJsr250Present() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().classpath("jakarta.annotation-api")),
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn("package javax.annotation; public @interface Generated {}")),
           mavenProject("my-project",
             //language=java
             srcMainJava(
               java(
                 """
                   import javax.annotation.Generated;
-
+                  
                   @Generated("Hello")
                   class A {
                   }
