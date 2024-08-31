@@ -77,8 +77,7 @@ public class ReplaceMathRandomWithThreadLocalRandom extends Recipe {
       }
       maybeRemoveImport("java.lang.Math");
       maybeAddImport("java.util.concurrent.ThreadLocalRandom");
-      J.MethodInvocation nextDoubleInvocation = template.apply(updateCursor(result), result.getCoordinates().replace());
-      return nextDoubleInvocation;
+      return template.apply(updateCursor(result), result.getCoordinates().replace());
     }
   }
 }
