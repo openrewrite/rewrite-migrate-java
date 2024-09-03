@@ -18,9 +18,9 @@ package org.openrewrite.java.migrate.util;
 
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
-import java.util.concurrent.ThreadLocalRandom;
 import org.openrewrite.java.template.RecipeDescriptor;
 
+import java.util.concurrent.ThreadLocalRandom;
 
 @RecipeDescriptor(
     name = "Replace `java.lang.Math random()` with `ThreadLocalRandom nextDouble()`",
