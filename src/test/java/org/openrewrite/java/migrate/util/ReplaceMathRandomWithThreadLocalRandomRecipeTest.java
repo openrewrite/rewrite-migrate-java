@@ -22,13 +22,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-
 class ReplaceMathRandomWithThreadLocalRandomRecipeTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec
-          .recipe(new ReplaceMathRandomWithThreadLocalRandomRecipe());
+        spec.recipe(new ReplaceMathRandomWithThreadLocalRandomRecipe());
     }
 
     @Test
@@ -38,7 +36,6 @@ class ReplaceMathRandomWithThreadLocalRandomRecipeTest implements RewriteTest {
           //language=java
           java(
             """
-
               class Example {
                   double test() {
                       return Math.random();
@@ -47,7 +44,7 @@ class ReplaceMathRandomWithThreadLocalRandomRecipeTest implements RewriteTest {
               """,
             """
               import java.util.concurrent.ThreadLocalRandom;
-
+              
               class Example {
                   double test() {
                       return ThreadLocalRandom.current().nextDouble();
