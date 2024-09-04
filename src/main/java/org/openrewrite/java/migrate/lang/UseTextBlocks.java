@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.search.HasJavaVersion;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.style.IntelliJ;
 import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.java.tree.Expression;
@@ -77,7 +77,7 @@ public class UseTextBlocks extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
                 Preconditions.not(new KotlinFileChecker<>()),
-                new HasJavaVersion("[15,)", null).getVisitor()
+                new UsesJavaVersion<>(17)
         );
         return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
             @Override

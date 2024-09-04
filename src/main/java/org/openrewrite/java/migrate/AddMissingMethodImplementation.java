@@ -31,17 +31,17 @@ import static org.openrewrite.java.tree.J.ClassDeclaration.Kind.Type.Interface;
 @EqualsAndHashCode(callSuper = false)
 public class AddMissingMethodImplementation extends Recipe {
 
-    @Option(displayName = "Fully Qualified Class Name",
+    @Option(displayName = "Fully qualified class name",
             description = "A fully qualified class being implemented with missing method.",
             example = "com.yourorg.FooBar")
     String fullyQualifiedClassName;
 
-    @Option(displayName = "Method Pattern",
+    @Option(displayName = "Method pattern",
             description = "A method pattern for matching required method definition.",
             example = "*..* hello(..)")
     String methodPattern;
 
-    @Option(displayName = "Method Template",
+    @Option(displayName = "Method template",
             description = "Template of method to add",
             example = "public String hello() { return \\\"Hello from #{}!\\\"; }")
     String methodTemplateString;
@@ -68,7 +68,7 @@ public class AddMissingMethodImplementation extends Recipe {
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cs, ExecutionContext ctx) {
-            // need to make sure we handle sub-classes
+            // need to make sure we handle inner classes
             J.ClassDeclaration classDecl = super.visitClassDeclaration(cs, ctx);
 
             // No need to make changes to abstract classes or interfaces; only change concrete classes.
