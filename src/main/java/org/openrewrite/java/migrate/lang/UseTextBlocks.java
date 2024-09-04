@@ -34,12 +34,10 @@ import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.requireNonNull;
 import static org.openrewrite.Tree.randomId;
 
 @Value
@@ -50,7 +48,6 @@ public class UseTextBlocks extends Recipe {
                           "The default value is true.",
             example = "true",
             required = false)
-    @Nullable
     boolean convertStringsWithoutNewlines;
 
     public UseTextBlocks() {
@@ -80,7 +77,7 @@ public class UseTextBlocks extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
                 Preconditions.not(new KotlinFileChecker<>()),
-                new HasJavaVersion("17", true).getVisitor()
+                new HasJavaVersion("[15,)", null).getVisitor()
         );
         return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
             @Override
@@ -125,13 +122,13 @@ public class UseTextBlocks extends Recipe {
 
                 StringBuilder sb = new StringBuilder();
                 StringBuilder originalContent = new StringBuilder();
-                stringLiterals = stringLiterals.stream().filter(s -> !s.getValue().toString().isEmpty()).collect(Collectors.toList());
+                stringLiterals = stringLiterals.stream().filter(s -> s.getValue() != null && !s.getValue().toString().isEmpty()).collect(Collectors.toList());
                 for (int i = 0; i < stringLiterals.size(); i++) {
-                    String s = stringLiterals.get(i).getValue().toString();
+                    String s = requireNonNull(stringLiterals.get(i).getValue()).toString();
                     sb.append(s);
                     originalContent.append(s);
                     if (i != stringLiterals.size() - 1) {
-                        String nextLine = stringLiterals.get(i + 1).getValue().toString();
+                        String nextLine = requireNonNull(stringLiterals.get(i + 1).getValue()).toString();
                         char nextChar = nextLine.charAt(0);
                         if (!s.endsWith("\n") && nextChar != '\n') {
                             sb.append(passPhrase);
@@ -202,7 +199,7 @@ public class UseTextBlocks extends Recipe {
         } else if (isRegularStringLiteral(expression)) {
             J.Literal l = (J.Literal) expression;
             stringLiterals.add(l);
-            contentSb.append(l.getValue().toString());
+            contentSb.append(requireNonNull(l.getValue()));
             concatenationSb.append(l.getPrefix().getWhitespace()).append("-");
             return true;
         }
@@ -296,13 +293,12 @@ public class UseTextBlocks extends Recipe {
 
     private static String generatePassword(String originalStr) throws NoSuchAlgorithmException {
         final String SALT = "kun";
-        String password = "";
         String saltedStr = originalStr + SALT;
 
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = md.digest(saltedStr.getBytes());
 
-        password = Base64.getEncoder().encodeToString(hashBytes);
+        String password = Base64.getEncoder().encodeToString(hashBytes);
 
         while (originalStr.contains(password)) {
             hashBytes = md.digest(password.getBytes());
