@@ -36,6 +36,7 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 import static org.openrewrite.kotlin.Assertions.kotlin;
 
+@SuppressWarnings({"ConcatenationWithEmptyString", "TextBlockMigration", "EscapedSpace"})
 class UseTextBlocksTest implements RewriteTest {
 
     @Override
@@ -116,6 +117,32 @@ class UseTextBlocksTest implements RewriteTest {
                                  ""\";
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void worksOnNewerJavaVersions() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  String color = "red\\n" +
+                                 "green\\n" +
+                                 "blue\\n";
+              }
+              """,
+            """
+              class Test {
+                  String color = \"""
+                                 red
+                                 green
+                                 blue
+                                 ""\";
+              }
+              """,
+              spec -> spec.markers(javaVersion(21))
           )
         );
     }

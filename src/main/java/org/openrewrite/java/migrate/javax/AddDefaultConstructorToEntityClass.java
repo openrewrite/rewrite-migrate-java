@@ -23,8 +23,6 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
-import java.util.Comparator;
-
 @EqualsAndHashCode(callSuper = false)
 public class AddDefaultConstructorToEntityClass extends Recipe {
     @Override

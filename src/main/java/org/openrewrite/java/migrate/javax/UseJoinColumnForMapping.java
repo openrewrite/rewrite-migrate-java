@@ -70,7 +70,7 @@ public class UseJoinColumnForMapping extends Recipe {
                         // The javax.persistence.Column attributes length, precision, and scale are not kept.
                         maybeRemoveImport(COLUMN);
                         maybeAddImport(JOIN_COLUMN);
-                        J.VariableDeclarations joinColumn = (J.VariableDeclarations) new ChangeType(COLUMN, JOIN_COLUMN, false).getVisitor().visit(multiVariable, ctx);
+                        J.VariableDeclarations joinColumn = (J.VariableDeclarations) new ChangeType(COLUMN, JOIN_COLUMN, false).getVisitor().visit(multiVariable, ctx, getCursor());
                         joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "length").getVisitor().visit(joinColumn, ctx);
                         joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "precision").getVisitor().visit(joinColumn, ctx);
                         joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "scale").getVisitor().visit(joinColumn, ctx);

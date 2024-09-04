@@ -43,7 +43,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -57,7 +57,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """,
             """
@@ -67,7 +67,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -80,7 +80,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """
           )
@@ -100,7 +100,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -115,7 +115,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """,
             """
@@ -125,7 +125,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -139,7 +139,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """
           )
@@ -158,11 +158,11 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <properties>
                   <java.version>11</java.version>
                 </properties>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -175,7 +175,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """,
             """
@@ -185,11 +185,11 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <properties>
                   <java.version>11</java.version>
                 </properties>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -201,7 +201,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """
           )
@@ -220,7 +220,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -233,7 +233,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """,
             """
@@ -243,7 +243,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -256,7 +256,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """
           )
@@ -275,11 +275,11 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <properties>
                   <java.version>11</java.version>
                 </properties>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -292,7 +292,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """,
             """
@@ -302,11 +302,11 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <properties>
                   <java.version>11</java.version>
                 </properties>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -319,7 +319,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """
           )
@@ -338,11 +338,11 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <properties>
                   <foobar>11</foobar>
                 </properties>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -356,7 +356,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """,
             """
@@ -366,11 +366,11 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <properties>
                   <foobar>11</foobar>
                 </properties>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -384,7 +384,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """
           )
@@ -404,7 +404,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>sample</artifactId>
                 <version>1.0.0</version>
-
+              
                 <build>
                   <plugins>
                     <plugin>
@@ -417,7 +417,7 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                     </plugin>
                   </plugins>
                 </build>
-
+              
               </project>
               """)
         );
@@ -435,11 +435,11 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <groupId>org.sample</groupId>
                 <artifactId>parent</artifactId>
                 <version>1.0.0</version>
-
+              
                 <properties>
                   <java.version>11</java.version>
                 </properties>
-
+              
                 <packaging>pom</packaging>
               </project>
               """),
@@ -450,16 +450,16 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <?xml version="1.0" encoding="UTF-8"?>
                 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                   <modelVersion>4.0.0</modelVersion>
-
+                
                   <parent>
                     <groupId>org.sample</groupId>
                     <artifactId>parent</artifactId>
                     <version>1.0.0</version>
                   </parent>
-
+                
                   <artifactId>sample</artifactId>
                   <version>1.0.0</version>
-
+                
                   <build>
                     <plugins>
                       <plugin>
@@ -478,16 +478,16 @@ class UseMavenCompilerPluginReleaseConfigurationTest implements RewriteTest {
                 <?xml version="1.0" encoding="UTF-8"?>
                 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                   <modelVersion>4.0.0</modelVersion>
-
+                
                   <parent>
                     <groupId>org.sample</groupId>
                     <artifactId>parent</artifactId>
                     <version>1.0.0</version>
                   </parent>
-
+                
                   <artifactId>sample</artifactId>
                   <version>1.0.0</version>
-
+                
                   <build>
                     <plugins>
                       <plugin>

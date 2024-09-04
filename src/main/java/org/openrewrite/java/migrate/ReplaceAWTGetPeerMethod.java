@@ -18,8 +18,8 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -77,7 +77,7 @@ class ReplaceAWTGetPeerMethod extends Recipe {
                 return bi;
             }
 
-            private @Nullable J.MethodInvocation findMatchingMethodInvocation(J.Binary binaryCondition) {
+            private J.@Nullable MethodInvocation findMatchingMethodInvocation(J.Binary binaryCondition) {
                 J.MethodInvocation mi = null;
                 if (binaryCondition.getOperator() == J.Binary.Type.NotEqual) {
                     if (binaryCondition.getLeft() instanceof J.MethodInvocation &&
