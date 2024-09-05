@@ -33,8 +33,9 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
 
     @Option(displayName = "Method pattern to replace",
             description = "The method pattern to match and replace.",
-            example = "com.test.AWTUtilities isTranslucencySupported1(com.test.AWTUtilitiesTest.Translucency)")
+            example = "com.sun.awt.AWTUtilities isTranslucencySupported(com.sun.awt.AWTUtilities.Translucency)")
     String getAWTIsWindowsTransclucencyPattern;
+
 
     @Option(displayName = "Method pattern to replace",
             description = "The method pattern to match and replace.",
@@ -65,6 +66,27 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
             description = "The method pattern to match and replace.",
             example = "com.test.AWTUtilities setComponentMixingCutoutShape(java.awt.Component,java.awt.Shape)")
     String setComponentMixingCutoutShapePattern;
+
+    public ReplaceComSunAWTUtilitiesMethods() {
+        getAWTIsWindowsTransclucencyPattern = "com.sun.awt.AWTUtilities isTranslucencySupported(com.sun.awt.AWTUtilities.Translucency)";
+        isWindowOpaquePattern = "com.sun.awt.AWTUtilities isWindowOpaque(java.awt.Window)";
+        isTranslucencyCapablePattern = "com.sun.awt.AWTUtilities isTranslucencyCapable(java.awt.GraphicsConfiguration)";
+        setWindowOpacityPattern = "com.sun.awt.AWTUtilities setWindowOpacity(java.awt.Window, float)";
+        getWindowOpacityPattern = "com.sun.awt.AWTUtilities getWindowOpacity(java.awt.Window)";
+        getWindowShapePattern = "com.sun.awt.AWTUtilities getWindowShape(java.awt.Window)";
+        setComponentMixingCutoutShapePattern = "com.sun.awt.AWTUtilities setComponentMixingCutoutShape(java.awt.Component,java.awt.Shape)";
+    }
+
+    public ReplaceComSunAWTUtilitiesMethods(String getAWTIsWindowsTransclucencyPattern, String isWindowOpaquePattern, String isTranslucencyCapablePattern,
+                                            String setWindowOpacityPattern, String getWindowOpacityPattern, String getWindowShapePattern, String setComponentMixingCutoutShapePattern) {
+        this.getAWTIsWindowsTransclucencyPattern = getAWTIsWindowsTransclucencyPattern;
+        this.isWindowOpaquePattern = isWindowOpaquePattern;
+        this.isTranslucencyCapablePattern = isTranslucencyCapablePattern;
+        this.setWindowOpacityPattern = setWindowOpacityPattern;
+        this.getWindowOpacityPattern = getWindowOpacityPattern;
+        this.getWindowShapePattern = getWindowShapePattern;
+        this.setComponentMixingCutoutShapePattern = setComponentMixingCutoutShapePattern;
+    }
 
     @Override
     public String getDisplayName() {

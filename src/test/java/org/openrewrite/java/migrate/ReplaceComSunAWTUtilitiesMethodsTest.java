@@ -24,10 +24,11 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
  class ReplaceComSunAWTUtilitiesMethodsTest  implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new ReplaceComSunAWTUtilitiesMethods("com.test.AWTUtilitiesTest isTranslucencySupported1(com.test.AWTUtilitiesTest.Translucency)",
-                        "com.test.AWTUtilitiesTest isWindowOpaque(java.awt.Window)",
+            "com.test.AWTUtilitiesTest isWindowOpaque(java.awt.Window)",
             "com.test.AWTUtilitiesTest isTranslucencyCapable(java.awt.GraphicsConfiguration)",
             "com.test.AWTUtilitiesTest setWindowOpacity(java.awt.Window,float)",
             "com.test.AWTUtilitiesTest getWindowOpacity(java.awt.Window)",
@@ -115,7 +116,7 @@ import static org.openrewrite.java.Assertions.java;
     }
      @Test
      @DocumentExample
-     void replaceComSunAWTUtilitiesClassesIsWindowsOpaqueOpacityShape() {
+     void replaceComSunAWTUtilitiesClassesRemaining() {
          rewriteRun(
            //language=java
            java(
