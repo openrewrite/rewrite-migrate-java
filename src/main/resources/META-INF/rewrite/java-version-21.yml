@@ -110,8 +110,8 @@ recipeList:
       methodPattern: javax.security.auth.Subject getSubject()
       newMethodName: current
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: javax.security.auth.Subject callAs()
-      newMethodName: doAs
+      methodPattern: javax.security.auth.Subject doAs()
+      newMethodName: callAs
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeleteDeprecatedFinalize
