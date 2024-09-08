@@ -125,54 +125,48 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
                 }
                 if (isWindowOpaquePatternMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    String templateString = ((J.Identifier) mi.getArguments().get(0)).getSimpleName() + ".isOpaque()";
-                    return JavaTemplate.builder(templateString)
-                            .contextSensitive()
+                    return JavaTemplate.builder("#{any()}.isOpaque()")
                             .build()
-                            .apply(getCursor(), mi.getCoordinates().replace())
+                            .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0))
                             .withPrefix(mi.getPrefix());
                 }
                 if (isTranslucencyCapablePatternMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    String templateString = ((J.Identifier) mi.getArguments().get(0)).getSimpleName() + ".isTranslucencyCapable()";
-                    return JavaTemplate.builder(templateString)
-                            .contextSensitive()
+                    return JavaTemplate.builder("#{any()}.isTranslucencyCapable()")
                             .build()
-                            .apply(getCursor(), mi.getCoordinates().replace())
+                            .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0))
                             .withPrefix(mi.getPrefix());
                 }
                 if (setWindowOpacityPatternMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    String templateString = ((J.Identifier) mi.getArguments().get(0)).getSimpleName() + ".setOpacity(" + ((J.Literal) mi.getArguments().get(1)).getValue() + ")";
-                    return JavaTemplate.builder(templateString)
-                            .contextSensitive()
+                    return JavaTemplate.builder("#{any()}.setOpacity(#{any()})")
                             .build()
-                            .apply(getCursor(), mi.getCoordinates().replace())
+                            .apply(getCursor(), mi.getCoordinates().replace(),
+                                    mi.getArguments().get(0),
+                                    mi.getArguments().get(1))
                             .withPrefix(mi.getPrefix());
                 }
                 if (getWindowOpacityPatternMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    String templateString = ((J.Identifier) mi.getArguments().get(0)).getSimpleName() + ".getOpacity()";
-                    return JavaTemplate.builder(templateString).contextSensitive().build()
-                            .apply(getCursor(), mi.getCoordinates().replace())
+                    return JavaTemplate.builder("#{any()}.getOpacity()")
+                            .build()
+                            .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0))
                             .withPrefix(mi.getPrefix());
                 }
                 if (getWindowShapePatternMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    String templateString = ((J.Identifier) mi.getArguments().get(0)).getSimpleName() + ".getShape()";
-                    return JavaTemplate.builder(templateString)
-                            .contextSensitive()
+                    return JavaTemplate.builder("#{any()}.getShape()")
                             .build()
-                            .apply(getCursor(), mi.getCoordinates().replace())
+                            .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0))
                             .withPrefix(mi.getPrefix());
                 }
                 if (setComponentMixingCutoutShapePatternMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    String templateString = ((J.Identifier) mi.getArguments().get(0)).getSimpleName() + ".setMixingCutoutShape(" + ((J.Identifier) mi.getArguments().get(1)).getSimpleName() + ")";
-                    return JavaTemplate.builder(templateString)
-                            .contextSensitive()
+                    return JavaTemplate.builder("#{any()}.setMixingCutoutShape(#{any()})")
                             .build()
-                            .apply(getCursor(), mi.getCoordinates().replace())
+                            .apply(getCursor(), mi.getCoordinates().replace(),
+                                    mi.getArguments().get(0),
+                                    mi.getArguments().get(1))
                             .withPrefix(mi.getPrefix());
                 }
                 return mi;
