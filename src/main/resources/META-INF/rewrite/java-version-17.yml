@@ -75,6 +75,14 @@ recipeList:
       artifactId: maven-checkstyle-plugin
       newVersion: 3.x
   - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-compiler-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-war-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
       groupId: com.sonatype.clm
       artifactId: clm-maven-plugin
       newVersion: 2.47.6-01
