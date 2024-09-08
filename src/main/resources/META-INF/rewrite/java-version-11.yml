@@ -75,12 +75,12 @@ recipeList:
   - org.openrewrite.scala.migrate.UpgradeScala_2_12
   - org.openrewrite.java.migrate.ReplaceComSunAWTUtilitiesMethods:
       getAWTIsWindowsTransclucencyPattern: com.sun.awt.AWTUtilities isTranslucencySupported1(com.sun.awt.AWTUtilities.Translucency)
-      isWindowOpaquePattern: com.sun.awt.AWTUtilities isWindowOpaque(java.awt.Window)
-      isTranslucencyCapablePattern: com.sun.awt.AWTUtilities isTranslucencyCapable(java.awt.GraphicsConfiguration)
-      setWindowOpacityPattern: com.sun.awt.AWTUtilities setWindowOpacity(java.awt.Window,float)
       getWindowOpacityPattern: com.sun.awt.AWTUtilities getWindowOpacity(java.awt.Window)
       getWindowShapePattern: com.sun.awt.AWTUtilities getWindowShape(java.awt.Window)
+      isWindowOpaquePattern: com.sun.awt.AWTUtilities isWindowOpaque(java.awt.Window)
+      isTranslucencyCapablePattern: com.sun.awt.AWTUtilities isTranslucencyCapable(java.awt.GraphicsConfiguration)
       setComponentMixingCutoutShapePattern: com.sun.awt.AWTUtilities setComponentMixingCutoutShape(java.awt.Component,java.awt.Shape)
+      setWindowOpacityPattern: com.sun.awt.AWTUtilities setWindowOpacity(java.awt.Window,float)
   - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
 ---
 type: specs.openrewrite.org/v1beta/recipe

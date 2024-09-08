@@ -23,11 +23,12 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
- class ReplaceComSunAWTUtilitiesMethodsTest  implements RewriteTest {
+class ReplaceComSunAWTUtilitiesMethodsTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new ReplaceComSunAWTUtilitiesMethods("com.test.AWTUtilitiesTest isTranslucencySupported1(com.test.AWTUtilitiesTest.Translucency)",
+        spec.recipe(new ReplaceComSunAWTUtilitiesMethods(
+            "com.test.AWTUtilitiesTest isTranslucencySupported1(com.test.AWTUtilitiesTest.Translucency)",
             "com.test.AWTUtilitiesTest isWindowOpaque(java.awt.Window)",
             "com.test.AWTUtilitiesTest isTranslucencyCapable(java.awt.GraphicsConfiguration)",
             "com.test.AWTUtilitiesTest setWindowOpacity(java.awt.Window,float)",
@@ -44,56 +45,54 @@ import static org.openrewrite.java.Assertions.java;
                 import java.awt.GraphicsConfiguration;
                 import java.awt.Shape;
                 import java.awt.Component;
-
-                public class AWTUtilitiesTest {                
+                
+                public class AWTUtilitiesTest {
                     private static final String TRANSLUCENT = "test";
-                    public static enum Translucency {           
+                    public enum Translucency {
                             PERPIXEL_TRANSPARENT,
                             TRANSLUCENT,
                             PERPIXEL_TRANSLUCENT;
-                    }                   
+                    }
                     public static boolean isTranslucencySupported1(Translucency translucencyKind) {
                         return true;
-                    }  
+                    }
                     public static boolean isWindowOpaque(Window win) {
-                        return true;        
-                    } 
+                        return true;
+                    }
                     public static boolean isTranslucencyCapable(GraphicsConfiguration gc) {
-                        return true;        
-                    } 
+                        return true;
+                    }
                     public static void setWindowOpacity(Window win,float f) {
-                         
-                    } 
+                
+                    }
                     public static float getWindowOpacity(Window win) {
-                         return 1;           
-                    } 
+                         return 1;
+                    }
                     public static Shape getWindowShape(Window win) {
-                         Shape sh = null; 
-                         return sh;           
-                    } 
+                         return null;
+                    }
                     public static void setComponentMixingCutoutShape(Component c, Shape sh){
-        
-                    }           
-                }    
+                
+                    }
+                }
                 """
             )
           );
     }
 
     @Test
-    @DocumentExample
     void replaceComSunAWTUtilitiesClassesIsTranslucencySupported() {
         rewriteRun(
           //language=java
           java(
             """
               import com.test.AWTUtilitiesTest;
-             
+              
               class Test {
-                  void foo() {                
+                  void foo() {
                       boolean f = AWTUtilitiesTest.isTranslucencySupported1(AWTUtilitiesTest.Translucency.TRANSLUCENT);
                       boolean j = AWTUtilitiesTest.isTranslucencySupported1(AWTUtilitiesTest.Translucency.PERPIXEL_TRANSPARENT);
-                      boolean k = AWTUtilitiesTest.isTranslucencySupported1(AWTUtilitiesTest.Translucency.PERPIXEL_TRANSLUCENT);             
+                      boolean k = AWTUtilitiesTest.isTranslucencySupported1(AWTUtilitiesTest.Translucency.PERPIXEL_TRANSLUCENT);
                   }
               }
               """,
@@ -102,7 +101,7 @@ import static org.openrewrite.java.Assertions.java;
               import java.awt.GraphicsDevice.WindowTranslucency;
               import java.awt.GraphicsEnvironment;
               import java.awt.Window;
-
+              
               class Test {
                   void foo() {
                       boolean f = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency.TRANSLUCENT);
@@ -114,58 +113,59 @@ import static org.openrewrite.java.Assertions.java;
           )
         );
     }
-     @Test
-     @DocumentExample
-     void replaceComSunAWTUtilitiesClassesRemaining() {
-         rewriteRun(
-           //language=java
-           java(
-             """
-               package com.test;
-               import com.test.AWTUtilitiesTest;
-               import java.awt.Window;
-               import java.awt.*;
-               import javax.swing.*;
-               import java.awt.geom.Ellipse2D;
+
+    @Test
+    @DocumentExample
+    void replaceComSunAWTUtilitiesClassesRemaining() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package com.test;
+              import com.test.AWTUtilitiesTest;
+              import java.awt.Window;
+              import java.awt.*;
+              import javax.swing.*;
+              import java.awt.geom.Ellipse2D;
               
-               class Test {
-                   void foo() {
-                          Window win = new Window(new JFrame("test"));
-                          boolean f = AWTUtilitiesTest.isWindowOpaque(win); 
-                          AWTUtilitiesTest.setWindowOpacity(win,1);
-                          float l = AWTUtilitiesTest.getWindowOpacity(win);
-                          Shape sh = AWTUtilitiesTest.getWindowShape(win);
-                          GraphicsConfiguration gc = null;
-                          boolean f = AWTUtilitiesTest.isTranslucencyCapable(gc);           
-                          Component c = null;
-                          Shape sh = new Ellipse2D.Double(0, 0, c.getWidth(), c.getHeight());
-                          AWTUtilitiesTest.setComponentMixingCutoutShape(c, sh);
-                   }
-               }
-               """,
-             """
-               package com.test;
-               import java.awt.Window;
-               import java.awt.*;
-               import javax.swing.*;
-               import java.awt.geom.Ellipse2D;
+              class Test {
+                  void foo() {
+                      Window win = new Window(new JFrame("test"));
+                      boolean f = AWTUtilitiesTest.isWindowOpaque(win);
+                      AWTUtilitiesTest.setWindowOpacity(win,1);
+                      float l = AWTUtilitiesTest.getWindowOpacity(win);
+                      Shape sh = AWTUtilitiesTest.getWindowShape(win);
+                      GraphicsConfiguration gc = null;
+                      boolean f = AWTUtilitiesTest.isTranslucencyCapable(gc);
+                      Component c = null;
+                      Shape sh = new Ellipse2D.Double(0, 0, c.getWidth(), c.getHeight());
+                      AWTUtilitiesTest.setComponentMixingCutoutShape(c, sh);
+                  }
+              }
+              """,
+            """
+              package com.test;
+              import java.awt.Window;
+              import java.awt.*;
+              import javax.swing.*;
+              import java.awt.geom.Ellipse2D;
               
-               class Test {
-                   void foo() {
-                          Window win = new Window(new JFrame("test"));
-                          boolean f = win.isOpaque();  
-                          win.setOpacity(1);
-                          float l = win.getOpacity();
-                          Shape sh = win.getShape();
-                          GraphicsConfiguration gc = null;
-                          boolean f = gc.isTranslucencyCapable();              
-                          Component c = null;
-                          Shape sh = new Ellipse2D.Double(0, 0, c.getWidth(), c.getHeight());
-                          c.setMixingCutoutShape(sh);
-                   }
-               }
-               """
-           )
-         );
-     }
+              class Test {
+                  void foo() {
+                      Window win = new Window(new JFrame("test"));
+                      boolean f = win.isOpaque();
+                      win.setOpacity(1);
+                      float l = win.getOpacity();
+                      Shape sh = win.getShape();
+                      GraphicsConfiguration gc = null;
+                      boolean f = gc.isTranslucencyCapable();
+                      Component c = null;
+                      Shape sh = new Ellipse2D.Double(0, 0, c.getWidth(), c.getHeight());
+                      c.setMixingCutoutShape(sh);
+                  }
+              }
+              """
+          )
+        );
+    }
 }
