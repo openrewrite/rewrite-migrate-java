@@ -73,8 +73,8 @@ recipeList:
       getPeerMethodPattern: java.awt.* getPeer()
       lightweightPeerFQCN: java.awt.peer.LightweightPeer
   - org.openrewrite.scala.migrate.UpgradeScala_2_12
+  - org.openrewrite.java.migrate.ReplaceComSunAWTUtilitiesMethods
   - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
-
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11
@@ -290,3 +290,4 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.nio.file.Path get(..)
       newMethodName: of
+
