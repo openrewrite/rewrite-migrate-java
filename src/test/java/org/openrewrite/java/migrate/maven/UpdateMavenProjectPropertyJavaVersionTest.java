@@ -192,4 +192,28 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void mavenUpgradeShouldUseDeclaredVersionInParent() {
+        rewriteRun(
+          pomXml(
+            //language=xml
+            """
+               <project>
+              <modelVersion>4.0.0</modelVersion>
+              <parent>
+              	<groupId>org.springframework.boot</groupId>
+              	<artifactId>spring-boot-starter-parent</artifactId>
+              	<version>3.3.3</version>
+              	<relativePath/> <!-- lookup parent from repository -->
+              </parent>
+              
+              <groupId>com.mycompany.app</groupId>
+              <artifactId>my-app</artifactId>
+              <version>1</version>
+               </project>
+              """
+          )
+        );
+    }
 }
