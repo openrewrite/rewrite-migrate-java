@@ -69,9 +69,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedPolicy
   - org.openrewrite.java.migrate.ReferenceCloneMethod
   - org.openrewrite.java.migrate.ThreadStopDestroy
-  - org.openrewrite.java.migrate.ReplaceAWTGetPeerMethod:
-      getPeerMethodPattern: java.awt.* getPeer()
-      lightweightPeerFQCN: java.awt.peer.LightweightPeer
+  - org.openrewrite.java.migrate.ReplaceAWTGetPeerMethod
   - org.openrewrite.scala.migrate.UpgradeScala_2_12
   - org.openrewrite.java.migrate.ReplaceComSunAWTUtilitiesMethods
   - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
