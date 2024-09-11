@@ -21,7 +21,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class FindInternalJavaxApisTest implements RewriteTest {
+class FindInternalJavaxApisTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
