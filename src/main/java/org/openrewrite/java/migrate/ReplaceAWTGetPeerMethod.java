@@ -16,6 +16,8 @@
 
 package org.openrewrite.java.migrate;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -30,17 +32,26 @@ import org.openrewrite.java.tree.TypedTree;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-class ReplaceAWTGetPeerMethod extends Recipe {
+@AllArgsConstructor
+public class ReplaceAWTGetPeerMethod extends Recipe {
 
     @Option(displayName = "Method pattern to replace",
             description = "The method pattern to match and replace.",
-            example = "java.awt.* getPeer()")
+            example = "java.awt.* getPeer()",
+            required = false)
     String getPeerMethodPattern;
 
     @Option(displayName = "The LightweightPeer interface FQCN",
             description = "The fully qualified class name of the LightweightPeer interface to replace in `instanceof`.",
-            example = "java.awt.peer.LightweightPeer")
+            example = "java.awt.peer.LightweightPeer",
+            required = false)
     String lightweightPeerFQCN;
+
+    @JsonCreator
+    public ReplaceAWTGetPeerMethod() {
+        getPeerMethodPattern = "java.awt.* getPeer()";
+        lightweightPeerFQCN = "java.awt.peer.LightweightPeer";
+    }
 
     @Override
     public String getDisplayName() {
@@ -50,8 +61,8 @@ class ReplaceAWTGetPeerMethod extends Recipe {
     @Override
     public String getDescription() {
         return "This recipe replaces the use of `getPeer()` method in `java.awt.*` classes. " +
-               "`component.getPeer() != null` is replaced with `component.isDisplayable()` and " +
-               "`component.getPeer() instanceof LightweightPeer` is replaced with `component.isLightweight()`.";
+                "`component.getPeer() != null` is replaced with `component.isDisplayable()` and " +
+                "`component.getPeer() instanceof LightweightPeer` is replaced with `component.isLightweight()`.";
     }
 
     @Override
@@ -81,10 +92,10 @@ class ReplaceAWTGetPeerMethod extends Recipe {
                 J.MethodInvocation mi = null;
                 if (binaryCondition.getOperator() == J.Binary.Type.NotEqual) {
                     if (binaryCondition.getLeft() instanceof J.MethodInvocation &&
-                        binaryCondition.getRight() instanceof J.Literal) {
+                            binaryCondition.getRight() instanceof J.Literal) {
                         mi = (J.MethodInvocation) binaryCondition.getLeft();
                     } else if (binaryCondition.getLeft() instanceof J.Literal &&
-                               binaryCondition.getRight() instanceof J.MethodInvocation) {
+                            binaryCondition.getRight() instanceof J.MethodInvocation) {
                         mi = (J.MethodInvocation) binaryCondition.getRight();
                     }
                 }

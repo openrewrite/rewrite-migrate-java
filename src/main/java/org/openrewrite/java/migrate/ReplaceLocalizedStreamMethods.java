@@ -33,12 +33,14 @@ public class ReplaceLocalizedStreamMethods extends Recipe {
 
     @Option(displayName = "Method pattern to replace",
             description = "The method pattern to match and replace.",
-            example = "java.lang.Runtime getLocalizedInputStream(java.io.InputStream)")
+            example = "java.lang.Runtime getLocalizedInputStream(java.io.InputStream)",
+            required = false)
     String localizedInputStreamMethodMatcher;
 
     @Option(displayName = "Method pattern to replace",
             description = "The method pattern to match and replace.",
-            example = "java.lang.Runtime getLocalizedOutputStream(java.io.OutputStream)")
+            example = "java.lang.Runtime getLocalizedOutputStream(java.io.OutputStream)",
+            required = false)
     String localizedOutputStreamMethodMatcher;
 
     @JsonCreator

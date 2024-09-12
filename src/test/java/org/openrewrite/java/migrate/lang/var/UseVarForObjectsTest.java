@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.java.Assertions.*;
@@ -58,6 +59,7 @@ class UseVarForObjectsTest extends VarBaseTest {
                   """)
             );
         }
+
 
         @Test
         void reassignment() {
@@ -310,6 +312,25 @@ class UseVarForObjectsTest extends VarBaseTest {
 
     @Nested
     class NotApplicable {
+
+        @Test
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/551")
+        void arrayInitializer() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+                  
+                  class A {
+                    void m() {
+                        String[] dictionary = {"aa", "b", "aba", "ba"};
+                    }
+                  }
+                  """)
+            );
+        }
+
         @Test
         void fieldInAnonymousSubclass() {
             //language=java
