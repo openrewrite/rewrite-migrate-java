@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- package org.openrewrite.java.migrate.jakarta;
+package org.openrewrite.java.migrate.jakarta;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
-
 import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.*;
+import static org.openrewrite.java.Assertions.java;
 
-public class JavaxTransactionMigrationToJakartaTransactionTest implements RewriteTest {
+class JavaxTransactionMigrationToJakartaTransactionTest implements RewriteTest {
     @Language("java")
     private static final String javax_transaction =
       """
@@ -67,12 +66,13 @@ public class JavaxTransactionMigrationToJakartaTransactionTest implements Rewrit
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax_transaction_xa)),
           //language=java
           java(
-                """
-            import javax.transaction.xa.*;
-            public class A {
-                XAResource xa;
-            }
-            """)
+            """
+              import javax.transaction.xa.*;
+              public class A {
+                  XAResource xa;
+              }
+              """
+          )
         );
     }
 
@@ -83,7 +83,7 @@ public class JavaxTransactionMigrationToJakartaTransactionTest implements Rewrit
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax_transaction, jakarta_transaction)),
           //language=java
           java(
-              """
+            """
               import javax.transaction.Transactional;
               @Transactional
               public class A {
@@ -96,7 +96,8 @@ public class JavaxTransactionMigrationToJakartaTransactionTest implements Rewrit
               public class A {
                   public void foo() {}
               }
-              """)
+              """
+          )
         );
     }
 }
