@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -28,8 +27,7 @@ import static org.openrewrite.java.Assertions.version;
 class StringFormattedTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new StringFormatted())
-          .typeValidationOptions(new TypeValidation().methodInvocations(false));
+        spec.recipe(new StringFormatted());
     }
 
     @Test

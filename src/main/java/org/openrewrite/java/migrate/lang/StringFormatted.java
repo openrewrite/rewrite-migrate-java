@@ -64,23 +64,20 @@ public class StringFormatted extends Recipe {
             if (!STRING_FORMAT.matches(methodInvocation) || methodInvocation.getMethodType() == null) {
                 return methodInvocation;
             }
-            List<Expression> arguments = methodInvocation.getArguments();
 
             maybeRemoveImport("java.lang.String.format");
             J.MethodInvocation mi = methodInvocation.withName(methodInvocation.getName().withSimpleName("formatted"));
-            JavaType.Method formatted = methodInvocation.getMethodType().getDeclaringType().getMethods().stream()
+            mi = mi.withMethodType(methodInvocation.getMethodType().getDeclaringType().getMethods().stream()
                     .filter(it -> it.getName().equals("formatted"))
                     .findAny()
-                    .orElse(null);
-            mi = mi.withMethodType(formatted);
+                    .orElse(null));
             if (mi.getName().getType() != null) {
                 mi = mi.withName(mi.getName().withType(mi.getMethodType()));
             }
-            boolean wrapperNotNeeded = wrapperNotNeeded(arguments.get(0));
-            Expression select = wrapperNotNeeded ? arguments.get(0).withPrefix(Space.EMPTY) :
+            List<Expression> arguments = methodInvocation.getArguments();
+            mi = mi.withSelect(wrapperNotNeeded(arguments.get(0)) ? arguments.get(0).withPrefix(Space.EMPTY) :
                     new J.Parentheses<>(randomId(), Space.EMPTY, Markers.EMPTY,
-                            JRightPadded.build(arguments.get(0)));
-            mi = mi.withSelect(select);
+                            JRightPadded.build(arguments.get(0))));
             mi = mi.withArguments(arguments.subList(1, arguments.size()));
             if (mi.getArguments().isEmpty()) {
                 // To store spaces between the parenthesis of a method invocation argument list
