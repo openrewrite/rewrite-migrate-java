@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -28,8 +27,7 @@ import static org.openrewrite.java.Assertions.version;
 class StringFormattedTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new StringFormatted())
-          .typeValidationOptions(new TypeValidation().methodInvocations(false));
+        spec.recipe(new StringFormatted());
     }
 
     @Test
@@ -94,10 +92,10 @@ class StringFormattedTest implements RewriteTest {
             java(
               """
                 package com.example.app;
-
+                
                 class A {
                     String str = String.format(getTemplateString(), "a");
-
+                
                     private String getTemplateString() {
                         return "foo %s";
                     }
@@ -105,10 +103,10 @@ class StringFormattedTest implements RewriteTest {
                 """,
               """
                 package com.example.app;
-
+                
                 class A {
                     String str = getTemplateString().formatted("a");
-
+                
                     private String getTemplateString() {
                         return "foo %s";
                     }
@@ -469,6 +467,34 @@ class StringFormattedTest implements RewriteTest {
                     String str = "foo %s %s".formatted(
                             "a",
                             // B
+                            "b");
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/453")
+    void doNotRetainTrailingWhitespaceWhenFirstArgumentOnNewLine() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                class A {
+                    String str = String.format(
+                    "foo %s %s",
+                        "a",
+                        "b");
+                }
+                """,
+              """
+                class A {
+                    String str = "foo %s %s".formatted(
+                            "a",
                             "b");
                 }
                 """

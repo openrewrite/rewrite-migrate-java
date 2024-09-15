@@ -59,41 +59,39 @@ public class StringFormatted extends Recipe {
 
     private static class StringFormattedVisitor extends JavaVisitor<ExecutionContext> {
         @Override
-        public J visitMethodInvocation(J.MethodInvocation m, ExecutionContext ctx) {
-            m = (J.MethodInvocation) super.visitMethodInvocation(m, ctx);
-            if (!STRING_FORMAT.matches(m) || m.getMethodType() == null) {
-                return m;
+        public J visitMethodInvocation(J.MethodInvocation methodInvocation, ExecutionContext ctx) {
+            methodInvocation = (J.MethodInvocation) super.visitMethodInvocation(methodInvocation, ctx);
+            if (!STRING_FORMAT.matches(methodInvocation) || methodInvocation.getMethodType() == null) {
+                return methodInvocation;
             }
 
-            List<Expression> arguments = m.getArguments();
-            boolean wrapperNotNeeded = wrapperNotNeeded(arguments.get(0));
             maybeRemoveImport("java.lang.String.format");
-            J.MethodInvocation mi = m.withName(m.getName().withSimpleName("formatted"));
-            JavaType.Method formatted = m.getMethodType().getDeclaringType().getMethods().stream()
+            J.MethodInvocation mi = methodInvocation.withName(methodInvocation.getName().withSimpleName("formatted"));
+            mi = mi.withMethodType(methodInvocation.getMethodType().getDeclaringType().getMethods().stream()
                     .filter(it -> it.getName().equals("formatted"))
                     .findAny()
-                    .orElse(null);
-            mi = mi.withMethodType(formatted);
+                    .orElse(null));
             if (mi.getName().getType() != null) {
                 mi = mi.withName(mi.getName().withType(mi.getMethodType()));
             }
-            Expression select = wrapperNotNeeded ? arguments.get(0) :
-                new J.Parentheses<>(randomId(), Space.EMPTY, Markers.EMPTY, JRightPadded.build(arguments.get(0)));
-            mi = mi.withSelect(select);
+            List<Expression> arguments = methodInvocation.getArguments();
+            mi = mi.withSelect(wrapperNotNeeded(arguments.get(0)) ? arguments.get(0).withPrefix(Space.EMPTY) :
+                    new J.Parentheses<>(randomId(), Space.EMPTY, Markers.EMPTY,
+                            JRightPadded.build(arguments.get(0))));
             mi = mi.withArguments(arguments.subList(1, arguments.size()));
-            if(mi.getArguments().isEmpty()) {
+            if (mi.getArguments().isEmpty()) {
                 // To store spaces between the parenthesis of a method invocation argument list
                 // Ensures formatting recipes chained together with this one will still work as expected
                 mi = mi.withArguments(singletonList(new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY)));
             }
-            return maybeAutoFormat(m, mi, ctx);
+            return maybeAutoFormat(methodInvocation, mi, ctx);
         }
 
         private static boolean wrapperNotNeeded(Expression expression) {
             return expression instanceof J.Identifier
-                    || expression instanceof J.Literal
-                    || expression instanceof J.MethodInvocation
-                    || expression instanceof J.FieldAccess;
+                   || expression instanceof J.Literal
+                   || expression instanceof J.MethodInvocation
+                   || expression instanceof J.FieldAccess;
         }
     }
 
