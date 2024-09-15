@@ -61,17 +61,17 @@ public class StringFormatted extends Recipe {
 
     private static class StringFormattedVisitor extends JavaVisitor<ExecutionContext> {
         @Override
-        public J visitMethodInvocation(J.MethodInvocation m, ExecutionContext ctx) {
-            m = (J.MethodInvocation) super.visitMethodInvocation(m, ctx);
-            if (!STRING_FORMAT.matches(m) || m.getMethodType() == null) {
-                return m;
+        public J visitMethodInvocation(J.MethodInvocation methodInvocation, ExecutionContext ctx) {
+            methodInvocation = (J.MethodInvocation) super.visitMethodInvocation(methodInvocation, ctx);
+            if (!STRING_FORMAT.matches(methodInvocation) || methodInvocation.getMethodType() == null) {
+                return methodInvocation;
             }
-            m = makeFirstArgumentPrefixAsEmpty(m);
-            List<Expression> arguments = m.getArguments();
+            methodInvocation = makeFirstArgumentPrefixAsEmpty(methodInvocation);
+            List<Expression> arguments = methodInvocation.getArguments();
 
             maybeRemoveImport("java.lang.String.format");
-            J.MethodInvocation mi = m.withName(m.getName().withSimpleName("formatted"));
-            JavaType.Method formatted = m.getMethodType().getDeclaringType().getMethods().stream()
+            J.MethodInvocation mi = methodInvocation.withName(methodInvocation.getName().withSimpleName("formatted"));
+            JavaType.Method formatted = methodInvocation.getMethodType().getDeclaringType().getMethods().stream()
                     .filter(it -> it.getName().equals("formatted"))
                     .findAny()
                     .orElse(null);
@@ -91,7 +91,7 @@ public class StringFormatted extends Recipe {
                 mi = mi.withArguments(singletonList(new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY)));
             }
 
-            return maybeAutoFormat(m, mi, ctx);
+            return maybeAutoFormat(methodInvocation, mi, ctx);
         }
 
         private static J.MethodInvocation makeFirstArgumentPrefixAsEmpty(J.MethodInvocation m) {

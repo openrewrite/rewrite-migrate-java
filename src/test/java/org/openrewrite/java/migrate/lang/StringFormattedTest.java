@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
@@ -95,10 +94,10 @@ class StringFormattedTest implements RewriteTest {
             java(
               """
                 package com.example.app;
-
+                
                 class A {
                     String str = String.format(getTemplateString(), "a");
-
+                
                     private String getTemplateString() {
                         return "foo %s";
                     }
@@ -106,10 +105,10 @@ class StringFormattedTest implements RewriteTest {
                 """,
               """
                 package com.example.app;
-
+                
                 class A {
                     String str = getTemplateString().formatted("a");
-
+                
                     private String getTemplateString() {
                         return "foo %s";
                     }
@@ -485,7 +484,8 @@ class StringFormattedTest implements RewriteTest {
         //language=java
         rewriteRun(
           version(
-            java("""
+            java(
+              """
                 class A {
                     String str = String.format(
                     "foo %s %s",
