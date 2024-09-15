@@ -477,4 +477,31 @@ class StringFormattedTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/453")
+    void shouldNotReturnNewLineWhenWeHasNewLineAfterTheOpenParenparenthesis() {
+        //language=java
+        rewriteRun(
+          version(
+            java("""
+                class A {
+                    String str = String.format(
+                    "foo %s %s",
+                        "a",
+                        "b");
+                }
+                """,
+              """
+                class A {
+                    String str = "foo %s %s".formatted(
+                            "a",
+                            "b");
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
 }

@@ -53,8 +53,8 @@ public class StringFormatted extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                Preconditions.and(new UsesJavaVersion<>(17), new UsesMethod<>(STRING_FORMAT)),
-                new StringFormattedVisitor());
+            Preconditions.and(new UsesJavaVersion<>(17), new UsesMethod<>(STRING_FORMAT)),
+            new StringFormattedVisitor());
     }
 
     private static class StringFormattedVisitor extends JavaVisitor<ExecutionContext> {
@@ -64,19 +64,20 @@ public class StringFormatted extends Recipe {
             if (!STRING_FORMAT.matches(m) || m.getMethodType() == null) {
                 return m;
             }
-
+            m = makeFirstArgumentPrefixAsEmpty(m);
             List<Expression> arguments = m.getArguments();
-            boolean wrapperNotNeeded = wrapperNotNeeded(arguments.get(0));
+
             maybeRemoveImport("java.lang.String.format");
             J.MethodInvocation mi = m.withName(m.getName().withSimpleName("formatted"));
             JavaType.Method formatted = m.getMethodType().getDeclaringType().getMethods().stream()
-                    .filter(it -> it.getName().equals("formatted"))
-                    .findAny()
-                    .orElse(null);
+                .filter(it -> it.getName().equals("formatted"))
+                .findAny()
+                .orElse(null);
             mi = mi.withMethodType(formatted);
             if (mi.getName().getType() != null) {
                 mi = mi.withName(mi.getName().withType(mi.getMethodType()));
             }
+            boolean wrapperNotNeeded = wrapperNotNeeded(arguments.get(0));
             Expression select = wrapperNotNeeded ? arguments.get(0) :
                 new J.Parentheses<>(randomId(), Space.EMPTY, Markers.EMPTY, JRightPadded.build(arguments.get(0)));
             mi = mi.withSelect(select);
@@ -86,14 +87,20 @@ public class StringFormatted extends Recipe {
                 // Ensures formatting recipes chained together with this one will still work as expected
                 mi = mi.withArguments(singletonList(new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY)));
             }
+
             return maybeAutoFormat(m, mi, ctx);
         }
 
+        private static J.MethodInvocation makeFirstArgumentPrefixAsEmpty(J.MethodInvocation m) {
+            List<Expression> newArgs = m.getArguments();
+            newArgs.set(0, m.getArguments().get(0).withPrefix(Space.EMPTY));
+            return m.withArguments(newArgs);
+        }
         private static boolean wrapperNotNeeded(Expression expression) {
             return expression instanceof J.Identifier
-                    || expression instanceof J.Literal
-                    || expression instanceof J.MethodInvocation
-                    || expression instanceof J.FieldAccess;
+                || expression instanceof J.Literal
+                || expression instanceof J.MethodInvocation
+                || expression instanceof J.FieldAccess;
         }
     }
 
