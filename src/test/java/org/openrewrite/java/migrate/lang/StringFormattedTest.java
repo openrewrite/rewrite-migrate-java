@@ -480,7 +480,7 @@ class StringFormattedTest implements RewriteTest {
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/453")
-    void shouldNotReturnNewLineWhenWeHasNewLineAfterTheOpenParenparenthesis() {
+    void doNotRetainTrailingWhitespaceWhenFirstArgumentOnNewLine() {
         //language=java
         rewriteRun(
           version(

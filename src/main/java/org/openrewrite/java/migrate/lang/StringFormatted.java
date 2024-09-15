@@ -66,7 +66,6 @@ public class StringFormatted extends Recipe {
             if (!STRING_FORMAT.matches(methodInvocation) || methodInvocation.getMethodType() == null) {
                 return methodInvocation;
             }
-            methodInvocation = makeFirstArgumentPrefixAsEmpty(methodInvocation);
             List<Expression> arguments = methodInvocation.getArguments();
 
             maybeRemoveImport("java.lang.String.format");
@@ -80,7 +79,7 @@ public class StringFormatted extends Recipe {
                 mi = mi.withName(mi.getName().withType(mi.getMethodType()));
             }
             boolean wrapperNotNeeded = wrapperNotNeeded(arguments.get(0));
-            Expression select = wrapperNotNeeded ? arguments.get(0) :
+            Expression select = wrapperNotNeeded ? arguments.get(0).withPrefix(Space.EMPTY) :
                     new J.Parentheses<>(randomId(), Space.EMPTY, Markers.EMPTY,
                             JRightPadded.build(arguments.get(0)));
             mi = mi.withSelect(select);
@@ -92,12 +91,6 @@ public class StringFormatted extends Recipe {
             }
 
             return maybeAutoFormat(methodInvocation, mi, ctx);
-        }
-
-        private static J.MethodInvocation makeFirstArgumentPrefixAsEmpty(J.MethodInvocation m) {
-            List<Expression> newArgs = m.getArguments();
-            newArgs.set(0, m.getArguments().get(0).withPrefix(Space.EMPTY));
-            return m.withArguments(newArgs);
         }
 
         private static boolean wrapperNotNeeded(Expression expression) {
