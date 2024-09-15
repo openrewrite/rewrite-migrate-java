@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.openrewrite.java.migrate.lang;
 
 import lombok.EqualsAndHashCode;
@@ -39,8 +38,7 @@ import static org.openrewrite.Tree.randomId;
 @EqualsAndHashCode(callSuper = false)
 public class StringFormatted extends Recipe {
 
-    private static final MethodMatcher STRING_FORMAT =
-            new MethodMatcher("java.lang.String format(String, ..)");
+    private static final MethodMatcher STRING_FORMAT = new MethodMatcher("java.lang.String format(String, ..)");
 
     @Override
     public String getDisplayName() {
@@ -89,7 +87,6 @@ public class StringFormatted extends Recipe {
                 // Ensures formatting recipes chained together with this one will still work as expected
                 mi = mi.withArguments(singletonList(new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY)));
             }
-
             return maybeAutoFormat(methodInvocation, mi, ctx);
         }
 
