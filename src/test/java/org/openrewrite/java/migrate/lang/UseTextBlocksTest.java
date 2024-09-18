@@ -860,6 +860,7 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/555")
     void textBlockTrailingEscape() {
         rewriteRun(
           spec -> spec.recipe(new UseTextBlocks()),
