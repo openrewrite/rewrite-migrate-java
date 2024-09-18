@@ -125,9 +125,9 @@ public class UseTextBlocks extends Recipe {
 
                 StringBuilder sb = new StringBuilder();
                 StringBuilder originalContent = new StringBuilder();
-                stringLiterals = stringLiterals.stream().filter(s -> s.getValue() != null
-                    && !s.getValue().toString().isEmpty()).collect(Collectors.toList());
-
+                stringLiterals = stringLiterals.stream()
+                        .filter(s -> s.getValue() != null && !s.getValue().toString().isEmpty())
+                        .collect(Collectors.toList());
                 for (int i = 0; i < stringLiterals.size(); i++) {
                     String s = requireNonNull(stringLiterals.get(i).getValue()).toString();
                     sb.append(s);
@@ -178,14 +178,10 @@ public class UseTextBlocks extends Recipe {
             }
 
             private boolean isEndsWithSpecialCharacters(String content) {
-                boolean isEndsWithQuotationMark = content.endsWith("\"");
-                boolean isEndsWithEqual = content.endsWith("=");
-                boolean isEndsWithCurlyBrackets = content.endsWith("}");
-                boolean isEndsWithSemicolon = content.endsWith(";");
-                return isEndsWithQuotationMark
-                    || isEndsWithEqual
-                    || isEndsWithCurlyBrackets
-                    || isEndsWithSemicolon;
+                return content.endsWith("\"") ||
+                       content.endsWith("=") ||
+                       content.endsWith("}") ||
+                       content.endsWith(";");
             }
         });
     }
