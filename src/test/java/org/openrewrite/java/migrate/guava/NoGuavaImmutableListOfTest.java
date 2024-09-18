@@ -313,6 +313,41 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
     }
 
     @Test
+    void doNotChangeMethodInvocationWithSelect() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.List;
+
+              public class A {
+                  Object[] list;
+                  public void method(Object[] list ) {
+                      this.list = list;
+                  }
+              }
+              """
+          ),
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class Test {
+                    void method() {
+                        A a = new A();
+                        a.method(ImmutableList.of().toArray());
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
     void methodInvocationWithListArgument() {
         //language=java
         rewriteRun(

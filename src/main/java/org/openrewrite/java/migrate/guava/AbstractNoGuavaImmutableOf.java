@@ -68,7 +68,7 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                if (IMMUTABLE_MATCHER.matches(method) && isParentTypeDownCast()) {
+                if (IMMUTABLE_MATCHER.matches(method) && isParentTypeDownCast(method)) {
                     maybeRemoveImport(guavaType);
                     maybeAddImport(javaType);
 
@@ -115,7 +115,7 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 return super.visitMethodInvocation(method, ctx);
             }
 
-            private boolean isParentTypeDownCast() {
+            private boolean isParentTypeDownCast(MethodCall immutableMethod) {
                 J parent = getCursor().dropParentUntil(J.class::isInstance).getValue();
                 boolean isParentTypeDownCast = false;
                 if (parent instanceof J.VariableDeclarations.NamedVariable) {
@@ -138,14 +138,8 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                     }
                 } else if (parent instanceof J.MethodInvocation) {
                     J.MethodInvocation m = (J.MethodInvocation) parent;
-                    if (m.getMethodType() != null) {
-                        int index = 0;
-                        for (Expression argument : m.getArguments()) {
-                            if (IMMUTABLE_MATCHER.matches(argument)) {
-                                break;
-                            }
-                            index++;
-                        }
+                    int index = m.getArguments().indexOf(immutableMethod);
+                    if (m.getMethodType() != null && index != -1) {
                         isParentTypeDownCast = isParentTypeMatched(m.getMethodType().getParameterTypes().get(index));
                     }
                 } else if (parent instanceof J.NewClass) {
