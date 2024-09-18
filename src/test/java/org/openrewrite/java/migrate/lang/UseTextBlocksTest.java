@@ -88,8 +88,7 @@ class UseTextBlocksTest implements RewriteTest {
                       String query = \"""
                           SELECT * FROM   \\s
                           my_table   \\s
-                          WHERE something = 1; \\
-                          \""";
+                          WHERE something = 1; \""";
               }
               """
           )
@@ -738,8 +737,7 @@ class UseTextBlocksTest implements RewriteTest {
               class Test {
                   String eightQuotes = ""\"
                                  ""\\""\"\\""\"\\
-                                 after 8 quotes\\
-                                 ""\";
+                                 after 8 quotes""\";
               }
               """
           )
@@ -859,5 +857,30 @@ class UseTextBlocksTest implements RewriteTest {
               """
           )
         );
+    }
+
+    @Test
+    void textBlockTrailingEscape() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks()),
+          java(
+            """
+             package com.helloworld;
+
+             public class Main {
+                 String foo =
+                     "hello\\n"
+                         + "world";
+            }""",
+            """
+             package com.helloworld;
+
+             public class Main {
+                 String foo =
+                     \"""
+                     hello
+                     world\""";
+            }""",
+            src -> src.markers(javaVersion(17))));
     }
 }
