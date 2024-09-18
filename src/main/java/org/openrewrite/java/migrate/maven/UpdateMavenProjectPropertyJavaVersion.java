@@ -79,7 +79,6 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MavenIsoVisitor<ExecutionContext>() {
-            final Set<String> propertiesExplicitlyReferenced = new HashSet<>();
             boolean compilerPluginConfiguredExplicitly;
 
             @Override
@@ -99,7 +98,7 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                 MavenResolutionResult mrr = getResolutionResult();
                 Map<String, String> currentProperties = mrr.getPom().getRequested().getProperties();
                 for (String property : JAVA_VERSION_PROPERTIES) {
-                    if (currentProperties.containsKey(property) || !propertiesExplicitlyReferenced.contains(property)) {
+                    if (currentProperties.containsKey(property)) {
                         continue;
                     }
                     d = (Xml.Document) new AddProperty(property, String.valueOf(version), null, false)
@@ -130,12 +129,8 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = super.visitTag(tag, ctx);
-                Optional<String> s = t.getValue()
-                        .map(it -> it.replace("${", "").replace("}", "").trim())
-                        .filter(JAVA_VERSION_PROPERTIES::contains);
-                if (s.isPresent()) {
-                    propertiesExplicitlyReferenced.add(s.get());
-                } else if (JAVA_VERSION_XPATH_MATCHERS.stream().anyMatch(matcher -> matcher.matches(getCursor()))) {
+
+                if (JAVA_VERSION_XPATH_MATCHERS.stream().anyMatch(matcher -> matcher.matches(getCursor()))) {
                     Optional<Float> maybeVersion = t.getValue().flatMap(
                             value -> {
                                 try {
