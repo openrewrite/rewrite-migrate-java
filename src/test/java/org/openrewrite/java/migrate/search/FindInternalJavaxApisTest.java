@@ -25,7 +25,7 @@ class FindInternalJavaxApisTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new FindInternalJavaxApis("org.openrewrite..* *(..)"));
+        spec.recipe(new FindInternalJavaxApis(null));
     }
 
     @Test
@@ -35,7 +35,7 @@ class FindInternalJavaxApisTest implements RewriteTest {
           java(
             """
               package org.openrewrite;
-
+              
               interface Api {
                   javax.xml.stream.StreamFilter test();
               }
@@ -44,9 +44,9 @@ class FindInternalJavaxApisTest implements RewriteTest {
           java(
             """
               package org.openrewrite;
-
+              
               import javax.xml.stream.StreamFilter;
-
+              
               class Consumer {
                   void test(Api api) {
                       StreamFilter sf = api.test();
@@ -55,9 +55,9 @@ class FindInternalJavaxApisTest implements RewriteTest {
               """,
             """
               package org.openrewrite;
-
+              
               import javax.xml.stream.StreamFilter;
-
+              
               class Consumer {
                   void test(Api api) {
                       StreamFilter sf = /*~~>*/api.test();
@@ -75,7 +75,7 @@ class FindInternalJavaxApisTest implements RewriteTest {
           java(
             """
               package org.openrewrite;
-
+              
               interface Api {
                   void test(javax.xml.stream.StreamFilter sf);
               }
@@ -84,9 +84,9 @@ class FindInternalJavaxApisTest implements RewriteTest {
           java(
             """
               package org.openrewrite;
-
+              
               import javax.xml.stream.StreamFilter;
-
+              
               class Consumer {
                   void test(Api api, StreamFilter sf) {
                       api.test(sf);
@@ -95,9 +95,9 @@ class FindInternalJavaxApisTest implements RewriteTest {
               """,
             """
               package org.openrewrite;
-
+              
               import javax.xml.stream.StreamFilter;
-
+              
               class Consumer {
                   void test(Api api, StreamFilter sf) {
                       /*~~>*/api.test(sf);

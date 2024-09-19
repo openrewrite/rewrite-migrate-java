@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.search;
 
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.search.UsesType;
@@ -37,9 +38,11 @@ public class FindInternalJavaxApis extends Recipe {
 
     @Option(
             displayName = "Method pattern",
-            description = "A method pattern that is used to find matching method invocations.",
-            example = "java.util.List add(..)"
+            description = "Optionally limit the search to declarations that match the provided method pattern.",
+            example = "java.util.List add(..)",
+            required = false
     )
+    @Nullable
     private final String methodPattern;
 
     @Override
@@ -55,25 +58,27 @@ public class FindInternalJavaxApis extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         Pattern javaxType = Pattern.compile(StringUtils.aspectjNameToPattern("javax..*"));
-        return Preconditions.check(new UsesType<>("javax..*", null), new MethodAccess.Matcher(methodPattern)
-                .asVisitor((ma, ctx) -> {
-                    MethodCall call = ma.getTree();
-                    JavaType.Method methodType = call.getMethodType();
-                    if (methodType == null) {
-                        return call;
-                    }
-                    if (methodType.getReturnType() != null && methodType.getReturnType().isAssignableFrom(javaxType)) {
-                        insertRow(ma, ctx, methodType);
-                        return SearchResult.found(call);
-                    }
-                    for (JavaType parameterType : methodType.getParameterTypes()) {
-                        if (parameterType.isAssignableFrom(javaxType)) {
-                            insertRow(ma, ctx, methodType);
-                            return SearchResult.found(call);
-                        }
-                    }
-                    return call;
-                })
+        return Preconditions.check(new UsesType<>("javax..*", null),
+                (methodPattern == null ? new MethodAccess.Matcher() : new MethodAccess.Matcher(methodPattern))
+                        .asVisitor((ma, ctx) -> {
+                            MethodCall call = ma.getTree();
+                            JavaType.Method methodType = call.getMethodType();
+                            //noinspection ConstantValue
+                            if (methodType == null || methodType.getReturnType() == null || methodType.getReturnType() instanceof JavaType.Unknown) {
+                                return call;
+                            }
+                            if (methodType.getReturnType().isAssignableFrom(javaxType)) {
+                                insertRow(ma, ctx, methodType);
+                                return SearchResult.found(call);
+                            }
+                            for (JavaType parameterType : methodType.getParameterTypes()) {
+                                if (parameterType.isAssignableFrom(javaxType)) {
+                                    insertRow(ma, ctx, methodType);
+                                    return SearchResult.found(call);
+                                }
+                            }
+                            return call;
+                        })
         );
     }
 
