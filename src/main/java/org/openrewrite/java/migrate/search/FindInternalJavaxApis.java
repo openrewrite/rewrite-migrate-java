@@ -59,7 +59,7 @@ public class FindInternalJavaxApis extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         Pattern javaxType = Pattern.compile(StringUtils.aspectjNameToPattern("javax..*"));
         return Preconditions.check(new UsesType<>("javax..*", null),
-                (methodPattern == null ? new MethodAccess.Matcher() : new MethodAccess.Matcher(methodPattern))
+                (StringUtils.isBlank(methodPattern) ? new MethodAccess.Matcher() : new MethodAccess.Matcher(methodPattern))
                         .asVisitor((ma, ctx) -> {
                             MethodCall call = ma.getTree();
                             JavaType.Method methodType = call.getMethodType();
