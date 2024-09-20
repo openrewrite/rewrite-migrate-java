@@ -106,6 +106,7 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                                 d = (Xml.Document) new AddProperty(property, String.valueOf(version), null, false)
                                         .getVisitor()
                                         .visitNonNull(d, ctx);
+                                maybeUpdateModel();
                             }
                         } catch (NumberFormatException ex) {
                             // either an expression or something else, don't touch
@@ -120,11 +121,7 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                     d = (Xml.Document) new AddProperty("maven.compiler.release", String.valueOf(version), null, false)
                             .getVisitor()
                             .visitNonNull(d, ctx);
-                    HashMap<String, String> updatedProps = new HashMap<>(mrr.getPom().getRequested().getProperties());
-                    updatedProps.put("maven.compiler.release", version.toString());
-                    mrr = mrr.withPom(mrr.getPom().withRequested(mrr.getPom().getRequested().withProperties(updatedProps)));
-
-                    d = d.withMarkers(d.getMarkers().setByType(mrr));
+                    maybeUpdateModel();
                 }
                 return d;
             }
