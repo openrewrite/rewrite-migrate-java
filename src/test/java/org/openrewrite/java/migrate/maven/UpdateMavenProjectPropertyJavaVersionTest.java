@@ -196,7 +196,8 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
         // Use UseMavenCompilerPluginReleaseConfiguration for this case
         rewriteRun(
           //language=xml
-          pomXml("""
+          pomXml(
+                """
             <project>
               <groupId>com.example</groupId>
               <artifactId>example-child</artifactId>
