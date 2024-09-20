@@ -73,7 +73,8 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                       <release.version>17</release.version>
                   </properties>
               </project>
-              """)
+              """
+          )
         );
     }
 
@@ -147,7 +148,8 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
             SourceSpec::skip),
           mavenProject("example-child",
             //language=xml
-            pomXml("""
+            pomXml(
+              """
                 <project>
                     <parent>
                         <groupId>com.example</groupId>
@@ -186,7 +188,8 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                         <release.version>17</release.version>
                     </properties>
                 </project>
-                """)
+                """
+            )
           )
         );
     }
@@ -197,28 +200,29 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
         rewriteRun(
           //language=xml
           pomXml(
-                """
-            <project>
-              <groupId>com.example</groupId>
-              <artifactId>example-child</artifactId>
-              <version>1.0.0</version>
-              <modelVersion>4.0</modelVersion>
-              <build>
-                <plugins>
-                  <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.0</version>
-                    <configuration>
-                      <release>11</release>
-                      <source>11</source>
-                      <target>11</target>
-                    </configuration>
-                  </plugin>
-                </plugins>
-              </build>
-            </project>
-            """)
+            """
+              <project>
+                <groupId>com.example</groupId>
+                <artifactId>example-child</artifactId>
+                <version>1.0.0</version>
+                <modelVersion>4.0</modelVersion>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <version>3.8.0</version>
+                      <configuration>
+                        <release>11</release>
+                        <source>11</source>
+                        <target>11</target>
+                      </configuration>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """
+          )
         );
     }
 

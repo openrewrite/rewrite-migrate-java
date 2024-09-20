@@ -65,15 +65,15 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
     public String getDescription() {
         //language=markdown
         return "The Java version is determined by several project properties, including:\n\n" +
-                " * `java.version`\n" +
-                " * `jdk.version`\n" +
-                " * `javaVersion`\n" +
-                " * `jdkVersion`\n" +
-                " * `maven.compiler.source`\n" +
-                " * `maven.compiler.target`\n" +
-                " * `maven.compiler.release`\n" +
-                " * `release.version`\n\n" +
-                "If none of these properties are in use and the maven compiler plugin is not otherwise configured, adds the `maven.compiler.release` property.";
+               " * `java.version`\n" +
+               " * `jdk.version`\n" +
+               " * `javaVersion`\n" +
+               " * `jdkVersion`\n" +
+               " * `maven.compiler.source`\n" +
+               " * `maven.compiler.target`\n" +
+               " * `maven.compiler.release`\n" +
+               " * `release.version`\n\n" +
+               "If none of these properties are in use and the maven compiler plugin is not otherwise configured, adds the `maven.compiler.release` property.";
     }
 
     @Override
@@ -137,8 +137,8 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                     Optional<Xml.Tag> maybeCompilerPlugin = t.getChildren().stream()
                             .filter(plugin ->
                                     "plugin".equals(plugin.getName()) &&
-                                            "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse("org.apache.maven.plugins")) &&
-                                            "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
+                                    "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse("org.apache.maven.plugins")) &&
+                                    "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
                             .findAny();
                     Optional<Xml.Tag> maybeCompilerPluginConfig = maybeCompilerPlugin
                             .flatMap(it -> it.getChild("configuration"));
@@ -149,9 +149,9 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                     Optional<String> source = compilerPluginConfig.getChildValue("source");
                     Optional<String> target = compilerPluginConfig.getChildValue("target");
                     Optional<String> release = compilerPluginConfig.getChildValue("release");
-                    if (source.isPresent()
-                            || target.isPresent()
-                            || release.isPresent()) {
+                    if (source.isPresent() ||
+                        target.isPresent() ||
+                        release.isPresent()) {
                         compilerPluginConfiguredExplicitly = true;
                     }
                 }
