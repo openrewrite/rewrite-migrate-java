@@ -113,8 +113,8 @@ final class DeclarationCheck {
         }
         initializer = initializer.unwrap();
 
-        return initializer instanceof J.NewClass
-               && ((J.NewClass) initializer).getClazz() instanceof J.ParameterizedType;
+        return initializer instanceof J.NewClass &&
+               ((J.NewClass) initializer).getClazz() instanceof J.ParameterizedType;
     }
 
     /**

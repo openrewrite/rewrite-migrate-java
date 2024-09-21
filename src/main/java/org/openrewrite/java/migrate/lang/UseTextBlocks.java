@@ -187,9 +187,9 @@ public class UseTextBlocks extends Recipe {
     }
 
     private static boolean allLiterals(Expression exp) {
-        return isRegularStringLiteral(exp) || exp instanceof J.Binary
-                                              && ((J.Binary) exp).getOperator() == J.Binary.Type.Addition
-                                              && allLiterals(((J.Binary) exp).getLeft()) && allLiterals(((J.Binary) exp).getRight());
+        return isRegularStringLiteral(exp) || exp instanceof J.Binary &&
+                                              ((J.Binary) exp).getOperator() == J.Binary.Type.Addition &&
+                                              allLiterals(((J.Binary) exp).getLeft()) && allLiterals(((J.Binary) exp).getRight());
     }
 
     private static boolean flatAdditiveStringLiterals(Expression expression,
@@ -203,8 +203,8 @@ public class UseTextBlocks extends Recipe {
             }
             concatenationSb.append(b.getPrefix().getWhitespace()).append("-");
             concatenationSb.append(b.getPadding().getOperator().getBefore().getWhitespace()).append("-");
-            return flatAdditiveStringLiterals(b.getLeft(), stringLiterals, contentSb, concatenationSb)
-                   && flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
+            return flatAdditiveStringLiterals(b.getLeft(), stringLiterals, contentSb, concatenationSb) &&
+                   flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
         } else if (isRegularStringLiteral(expression)) {
             J.Literal l = (J.Literal) expression;
             stringLiterals.add(l);

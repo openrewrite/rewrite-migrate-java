@@ -57,8 +57,8 @@ public class UseEnumSetOf extends Recipe {
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
-                if (SET_OF.matches(method) && method.getType() instanceof JavaType.Parameterized
-                    && !TypeUtils.isOfClassType(method.getType(), "java.util.EnumSet")) {
+                if (SET_OF.matches(method) && method.getType() instanceof JavaType.Parameterized &&
+                    !TypeUtils.isOfClassType(method.getType(), "java.util.EnumSet")) {
                     Cursor parent = getCursor().dropParentUntil(is -> is instanceof J.Assignment || is instanceof J.VariableDeclarations || is instanceof J.Block);
                     if (!(parent.getValue() instanceof J.Block)) {
                         JavaType type = parent.getValue() instanceof J.Assignment ?

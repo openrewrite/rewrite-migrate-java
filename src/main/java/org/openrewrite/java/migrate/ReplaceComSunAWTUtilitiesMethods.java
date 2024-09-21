@@ -119,8 +119,8 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
                     maybeAddImport("java.awt.GraphicsEnvironment", false);
                     maybeAddImport("java.awt.Window", false);
                     maybeAddImport("java.awt.GraphicsDevice.WindowTranslucency", false);
-                    String templateString = "GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency."
-                                            + ((J.FieldAccess) mi.getArguments().get(0)).getSimpleName();
+                    String templateString = "GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency." +
+                                            ((J.FieldAccess) mi.getArguments().get(0)).getSimpleName();
                     return JavaTemplate.builder(templateString).
                             imports("java.awt.GraphicsDevice",
                                     "java.awt.GraphicsEnvironment",

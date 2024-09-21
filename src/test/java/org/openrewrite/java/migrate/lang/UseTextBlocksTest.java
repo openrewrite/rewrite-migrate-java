@@ -494,14 +494,14 @@ class UseTextBlocksTest implements RewriteTest {
       """)
     @Test
     void textBlockDemo() {
-        String s1 = "\n========================================================="
-                    + "\n                                                         "
-                    + "\n          Welcome to Spring Integration!                 "
-                    + "\n                                                         "
-                    + "\n    For more information please visit:                   "
-                    + "\n    https://www.springsource.org/spring-integration      "
-                    + "\n                                                         "
-                    + "\n=========================================================";
+        String s1 = "\n=========================================================" +
+                    "\n                                                         " +
+                    "\n          Welcome to Spring Integration!                 " +
+                    "\n                                                         " +
+                    "\n    For more information please visit:                   " +
+                    "\n    https://www.springsource.org/spring-integration      " +
+                    "\n                                                         " +
+                    "\n=========================================================";
         String s2 = """
 
           =========================================================

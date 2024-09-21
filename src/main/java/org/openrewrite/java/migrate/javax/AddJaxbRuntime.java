@@ -147,8 +147,8 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
 
                     GradleProject gp = maybeGp.get();
                     GradleDependencyConfiguration rc = gp.getConfiguration("runtimeClasspath");
-                    if (rc == null || rc.findResolvedDependency(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT) == null
-                        || rc.findResolvedDependency(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT) != null) {
+                    if (rc == null || rc.findResolvedDependency(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT) == null ||
+                        rc.findResolvedDependency(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT) != null) {
                         return g;
                     }
 
@@ -189,8 +189,8 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                         return d;
                     }
                     MavenResolutionResult mavenModel = getResolutionResult();
-                    if (!mavenModel.findDependencies(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT, Scope.Runtime).isEmpty()
-                        || mavenModel.findDependencies(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT, Scope.Runtime).isEmpty()) {
+                    if (!mavenModel.findDependencies(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT, Scope.Runtime).isEmpty() ||
+                        mavenModel.findDependencies(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT, Scope.Runtime).isEmpty()) {
                         return d;
                     }
 

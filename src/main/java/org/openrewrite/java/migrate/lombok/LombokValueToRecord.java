@@ -116,12 +116,12 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
         private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
             List<J.Annotation> allAnnotations = classDeclaration.getAllAnnotations();
-            return classDeclaration.getType() != null
-                   && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
-                   && hasMatchingAnnotations(classDeclaration)
-                   && !hasGenericTypeParameter(classDeclaration)
-                   && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField)
-                   && !hasIncompatibleModifier(classDeclaration);
+            return classDeclaration.getType() != null &&
+                   !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind()) &&
+                   hasMatchingAnnotations(classDeclaration) &&
+                   !hasGenericTypeParameter(classDeclaration) &&
+                   classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField) &&
+                   !hasIncompatibleModifier(classDeclaration);
         }
 
         private static Predicate<J.Annotation> matchAnnotationWithNoArguments(AnnotationMatcher matcher) {
@@ -268,9 +268,9 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             String methodName = methodInvocation.getName().getSimpleName();
             String classFqn = classType.getFullyQualifiedName();
 
-            return recordTypeToMembers.containsKey(classFqn)
-                   && methodName.startsWith(STANDARD_GETTER_PREFIX)
-                   && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
+            return recordTypeToMembers.containsKey(classFqn) &&
+                   methodName.startsWith(STANDARD_GETTER_PREFIX) &&
+                   recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
         }
 
         private static boolean isClassExpression(@Nullable Expression expression) {
