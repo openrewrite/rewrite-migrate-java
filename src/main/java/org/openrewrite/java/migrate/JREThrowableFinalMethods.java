@@ -56,9 +56,9 @@ class JREThrowableFinalMethods extends Recipe {
 
     @Override
     public String getDescription() {
-        return "The recipe renames  `getSuppressed()` and `addSuppressed(Throwable exception)` methods  in classes "
-               + "that extend `java.lang.Throwable` to `myGetSuppressed` and `myAddSuppressed(Throwable)`."
-               + "These methods were added to Throwable in Java 7 and are marked final which cannot be overridden.";
+        return "The recipe renames  `getSuppressed()` and `addSuppressed(Throwable exception)` methods  in classes " +
+               "that extend `java.lang.Throwable` to `myGetSuppressed` and `myAddSuppressed(Throwable)`." +
+               "These methods were added to Throwable in Java 7 and are marked final which cannot be overridden.";
     }
 
     @Override

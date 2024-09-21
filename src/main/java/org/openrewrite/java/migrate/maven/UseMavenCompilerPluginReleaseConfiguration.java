@@ -78,16 +78,16 @@ public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
                 Optional<String> source = compilerPluginConfig.getChildValue("source");
                 Optional<String> target = compilerPluginConfig.getChildValue("target");
                 Optional<String> release = compilerPluginConfig.getChildValue("release");
-                if (!source.isPresent()
-                        && !target.isPresent()
-                        && !release.isPresent()
-                        || currentNewerThanProposed(release)) {
+                if (!source.isPresent() &&
+                        !target.isPresent() &&
+                        !release.isPresent() ||
+                        currentNewerThanProposed(release)) {
                     return t;
                 }
                 Xml.Tag updated = filterTagChildren(t, compilerPluginConfig,
                         child -> !("source".equals(child.getName()) || "target".equals(child.getName())));
-                String releaseVersionValue = hasJavaVersionProperty(getCursor().firstEnclosingOrThrow(Xml.Document.class))
-                        ? "${java.version}" : releaseVersion.toString();
+                String releaseVersionValue = hasJavaVersionProperty(getCursor().firstEnclosingOrThrow(Xml.Document.class)) ?
+                        "${java.version}" : releaseVersion.toString();
                 updated = addOrUpdateChild(updated, compilerPluginConfig,
                         Xml.Tag.build("<release>" + releaseVersionValue + "</release>"), getCursor().getParentOrThrow());
                 return updated;

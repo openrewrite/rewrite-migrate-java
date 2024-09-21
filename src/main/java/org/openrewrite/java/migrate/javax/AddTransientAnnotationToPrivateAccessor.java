@@ -87,11 +87,11 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                     }
 
                     private boolean isPrivateAccessorMethodWithoutTransientAnnotation(J.MethodDeclaration method) {
-                        return method.hasModifier(J.Modifier.Type.Private)
-                               && method.getParameters().get(0) instanceof J.Empty
-                               && method.getReturnTypeExpression().getType() != JavaType.Primitive.Void
-                               && FindAnnotations.find(method, "javax.persistence.Transient").isEmpty()
-                               && methodReturnsFieldFromClass(method);
+                        return method.hasModifier(J.Modifier.Type.Private) &&
+                               method.getParameters().get(0) instanceof J.Empty &&
+                               method.getReturnTypeExpression().getType() != JavaType.Primitive.Void &&
+                               FindAnnotations.find(method, "javax.persistence.Transient").isEmpty() &&
+                               methodReturnsFieldFromClass(method);
                     }
 
                     /**
