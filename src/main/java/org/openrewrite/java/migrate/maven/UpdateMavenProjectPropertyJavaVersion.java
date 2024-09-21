@@ -143,12 +143,9 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                         return t;
                     }
                     Xml.Tag compilerPluginConfig = maybeCompilerPluginConfig.get();
-                    Optional<String> source = compilerPluginConfig.getChildValue("source");
-                    Optional<String> target = compilerPluginConfig.getChildValue("target");
-                    Optional<String> release = compilerPluginConfig.getChildValue("release");
-                    if (source.isPresent() ||
-                        target.isPresent() ||
-                        release.isPresent()) {
+                    if (compilerPluginConfig.getChildValue("source").isPresent() ||
+                        compilerPluginConfig.getChildValue("target").isPresent() ||
+                        compilerPluginConfig.getChildValue("release").isPresent()) {
                         compilerPluginConfiguredExplicitly = true;
                     }
                 }
