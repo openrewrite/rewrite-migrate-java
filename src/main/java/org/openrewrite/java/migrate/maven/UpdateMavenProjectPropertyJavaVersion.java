@@ -90,22 +90,22 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                 Xml.Document d = super.visitDocument(document, ctx);
 
                 // Return early if the parent appears to be within the current repository, as properties defined there will be updated
-                Optional<String> pathToLocalParent = d.getRoot().getChild("parent")
+                if (d.getRoot().getChild("parent")
                         .flatMap(parent -> parent.getChild("relativePath"))
-                        .flatMap(Xml.Tag::getValue);
-                if (pathToLocalParent.isPresent()) {
+                        .flatMap(Xml.Tag::getValue)
+                        .isPresent()) {
                     return d;
                 }
 
                 // Otherwise override remote parent's properties locally
-                MavenResolutionResult mrr = getResolutionResult();
-                Map<String, String> currentProperties = mrr.getPom().getProperties();
+                Map<String, String> currentProperties = getResolutionResult().getPom().getProperties();
                 boolean foundProperty = false;
                 for (String property : JAVA_VERSION_PROPERTIES) {
-                    if (currentProperties.containsKey(property)) {
+                    String propertyValue = currentProperties.get(property);
+                    if (propertyValue != null) {
                         foundProperty = true;
                         try {
-                            if (Float.parseFloat(currentProperties.get(property)) < version) {
+                            if (Float.parseFloat(propertyValue) < version) {
                                 d = (Xml.Document) new AddProperty(property, String.valueOf(version), null, false)
                                         .getVisitor()
                                         .visitNonNull(d, ctx);
@@ -126,6 +126,7 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                             .visitNonNull(d, ctx);
                     maybeUpdateModel();
                 }
+
                 return d;
             }
 
