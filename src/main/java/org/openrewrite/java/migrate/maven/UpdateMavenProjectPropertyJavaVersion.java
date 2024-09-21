@@ -27,7 +27,10 @@ import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Value
@@ -129,25 +132,14 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = super.visitTag(tag, ctx);
-
-                if (PLUGINS_MATCHER.matches(getCursor())) {
-                    Optional<Xml.Tag> maybeCompilerPlugin = t.getChildren().stream()
-                            .filter(plugin ->
-                                    "plugin".equals(plugin.getName()) &&
-                                    "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse("org.apache.maven.plugins")) &&
-                                    "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
-                            .findAny();
-                    Optional<Xml.Tag> maybeCompilerPluginConfig = maybeCompilerPlugin
-                            .flatMap(it -> it.getChild("configuration"));
-                    if (!maybeCompilerPluginConfig.isPresent()) {
-                        return t;
-                    }
-                    Xml.Tag compilerPluginConfig = maybeCompilerPluginConfig.get();
-                    if (compilerPluginConfig.getChildValue("source").isPresent() ||
-                        compilerPluginConfig.getChildValue("target").isPresent() ||
-                        compilerPluginConfig.getChildValue("release").isPresent()) {
-                        compilerPluginConfiguredExplicitly = true;
-                    }
+                if (isPluginTag("org.apache.maven.plugins", "maven-compiler-plugin")) {
+                    t.getChild("configuration").ifPresent(compilerPluginConfig -> {
+                        if (compilerPluginConfig.getChildValue("source").isPresent() ||
+                            compilerPluginConfig.getChildValue("target").isPresent() ||
+                            compilerPluginConfig.getChildValue("release").isPresent()) {
+                            compilerPluginConfiguredExplicitly = true;
+                        }
+                    });
                 }
                 return t;
             }
