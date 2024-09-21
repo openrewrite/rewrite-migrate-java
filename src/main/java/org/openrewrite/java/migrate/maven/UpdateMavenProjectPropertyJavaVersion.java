@@ -23,11 +23,12 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.maven.AddProperty;
 import org.openrewrite.maven.MavenIsoVisitor;
-import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Value
@@ -73,13 +74,12 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                " * `maven.compiler.target`\n" +
                " * `maven.compiler.release`\n" +
                " * `release.version`\n\n" +
-               "If none of these properties are in use and the maven compiler plugin is not otherwise configured adds the `maven.compiler.release` property.";
+               "If none of these properties are in use and the maven compiler plugin is not otherwise configured, adds the `maven.compiler.release` property.";
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MavenIsoVisitor<ExecutionContext>() {
-            final Set<String> propertiesExplicitlyReferenced = new HashSet<>();
             boolean compilerPluginConfiguredExplicitly;
 
             @Override
@@ -88,93 +88,57 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                 Xml.Document d = super.visitDocument(document, ctx);
 
                 // Return early if the parent appears to be within the current repository, as properties defined there will be updated
-                Optional<String> pathToLocalParent = d.getRoot().getChild("parent")
+                if (d.getRoot().getChild("parent")
                         .flatMap(parent -> parent.getChild("relativePath"))
-                        .flatMap(Xml.Tag::getValue);
-                if (pathToLocalParent.isPresent()) {
+                        .flatMap(Xml.Tag::getValue)
+                        .isPresent()) {
                     return d;
                 }
 
                 // Otherwise override remote parent's properties locally
-                MavenResolutionResult mrr = getResolutionResult();
-                Map<String, String> currentProperties = mrr.getPom().getRequested().getProperties();
+                Map<String, String> currentProperties = getResolutionResult().getPom().getProperties();
+                boolean foundProperty = false;
                 for (String property : JAVA_VERSION_PROPERTIES) {
-                    if (currentProperties.containsKey(property) || !propertiesExplicitlyReferenced.contains(property)) {
-                        continue;
+                    String propertyValue = currentProperties.get(property);
+                    if (propertyValue != null) {
+                        foundProperty = true;
+                        try {
+                            if (Float.parseFloat(propertyValue) < version) {
+                                d = (Xml.Document) new AddProperty(property, String.valueOf(version), null, false)
+                                        .getVisitor()
+                                        .visitNonNull(d, ctx);
+                                maybeUpdateModel();
+                            }
+                        } catch (NumberFormatException ex) {
+                            // either an expression or something else, don't touch
+                        }
                     }
-                    d = (Xml.Document) new AddProperty(property, String.valueOf(version), null, false)
-                            .getVisitor()
-                            .visitNonNull(d, ctx);
                 }
 
                 // When none of the relevant properties are explicitly configured Maven defaults to Java 8
                 // The release option was added in 9
                 // If no properties have yet been updated then set release explicitly
-                if (version >= 9 &&
-                    !compilerPluginConfiguredExplicitly &&
-                    currentProperties.keySet()
-                        .stream()
-                        .noneMatch(JAVA_VERSION_PROPERTIES::contains)) {
+                if (!foundProperty && version >= 9 && !compilerPluginConfiguredExplicitly) {
                     d = (Xml.Document) new AddProperty("maven.compiler.release", String.valueOf(version), null, false)
                             .getVisitor()
                             .visitNonNull(d, ctx);
-                    HashMap<String, String> updatedProps = new HashMap<>(currentProperties);
-                    updatedProps.put("maven.compiler.release", version.toString());
-                    mrr = mrr.withPom(mrr.getPom().withRequested(mrr.getPom().getRequested().withProperties(updatedProps)));
-
-                    d = d.withMarkers(d.getMarkers().setByType(mrr));
+                    maybeUpdateModel();
                 }
+
                 return d;
             }
 
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = super.visitTag(tag, ctx);
-                Optional<String> s = t.getValue()
-                        .map(it -> it.replace("${", "").replace("}", "").trim())
-                        .filter(JAVA_VERSION_PROPERTIES::contains);
-                if (s.isPresent()) {
-                    propertiesExplicitlyReferenced.add(s.get());
-                } else if (JAVA_VERSION_XPATH_MATCHERS.stream().anyMatch(matcher -> matcher.matches(getCursor()))) {
-                    Optional<Float> maybeVersion = t.getValue().flatMap(
-                            value -> {
-                                try {
-                                    return Optional.of(Float.parseFloat(value));
-                                } catch (NumberFormatException e) {
-                                    return Optional.empty();
-                                }
-                            }
-                    );
-
-                    if (!maybeVersion.isPresent()) {
-                        return t;
-                    }
-                    float currentVersion = maybeVersion.get();
-                    if (currentVersion >= version) {
-                        return t;
-                    }
-                    return t.withValue(String.valueOf(version));
-                } else if (PLUGINS_MATCHER.matches(getCursor())) {
-                    Optional<Xml.Tag> maybeCompilerPlugin = t.getChildren().stream()
-                            .filter(plugin ->
-                                    "plugin".equals(plugin.getName()) &&
-                                    "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse("org.apache.maven.plugins")) &&
-                                    "maven-compiler-plugin".equals(plugin.getChildValue("artifactId").orElse(null)))
-                            .findAny();
-                    Optional<Xml.Tag> maybeCompilerPluginConfig = maybeCompilerPlugin
-                            .flatMap(it -> it.getChild("configuration"));
-                    if (!maybeCompilerPluginConfig.isPresent()) {
-                        return t;
-                    }
-                    Xml.Tag compilerPluginConfig = maybeCompilerPluginConfig.get();
-                    Optional<String> source = compilerPluginConfig.getChildValue("source");
-                    Optional<String> target = compilerPluginConfig.getChildValue("target");
-                    Optional<String> release = compilerPluginConfig.getChildValue("release");
-                    if (source.isPresent()
-                        || target.isPresent()
-                        || release.isPresent()) {
-                        compilerPluginConfiguredExplicitly = true;
-                    }
+                if (isPluginTag("org.apache.maven.plugins", "maven-compiler-plugin")) {
+                    t.getChild("configuration").ifPresent(compilerPluginConfig -> {
+                        if (compilerPluginConfig.getChildValue("source").isPresent() ||
+                            compilerPluginConfig.getChildValue("target").isPresent() ||
+                            compilerPluginConfig.getChildValue("release").isPresent()) {
+                            compilerPluginConfiguredExplicitly = true;
+                        }
+                    });
                 }
                 return t;
             }
