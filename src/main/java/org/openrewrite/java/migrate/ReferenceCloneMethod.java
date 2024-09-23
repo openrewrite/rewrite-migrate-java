@@ -32,7 +32,7 @@ import org.openrewrite.java.tree.TypeUtils;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-class ReferenceCloneMethod extends Recipe {
+public class ReferenceCloneMethod extends Recipe {
     private static final MethodMatcher REFERENCE_CLONE = new MethodMatcher("java.lang.ref.Reference clone()", true);
 
     @Override

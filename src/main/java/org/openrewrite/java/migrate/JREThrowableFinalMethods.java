@@ -30,7 +30,7 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 @EqualsAndHashCode(callSuper = false)
-class JREThrowableFinalMethods extends Recipe {
+public class JREThrowableFinalMethods extends Recipe {
 
     private final String methodPatternAddSuppressed;
     private final String methodPatternGetSuppressed;
