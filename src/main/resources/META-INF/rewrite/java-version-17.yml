@@ -31,7 +31,7 @@ recipeList:
   - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.staticanalysis.AddSerialVersionUidToSerializable
-  - org.openrewrite.staticanalysis.AddSerialAnnotationToserialVersionUID
+  - org.openrewrite.staticanalysis.AddSerialAnnotationToSerialVersionUID
   - org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
   - org.openrewrite.java.migrate.RemovedToolProviderConstructor
   - org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
