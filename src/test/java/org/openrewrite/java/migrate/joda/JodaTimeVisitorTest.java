@@ -63,6 +63,7 @@ public class JodaTimeVisitorTest implements RewriteTest {
     }
 
     @DocumentExample
+    @DocumentExample
     @Test
     void migrateNewDateTime() {
         //language=java
