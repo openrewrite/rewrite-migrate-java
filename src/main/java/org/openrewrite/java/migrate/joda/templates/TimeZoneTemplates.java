@@ -21,9 +21,7 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_ZONE_ID;
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_ZONE_OFFSET;
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_DATE_TIME_ZONE;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 public class TimeZoneTemplates {
   private final MethodMatcher zoneForID = new MethodMatcher(JODA_DATE_TIME_ZONE + " forID(String)");
