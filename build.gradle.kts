@@ -29,6 +29,7 @@ dependencies {
     implementation("org.openrewrite.recipe:rewrite-static-analysis:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-jenkins:$rewriteVersion")
     implementation("org.openrewrite:rewrite-templating:$rewriteVersion")
+    implementation("org.openrewrite.meta:rewrite-analysis:$rewriteVersion")
 
     runtimeOnly("org.openrewrite:rewrite-java-8")
     runtimeOnly("org.openrewrite:rewrite-java-11")
@@ -48,6 +49,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:latest.release")
 
     testImplementation("com.google.guava:guava:33.0.0-jre")
+    testImplementation("joda-time:joda-time:2.12.3")
 
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
