@@ -15,8 +15,6 @@
  */
 package org.openrewrite.java.migrate.joda;
 
-import org.openrewrite.DocumentExample;
-
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
