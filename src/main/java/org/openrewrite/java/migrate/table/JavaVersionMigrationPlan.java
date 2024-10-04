@@ -34,8 +34,6 @@ public class JavaVersionMigrationPlan extends DataTable<JavaVersionMigrationPlan
     @Builder
     @Value
     public static class Row {
-        public static class Builder {
-        }
 
         @Column(displayName = "Has Java",
                 description = "Whether this is a Java repository at all.")
