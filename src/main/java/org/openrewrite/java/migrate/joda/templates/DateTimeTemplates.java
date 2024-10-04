@@ -1,3 +1,18 @@
+/*
+ * Copyright 2024 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * https://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.openrewrite.java.migrate.joda.templates;
 
 import lombok.NoArgsConstructor;
@@ -31,6 +46,7 @@ public class DateTimeTemplates {
 
   private final MethodMatcher toDateTime = new MethodMatcher(JODA_DATE_TIME + " toDateTime()");
   private final MethodMatcher toDateTimeWithZone = new MethodMatcher(JODA_DATE_TIME + " toDateTime(" + JODA_DATE_TIME_ZONE + ")");
+  private final MethodMatcher getMillis = new MethodMatcher(JODA_BASE_DATE_TIME + " getMillis()");
   private final MethodMatcher withMillis = new MethodMatcher(JODA_DATE_TIME + " withMillis(long)");
   private final MethodMatcher withZone = new MethodMatcher(JODA_DATE_TIME + " withZone(" + JODA_DATE_TIME_ZONE + ")");
   private final MethodMatcher withZoneRetainFields = new MethodMatcher(JODA_DATE_TIME + " withZoneRetainFields(" + JODA_DATE_TIME_ZONE + ")");
@@ -143,6 +159,8 @@ public class DateTimeTemplates {
       .imports(JAVA_DATE_TIME)
       .build();
   private final JavaTemplate toDateTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}")
+      .build();
+  private final JavaTemplate getMillisTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toInstant().toEpochMilli()")
       .build();
   private final JavaTemplate withMillisTemplate = JavaTemplate.builder("ZonedDateTime.ofInstant(Instant.ofEpochMilli(#{any(long)}),#{any(java.time.ZonedDateTime)}.getZone())")
       .imports(JAVA_DATE_TIME, JAVA_INSTANT)
@@ -270,6 +288,7 @@ public class DateTimeTemplates {
       add(new MethodTemplate(dateTimeParseWithFormatter, dateTimeParseWithFormatterTemplate));
       add(new MethodTemplate(toDateTime, toDateTimeTemplate));
       add(new MethodTemplate(toDateTimeWithZone, withZoneTemplate));
+      add(new MethodTemplate(getMillis, getMillisTemplate));
       add(new MethodTemplate(withMillis, withMillisTemplate, m -> {
         J.MethodInvocation mi = (J.MethodInvocation) m;
         return new Expression[] {mi.getArguments().get(0), mi.getSelect()};

@@ -15,10 +15,10 @@
  */
 package org.openrewrite.java.migrate.joda;
 
+import lombok.NonNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.migrate.joda.templates.*;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.migrate.joda.templates.DateTimeFormatTemplates;
 import org.openrewrite.java.migrate.joda.templates.DateTimeTemplates;
@@ -42,6 +42,7 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
 
   private final MethodMatcher anyNewDateTime = new MethodMatcher(JODA_DATE_TIME + "<constructor>(..)");
   private final MethodMatcher anyDateTime = new MethodMatcher(JODA_DATE_TIME + " *(..)");
+  private final MethodMatcher anyBaseDateTime = new MethodMatcher(JODA_BASE_DATE_TIME + " *(..)");
   private final MethodMatcher zoneFor = new MethodMatcher(JODA_DATE_TIME_ZONE + " for*(..)");
   private final MethodMatcher anyTimeFormatter = new MethodMatcher(JODA_TIME_FORMAT + " *(..)");
   private final MethodMatcher anyNewDuration = new MethodMatcher(JODA_DURATION + "<constructor>(..)");
@@ -100,13 +101,13 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
   @Override
   public J visitMethodInvocation(@NonNull J.MethodInvocation method, @NonNull ExecutionContext ctx) {
     J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
-    if (hasJodaType(m.getArguments()) || isVarRef(m.getSelect())) {
+    if (hasJodaType(m.getArguments()) || isJodaVarRef(m.getSelect())) {
       return method;
     }
     if (zoneFor.matches(method)) {
       return applyTemplate(method, m, TimeZoneTemplates.getTemplates()).orElse(method);
     }
-    if (anyDateTime.matches(method)) {
+    if (anyDateTime.matches(method) || anyBaseDateTime.matches(method)) {
       return applyTemplate(method, m, DateTimeTemplates.getTemplates()).orElse(method);
     }
     if (anyTimeFormatter.matches(method)) {
@@ -168,7 +169,10 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
     return true;
   }
 
-  private boolean isVarRef(Expression expr) {
+  private boolean isJodaVarRef(Expression expr) {
+    if (expr.getType() == null || !expr.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+      return false;
+    }
     if (expr instanceof J.FieldAccess) {
       return ((J.FieldAccess) expr).getName().getFieldType() != null;
     }

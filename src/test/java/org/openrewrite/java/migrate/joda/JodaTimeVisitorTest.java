@@ -437,11 +437,11 @@ public class JodaTimeVisitorTest implements RewriteTest {
               }
               """,
             """
-                import java.time.Instant;
+                import java.time.ZonedDateTime;
     
                 class A {
                     public void foo() {
-                        long millis = Instant.now().toEpochMilli();
+                        long millis = ZonedDateTime.now().toInstant().toEpochMilli();
                         System.out.println(millis);
                     }
                 }
