@@ -59,3 +59,7 @@ dependencies {
     testRuntimeOnly("com.google.code.findbugs:jsr305:3.0.2")
     testRuntimeOnly(gradleApi())
 }
+
+tasks.withType(Javadoc::class.java) {
+    exclude("**/PlanJavaMigration.java")
+}

@@ -16,8 +16,11 @@
 package org.openrewrite.java.migrate.joda;
 
 import lombok.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.migrate.joda.templates.*;
 import org.openrewrite.java.migrate.joda.templates.MethodTemplate;
 import org.openrewrite.java.migrate.joda.templates.TimeZoneTemplates;
@@ -45,7 +48,7 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
   private final MethodMatcher anyDuration = new MethodMatcher(JODA_DURATION + " *(..)");
 
   @Override
-  public J visitCompilationUnit(@NonNull J.CompilationUnit cu, @NonNull ExecutionContext ctx) {
+  public @NonNull J visitCompilationUnit(@NonNull J.CompilationUnit cu, @NonNull ExecutionContext ctx) {
     maybeRemoveImport(JODA_DATE_TIME);
     maybeRemoveImport(JODA_DATE_TIME_ZONE);
     maybeRemoveImport(JODA_TIME_FORMAT);
@@ -67,7 +70,7 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
   }
 
   @Override
-  public J visitVariable(@NonNull J.VariableDeclarations.NamedVariable variable, @NonNull ExecutionContext ctx) {
+  public @NonNull J visitVariable(@NonNull J.VariableDeclarations.NamedVariable variable, @NonNull ExecutionContext ctx) {
     // TODO implement logic for safe variable migration
     if (variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
       return variable;
@@ -76,7 +79,7 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
   }
 
   @Override
-  public J visitNewClass(@NonNull J.NewClass newClass, @NonNull ExecutionContext ctx) {
+  public @NonNull J visitNewClass(@NonNull J.NewClass newClass, @NonNull ExecutionContext ctx) {
     MethodCall updated = (MethodCall) super.visitNewClass(newClass, ctx);
     if (hasJodaType(updated.getArguments())) {
       return newClass;
@@ -95,7 +98,7 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
 
 
   @Override
-  public J visitMethodInvocation(@NonNull J.MethodInvocation method, @NonNull ExecutionContext ctx) {
+  public @NonNull J visitMethodInvocation(@NonNull J.MethodInvocation method, @NonNull ExecutionContext ctx) {
     J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
     if (hasJodaType(m.getArguments()) || isJodaVarRef(m.getSelect())) {
       return method;
@@ -119,7 +122,7 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
   }
 
   @Override
-  public J visitFieldAccess(@NonNull J.FieldAccess fieldAccess, @NonNull ExecutionContext ctx) {
+  public @NonNull J visitFieldAccess(@NonNull J.FieldAccess fieldAccess, @NonNull ExecutionContext ctx) {
     J.FieldAccess f = (J.FieldAccess) super.visitFieldAccess(fieldAccess, ctx);
     if (TypeUtils.isOfClassType(f.getType(), JODA_DATE_TIME_ZONE) && f.getSimpleName().equals("UTC")) {
       return JavaTemplate.builder("ZoneOffset.UTC")
@@ -147,14 +150,14 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
         if (args.length == 0) {
           return Optional.of(template.getTemplate().apply(updateCursor(updated), updated.getCoordinates().replace()));
         }
-        return Optional.of(template.getTemplate().apply(updateCursor(updated), updated.getCoordinates().replace(), args));
+        return Optional.of(template.getTemplate().apply(updateCursor(updated), updated.getCoordinates().replace(), (Object[]) args));
       }
     }
     return Optional.empty(); // unhandled case
   }
 
   private boolean areArgumentsAssignable(MethodCall m) {
-    if (m.getArguments().size() != m.getMethodType().getParameterTypes().size()) {
+    if (m.getMethodType() == null || m.getArguments().size() != m.getMethodType().getParameterTypes().size()) {
       return false;
     }
     for (int i = 0; i < m.getArguments().size(); i++) {
@@ -165,8 +168,8 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
     return true;
   }
 
-  private boolean isJodaVarRef(Expression expr) {
-    if (expr.getType() == null || !expr.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+  private boolean isJodaVarRef(@Nullable Expression expr) {
+    if (expr == null || expr.getType() == null || !expr.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
       return false;
     }
     if (expr instanceof J.FieldAccess) {
