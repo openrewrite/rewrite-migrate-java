@@ -13,36 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Copyright 2024 the original author or authors.
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/*
- * Copyright 2024 the original author or authors.
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.openrewrite.java.migrate.joda;
 
 import org.junit.jupiter.api.Test;
@@ -50,7 +20,6 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.test.RewriteTest.toRecipe;
@@ -73,7 +42,7 @@ class JodaTimeVisitorTest implements RewriteTest {
               import org.joda.time.DateTime;
               import org.joda.time.DateTimeZone;
               import java.util.TimeZone;
-              
+
               class A {
                   public void foo() {
                       System.out.println(new DateTime());
@@ -95,7 +64,7 @@ class JodaTimeVisitorTest implements RewriteTest {
               import java.time.ZoneOffset;
               import java.time.ZonedDateTime;
               import java.util.TimeZone;
-              
+
               class A {
                   public void foo() {
                       System.out.println(ZonedDateTime.now());
@@ -125,7 +94,7 @@ class JodaTimeVisitorTest implements RewriteTest {
               import org.joda.time.DateTimeZone;
               import org.joda.time.format.DateTimeFormat;
               import java.util.TimeZone;
-              
+
               class A {
                   public void foo() {
                       System.out.println(DateTime.now());
@@ -140,7 +109,7 @@ class JodaTimeVisitorTest implements RewriteTest {
               import java.time.format.DateTimeFormatter;
               import java.time.format.FormatStyle;
               import java.util.TimeZone;
-              
+
               class A {
                   public void foo() {
                       System.out.println(ZonedDateTime.now());
@@ -164,7 +133,7 @@ class JodaTimeVisitorTest implements RewriteTest {
               import org.joda.time.DateTimeZone;
               import org.joda.time.Duration;
               import java.util.TimeZone;
-              
+
               class A {
                   public void foo() {
                       System.out.println(new DateTime().toDateTime());
@@ -223,7 +192,7 @@ class JodaTimeVisitorTest implements RewriteTest {
               import java.time.temporal.ChronoField;
               import java.time.temporal.IsoFields;
               import java.util.TimeZone;
-              
+
               class A {
                   public void foo() {
                       System.out.println(ZonedDateTime.now());
@@ -286,7 +255,7 @@ class JodaTimeVisitorTest implements RewriteTest {
             """
               import org.joda.time.DateTimeZone;
               import java.util.TimeZone;
-              
+
               class A {
                   public void foo() {
                       System.out.println(DateTimeZone.UTC);
@@ -301,7 +270,7 @@ class JodaTimeVisitorTest implements RewriteTest {
               import java.time.ZoneId;
               import java.time.ZoneOffset;
               import java.util.TimeZone;
-              
+
               class A {
                   public void foo() {
                       System.out.println(ZoneOffset.UTC);
@@ -323,7 +292,7 @@ class JodaTimeVisitorTest implements RewriteTest {
           java(
             """
               import org.joda.time.format.DateTimeFormat;
-              
+
               class A {
                   public void foo() {
                       System.out.println(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
@@ -347,7 +316,7 @@ class JodaTimeVisitorTest implements RewriteTest {
             """
               import java.time.format.DateTimeFormatter;
               import java.time.format.FormatStyle;
-              
+
               class A {
                   public void foo() {
                       System.out.println(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
@@ -379,7 +348,7 @@ class JodaTimeVisitorTest implements RewriteTest {
           java(
             """
               import org.joda.time.Duration;
-              
+
               class A {
                   public void foo() {
                       System.out.println(Duration.standardDays(1L));
@@ -411,7 +380,7 @@ class JodaTimeVisitorTest implements RewriteTest {
             """
               import java.time.Duration;
               import java.time.Instant;
-              
+
               class A {
                   public void foo() {
                       System.out.println(Duration.ofDays(1L));
@@ -458,7 +427,7 @@ class JodaTimeVisitorTest implements RewriteTest {
               """,
             """
               import java.time.format.DateTimeFormatter;
-              
+
               class A {
                   public void foo() {
                       System.out.println(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
@@ -476,7 +445,7 @@ class JodaTimeVisitorTest implements RewriteTest {
           java(
             """
               import org.joda.time.DateTime;
-              
+
               class A {
                   public void foo() {
                       long millis = DateTime.now().getMillis();
@@ -506,7 +475,7 @@ class JodaTimeVisitorTest implements RewriteTest {
           java(
             """
               import org.joda.time.DateTime;
-              
+
               class A {
                   public void foo() {
                       DateTime dt = new DateTime();
@@ -529,13 +498,13 @@ class JodaTimeVisitorTest implements RewriteTest {
           java(
             """
               import org.joda.time.DateTime;
-              
+
               class A {
                   public void foo() {
                       new B().print(new DateTime()); // print is public method accepting DateTime, not handled yet
                   }
               }
-              
+
               class B {
                   public void print(DateTime dateTime) {
                       System.out.println(dateTime);
@@ -554,7 +523,7 @@ class JodaTimeVisitorTest implements RewriteTest {
             """
               import org.joda.time.DateTime;
               import org.joda.time.format.DateTimeFormat;
-              
+
               class A {
                   public void foo() {
                       // DateTimeFormat.forStyle is unhandled so parent method should not be changed
