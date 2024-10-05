@@ -20,8 +20,8 @@ import static java.util.Collections.singletonList;
 
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
@@ -56,44 +56,47 @@ public class UseEnumSetOf extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(9),
-                new UsesMethod<>(SET_OF)), new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                J.MethodInvocation methodInvocation = super.visitMethodInvocation(method, ctx);
+                new UsesMethod<>(SET_OF)), new UseEnumSetOfVisitor());
+    }
 
-                if (SET_OF.matches(method) && method.getType() instanceof JavaType.Parameterized
-                    && !TypeUtils.isOfClassType(method.getType(), METHOD_TYPE)) {
-                    Cursor parent = getCursor().dropParentUntil(is -> is instanceof J.Assignment || is instanceof J.VariableDeclarations || is instanceof J.Block);
-                    if (!(parent.getValue() instanceof J.Block)) {
-                        JavaType type = parent.getValue() instanceof J.Assignment ?
-                                ((J.Assignment) parent.getValue()).getType() : ((J.VariableDeclarations) parent.getValue()).getVariables().get(0).getType();
-                        if (isAssignmentSetOfEnum(type)) {
-                            maybeAddImport(METHOD_TYPE);
+    private static class UseEnumSetOfVisitor extends JavaVisitor<ExecutionContext> {
+        @Override
+        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            J.MethodInvocation methodInvocation = (J.MethodInvocation)  super.visitMethodInvocation(method, ctx);
 
-                            List<Expression> args = methodInvocation.getArguments();
-                            if (isArrayParameter(args)) {
-                                return methodInvocation;
-                            }
-                            StringJoiner setOf = initStringJoiner(args);
-                            args.forEach(o -> setOf.add("#{any()}"));
+            if (SET_OF.matches(method) && method.getType() instanceof JavaType.Parameterized
+                && !TypeUtils.isOfClassType(method.getType(), METHOD_TYPE)) {
+                Cursor parent = getCursor().dropParentUntil(is -> is instanceof J.Assignment || is instanceof J.VariableDeclarations || is instanceof J.Block);
+                if (!(parent.getValue() instanceof J.Block)) {
+                    JavaType type = parent.getValue() instanceof J.Assignment ?
+                        ((J.Assignment) parent.getValue()).getType() : ((J.VariableDeclarations) parent.getValue()).getVariables().get(0).getType();
+                    if (isAssignmentSetOfEnum(type)) {
+                        maybeAddImport(METHOD_TYPE);
 
-                            return createNewMethodInvocation(methodInvocation, (JavaType.Parameterized) type, setOf);
+                        List<Expression> args = methodInvocation.getArguments();
+                        if (isArrayParameter(args)) {
+                            return methodInvocation;
                         }
+                        StringJoiner setOf = initStringJoiner(args);
+                        args.forEach(o -> setOf.add("#{any()}"));
+
+                        return createNewMethodInvocation(methodInvocation, (JavaType.Parameterized) type, setOf);
                     }
                 }
-                return methodInvocation;
             }
+            return methodInvocation;
+        }
 
-            private StringJoiner initStringJoiner(List<Expression> args) {
-                if(args.get(0) instanceof J.Empty) {
-                    return new StringJoiner(", ", "EnumSet.noneOf(", ")");
-                }
-                return new StringJoiner(", ", "EnumSet.of(", ")");
+        private StringJoiner initStringJoiner(List<Expression> args) {
+            if(args.get(0) instanceof J.Empty) {
+                return new StringJoiner(", ", "EnumSet.noneOf(", ")");
             }
+            return new StringJoiner(", ", "EnumSet.of(", ")");
+        }
 
-          private J.MethodInvocation createNewMethodInvocation(J.MethodInvocation methodInvocation,
-                                                         JavaType.Parameterized type,
-                                                         StringJoiner setOf) {
+        private J.MethodInvocation createNewMethodInvocation(J.MethodInvocation methodInvocation,
+                                                             JavaType.Parameterized type,
+                                                             StringJoiner setOf) {
             J.MethodInvocation visitMethodInvocation = JavaTemplate.builder(setOf.toString())
                 .contextSensitive()
                 .imports(METHOD_TYPE)
@@ -102,37 +105,37 @@ public class UseEnumSetOf extends Recipe {
                     methodInvocation.getArguments().toArray());
 
             if (methodInvocation.getArguments().get(0) instanceof J.Empty) {
-              JavaType.Method methodType = methodInvocation.getMethodType().withName("noneOf");
-              JavaType.Class parameterType = JavaType.ShallowClass.build(
-                  type.getTypeParameters().get(0).toString());
-              return visitMethodInvocation.withMethodType(methodType)
-                  .withArguments(singletonList(new J.Identifier(
-                      Tree.randomId(), Space.EMPTY, methodInvocation.getMarkers(), emptyList(),
-                      parameterType.getClassName() + ".class", parameterType, null)));
+                JavaType.Method methodType = methodInvocation.getMethodType().withName("noneOf");
+                JavaType.Class parameterType = JavaType.ShallowClass.build(
+                    type.getTypeParameters().get(0).toString());
+                return visitMethodInvocation.withMethodType(methodType)
+                    .withArguments(singletonList(new J.Identifier(
+                        Tree.randomId(), Space.EMPTY, methodInvocation.getMarkers(), emptyList(),
+                        parameterType.getClassName() + ".class", parameterType, null)));
             }
             return visitMethodInvocation;
-          }
+        }
 
-            private boolean isAssignmentSetOfEnum(@Nullable JavaType type) {
-                if (type instanceof JavaType.Parameterized) {
-                    JavaType.Parameterized parameterized = (JavaType.Parameterized) type;
-                    if (TypeUtils.isOfClassType(parameterized.getType(), "java.util.Set")) {
-                        return ((JavaType.Parameterized) type).getTypeParameters().stream()
-                                .filter(org.openrewrite.java.tree.JavaType.Class.class::isInstance)
-                                .map(org.openrewrite.java.tree.JavaType.Class.class::cast)
-                                .anyMatch(o -> o.getKind() == JavaType.FullyQualified.Kind.Enum);
-                    }
+        private boolean isAssignmentSetOfEnum(@Nullable JavaType type) {
+            if (type instanceof JavaType.Parameterized) {
+                JavaType.Parameterized parameterized = (JavaType.Parameterized) type;
+                if (TypeUtils.isOfClassType(parameterized.getType(), "java.util.Set")) {
+                    return ((JavaType.Parameterized) type).getTypeParameters().stream()
+                        .filter(org.openrewrite.java.tree.JavaType.Class.class::isInstance)
+                        .map(org.openrewrite.java.tree.JavaType.Class.class::cast)
+                        .anyMatch(o -> o.getKind() == JavaType.FullyQualified.Kind.Enum);
                 }
+            }
+            return false;
+        }
+
+        private boolean isArrayParameter(final List<Expression> args) {
+            if (args.size() != 1) {
                 return false;
             }
-
-            private boolean isArrayParameter(final List<Expression> args) {
-                if (args.size() != 1) {
-                    return false;
-                }
-                JavaType type = args.get(0).getType();
-                return TypeUtils.asArray(type) != null;
-            }
-        });
+            JavaType type = args.get(0).getType();
+            return TypeUtils.asArray(type) != null;
+        }
     }
+
 }
