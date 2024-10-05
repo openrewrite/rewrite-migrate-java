@@ -75,30 +75,24 @@ public class UseEnumSetOf extends Recipe {
                         if (isArrayParameter(args)) {
                             return mi;
                         }
-                        StringJoiner setOf;
-                        if (args.get(0) instanceof J.Empty) {
-                            setOf = new StringJoiner(", ", "EnumSet.noneOf(", ")");
-                        } else {
-                            setOf = new StringJoiner(", ", "EnumSet.of(", ")");
-                        }
-                        args.forEach(o -> setOf.add("#{any()}"));
 
-                        J.MethodInvocation visitMethodInvocation = JavaTemplate.builder(setOf.toString())
+                        if (args.get(0) instanceof J.Empty) {
+                            JavaType firstTypeParameter = ((JavaType.Parameterized) type).getTypeParameters().get(0);
+                            JavaType.ShallowClass shallowClass = JavaType.ShallowClass.build(firstTypeParameter.toString());
+                            return JavaTemplate.builder("EnumSet.noneOf(" + shallowClass.getClassName() + ".class)")
+                                    .contextSensitive()
+                                    .imports(METHOD_TYPE)
+                                    .build()
+                                    .apply(updateCursor(mi), mi.getCoordinates().replace());
+                        }
+
+                        StringJoiner  setOf = new StringJoiner(", ", "EnumSet.of(", ")");
+                        args.forEach(o -> setOf.add("#{any()}"));
+                        return JavaTemplate.builder(setOf.toString())
                                 .contextSensitive()
                                 .imports(METHOD_TYPE)
                                 .build()
                                 .apply(updateCursor(mi), mi.getCoordinates().replace(), args.toArray());
-
-                        if (args.get(0) instanceof J.Empty) {
-                            JavaType.Method methodType = mi.getMethodType().withName("noneOf");
-                            JavaType.Class parameterType = JavaType.ShallowClass.build(
-                                    ((JavaType.Parameterized) type).getTypeParameters().get(0).toString());
-                            return visitMethodInvocation.withMethodType(methodType)
-                                    .withArguments(singletonList(new J.Identifier(
-                                            Tree.randomId(), Space.EMPTY, mi.getMarkers(), emptyList(),
-                                            parameterType.getClassName() + ".class", parameterType, null)));
-                        }
-                        return visitMethodInvocation;
                     }
                 }
             }
