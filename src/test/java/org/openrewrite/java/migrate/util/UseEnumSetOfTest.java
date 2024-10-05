@@ -39,7 +39,7 @@ class UseEnumSetOfTest implements RewriteTest {
             java(
               """
                 import java.util.Set;
-
+                
                 class Test {
                     public enum Color {
                         RED, GREEN, BLUE
@@ -52,7 +52,7 @@ class UseEnumSetOfTest implements RewriteTest {
               """
                 import java.util.EnumSet;
                 import java.util.Set;
-
+                
                 class Test {
                     public enum Color {
                         RED, GREEN, BLUE
@@ -76,7 +76,7 @@ class UseEnumSetOfTest implements RewriteTest {
             java(
               """
                 import java.util.Set;
-
+                
                 class Test {
                     public enum Color {
                         RED, GREEN, BLUE
@@ -90,7 +90,7 @@ class UseEnumSetOfTest implements RewriteTest {
               """
                 import java.util.EnumSet;
                 import java.util.Set;
-
+                
                 class Test {
                     public enum Color {
                         RED, GREEN, BLUE
@@ -116,7 +116,7 @@ class UseEnumSetOfTest implements RewriteTest {
             java(
               """
                 import java.util.Set;
-
+                
                 class Test {
                     public enum Color {
                         RED, GREEN, BLUE
@@ -141,7 +141,7 @@ class UseEnumSetOfTest implements RewriteTest {
             java(
               """
                 import java.util.Set;
-
+                
                 class Test {
                     public enum Color {
                         RED, GREEN, BLUE
@@ -180,7 +180,7 @@ class UseEnumSetOfTest implements RewriteTest {
                 import java.util.concurrent.TimeUnit;
                 
                 class Test {
-
+                
                     public void method() {
                         Set<TimeUnit> warm = EnumSet.noneOf(TimeUnit.class);
                     }

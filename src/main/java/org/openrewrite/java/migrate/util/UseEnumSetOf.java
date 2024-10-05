@@ -15,33 +15,26 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.StringJoiner;
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.Cursor;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.Tree;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.Space;
-import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.java.tree.*;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.StringJoiner;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 public class UseEnumSetOf extends Recipe {
     private static final MethodMatcher SET_OF = new MethodMatcher("java.util.Set of(..)", true);
     private static final String METHOD_TYPE = "java.util.EnumSet";
+
     @Override
     public String getDisplayName() {
         return "Prefer `EnumSet of(..)`";
@@ -66,7 +59,7 @@ public class UseEnumSetOf extends Recipe {
     private static class UseEnumSetOfVisitor extends JavaVisitor<ExecutionContext> {
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-            J.MethodInvocation methodInvocation = (J.MethodInvocation)  super.visitMethodInvocation(method, ctx);
+            J.MethodInvocation methodInvocation = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
 
             if (SET_OF.matches(method) &&
                 method.getType() instanceof JavaType.Parameterized &&
@@ -74,7 +67,7 @@ public class UseEnumSetOf extends Recipe {
                 Cursor parent = getCursor().dropParentUntil(is -> is instanceof J.Assignment || is instanceof J.VariableDeclarations || is instanceof J.Block);
                 if (!(parent.getValue() instanceof J.Block)) {
                     JavaType type = parent.getValue() instanceof J.Assignment ?
-                        ((J.Assignment) parent.getValue()).getType() : ((J.VariableDeclarations) parent.getValue()).getVariables().get(0).getType();
+                            ((J.Assignment) parent.getValue()).getType() : ((J.VariableDeclarations) parent.getValue()).getVariables().get(0).getType();
                     if (isAssignmentSetOfEnum(type)) {
                         maybeAddImport(METHOD_TYPE);
 
@@ -93,7 +86,7 @@ public class UseEnumSetOf extends Recipe {
         }
 
         private StringJoiner initStringJoiner(List<Expression> args) {
-            if(args.get(0) instanceof J.Empty) {
+            if (args.get(0) instanceof J.Empty) {
                 return new StringJoiner(", ", "EnumSet.noneOf(", ")");
             }
             return new StringJoiner(", ", "EnumSet.of(", ")");
@@ -103,20 +96,20 @@ public class UseEnumSetOf extends Recipe {
                                                              JavaType.Parameterized type,
                                                              StringJoiner setOf) {
             J.MethodInvocation visitMethodInvocation = JavaTemplate.builder(setOf.toString())
-                .contextSensitive()
-                .imports(METHOD_TYPE)
-                .build()
-                .apply(updateCursor(methodInvocation), methodInvocation.getCoordinates().replace(),
-                    methodInvocation.getArguments().toArray());
+                    .contextSensitive()
+                    .imports(METHOD_TYPE)
+                    .build()
+                    .apply(updateCursor(methodInvocation), methodInvocation.getCoordinates().replace(),
+                            methodInvocation.getArguments().toArray());
 
             if (methodInvocation.getArguments().get(0) instanceof J.Empty) {
                 JavaType.Method methodType = methodInvocation.getMethodType().withName("noneOf");
                 JavaType.Class parameterType = JavaType.ShallowClass.build(
-                    type.getTypeParameters().get(0).toString());
+                        type.getTypeParameters().get(0).toString());
                 return visitMethodInvocation.withMethodType(methodType)
-                    .withArguments(singletonList(new J.Identifier(
-                        Tree.randomId(), Space.EMPTY, methodInvocation.getMarkers(), emptyList(),
-                        parameterType.getClassName() + ".class", parameterType, null)));
+                        .withArguments(singletonList(new J.Identifier(
+                                Tree.randomId(), Space.EMPTY, methodInvocation.getMarkers(), emptyList(),
+                                parameterType.getClassName() + ".class", parameterType, null)));
             }
             return visitMethodInvocation;
         }
@@ -126,9 +119,9 @@ public class UseEnumSetOf extends Recipe {
                 JavaType.Parameterized parameterized = (JavaType.Parameterized) type;
                 if (TypeUtils.isOfClassType(parameterized.getType(), "java.util.Set")) {
                     return ((JavaType.Parameterized) type).getTypeParameters().stream()
-                        .filter(org.openrewrite.java.tree.JavaType.Class.class::isInstance)
-                        .map(org.openrewrite.java.tree.JavaType.Class.class::cast)
-                        .anyMatch(o -> o.getKind() == JavaType.FullyQualified.Kind.Enum);
+                            .filter(org.openrewrite.java.tree.JavaType.Class.class::isInstance)
+                            .map(org.openrewrite.java.tree.JavaType.Class.class::cast)
+                            .anyMatch(o -> o.getKind() == JavaType.FullyQualified.Kind.Enum);
                 }
             }
             return false;
