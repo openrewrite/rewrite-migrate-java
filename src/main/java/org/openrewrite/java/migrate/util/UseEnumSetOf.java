@@ -58,12 +58,12 @@ public class UseEnumSetOf extends Recipe {
 
     private static class UseEnumSetOfVisitor extends JavaVisitor<ExecutionContext> {
         @Override
-        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-            J.MethodInvocation methodInvocation = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
+        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation methodInvocation, ExecutionContext ctx) {
+            J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(methodInvocation, ctx);
 
-            if (SET_OF.matches(method) &&
-                method.getType() instanceof JavaType.Parameterized &&
-                !TypeUtils.isOfClassType(method.getType(), METHOD_TYPE)) {
+            if (SET_OF.matches(mi) &&
+                mi.getType() instanceof JavaType.Parameterized &&
+                !TypeUtils.isOfClassType(mi.getType(), METHOD_TYPE)) {
                 Cursor parent = getCursor().dropParentUntil(is -> is instanceof J.Assignment || is instanceof J.VariableDeclarations || is instanceof J.Block);
                 if (!(parent.getValue() instanceof J.Block)) {
                     JavaType type = parent.getValue() instanceof J.Assignment ?
@@ -71,47 +71,38 @@ public class UseEnumSetOf extends Recipe {
                     if (isAssignmentSetOfEnum(type)) {
                         maybeAddImport(METHOD_TYPE);
 
-                        List<Expression> args = methodInvocation.getArguments();
+                        List<Expression> args = mi.getArguments();
                         if (isArrayParameter(args)) {
-                            return methodInvocation;
+                            return mi;
                         }
-                        StringJoiner setOf = initStringJoiner(args);
+                        StringJoiner setOf;
+                        if (args.get(0) instanceof J.Empty) {
+                            setOf = new StringJoiner(", ", "EnumSet.noneOf(", ")");
+                        } else {
+                            setOf = new StringJoiner(", ", "EnumSet.of(", ")");
+                        }
                         args.forEach(o -> setOf.add("#{any()}"));
 
-                        return createNewMethodInvocation(methodInvocation, (JavaType.Parameterized) type, setOf);
+                        J.MethodInvocation visitMethodInvocation = JavaTemplate.builder(setOf.toString())
+                                .contextSensitive()
+                                .imports(METHOD_TYPE)
+                                .build()
+                                .apply(updateCursor(mi), mi.getCoordinates().replace(), args.toArray());
+
+                        if (args.get(0) instanceof J.Empty) {
+                            JavaType.Method methodType = mi.getMethodType().withName("noneOf");
+                            JavaType.Class parameterType = JavaType.ShallowClass.build(
+                                    ((JavaType.Parameterized) type).getTypeParameters().get(0).toString());
+                            return visitMethodInvocation.withMethodType(methodType)
+                                    .withArguments(singletonList(new J.Identifier(
+                                            Tree.randomId(), Space.EMPTY, mi.getMarkers(), emptyList(),
+                                            parameterType.getClassName() + ".class", parameterType, null)));
+                        }
+                        return visitMethodInvocation;
                     }
                 }
             }
-            return methodInvocation;
-        }
-
-        private StringJoiner initStringJoiner(List<Expression> args) {
-            if (args.get(0) instanceof J.Empty) {
-                return new StringJoiner(", ", "EnumSet.noneOf(", ")");
-            }
-            return new StringJoiner(", ", "EnumSet.of(", ")");
-        }
-
-        private J.MethodInvocation createNewMethodInvocation(J.MethodInvocation methodInvocation,
-                                                             JavaType.Parameterized type,
-                                                             StringJoiner setOf) {
-            J.MethodInvocation visitMethodInvocation = JavaTemplate.builder(setOf.toString())
-                    .contextSensitive()
-                    .imports(METHOD_TYPE)
-                    .build()
-                    .apply(updateCursor(methodInvocation), methodInvocation.getCoordinates().replace(),
-                            methodInvocation.getArguments().toArray());
-
-            if (methodInvocation.getArguments().get(0) instanceof J.Empty) {
-                JavaType.Method methodType = methodInvocation.getMethodType().withName("noneOf");
-                JavaType.Class parameterType = JavaType.ShallowClass.build(
-                        type.getTypeParameters().get(0).toString());
-                return visitMethodInvocation.withMethodType(methodType)
-                        .withArguments(singletonList(new J.Identifier(
-                                Tree.randomId(), Space.EMPTY, methodInvocation.getMarkers(), emptyList(),
-                                parameterType.getClassName() + ".class", parameterType, null)));
-            }
-            return visitMethodInvocation;
+            return mi;
         }
 
         private boolean isAssignmentSetOfEnum(@Nullable JavaType type) {

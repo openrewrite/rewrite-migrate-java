@@ -161,6 +161,7 @@ class UseEnumSetOfTest implements RewriteTest {
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/490")
     void dontHaveArgs() {
+        //language=java
         rewriteRun(
           version(
             java(
@@ -191,6 +192,4 @@ class UseEnumSetOfTest implements RewriteTest {
           )
         );
     }
-
-
 }
