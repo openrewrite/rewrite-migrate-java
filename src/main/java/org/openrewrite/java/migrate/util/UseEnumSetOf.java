@@ -22,14 +22,14 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.StringJoiner;
-
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 public class UseEnumSetOf extends Recipe {
     private static final MethodMatcher SET_OF = new MethodMatcher("java.util.Set of(..)", true);
@@ -86,7 +86,7 @@ public class UseEnumSetOf extends Recipe {
                                     .apply(updateCursor(mi), mi.getCoordinates().replace());
                         }
 
-                        StringJoiner  setOf = new StringJoiner(", ", "EnumSet.of(", ")");
+                        StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
                         args.forEach(o -> setOf.add("#{any()}"));
                         return JavaTemplate.builder(setOf.toString())
                                 .contextSensitive()
