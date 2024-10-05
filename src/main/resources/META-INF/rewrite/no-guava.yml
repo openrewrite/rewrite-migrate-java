@@ -60,9 +60,6 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferMathSubtractExact
   - org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
   - org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference
-  - org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
-  - org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
-  - org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -77,6 +74,9 @@ tags:
   - java11
 recipeList:
   - org.openrewrite.java.migrate.guava.NoGuava
+  - org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
+  - org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
+  - org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNullElse
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: io.springfox
