@@ -160,8 +160,7 @@ class UseEnumSetOfTest implements RewriteTest {
 
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/490")
-    void nonof() {
-        //language=java
+    void dontHaveArgs() {
         rewriteRun(
           version(
             java(
