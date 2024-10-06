@@ -15,12 +15,14 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.NoMissingTypes;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.JavaType.ShallowClass;
@@ -49,7 +51,7 @@ public class MigrateCollectionsSingletonList extends Recipe {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
-                if (SINGLETON_LIST.matches(method)) {
+                if (SINGLETON_LIST.matches(m) && isNotLiteralNull(m)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.List");
 
@@ -64,6 +66,11 @@ public class MigrateCollectionsSingletonList extends Recipe {
                             .withPrefix(Space.EMPTY);
                 }
                 return m;
+            }
+
+            private boolean isNotLiteralNull(J.MethodInvocation m) {
+                return !(m.getArguments().get(0) instanceof J.Literal &&
+                         ((J.Literal) m.getArguments().get(0)).getValue() == null);
             }
         });
     }

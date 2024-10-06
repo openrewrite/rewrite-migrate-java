@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -30,6 +31,7 @@ class MigrateCollectionsSingletonSetTest implements RewriteTest {
         spec.recipe(new MigrateCollectionsSingletonSet());
     }
 
+    @DocumentExample
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
     void singleTonSet() {
@@ -78,6 +80,26 @@ class MigrateCollectionsSingletonSetTest implements RewriteTest {
 
                 class Test {
                     Set<LocalDate> set = Set.of(LocalDate.now());
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/571")
+    @Test
+    void shouldNotConvertLiteralNull() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.*;
+
+                class Test {
+                    Set<String> set = Collections.singleton(null);
                 }
                 """
             ),
