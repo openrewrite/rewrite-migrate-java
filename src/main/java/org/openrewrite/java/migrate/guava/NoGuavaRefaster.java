@@ -56,21 +56,4 @@ public class NoGuavaRefaster {
             return java.util.Objects.requireNonNull(object, String.valueOf(message));
         }
     }
-
-    @RecipeDescriptor(
-            name = "`String.valueof(String)` to `String`",
-            description = "Migrate from `String.valueof(String)` to `String`, mainly as a cleanup after other recipes."
-    )
-    public static class StringValueOfString {
-        @BeforeTemplate
-        @SuppressWarnings("UnnecessaryCallToStringValueOf")
-        String before(String string) {
-            return String.valueOf(string);
-        }
-
-        @AfterTemplate
-        String after(String string) {
-            return (string);
-        }
-    }
 }
