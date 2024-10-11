@@ -45,7 +45,7 @@ public class NoGuavaRefaster {
 
     // Note: Order of the below two recipes are important.
     @RecipeDescriptor(
-            name = "`Preconditions.checkNotNull` with message to `Objects.requireNonNull`",
+            name = "`Preconditions.checkNotNull` with `String` message to `Objects.requireNonNull`",
             description = "Migrate from Guava `Preconditions.checkNotNull` to Java 8 `java.util.Objects.requireNonNull`."
     )
     public static class PreconditionsCheckNotNullWithMessageToObjectsRequireNonNull {
@@ -61,7 +61,7 @@ public class NoGuavaRefaster {
     }
 
     @RecipeDescriptor(
-        name = "`Preconditions.checkNotNull` with message to `Objects.requireNonNull`",
+        name = "`Preconditions.checkNotNull` with `Object` message to `Objects.requireNonNull` with `String.valueOf`",
         description = "Migrate from Guava `Preconditions.checkNotNull` to Java 8 `java.util.Objects.requireNonNull`."
     )
     public static class PreconditionsCheckNotNullWithMessageToObjectsRequireNonNullMessageTypeObject {
