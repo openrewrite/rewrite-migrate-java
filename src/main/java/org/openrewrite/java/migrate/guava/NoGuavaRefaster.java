@@ -19,8 +19,6 @@ import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import org.openrewrite.java.template.RecipeDescriptor;
 
-import java.util.Objects;
-
 @RecipeDescriptor(
         name = "Refaster style Guava to Java migration recipes",
         description = "Recipes that migrate from Guava to Java, using Refaster style templates for cases beyond what declarative recipes can cover."
