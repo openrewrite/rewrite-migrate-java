@@ -503,4 +503,32 @@ class StringFormattedTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/573")
+    void doNotRetainPrefixOfTheFirstArgument() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                class A {
+                    void foo(String bar) {
+                        String.format(
+                        "my string %s", bar);
+                    }
+                }
+                """,
+              """
+                class A {
+                    void foo(String bar) {
+                        "my string %s".formatted(bar);
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
 }
