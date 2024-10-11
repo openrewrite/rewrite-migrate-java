@@ -63,25 +63,34 @@ class JohnzonJavaxtoJakartaTest implements RewriteTest {
                 assertThat(actual).isNotNull();
                 Matcher version = Pattern.compile("<johnzon.version>([0-9]+\\.[0-9]+\\.[0-9]+)</johnzon.version>")
                   .matcher(actual);
+
+                Matcher jsonApiVersion = Pattern.compile("2.1.\\d+").matcher(actual);
+                assertThat(jsonApiVersion.find()).describedAs("Expected jakarta.json-api 2.1.x version in %s", actual).isTrue();
+
                 assertThat(version.find()).isTrue();
                 return """
-                  <project>
-                      <groupId>com.example.ehcache</groupId>
-                      <artifactId>johnzon-legacy</artifactId>
-                      <version>1.0.0</version>
-                      <properties>
-                          <johnzon.version>%s</johnzon.version>
-                      </properties>
-                      <dependencies>
-                          <dependency>
-                              <groupId>org.apache.johnzon</groupId>
-                              <artifactId>johnzon-core</artifactId>
-                              <version>${johnzon.version}</version>
-                              <classifier>jakarta</classifier>
-                          </dependency>
-                      </dependencies>
-                  </project>
-                  """.formatted(version.group(1));
+                <project>
+                    <groupId>com.example.ehcache</groupId>
+                    <artifactId>johnzon-legacy</artifactId>
+                    <version>1.0.0</version>
+                    <properties>
+                        <johnzon.version>%s</johnzon.version>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.johnzon</groupId>
+                            <artifactId>johnzon-core</artifactId>
+                            <version>${johnzon.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>jakarta.json</groupId>
+                            <artifactId>jakarta.json-api</artifactId>
+                            <version>%s</version>
+                            <scope>provided</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """.formatted(version.group(1), jsonApiVersion.group(0));
             })
           )
         );
