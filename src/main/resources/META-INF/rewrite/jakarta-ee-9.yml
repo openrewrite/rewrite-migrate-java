@@ -957,6 +957,7 @@ recipeList:
       artifactId: jakarta.json-api
       scope: provided
       version: 2.1.X
+      onlyIfUsing: org.apache.johnzon..*
 ---
 # Currently this recipe is only updating the artifacts to a version that is compatible with J2EE 9. There still may be
 # breaking changes to the Rest Assured API that need to be addressed.
