@@ -41,11 +41,28 @@ public class NoGuavaRefaster {
         }
     }
 
+    // Note: Order of the below two recipes are important.
     @RecipeDescriptor(
-            name = "`Preconditions.checkNotNull` with message to `Objects.requireNonNull`",
+            name = "`Preconditions.checkNotNull` with `String` message to `Objects.requireNonNull`",
             description = "Migrate from Guava `Preconditions.checkNotNull` to Java 8 `java.util.Objects.requireNonNull`."
     )
     public static class PreconditionsCheckNotNullWithMessageToObjectsRequireNonNull {
+        @BeforeTemplate
+        Object before(Object object, String message) {
+            return com.google.common.base.Preconditions.checkNotNull(object, message);
+        }
+
+        @AfterTemplate
+        Object after(Object object, String message) {
+            return java.util.Objects.requireNonNull(object, message);
+        }
+    }
+
+    @RecipeDescriptor(
+        name = "`Preconditions.checkNotNull` with `Object` message to `Objects.requireNonNull` with `String.valueOf`",
+        description = "Migrate from Guava `Preconditions.checkNotNull` to Java 8 `java.util.Objects.requireNonNull`."
+    )
+    public static class PreconditionsCheckNotNullWithMessageToObjectsRequireNonNullMessageTypeObject {
         @BeforeTemplate
         Object before(Object object, Object message) {
             return com.google.common.base.Preconditions.checkNotNull(object, message);
@@ -54,23 +71,6 @@ public class NoGuavaRefaster {
         @AfterTemplate
         Object after(Object object, Object message) {
             return java.util.Objects.requireNonNull(object, String.valueOf(message));
-        }
-    }
-
-    @RecipeDescriptor(
-            name = "`String.valueof(String)` to `String`",
-            description = "Migrate from `String.valueof(String)` to `String`, mainly as a cleanup after other recipes."
-    )
-    public static class StringValueOfString {
-        @BeforeTemplate
-        @SuppressWarnings("UnnecessaryCallToStringValueOf")
-        String before(String string) {
-            return String.valueOf(string);
-        }
-
-        @AfterTemplate
-        String after(String string) {
-            return (string);
         }
     }
 }
