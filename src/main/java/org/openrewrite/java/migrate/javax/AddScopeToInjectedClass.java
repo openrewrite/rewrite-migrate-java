@@ -85,7 +85,7 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
                 for (J.ClassDeclaration aClass : cu.getClasses()) {
                     if (aClass.getType() != null && injectedTypes.contains(aClass.getType().getFullyQualifiedName())) {
                         return (J.CompilationUnit) new AnnotateTypesVisitor(JAVAX_ENTERPRISE_CONTEXT_DEPENDENT)
-                                .visit(cu, injectedTypes, getCursor().getParent());
+                                .visit(cu, injectedTypes, getCursor().getParentTreeCursor());
                     }
                 }
                 return cu;

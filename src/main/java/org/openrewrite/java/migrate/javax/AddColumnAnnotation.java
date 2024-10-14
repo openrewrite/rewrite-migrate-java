@@ -91,7 +91,7 @@ public class AddColumnAnnotation extends Recipe {
                         // Update existing @Column annotation
                         J.VariableDeclarations updatedVariable = (J.VariableDeclarations) new AddOrUpdateAnnotationAttribute(
                                 "javax.persistence.Column", "name", "element", true)
-                                .getVisitor().visit(multiVariable, ctx, getCursor());
+                                .getVisitor().visit(multiVariable, ctx, getCursor().getParentTreeCursor());
                         return super.visitVariableDeclarations(updatedVariable, ctx);
                     }
                 }
