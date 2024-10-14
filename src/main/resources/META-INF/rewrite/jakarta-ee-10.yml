@@ -36,6 +36,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml
   - org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
+  - org.openrewrite.java.migrate.jakarta.UpdateJakartaAnnotations2
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -289,3 +290,13 @@ recipeList:
       groupId: jakarta.platform
       artifactId: "*"
       newVersion: 10.0.0
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateJakartaAnnotations2
+displayName: Update Jakarta EE annotation Dependencies to 2.1.x.
+description: Update Jakarta EE annotation Dependencies to 2.1.x.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.annotations
+      artifactId: jakarta.annotation-api
+      newVersion: 2.1.x
