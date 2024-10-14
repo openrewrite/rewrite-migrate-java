@@ -72,7 +72,7 @@ public class BeanDiscovery extends Recipe {
                 // Update or apply bean-discovery-mode=all
                 if (hasBeanDiscoveryMode) {
                     TreeVisitor<?, ExecutionContext> changeTagVisitor = new ChangeTagAttribute("beans", "bean-discovery-mode", "all", null, null).getVisitor();
-                    t = (Xml.Tag) changeTagVisitor.visit(t, ctx, getCursor());
+                    t = (Xml.Tag) changeTagVisitor.visit(t, ctx, getCursor().getParentOrThrow());
                 } else {
                     t = addAttribute(t, "bean-discovery-mode", "all", ctx);
                 }
