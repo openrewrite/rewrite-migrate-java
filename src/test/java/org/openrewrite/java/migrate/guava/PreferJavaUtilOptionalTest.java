@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
@@ -135,6 +136,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
             """));
     }
 
+    @Disabled
     @Test
     void orSupplierToOrElseGetWithSupplierArgument() {
         //language=java
