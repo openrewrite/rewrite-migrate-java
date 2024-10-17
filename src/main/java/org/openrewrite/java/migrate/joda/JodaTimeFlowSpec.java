@@ -50,12 +50,12 @@ public class JodaTimeFlowSpec extends DataFlowSpec {
     Object parent = sinkNode.getCursor().getParentTreeCursor().getValue();
     if (parent instanceof J.MethodInvocation) {
       J.MethodInvocation method = (J.MethodInvocation) parent;
-      return (method.getSelect() != null && method.getSelect().equals(value))
-          || method.getArguments().stream().anyMatch(a -> a.equals(value));
-    }
-    return parent instanceof J.VariableDeclarations.NamedVariable
-        || parent instanceof J.NewClass
-        || parent instanceof J.Assignment
+      return (method.getSelect() != null && method.getSelect().equals(value)) ||
+          method.getArguments().stream().anyMatch(a -> a.equals(value));
+    return parent instanceof J.VariableDeclarations.NamedVariable ||
+        parent instanceof J.NewClass ||
+        parent instanceof J.Assignment ||
+        parent instanceof J.Return;
         || parent instanceof J.Return;
   }
 
