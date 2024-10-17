@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.test.RewriteTest.toRecipe;
 
-public class JodaTimeScannerTest implements RewriteTest {
+class JodaTimeScannerTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
