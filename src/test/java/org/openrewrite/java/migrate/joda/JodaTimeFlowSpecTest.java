@@ -84,6 +84,7 @@ public class JodaTimeFlowSpecTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().classpath("joda-time"));
     }
 
+    @DocumentExample
     @Test
     void jodaTimeUsageWithVarBindings() {
         rewriteRun(
