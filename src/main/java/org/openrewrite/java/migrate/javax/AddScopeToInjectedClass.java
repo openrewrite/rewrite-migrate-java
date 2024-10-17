@@ -52,9 +52,11 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
-                for (JavaType.Variable variable : cd.getType().getMembers()) {
-                    if (variableTypeRequiresScope(variable)) {
-                        injectedTypes.add(((JavaType.FullyQualified) variable.getType()).getFullyQualifiedName());
+                if(cd.getType() != null) {
+                    for (JavaType.Variable variable : cd.getType().getMembers()) {
+                        if (variableTypeRequiresScope(variable)) {
+                            injectedTypes.add(((JavaType.FullyQualified) variable.getType()).getFullyQualifiedName());
+                        }
                     }
                 }
                 return cd;
@@ -85,7 +87,7 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
                 for (J.ClassDeclaration aClass : cu.getClasses()) {
                     if (aClass.getType() != null && injectedTypes.contains(aClass.getType().getFullyQualifiedName())) {
                         return (J.CompilationUnit) new AnnotateTypesVisitor(JAVAX_ENTERPRISE_CONTEXT_DEPENDENT)
-                                .visit(cu, injectedTypes, getCursor().getParentTreeCursor());
+                                .visitNonNull(cu, injectedTypes, getCursor().getParentTreeCursor());
                     }
                 }
                 return cu;
