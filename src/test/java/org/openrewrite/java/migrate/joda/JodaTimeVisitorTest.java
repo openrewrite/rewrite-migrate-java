@@ -28,7 +28,7 @@ class JodaTimeVisitorTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(toRecipe(JodaTimeVisitor::new))
+          .recipe(toRecipe(() -> new JodaTimeVisitor()))
           .parser(JavaParser.fromJavaVersion().classpath("joda-time"));
     }
 
@@ -414,6 +414,34 @@ class JodaTimeVisitorTest implements RewriteTest {
     }
 
     @Test
+    void migrateAbstractInstant() {
+        // language=java
+        rewriteRun(
+          java(
+            """
+              import org.joda.time.DateTime;
+
+              class A {
+                  public void foo() {
+                      new DateTime().toDate();
+                  }
+              }
+              """,
+            """
+              import java.time.ZonedDateTime;
+              import java.util.Date;
+              
+              class A {
+                  public void foo() {
+                      Date.from(ZonedDateTime.now().toInstant());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void migrateClassesWithFqn() {
         // language=java
         rewriteRun(
@@ -502,10 +530,12 @@ class JodaTimeVisitorTest implements RewriteTest {
               class A {
                   public void foo() {
                       new B().print(new DateTime()); // print is public method accepting DateTime, not handled yet
+                      System.out.println(new B().dateTime);
                   }
               }
               
               class B {
+                  DateTime dateTime = new DateTime();
                   public void print(DateTime dateTime) {
                       System.out.println(dateTime);
                   }
@@ -528,6 +558,26 @@ class JodaTimeVisitorTest implements RewriteTest {
                   public void foo() {
                       // DateTimeFormat.forStyle is unhandled so parent method should not be changed
                       System.out.println(DateTime.parse("2024-09-30T23:03:00.000Z", DateTimeFormat.forStyle("SS")));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void unhandledCases() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import org.joda.time.DateTime;
+              import org.joda.time.Instant;
+              
+              class A {
+                  public void foo() {
+                      new Instant();
+                      new DateTime().getZone();
                   }
               }
               """
