@@ -15,7 +15,8 @@
  */
 package org.openrewrite.java.migrate.joda.templates;
 
-import java.util.HashMap;
+import org.openrewrite.java.tree.JavaType;
+
 import java.util.Map;
 import org.openrewrite.java.tree.JavaType;
 
