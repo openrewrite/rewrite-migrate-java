@@ -101,9 +101,9 @@ public class JodaTimeScannerTest implements RewriteTest {
         // is passed as argument to method, and migration of method parameters has not been implemented yet.
         assertEquals(4, scanner.getUnsafeVars().size());
         for (J.VariableDeclarations.NamedVariable var : scanner.getUnsafeVars()) {
-            assertTrue(var.getSimpleName().equals("dtz")
-              || var.getSimpleName().equals("dt")
-              || var.getSimpleName().equals("dateTime")
+            assertTrue(var.getSimpleName().equals("dtz") ||
+              var.getSimpleName().equals("dt") ||
+              var.getSimpleName().equals("dateTime")
             );
         }
     }
