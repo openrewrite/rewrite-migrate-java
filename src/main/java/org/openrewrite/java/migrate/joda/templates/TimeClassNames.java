@@ -19,6 +19,10 @@ import java.util.regex.Pattern;
 
 public class TimeClassNames {
     public static final Pattern JODA_CLASS_PATTERN = Pattern.compile("org\\.joda\\.time\\..*");
+
+    // java util
+    public static final String JAVA_UTIL_DATE = "java.util.Date";
+
     // Joda-Time classes
     public static final String JODA_TIME_PKG = "org.joda.time";
     public static final String JODA_BASE_DATE_TIME = JODA_TIME_PKG + ".base.BaseDateTime";
@@ -32,6 +36,7 @@ public class TimeClassNames {
     public static final String JODA_DURATION_FIELD_TYPE = JODA_TIME_PKG + ".DurationFieldType";
     public static final String JODA_DURATION = JODA_TIME_PKG + ".Duration";
     public static final String JODA_READABLE_DURATION = JODA_TIME_PKG + ".ReadableDuration";
+    public static final String JODA_ABSTRACT_INSTANT = JODA_TIME_PKG + ".base.AbstractInstant";
 
     // Java Time classes
     public static final String JAVA_TIME_PKG = "java.time";
