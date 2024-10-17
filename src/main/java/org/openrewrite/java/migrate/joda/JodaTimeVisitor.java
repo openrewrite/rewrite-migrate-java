@@ -130,9 +130,9 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
         if (anyDuration.matches(method)) {
             return applyTemplate(method, m, DurationTemplates.getTemplates()).orElse(method);
         }
-        if (method.getSelect() != null
-                && method.getSelect().getType() != null
-                && method.getSelect().getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+        if (method.getSelect() != null &&
+                method.getSelect().getType() != null &&
+                method.getSelect().getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return method; // unhandled case
         }
         if (areArgumentsAssignable(m)) {

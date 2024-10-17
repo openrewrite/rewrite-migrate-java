@@ -28,8 +28,6 @@ import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_CL
 
 public class JodaTimeFlowSpec extends DataFlowSpec {
 
-  private static final Set<String> JODA_CLASSES = new HashSet<String>(){{add("org.joda.time.DateTime");}};
-
   @Override
   public boolean isSource(@NonNull DataFlowNode srcNode) {
     Object value = srcNode.getCursor().getParentTreeCursor().getValue();
@@ -51,12 +49,12 @@ public class JodaTimeFlowSpec extends DataFlowSpec {
     if (parent instanceof J.MethodInvocation) {
       J.MethodInvocation method = (J.MethodInvocation) parent;
       return (method.getSelect() != null && method.getSelect().equals(value)) ||
-          method.getArguments().stream().anyMatch(a -> a.equals(value));
+              method.getArguments().stream().anyMatch(a -> a.equals(value));
+    }
     return parent instanceof J.VariableDeclarations.NamedVariable ||
         parent instanceof J.NewClass ||
         parent instanceof J.Assignment ||
         parent instanceof J.Return;
-        || parent instanceof J.Return;
   }
 
   static boolean isJodaType(JavaType type) {
