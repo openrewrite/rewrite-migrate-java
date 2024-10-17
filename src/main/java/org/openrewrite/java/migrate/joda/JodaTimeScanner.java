@@ -196,6 +196,7 @@ public class JodaTimeScanner extends JavaIsoVisitor<ExecutionContext> {
         @NonNull
         private List<Expression> expressions;
 
+        @Override
         public Expression visitExpression(Expression expression, ExecutionContext ctx) {
             int index = expressions.indexOf(expression);
             if (index == -1) {
