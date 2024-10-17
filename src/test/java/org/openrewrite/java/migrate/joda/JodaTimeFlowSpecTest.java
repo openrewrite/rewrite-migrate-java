@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.test.RewriteTest.toRecipe;
 
-public class JodaTimeFlowSpecTest implements RewriteTest {
+class JodaTimeFlowSpecTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
