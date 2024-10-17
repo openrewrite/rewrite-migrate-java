@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.joda;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Cursor;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.analysis.dataflow.Dataflow;
 import org.openrewrite.java.JavaIsoVisitor;

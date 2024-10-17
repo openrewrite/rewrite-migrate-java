@@ -15,13 +15,13 @@
  */
 package org.openrewrite.java.migrate.joda;
 
+import fj.data.Option;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
-import fj.data.Option;
 import org.openrewrite.analysis.dataflow.Dataflow;
 import org.openrewrite.analysis.dataflow.analysis.SinkFlowSummary;
 import org.openrewrite.java.JavaIsoVisitor;

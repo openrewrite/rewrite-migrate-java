@@ -17,8 +17,8 @@ package org.openrewrite.java.migrate.joda.templates;
 
 import org.openrewrite.java.tree.JavaType;
 
+import java.util.HashMap;
 import java.util.Map;
-import org.openrewrite.java.tree.JavaType;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
