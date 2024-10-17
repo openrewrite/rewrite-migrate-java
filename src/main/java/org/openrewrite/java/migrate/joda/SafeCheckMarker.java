@@ -21,7 +21,9 @@ import lombok.With;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
 import org.openrewrite.marker.Marker;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * A marker to indicate whether an expression is safe to migrate
