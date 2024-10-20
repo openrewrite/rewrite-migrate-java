@@ -494,7 +494,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
     @Test
-    void doChangeNestedLists() {
+    void doChangeAssignToImmutableMap() {
         //language=java
         rewriteRun(
           version(

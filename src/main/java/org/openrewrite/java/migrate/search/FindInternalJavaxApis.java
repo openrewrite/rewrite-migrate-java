@@ -85,7 +85,7 @@ public class FindInternalJavaxApis extends Recipe {
     private void insertRow(MethodAccess ma, ExecutionContext ctx, JavaType.Method methodType) {
         methodCalls.insertRow(ctx, new MethodCalls.Row(
                 ma.getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath().toString(),
-                ma.getTree().printTrimmed(ma.getCursor()),
+                ma.getTree().printTrimmed(ma.getCursor().getParentOrThrow()),
                 methodType.getDeclaringType().toString(),
                 methodType.getName(),
                 methodType.getParameterTypes().stream().map(String::valueOf)

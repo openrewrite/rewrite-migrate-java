@@ -87,37 +87,18 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
         maybeRemoveImport(guavaType);
         maybeAddImport(javaType);
 
-        String template = mi.getArguments().stream()
-            .map(arg -> {
-              if (arg.getType() instanceof JavaType.Primitive) {
-                String type = "";
-                if (JavaType.Primitive.Boolean == arg.getType()) {
-                  type = "Boolean";
-                } else if (JavaType.Primitive.Byte == arg.getType()) {
-                  type = "Byte";
-                } else if (JavaType.Primitive.Char == arg.getType()) {
-                  type = "Character";
-                } else if (JavaType.Primitive.Double == arg.getType()) {
-                  type = "Double";
-                } else if (JavaType.Primitive.Float == arg.getType()) {
-                  type = "Float";
-                } else if (JavaType.Primitive.Int == arg.getType()) {
-                  type = "Integer";
-                } else if (JavaType.Primitive.Long == arg.getType()) {
-                  type = "Long";
-                } else if (JavaType.Primitive.Short == arg.getType()) {
-                  type = "Short";
-                } else if (JavaType.Primitive.String == arg.getType()) {
-                  type = "String";
-                }
-                return TypeUtils.asFullyQualified(JavaType.buildType("java.lang." + type));
-              } else {
-                return TypeUtils.asFullyQualified(arg.getType());
-              }
-            })
-            .filter(Objects::nonNull)
-            .map(type -> "#{any(" + type.getFullyQualifiedName() + ")}")
-            .collect(Collectors.joining(",", getShortType(javaType) + ".of(", ")"));
+        String template;
+        Object[] args;
+        if (method.getArguments().isEmpty() || method.getArguments().get(0) instanceof J.Empty) {
+          template = getShortType(javaType) + ".of()";
+          args = new Object[]{};
+        } else if ("com.google.common.collect.ImmutableMap".equals(guavaType)) {
+          template = getShortType(javaType) + ".of(#{any()}, #{any()})";
+          args = new Object[]{method.getArguments().get(0), method.getArguments().get(1)};
+        } else {
+          template = getShortType(javaType) + ".of(#{any()})";
+          args = new Object[]{method.getArguments().get(0)};
+        }
 
         methodUpdated = true;
         J.MethodInvocation m = JavaTemplate.builder(template)
@@ -126,8 +107,8 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
             .build()
             .apply(getCursor(),
                 mi.getCoordinates().replace(),
-                mi.getArguments().get(0) instanceof J.Empty ? new Object[] {} :
-                    mi.getArguments().toArray());
+                args);
+        m = m.getPadding().withArguments(method.getPadding().getArguments());
         J.MethodInvocation p = getCursor().getValue();
         m = m.withMethodType((JavaType.Method) visitType(p.getMethodType(), ctx));
         return super.visitMethodInvocation(m, ctx);

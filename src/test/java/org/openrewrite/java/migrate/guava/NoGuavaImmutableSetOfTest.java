@@ -16,13 +16,13 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.*;
 
 class NoGuavaImmutableSetOfTest implements RewriteTest {
     @Override
@@ -158,6 +158,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
     }
 
     @Test
+    @DocumentExample
     void replaceArguments() {
         //language=java
         rewriteRun(
@@ -478,20 +479,56 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
     @Test
-    void doNotchangeAssignToImmutableSet() {
+    void doChangeAssignToImmutableSet() {
         //language=java
         rewriteRun(
-          version(
-            java(
+          spec -> spec.allSources(all -> all.markers(javaVersion(9))),
+          java(
+            """
+              import com.google.common.collect.ImmutableSet;
+              
+              class Test {
+                  ImmutableSet<String> m = ImmutableSet.of();
+              }
+              """,
+            """
+              import java.util.Set;
+              
+              class Test {
+                  Set<String> m = Set.of();
+              }
               """
-                import com.google.common.collect.ImmutableSet;
+          )
+        );
+    }
 
-                class Test {
-                    ImmutableSetp<String> m = ImmutableSet.of();
-                }
-                """
-            ),
-            9
+    @Test
+    void multiLine() {
+        //language=java
+        rewriteRun(
+          spec -> spec.allSources(all -> all.markers(javaVersion(11))),
+          java(
+            """
+              import com.google.common.collect.ImmutableSet;
+              import java.util.Set;
+              
+              class Test {
+                  Set<String> m = ImmutableSet.of(
+                    "foo",
+                    "bar"
+                  );
+              }
+              """,
+            """
+              import java.util.Set;
+              
+              class Test {
+                  Set<String> m = Set.of(
+                    "foo",
+                    "bar"
+                  );
+              }
+              """
           )
         );
     }
