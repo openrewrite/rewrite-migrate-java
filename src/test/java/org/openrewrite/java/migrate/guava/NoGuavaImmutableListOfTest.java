@@ -313,7 +313,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
     }
 
     @Test
-    void doNotChangeMethodInvocationWithSelect() {
+    void doChangeMethodInvocationWithSelect() {
         //language=java
         rewriteRun(
           java(
@@ -338,6 +338,16 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                     void method() {
                         A a = new A();
                         a.method(ImmutableList.of().toArray());
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+
+                class Test {
+                    void method() {
+                        A a = new A();
+                        a.method(List.of().toArray());
                     }
                 }
                 """
@@ -484,7 +494,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
     @Test
-    void doNotChangeNestedLists() {
+    void doChangeNestedLists() {
         //language=java
         rewriteRun(
           version(
@@ -496,25 +506,12 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                 class A {
                     Object o = List.of(ImmutableList.of(1, 2), ImmutableList.of(2, 3));
                 }
-                """
-            ),
-            9
-          )
-        );
-    }
-
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
-    @Test
-    void doNotchangeAssignToImmutableList() {
-        //language=java
-        rewriteRun(
-          version(
-            java(
+                """,
               """
-                import com.google.common.collect.ImmutableList;
+                import java.util.List;
 
-                class Test {
-                    ImmutableList<String> l = ImmutableList.of();
+                class A {
+                    Object o = List.of(List.of(1, 2), List.of(2, 3));
                 }
                 """
             ),
@@ -522,4 +519,91 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void doChangeNestedListsWithVariableType() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class A {
+                    ImmutableList<ImmutableList<Integer>> o = ImmutableList.of(ImmutableList.of(1, 2), ImmutableList.of(2, 3));
+                }
+                """,
+              """
+                import java.util.List;
+
+                class A {
+                    List<List<Integer>> o = List.of(List.of(1, 2), List.of(2, 3));
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+    @Test
+    void doChangeAssignFromImmutableListToList() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class A {
+                    void test() {
+                        ImmutableList<Integer> o = ImmutableList.of(1, 2);
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+
+                class A {
+                    void test() {
+                        List<Integer> o = List.of(1, 2);
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/489")
+    @Test
+    void doChangeWithStreamOperation() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class A {
+                    void test() {
+                        final List<Integer> list = ImmutableList.of(1, 2).stream().toList();
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+
+                class A {
+                    void test() {
+                        final List<Integer> list = List.of(1, 2).stream().toList();
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
 }
