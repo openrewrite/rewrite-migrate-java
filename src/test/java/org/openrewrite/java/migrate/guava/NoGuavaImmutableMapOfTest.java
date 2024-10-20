@@ -501,7 +501,7 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
     @Test
-    void doNotchangeAssignToImmutableMap() {
+    void doNotChangeAssignToImmutableMap() {
         //language=java
         rewriteRun(
           version(
