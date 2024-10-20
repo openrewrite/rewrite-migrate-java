@@ -451,7 +451,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
     @Test
-    void doNotChangeNestedSets() {
+    void doChangeNestedSets() {
         //language=java
         rewriteRun(
           version(
@@ -463,6 +463,13 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
                 class A {
                     Object o = Set.of(ImmutableSet.of(1, 2));
                 }
+                """,
+              """
+                import java.util.Set;
+
+                class A {
+                    Object o = Set.of(Set.of(1, 2));
+                }
                 """
             ),
             9
@@ -472,7 +479,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
     @Test
-    void doNotChangeAssignToImmutableSet() {
+    void doChangeAssignToImmutableSet() {
         //language=java
         rewriteRun(
           spec -> spec.allSources(all -> all.markers(javaVersion(9))),
@@ -482,6 +489,13 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
               
               class Test {
                   ImmutableSet<String> m = ImmutableSet.of();
+              }
+              """,
+            """
+              import java.util.Set;
+              
+              class Test {
+                  Set<String> m = Set.of();
               }
               """
           )
