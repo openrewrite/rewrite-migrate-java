@@ -21,9 +21,6 @@ import org.openrewrite.analysis.dataflow.DataFlowSpec;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_CLASS_PATTERN;
 
 public class JodaTimeFlowSpec extends DataFlowSpec {
