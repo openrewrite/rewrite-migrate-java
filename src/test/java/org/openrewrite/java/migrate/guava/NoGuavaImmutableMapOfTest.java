@@ -39,7 +39,7 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.ImmutableMap;
-
+              
               class Test {
                   ImmutableMap<String, String> getMap() {
                       return ImmutableMap.of();
