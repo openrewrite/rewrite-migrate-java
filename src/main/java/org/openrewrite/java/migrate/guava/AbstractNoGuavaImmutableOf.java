@@ -102,8 +102,7 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
             }
 
             @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable,
-                                                                    ExecutionContext ctx) {
+            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 J.VariableDeclarations mv = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
 
                 if (multiVariable != mv && TypeUtils.isOfClassType(mv.getType(), guavaType)) {
@@ -123,12 +122,11 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 return mv;
             }
 
-            private TypeTree createNewTypeExpression(TypeTree typeTree,
-                                                     JavaType newType) {
+            private TypeTree createNewTypeExpression(TypeTree typeTree, JavaType newType) {
                 if (typeTree instanceof J.ParameterizedType) {
-                    List<Expression> parameterizedTypes = ((J.ParameterizedType) typeTree).getTypeParameters();
+                    J.ParameterizedType parameterizedType = (J.ParameterizedType) typeTree;
                     List<JRightPadded<Expression>> jRightPaddedList = new ArrayList<>();
-                    parameterizedTypes.forEach(
+                    parameterizedType.getTypeParameters().forEach(
                             expression -> {
                                 if (expression instanceof J.ParameterizedType && TypeUtils.isOfClassType(expression.getType(), guavaType)) {
                                     jRightPaddedList.add(JRightPadded.build(((J.ParameterizedType) createNewTypeExpression((TypeTree) expression, newType))));
@@ -136,19 +134,12 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                                     jRightPaddedList.add(JRightPadded.build(expression));
                                 }
                             });
-                    JContainer<Expression> typeParameters = JContainer.build(jRightPaddedList);
                     NameTree clazz = new J.Identifier(
                             Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), getShortType(javaType), null, null);
-                    return new J.ParameterizedType(
-                            typeTree.getId(),
-                            typeTree.getPrefix(),
-                            typeTree.getMarkers(),
-                            clazz,
-                            typeParameters,
-                            newType
-                    );
+                    return parameterizedType.withClazz(clazz).withType(newType).getPadding().withTypeParameters(JContainer.build(jRightPaddedList));
                 }
-                return new J.Identifier(typeTree.getId(),
+                return new J.Identifier(
+                        typeTree.getId(),
                         typeTree.getPrefix(),
                         Markers.EMPTY,
                         emptyList(),
