@@ -25,39 +25,39 @@ import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_CL
 
 public class JodaTimeFlowSpec extends DataFlowSpec {
 
-  @Override
-  public boolean isSource(@NonNull DataFlowNode srcNode) {
-    Object value = srcNode.getCursor().getParentTreeCursor().getValue();
+    @Override
+    public boolean isSource(@NonNull DataFlowNode srcNode) {
+        Object value = srcNode.getCursor().getParentTreeCursor().getValue();
 
-    if (value instanceof J.Assignment && ((J.Assignment)value).getVariable() instanceof J.Identifier) {
-      return isJodaType(((J.Assignment)value).getVariable().getType());
+        if (value instanceof J.Assignment && ((J.Assignment) value).getVariable() instanceof J.Identifier) {
+            return isJodaType(((J.Assignment) value).getVariable().getType());
+        }
+
+        if (value instanceof J.VariableDeclarations.NamedVariable) {
+            return isJodaType(((J.VariableDeclarations.NamedVariable) value).getType());
+        }
+        return false;
     }
 
-    if (value instanceof J.VariableDeclarations.NamedVariable) {
-      return isJodaType(((J.VariableDeclarations.NamedVariable)value).getType());
+    @Override
+    public boolean isSink(@NonNull DataFlowNode sinkNode) {
+        Object value = sinkNode.getCursor().getValue();
+        Object parent = sinkNode.getCursor().getParentTreeCursor().getValue();
+        if (parent instanceof J.MethodInvocation) {
+            J.MethodInvocation method = (J.MethodInvocation) parent;
+            return (method.getSelect() != null && method.getSelect().equals(value)) ||
+                   method.getArguments().stream().anyMatch(a -> a.equals(value));
+        }
+        return parent instanceof J.VariableDeclarations.NamedVariable ||
+               parent instanceof J.NewClass ||
+               parent instanceof J.Assignment ||
+               parent instanceof J.Return;
     }
-    return false;
-  }
 
-  @Override
-  public boolean isSink(@NonNull DataFlowNode sinkNode) {
-    Object value = sinkNode.getCursor().getValue();
-    Object parent = sinkNode.getCursor().getParentTreeCursor().getValue();
-    if (parent instanceof J.MethodInvocation) {
-      J.MethodInvocation method = (J.MethodInvocation) parent;
-      return (method.getSelect() != null && method.getSelect().equals(value)) ||
-              method.getArguments().stream().anyMatch(a -> a.equals(value));
+    static boolean isJodaType(JavaType type) {
+        if (!(type instanceof JavaType.Class)) {
+            return false;
+        }
+        return type.isAssignableFrom(JODA_CLASS_PATTERN);
     }
-    return parent instanceof J.VariableDeclarations.NamedVariable ||
-        parent instanceof J.NewClass ||
-        parent instanceof J.Assignment ||
-        parent instanceof J.Return;
-  }
-
-  static boolean isJodaType(JavaType type) {
-    if (!(type instanceof JavaType.Class)) {
-      return false;
-    }
-    return type.isAssignableFrom(JODA_CLASS_PATTERN);
-  }
 }

@@ -420,7 +420,7 @@ class JodaTimeVisitorTest implements RewriteTest {
           java(
             """
               import org.joda.time.DateTime;
-
+              
               class A {
                   public void foo() {
                       new DateTime().toDate();

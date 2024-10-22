@@ -42,26 +42,26 @@ class JodaTimeScannerTest implements RewriteTest {
           spec -> spec.recipe(toRecipe(() -> scanner)),
           java(
             """
-            import org.joda.time.DateTime;
-            import org.joda.time.DateTimeZone;
-            import java.util.Date;
-
-            class A {
-                public void foo(String city) {
-                    DateTimeZone dtz;
-                    if ("london".equals(city)) {
-                        dtz = DateTimeZone.forID("Europe/London");
-                    } else {
-                        dtz = DateTimeZone.forID("America/New_York");
-                    }
-                    DateTime dt = new DateTime(dtz);
-                    print(dt.toDate());
-                }
-                private void print(Date date) {
-                    System.out.println(date);
-                }
-           }
-           """
+               import org.joda.time.DateTime;
+               import org.joda.time.DateTimeZone;
+               import java.util.Date;
+              
+               class A {
+                   public void foo(String city) {
+                       DateTimeZone dtz;
+                       if ("london".equals(city)) {
+                           dtz = DateTimeZone.forID("Europe/London");
+                       } else {
+                           dtz = DateTimeZone.forID("America/New_York");
+                       }
+                       DateTime dt = new DateTime(dtz);
+                       print(dt.toDate());
+                   }
+                   private void print(Date date) {
+                       System.out.println(date);
+                   }
+              }
+              """
           )
         );
         assertTrue(scanner.getUnsafeVars().isEmpty());
@@ -75,26 +75,26 @@ class JodaTimeScannerTest implements RewriteTest {
           spec -> spec.recipe(toRecipe(() -> scanner)),
           java(
             """
-            import org.joda.time.DateTime;
-            import org.joda.time.DateTimeZone;
-
-            class A {
-                DateTime dateTime;
-                public void foo(String city) {
-                    DateTimeZone dtz;
-                    if ("london".equals(city)) {
-                        dtz = DateTimeZone.forID("Europe/London");
-                    } else {
-                        dtz = DateTimeZone.forID("America/New_York");
-                    }
-                    DateTime dt = new DateTime(dtz);
-                    print(dt.toDateTime());
-                }
-                private void print(DateTime dateTime) { // method parameter not handled yet
-                    System.out.println(dateTime);
-                }
-           }
-           """
+               import org.joda.time.DateTime;
+               import org.joda.time.DateTimeZone;
+              
+               class A {
+                   DateTime dateTime;
+                   public void foo(String city) {
+                       DateTimeZone dtz;
+                       if ("london".equals(city)) {
+                           dtz = DateTimeZone.forID("Europe/London");
+                       } else {
+                           dtz = DateTimeZone.forID("America/New_York");
+                       }
+                       DateTime dt = new DateTime(dtz);
+                       print(dt.toDateTime());
+                   }
+                   private void print(DateTime dateTime) { // method parameter not handled yet
+                       System.out.println(dateTime);
+                   }
+              }
+              """
           )
         );
         // The variable dtz is unsafe due to dt. The dt variable is unsafe because its associated expression
@@ -102,8 +102,8 @@ class JodaTimeScannerTest implements RewriteTest {
         assertEquals(4, scanner.getUnsafeVars().size());
         for (J.VariableDeclarations.NamedVariable var : scanner.getUnsafeVars()) {
             assertTrue(var.getSimpleName().equals("dtz") ||
-              var.getSimpleName().equals("dt") ||
-              var.getSimpleName().equals("dateTime")
+                       var.getSimpleName().equals("dt") ||
+                       var.getSimpleName().equals("dateTime")
             );
         }
     }
@@ -116,23 +116,23 @@ class JodaTimeScannerTest implements RewriteTest {
           spec -> spec.recipe(toRecipe(() -> scanner)),
           java(
             """
-            import org.joda.time.DateTime;
-            import org.joda.time.DateTimeZone;
-
-            class A {
-                DateTime dateTime;
-                public void foo(String city) {
-                    DateTimeZone dtz;
-                    if ("london".equals(city)) {
-                        dtz = DateTimeZone.forID("Europe/London");
-                    } else {
-                        dtz = DateTimeZone.forID("America/New_York");
-                    }
-                    DateTime dt = dateTime.minus(2);
-                    System.out.println(dt);
-                }
-           }
-           """
+               import org.joda.time.DateTime;
+               import org.joda.time.DateTimeZone;
+              
+               class A {
+                   DateTime dateTime;
+                   public void foo(String city) {
+                       DateTimeZone dtz;
+                       if ("london".equals(city)) {
+                           dtz = DateTimeZone.forID("Europe/London");
+                       } else {
+                           dtz = DateTimeZone.forID("America/New_York");
+                       }
+                       DateTime dt = dateTime.minus(2);
+                       System.out.println(dt);
+                   }
+              }
+              """
           )
         );
         // The local variable dt is unsafe due to class var datetime.
@@ -150,22 +150,22 @@ class JodaTimeScannerTest implements RewriteTest {
           spec -> spec.recipe(toRecipe(() -> scanner)),
           java(
             """
-            import org.joda.time.DateTime;
-            import org.joda.time.DateTimeZone;
-
-            class A {
-                public DateTime foo(String city) {
-                    DateTimeZone dtz;
-                    if ("london".equals(city)) {
-                        dtz = DateTimeZone.forID("Europe/London");
-                    } else {
-                        dtz = DateTimeZone.forID("America/New_York");
-                    }
-                    DateTime dt = new DateTime(dtz);
-                    return dt.plus(2);
-                }
-           }
-           """
+               import org.joda.time.DateTime;
+               import org.joda.time.DateTimeZone;
+              
+               class A {
+                   public DateTime foo(String city) {
+                       DateTimeZone dtz;
+                       if ("london".equals(city)) {
+                           dtz = DateTimeZone.forID("Europe/London");
+                       } else {
+                           dtz = DateTimeZone.forID("America/New_York");
+                       }
+                       DateTime dt = new DateTime(dtz);
+                       return dt.plus(2);
+                   }
+              }
+              """
           )
         );
         // The local variable dt used in return statement.
