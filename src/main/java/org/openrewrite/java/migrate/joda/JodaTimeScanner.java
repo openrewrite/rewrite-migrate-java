@@ -31,6 +31,7 @@ import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
 import org.openrewrite.java.tree.JavaType;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_CLASS_PATTERN;
 
@@ -223,9 +224,9 @@ public class JodaTimeScanner extends JavaIsoVisitor<ExecutionContext> {
             J j = new JodaTimeVisitor(true).visit(boundaryExpr, ctx, boundary.getParentTreeCursor());
             Set<NamedVariable> referencedVars = new HashSet<>();
             new FindVarReferences().visit(expr, referencedVars, getCursor().getParentTreeCursor());
-            Boolean[] hasJodaType = {false};
+            AtomicBoolean hasJodaType = new AtomicBoolean();
             new HasJodaType().visit(j, hasJodaType);
-            isSafe = isSafe && !hasJodaType[0] && !referencedVars.contains(null);
+            isSafe = isSafe && !hasJodaType.get() && !referencedVars.contains(null);
             referencedVars.remove(null);
             return new SafeCheckMarker(UUID.randomUUID(), isSafe, referencedVars);
         }
@@ -265,14 +266,14 @@ public class JodaTimeScanner extends JavaIsoVisitor<ExecutionContext> {
         }
     }
 
-    private static class HasJodaType extends JavaIsoVisitor<Boolean[]> {
+    private static class HasJodaType extends JavaIsoVisitor<AtomicBoolean> {
         @Override
-        public Expression visitExpression(Expression expression, Boolean[] hasJodaType) {
-            if (hasJodaType[0]) {
+        public Expression visitExpression(Expression expression, AtomicBoolean hasJodaType) {
+            if (hasJodaType.get()) {
                 return expression;
             }
             if (expression.getType() != null && expression.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
-                hasJodaType[0] = true;
+                hasJodaType.set(true);
             }
             return super.visitExpression(expression, hasJodaType);
         }
