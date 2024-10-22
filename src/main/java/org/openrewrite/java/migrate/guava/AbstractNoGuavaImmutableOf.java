@@ -16,7 +16,6 @@
 
 package org.openrewrite.java.migrate.guava;
 
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
@@ -134,7 +133,6 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 return mv;
             }
 
-            @NotNull
             private TypeTree createNewTypeExpression(TypeTree typeTree,
                                                      JavaType newType) {
                 if (typeTree instanceof J.ParameterizedType) {
