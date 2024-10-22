@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.openrewrite.java.migrate.guava;
 
 import org.jspecify.annotations.Nullable;
@@ -56,8 +55,7 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Replaces `" + getShortType(guavaType) +
-               ".of(..)` if the returned type is immediately down-cast.";
+        return "Replaces `" + getShortType(guavaType) + ".of(..)` if the returned type is immediately down-cast.";
     }
 
     @Override
@@ -175,22 +173,17 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 J parent = getCursor().dropParentUntil(J.class::isInstance).getValue();
                 boolean isParentTypeDownCast = false;
                 if (parent instanceof J.VariableDeclarations.NamedVariable) {
-                    isParentTypeDownCast =
-                            isParentTypeMatched(((J.VariableDeclarations.NamedVariable) parent).getType());
+                    isParentTypeDownCast = isParentTypeMatched(((J.VariableDeclarations.NamedVariable) parent).getType());
                 } else if (parent instanceof J.Assignment) {
                     J.Assignment a = (J.Assignment) parent;
-                    if (a.getVariable() instanceof J.Identifier &&
-                        ((J.Identifier) a.getVariable()).getFieldType() != null) {
-                        isParentTypeDownCast =
-                                isParentTypeMatched(((J.Identifier) a.getVariable()).getFieldType().getType());
+                    if (a.getVariable() instanceof J.Identifier && ((J.Identifier) a.getVariable()).getFieldType() != null) {
+                        isParentTypeDownCast = isParentTypeMatched(((J.Identifier) a.getVariable()).getFieldType().getType());
                     } else if (a.getVariable() instanceof J.FieldAccess) {
                         isParentTypeDownCast = isParentTypeMatched(a.getVariable().getType());
                     }
                 } else if (parent instanceof J.Return) {
                     // Does not currently support returns in lambda expressions.
-                    J j = getCursor().dropParentUntil(
-                                    is -> is instanceof J.MethodDeclaration || is instanceof J.CompilationUnit)
-                            .getValue();
+                    J j = getCursor().dropParentUntil(is -> is instanceof J.MethodDeclaration || is instanceof J.CompilationUnit).getValue();
                     if (j instanceof J.MethodDeclaration) {
                         TypeTree returnType = ((J.MethodDeclaration) j).getReturnTypeExpression();
                         if (returnType != null) {
@@ -200,10 +193,8 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 } else if (parent instanceof J.MethodInvocation) {
                     J.MethodInvocation m = (J.MethodInvocation) parent;
                     int index = m.getArguments().indexOf(immutableMethod);
-                    if (m.getMethodType() != null && index != -1 &&
-                        !m.getMethodType().getParameterTypes().isEmpty()) {
-                        isParentTypeDownCast =
-                                isParentTypeMatched(m.getMethodType().getParameterTypes().get(index));
+                    if (m.getMethodType() != null && index != -1 && !m.getMethodType().getParameterTypes().isEmpty()) {
+                        isParentTypeDownCast = isParentTypeMatched(m.getMethodType().getParameterTypes().get(index));
                     } else {
                         isParentTypeDownCast = true;
                     }
@@ -218,8 +209,7 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                             index++;
                         }
                         if (c.getConstructorType() != null) {
-                            isParentTypeDownCast =
-                                    isParentTypeMatched(c.getConstructorType().getParameterTypes().get(index));
+                            isParentTypeDownCast = isParentTypeMatched(c.getConstructorType().getParameterTypes().get(index));
                         }
                     }
                 } else if (parent instanceof J.NewArray) {
