@@ -37,7 +37,6 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
     private final String guavaType;
     private final String javaType;
-    private boolean methodUpdated = false;
 
     AbstractNoGuavaImmutableOf(String guavaType, String javaType) {
         this.guavaType = guavaType;
@@ -91,7 +90,6 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                     args = new Object[]{method.getArguments().get(0)};
                 }
 
-                methodUpdated = true;
                 J.MethodInvocation m = JavaTemplate.builder(template)
                         .contextSensitive()
                         .imports(javaType)
@@ -108,16 +106,12 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable,
                                                                     ExecutionContext ctx) {
-                methodUpdated = false;
-                J.VariableDeclarations mv =
-                        (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
+                J.VariableDeclarations mv = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
 
-                if (methodUpdated && TypeUtils.isOfClassType(mv.getType(), guavaType)) {
+                if (multiVariable != mv && TypeUtils.isOfClassType(mv.getType(), guavaType)) {
                     JavaType newType = JavaType.buildType(javaType);
                     mv = mv.withTypeExpression(mv.getTypeExpression() == null ?
-                            null :
-                            createNewTypeExpression(mv.getTypeExpression(), newType)
-                    );
+                            null : createNewTypeExpression(mv.getTypeExpression(), newType));
 
                     mv = mv.withVariables(ListUtils.map(mv.getVariables(), variable -> {
                         JavaType.FullyQualified varType = TypeUtils.asFullyQualified(variable.getType());
@@ -134,8 +128,7 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
             private TypeTree createNewTypeExpression(TypeTree typeTree,
                                                      JavaType newType) {
                 if (typeTree instanceof J.ParameterizedType) {
-                    List<Expression> parameterizedTypes =
-                            ((J.ParameterizedType) typeTree).getTypeParameters();
+                    List<Expression> parameterizedTypes = ((J.ParameterizedType) typeTree).getTypeParameters();
                     List<JRightPadded<Expression>> jRightPaddedList = new ArrayList<>();
                     parameterizedTypes.forEach(
                             expression -> {
@@ -146,9 +139,8 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                                 }
                             });
                     JContainer<Expression> typeParameters = JContainer.build(jRightPaddedList);
-                    NameTree clazz =
-                            new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(),
-                                    getShortType(javaType), null, null);
+                    NameTree clazz = new J.Identifier(
+                            Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), getShortType(javaType), null, null);
                     return new J.ParameterizedType(
                             typeTree.getId(),
                             typeTree.getPrefix(),
