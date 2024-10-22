@@ -91,7 +91,6 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 }
 
                 J.MethodInvocation m = JavaTemplate.builder(template)
-                        .contextSensitive()
                         .imports(javaType)
                         .build()
                         .apply(getCursor(),
@@ -99,7 +98,8 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                                 args);
                 m = m.getPadding().withArguments(method.getPadding().getArguments());
                 J.MethodInvocation p = getCursor().getValue();
-                m = m.withMethodType((JavaType.Method) visitType(p.getMethodType(), ctx));
+                JavaType.Method newType = (JavaType.Method) visitType(p.getMethodType(), ctx);
+                m = m.withMethodType(newType).withName(m.getName().withType(newType));
                 return super.visitMethodInvocation(m, ctx);
             }
 
