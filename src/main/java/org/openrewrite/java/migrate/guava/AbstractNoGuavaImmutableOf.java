@@ -78,27 +78,25 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 maybeAddImport(javaType);
 
                 String template;
-                Object[] args;
-                if (method.getArguments().isEmpty() || method.getArguments().get(0) instanceof J.Empty) {
+                Object[] templateArguments;
+                List<Expression> methodArguments = mi.getArguments();
+                if (methodArguments.isEmpty() || methodArguments.get(0) instanceof J.Empty) {
                     template = getShortType(javaType) + ".of()";
-                    args = new Object[]{};
+                    templateArguments = new Object[]{};
                 } else if ("com.google.common.collect.ImmutableMap".equals(guavaType)) {
                     template = getShortType(javaType) + ".of(#{any()}, #{any()})";
-                    args = new Object[]{method.getArguments().get(0), method.getArguments().get(1)};
+                    templateArguments = new Object[]{methodArguments.get(0), methodArguments.get(1)};
                 } else {
                     template = getShortType(javaType) + ".of(#{any()})";
-                    args = new Object[]{method.getArguments().get(0)};
+                    templateArguments = new Object[]{methodArguments.get(0)};
                 }
 
                 J.MethodInvocation m = JavaTemplate.builder(template)
                         .imports(javaType)
                         .build()
-                        .apply(getCursor(),
-                                mi.getCoordinates().replace(),
-                                args);
-                m = m.getPadding().withArguments(method.getPadding().getArguments());
-                J.MethodInvocation p = getCursor().getValue();
-                JavaType.Method newType = (JavaType.Method) visitType(p.getMethodType(), ctx);
+                        .apply(getCursor(), mi.getCoordinates().replace(), templateArguments);
+                m = m.getPadding().withArguments(mi.getPadding().getArguments());
+                JavaType.Method newType = (JavaType.Method) visitType(mi.getMethodType(), ctx);
                 m = m.withMethodType(newType).withName(m.getName().withType(newType));
                 return super.visitMethodInvocation(m, ctx);
             }
