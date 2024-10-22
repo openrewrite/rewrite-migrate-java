@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
-import static java.util.Objects.nonNull;
 
 abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
@@ -112,7 +111,7 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
                     mv = mv.withVariables(ListUtils.map(mv.getVariables(), variable -> {
                         JavaType.FullyQualified varType = TypeUtils.asFullyQualified(variable.getType());
-                        if (nonNull(varType) && !varType.equals(newType)) {
+                        if (varType != null && !varType.equals(newType)) {
                             return variable.withType(newType).withName(variable.getName().withType(newType));
                         }
                         return variable;
