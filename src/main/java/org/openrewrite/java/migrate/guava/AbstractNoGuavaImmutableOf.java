@@ -16,18 +16,21 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
+import org.openrewrite.marker.Markers;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Collections.emptyList;
 
 abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
@@ -66,33 +69,85 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                if (IMMUTABLE_MATCHER.matches(method) && isParentTypeDownCast(method)) {
-                    maybeRemoveImport(guavaType);
-                    maybeAddImport(javaType);
-
-                    String template;
-                    Object[] args;
-                    if (method.getArguments().isEmpty() || method.getArguments().get(0) instanceof J.Empty) {
-                        template = getShortType(javaType) + ".of()";
-                        args = new Object[]{};
-                    } else if ("com.google.common.collect.ImmutableMap".equals(guavaType)) {
-                        template = getShortType(javaType) + ".of(#{any()}, #{any()})";
-                        args = new Object[]{method.getArguments().get(0), method.getArguments().get(1)};
-                    } else {
-                        template = getShortType(javaType) + ".of(#{any()})";
-                        args = new Object[]{method.getArguments().get(0)};
-                    }
-
-                    J.MethodInvocation templated = JavaTemplate.builder(template)
-                            .imports(javaType)
-                            .build()
-                            .apply(getCursor(),
-                                    method.getCoordinates().replace(),
-                                    args);
-                    return templated.getPadding().withArguments(method.getPadding().getArguments());
+                J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
+                if (!IMMUTABLE_MATCHER.matches(mi) || !isParentTypeDownCast(mi)) {
+                    return mi;
                 }
-                return super.visitMethodInvocation(method, ctx);
+                maybeRemoveImport(guavaType);
+                maybeAddImport(javaType);
+
+                String template;
+                Object[] templateArguments;
+                List<Expression> methodArguments = mi.getArguments();
+                if (methodArguments.isEmpty() || methodArguments.get(0) instanceof J.Empty) {
+                    template = getShortType(javaType) + ".of()";
+                    templateArguments = new Object[]{};
+                } else if ("com.google.common.collect.ImmutableMap".equals(guavaType)) {
+                    template = getShortType(javaType) + ".of(#{any()}, #{any()})";
+                    templateArguments = new Object[]{methodArguments.get(0), methodArguments.get(1)};
+                } else {
+                    template = getShortType(javaType) + ".of(#{any()})";
+                    templateArguments = new Object[]{methodArguments.get(0)};
+                }
+
+                J.MethodInvocation m = JavaTemplate.builder(template)
+                        .imports(javaType)
+                        .build()
+                        .apply(getCursor(), mi.getCoordinates().replace(), templateArguments);
+                m = m.getPadding().withArguments(mi.getPadding().getArguments());
+                JavaType.Method newType = (JavaType.Method) visitType(mi.getMethodType(), ctx);
+                m = m.withMethodType(newType).withName(m.getName().withType(newType));
+                return super.visitMethodInvocation(m, ctx);
             }
+
+            @Override
+            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
+                J.VariableDeclarations mv = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
+
+                if (multiVariable != mv && TypeUtils.isOfClassType(mv.getType(), guavaType)) {
+                    JavaType newType = JavaType.buildType(javaType);
+                    mv = mv.withTypeExpression(mv.getTypeExpression() == null ?
+                            null : createNewTypeExpression(mv.getTypeExpression(), newType));
+
+                    mv = mv.withVariables(ListUtils.map(mv.getVariables(), variable -> {
+                        JavaType.FullyQualified varType = TypeUtils.asFullyQualified(variable.getType());
+                        if (varType != null && !varType.equals(newType)) {
+                            return variable.withType(newType).withName(variable.getName().withType(newType));
+                        }
+                        return variable;
+                    }));
+                }
+
+                return mv;
+            }
+
+            private TypeTree createNewTypeExpression(TypeTree typeTree, JavaType newType) {
+                if (typeTree instanceof J.ParameterizedType) {
+                    J.ParameterizedType parameterizedType = (J.ParameterizedType) typeTree;
+                    List<JRightPadded<Expression>> jRightPaddedList = new ArrayList<>();
+                    parameterizedType.getTypeParameters().forEach(
+                            expression -> {
+                                if (expression instanceof J.ParameterizedType && TypeUtils.isOfClassType(expression.getType(), guavaType)) {
+                                    jRightPaddedList.add(JRightPadded.build(((J.ParameterizedType) createNewTypeExpression((TypeTree) expression, newType))));
+                                } else {
+                                    jRightPaddedList.add(JRightPadded.build(expression));
+                                }
+                            });
+                    NameTree clazz = new J.Identifier(
+                            Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), getShortType(javaType), null, null);
+                    return parameterizedType.withClazz(clazz).withType(newType).getPadding().withTypeParameters(JContainer.build(jRightPaddedList));
+                }
+                return new J.Identifier(
+                        typeTree.getId(),
+                        typeTree.getPrefix(),
+                        Markers.EMPTY,
+                        emptyList(),
+                        getShortType(javaType),
+                        newType,
+                        null
+                );
+            }
+
 
             private boolean isParentTypeDownCast(MethodCall immutableMethod) {
                 J parent = getCursor().dropParentUntil(J.class::isInstance).getValue();
@@ -118,8 +173,10 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 } else if (parent instanceof J.MethodInvocation) {
                     J.MethodInvocation m = (J.MethodInvocation) parent;
                     int index = m.getArguments().indexOf(immutableMethod);
-                    if (m.getMethodType() != null && index != -1) {
+                    if (m.getMethodType() != null && index != -1 && !m.getMethodType().getParameterTypes().isEmpty()) {
                         isParentTypeDownCast = isParentTypeMatched(m.getMethodType().getParameterTypes().get(index));
+                    } else {
+                        isParentTypeDownCast = true;
                     }
                 } else if (parent instanceof J.NewClass) {
                     J.NewClass c = (J.NewClass) parent;
@@ -150,7 +207,8 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
             private boolean isParentTypeMatched(@Nullable JavaType type) {
                 JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
                 return TypeUtils.isOfClassType(fq, javaType) ||
-                       TypeUtils.isOfClassType(fq, "java.lang.Object");
+                       TypeUtils.isOfClassType(fq, "java.lang.Object") ||
+                       TypeUtils.isOfClassType(fq, guavaType);
             }
         });
     }

@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -44,7 +45,7 @@ class NoGuavaJava21Test implements RewriteTest {
             java(
               """   
                 import com.google.common.primitives.Doubles;
-
+                
                 class Test {
                     public double testMethod() {
                         return Doubles.constrainToRange(20D, 10D, 100D);
@@ -71,7 +72,7 @@ class NoGuavaJava21Test implements RewriteTest {
             java(
               """   
                 import com.google.common.primitives.Longs;
-
+                
                 class Test {
                     public long testMethod() {
                         return Longs.constrainToRange(20L, 10L, 100L);
@@ -98,7 +99,7 @@ class NoGuavaJava21Test implements RewriteTest {
             java(
               """   
                 import com.google.common.primitives.Floats;
-
+                
                 class Test {
                     public float testMethod() {
                         return Floats.constrainToRange(20F, 10F, 100F);
@@ -114,6 +115,39 @@ class NoGuavaJava21Test implements RewriteTest {
                 """
             ),
             21)
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/520")
+    @Test
+    void noGuavaImmutableOfException() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableSet;
+                import com.google.common.collect.ImmutableMap;
+                
+                class A {
+                    public Object getMap() {
+                        return ImmutableMap.of("key", ImmutableSet.of("value1", "value2"));
+                    }
+                }
+                """,
+              """
+                import java.util.Map;
+                import java.util.Set;
+                
+                class A {
+                    public Object getMap() {
+                        return Map.of("key", Set.of("value1", "value2"));
+                    }
+                }
+                """
+            ),
+            21
+          )
         );
     }
 }
