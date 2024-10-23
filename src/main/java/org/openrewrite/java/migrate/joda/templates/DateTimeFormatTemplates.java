@@ -25,8 +25,6 @@ import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 public class DateTimeFormatTemplates {
     private final MethodMatcher forPattern = new MethodMatcher(JODA_TIME_FORMAT + " forPattern(String)");
-    private final MethodMatcher forStyle = new MethodMatcher(JODA_TIME_FORMAT + " forStyle(String)");
-    private final MethodMatcher patternForStyle = new MethodMatcher(JODA_TIME_FORMAT + " patternForStyle(String, java.util.Locale)");
     private final MethodMatcher shortDate = new MethodMatcher(JODA_TIME_FORMAT + " shortDate()");
     private final MethodMatcher mediumDate = new MethodMatcher(JODA_TIME_FORMAT + " mediumDate()");
     private final MethodMatcher longDate = new MethodMatcher(JODA_TIME_FORMAT + " longDate()");
