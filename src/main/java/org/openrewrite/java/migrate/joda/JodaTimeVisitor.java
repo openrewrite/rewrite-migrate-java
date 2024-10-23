@@ -26,7 +26,6 @@ import org.openrewrite.java.tree.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
@@ -39,6 +38,18 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
     private final MethodMatcher anyTimeFormatter = new MethodMatcher(JODA_TIME_FORMAT + " *(..)");
     private final MethodMatcher anyNewDuration = new MethodMatcher(JODA_DURATION + "<constructor>(..)");
     private final MethodMatcher anyDuration = new MethodMatcher(JODA_DURATION + " *(..)");
+    private final MethodMatcher anyAbstractInstant = new MethodMatcher(JODA_ABSTRACT_INSTANT + " *(..)");
+
+    private boolean scanMode;
+
+    public JodaTimeVisitor(boolean scanMode) {
+        this.scanMode = scanMode;
+    }
+
+    public JodaTimeVisitor() {
+        this(false);
+    }
+
 
     @Override
     public @NonNull J visitCompilationUnit(@NonNull J.CompilationUnit cu, @NonNull ExecutionContext ctx) {
@@ -46,6 +57,7 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
         maybeRemoveImport(JODA_DATE_TIME_ZONE);
         maybeRemoveImport(JODA_TIME_FORMAT);
         maybeRemoveImport(JODA_DURATION);
+        maybeRemoveImport(JODA_ABSTRACT_INSTANT);
         maybeRemoveImport("java.util.Locale");
 
         maybeAddImport(JAVA_DATE_TIME);
@@ -59,6 +71,7 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
         maybeAddImport(JAVA_LOCAL_TIME);
         maybeAddImport(JAVA_TEMPORAL_ISO_FIELDS);
         maybeAddImport(JAVA_CHRONO_FIELD);
+        maybeAddImport(JAVA_UTIL_DATE);
         return super.visitCompilationUnit(cu, ctx);
     }
 
@@ -69,6 +82,12 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
             return variable;
         }
         return super.visitVariable(variable, ctx);
+    }
+
+    @Override
+    public @NonNull J visitAssignment(@NonNull J.Assignment assignment, @NonNull ExecutionContext ctx) {
+        J.Assignment a = (J.Assignment) super.visitAssignment(assignment, ctx);
+        return a.withType(a.getVariable().getType());
     }
 
     @Override
@@ -102,11 +121,19 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
         if (anyDateTime.matches(method) || anyBaseDateTime.matches(method)) {
             return applyTemplate(method, m, DateTimeTemplates.getTemplates()).orElse(method);
         }
+        if (anyAbstractInstant.matches(method)) {
+            return applyTemplate(method, m, AbstractInstantTemplates.getTemplates()).orElse(method);
+        }
         if (anyTimeFormatter.matches(method)) {
             return applyTemplate(method, m, DateTimeFormatTemplates.getTemplates()).orElse(method);
         }
         if (anyDuration.matches(method)) {
             return applyTemplate(method, m, DurationTemplates.getTemplates()).orElse(method);
+        }
+        if (method.getSelect() != null &&
+            method.getSelect().getType() != null &&
+            method.getSelect().getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return method; // unhandled case
         }
         if (areArgumentsAssignable(m)) {
             return m;
@@ -126,17 +153,35 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
         return f;
     }
 
+    @Override
+    public @NonNull J visitIdentifier(@NonNull J.Identifier ident, @NonNull ExecutionContext ctx) {
+        if (!(isJodaVarRef(ident) && scanMode)) {
+            return super.visitIdentifier(ident, ctx);
+        }
+
+        // TODO: support migration for class variables
+        if (!(ident.getType() instanceof JavaType.Class)) {
+            return ident;
+        }
+
+        JavaType.FullyQualified jodaType = ((JavaType.Class) ident.getType());
+        JavaType.FullyQualified fqType = TimeClassMap.getJavaTimeType(jodaType.getFullyQualifiedName());
+
+        return ident.withType(fqType)
+                .withFieldType(ident.getFieldType().withType(fqType));
+    }
+
     private boolean hasJodaType(List<Expression> exprs) {
         for (Expression expr : exprs) {
             JavaType exprType = expr.getType();
-            if (exprType != null && exprType.isAssignableFrom(Pattern.compile("org.joda.time.*"))) {
+            if (exprType != null && exprType.isAssignableFrom(JODA_CLASS_PATTERN)) {
                 return true;
             }
         }
         return false;
     }
 
-    private Optional<MethodCall> applyTemplate(MethodCall original, MethodCall updated, List<MethodTemplate> templates) {
+    private Optional<J> applyTemplate(MethodCall original, MethodCall updated, List<MethodTemplate> templates) {
         for (MethodTemplate template : templates) {
             if (template.getMatcher().matches(original)) {
                 Expression[] args = template.getTemplateArgsFunc().apply(updated);
@@ -150,8 +195,11 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
     }
 
     private boolean areArgumentsAssignable(MethodCall m) {
-        if (m.getMethodType() == null || m.getArguments().size() != m.getMethodType().getParameterTypes().size()) {
+        if (m.getMethodType() == null || getArgumentsCount(m) != m.getMethodType().getParameterTypes().size()) {
             return false;
+        }
+        if (getArgumentsCount(m) == 0) {
+            return true;
         }
         for (int i = 0; i < m.getArguments().size(); i++) {
             if (!TypeUtils.isAssignableTo(m.getMethodType().getParameterTypes().get(i), m.getArguments().get(i).getType())) {
@@ -159,6 +207,13 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
             }
         }
         return true;
+    }
+
+    private int getArgumentsCount(MethodCall m) {
+        if (m.getArguments().size() == 1 && m.getArguments().get(0) instanceof J.Empty) {
+            return 0;
+        }
+        return m.getArguments().size();
     }
 
     private boolean isJodaVarRef(@Nullable Expression expr) {
