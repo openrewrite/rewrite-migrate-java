@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.joda;
 
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.NlsRewrite;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
 
@@ -30,7 +29,7 @@ public class JodaTimeRecipe extends ScanningRecipe<Set<NamedVariable>> {
     }
 
     @Override
-    public @NlsRewrite.Description String getDescription() {
+    public String getDescription() {
         return "Prefer the Java standard library over third-party usage of Joda Time.";
     }
 
