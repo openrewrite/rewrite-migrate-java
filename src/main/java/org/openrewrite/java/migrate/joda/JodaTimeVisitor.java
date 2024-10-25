@@ -19,17 +19,17 @@ import lombok.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.migrate.joda.templates.*;
 import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
+import org.openrewrite.java.tree.MethodCall;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
-public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
+public class JodaTimeVisitor extends ScopeAwareVisitor {
 
     private final MethodMatcher anyNewDateTime = new MethodMatcher(JODA_DATE_TIME + "<constructor>(..)");
     private final MethodMatcher anyDateTime = new MethodMatcher(JODA_DATE_TIME + " *(..)");
@@ -40,16 +40,20 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
     private final MethodMatcher anyDuration = new MethodMatcher(JODA_DURATION + " *(..)");
     private final MethodMatcher anyAbstractInstant = new MethodMatcher(JODA_ABSTRACT_INSTANT + " *(..)");
 
-    private boolean scanMode;
+    private final Set<NamedVariable> unsafeVars;
 
-    public JodaTimeVisitor(boolean scanMode) {
-        this.scanMode = scanMode;
+    public JodaTimeVisitor(Set<NamedVariable> unsafeVars, LinkedList<VariablesInScope> scopes) {
+        super(scopes);
+        this.unsafeVars = unsafeVars;
+    }
+
+    public JodaTimeVisitor(Set<NamedVariable> unsafeVars) {
+        this(unsafeVars, new LinkedList<>());
     }
 
     public JodaTimeVisitor() {
-        this(false);
+        this(new HashSet<>());
     }
-
 
     @Override
     public @NonNull J visitCompilationUnit(@NonNull J.CompilationUnit cu, @NonNull ExecutionContext ctx) {
@@ -76,18 +80,49 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
     }
 
     @Override
+    public @NonNull J visitVariableDeclarations(@NonNull J.VariableDeclarations multiVariable, @NonNull ExecutionContext ctx) {
+        if (!multiVariable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return super.visitVariableDeclarations(multiVariable, ctx);
+        }
+        if (multiVariable.getVariables().stream().anyMatch(unsafeVars::contains)) {
+            return multiVariable;
+        }
+        multiVariable = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
+        return VarTemplates.getTemplate(multiVariable).apply(
+                updateCursor(multiVariable),
+                multiVariable.getCoordinates().replace(),
+                VarTemplates.getTemplateArgs(multiVariable));
+    }
+
+    @Override
     public @NonNull J visitVariable(@NonNull J.VariableDeclarations.NamedVariable variable, @NonNull ExecutionContext ctx) {
-        // TODO implement logic for safe variable migration
-        if (variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+        if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return super.visitVariable(variable, ctx);
+        }
+        if (unsafeVars.contains(variable) || ! (variable.getType() instanceof JavaType.Class)) {
             return variable;
         }
-        return super.visitVariable(variable, ctx);
-    }
+        JavaType.Class jodaType = (JavaType.Class) variable.getType();
+        return variable
+                .withType(TimeClassMap.getJavaTimeType(jodaType.getFullyQualifiedName()))
+                .withInitializer((Expression) visit(variable.getInitializer(), ctx));
+     }
 
     @Override
     public @NonNull J visitAssignment(@NonNull J.Assignment assignment, @NonNull ExecutionContext ctx) {
         J.Assignment a = (J.Assignment) super.visitAssignment(assignment, ctx);
-        return a.withType(a.getVariable().getType());
+        if (!a.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return a;
+        }
+        if (!(a.getVariable() instanceof J.Identifier)) {
+            return assignment;
+        }
+        J.Identifier varName = (J.Identifier) a.getVariable();
+        Optional<NamedVariable> mayBeVar = findVarInScope(varName.getSimpleName());
+        if (!mayBeVar.isPresent() || unsafeVars.contains(mayBeVar.get())) {
+            return assignment;
+        }
+        return VarTemplates.getTemplate(a).apply(updateCursor(a), a.getCoordinates().replace(), a.getAssignment());
     }
 
     @Override
@@ -155,12 +190,11 @@ public class JodaTimeVisitor extends JavaVisitor<ExecutionContext> {
 
     @Override
     public @NonNull J visitIdentifier(@NonNull J.Identifier ident, @NonNull ExecutionContext ctx) {
-        if (!(isJodaVarRef(ident) && scanMode)) {
+        if (!isJodaVarRef(ident)) {
             return super.visitIdentifier(ident, ctx);
         }
-
-        // TODO: support migration for class variables
-        if (!(ident.getType() instanceof JavaType.Class)) {
+        Optional<NamedVariable> mayBeVar = findVarInScope(ident.getSimpleName());
+        if (!mayBeVar.isPresent() || unsafeVars.contains(mayBeVar.get())) {
             return ident;
         }
 

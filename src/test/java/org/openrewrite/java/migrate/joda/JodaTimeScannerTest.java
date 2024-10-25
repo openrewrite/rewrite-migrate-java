@@ -21,6 +21,8 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.HashSet;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.openrewrite.java.Assertions.java;
@@ -29,14 +31,12 @@ import static org.openrewrite.test.RewriteTest.toRecipe;
 class JodaTimeScannerTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec
-          .recipe(toRecipe(JodaTimeScanner::new))
-          .parser(JavaParser.fromJavaVersion().classpath("joda-time"));
+        spec.parser(JavaParser.fromJavaVersion().classpath("joda-time"));
     }
 
     @Test
     void noUnsafeVar() {
-        JodaTimeScanner scanner = new JodaTimeScanner();
+        JodaTimeScanner scanner = new JodaTimeScanner(new HashSet<>());
         // language=java
         rewriteRun(
           spec -> spec.recipe(toRecipe(() -> scanner)),
@@ -45,7 +45,7 @@ class JodaTimeScannerTest implements RewriteTest {
                import org.joda.time.DateTime;
                import org.joda.time.DateTimeZone;
                import java.util.Date;
-              
+
                class A {
                    public void foo(String city) {
                        DateTimeZone dtz;
@@ -69,7 +69,7 @@ class JodaTimeScannerTest implements RewriteTest {
 
     @Test
     void hasUnsafeVars() {
-        JodaTimeScanner scanner = new JodaTimeScanner();
+        JodaTimeScanner scanner = new JodaTimeScanner(new HashSet<>());
         // language=java
         rewriteRun(
           spec -> spec.recipe(toRecipe(() -> scanner)),
@@ -77,7 +77,7 @@ class JodaTimeScannerTest implements RewriteTest {
             """
                import org.joda.time.DateTime;
                import org.joda.time.DateTimeZone;
-              
+
                class A {
                    DateTime dateTime;
                    public void foo(String city) {
@@ -110,7 +110,7 @@ class JodaTimeScannerTest implements RewriteTest {
 
     @Test
     void localVarReferencingClassVar() { // not supported yet
-        JodaTimeScanner scanner = new JodaTimeScanner();
+        JodaTimeScanner scanner = new JodaTimeScanner(new HashSet<>());
         // language=java
         rewriteRun(
           spec -> spec.recipe(toRecipe(() -> scanner)),
@@ -118,7 +118,7 @@ class JodaTimeScannerTest implements RewriteTest {
             """
                import org.joda.time.DateTime;
                import org.joda.time.DateTimeZone;
-              
+
                class A {
                    DateTime dateTime;
                    public void foo(String city) {
@@ -144,7 +144,7 @@ class JodaTimeScannerTest implements RewriteTest {
 
     @Test
     void localVarUsedReferencedInReturnStatement() { // not supported yet
-        JodaTimeScanner scanner = new JodaTimeScanner();
+        JodaTimeScanner scanner = new JodaTimeScanner(new HashSet<>());
         // language=java
         rewriteRun(
           spec -> spec.recipe(toRecipe(() -> scanner)),
@@ -152,7 +152,7 @@ class JodaTimeScannerTest implements RewriteTest {
             """
                import org.joda.time.DateTime;
                import org.joda.time.DateTimeZone;
-              
+
                class A {
                    public DateTime foo(String city) {
                        DateTimeZone dtz;

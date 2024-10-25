@@ -37,6 +37,12 @@ public class TimeClassMap {
         }
     };
 
+    private final Map<String, String> jodaToJavaTimeShortName = new HashMap<String, String>() {
+        {
+            put(JODA_DATE_TIME, "ZonedDateTime");
+        }
+    };
+
     private static JavaType.Class javaTypeClass(String fqn, JavaType.Class superType) {
         return new JavaType.Class(null, 0, fqn, JavaType.FullyQualified.Kind.Class, null, superType,
                 null, null, null, null, null);
@@ -44,5 +50,9 @@ public class TimeClassMap {
 
     public static JavaType.Class getJavaTimeType(String typeFqn) {
         return new TimeClassMap().jodaToJavaTimeMap.get(typeFqn);
+    }
+
+    public static String getJavaTimeShortName(String typeFqn) {
+        return new TimeClassMap().jodaToJavaTimeShortName.get(typeFqn);
     }
 }

@@ -19,7 +19,6 @@ import fj.data.Option;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.analysis.dataflow.Dataflow;
@@ -35,18 +34,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_CLASS_PATTERN;
 
-public class JodaTimeScanner extends JavaIsoVisitor<ExecutionContext> {
+public class JodaTimeScanner extends ScopeAwareVisitor {
 
     @Getter
-    private final Set<NamedVariable> unsafeVars = new HashSet<>();
-
-    private final LinkedList<VariablesInScope> scopes = new LinkedList<>();
+    private final Set<NamedVariable> unsafeVars;
 
     private final Map<NamedVariable, Set<NamedVariable>> varDependencies = new HashMap<>();
 
+    public JodaTimeScanner(Set<NamedVariable> unsafeVars, LinkedList<VariablesInScope> scopes) {
+        super(scopes);
+        this.unsafeVars = unsafeVars;
+    }
+
+    public JodaTimeScanner(Set<NamedVariable> unsafeVars) {
+        this(unsafeVars, new LinkedList<>());
+    }
+
     @Override
-    public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-        cu = super.visitCompilationUnit(cu, ctx);
+    public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+        super.visitCompilationUnit(cu, ctx);
         Set<NamedVariable> allReachable = new HashSet<>();
         for (NamedVariable var : unsafeVars) {
             dfs(var, allReachable);
@@ -56,17 +62,7 @@ public class JodaTimeScanner extends JavaIsoVisitor<ExecutionContext> {
     }
 
     @Override
-    public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
-        scopes.push(new VariablesInScope(getCursor()));
-        J.Block b = super.visitBlock(block, ctx);
-        scopes.pop();
-        return b;
-    }
-
-    @Override
     public NamedVariable visitVariable(NamedVariable variable, ExecutionContext ctx) {
-        assert !scopes.isEmpty();
-        scopes.peek().variables.add(variable);
         if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return variable;
         }
@@ -75,14 +71,14 @@ public class JodaTimeScanner extends JavaIsoVisitor<ExecutionContext> {
             unsafeVars.add(variable);
             return variable;
         }
-        variable = super.visitVariable(variable, ctx);
+        variable = (NamedVariable) super.visitVariable(variable, ctx);
 
         if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN) || variable.getInitializer() == null) {
             return variable;
         }
         List<Expression> sinks = findSinks(variable.getInitializer());
-        assert !scopes.isEmpty();
-        Cursor currentScope = scopes.peek().getScope();
+
+        Cursor currentScope = getCurrentScope();
         J.Block block = currentScope.getValue();
         new AddSafeCheckMarker(sinks).visit(block, ctx, currentScope.getParent());
         processMarkersOnExpression(sinks, variable);
@@ -149,27 +145,6 @@ public class JodaTimeScanner extends JavaIsoVisitor<ExecutionContext> {
         return j instanceof J.Block;
     }
 
-    // Returns the variable in the closest scope
-    private Optional<NamedVariable> findVarInScope(String varName) {
-        for (VariablesInScope scope : scopes) {
-            for (NamedVariable var : scope.variables) {
-                if (var.getSimpleName().equals(varName)) {
-                    return Optional.of(var);
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
-    private Cursor findScope(NamedVariable variable) {
-        for (VariablesInScope scope : scopes) {
-            if (scope.variables.contains(variable)) {
-                return scope.scope;
-            }
-        }
-        return null;
-    }
-
     private void dfs(NamedVariable root, Set<NamedVariable> visited) {
         if (visited.contains(root)) {
             return;
@@ -177,17 +152,6 @@ public class JodaTimeScanner extends JavaIsoVisitor<ExecutionContext> {
         visited.add(root);
         for (NamedVariable dep : varDependencies.getOrDefault(root, Collections.emptySet())) {
             dfs(dep, visited);
-        }
-    }
-
-    @Value
-    private static class VariablesInScope {
-        Cursor scope;
-        Set<NamedVariable> variables;
-
-        public VariablesInScope(Cursor scope) {
-            this.scope = scope;
-            this.variables = new HashSet<>();
         }
     }
 
@@ -221,7 +185,7 @@ public class JodaTimeScanner extends JavaIsoVisitor<ExecutionContext> {
                 isSafe = false;
             }
             Expression boundaryExpr = boundary.getValue();
-            J j = new JodaTimeVisitor(true).visit(boundaryExpr, ctx, boundary.getParentTreeCursor());
+            J j = new JodaTimeVisitor(new HashSet<>(), scopes).visit(boundaryExpr, ctx, boundary.getParentTreeCursor());
             Set<NamedVariable> referencedVars = new HashSet<>();
             new FindVarReferences().visit(expr, referencedVars, getCursor().getParentTreeCursor());
             AtomicBoolean hasJodaType = new AtomicBoolean();
