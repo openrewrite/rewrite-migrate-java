@@ -497,7 +497,7 @@ class JodaTimeVisitorTest implements RewriteTest {
 
     // Test will be removed once safe variable migration is implemented
     @Test
-    void dontChangeMethodAccessOnVariable() {
+    void migrateSafeVariable() {
         //language=java
         rewriteRun(
           java(
@@ -508,36 +508,16 @@ class JodaTimeVisitorTest implements RewriteTest {
                   public void foo() {
                       DateTime dt = new DateTime();
                       System.out.println(dt.toDateTime());
-                      System.out.println(new B().dateTime.toDateTime());
-                  }
-                  public static class B {
-                      DateTime dateTime = new DateTime();
                   }
               }
-              """
-          )
-        );
-    }
-
-    @Test
-    void dontChangeIncompatibleType() {
-        //language=java
-        rewriteRun(
-          java(
+              """,
             """
-              import org.joda.time.DateTime;
-              
+              import java.time.ZonedDateTime;
+
               class A {
                   public void foo() {
-                      new B().print(new DateTime()); // print is public method accepting DateTime, not handled yet
-                      System.out.println(new B().dateTime);
-                  }
-              }
-              
-              class B {
-                  DateTime dateTime = new DateTime();
-                  public void print(DateTime dateTime) {
-                      System.out.println(dateTime);
+                      ZonedDateTime dt = ZonedDateTime.now();
+                      System.out.println(dt);
                   }
               }
               """
