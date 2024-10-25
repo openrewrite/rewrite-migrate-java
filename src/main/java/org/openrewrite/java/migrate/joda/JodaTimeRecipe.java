@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.openrewrite.java.migrate.joda;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.NlsRewrite;
@@ -25,7 +26,7 @@ import java.util.Set;
 public class JodaTimeRecipe extends ScanningRecipe<Set<NamedVariable>> {
     @Override
     public String getDisplayName() {
-    public String getDescription() {
+        return "Migrate Joda Time to Java Time";
     }
 
     @Override

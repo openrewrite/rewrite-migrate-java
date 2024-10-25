@@ -122,7 +122,12 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         if (!mayBeVar.isPresent() || unsafeVars.contains(mayBeVar.get())) {
             return assignment;
         }
-        return VarTemplates.getTemplate(a).apply(updateCursor(a), a.getCoordinates().replace(), a.getAssignment());
+        J j = VarTemplates.getTemplate(a).apply(
+                updateCursor(a),
+                a.getCoordinates().replace(),
+                varName.getSimpleName(),
+                a.getAssignment());
+        return j;
     }
 
     @Override
