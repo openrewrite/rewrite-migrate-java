@@ -67,8 +67,10 @@ public class VarTemplates {
 
     public static JavaTemplate getTemplate(J.Assignment assignment) {
         JavaType.Class type = (JavaType.Class) assignment.getAssignment().getType();
+        JavaType.Class varType = (JavaType.Class) assignment.getVariable().getType();
         String typeName = JodaToJavaTimeType.get(type.getFullyQualifiedName());
-        String template = "#{} = #{any(" + typeName +")}";
+        String varTypeName = JodaToJavaTimeType.get(varType.getFullyQualifiedName());
+        String template = "#{any(" + varTypeName + ")} = #{any(" + typeName +")}";
         return JavaTemplate.builder(template)
                 .build();
     }
