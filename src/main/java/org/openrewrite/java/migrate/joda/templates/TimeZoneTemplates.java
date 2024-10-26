@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.joda.templates;
 
+import lombok.Getter;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 
@@ -23,7 +24,7 @@ import java.util.List;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
-public class TimeZoneTemplates {
+public class TimeZoneTemplates implements Templates {
     private final MethodMatcher zoneForID = new MethodMatcher(JODA_DATE_TIME_ZONE + " forID(String)");
     private final MethodMatcher zoneForOffsetHours = new MethodMatcher(JODA_DATE_TIME_ZONE + " forOffsetHours(int)");
     private final MethodMatcher zoneForOffsetHoursMinutes = new MethodMatcher(JODA_DATE_TIME_ZONE + " forOffsetHoursMinutes(int, int)");
@@ -41,6 +42,7 @@ public class TimeZoneTemplates {
     private final JavaTemplate timeZoneToZoneIdTemplate = JavaTemplate.builder("#{any(java.util.TimeZone)}.toZoneId()")
             .build();
 
+    @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
             add(new MethodTemplate(zoneForID, zoneIdOfTemplate));
@@ -49,8 +51,4 @@ public class TimeZoneTemplates {
             add(new MethodTemplate(zoneForTimeZone, timeZoneToZoneIdTemplate));
         }
     };
-
-    public static List<MethodTemplate> getTemplates() {
-        return new TimeZoneTemplates().templates;
-    }
 }
