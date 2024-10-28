@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.joda.templates;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.java.tree.JavaType;
 
 import java.util.HashMap;
@@ -48,11 +49,11 @@ public class TimeClassMap {
                 null, null, null, null, null);
     }
 
-    public static JavaType.Class getJavaTimeType(String typeFqn) {
+    public static  JavaType.@Nullable Class getJavaTimeType(String typeFqn) {
         return new TimeClassMap().jodaToJavaTimeMap.get(typeFqn);
     }
 
-    public static String getJavaTimeShortName(String typeFqn) {
+    public static @Nullable String getJavaTimeShortName(String typeFqn) {
         return new TimeClassMap().jodaToJavaTimeShortName.get(typeFqn);
     }
 }
