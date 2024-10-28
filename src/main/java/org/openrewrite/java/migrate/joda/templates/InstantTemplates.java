@@ -22,7 +22,8 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_INSTANT;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_INSTANT;
 
 public class InstantTemplates implements Templates {
     private final MethodMatcher constructor = new MethodMatcher(JODA_INSTANT + " <constructor>()");

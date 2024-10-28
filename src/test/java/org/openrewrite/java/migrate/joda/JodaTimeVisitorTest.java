@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.joda;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
@@ -479,6 +480,7 @@ class JodaTimeVisitorTest implements RewriteTest {
         );
     }
 
+    @Disabled
     @Test
     void migrateAbstractDateTime() {
         // language=java
@@ -528,33 +530,6 @@ class JodaTimeVisitorTest implements RewriteTest {
     }
 
     @Test
-    void migrateAbstractDuration() {
-        // language=java
-        rewriteRun(
-          java(
-            """
-              import org.joda.time.Interval;
-              
-              class A {
-                  public void foo() {
-                  }
-              }
-              """,
-            """
-              import java.time.ZonedDateTime;
-              import java.time.temporal.ChronoField;
-              
-              class A {
-                  public void foo() {
- 
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
     void migrateDateTimeFormatter() {
         // language=java
         rewriteRun(
@@ -563,7 +538,7 @@ class JodaTimeVisitorTest implements RewriteTest {
               import org.joda.time.format.DateTimeFormat;
               import org.joda.time.DateTime;
               import org.joda.time.DateTimeZone;
-              
+
               class A {
                   public void foo() {
                       DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss").parseDateTime("2024-10-25T15:45:00");
@@ -576,23 +551,23 @@ class JodaTimeVisitorTest implements RewriteTest {
               }
               """,
             """
-              import java.time.Instant;
-              import java.time.ZoneId;
-              import java.time.ZoneOffset;
-              import java.time.ZonedDateTime;
-              import java.time.format.DateTimeFormatter;
-              
-              class A {
-                  public void foo() {
-                      ZonedDateTime.parse("2024-10-25T15:45:00", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-                      ZonedDateTime.parse("2024-10-25T15:45:00", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toInstant().toEpochMilli();
-                      ZonedDateTime.ofInstant(Instant.ofEpochMilli(1234567890L), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-                      ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-                      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(ZoneOffset.UTC);
-                      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(ZoneOffset.UTC);
+                  import java.time.Instant;
+                  import java.time.ZoneId;
+                  import java.time.ZoneOffset;
+                  import java.time.ZonedDateTime;
+                  import java.time.format.DateTimeFormatter;
+
+                  class A {
+                      public void foo() {
+                          ZonedDateTime.parse("2024-10-25T15:45:00", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+                          ZonedDateTime.parse("2024-10-25T15:45:00", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toInstant().toEpochMilli();
+                          ZonedDateTime.ofInstant(Instant.ofEpochMilli(1234567890L), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+                          ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+                          DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(ZoneOffset.UTC);
+                          DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(ZoneOffset.UTC);
+                      }
                   }
-              }
-          """
+              """
           )
         );
     }

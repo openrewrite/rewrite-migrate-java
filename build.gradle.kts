@@ -65,3 +65,7 @@ dependencies {
 tasks.withType(Javadoc::class.java) {
     exclude("**/PlanJavaMigration.java")
 }
+
+tasks.test {
+    maxHeapSize = "2g"  // Set max heap size to 2GB or adjust as necessary
+}

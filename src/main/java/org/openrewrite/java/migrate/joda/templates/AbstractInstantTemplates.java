@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_INSTANT;
 
 public class AbstractInstantTemplates implements Templates {
     private final MethodMatcher equals = new MethodMatcher(JODA_ABSTRACT_INSTANT + " equals(java.lang.Object)");
