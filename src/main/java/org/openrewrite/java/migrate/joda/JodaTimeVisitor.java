@@ -19,7 +19,6 @@ import lombok.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.migrate.joda.templates.*;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
@@ -30,15 +29,6 @@ import java.util.*;
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 public class JodaTimeVisitor extends ScopeAwareVisitor {
-
-    private final MethodMatcher anyNewDateTime = new MethodMatcher(JODA_DATE_TIME + "<constructor>(..)");
-    private final MethodMatcher anyDateTime = new MethodMatcher(JODA_DATE_TIME + " *(..)");
-    private final MethodMatcher anyBaseDateTime = new MethodMatcher(JODA_BASE_DATE_TIME + " *(..)");
-    private final MethodMatcher zoneFor = new MethodMatcher(JODA_DATE_TIME_ZONE + " for*(..)");
-    private final MethodMatcher anyTimeFormatter = new MethodMatcher(JODA_TIME_FORMAT + " *(..)");
-    private final MethodMatcher anyNewDuration = new MethodMatcher(JODA_DURATION + "<constructor>(..)");
-    private final MethodMatcher anyDuration = new MethodMatcher(JODA_DURATION + " *(..)");
-    private final MethodMatcher anyAbstractInstant = new MethodMatcher(JODA_ABSTRACT_INSTANT + " *(..)");
 
     private final Set<NamedVariable> unsafeVars;
 
@@ -62,6 +52,7 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         maybeRemoveImport(JODA_TIME_FORMAT);
         maybeRemoveImport(JODA_DURATION);
         maybeRemoveImport(JODA_ABSTRACT_INSTANT);
+        maybeRemoveImport(JODA_INSTANT);
         maybeRemoveImport("java.util.Locale");
 
         maybeAddImport(JAVA_DATE_TIME);
@@ -135,11 +126,9 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         if (hasJodaType(updated.getArguments())) {
             return newClass;
         }
-        if (anyNewDateTime.matches(newClass)) {
-            return applyTemplate(newClass, updated, DateTimeTemplates.getTemplates()).orElse(newClass);
-        }
-        if (anyNewDuration.matches(newClass)) {
-            return applyTemplate(newClass, updated, DurationTemplates.getTemplates()).orElse(newClass);
+        MethodTemplate template = AllTemplates.getTemplate(newClass);
+        if (template != null) {
+            return applyTemplate(newClass, updated, template).orElse(newClass);
         }
         if (areArgumentsAssignable(updated)) {
             return updated;
@@ -154,24 +143,11 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         if (hasJodaType(m.getArguments()) || isJodaVarRef(m.getSelect())) {
             return method;
         }
-        if (zoneFor.matches(method)) {
-            return applyTemplate(method, m, TimeZoneTemplates.getTemplates()).orElse(method);
+        MethodTemplate template = AllTemplates.getTemplate(method);
+        if (template != null) {
+            return applyTemplate(method, m, template).orElse(method);
         }
-        if (anyDateTime.matches(method) || anyBaseDateTime.matches(method)) {
-            return applyTemplate(method, m, DateTimeTemplates.getTemplates()).orElse(method);
-        }
-        if (anyAbstractInstant.matches(method)) {
-            return applyTemplate(method, m, AbstractInstantTemplates.getTemplates()).orElse(method);
-        }
-        if (anyTimeFormatter.matches(method)) {
-            return applyTemplate(method, m, DateTimeFormatTemplates.getTemplates()).orElse(method);
-        }
-        if (anyDuration.matches(method)) {
-            return applyTemplate(method, m, DurationTemplates.getTemplates()).orElse(method);
-        }
-        if (method.getSelect() != null &&
-            method.getSelect().getType() != null &&
-            method.getSelect().getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+        if (method.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return method; // unhandled case
         }
         if (areArgumentsAssignable(m)) {
@@ -219,15 +195,13 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         return false;
     }
 
-    private Optional<J> applyTemplate(MethodCall original, MethodCall updated, List<MethodTemplate> templates) {
-        for (MethodTemplate template : templates) {
-            if (template.getMatcher().matches(original)) {
-                Expression[] args = template.getTemplateArgsFunc().apply(updated);
-                if (args.length == 0) {
-                    return Optional.of(template.getTemplate().apply(updateCursor(updated), updated.getCoordinates().replace()));
-                }
-                return Optional.of(template.getTemplate().apply(updateCursor(updated), updated.getCoordinates().replace(), (Object[]) args));
+    private Optional<J> applyTemplate(MethodCall original, MethodCall updated, MethodTemplate template) {
+        if (template.getMatcher().matches(original)) {
+            Expression[] args = template.getTemplateArgsFunc().apply(updated);
+            if (args.length == 0) {
+                return Optional.of(template.getTemplate().apply(updateCursor(updated), updated.getCoordinates().replace()));
             }
+            return Optional.of(template.getTemplate().apply(updateCursor(updated), updated.getCoordinates().replace(), (Object[]) args));
         }
         return Optional.empty(); // unhandled case
     }

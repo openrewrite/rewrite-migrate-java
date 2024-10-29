@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.joda.templates;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
@@ -27,7 +28,7 @@ import java.util.List;
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 @NoArgsConstructor
-public class DateTimeTemplates {
+public class DateTimeTemplates implements Templates {
     private final MethodMatcher newDateTime = new MethodMatcher(JODA_DATE_TIME + "<constructor>()");
     private final MethodMatcher newDateTimeWithZone = new MethodMatcher(JODA_DATE_TIME + "<constructor>(" + JODA_DATE_TIME_ZONE + ")");
     private final MethodMatcher newDateTimeWithEpoch = new MethodMatcher(JODA_DATE_TIME + "<constructor>(long)");
@@ -46,7 +47,6 @@ public class DateTimeTemplates {
 
     private final MethodMatcher toDateTime = new MethodMatcher(JODA_DATE_TIME + " toDateTime()");
     private final MethodMatcher toDateTimeWithZone = new MethodMatcher(JODA_DATE_TIME + " toDateTime(" + JODA_DATE_TIME_ZONE + ")");
-    private final MethodMatcher getMillis = new MethodMatcher(JODA_BASE_DATE_TIME + " getMillis()");
     private final MethodMatcher withMillis = new MethodMatcher(JODA_DATE_TIME + " withMillis(long)");
     private final MethodMatcher withZone = new MethodMatcher(JODA_DATE_TIME + " withZone(" + JODA_DATE_TIME_ZONE + ")");
     private final MethodMatcher withZoneRetainFields = new MethodMatcher(JODA_DATE_TIME + " withZoneRetainFields(" + JODA_DATE_TIME_ZONE + ")");
@@ -270,6 +270,7 @@ public class DateTimeTemplates {
             .imports(JAVA_CHRONO_FIELD)
             .build();
 
+    @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
             add(new MethodTemplate(newDateTime, dateTimeTemplate));
@@ -288,7 +289,6 @@ public class DateTimeTemplates {
             add(new MethodTemplate(dateTimeParseWithFormatter, dateTimeParseWithFormatterTemplate));
             add(new MethodTemplate(toDateTime, toDateTimeTemplate));
             add(new MethodTemplate(toDateTimeWithZone, withZoneTemplate));
-            add(new MethodTemplate(getMillis, getMillisTemplate));
             add(new MethodTemplate(withMillis, withMillisTemplate, m -> {
                 J.MethodInvocation mi = (J.MethodInvocation) m;
                 return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
@@ -340,8 +340,4 @@ public class DateTimeTemplates {
             add(new MethodTemplate(withMillisOfDay, withMillisOfDayTemplate));
         }
     };
-
-    public static List<MethodTemplate> getTemplates() {
-        return new DateTimeTemplates().templates;
-    }
 }
