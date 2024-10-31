@@ -64,6 +64,7 @@ class LombokValToFinalVarTest implements RewriteTest {
     void replaceAssignmentVar() {
         //language=java
         rewriteRun(
+          spec -> spec.typeValidationOptions(TypeValidation.builder().identifiers(false).build()),
           version(
             java(
               """
