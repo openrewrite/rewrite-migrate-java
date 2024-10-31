@@ -32,6 +32,35 @@ class UseVarForObjectsTest extends VarBaseTest {
           .allSources(s -> s.markers(javaVersion(10)));
     }
 
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/550")
+    void genericType() {
+        rewriteRun(
+          java(
+            """
+              import java.io.Serializable;
+              
+              abstract class Outer<T extends Serializable> {
+                  abstract T doIt();
+                  void trigger() {
+                      T x = doIt();
+                  }
+              }
+              """,
+            """
+              import java.io.Serializable;
+              
+              abstract class Outer<T extends Serializable> {
+                  abstract T doIt();
+                  void trigger() {
+                      var x = doIt();
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class Applicable {
         @DocumentExample
