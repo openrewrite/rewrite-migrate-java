@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.joda.templates;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
@@ -26,7 +27,7 @@ import java.util.List;
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 @NoArgsConstructor
-public class DurationTemplates {
+public class DurationTemplates implements Templates{
     private final MethodMatcher parse = new MethodMatcher(JODA_DURATION + " parse(String)");
     private final MethodMatcher standardDays = new MethodMatcher(JODA_DURATION + " standardDays(long)");
     private final MethodMatcher standardHours = new MethodMatcher(JODA_DURATION + " standardHours(long)");
@@ -123,6 +124,7 @@ public class DurationTemplates {
     private final JavaTemplate absTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.abs()")
             .build();
 
+    @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
             add(new MethodTemplate(parse, parseTemplate));
@@ -163,8 +165,4 @@ public class DurationTemplates {
             add(new MethodTemplate(abs, absTemplate));
         }
     };
-
-    public static List<MethodTemplate> getTemplates() {
-        return new DurationTemplates().templates;
-    }
 }

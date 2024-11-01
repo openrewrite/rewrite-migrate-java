@@ -80,7 +80,8 @@ public class LombokValToFinalVar extends Recipe {
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations mv, ExecutionContext ctx) {
             J.VariableDeclarations varDecls = super.visitVariableDeclarations(mv, ctx);
-            if (TypeUtils.isOfClassType(varDecls.getType(), LOMBOK_VAL)) {
+            if (TypeUtils.isOfClassType(varDecls.getType(), LOMBOK_VAL) ||
+                (varDecls.getTypeExpression() instanceof J.Identifier && ((J.Identifier) varDecls.getTypeExpression()).getSimpleName().equals("val"))) {
                 maybeRemoveImport(LOMBOK_VAL);
 
                 J.VariableDeclarations.NamedVariable nv = mv.getVariables().get(0);
