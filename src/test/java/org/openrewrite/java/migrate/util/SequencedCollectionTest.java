@@ -39,7 +39,7 @@ class SequencedCollectionTest implements RewriteTest {
               //language=java
               java(
                 """
-                  import java.util.SortedSet;
+                  import java.util.*;
                   
                   class Foo {
                       void bar(SortedSet<String> collection) {
