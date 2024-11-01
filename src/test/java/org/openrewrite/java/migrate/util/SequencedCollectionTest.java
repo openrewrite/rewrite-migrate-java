@@ -17,18 +17,15 @@ package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-
 @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
-@EnabledForJreRange(min = JRE.JAVA_21)
 class SequencedCollectionTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResource("/META-INF/rewrite/java-version-21.yml", "org.openrewrite.java.migrate.util.SequencedCollection");
@@ -42,8 +39,8 @@ class SequencedCollectionTest implements RewriteTest {
               //language=java
               java(
                 """
-                  import java.util.*;
-
+                  import java.util.SortedSet;
+                  
                   class Foo {
                       void bar(SortedSet<String> collection) {
                           String first = collection.first();
@@ -53,7 +50,7 @@ class SequencedCollectionTest implements RewriteTest {
                   """,
                 """
                   import java.util.*;
-
+                  
                   class Foo {
                       void bar(SortedSet<String> collection) {
                           String first = collection.getFirst();
@@ -75,7 +72,7 @@ class SequencedCollectionTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-
+                  
                   class Foo {
                       void bar(NavigableSet<String> collection) {
                           NavigableSet<String> reversed = collection.descendingSet();
@@ -84,7 +81,7 @@ class SequencedCollectionTest implements RewriteTest {
                   """,
                 """
                   import java.util.*;
-
+                  
                   class Foo {
                       void bar(NavigableSet<String> collection) {
                           NavigableSet<String> reversed = collection.reversed();
