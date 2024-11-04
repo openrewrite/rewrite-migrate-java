@@ -47,6 +47,10 @@ recipeList:
       oldFullyQualifiedTypeName: javax.annotation.Nonnull
       newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
       ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.ParametersAreNonnullByDefault
+      newFullyQualifiedTypeName: org.jspecify.annotations.NullMarked
+      ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
       annotationType: org.jspecify.annotations.*
 ---
