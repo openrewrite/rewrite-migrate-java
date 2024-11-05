@@ -97,7 +97,7 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                 if (acc.get()) {
                     return (J) tree;
                 }
-                J t = new UsesType<ExecutionContext>("javax.xml.bind..*", true).visit(tree, ctx);
+                Tree t = new UsesType<ExecutionContext>("javax.xml.bind..*", true).visit(tree, ctx);
                 if (t != tree) {
                     acc.set(true);
                 }
