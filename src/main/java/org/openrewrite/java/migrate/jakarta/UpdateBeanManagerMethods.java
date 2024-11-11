@@ -22,7 +22,11 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+
+import java.util.Collections;
+import java.util.List;
 
 public class UpdateBeanManagerMethods extends Recipe {
     @Override
@@ -44,14 +48,30 @@ public class UpdateBeanManagerMethods extends Recipe {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
+                List<Expression> arguments = mi.getArguments();
                 if (fireEventMatcher.matches(method)) {
-                    return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getEvent().fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})")
+                    if (arguments.size() <= 1) {
+                        return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getEvent()" +
+                                                    ".fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})")
+                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
+                                .build()
+                                .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), arguments.get(0));
+                    }
+
+                    J[] args = new J[arguments.size() + 1];
+                    args[0] = mi.getSelect();
+                    for (int i = 1; i < arguments.size(); i++) {
+                        args[i] = arguments.get(i);
+                    }
+                    args[arguments.size()] = arguments.get(0);
+
+                    String template = "#{any(jakarta.enterprise.inject.spi.BeanManager)}.getEvent()" +
+                                      ".select(" + String.join(", ", Collections.nCopies(arguments.size() - 1, "#{any(java.lang.annotation.Annotation)}")) + ')' +
+                                      ".fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})";
+                    return JavaTemplate.builder(template)
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
                             .build()
-                            .apply(updateCursor(mi),
-                                    mi.getCoordinates().replace(),
-                                    mi.getSelect(),
-                                    mi.getArguments().get(0));
+                            .apply(updateCursor(mi), mi.getCoordinates().replace(), args);
                 } else if (createInjectionTargetMatcher.matches(method)) {
                     return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getInjectionTargetFactory(#{any(jakarta.enterprise.inject.spi.AnnotatedType)}).createInjectionTarget(null)")
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
@@ -59,10 +79,11 @@ public class UpdateBeanManagerMethods extends Recipe {
                             .apply(updateCursor(mi),
                                     mi.getCoordinates().replace(),
                                     mi.getSelect(),
-                                    mi.getArguments().get(0));
+                                    arguments.get(0));
                 }
                 return mi;
             }
+
         };
     }
 }
