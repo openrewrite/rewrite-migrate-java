@@ -49,7 +49,7 @@ public class UpdateBeanManagerMethods extends Recipe {
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
                 List<Expression> arguments = mi.getArguments();
-                if (fireEventMatcher.matches(method)) {
+                if (fireEventMatcher.matches(method) && mi.getSelect() != null) {
                     if (arguments.size() <= 1) {
                         return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getEvent()" +
                                                     ".fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})")
@@ -58,7 +58,7 @@ public class UpdateBeanManagerMethods extends Recipe {
                                 .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), arguments.get(0));
                     }
 
-                    J[] args = new J[arguments.size() + 1];
+                    Object[] args = new Expression[arguments.size() + 1];
                     args[0] = mi.getSelect();
                     for (int i = 1; i < arguments.size(); i++) {
                         args[i] = arguments.get(i);
@@ -72,14 +72,11 @@ public class UpdateBeanManagerMethods extends Recipe {
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
                             .build()
                             .apply(updateCursor(mi), mi.getCoordinates().replace(), args);
-                } else if (createInjectionTargetMatcher.matches(method)) {
+                } else if (createInjectionTargetMatcher.matches(method) && mi.getSelect() != null) {
                     return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getInjectionTargetFactory(#{any(jakarta.enterprise.inject.spi.AnnotatedType)}).createInjectionTarget(null)")
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
                             .build()
-                            .apply(updateCursor(mi),
-                                    mi.getCoordinates().replace(),
-                                    mi.getSelect(),
-                                    arguments.get(0));
+                            .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), arguments.get(0));
                 }
                 return mi;
             }
