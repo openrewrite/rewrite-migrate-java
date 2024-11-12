@@ -25,6 +25,7 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
 class ThreadStopUnsupportedTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new ThreadStopUnsupported());
@@ -62,8 +63,6 @@ class ThreadStopUnsupportedTest implements RewriteTest {
     }
 
     @Test
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/194")
-    @DocumentExample
     void retainCommentIfPresent() {
         rewriteRun(
           //language=java
@@ -82,8 +81,6 @@ class ThreadStopUnsupportedTest implements RewriteTest {
     }
 
     @Test
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/194")
-    @DocumentExample
     void replaceStopWithThrowsOnJava21() {
         rewriteRun(
           //language=java
@@ -113,8 +110,6 @@ class ThreadStopUnsupportedTest implements RewriteTest {
     }
 
     @Test
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/194")
-    @DocumentExample
     void replaceResumeWithThrowsOnJava21() {
         rewriteRun(
           //language=java
@@ -144,8 +139,6 @@ class ThreadStopUnsupportedTest implements RewriteTest {
     }
 
     @Test
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/194")
-    @DocumentExample
     void replaceSuspendWithThrowsOnJava21() {
         rewriteRun(
           //language=java
