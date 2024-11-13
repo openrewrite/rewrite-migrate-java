@@ -519,4 +519,118 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
           )
         );
     }
+    @Test
+    void doChangeNestedMaps() {
+        //language=java
+        rewriteRun(
+          spec -> spec.recipe(new NoGuavaImmutableMapOf(true)),
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableMap;
+                import java.util.Map;
+
+                class A {
+                    Object o = Map.of(1, ImmutableMap.of(2, 3));
+                }
+                """,
+              """
+                import java.util.Map;
+
+                class A {
+                    Object o = Map.of(1, Map.of(2, 3));
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
+    void doChangeNestedMaps2() {
+        //language=java
+        rewriteRun(
+          spec -> spec.recipe(new NoGuavaImmutableMapOf(true)),
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableMap;
+
+                class A {
+                    Object o = ImmutableMap.of(1, ImmutableMap.of(2, 3));
+                }
+                """,
+              """
+                import java.util.Map;
+
+                class A {
+                    Object o = Map.of(1, Map.of(2, 3));
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
+    @Test
+    void doChangeAssignToImmutableMap() {
+        //language=java
+        rewriteRun(
+          spec -> spec.recipe(new NoGuavaImmutableMapOf(true)),
+          version(
+            java(
+              """
+                import java.util.Map;
+                import com.google.common.collect.ImmutableMap;
+
+                class Test {
+                    ImmutableMap<String, String> m = ImmutableMap.of();
+                }
+                """,
+              """
+                import java.util.Map;
+
+                class Test {
+                    Map<String, String> m = Map.of();
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Test
+    void doChangeNestedAssignReturnType() {
+        rewriteRun(
+          spec -> spec.recipe(new NoGuavaImmutableMapOf(true)),
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableMap;
+
+                class A {
+                    public void getMap() {
+                        ImmutableMap<String, ImmutableMap<String, String>> s =  ImmutableMap.of("key", ImmutableMap.of("value1", "value2"));
+                    }
+                }
+                """,
+              """
+                import java.util.Map;
+
+                class A {
+                    public void getMap() {
+                        Map<String, Map<String, String>> s =  Map.of("key", Map.of("value1", "value2"));
+                    }
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
 }

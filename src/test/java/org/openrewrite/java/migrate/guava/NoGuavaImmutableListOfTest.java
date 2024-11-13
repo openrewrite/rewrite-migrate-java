@@ -576,4 +576,88 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
         );
     }
 
+    @Test
+    void doChangeAllAssignToImmutableMap() {
+        //language=java
+        rewriteRun(
+          spec -> spec.recipe(new NoGuavaImmutableListOf(true)),
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+                import java.util.List;
+
+                class A {
+                    Object o = List.of(ImmutableList.of(1, 2), ImmutableList.of(2, 3));
+                }
+                """,
+              """
+                import java.util.List;
+
+                class A {
+                    Object o = List.of(List.of(1, 2), List.of(2, 3));
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+    @Test
+    void doChangeNestedListsWithVariableType() {
+        //language=java
+        rewriteRun(
+          spec -> spec.recipe(new NoGuavaImmutableListOf(true)),
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class A {
+                    ImmutableList<ImmutableList<Integer>> o = ImmutableList.of(ImmutableList.of(1, 2), ImmutableList.of(2, 3));
+                }
+                """,
+              """
+                import java.util.List;
+
+                class A {
+                    List<List<Integer>> o = List.of(List.of(1, 2), List.of(2, 3));
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Test
+    void doChangeAssignFromImmutableListToList() {
+        rewriteRun(
+          spec -> spec.recipe(new NoGuavaImmutableListOf(true)),
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class A {
+                    void test() {
+                        ImmutableList<Integer> o = ImmutableList.of(1, 2);
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+
+                class A {
+                    void test() {
+                        List<Integer> o = List.of(1, 2);
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
 }

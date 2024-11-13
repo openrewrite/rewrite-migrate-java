@@ -19,4 +19,8 @@ public class NoGuavaImmutableListOf extends AbstractNoGuavaImmutableOf {
     public NoGuavaImmutableListOf() {
         super("com.google.common.collect.ImmutableList", "java.util.List");
     }
+
+    public NoGuavaImmutableListOf(boolean isAbleToConvertReturnType) {
+        super("com.google.common.collect.ImmutableList", "java.util.List", isAbleToConvertReturnType);
+    }
 }

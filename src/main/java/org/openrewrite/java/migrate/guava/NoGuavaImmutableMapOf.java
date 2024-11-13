@@ -19,4 +19,7 @@ public class NoGuavaImmutableMapOf extends AbstractNoGuavaImmutableOf {
     public NoGuavaImmutableMapOf() {
         super("com.google.common.collect.ImmutableMap", "java.util.Map");
     }
+    public NoGuavaImmutableMapOf(boolean isAbleToConvertReturnType) {
+        super("com.google.common.collect.ImmutableMap", "java.util.Map", isAbleToConvertReturnType);
+    }
 }

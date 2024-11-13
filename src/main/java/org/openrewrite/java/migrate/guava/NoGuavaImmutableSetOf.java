@@ -19,4 +19,7 @@ public class NoGuavaImmutableSetOf extends AbstractNoGuavaImmutableOf {
     public NoGuavaImmutableSetOf() {
         super("com.google.common.collect.ImmutableSet", "java.util.Set");
     }
+    public NoGuavaImmutableSetOf(boolean isAbleToConvertReturnType) {
+        super("com.google.common.collect.ImmutableSet", "java.util.Set", isAbleToConvertReturnType);
+    }
 }

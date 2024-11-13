@@ -518,4 +518,59 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void doChangeNestedSets() {
+        //language=java
+        rewriteRun(
+          spec -> spec.recipe(new NoGuavaImmutableSetOf(true)),
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableSet;
+                import java.util.Set;
+
+                class A {
+                    Object o = Set.of(ImmutableSet.of(1, 2));
+                }
+                """,
+              """
+                import java.util.Set;
+
+                class A {
+                    Object o = Set.of(Set.of(1, 2));
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Test
+    void doChangeAssignToImmutableSet() {
+        //language=java
+        rewriteRun(
+          spec -> spec.recipe(new NoGuavaImmutableSetOf(true)),
+          version(
+              java(
+                """
+                  import com.google.common.collect.ImmutableSet;
+
+                  class Test {
+                      ImmutableSet<String> m = ImmutableSet.of();
+                  }
+                  """,
+                """
+                  import java.util.Set;
+
+                  class Test {
+                      Set<String> m = Set.of();
+                  }
+                  """
+              ),
+          11)
+        );
+    }
+
 }
