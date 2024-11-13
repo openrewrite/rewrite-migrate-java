@@ -25,6 +25,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
+import static org.openrewrite.xml.Assertions.xml;
 
 class JavaxToJakartaTest implements RewriteTest {
 
@@ -607,6 +608,38 @@ class JavaxToJakartaTest implements RewriteTest {
                 </project>
                 """
             )
+          )
+        );
+    }
+
+    @Test
+    void shouldRefactorSpringBeanXml() {
+        //language=java
+        rewriteRun(
+          //language=XML
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://www.springframework.org/schema/beans"
+                     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+                  <bean id="exampleBean" class="org.springframework.beans.ExampleBean">
+                      <property name="conFactory">
+                          <value>javax.jms.ConnectionFactory</value>
+                      </property>
+                  </bean>
+              </beans>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://www.springframework.org/schema/beans"
+                     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+                  <bean id="exampleBean" class="org.springframework.beans.ExampleBean">
+                      <property name="conFactory">
+                          <value>jakarta.jms.ConnectionFactory</value>
+                      </property>
+                  </bean>
+              </beans>
+              """
           )
         );
     }
