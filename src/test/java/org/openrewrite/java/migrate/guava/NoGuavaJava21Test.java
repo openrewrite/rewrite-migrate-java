@@ -43,16 +43,16 @@ class NoGuavaJava21Test implements RewriteTest {
         rewriteRun(
           version(
             java(
-              """   
+              """
                 import com.google.common.primitives.Doubles;
-                
+
                 class Test {
                     public double testMethod() {
                         return Doubles.constrainToRange(20D, 10D, 100D);
                     }
                 }
                 """,
-              """ 
+              """
                 class Test {
                     public double testMethod() {
                         return Math.clamp(20D, 10D, 100D);
@@ -70,16 +70,16 @@ class NoGuavaJava21Test implements RewriteTest {
         rewriteRun(
           version(
             java(
-              """   
+              """
                 import com.google.common.primitives.Longs;
-                
+
                 class Test {
                     public long testMethod() {
                         return Longs.constrainToRange(20L, 10L, 100L);
                     }
                 }
                 """,
-              """ 
+              """
                 class Test {
                     public long testMethod() {
                         return Math.clamp(20L, 10L, 100L);
@@ -97,16 +97,16 @@ class NoGuavaJava21Test implements RewriteTest {
         rewriteRun(
           version(
             java(
-              """   
+              """
                 import com.google.common.primitives.Floats;
-                
+
                 class Test {
                     public float testMethod() {
                         return Floats.constrainToRange(20F, 10F, 100F);
                     }
                 }
                 """,
-              """ 
+              """
                 class Test {
                     public float testMethod() {
                         return Math.clamp(20F, 10F, 100F);
@@ -128,7 +128,7 @@ class NoGuavaJava21Test implements RewriteTest {
               """
                 import com.google.common.collect.ImmutableSet;
                 import com.google.common.collect.ImmutableMap;
-                
+
                 class A {
                     public Object getMap() {
                         return ImmutableMap.of("key", ImmutableSet.of("value1", "value2"));
@@ -136,12 +136,13 @@ class NoGuavaJava21Test implements RewriteTest {
                 }
                 """,
               """
+                import com.google.common.collect.ImmutableSet;
+
                 import java.util.Map;
-                import java.util.Set;
-                
+
                 class A {
                     public Object getMap() {
-                        return Map.of("key", Set.of("value1", "value2"));
+                        return Map.of("key", ImmutableSet.of("value1", "value2"));
                     }
                 }
                 """
