@@ -26,7 +26,10 @@ recipeList:
   - org.openrewrite.java.jspecify.MigrateFromJavaxAnnotationApi
   - org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
   - org.openrewrite.java.jspecify.MigrateFromJetbrainsAnnotations
-  - org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations
+  # Running the following recipe on current versions of Spring can cause Spring to misunderstand a nullable field.
+  #   For instance, a custom Prometheus scrape endpoint with @Nullable Set<String> includedNames will fail if 
+  #   includedNames is null and if @Nullable is @org.jspecify.annotations.Nullable.
+  # - org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
