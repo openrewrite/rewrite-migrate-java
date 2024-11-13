@@ -16,22 +16,23 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-@DisabledIfEnvironmentVariable(named = "CI", matches = "true") // Unexplained failure only on GitHub Actions
 class UpdateBeanManagerMethodsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
           .parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.enterprise.cdi-api-3.0.0-M4", "jakarta.enterprise.cdi-api-4.0.1"))
+            .classpathFromResources(new InMemoryExecutionContext(),
+              "jakarta.enterprise.cdi-api-3.0.0-M4",
+              "jakarta.enterprise.cdi-api-4.0.1"))
           .recipe(new UpdateBeanManagerMethods());
     }
 
@@ -91,6 +92,46 @@ class UpdateBeanManagerMethodsTest implements RewriteTest {
                   void bar(BeanManager beanManager) {
                       AnnotatedType<String> producerType = beanManager.createAnnotatedType(String.class);
                       beanManager.getInjectionTargetFactory(producerType).createInjectionTarget(null);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/597")
+    @Test
+    void fireEventWithClassifiers() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.lang.annotation.Annotation;
+              import jakarta.enterprise.inject.spi.BeanManager;
+              import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+              import java.util.Set;
+
+              class Foo {
+                  void one(BeanManager beanManager, BeforeBeanDiscovery beforeBeanDiscovery, Annotation classifier) {
+                      beanManager.fireEvent(beforeBeanDiscovery, classifier);
+                  }
+                  void two(BeanManager beanManager, BeforeBeanDiscovery beforeBeanDiscovery, Annotation classifier) {
+                      beanManager.fireEvent(beforeBeanDiscovery, classifier, classifier);
+                  }
+              }
+              """,
+            """
+              import java.lang.annotation.Annotation;
+              import jakarta.enterprise.inject.spi.BeanManager;
+              import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+              import java.util.Set;
+
+              class Foo {
+                  void one(BeanManager beanManager, BeforeBeanDiscovery beforeBeanDiscovery, Annotation classifier) {
+                      beanManager.getEvent().select(classifier).fire(beforeBeanDiscovery);
+                  }
+                  void two(BeanManager beanManager, BeforeBeanDiscovery beforeBeanDiscovery, Annotation classifier) {
+                      beanManager.getEvent().select(classifier, classifier).fire(beforeBeanDiscovery);
                   }
               }
               """
