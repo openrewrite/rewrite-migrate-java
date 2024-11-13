@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jspecify;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -324,9 +325,13 @@ class MigrateToJspecifyTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/602")
     @Test
     void migrateFromSpringFrameworkAnnotationsToJspecify() {
         rewriteRun(
+          spec -> spec.recipeFromResource(
+            "/META-INF/rewrite/jspecify.yml",
+            "org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations"),
           mavenProject("foo",
             //language=java
             srcMainJava(
