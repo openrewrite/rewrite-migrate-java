@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import java.time.Duration;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
@@ -34,7 +35,6 @@ import java.util.ArrayList;
 
 import static java.util.Collections.emptyList;
 import java.util.List;
-import org.openrewrite.marker.Markers;
 
 abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
