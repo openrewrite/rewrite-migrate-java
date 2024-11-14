@@ -614,7 +614,6 @@ class JavaxToJakartaTest implements RewriteTest {
 
     @Test
     void shouldRefactorSpringBeanXml() {
-        //language=java
         rewriteRun(
           //language=XML
           xml(
