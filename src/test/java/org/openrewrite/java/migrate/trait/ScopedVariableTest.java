@@ -25,7 +25,6 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.openrewrite.java.Assertions.java;
 
 class ScopedVariableTest implements RewriteTest {
@@ -86,7 +85,7 @@ class ScopedVariableTest implements RewriteTest {
             spec -> spec.beforeRecipe((source) -> {
                 J.MethodDeclaration md = (J.MethodDeclaration) source.getClasses().get(0).getBody().getStatements().get(1);
                 new ScopedVariable.Matcher().asVisitor(var -> {
-                    assertThat(((J.Block)var.getScope().getValue())).isEqualTo(md.getBody());
+                    assertThat(((J.Block) var.getScope().getValue())).isEqualTo(md.getBody());
                     return var.getTree();
                 }).visit(md, new InMemoryExecutionContext());
             })
