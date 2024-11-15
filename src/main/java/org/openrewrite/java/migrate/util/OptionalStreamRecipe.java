@@ -50,10 +50,6 @@ public class OptionalStreamRecipe extends Recipe {
     }
 
     private static class OptionalStreamVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private static final JavaTemplate template =
-                JavaTemplate.builder("#{any(java.util.stream.Stream)}.flatMap(Optional::stream)")
-                        .imports("java.util.Optional")
-                        .build();
 
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation invocation, ExecutionContext ctx) {
@@ -77,6 +73,10 @@ public class OptionalStreamRecipe extends Recipe {
             JRightPadded<Expression> mapSelect = mapInvocation.getPadding().getSelect();
             JavaType.Method mapInvocationType = mapInvocation.getMethodType();
             Space flatMapComments = getFlatMapComments(mapSelect, filterSelect);
+            JavaTemplate template =
+                    JavaTemplate.builder("#{any(java.util.stream.Stream)}.flatMap(Optional::stream)")
+                            .imports("java.util.Optional")
+                            .build();
             J.MethodInvocation flatMapInvocation = template
                     .apply(updateCursor(mapInvocation), mapInvocation.getCoordinates().replace(), filterInvocation.getSelect());
             return flatMapInvocation.getPadding()
