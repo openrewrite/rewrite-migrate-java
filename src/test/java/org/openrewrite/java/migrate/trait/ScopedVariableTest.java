@@ -56,10 +56,10 @@ class ScopedVariableTest implements RewriteTest {
               """,
             """
               class Test {
-                  private String /*~~(Identified variable field with scope Block)~~>*/field;
+                  private String /*~~(Identified variable field within scope Block)~~>*/field;
 
                   void doSome() {
-                      String /*~~(Identified variable anotherField with scope Block)~~>*/anotherField;
+                      String /*~~(Identified variable anotherField within scope Block)~~>*/anotherField;
                   }
               }
               """
