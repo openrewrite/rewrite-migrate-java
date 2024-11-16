@@ -247,8 +247,8 @@ public class JodaTimeScanner extends ScopeAwareVisitor {
             Cursor cursor = getCursor();
             while (cursor.getValue() instanceof Expression && isJodaExpr(cursor.getValue())) {
                 Cursor parentCursor = cursor.getParentTreeCursor();
-                if (parentCursor.getValue() instanceof MethodCall
-                        && ((MethodCall) parentCursor.getValue()).getArguments().contains(cursor.getValue())) {
+                if (parentCursor.getValue() instanceof MethodCall &&
+                        ((MethodCall) parentCursor.getValue()).getArguments().contains(cursor.getValue())) {
                     return Optional.of(cursor);
                 }
                 cursor = parentCursor;
