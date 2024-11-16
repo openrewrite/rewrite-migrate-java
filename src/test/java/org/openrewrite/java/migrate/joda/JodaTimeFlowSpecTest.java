@@ -46,10 +46,12 @@ class JodaTimeFlowSpecTest implements RewriteTest {
 
               @Override
               public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
-                  if (variable.getInitializer() == null) {
-                      return super.visitVariable(variable, ctx);
+                  if (atMethodParam(getCursor())) {
+                      updateSinks(getCursor(), variable.getName());
                   }
-                  updateSinks(variable.getInitializer(), variable.getName());
+                  if (variable.getInitializer() != null) {
+                      updateSinks(new Cursor(getCursor(), variable.getInitializer()), variable.getName());
+                  }
                   return super.visitVariable(variable, ctx);
               }
 
@@ -58,7 +60,8 @@ class JodaTimeFlowSpecTest implements RewriteTest {
                   if (!(assignment.getVariable() instanceof J.Identifier)) {
                       return super.visitAssignment(assignment, ctx);
                   }
-                  updateSinks(assignment.getAssignment(), (J.Identifier) assignment.getVariable());
+                  Cursor cursor = new Cursor(getCursor(), assignment.getAssignment());
+                  updateSinks(cursor, (J.Identifier) assignment.getVariable());
                   return super.visitAssignment(assignment, ctx);
               }
 
@@ -72,14 +75,17 @@ class JodaTimeFlowSpecTest implements RewriteTest {
                   return SearchResult.found(expression, desc);
               }
 
-              private void updateSinks(Expression expr, J.Identifier identifier) {
-                  Cursor cursor = new Cursor(getCursor(), expr);
+              private void updateSinks(Cursor cursor, J.Identifier identifier) {
                   Dataflow.startingAt(cursor).findSinks(new JodaTimeFlowSpec())
                     .foreachDoEffect(sinkFlow -> {
                         for (Expression sink : sinkFlow.getExpressionSinks()) {
                             exprVarBindings.computeIfAbsent(sink, e -> new ArrayList<>()).add(identifier);
                         }
                     });
+              }
+
+              private boolean atMethodParam(Cursor cursor) {
+                  return cursor.getParentTreeCursor().getParentTreeCursor().getValue() instanceof J.MethodDeclaration;
               }
           }))
           .parser(JavaParser.fromJavaVersion().classpath("joda-time"));
@@ -94,7 +100,7 @@ class JodaTimeFlowSpecTest implements RewriteTest {
             """
               import org.joda.time.DateTime;
               import org.joda.time.Interval;
-              
+
               class A {
                   public void foo() {
                       DateTime dateTime = new DateTime(), _dateTime = DateTime.now();
@@ -104,6 +110,9 @@ class JodaTimeFlowSpecTest implements RewriteTest {
                       dateTime = dateTime.minusDays(1);
                       _dateTime = dateTime;
                       Interval interval = new Interval(_dateTime, dateTimePlus2);
+                      print(interval);
+                  }
+                  private void print(Interval interval) {
                       System.out.println(interval);
                   }
               }
@@ -111,7 +120,7 @@ class JodaTimeFlowSpecTest implements RewriteTest {
             """
               import org.joda.time.DateTime;
               import org.joda.time.Interval;
-              
+
               class A {
                   public void foo() {
                       DateTime dateTime = /*~~(dateTime)~~>*/new DateTime(), _dateTime = /*~~(_dateTime)~~>*/DateTime.now();
@@ -121,6 +130,9 @@ class JodaTimeFlowSpecTest implements RewriteTest {
                       dateTime = /*~~(dateTime)~~>*//*~~(dateTime)~~>*/dateTime.minusDays(1);
                       _dateTime = /*~~(dateTime, _dateTime)~~>*/dateTime;
                       Interval interval = /*~~(interval)~~>*/new Interval(/*~~(dateTime, _dateTime)~~>*/_dateTime, /*~~(dateTimePlus2)~~>*/dateTimePlus2);
+                      print(/*~~(interval)~~>*/interval);
+                  }
+                  private void print(Interval interval) {
                       System.out.println(/*~~(interval)~~>*/interval);
                   }
               }

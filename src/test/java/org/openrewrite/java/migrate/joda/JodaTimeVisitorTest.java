@@ -182,6 +182,7 @@ class JodaTimeVisitorTest implements RewriteTest {
                       System.out.println(new DateTime().withSecondOfMinute(57));
                       System.out.println(new DateTime().withMillisOfSecond(550));
                       System.out.println(new DateTime().withMillisOfDay(123456));
+                      System.out.println(new DateTime().withTimeAtStartOfDay());
                   }
               }
               """,
@@ -241,6 +242,7 @@ class JodaTimeVisitorTest implements RewriteTest {
                       System.out.println(ZonedDateTime.now().withSecond(57));
                       System.out.println(ZonedDateTime.now().withNano(550 * 1_000_000));
                       System.out.println(ZonedDateTime.now().with(ChronoField.MILLI_OF_DAY, 123456));
+                      System.out.println(ZonedDateTime.now().toLocalDate().atStartOfDay(ZonedDateTime.now().getZone()));
                   }
               }
               """

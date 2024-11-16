@@ -15,17 +15,19 @@
  */
 package org.openrewrite.java.migrate.joda;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
+import org.openrewrite.java.tree.JavaType;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-public class JodaTimeRecipe extends ScanningRecipe<Set<NamedVariable>> {
+public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
     @Override
     public String getDisplayName() {
-        return "Migrate Joda Time to Java Time";
+        return "Migrate joda time to java time";
     }
 
     @Override
@@ -34,17 +36,46 @@ public class JodaTimeRecipe extends ScanningRecipe<Set<NamedVariable>> {
     }
 
     @Override
-    public Set<NamedVariable> getInitialValue(ExecutionContext ctx) {
-        return new HashSet<>();
+    public Accumulator getInitialValue(ExecutionContext ctx) {
+        return new Accumulator();
     }
 
     @Override
-    public JodaTimeScanner getScanner(Set<NamedVariable> acc) {
+    public JodaTimeScanner getScanner(Accumulator acc) {
         return new JodaTimeScanner(acc);
     }
 
     @Override
-    public JodaTimeVisitor getVisitor(Set<NamedVariable> acc) {
+    public JodaTimeVisitor getVisitor(Accumulator acc) {
         return new JodaTimeVisitor(acc);
+    }
+
+    @Getter
+    public static class Accumulator {
+        private final Set<NamedVariable> unsafeVars = new HashSet<>();
+        private final VarTable varTable = new VarTable();
+    }
+
+    static class VarTable {
+        private final Map<JavaType, List<NamedVariable>> vars = new HashMap<>();
+
+        public void addVars(J.MethodDeclaration methodDeclaration) {
+            JavaType type = methodDeclaration.getMethodType();
+
+            methodDeclaration.getParameters().forEach(p -> {
+                if (!(p instanceof J.VariableDeclarations) ) {
+                    return;
+                }
+                J.VariableDeclarations.NamedVariable namedVariable = ((J.VariableDeclarations) p).getVariables().get(0);
+                vars.computeIfAbsent(type, k -> new ArrayList<>()).add(namedVariable);
+            });
+        }
+
+        public NamedVariable getVarByName(JavaType declaringType, String varName) {
+            return vars.getOrDefault(declaringType, Collections.emptyList()).stream()
+                    .filter(v -> v.getSimpleName().equals(varName))
+                    .findFirst() // there should be only one variable with the same name
+                    .orElse(null);
+        }
     }
 }

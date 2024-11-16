@@ -102,7 +102,7 @@ class JodaTimeRecipeTest implements RewriteTest {
     }
 
     @Test
-    void dontChangeIncompatibleType() {
+    void safeMethodParamMigrationAcrossClassBoundary() {
         //language=java
         rewriteRun(
           java(
@@ -111,14 +111,33 @@ class JodaTimeRecipeTest implements RewriteTest {
 
               class A {
                   public void foo() {
-                      new B().print(new DateTime()); // print is public method accepting DateTime, not handled yet
-                      System.out.println(new B().dateTime);
+                      new B().print(new DateTime());
+                      System.out.println(new B().dateTime); // dateTime is class variable, not handled yet
                   }
               }
 
               class B {
                   DateTime dateTime = new DateTime();
                   public void print(DateTime dateTime) {
+                      System.out.println(dateTime);
+                  }
+              }
+              """,
+            """
+              import org.joda.time.DateTime;
+
+              import java.time.ZonedDateTime;
+
+              class A {
+                  public void foo() {
+                      new B().print(ZonedDateTime.now());
+                      System.out.println(new B().dateTime); // dateTime is class variable, not handled yet
+                  }
+              }
+
+              class B {
+                  DateTime dateTime = new DateTime();
+                  public void print(ZonedDateTime dateTime) {
                       System.out.println(dateTime);
                   }
               }
@@ -198,6 +217,69 @@ class JodaTimeRecipeTest implements RewriteTest {
                        DateTime dt = new DateTime(dtz);
                        return dt.plus(2);
                    }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void migrateSafeMethodParam() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import org.joda.time.DateTime;
+
+              class A {
+                  public void foo() {
+                      new Bar().bar(new DateTime());
+                  }
+
+                  private static class Bar {
+                      public void bar(DateTime dt) {
+                          dt.getMillis();
+                      }
+                  }
+              }
+              """,
+            """
+              import java.time.ZonedDateTime;
+
+              class A {
+                  public void foo() {
+                      new Bar().bar(ZonedDateTime.now());
+                  }
+
+                  private static class Bar {
+                      public void bar(ZonedDateTime dt) {
+                          dt.toInstant().toEpochMilli();
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotMigrateUnsafeMethodParam() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import org.joda.time.DateTime;
+
+              class A {
+                  public void foo() {
+                      new Bar().bar(new DateTime());
+                  }
+
+                  private static class Bar {
+                      public void bar(DateTime dt) {
+                          dt.toDateMidnight(); // template doesn't exist for toDateMidnight
+                      }
+                  }
               }
               """
           )

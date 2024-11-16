@@ -36,6 +36,12 @@ public class JodaTimeFlowSpec extends DataFlowSpec {
         if (value instanceof J.VariableDeclarations.NamedVariable) {
             return isJodaType(((J.VariableDeclarations.NamedVariable) value).getType());
         }
+
+        if (value instanceof J.VariableDeclarations) {
+            if (srcNode.getCursor().getParentTreeCursor().getParentTreeCursor().getValue() instanceof J.MethodDeclaration) {
+                return isJodaType(((J.VariableDeclarations) value).getType());
+            }
+        }
         return false;
     }
 

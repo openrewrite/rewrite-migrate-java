@@ -59,15 +59,9 @@ public class AllTemplates {
         }
     };
 
-    public static MethodTemplate getTemplate(J.MethodInvocation method) {
+    public static MethodTemplate getTemplate(MethodCall method) {
         return getTemplateGroup(method).flatMap(templates -> templates.getTemplates().stream()
                 .filter(template -> template.getMatcher().matches(method) && templates.matchesMethodCall(method, template))
-                .findFirst()).orElse(null);
-    }
-
-    public static MethodTemplate getTemplate(J.NewClass newClass) {
-        return getTemplateGroup(newClass).flatMap(templates -> templates.getTemplates().stream()
-                .filter(template -> template.getMatcher().matches(newClass) && templates.matchesMethodCall(newClass, template))
                 .findFirst()).orElse(null);
     }
 
