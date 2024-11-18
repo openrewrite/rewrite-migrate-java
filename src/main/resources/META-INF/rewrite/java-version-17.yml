@@ -226,7 +226,7 @@ description: >-
 tags:
   - java17
 recipeList:
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: 'java.lang.Thread countStackFrames()'
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -281,7 +281,7 @@ description: >-
 tags:
   - java17
 recipeList:
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: 'java.lang.Runtime traceInstructions(boolean)'
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: 'java.lang.Runtime traceMethodCalls(boolean)'
