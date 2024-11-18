@@ -27,7 +27,7 @@ import java.util.*;
 public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
     @Override
     public String getDisplayName() {
-        return "Migrate joda time to java time";
+        return "Migrate Joda-Time to Java time";
     }
 
     @Override
