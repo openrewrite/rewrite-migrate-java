@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -41,15 +42,15 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
           java(
             """
               import java.util.*;
-
+              
               interface ConnectionListener {
                void onCreate();
               }
-
+              
               class A {
                   public void setConnectionListeners(List<? extends ConnectionListener> listeners) {
                   }
-
+              
                   public void test() {
                       setConnectionListeners(Collections.singletonList(new ConnectionListener() {
                           @Override
@@ -61,15 +62,15 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
               """,
             """
               import java.util.List;
-
+              
               interface ConnectionListener {
                void onCreate();
               }
-
+              
               class A {
                   public void setConnectionListeners(List<? extends ConnectionListener> listeners) {
                   }
-
+              
                   public void test() {
                       setConnectionListeners(List.of(new ConnectionListener() {
                           @Override
@@ -83,6 +84,7 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
         );
     }
 
+    @DocumentExample
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
     @Test
     void singletonList() {
@@ -91,14 +93,14 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
           java(
             """
               import java.util.*;
-
+              
               class Test {
                   List<String> list = Collections.singletonList("ABC");
               }
               """,
             """
               import java.util.List;
-
+              
               class Test {
                   List<String> list = List.of("ABC");
               }
@@ -116,14 +118,14 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
             """
               import java.util.*;
               import static java.util.Collections.singletonList;
-
+              
               class Test {
                   List<String> list = singletonList("ABC");
               }
               """,
             """
               import java.util.List;
-
+              
               class Test {
                   List<String> list = List.of("ABC");
               }
@@ -141,7 +143,7 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
             """
               import java.util.*;
               import java.time.LocalDate;
-
+              
               class Test {
                   List<LocalDate> list = Collections.singletonList(LocalDate.now());
               }
@@ -149,7 +151,7 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
             """
               import java.util.List;
               import java.time.LocalDate;
-
+              
               class Test {
                   List<LocalDate> list = List.of(LocalDate.now());
               }
@@ -169,18 +171,35 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
             """
               import lombok.AllArgsConstructor;
               import java.util.List;
-
+              
               import static java.util.Collections.singletonList;
-
+              
               enum FooEnum {
                   FOO, BAR;
-
+              
                   @AllArgsConstructor
                   public enum BarEnum {
                       foobar(singletonList(FOO));
-
+              
                       private final List<FooEnum> expectedStates;
                   }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/571")
+    @Test
+    void shouldNotConvertLiteralNull() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+              
+              class Test {
+                  List<String> list = Collections.singletonList(null);
               }
               """
           )

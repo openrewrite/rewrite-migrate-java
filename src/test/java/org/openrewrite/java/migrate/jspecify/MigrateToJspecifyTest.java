@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jspecify;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -31,7 +32,7 @@ class MigrateToJspecifyTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipeFromResource("/META-INF/rewrite/jspecify.yml", "org.openrewrite.java.jspecify.MigrateToJspecify")
-          .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jakarta.annotation-api", "annotations"));
+          .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jakarta.annotation-api", "annotations", "spring-core"));
     }
 
     @DocumentExample
@@ -45,7 +46,7 @@ class MigrateToJspecifyTest implements RewriteTest {
                 """
                   import javax.annotation.Nonnull;
                   import javax.annotation.Nullable;
-                  
+
                   public class Test {
                       @Nonnull
                       public String field1;
@@ -54,7 +55,7 @@ class MigrateToJspecifyTest implements RewriteTest {
                       @Nullable
                       public Foo.Bar foobar;
                   }
-                  
+
                   interface Foo {
                     class Bar {
                       @Nonnull
@@ -65,22 +66,37 @@ class MigrateToJspecifyTest implements RewriteTest {
                 """
                   import org.jspecify.annotations.NonNull;
                   import org.jspecify.annotations.Nullable;
-                  
+
                   public class Test {
                       @NonNull
                       public String field1;
                       @Nullable
                       public String field2;
-                  
+
                       public Foo.@Nullable Bar foobar;
                   }
-                  
+
                   interface Foo {
                     class Bar {
                       @NonNull
                       public String barField;
                     }
                   }
+                  """
+              ),
+              // package-info.java
+              java(
+                """
+                  @ParametersAreNonnullByDefault
+                  package org.openrewrite.example;
+
+                  import javax.annotation.ParametersAreNonnullByDefault;
+                  """,
+                """
+                  @NullMarked
+                  package org.openrewrite.example;
+
+                  import org.jspecify.annotation.NullMarked;
                   """
               )
             ),
@@ -136,7 +152,7 @@ class MigrateToJspecifyTest implements RewriteTest {
                 """
                   import jakarta.annotation.Nonnull;
                   import jakarta.annotation.Nullable;
-                  
+
                   public class Test {
                       @Nonnull
                       public String field1;
@@ -145,7 +161,7 @@ class MigrateToJspecifyTest implements RewriteTest {
                       @Nullable
                       public Foo.Bar foobar;
                   }
-                  
+
                   interface Foo {
                     class Bar {
                       @Nonnull
@@ -156,16 +172,16 @@ class MigrateToJspecifyTest implements RewriteTest {
                 """
                   import org.jspecify.annotations.NonNull;
                   import org.jspecify.annotations.Nullable;
-                  
+
                   public class Test {
                       @NonNull
                       public String field1;
                       @Nullable
                       public String field2;
-                  
+
                       public Foo.@Nullable Bar foobar;
                   }
-                  
+
                   interface Foo {
                     class Bar {
                       @NonNull
@@ -228,7 +244,7 @@ class MigrateToJspecifyTest implements RewriteTest {
                 """
                   import org.jetbrains.annotations.NotNull;
                   import org.jetbrains.annotations.Nullable;
-                  
+
                   public class Test {
                       @NotNull
                       public String field1;
@@ -237,7 +253,7 @@ class MigrateToJspecifyTest implements RewriteTest {
                       @Nullable
                       public Foo.Bar foobar;
                   }
-                  
+
                   interface Foo {
                     class Bar {
                       @NotNull
@@ -248,16 +264,16 @@ class MigrateToJspecifyTest implements RewriteTest {
                 """
                   import org.jspecify.annotations.NonNull;
                   import org.jspecify.annotations.Nullable;
-                  
+
                   public class Test {
                       @NonNull
                       public String field1;
                       @Nullable
                       public String field2;
-                  
+
                       public Foo.@Nullable Bar foobar;
                   }
-                  
+
                   interface Foo {
                     class Bar {
                       @NonNull
@@ -300,6 +316,101 @@ class MigrateToJspecifyTest implements RewriteTest {
                             <groupId>org.jspecify</groupId>
                             <artifactId>jspecify</artifactId>
                             <version>1.0.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/602")
+    @Test
+    void migrateFromSpringFrameworkAnnotationsToJspecify() {
+        rewriteRun(
+          spec -> spec.recipeFromResource(
+            "/META-INF/rewrite/jspecify.yml",
+            "org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations"),
+          mavenProject("foo",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import org.springframework.lang.NonNull;
+                  import org.springframework.lang.Nullable;
+
+                  public class Test {
+                      @NonNull
+                      public String field1;
+                      @Nullable
+                      public String field2;
+                      @Nullable
+                      public Foo.Bar foobar;
+                  }
+
+                  interface Foo {
+                    class Bar {
+                      @NonNull
+                      public String barField;
+                    }
+                  }
+                  """,
+                """
+                  import org.jspecify.annotations.NonNull;
+                  import org.jspecify.annotations.Nullable;
+
+                  public class Test {
+                      @NonNull
+                      public String field1;
+                      @Nullable
+                      public String field2;
+
+                      public Foo.@Nullable Bar foobar;
+                  }
+
+                  interface Foo {
+                    class Bar {
+                      @NonNull
+                      public String barField;
+                    }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.springframework</groupId>
+                            <artifactId>spring-core</artifactId>
+                            <version>6.1.13</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jspecify</groupId>
+                            <artifactId>jspecify</artifactId>
+                            <version>1.0.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework</groupId>
+                            <artifactId>spring-core</artifactId>
+                            <version>6.1.13</version>
                         </dependency>
                     </dependencies>
                 </project>

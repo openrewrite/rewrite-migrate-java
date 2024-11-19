@@ -108,9 +108,9 @@ public class MXBeanRule extends Recipe {
             }
 
             List<Modifier> modifiers = new ArrayList<>(cd.getModifiers());
-            modifiers.removeIf(modifier -> modifier.getType() == Modifier.Type.Private
-                    || modifier.getType() == Modifier.Type.Protected
-                    || modifier.getType() == Modifier.Type.Abstract);
+            modifiers.removeIf(modifier -> modifier.getType() == Modifier.Type.Private ||
+                    modifier.getType() == Modifier.Type.Protected ||
+                    modifier.getType() == Modifier.Type.Abstract);
             modifiers.add(new J.Modifier(randomId(), Space.EMPTY, Markers.EMPTY, Modifier.Type.Public, emptyList()));
             return maybeAutoFormat(cd, cd.withModifiers(sortModifiers(modifiers)), ctx);
         }

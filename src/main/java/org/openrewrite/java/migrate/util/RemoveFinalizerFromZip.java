@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.util;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -62,8 +63,9 @@ public class RemoveFinalizerFromZip extends Recipe {
                                 new UsesType<>(JAVA_UTIL_ZIP_INFLATER, false),
                                 new UsesType<>(JAVA_UTIL_ZIP_ZIP_FILE, false))),
                 new JavaVisitor<ExecutionContext>() {
+
                     @Override
-                    public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                    public @Nullable J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
 
                         if (METHOD_MATCHER.matches(mi)) {
@@ -91,9 +93,9 @@ public class RemoveFinalizerFromZip extends Recipe {
                     }
 
                     private boolean shouldRemoveFinalize(JavaType type) {
-                        return TypeUtils.isAssignableTo(JAVA_UTIL_ZIP_DEFLATER, type)
-                               || TypeUtils.isAssignableTo(JAVA_UTIL_ZIP_INFLATER, type)
-                               || TypeUtils.isAssignableTo(JAVA_UTIL_ZIP_ZIP_FILE, type);
+                        return TypeUtils.isAssignableTo(JAVA_UTIL_ZIP_DEFLATER, type) ||
+                               TypeUtils.isAssignableTo(JAVA_UTIL_ZIP_INFLATER, type) ||
+                               TypeUtils.isAssignableTo(JAVA_UTIL_ZIP_ZIP_FILE, type);
                     }
                 });
     }

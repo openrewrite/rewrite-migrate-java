@@ -16,7 +16,7 @@ dependencies {
     testImplementation("org.projectlombok:lombok:latest.release")
 
     annotationProcessor("org.openrewrite:rewrite-templating:$rewriteVersion")
-    compileOnly("com.google.errorprone:error_prone_core:2.19.1") {
+    compileOnly("com.google.errorprone:error_prone_core:2.+") {
         exclude("com.google.auto.service", "auto-service-annotations")
     }
 
@@ -29,6 +29,7 @@ dependencies {
     implementation("org.openrewrite.recipe:rewrite-static-analysis:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-jenkins:$rewriteVersion")
     implementation("org.openrewrite:rewrite-templating:$rewriteVersion")
+    implementation("org.openrewrite.meta:rewrite-analysis:$rewriteVersion")
 
     runtimeOnly("org.openrewrite:rewrite-java-8")
     runtimeOnly("org.openrewrite:rewrite-java-11")
@@ -48,12 +49,29 @@ dependencies {
     testImplementation("org.assertj:assertj-core:latest.release")
 
     testImplementation("com.google.guava:guava:33.0.0-jre")
+    testImplementation("joda-time:joda-time:2.12.3")
 
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind")
+    testRuntimeOnly("org.apache.johnzon:johnzon-core:1.2.18")
     testRuntimeOnly("org.codehaus.groovy:groovy:latest.release")
     testRuntimeOnly("jakarta.annotation:jakarta.annotation-api:2.1.1")
+    testRuntimeOnly("org.springframework:spring-core:6.1.13")
     testRuntimeOnly("com.google.code.findbugs:jsr305:3.0.2")
     testRuntimeOnly(gradleApi())
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+tasks.withType(Javadoc::class.java) {
+    exclude("**/PlanJavaMigration.java")
+}
+
+tasks.test {
+    maxHeapSize = "2g"  // Set max heap size to 2GB or adjust as necessary
 }

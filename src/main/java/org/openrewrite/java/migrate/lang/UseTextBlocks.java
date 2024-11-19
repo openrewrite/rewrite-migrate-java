@@ -34,7 +34,10 @@ import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -122,7 +125,9 @@ public class UseTextBlocks extends Recipe {
 
                 StringBuilder sb = new StringBuilder();
                 StringBuilder originalContent = new StringBuilder();
-                stringLiterals = stringLiterals.stream().filter(s -> s.getValue() != null && !s.getValue().toString().isEmpty()).collect(Collectors.toList());
+                stringLiterals = stringLiterals.stream()
+                        .filter(s -> s.getValue() != null && !s.getValue().toString().isEmpty())
+                        .collect(Collectors.toList());
                 for (int i = 0; i < stringLiterals.size(); i++) {
                     String s = requireNonNull(stringLiterals.get(i).getValue()).toString();
                     sb.append(s);
@@ -136,8 +141,6 @@ public class UseTextBlocks extends Recipe {
                     }
                 }
 
-                content = sb.toString();
-
                 TabsAndIndentsStyle tabsAndIndentsStyle = Optional.ofNullable(getCursor().firstEnclosingOrThrow(SourceFile.class)
                         .getStyle(TabsAndIndentsStyle.class)).orElse(IntelliJ.tabsAndIndents());
                 boolean useTab = tabsAndIndentsStyle.getUseTabCharacter();
@@ -145,12 +148,11 @@ public class UseTextBlocks extends Recipe {
 
                 String indentation = getIndents(concatenation, useTab, tabSize);
 
-                boolean isEndsWithNewLine = content.endsWith("\n");
-
                 // references:
                 //  - https://docs.oracle.com/en/java/javase/14/docs/specs/text-blocks-jls.html
                 //  - https://javaalmanac.io/features/textblocks/
 
+                content = sb.toString();
                 // escape backslashes
                 content = content.replace("\\", "\\\\");
                 // escape triple quotes
@@ -167,20 +169,27 @@ public class UseTextBlocks extends Recipe {
 
                 // add last line to ensure the closing delimiter is in a new line to manage indentation & remove the
                 // need to escape ending quote in the content
-                if (!isEndsWithNewLine) {
+                if (isEndsWithSpecialCharacters(sb.toString())) {
                     content = content + "\\\n" + indentation;
                 }
 
                 return new J.Literal(randomId(), binary.getPrefix(), Markers.EMPTY, originalContent.toString(),
                         String.format("\"\"\"%s\"\"\"", content), null, JavaType.Primitive.String);
             }
+
+            private boolean isEndsWithSpecialCharacters(String content) {
+                return content.endsWith("\"") ||
+                       content.endsWith("=") ||
+                       content.endsWith("}") ||
+                       content.endsWith(";");
+            }
         });
     }
 
     private static boolean allLiterals(Expression exp) {
-        return isRegularStringLiteral(exp) || exp instanceof J.Binary
-                                              && ((J.Binary) exp).getOperator() == J.Binary.Type.Addition
-                                              && allLiterals(((J.Binary) exp).getLeft()) && allLiterals(((J.Binary) exp).getRight());
+        return isRegularStringLiteral(exp) || exp instanceof J.Binary &&
+                                              ((J.Binary) exp).getOperator() == J.Binary.Type.Addition &&
+                                              allLiterals(((J.Binary) exp).getLeft()) && allLiterals(((J.Binary) exp).getRight());
     }
 
     private static boolean flatAdditiveStringLiterals(Expression expression,
@@ -194,8 +203,8 @@ public class UseTextBlocks extends Recipe {
             }
             concatenationSb.append(b.getPrefix().getWhitespace()).append("-");
             concatenationSb.append(b.getPadding().getOperator().getBefore().getWhitespace()).append("-");
-            return flatAdditiveStringLiterals(b.getLeft(), stringLiterals, contentSb, concatenationSb)
-                   && flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
+            return flatAdditiveStringLiterals(b.getLeft(), stringLiterals, contentSb, concatenationSb) &&
+                   flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
         } else if (isRegularStringLiteral(expression)) {
             J.Literal l = (J.Literal) expression;
             stringLiterals.add(l);

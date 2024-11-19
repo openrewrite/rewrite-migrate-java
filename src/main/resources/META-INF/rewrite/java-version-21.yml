@@ -35,6 +35,7 @@ recipeList:
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion
   - org.openrewrite.java.migrate.UpgradePluginsForJava21
   - org.openrewrite.java.migrate.DeleteDeprecatedFinalize
+  - org.openrewrite.java.migrate.RemovedSubjectMethods
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -101,7 +102,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedSubjectMethods
 displayName: Adopt `javax.security.auth.Subject.current()` and `javax.security.auth.Subject.callAs()` methods`
 description: >-
-  Replaces the `javax.security.auth.Subject.getSubject()` and `javax.security.auth.Subject.doAs()` methods 
+  Replaces the `javax.security.auth.Subject.getSubject()` and `javax.security.auth.Subject.doAs()` methods
   with `javax.security.auth.Subject.current()` and `javax.security.auth.Subject.callAs()`.
 tags:
   - java21
@@ -110,8 +111,8 @@ recipeList:
       methodPattern: javax.security.auth.Subject getSubject()
       newMethodName: current
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: javax.security.auth.Subject callAs()
-      newMethodName: doAs
+      methodPattern: javax.security.auth.Subject doAs()
+      newMethodName: callAs
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeleteDeprecatedFinalize
@@ -120,9 +121,9 @@ description: The java.desktop module had a few implementations of finalize() tha
 tags:
   - java21
 recipeList:
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.awt.color.ICC_Profile finalize()
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.awt.image.ColorModel finalize()
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.awt.image.IndexColorModel finalize()

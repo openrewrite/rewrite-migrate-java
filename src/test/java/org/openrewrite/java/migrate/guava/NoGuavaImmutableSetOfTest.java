@@ -16,13 +16,13 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.*;
 
 class NoGuavaImmutableSetOfTest implements RewriteTest {
     @Override
@@ -39,7 +39,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.ImmutableSet;
-
+              
               class Test {
                   ImmutableSet<String> getSet() {
                       return ImmutableSet.of();
@@ -57,10 +57,10 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.ImmutableSet;
-
+              
               class Test {
                   ImmutableSet<String> m;
-
+              
                   {
                       this.m = ImmutableSet.of();
                   }
@@ -77,10 +77,10 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.ImmutableSet;
-
+              
               class Test {
                   ImmutableSet<String> m;
-
+              
                   void init() {
                       m = ImmutableSet.of();
                   }
@@ -100,7 +100,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
                 //language=java
                 """
                   import com.google.common.collect.ImmutableSet;
-
+                  
                   public class A {
                       ImmutableSet<String> immutableSet;
                       public A(ImmutableSet<String> immutableSet) {
@@ -113,7 +113,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.ImmutableSet;
-
+              
               class Test {
                   A a = new A(ImmutableSet.of());
               }
@@ -132,7 +132,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
                 //language=java
                 """
                   import com.google.common.collect.ImmutableSet;
-
+                  
                   public class A {
                       ImmutableSet<String> immutableSet;
                       public void method(ImmutableSet<String> immutableSet) {
@@ -145,7 +145,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.ImmutableSet;
-
+              
               class Test {
                   void method() {
                       A a = new A();
@@ -158,6 +158,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
     }
 
     @Test
+    @DocumentExample
     void replaceArguments() {
         //language=java
         rewriteRun(
@@ -166,14 +167,14 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
               """
                 import java.util.Set;
                 import com.google.common.collect.ImmutableSet;
-
+                
                 class Test {
                     Set<String> m = ImmutableSet.of("A", "B", "C", "D");
                 }
                 """,
               """
                 import java.util.Set;
-
+                
                 class Test {
                     Set<String> m = Set.of("A", "B", "C", "D");
                 }
@@ -193,7 +194,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
               """
                 import java.util.Set;
                 import com.google.common.collect.ImmutableSet;
-
+                
                 class Test {
                     Set<String> m;
                     {
@@ -203,7 +204,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
                 """,
               """
                 import java.util.Set;
-
+                
                 class Test {
                     Set<String> m;
                     {
@@ -226,14 +227,14 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
               """
                 import java.util.Set;
                 import com.google.common.collect.ImmutableSet;
-
+                
                 class Test {
                     Set<String> m = ImmutableSet.of();
                 }
                 """,
               """
                 import java.util.Set;
-
+                
                 class Test {
                     Set<String> m = Set.of();
                 }
@@ -253,7 +254,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
               """
                 import java.util.Set;
                 import com.google.common.collect.ImmutableSet;
-
+                
                 class Test {
                     Set<String> set() {
                         return ImmutableSet.of();
@@ -262,7 +263,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
                 """,
               """
                 import java.util.Set;
-
+                
                 class Test {
                     Set<String> set() {
                         return Set.of();
@@ -285,7 +286,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
               """
                 import java.util.Set;
                 import com.google.common.collect.ImmutableSet;
-
+                
                 class Test {
                     Set<Integer> set() {
                         return ImmutableSet.of(1, 2, 3);
@@ -294,7 +295,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
                 """,
               """
                 import java.util.Set;
-
+                
                 class Test {
                     Set<Integer> set() {
                         return Set.of(1, 2, 3);
@@ -314,7 +315,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
           java(
             """
               import java.util.Set;
-
+              
               public class A {
                   Set<String> set;
                   public A(Set<String> set) {
@@ -328,14 +329,14 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
             java(
               """
                 import com.google.common.collect.ImmutableSet;
-
+                
                 class Test {
                     A a = new A(ImmutableSet.of());
                 }
                 """,
               """
                 import java.util.Set;
-
+                
                 class Test {
                     A a = new A(Set.of());
                 }
@@ -353,7 +354,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
           java(
             """
               import java.util.Set;
-
+              
               public class A {
                   Set<String> set;
                   public void method(Set<String> set) {
@@ -366,7 +367,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
             java(
               """
                 import com.google.common.collect.ImmutableSet;
-
+                
                 class Test {
                     void method() {
                         A a = new A();
@@ -376,7 +377,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
                 """,
               """
                 import java.util.Set;
-
+                
                 class Test {
                     void method() {
                         A a = new A();
@@ -399,7 +400,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
             java(
               """
                 import com.google.common.collect.ImmutableSet;
-
+                
                 class A {
                     Object[] o = new Object[] {
                             ImmutableSet.of(1, 2, 3)
@@ -408,7 +409,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
                 """,
               """
                 import java.util.Set;
-
+                
                 class A {
                     Object[] o = new Object[] {
                             Set.of(1, 2, 3)
@@ -430,14 +431,14 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
             java(
               """
                 import com.google.common.collect.ImmutableSet;
-
+                
                 class A {
                     Object o = ImmutableSet.of(1, 2, 3);
                 }
                 """,
               """
                 import java.util.Set;
-
+                
                 class A {
                     Object o = Set.of(1, 2, 3);
                 }
@@ -450,7 +451,7 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
     @Test
-    void doNotChangeNestedSets() {
+    void doChangeNestedSets() {
         //language=java
         rewriteRun(
           version(
@@ -458,9 +459,16 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
               """
                 import com.google.common.collect.ImmutableSet;
                 import java.util.Set;
-
+                
                 class A {
                     Object o = Set.of(ImmutableSet.of(1, 2));
+                }
+                """,
+              """
+                import java.util.Set;
+                
+                class A {
+                    Object o = Set.of(Set.of(1, 2));
                 }
                 """
             ),
@@ -471,20 +479,56 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
     @Test
-    void doNotchangeAssignToImmutableSet() {
+    void doChangeAssignToImmutableSet() {
         //language=java
         rewriteRun(
-          version(
-            java(
+          spec -> spec.allSources(all -> all.markers(javaVersion(9))),
+          java(
+            """
+              import com.google.common.collect.ImmutableSet;
+              
+              class Test {
+                  ImmutableSet<String> m = ImmutableSet.of();
+              }
+              """,
+            """
+              import java.util.Set;
+              
+              class Test {
+                  Set<String> m = Set.of();
+              }
               """
-                import com.google.common.collect.ImmutableSet;
+          )
+        );
+    }
 
-                class Test {
-                    ImmutableSetp<String> m = ImmutableSet.of();
-                }
-                """
-            ),
-            9
+    @Test
+    void multiLine() {
+        //language=java
+        rewriteRun(
+          spec -> spec.allSources(all -> all.markers(javaVersion(11))),
+          java(
+            """
+              import com.google.common.collect.ImmutableSet;
+              import java.util.Set;
+              
+              class Test {
+                  Set<String> m = ImmutableSet.of(
+                    "foo",
+                    "bar"
+                  );
+              }
+              """,
+            """
+              import java.util.Set;
+              
+              class Test {
+                  Set<String> m = Set.of(
+                    "foo",
+                    "bar"
+                  );
+              }
+              """
           )
         );
     }

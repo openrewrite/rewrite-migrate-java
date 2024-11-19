@@ -73,12 +73,57 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                       <release.version>17</release.version>
                   </properties>
               </project>
+              """
+          )
+        );
+    }
+
+    @Test
+    void basicWithVariables() {
+        rewriteRun(
+          //language=xml
+          pomXml(
+            """
+              <project>
+                  <groupId>com.example</groupId>
+                  <artifactId>foo</artifactId>
+                  <version>1.0.0</version>
+                  <modelVersion>4.0</modelVersion>
+                  <properties>
+                      <java.version>${release.version}</java.version>
+                      <jdk.version>11</jdk.version>
+                      <javaVersion>${release.version}</javaVersion>
+                      <jdkVersion>${jdk.version}</jdkVersion>
+                      <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
+                      <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
+                      <maven.compiler.release>11</maven.compiler.release>
+                      <release.version>11</release.version>
+                  </properties>
+              </project>
+              """,
+            """
+              <project>
+                  <groupId>com.example</groupId>
+                  <artifactId>foo</artifactId>
+                  <version>1.0.0</version>
+                  <modelVersion>4.0</modelVersion>
+                  <properties>
+                      <java.version>${release.version}</java.version>
+                      <jdk.version>17</jdk.version>
+                      <javaVersion>${release.version}</javaVersion>
+                      <jdkVersion>${jdk.version}</jdkVersion>
+                      <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
+                      <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
+                      <maven.compiler.release>17</maven.compiler.release>
+                      <release.version>17</release.version>
+                  </properties>
+              </project>
               """)
         );
     }
 
     @Test
-    void bringsDownExplicitlyUsedPropertyFromRemoteParent() {
+    void overrideRemoteParent() {
         rewriteRun(
           //language=xml
           pomXml(
@@ -103,7 +148,8 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
             SourceSpec::skip),
           mavenProject("example-child",
             //language=xml
-            pomXml("""
+            pomXml(
+              """
                 <project>
                     <parent>
                         <groupId>com.example</groupId>
@@ -116,18 +162,6 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                     <artifactId>example-child</artifactId>
                     <version>1.0.0</version>
                     <modelVersion>4.0</modelVersion>
-                    <build>
-                      <plugins>
-                        <plugin>
-                          <groupId>org.apache.maven.plugins</groupId>
-                          <artifactId>maven-compiler-plugin</artifactId>
-                          <version>3.8.0</version>
-                          <configuration>
-                            <release>${java.version}</release>
-                          </configuration>
-                        </plugin>
-                      </plugins>
-                    </build>
                 </project>
                 """,
               """
@@ -145,21 +179,49 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                     <modelVersion>4.0</modelVersion>
                     <properties>
                         <java.version>17</java.version>
+                        <javaVersion>17</javaVersion>
+                        <jdk.version>17</jdk.version>
+                        <jdkVersion>17</jdkVersion>
+                        <maven.compiler.release>17</maven.compiler.release>
+                        <maven.compiler.source>17</maven.compiler.source>
+                        <maven.compiler.target>17</maven.compiler.target>
+                        <release.version>17</release.version>
                     </properties>
-                    <build>
-                      <plugins>
-                        <plugin>
-                          <groupId>org.apache.maven.plugins</groupId>
-                          <artifactId>maven-compiler-plugin</artifactId>
-                          <version>3.8.0</version>
-                          <configuration>
-                            <release>${java.version}</release>
-                          </configuration>
-                        </plugin>
-                      </plugins>
-                    </build>
                 </project>
-                """)
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void doNothingForExplicitPluginConfiguration() {
+        // Use UseMavenCompilerPluginReleaseConfiguration for this case
+        rewriteRun(
+          //language=xml
+          pomXml(
+            """
+              <project>
+                <groupId>com.example</groupId>
+                <artifactId>example-child</artifactId>
+                <version>1.0.0</version>
+                <modelVersion>4.0</modelVersion>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <version>3.8.0</version>
+                      <configuration>
+                        <release>11</release>
+                        <source>11</source>
+                        <target>11</target>
+                      </configuration>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """
           )
         );
     }
@@ -187,6 +249,75 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                   <properties>
                       <maven.compiler.release>17</maven.compiler.release>
                   </properties>
+              </project>
+              """
+          )
+        );
+    }
+
+    @Test
+    void springBoot3ParentToJava17() {
+        // Spring Boot Starter Parent already enforces Java 17
+        rewriteRun(
+          pomXml(
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <parent>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-parent</artifactId>
+                  <version>3.3.3</version>
+                  <relativePath/> <!-- lookup parent from repository -->
+                </parent>
+              
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+              </project>
+              """
+          )
+        );
+    }
+
+    @Test
+    void springBoot3ParentToJava21() {
+        rewriteRun(
+          spec -> spec.recipe(new UpdateMavenProjectPropertyJavaVersion(21)),
+          pomXml(
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <parent>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-parent</artifactId>
+                  <version>3.3.3</version>
+                  <relativePath/> <!-- lookup parent from repository -->
+                </parent>
+              
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+              </project>
+              """,
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <parent>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-parent</artifactId>
+                  <version>3.3.3</version>
+                  <relativePath/> <!-- lookup parent from repository -->
+                </parent>
+              
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <properties>
+                  <java.version>21</java.version>
+                </properties>
               </project>
               """
           )

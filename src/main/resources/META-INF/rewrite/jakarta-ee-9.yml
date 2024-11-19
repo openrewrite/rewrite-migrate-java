@@ -606,7 +606,7 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.transaction
       newPackageName: jakarta.transaction
-      recursive: true
+      recursive: false
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxWebsocketToJakartaWebsocket
@@ -952,10 +952,12 @@ recipeList:
       groupId: org.apache.johnzon
       artifactId: "*"
       newVersion: latest.release
-  - org.openrewrite.maven.ChangeDependencyClassifier:
-      groupId: org.apache.johnzon
-      artifactId: "*"
-      newClassifier: jakarta
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.json
+      artifactId: jakarta.json-api
+      scope: provided
+      version: 2.1.X
+      onlyIfUsing: org.apache.johnzon..*
 ---
 # Currently this recipe is only updating the artifacts to a version that is compatible with J2EE 9. There still may be
 # breaking changes to the Rest Assured API that need to be addressed.

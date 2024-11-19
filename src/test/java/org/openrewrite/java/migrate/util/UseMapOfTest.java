@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -53,6 +54,41 @@ class UseMapOfTest implements RewriteTest {
 
               class Test {
                   Map<String, String> m = Map.of("stru", "menta", "mod", "erne");
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/566")
+    @Test
+    void changeDoubleBraceInitForNonStringTypes() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+              private static final String BLAH ="ss";
+              
+              void foo() {
+                        new HashMap<>() {{
+                          put(BLAH, "foo");
+                      }};
+                  }
+              }
+              """,
+            """
+              import java.util.Map;
+
+              class Test {
+              private static final String BLAH ="ss";
+              
+              void foo() {
+                  Map.of(BLAH, "foo");
+                  }
               }
               """
           )

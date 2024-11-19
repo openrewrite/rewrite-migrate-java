@@ -56,7 +56,7 @@ public class HttpSessionInvalidate extends Recipe {
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         if (invalidateMethodMatcher.matches(method)) {
                             // Get index of param for HttpServletRequest, from the encapsulating method declaration TODO: would like to make this cleaner...
-                            J.MethodDeclaration parentMethod = getCursor().dropParentUntil(parent -> parent instanceof J.MethodDeclaration).getValue();
+                            J.MethodDeclaration parentMethod = getCursor().firstEnclosing(J.MethodDeclaration.class);
                             Integer servletReqParamIndex = getServletRequestIndex(parentMethod);
 
                             // Failed to find HttpServletRequest from parent MethodDeclaration

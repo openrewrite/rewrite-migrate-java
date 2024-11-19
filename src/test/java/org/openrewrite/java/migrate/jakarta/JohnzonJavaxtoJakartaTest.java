@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.config.Environment;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -24,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class JohnzonJavaxtoJakartaTest implements RewriteTest {
@@ -34,55 +36,83 @@ class JohnzonJavaxtoJakartaTest implements RewriteTest {
           Environment.builder()
             .scanRuntimeClasspath("org.openrewrite.java.migrate")
             .build()
-            .activateRecipes("org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta"));
+            .activateRecipes("org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta")
+        ).parser(JavaParser.fromJavaVersion().classpath("johnzon-core"));
     }
 
     @Test
     void migrateJohnzonDependencies() {
-        //language=xml
         rewriteRun(
-          pomXml(
-            """
-              <project>
-                  <groupId>com.example.ehcache</groupId>
-                  <artifactId>johnzon-legacy</artifactId>
-                  <version>1.0.0</version>
-                  <properties>
-                      <johnzon.version>1.2.5</johnzon.version>
-                  </properties>
-                  <dependencies>
-                      <dependency>
-                          <groupId>org.apache.johnzon</groupId>
-                          <artifactId>johnzon-core</artifactId>
-                          <version>${johnzon.version}</version>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """,
-            spec -> spec.after(actual -> {
-                assertThat(actual).isNotNull();
-                Matcher version = Pattern.compile("<johnzon.version>([0-9]+\\.[0-9]+\\.[0-9]+)</johnzon.version>")
-                  .matcher(actual);
-                assertThat(version.find()).isTrue();
-                return """
-                  <project>
-                      <groupId>com.example.ehcache</groupId>
-                      <artifactId>johnzon-legacy</artifactId>
-                      <version>1.0.0</version>
-                      <properties>
-                          <johnzon.version>%s</johnzon.version>
-                      </properties>
-                      <dependencies>
-                          <dependency>
-                              <groupId>org.apache.johnzon</groupId>
-                              <artifactId>johnzon-core</artifactId>
-                              <version>${johnzon.version}</version>
-                              <classifier>jakarta</classifier>
-                          </dependency>
-                      </dependencies>
-                  </project>
-                  """.formatted(version.group(1));
-            })
+          mavenProject("demo",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.example.ehcache</groupId>
+                    <artifactId>johnzon-legacy</artifactId>
+                    <version>1.0.0</version>
+                    <properties>
+                        <johnzon.version>1.2.5</johnzon.version>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.johnzon</groupId>
+                            <artifactId>johnzon-core</artifactId>
+                            <version>${johnzon.version}</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(actual -> {
+                  assertThat(actual).isNotNull();
+                  Matcher version = Pattern.compile("<johnzon.version>([0-9]+\\.[0-9]+\\.[0-9]+)</johnzon.version>")
+                    .matcher(actual);
+
+                  Matcher jsonApiVersion = Pattern.compile("2.1.\\d+").matcher(actual);
+                  assertThat(jsonApiVersion.find()).describedAs("Expected jakarta.json-api 2.1.x version in %s", actual).isTrue();
+
+                  assertThat(version.find()).isTrue();
+                  return """
+                <project>
+                    <groupId>com.example.ehcache</groupId>
+                    <artifactId>johnzon-legacy</artifactId>
+                    <version>1.0.0</version>
+                    <properties>
+                        <johnzon.version>%s</johnzon.version>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.johnzon</groupId>
+                            <artifactId>johnzon-core</artifactId>
+                            <version>${johnzon.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>jakarta.json</groupId>
+                            <artifactId>jakarta.json-api</artifactId>
+                            <version>%s</version>
+                            <scope>provided</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """.formatted(version.group(1), jsonApiVersion.group(0));
+              })
+            ),
+            srcMainJava(
+              java(
+                //language=java
+                """
+                package com.example.demo;
+                
+                import org.apache.johnzon.core.Snippet;
+                
+                public class A {
+                    
+                    void foo(Snippet snippet, String str) {
+                    }
+                }
+                """
+              )
+            )
           )
         );
     }

@@ -73,8 +73,8 @@ public class AddColumnAnnotation extends Recipe {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         // Exit if var does not have @ElementCollection or has @Transient
-                        if (FindAnnotations.find(multiVariable, "@javax.persistence.ElementCollection").isEmpty()
-                            || !FindAnnotations.find(multiVariable, "@javax.persistence.Transient").isEmpty()) {
+                        if (FindAnnotations.find(multiVariable, "@javax.persistence.ElementCollection").isEmpty() ||
+                            !FindAnnotations.find(multiVariable, "@javax.persistence.Transient").isEmpty()) {
                             return multiVariable;
                         }
 
@@ -90,8 +90,8 @@ public class AddColumnAnnotation extends Recipe {
 
                         // Update existing @Column annotation
                         J.VariableDeclarations updatedVariable = (J.VariableDeclarations) new AddOrUpdateAnnotationAttribute(
-                                "javax.persistence.Column", "name", "element", true)
-                                .getVisitor().visit(multiVariable, ctx, getCursor());
+                                "javax.persistence.Column", "name", "element", true, null)
+                                .getVisitor().visit(multiVariable, ctx, getCursor().getParentTreeCursor());
                         return super.visitVariableDeclarations(updatedVariable, ctx);
                     }
                 }

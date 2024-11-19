@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.java.Assertions.*;
@@ -29,6 +30,35 @@ class UseVarForObjectsTest extends VarBaseTest {
     public void defaults(RecipeSpec spec) {
         spec.recipe(new UseVarForObject())
           .allSources(s -> s.markers(javaVersion(10)));
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/550")
+    void genericType() {
+        rewriteRun(
+          java(
+            """
+              import java.io.Serializable;
+              
+              abstract class Outer<T extends Serializable> {
+                  abstract T doIt();
+                  void trigger() {
+                      T x = doIt();
+                  }
+              }
+              """,
+            """
+              import java.io.Serializable;
+              
+              abstract class Outer<T extends Serializable> {
+                  abstract T doIt();
+                  void trigger() {
+                      var x = doIt();
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Nested
@@ -58,6 +88,7 @@ class UseVarForObjectsTest extends VarBaseTest {
                   """)
             );
         }
+
 
         @Test
         void reassignment() {
@@ -310,6 +341,25 @@ class UseVarForObjectsTest extends VarBaseTest {
 
     @Nested
     class NotApplicable {
+
+        @Test
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/551")
+        void arrayInitializer() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+                  
+                  class A {
+                    void m() {
+                        String[] dictionary = {"aa", "b", "aba", "ba"};
+                    }
+                  }
+                  """)
+            );
+        }
+
         @Test
         void fieldInAnonymousSubclass() {
             //language=java

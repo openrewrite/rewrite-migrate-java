@@ -32,7 +32,7 @@ import org.openrewrite.java.tree.TypeUtils;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-class ReferenceCloneMethod extends Recipe {
+public class ReferenceCloneMethod extends Recipe {
     private static final MethodMatcher REFERENCE_CLONE = new MethodMatcher("java.lang.ref.Reference clone()", true);
 
     @Override
@@ -57,8 +57,8 @@ class ReferenceCloneMethod extends Recipe {
                     @Override
                     public J visitTypeCast(J.TypeCast typeCast, ExecutionContext ctx) {
                         J j = super.visitTypeCast(typeCast, ctx);
-                        if (Boolean.TRUE.equals(getCursor().pollNearestMessage(REFERENCE_CLONE_REPLACED))
-                            && j instanceof J.TypeCast) {
+                        if (Boolean.TRUE.equals(getCursor().pollNearestMessage(REFERENCE_CLONE_REPLACED)) &&
+                            j instanceof J.TypeCast) {
                             J.TypeCast tc = (J.TypeCast) j;
                             if (TypeUtils.isOfType(tc.getType(), tc.getExpression().getType())) {
                                 return tc.getExpression();

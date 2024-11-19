@@ -53,18 +53,19 @@ class AddScopeToInjectedClassTest implements RewriteTest {
     @DocumentExample
     @Test
     void scopeRequired() {
+        //language=java
         rewriteRun(
           java(
             """
               package com.sample.service;
-
+              
               public class Bar {}
               """,
             """
               package com.sample.service;
-
+              
               import javax.enterprise.context.Dependent;
-
+              
               @Dependent
               public class Bar {}
               """
@@ -72,12 +73,12 @@ class AddScopeToInjectedClassTest implements RewriteTest {
           java(
             """
               package com.sample;
-
+              
               import javax.inject.Inject;
               import com.sample.service.Bar;
-
+              
               public class Foo {
-
+              
                   @Inject
                   Bar service;
               }
@@ -86,25 +87,25 @@ class AddScopeToInjectedClassTest implements RewriteTest {
         );
     }
 
-
     @Test
     void noMemberVariableAnnotation() {
+        //language=java
         rewriteRun(
           java(
             """
               package com.sample.service;
-
+              
               public class Bar {}
               """
           ),
           java(
             """
               package com.sample;
-
+              
               import com.sample.service.Bar;
-
+              
               public class Foo{
-
+              
                   Bar service;
               }
               """
@@ -114,21 +115,22 @@ class AddScopeToInjectedClassTest implements RewriteTest {
 
     @Test
     void nonInjectAnnotation() {
+        //language=java
         rewriteRun(
           java(
             """
               package com.sample.service;
-
+              
               public class Bar {}
               """
           ),
           java(
             """
               package com.sample;
-
+              
               import com.sample.service.Bar;
               import javax.inject.NotInject;
-
+              
               public class Foo{
                   @NotInject
                   Bar service;
@@ -138,9 +140,9 @@ class AddScopeToInjectedClassTest implements RewriteTest {
           java(
             """
               package javax.inject;
-
+              
               import java.lang.annotation.*;
-
+              
               @Target({ElementType.Type})
               @Retention(RetentionPolicy.RUNTIME)
               public @interface NotInject {
@@ -153,13 +155,14 @@ class AddScopeToInjectedClassTest implements RewriteTest {
 
     @Test
     void scopeAnnotationAlreadyExists() {
+        //language=java
         rewriteRun(
           java(
             """
               package com.sample.service;
-
+              
               import javax.enterprise.context.Dependent;
-
+              
               @Dependent
               public class Bar {}
               """
@@ -167,12 +170,12 @@ class AddScopeToInjectedClassTest implements RewriteTest {
           java(
             """
               package com.sample;
-
+              
               import com.sample.service.Bar;
               import javax.inject.Inject;
-
+              
               public class Foo {
-
+              
                   @javax.inject.Inject
                   Bar service;
               }
@@ -180,5 +183,4 @@ class AddScopeToInjectedClassTest implements RewriteTest {
           )
         );
     }
-
 }

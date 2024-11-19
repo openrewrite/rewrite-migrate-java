@@ -423,11 +423,7 @@ class IBMSemeruTest implements RewriteTest {
                   mavenCentral()
               }
               dependencies {
-                  implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
-                      exclude group: "junit"
-                  }
                   implementation("javax.xml.ws:jaxws-api:2.0")
-                  testImplementation "org.junit.vintage:junit-vintage-engine:5.6.2"
               }
               """,
             """
@@ -438,10 +434,6 @@ class IBMSemeruTest implements RewriteTest {
                   mavenCentral()
               }
               dependencies {
-                  implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
-                      exclude group: "junit"
-                  }
-                  testImplementation "org.junit.vintage:junit-vintage-engine:5.6.2"
               }
               """
           )
@@ -530,12 +522,8 @@ class IBMSemeruTest implements RewriteTest {
                   mavenCentral()
               }
               dependencies {
-                  implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
-                      exclude group: "junit"
-                  }
                   implementation("javax.xml.bind:jaxb-api:2.3.1")
                   implementation("javax.activation:activation:1.1.1")
-                  testImplementation "org.junit.vintage:junit-vintage-engine:5.6.2"
               }
               """,
             """
@@ -546,10 +534,6 @@ class IBMSemeruTest implements RewriteTest {
                   mavenCentral()
               }
               dependencies {
-                  implementation("org.springframework.boot:spring-boot-starter-web:2.7.0") {
-                      exclude group: "junit"
-                  }
-                  testImplementation "org.junit.vintage:junit-vintage-engine:5.6.2"
               }
               """
           )

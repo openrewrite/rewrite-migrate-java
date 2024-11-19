@@ -47,7 +47,7 @@ public class MigrateCollectionsSingletonSet extends Recipe {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
-                if (SINGLETON_SET.matches(method)) {
+                if (SINGLETON_SET.matches(m) && isNotLiteralNull(m)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Set");
                     return JavaTemplate.builder("Set.of(#{any()})")
@@ -57,6 +57,11 @@ public class MigrateCollectionsSingletonSet extends Recipe {
                             .apply(updateCursor(m), m.getCoordinates().replace(), m.getArguments().get(0));
                 }
                 return m;
+            }
+
+            private boolean isNotLiteralNull(J.MethodInvocation m) {
+                return !(m.getArguments().get(0) instanceof J.Literal &&
+                         ((J.Literal) m.getArguments().get(0)).getValue() == null);
             }
         });
     }

@@ -17,8 +17,8 @@ package org.openrewrite.java.migrate.util;
 
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
@@ -33,6 +33,7 @@ import java.util.StringJoiner;
 
 public class UseEnumSetOf extends Recipe {
     private static final MethodMatcher SET_OF = new MethodMatcher("java.util.Set of(..)", true);
+    private static final String METHOD_TYPE = "java.util.EnumSet";
 
     @Override
     public String getDisplayName() {
@@ -52,59 +53,72 @@ public class UseEnumSetOf extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(9),
-                new UsesMethod<>(SET_OF)), new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
+                new UsesMethod<>(SET_OF)), new UseEnumSetOfVisitor());
+    }
 
-                if (SET_OF.matches(method) && method.getType() instanceof JavaType.Parameterized
-                    && !TypeUtils.isOfClassType(method.getType(), "java.util.EnumSet")) {
-                    Cursor parent = getCursor().dropParentUntil(is -> is instanceof J.Assignment || is instanceof J.VariableDeclarations || is instanceof J.Block);
-                    if (!(parent.getValue() instanceof J.Block)) {
-                        JavaType type = parent.getValue() instanceof J.Assignment ?
-                                ((J.Assignment) parent.getValue()).getType() : ((J.VariableDeclarations) parent.getValue()).getVariables().get(0).getType();
-                        if (isAssignmentSetOfEnum(type)) {
-                            maybeAddImport("java.util.EnumSet");
+    private static class UseEnumSetOfVisitor extends JavaVisitor<ExecutionContext> {
+        @Override
+        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation methodInvocation, ExecutionContext ctx) {
+            J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(methodInvocation, ctx);
 
-                            List<Expression> args = m.getArguments();
-                            if (isArrayParameter(args)) {
-                                return m;
-                            }
+            if (SET_OF.matches(mi) &&
+                mi.getType() instanceof JavaType.Parameterized &&
+                !TypeUtils.isOfClassType(mi.getType(), METHOD_TYPE)) {
+                Cursor parent = getCursor().dropParentUntil(is -> is instanceof J.Assignment || is instanceof J.VariableDeclarations || is instanceof J.Block);
+                if (!(parent.getValue() instanceof J.Block)) {
+                    JavaType type = parent.getValue() instanceof J.Assignment ?
+                            ((J.Assignment) parent.getValue()).getType() : ((J.VariableDeclarations) parent.getValue()).getVariables().get(0).getType();
+                    if (isAssignmentSetOfEnum(type)) {
+                        maybeAddImport(METHOD_TYPE);
 
-                            StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
-                            args.forEach(o -> setOf.add("#{any()}"));
-
-                            return JavaTemplate.builder(setOf.toString())
-                                    .contextSensitive()
-                                    .imports("java.util.EnumSet")
-                                    .build()
-                                    .apply(updateCursor(m), m.getCoordinates().replace(), args.toArray());
+                        List<Expression> args = mi.getArguments();
+                        if (isArrayParameter(args)) {
+                            return mi;
                         }
-                    }
-                }
-                return m;
-            }
 
-            private boolean isAssignmentSetOfEnum(@Nullable JavaType type) {
-                if (type instanceof JavaType.Parameterized) {
-                    JavaType.Parameterized parameterized = (JavaType.Parameterized) type;
-                    if (TypeUtils.isOfClassType(parameterized.getType(), "java.util.Set")) {
-                        return ((JavaType.Parameterized) type).getTypeParameters().stream()
-                                .filter(org.openrewrite.java.tree.JavaType.Class.class::isInstance)
-                                .map(org.openrewrite.java.tree.JavaType.Class.class::cast)
-                                .anyMatch(o -> o.getKind() == JavaType.FullyQualified.Kind.Enum);
+                        if (args.get(0) instanceof J.Empty) {
+                            JavaType firstTypeParameter = ((JavaType.Parameterized) type).getTypeParameters().get(0);
+                            JavaType.ShallowClass shallowClass = JavaType.ShallowClass.build(firstTypeParameter.toString());
+                            return JavaTemplate.builder("EnumSet.noneOf(" + shallowClass.getClassName() + ".class)")
+                                    .contextSensitive()
+                                    .imports(METHOD_TYPE)
+                                    .build()
+                                    .apply(updateCursor(mi), mi.getCoordinates().replace());
+                        }
+
+                        StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
+                        args.forEach(o -> setOf.add("#{any()}"));
+                        return JavaTemplate.builder(setOf.toString())
+                                .contextSensitive()
+                                .imports(METHOD_TYPE)
+                                .build()
+                                .apply(updateCursor(mi), mi.getCoordinates().replace(), args.toArray());
                     }
                 }
+            }
+            return mi;
+        }
+
+        private boolean isAssignmentSetOfEnum(@Nullable JavaType type) {
+            if (type instanceof JavaType.Parameterized) {
+                JavaType.Parameterized parameterized = (JavaType.Parameterized) type;
+                if (TypeUtils.isOfClassType(parameterized.getType(), "java.util.Set")) {
+                    return ((JavaType.Parameterized) type).getTypeParameters().stream()
+                            .filter(org.openrewrite.java.tree.JavaType.Class.class::isInstance)
+                            .map(org.openrewrite.java.tree.JavaType.Class.class::cast)
+                            .anyMatch(o -> o.getKind() == JavaType.FullyQualified.Kind.Enum);
+                }
+            }
+            return false;
+        }
+
+        private boolean isArrayParameter(final List<Expression> args) {
+            if (args.size() != 1) {
                 return false;
             }
-
-            private boolean isArrayParameter(final List<Expression> args) {
-                if (args.size() != 1) {
-                    return false;
-                }
-                JavaType type = args.get(0).getType();
-                return TypeUtils.asArray(type) != null;
-            }
-        });
+            JavaType type = args.get(0).getType();
+            return TypeUtils.asArray(type) != null;
+        }
     }
+
 }

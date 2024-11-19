@@ -47,8 +47,8 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                         // Exit if class not annotated with either @Entity or @MappedSuperclass
-                        if (FindAnnotations.find(classDecl, "javax.persistence.Entity").isEmpty()
-                            && FindAnnotations.find(classDecl, "javax.persistence.MappedSuperclass").isEmpty()) {
+                        if (FindAnnotations.find(classDecl, "javax.persistence.Entity").isEmpty() &&
+                            FindAnnotations.find(classDecl, "javax.persistence.MappedSuperclass").isEmpty()) {
                             return classDecl;
                         }
 

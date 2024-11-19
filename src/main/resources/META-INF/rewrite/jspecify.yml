@@ -26,6 +26,10 @@ recipeList:
   - org.openrewrite.java.jspecify.MigrateFromJavaxAnnotationApi
   - org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
   - org.openrewrite.java.jspecify.MigrateFromJetbrainsAnnotations
+  # Running the following recipe on current versions of Spring can cause Spring to misunderstand a nullable field.
+  #   For instance, a custom Prometheus scrape endpoint with @Nullable Set<String> includedNames will fail if 
+  #   includedNames is null and if @Nullable is @org.jspecify.annotations.Nullable.
+  # - org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -45,6 +49,10 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.Nonnull
       newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.ParametersAreNonnullByDefault
+      newFullyQualifiedTypeName: org.jspecify.annotation.NullMarked
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
       annotationType: org.jspecify.annotations.*
@@ -86,6 +94,27 @@ recipeList:
       ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.jetbrains.annotations.NotNull
+      newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
+      ignoreDefinition: true
+  - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
+      annotationType: org.jspecify.annotations.*
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations
+displayName: Migrate from Spring Framework annotations to JSpecify
+description: Migrate from Spring Framework annotations to JSpecify.
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.jspecify
+      artifactId: jspecify
+      version: 1.0.0
+      onlyIfUsing: org.springframework.lang.*ull*
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.springframework.lang.Nullable
+      newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.springframework.lang.NonNull
       newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:

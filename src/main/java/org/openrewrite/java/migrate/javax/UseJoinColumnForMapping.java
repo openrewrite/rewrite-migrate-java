@@ -60,9 +60,9 @@ public class UseJoinColumnForMapping extends Recipe {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         // Exit if not annotated with @Column and a relationship mapping annotation
-                        if (FindAnnotations.find(multiVariable, COLUMN).isEmpty()
-                            || (FindAnnotations.find(multiVariable, "javax.persistence.OneToOne").isEmpty()
-                                && FindAnnotations.find(multiVariable, "javax.persistence.ManyToOne").isEmpty())) {
+                        if (FindAnnotations.find(multiVariable, COLUMN).isEmpty() ||
+                            (FindAnnotations.find(multiVariable, "javax.persistence.OneToOne").isEmpty() &&
+                                FindAnnotations.find(multiVariable, "javax.persistence.ManyToOne").isEmpty())) {
                             return multiVariable;
                         }
 
@@ -70,10 +70,10 @@ public class UseJoinColumnForMapping extends Recipe {
                         // The javax.persistence.Column attributes length, precision, and scale are not kept.
                         maybeRemoveImport(COLUMN);
                         maybeAddImport(JOIN_COLUMN);
-                        J.VariableDeclarations joinColumn = (J.VariableDeclarations) new ChangeType(COLUMN, JOIN_COLUMN, false).getVisitor().visit(multiVariable, ctx, getCursor());
-                        joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "length").getVisitor().visit(joinColumn, ctx);
-                        joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "precision").getVisitor().visit(joinColumn, ctx);
-                        joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "scale").getVisitor().visit(joinColumn, ctx);
+                        J.VariableDeclarations joinColumn = (J.VariableDeclarations) new ChangeType(COLUMN, JOIN_COLUMN, false).getVisitor().visit(multiVariable, ctx, getCursor().getParentOrThrow());
+                        joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "length").getVisitor().visit(joinColumn, ctx, getCursor().getParentOrThrow());
+                        joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "precision").getVisitor().visit(joinColumn, ctx, getCursor().getParentOrThrow());
+                        joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "scale").getVisitor().visit(joinColumn, ctx, getCursor().getParentOrThrow());
 
                         return joinColumn;
                     }

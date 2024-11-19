@@ -30,6 +30,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeBuildToJava17
   - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
+  - org.openrewrite.staticanalysis.AddSerialAnnotationToSerialVersionUID
   - org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
   - org.openrewrite.java.migrate.RemovedToolProviderConstructor
   - org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
@@ -46,6 +47,10 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
   - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
   - org.openrewrite.java.migrate.UpgradePluginsForJava17
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.google.inject
+      artifactId: guice
+      newVersion: 5.x
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -73,6 +78,14 @@ recipeList:
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
       artifactId: maven-checkstyle-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-compiler-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-war-plugin
       newVersion: 3.x
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: com.sonatype.clm
@@ -146,7 +159,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedZipFinalizeMethods
 displayName: Replace `finalize` method in `java.util.zip.ZipFile`, `java.util.zip.Inflater` and `java.util.zip.Deflater`
 description: >-
-  The `finalize` method in `java.util.zip.ZipFile` is replaced with the `close` method and is replaced by the `end` method in 
+  The `finalize` method in `java.util.zip.ZipFile` is replaced with the `close` method and is replaced by the `end` method in
    `java.util.zip.Inflater` and `java.util.zip.Deflater` as it is no longer available in Java SE 12 and later.
 tags:
   - java17
@@ -168,8 +181,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
 displayName: Replace `SSLSession.getPeerCertificateChain()` method
 description: >-
-  The `javax.net.ssl.SSLSession.getPeerCertificateChain()` method implementation was removed from the SunJSSE provider and HTTP client implementation in Java SE 15. 
-  The default implementation will now throw an `UnsupportedOperationException`. 
+  The `javax.net.ssl.SSLSession.getPeerCertificateChain()` method implementation was removed from the SunJSSE provider and HTTP client implementation in Java SE 15.
+  The default implementation will now throw an `UnsupportedOperationException`.
   Applications using this method should be updated to use the `javax.net.ssl.SSLSession.getPeerCertificates()` method instead.
 tags:
   - java17
@@ -213,7 +226,7 @@ description: >-
 tags:
   - java17
 recipeList:
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: 'java.lang.Thread countStackFrames()'
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -263,12 +276,12 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
 displayName: Remove `Runtime.traceInstructions(boolean)` and `Runtime.traceMethodCalls` methods
 description: >-
-  The `traceInstructions` and `traceMethodCalls` methods in `java.lang.Runtime` were deprecated in Java SE 9 and are no longer available in Java SE 13 and later. 
+  The `traceInstructions` and `traceMethodCalls` methods in `java.lang.Runtime` were deprecated in Java SE 9 and are no longer available in Java SE 13 and later.
   The recipe removes the invocations of these methods since the method invocations do nothing functionally.
 tags:
   - java17
 recipeList:
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: 'java.lang.Runtime traceInstructions(boolean)'
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: 'java.lang.Runtime traceMethodCalls(boolean)'
