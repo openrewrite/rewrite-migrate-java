@@ -74,6 +74,7 @@ recipeList:
       lightweightPeerFQCN: java.awt.peer.LightweightPeer
   - org.openrewrite.scala.migrate.UpgradeScala_2_12
   - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
+  - org.openrewrite.java.migrate.HandleTypeNotPresentExceptionInsteadOfArrayStoreException
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
