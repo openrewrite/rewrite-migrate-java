@@ -313,6 +313,7 @@ class UseVarForObjectsTest extends VarBaseTest {
             @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/550")
             void genericType() {
                 rewriteRun(
+                  //language=java
                   java(
                     """
                       import java.io.Serializable;
@@ -348,6 +349,7 @@ class UseVarForObjectsTest extends VarBaseTest {
         void genericTypeInStaticMethod() {
             // ATM the recipe skips all static method initialized variables
             rewriteRun(
+              //language=java
               java(
                 """
                   package example;
@@ -360,7 +362,7 @@ class UseVarForObjectsTest extends VarBaseTest {
                   class User {
                       public String test() {
                           Object o = "Hello";
-                          String string = Global.cast(o);
+                          String string = Global.cast(o); // static method unchanged
                           return string;
                       }
                   }
@@ -376,7 +378,7 @@ class UseVarForObjectsTest extends VarBaseTest {
                   class User {
                       public String test() {
                           var o = "Hello";
-                          String string = Global.cast(o);
+                          String string = Global.cast(o); // static method unchanged
                           return string;
                       }
                   }

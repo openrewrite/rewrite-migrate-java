@@ -224,6 +224,6 @@ final class DeclarationCheck {
             return false;
         }
 
-        return invocation.getMethodType().getFlags().contains(Flag.Static);
+        return invocation.getMethodType().hasFlags(Flag.Static);
     }
 }
