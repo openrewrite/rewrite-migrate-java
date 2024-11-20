@@ -270,6 +270,7 @@ class UseVarForObjectsTest extends VarBaseTest {
             }
 
             @Test
+            @Disabled("in favor to https://github.com/openrewrite/rewrite-migrate-java/issues/608 we skip all static methods ATM")
             void staticMethods() {
                 //language=java
                 rewriteRun(
@@ -345,10 +346,7 @@ class UseVarForObjectsTest extends VarBaseTest {
         @Test
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/608")
         void genericTypeInStaticMethod() {
-            /*
-                         * This can be migrated from `String string = Global.cast(o)` to `var string = Global.<String>cast(o)`.
-                         * But we decided to not migrate, because it is very unconventional Java.
-            */
+            // ATM the recipe skips all static method initialized variables
             rewriteRun(
               java(
                 """
