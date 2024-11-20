@@ -15,10 +15,9 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
 import org.openrewrite.java.tree.*;
-
-import javax.annotation.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
