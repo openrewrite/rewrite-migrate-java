@@ -289,8 +289,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.AddLombokMapstructBinding
-displayName: Add lombok-mapstruct-binding when both MapStruct and Lombok are used
-description: Add lombok-mapstruct-binding when both MapStruct and Lombok are used.
+displayName: Add `lombok-mapstruct-binding` when both MapStruct and Lombok are used
+description: Add the `lombok-mapstruct-binding` annotation processor as needed when both MapStruct and Lombok are used.
 tags:
   - java17
 preconditions:
