@@ -29,6 +29,7 @@ import org.openrewrite.xml.tree.Xml;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Value
@@ -88,10 +89,7 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
                 Xml.Document d = super.visitDocument(document, ctx);
 
                 // Return early if the parent appears to be within the current repository, as properties defined there will be updated
-                if (d.getRoot().getChild("parent")
-                        .flatMap(parent -> parent.getChild("relativePath"))
-                        .flatMap(Xml.Tag::getValue)
-                        .isPresent()) {
+                if (getResolutionResult().parentPomIsProjectPom()) {
                     return d;
                 }
 
