@@ -51,6 +51,7 @@ recipeList:
       groupId: com.google.inject
       artifactId: guice
       newVersion: 5.x
+  - org.openrewrite.java.migrate.AddLombokMapstructBinding
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -285,3 +286,24 @@ recipeList:
       methodPattern: 'java.lang.Runtime traceInstructions(boolean)'
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: 'java.lang.Runtime traceMethodCalls(boolean)'
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.AddLombokMapstructBinding
+displayName: Add `lombok-mapstruct-binding` when both MapStruct and Lombok are used
+description: Add the `lombok-mapstruct-binding` annotation processor as needed when both MapStruct and Lombok are used.
+tags:
+  - java17
+preconditions:
+  - org.openrewrite.java.dependencies.DependencyInsight:
+      groupIdPattern: org.projectlombok
+      artifactIdPattern: lombok
+  - org.openrewrite.java.dependencies.DependencyInsight:
+      groupIdPattern: org.mapstruct
+      artifactIdPattern: mapstruct
+recipeList:
+  - org.openrewrite.gradle.AddDependency:
+      groupId: org.projectlombok
+      artifactId: lombok-mapstruct-binding
+      version: 0.2.0
+      configuration: annotationProcessor
+      acceptTransitive: false
