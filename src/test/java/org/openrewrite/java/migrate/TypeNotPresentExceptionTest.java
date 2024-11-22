@@ -1,29 +1,36 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.javaVersion;
 
 public class TypeNotPresentExceptionTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new HandleTypeNotPresentExceptionInsteadOfArrayStoreException())
-          .parser(JavaParser.fromJavaVersion()
-            //language=java
-            .dependsOn(
+        spec.recipe(new ArrayStoreExceptionToTypeNotPresentException());
+    }
+
+    @Test
+    void ArrayStoreExceptionTest() {
+        rewriteRun(
+          //language=java
+          java(
             """
               import java.lang.annotation.*;
               import java.util.*;
-          
+
               public class Test {
                   public void testMethod() {
                       try {
                           Object o = "test";
                           o.getClass().getAnnotation(Override.class);
+                      } catch (ArrayStoreException e) {
+                          System.out.println("Caught Exception");
+                      }
+                      try {
+                          Object.class.getAnnotation(Override.class);
                       } catch (ArrayStoreException e) {
                           System.out.println("Caught ArrayStoreException");
                       }
@@ -33,14 +40,19 @@ public class TypeNotPresentExceptionTest implements RewriteTest {
             """
               import java.lang.annotation.*;
               import java.util.*;
-              
+
               public class Test {
                   public void testMethod() {
                       try {
                           Object o = "test";
                           o.getClass().getAnnotation(Override.class);
                       } catch (TypeNotPresentException e) {
-                          System.out.println("Caught TypeNotPresentException");
+                          System.out.println("Caught Exception");
+                      }
+                      try {
+                          Object.class.getAnnotation(Override.class);
+                      } catch (TypeNotPresentException e) {
+                          System.out.println("Caught ArrayStoreException");
                       }
                   }
               }
@@ -49,24 +61,23 @@ public class TypeNotPresentExceptionTest implements RewriteTest {
         );
     }
 
-
     @Test
-    void replaceGetLocalizedOutputStream() {
+    void rOtherExceptionsTest() {
         rewriteRun(
           //language=java
           java(
             """
-          public class Test {
-              public void testMethod() {
-                  try {
-                      Object o = "test";
-                      o.getClass().getAnnotation(Override.class);
-                  } catch (NullPointerException e) {
-                      System.out.println("Caught NullPointerException");
+              public class Test {
+                  public void testMethod() {
+                      try {
+                          Object o = "test";
+                          o.getClass().getAnnotation(Override.class);
+                      } catch (NullPointerException e) {
+                          System.out.println("Caught Exception");
+                      }
                   }
               }
-          }
-          """
+              """
           )
         );
     }
