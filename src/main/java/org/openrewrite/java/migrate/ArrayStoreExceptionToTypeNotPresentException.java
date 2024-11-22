@@ -16,12 +16,12 @@ import java.util.regex.Pattern;
 public class ArrayStoreExceptionToTypeNotPresentException extends Recipe {
     @Override
     public String getDisplayName() {
-        return "Handle TypeNotPresentException instead of ArrayStoreException";
+        return "ArrayStoreExceptionToTypeNotPresentException";
     }
 
     @Override
     public String getDescription() {
-        return "This recipe replaces catch blocks for ArrayStoreException around getAnnotation() with TypeNotPresentException or both exceptions, to ensure compatibility with Java 11+.";
+        return "This recipe replaces catch blocks for ArrayStoreException around getAnnotation() with TypeNotPresentException to ensure compatibility with Java 11+.";
     }
 
     @Override
