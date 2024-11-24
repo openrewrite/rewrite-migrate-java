@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -27,6 +28,7 @@ class TypeNotPresentExceptionTest implements RewriteTest {
         spec.recipe(new ArrayStoreExceptionToTypeNotPresentException());
     }
 
+    @DocumentExample
     @Test
     void ArrayStoreExceptionTest() {
         rewriteRun(
