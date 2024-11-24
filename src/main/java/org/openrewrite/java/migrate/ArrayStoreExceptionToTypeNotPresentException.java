@@ -58,8 +58,9 @@ public class ArrayStoreExceptionToTypeNotPresentException extends Recipe {
                             updatedCatches.add(catchClause);
                         }
                     }
-                    if (flag)
+                    if (flag) {
                         tryStmt = tryStmt.withCatches(updatedCatches);
+                    }
                 }
                 return super.visitTry(tryStmt, ctx);
             }

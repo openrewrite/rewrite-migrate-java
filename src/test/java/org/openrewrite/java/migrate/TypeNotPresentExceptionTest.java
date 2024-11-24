@@ -21,7 +21,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class TypeNotPresentExceptionTest implements RewriteTest {
+class TypeNotPresentExceptionTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new ArrayStoreExceptionToTypeNotPresentException());
