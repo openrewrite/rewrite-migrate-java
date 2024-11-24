@@ -36,7 +36,7 @@ public class ArrayStoreExceptionToTypeNotPresentException extends Recipe {
 
     @Override
     public String getDescription() {
-        return "This recipe replaces catch blocks for ArrayStoreException around getAnnotation() with TypeNotPresentException to ensure compatibility with Java 11+.";
+        return "Replace catch blocks for `ArrayStoreException` around `getAnnotation()` with `TypeNotPresentException` to ensure compatibility with Java 11+.";
     }
 
     @Override
