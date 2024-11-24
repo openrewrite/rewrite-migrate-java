@@ -74,4 +74,3 @@ public class ArrayStoreExceptionToTypeNotPresentException extends Recipe {
         };
     }
 }
-
