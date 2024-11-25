@@ -23,7 +23,7 @@ import org.openrewrite.java.tree.JavaType;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_CLASS_PATTERN;
 
-public class JodaTimeFlowSpec extends DataFlowSpec {
+class JodaTimeFlowSpec extends DataFlowSpec {
 
     @Override
     public boolean isSource(@NonNull DataFlowNode srcNode) {
@@ -35,6 +35,12 @@ public class JodaTimeFlowSpec extends DataFlowSpec {
 
         if (value instanceof J.VariableDeclarations.NamedVariable) {
             return isJodaType(((J.VariableDeclarations.NamedVariable) value).getType());
+        }
+
+        if (value instanceof J.VariableDeclarations) {
+            if (srcNode.getCursor().getParentTreeCursor().getParentTreeCursor().getValue() instanceof J.MethodDeclaration) {
+                return isJodaType(((J.VariableDeclarations) value).getType());
+            }
         }
         return false;
     }

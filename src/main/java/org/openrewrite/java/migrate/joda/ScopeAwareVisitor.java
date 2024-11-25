@@ -29,7 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @AllArgsConstructor
-public class ScopeAwareVisitor extends JavaVisitor<ExecutionContext>  {
+class ScopeAwareVisitor extends JavaVisitor<ExecutionContext> {
     protected final LinkedList<VariablesInScope> scopes;
 
     @Override

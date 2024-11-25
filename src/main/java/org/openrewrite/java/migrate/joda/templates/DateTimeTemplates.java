@@ -180,7 +180,7 @@ public class DateTimeTemplates implements Templates {
             .build();
     private final JavaTemplate withTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withHour(#{any(int)}).withMinute(#{any(int)}).withSecond(#{any(int)}).withNano(#{any(int)} * 1_000_000)")
             .build();
-    private final JavaTemplate withTimeAtStartOfDayTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.atStartOfDay(#{any(java.time.ZonedDateTime)}.getZone())")
+    private final JavaTemplate withTimeAtStartOfDayTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalDate().atStartOfDay(#{any(java.time.ZonedDateTime)}.getZone())")
             .build();
     private final JavaTemplate withDurationAddedTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plus(Duration.ofMillis(#{any(long)}).multipliedBy(#{any(int)}))")
             .imports(JAVA_DURATION)
@@ -301,7 +301,10 @@ public class DateTimeTemplates implements Templates {
             add(new MethodTemplate(withDateLocalDate, withTemporalAdjusterTemplate));
             add(new MethodTemplate(withTime, withTimeTemplate));
             add(new MethodTemplate(withTimeLocalTime, withTemporalAdjusterTemplate));
-            add(new MethodTemplate(withTimeAtStartOfDay, withTimeAtStartOfDayTemplate));
+            add(new MethodTemplate(withTimeAtStartOfDay, withTimeAtStartOfDayTemplate, m -> {
+                J.MethodInvocation mi = (J.MethodInvocation) m;
+                return new Expression[]{mi.getSelect(), mi.getSelect()};
+            }));
             add(new MethodTemplate(withDurationAdded, withDurationAddedTemplate));
             add(new MethodTemplate(plusLong, plusMillisTemplate));
             add(new MethodTemplate(plusReadableDuration, plusReadableDurationTemplate));

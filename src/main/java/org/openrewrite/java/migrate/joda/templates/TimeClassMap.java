@@ -49,7 +49,7 @@ public class TimeClassMap {
                 null, null, null, null, null);
     }
 
-    public static  JavaType.@Nullable Class getJavaTimeType(String typeFqn) {
+    public static JavaType.@Nullable Class getJavaTimeType(String typeFqn) {
         return new TimeClassMap().jodaToJavaTimeMap.get(typeFqn);
     }
 

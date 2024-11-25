@@ -19,30 +19,28 @@ import lombok.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.migrate.joda.templates.*;
+import org.openrewrite.java.migrate.joda.templates.AllTemplates;
+import org.openrewrite.java.migrate.joda.templates.MethodTemplate;
+import org.openrewrite.java.migrate.joda.templates.TimeClassMap;
+import org.openrewrite.java.migrate.joda.templates.VarTemplates;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
-import org.openrewrite.java.tree.MethodCall;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
-public class JodaTimeVisitor extends ScopeAwareVisitor {
+class JodaTimeVisitor extends ScopeAwareVisitor {
 
-    private final Set<NamedVariable> unsafeVars;
+    private final boolean safeMigration;
+    private final JodaTimeRecipe.Accumulator acc;
 
-    public JodaTimeVisitor(Set<NamedVariable> unsafeVars, LinkedList<VariablesInScope> scopes) {
+    public JodaTimeVisitor(JodaTimeRecipe.Accumulator acc, boolean safeMigration, LinkedList<VariablesInScope> scopes) {
         super(scopes);
-        this.unsafeVars = unsafeVars;
-    }
-
-    public JodaTimeVisitor(Set<NamedVariable> unsafeVars) {
-        this(unsafeVars, new LinkedList<>());
-    }
-
-    public JodaTimeVisitor() {
-        this(new HashSet<>());
+        this.acc = acc;
+        this.safeMigration = safeMigration;
     }
 
     @Override
@@ -75,7 +73,7 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         if (!multiVariable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return super.visitVariableDeclarations(multiVariable, ctx);
         }
-        if (multiVariable.getVariables().stream().anyMatch(unsafeVars::contains)) {
+        if (multiVariable.getVariables().stream().anyMatch(acc.getUnsafeVars()::contains)) {
             return multiVariable;
         }
         multiVariable = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
@@ -90,14 +88,14 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return super.visitVariable(variable, ctx);
         }
-        if (unsafeVars.contains(variable) || ! (variable.getType() instanceof JavaType.Class)) {
+        if (acc.getUnsafeVars().contains(variable) || !(variable.getType() instanceof JavaType.Class)) {
             return variable;
         }
         JavaType.Class jodaType = (JavaType.Class) variable.getType();
         return variable
                 .withType(TimeClassMap.getJavaTimeType(jodaType.getFullyQualifiedName()))
                 .withInitializer((Expression) visit(variable.getInitializer(), ctx));
-     }
+    }
 
     @Override
     public @NonNull J visitAssignment(@NonNull J.Assignment assignment, @NonNull ExecutionContext ctx) {
@@ -110,7 +108,7 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         J.Identifier varName = (J.Identifier) a.getVariable();
         Optional<NamedVariable> mayBeVar = findVarInScope(varName.getSimpleName());
-        if (!mayBeVar.isPresent() || unsafeVars.contains(mayBeVar.get())) {
+        if (!mayBeVar.isPresent() || acc.getUnsafeVars().contains(mayBeVar.get())) {
             return assignment;
         }
         return VarTemplates.getTemplate(a).apply(
@@ -126,14 +124,7 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         if (hasJodaType(updated.getArguments())) {
             return newClass;
         }
-        MethodTemplate template = AllTemplates.getTemplate(newClass);
-        if (template != null) {
-            return applyTemplate(newClass, updated, template).orElse(newClass);
-        }
-        if (areArgumentsAssignable(updated)) {
-            return updated;
-        }
-        return newClass;
+        return migrateMethodCall(newClass, updated);
     }
 
 
@@ -143,17 +134,7 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         if (hasJodaType(m.getArguments()) || isJodaVarRef(m.getSelect())) {
             return method;
         }
-        MethodTemplate template = AllTemplates.getTemplate(method);
-        if (template != null) {
-            return applyTemplate(method, m, template).orElse(method);
-        }
-        if (method.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN)) {
-            return method; // unhandled case
-        }
-        if (areArgumentsAssignable(m)) {
-            return m;
-        }
-        return method;
+        return migrateMethodCall(method, m);
     }
 
     @Override
@@ -174,7 +155,7 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
             return super.visitIdentifier(ident, ctx);
         }
         Optional<NamedVariable> mayBeVar = findVarInScope(ident.getSimpleName());
-        if (!mayBeVar.isPresent() || unsafeVars.contains(mayBeVar.get())) {
+        if (!mayBeVar.isPresent() || acc.getUnsafeVars().contains(mayBeVar.get())) {
             return ident;
         }
 
@@ -183,6 +164,40 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
 
         return ident.withType(fqType)
                 .withFieldType(ident.getFieldType().withType(fqType));
+    }
+
+    private J migrateMethodCall(MethodCall original, MethodCall updated) {
+        if (!original.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return updated; // not a joda type, no need to migrate
+        }
+        MethodTemplate template = AllTemplates.getTemplate(original);
+        if (template == null) {
+            return original; // unhandled case
+        }
+        Optional<J> maybeUpdated = applyTemplate(original, updated, template);
+        if (!maybeUpdated.isPresent()) {
+            return original; // unhandled case
+        }
+        Expression updatedExpr = (Expression) maybeUpdated.get();
+        if (!safeMigration || !isArgument(original)) {
+            return updatedExpr;
+        }
+        // this expression is an argument to a method call
+        MethodCall parentMethod = getCursor().getParentTreeCursor().getValue();
+        if (parentMethod.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return updatedExpr;
+        }
+        int argPos = parentMethod.getArguments().indexOf(original);
+        JavaType paramType = parentMethod.getMethodType().getParameterTypes().get(argPos);
+        if (TypeUtils.isAssignableTo(paramType, updatedExpr.getType())) {
+            return updatedExpr;
+        }
+        String paramName = parentMethod.getMethodType().getParameterNames().get(argPos);
+        NamedVariable var = acc.getVarTable().getVarByName(parentMethod.getMethodType(), paramName);
+        if (var != null && !acc.getUnsafeVars().contains(var)) {
+            return updatedExpr;
+        }
+        return original;
     }
 
     private boolean hasJodaType(List<Expression> exprs) {
@@ -206,28 +221,6 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         return Optional.empty(); // unhandled case
     }
 
-    private boolean areArgumentsAssignable(MethodCall m) {
-        if (m.getMethodType() == null || getArgumentsCount(m) != m.getMethodType().getParameterTypes().size()) {
-            return false;
-        }
-        if (getArgumentsCount(m) == 0) {
-            return true;
-        }
-        for (int i = 0; i < m.getArguments().size(); i++) {
-            if (!TypeUtils.isAssignableTo(m.getMethodType().getParameterTypes().get(i), m.getArguments().get(i).getType())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private int getArgumentsCount(MethodCall m) {
-        if (m.getArguments().size() == 1 && m.getArguments().get(0) instanceof J.Empty) {
-            return 0;
-        }
-        return m.getArguments().size();
-    }
-
     private boolean isJodaVarRef(@Nullable Expression expr) {
         if (expr == null || expr.getType() == null || !expr.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return false;
@@ -239,5 +232,13 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
             return ((J.Identifier) expr).getFieldType() != null;
         }
         return false;
+    }
+
+    private boolean isArgument(J expr) {
+        if (!(getCursor().getParentTreeCursor().getValue() instanceof MethodCall)) {
+            return false;
+        }
+        MethodCall methodCall = getCursor().getParentTreeCursor().getValue();
+        return methodCall.getArguments().contains(expr);
     }
 }

@@ -27,7 +27,7 @@ import java.util.List;
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 @NoArgsConstructor
-public class DurationTemplates implements Templates{
+public class DurationTemplates implements Templates {
     private final MethodMatcher parse = new MethodMatcher(JODA_DURATION + " parse(String)");
     private final MethodMatcher standardDays = new MethodMatcher(JODA_DURATION + " standardDays(long)");
     private final MethodMatcher standardHours = new MethodMatcher(JODA_DURATION + " standardHours(long)");
