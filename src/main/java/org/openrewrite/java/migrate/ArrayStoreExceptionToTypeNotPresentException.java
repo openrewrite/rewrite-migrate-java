@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 public class ArrayStoreExceptionToTypeNotPresentException extends Recipe {
     @Override
     public String getDisplayName() {
-        return "ArrayStoreExceptionToTypeNotPresentException";
+        return "ArrayStoreException to TypeNotPresentException around getAnnotation() method ";
     }
 
     @Override
@@ -46,8 +46,10 @@ public class ArrayStoreExceptionToTypeNotPresentException extends Recipe {
 
             @Override
             public J visitTry(J.Try tryStmt, ExecutionContext ctx) {
+                if (!containsGetAnnotation(tryStmt)) {
+                    return super.visitTry(tryStmt, ctx);
+                }
                 boolean flag = false;
-                if (containsGetAnnotation(tryStmt)) {
                     List<J.Try.Catch> updatedCatches = new ArrayList<>();
                     for (J.Try.Catch catchClause : tryStmt.getCatches()) {
                         if (catchClause.getParameter().getType() != null && catchClause.getParameter().getType().isAssignableFrom(Pattern.compile("java.lang.ArrayStoreException"))) {
@@ -61,7 +63,6 @@ public class ArrayStoreExceptionToTypeNotPresentException extends Recipe {
                     if (flag) {
                         tryStmt = tryStmt.withCatches(updatedCatches);
                     }
-                }
                 return super.visitTry(tryStmt, ctx);
             }
 
