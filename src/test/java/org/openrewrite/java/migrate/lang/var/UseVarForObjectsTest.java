@@ -32,35 +32,6 @@ class UseVarForObjectsTest extends VarBaseTest {
           .allSources(s -> s.markers(javaVersion(10)));
     }
 
-    @Test
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/550")
-    void genericType() {
-        rewriteRun(
-          java(
-            """
-              import java.io.Serializable;
-              
-              abstract class Outer<T extends Serializable> {
-                  abstract T doIt();
-                  void trigger() {
-                      T x = doIt();
-                  }
-              }
-              """,
-            """
-              import java.io.Serializable;
-              
-              abstract class Outer<T extends Serializable> {
-                  abstract T doIt();
-                  void trigger() {
-                      var x = doIt();
-                  }
-              }
-              """
-          )
-        );
-    }
-
     @Nested
     class Applicable {
         @DocumentExample
@@ -299,6 +270,7 @@ class UseVarForObjectsTest extends VarBaseTest {
             }
 
             @Test
+            @Disabled("in favor to https://github.com/openrewrite/rewrite-migrate-java/issues/608 we skip all static methods ATM")
             void staticMethods() {
                 //language=java
                 rewriteRun(
@@ -336,11 +308,84 @@ class UseVarForObjectsTest extends VarBaseTest {
                   )
                 );
             }
+
+            @Test
+            @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/550")
+            void genericType() {
+                rewriteRun(
+                  //language=java
+                  java(
+                    """
+                      import java.io.Serializable;
+
+                      abstract class Outer<T extends Serializable> {
+                          abstract T doIt();
+                          void trigger() {
+                              T x = doIt();
+                          }
+                      }
+                      """,
+                    """
+                      import java.io.Serializable;
+
+                      abstract class Outer<T extends Serializable> {
+                          abstract T doIt();
+                          void trigger() {
+                              var x = doIt();
+                          }
+                      }
+                      """
+                  )
+                );
+            }
         }
     }
 
     @Nested
     class NotApplicable {
+
+        @Test
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/608")
+        void genericTypeInStaticMethod() {
+            // ATM the recipe skips all static method initialized variables
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  package example;
+
+                  class Global {
+                      static <T> T cast(Object o) {
+                          return (T) o;
+                      }
+                  }
+                  class User {
+                      public String test() {
+                          Object o = "Hello";
+                          String string = Global.cast(o); // static method unchanged
+                          return string;
+                      }
+                  }
+                  """,
+                """
+                  package example;
+
+                  class Global {
+                      static <T> T cast(Object o) {
+                          return (T) o;
+                      }
+                  }
+                  class User {
+                      public String test() {
+                          var o = "Hello";
+                          String string = Global.cast(o); // static method unchanged
+                          return string;
+                      }
+                  }
+                  """
+              )
+            );
+        }
 
         @Test
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/551")
@@ -350,7 +395,7 @@ class UseVarForObjectsTest extends VarBaseTest {
               java(
                 """
                   package com.example.app;
-                  
+
                   class A {
                     void m() {
                         String[] dictionary = {"aa", "b", "aba", "ba"};

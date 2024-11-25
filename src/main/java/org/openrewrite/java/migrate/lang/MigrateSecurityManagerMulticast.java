@@ -53,7 +53,11 @@ public class MigrateSecurityManagerMulticast extends Recipe {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
                 if (MULTICAST_METHOD.matches(m) && m.getArguments().size() == 2) {
-                    return m.withArguments(Collections.singletonList(m.getArguments().get(0)));
+                    return m.withArguments(Collections.singletonList(m.getArguments().get(0)))
+                            .withMethodType(m.getMethodType()
+                                    .withParameterNames(m.getMethodType().getParameterNames().subList(0, 1))
+                                    .withParameterTypes(m.getMethodType().getParameterTypes().subList(0, 1))
+                            );
                 }
                 return m;
             }

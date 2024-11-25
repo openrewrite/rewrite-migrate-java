@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
 import org.openrewrite.java.tree.*;
 
@@ -197,5 +198,31 @@ final class DeclarationCheck {
         }
 
         return isInsideInitializer(requireNonNull(cursor.getParent()), nestedBlockLevel);
+    }
+
+    /**
+     * Checks whether the initializer {@linkplain Expression} is a {@linkplain J.MethodInvocation} targeting a static method.
+     *
+     * @param initializer {@linkplain J.VariableDeclarations.NamedVariable#getInitializer()} value
+     * @return true iff is initialized by static method
+     */
+    public static boolean initializedByStaticMethod(@Nullable Expression initializer) {
+        if (initializer == null) {
+            return false;
+        }
+        initializer = initializer.unwrap();
+
+        if (!(initializer instanceof J.MethodInvocation)) {
+            // no MethodInvocation -> false
+            return false;
+        }
+
+        J.MethodInvocation invocation = (J.MethodInvocation) initializer;
+        if (invocation.getMethodType() == null) {
+            // not a static method -> false
+            return false;
+        }
+
+        return invocation.getMethodType().hasFlags(Flag.Static);
     }
 }

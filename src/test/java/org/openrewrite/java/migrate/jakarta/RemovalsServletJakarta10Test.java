@@ -182,7 +182,7 @@ class RemovalsServletJakarta10Test implements RewriteTest {
                       jakarta.servlet.Servlet servlet ;
                       UnavailableException unavailableEx1 = new UnavailableException("x", 0);
                       UnavailableException unavailableEx2 = new UnavailableException("x", 0);
-                      UnavailableException unavailableEx3 = new UnavailableException( "x");
+                      UnavailableException unavailableEx3 = new UnavailableException("x");
                   }
               }
               """
