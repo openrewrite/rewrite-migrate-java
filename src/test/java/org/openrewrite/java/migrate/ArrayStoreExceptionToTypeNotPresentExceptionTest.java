@@ -22,7 +22,8 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class TypeNotPresentExceptionTest implements RewriteTest {
+class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new ArrayStoreExceptionToTypeNotPresentException());
@@ -30,7 +31,7 @@ class TypeNotPresentExceptionTest implements RewriteTest {
 
     @DocumentExample
     @Test
-    void ArrayStoreExceptionTest() {
+    void replaceCaughtException() {
         rewriteRun(
           //language=java
           java(
@@ -79,7 +80,7 @@ class TypeNotPresentExceptionTest implements RewriteTest {
     }
 
     @Test
-    void rOtherExceptionsTest() {
+    void retainOtherCaughtExceptions() {
         rewriteRun(
           //language=java
           java(
@@ -90,6 +91,26 @@ class TypeNotPresentExceptionTest implements RewriteTest {
                           Object o = "test";
                           o.getClass().getAnnotation(Override.class);
                       } catch (NullPointerException e) {
+                          System.out.println("Caught Exception");
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void retainArrayStoreExceptionWithoutClassGetAnnotation() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              public class Test {
+                  public void testMethod() {
+                      try {
+                          Object o = "test";
+                      } catch (ArrayStoreException e) {
                           System.out.println("Caught Exception");
                       }
                   }
