@@ -553,23 +553,23 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
         rewriteRun(
           spec -> spec.recipe(new NoGuavaImmutableSetOf(true)),
           version(
-              java(
-                """
-                  import com.google.common.collect.ImmutableSet;
+            java(
+              """
+                import com.google.common.collect.ImmutableSet;
 
-                  class Test {
-                      ImmutableSet<String> m = ImmutableSet.of();
-                  }
-                  """,
-                """
-                  import java.util.Set;
+                class Test {
+                    ImmutableSet<String> m = ImmutableSet.of();
+                }
+                """,
+              """
+                import java.util.Set;
 
-                  class Test {
-                      Set<String> m = Set.of();
-                  }
-                  """
-              ),
-          11)
+                class Test {
+                    Set<String> m = Set.of();
+                }
+                """
+            ),
+            11)
         );
     }
 

@@ -603,6 +603,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
           )
         );
     }
+
     @Test
     void doChangeNestedListsWithVariableType() {
         //language=java

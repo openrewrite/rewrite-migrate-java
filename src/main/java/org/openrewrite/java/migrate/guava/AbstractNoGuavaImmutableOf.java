@@ -15,14 +15,8 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import java.time.Duration;
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Option;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.Tree;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
@@ -31,10 +25,12 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
+
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Collections.emptyList;
-import java.util.List;
 
 abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
@@ -42,15 +38,17 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
     private final String javaType;
 
     @Option(displayName = "Whether to convert return type (the default value is false).",
-        description = "converting the return type from Guava Type to Java Type " +
-            "The default value is false.",
-        example = "true",
-        required = false)
+            description = "converting the return type from Guava Type to Java Type " +
+                          "The default value is false.",
+            example = "true",
+            required = false)
     boolean isAbleToConvertReturnType;
+
     AbstractNoGuavaImmutableOf(String guavaType, String javaType) {
         this.guavaType = guavaType;
         this.javaType = javaType;
     }
+
     AbstractNoGuavaImmutableOf(String guavaType, String javaType, boolean isAbleToConvertReturnType) {
         this.guavaType = guavaType;
         this.javaType = javaType;
@@ -175,13 +173,13 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 J.VariableDeclarations mv = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
-                if(!isAbleToConvertReturnType) {
+                if (!isAbleToConvertReturnType) {
                     return mv;
                 }
                 if (multiVariable != mv && TypeUtils.isOfClassType(mv.getType(), guavaType)) {
                     JavaType newType = JavaType.buildType(javaType);
                     mv = mv.withTypeExpression(mv.getTypeExpression() == null ?
-                        null : createNewTypeExpression(mv.getTypeExpression(), newType));
+                            null : createNewTypeExpression(mv.getTypeExpression(), newType));
 
                     mv = mv.withVariables(ListUtils.map(mv.getVariables(), variable -> {
                         JavaType.FullyQualified varType = TypeUtils.asFullyQualified(variable.getType());
@@ -200,25 +198,25 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                     J.ParameterizedType parameterizedType = (J.ParameterizedType) typeTree;
                     List<JRightPadded<Expression>> jRightPaddedList = new ArrayList<>();
                     parameterizedType.getTypeParameters().forEach(
-                        expression -> {
-                            if (expression instanceof J.ParameterizedType && TypeUtils.isOfClassType(expression.getType(), guavaType)) {
-                                jRightPaddedList.add(JRightPadded.build(((J.ParameterizedType) createNewTypeExpression((TypeTree) expression, newType))));
-                            } else {
-                                jRightPaddedList.add(JRightPadded.build(expression));
-                            }
-                        });
+                            expression -> {
+                                if (expression instanceof J.ParameterizedType && TypeUtils.isOfClassType(expression.getType(), guavaType)) {
+                                    jRightPaddedList.add(JRightPadded.build(((J.ParameterizedType) createNewTypeExpression((TypeTree) expression, newType))));
+                                } else {
+                                    jRightPaddedList.add(JRightPadded.build(expression));
+                                }
+                            });
                     NameTree clazz = new J.Identifier(
-                        Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), getShortType(javaType), null, null);
+                            Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), getShortType(javaType), null, null);
                     return parameterizedType.withClazz(clazz).withType(newType).getPadding().withTypeParameters(JContainer.build(jRightPaddedList));
                 }
                 return new J.Identifier(
-                    typeTree.getId(),
-                    typeTree.getPrefix(),
-                    Markers.EMPTY,
-                    emptyList(),
-                    getShortType(javaType),
-                    newType,
-                    null
+                        typeTree.getId(),
+                        typeTree.getPrefix(),
+                        Markers.EMPTY,
+                        emptyList(),
+                        getShortType(javaType),
+                        newType,
+                        null
                 );
             }
 
