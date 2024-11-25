@@ -15,8 +15,14 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import org.jspecify.annotations.Nullable;
+
 public class NoGuavaImmutableMapOf extends AbstractNoGuavaImmutableOf {
     public NoGuavaImmutableMapOf() {
         super("com.google.common.collect.ImmutableMap", "java.util.Map");
+    }
+
+    public NoGuavaImmutableMapOf(@Nullable Boolean convertReturnType) {
+        super("com.google.common.collect.ImmutableMap", "java.util.Map", convertReturnType);
     }
 }

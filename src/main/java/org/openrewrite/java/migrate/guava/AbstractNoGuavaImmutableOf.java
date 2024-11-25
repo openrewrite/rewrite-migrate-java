@@ -37,9 +37,23 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
     private final String guavaType;
     private final String javaType;
 
+    @Option(displayName = "Whether to convert return type (the default value is false).",
+            description = "converting the return type from Guava Type to Java Type " +
+                          "The default value is false.",
+            example = "true",
+            required = false)
+    @Nullable
+    Boolean convertReturnType;
+
     AbstractNoGuavaImmutableOf(String guavaType, String javaType) {
         this.guavaType = guavaType;
         this.javaType = javaType;
+    }
+
+    AbstractNoGuavaImmutableOf(String guavaType, String javaType, @Nullable Boolean convertReturnType) {
+        this.guavaType = guavaType;
+        this.javaType = javaType;
+        this.convertReturnType = convertReturnType;
     }
 
     private String getShortType(String fullyQualifiedType) {
@@ -103,8 +117,9 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 J.VariableDeclarations mv = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
-
-                if (multiVariable != mv && TypeUtils.isOfClassType(mv.getType(), guavaType)) {
+                if (Boolean.TRUE.equals(convertReturnType) &&
+                    multiVariable != mv &&
+                    TypeUtils.isOfClassType(mv.getType(), guavaType)) {
                     JavaType newType = JavaType.buildType(javaType);
                     mv = mv.withTypeExpression(mv.getTypeExpression() == null ?
                             null : createNewTypeExpression(mv.getTypeExpression(), newType));
@@ -117,7 +132,6 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                         return variable;
                     }));
                 }
-
                 return mv;
             }
 
@@ -148,7 +162,6 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 );
             }
 
-
             private boolean isParentTypeDownCast(MethodCall immutableMethod) {
                 J parent = getCursor().dropParentUntil(J.class::isInstance).getValue();
                 boolean isParentTypeDownCast = false;
@@ -173,10 +186,12 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 } else if (parent instanceof J.MethodInvocation) {
                     J.MethodInvocation m = (J.MethodInvocation) parent;
                     int index = m.getArguments().indexOf(immutableMethod);
-                    if (m.getMethodType() != null && index != -1 && !m.getMethodType().getParameterTypes().isEmpty()) {
-                        isParentTypeDownCast = isParentTypeMatched(m.getMethodType().getParameterTypes().get(index));
-                    } else {
-                        isParentTypeDownCast = true;
+                    if (m.getMethodType() != null) {
+                        if (index != -1 && !m.getMethodType().getParameterTypes().isEmpty()) {
+                            isParentTypeDownCast = isParentTypeMatched(m.getMethodType().getParameterTypes().get(index));
+                        } else {
+                            isParentTypeDownCast = !TypeUtils.isOfClassType(m.getMethodType().getReturnType(), guavaType);
+                        }
                     }
                 } else if (parent instanceof J.NewClass) {
                     J.NewClass c = (J.NewClass) parent;
@@ -207,8 +222,8 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
             private boolean isParentTypeMatched(@Nullable JavaType type) {
                 JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
                 return TypeUtils.isOfClassType(fq, javaType) ||
-                       TypeUtils.isOfClassType(fq, "java.lang.Object") ||
-                       TypeUtils.isOfClassType(fq, guavaType);
+                       (Boolean.TRUE.equals(convertReturnType) && TypeUtils.isOfClassType(fq, guavaType)) ||
+                       TypeUtils.isOfClassType(fq, "java.lang.Object");
             }
         });
     }
