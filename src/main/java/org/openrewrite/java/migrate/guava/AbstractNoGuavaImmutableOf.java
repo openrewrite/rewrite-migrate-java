@@ -81,6 +81,39 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
         final MethodMatcher IMMUTABLE_MATCHER = new MethodMatcher(guavaType + " of(..)");
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
+                if (!IMMUTABLE_MATCHER.matches(mi) || !isParentTypeDownCast(mi)) {
+                    return mi;
+                }
+                maybeRemoveImport(guavaType);
+                maybeAddImport(javaType);
+
+                String template;
+                Object[] templateArguments;
+                List<Expression> methodArguments = mi.getArguments();
+                if (methodArguments.isEmpty() || methodArguments.get(0) instanceof J.Empty) {
+                    template = getShortType(javaType) + ".of()";
+                    templateArguments = new Object[]{};
+                } else if ("com.google.common.collect.ImmutableMap".equals(guavaType)) {
+                    template = getShortType(javaType) + ".of(#{any()}, #{any()})";
+                    templateArguments = new Object[]{methodArguments.get(0), methodArguments.get(1)};
+                } else {
+                    template = getShortType(javaType) + ".of(#{any()})";
+                    templateArguments = new Object[]{methodArguments.get(0)};
+                }
+
+                J.MethodInvocation m = JavaTemplate.builder(template)
+                        .imports(javaType)
+                        .build()
+                        .apply(getCursor(), mi.getCoordinates().replace(), templateArguments);
+                m = m.getPadding().withArguments(mi.getPadding().getArguments());
+                JavaType.Method newType = (JavaType.Method) visitType(mi.getMethodType(), ctx);
+                m = m.withMethodType(newType).withName(m.getName().withType(newType));
+                return super.visitMethodInvocation(m, ctx);
+            }
+
+            @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 J.VariableDeclarations mv = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
                 if (!convertReturnType) {
@@ -128,39 +161,6 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                         newType,
                         null
                 );
-            }
-
-            @Override
-            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
-                if (!IMMUTABLE_MATCHER.matches(mi) || !isParentTypeDownCast(mi)) {
-                    return mi;
-                }
-                maybeRemoveImport(guavaType);
-                maybeAddImport(javaType);
-
-                String template;
-                Object[] templateArguments;
-                List<Expression> methodArguments = mi.getArguments();
-                if (methodArguments.isEmpty() || methodArguments.get(0) instanceof J.Empty) {
-                    template = getShortType(javaType) + ".of()";
-                    templateArguments = new Object[]{};
-                } else if ("com.google.common.collect.ImmutableMap".equals(guavaType)) {
-                    template = getShortType(javaType) + ".of(#{any()}, #{any()})";
-                    templateArguments = new Object[]{methodArguments.get(0), methodArguments.get(1)};
-                } else {
-                    template = getShortType(javaType) + ".of(#{any()})";
-                    templateArguments = new Object[]{methodArguments.get(0)};
-                }
-
-                J.MethodInvocation m = JavaTemplate.builder(template)
-                        .imports(javaType)
-                        .build()
-                        .apply(getCursor(), mi.getCoordinates().replace(), templateArguments);
-                m = m.getPadding().withArguments(mi.getPadding().getArguments());
-                JavaType.Method newType = (JavaType.Method) visitType(mi.getMethodType(), ctx);
-                m = m.withMethodType(newType).withName(m.getName().withType(newType));
-                return super.visitMethodInvocation(m, ctx);
             }
 
             private boolean isParentTypeDownCast(MethodCall immutableMethod) {
