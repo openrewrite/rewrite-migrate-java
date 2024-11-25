@@ -48,7 +48,7 @@ public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
 
     @Override
     public JodaTimeVisitor getVisitor(Accumulator acc) {
-        return new JodaTimeVisitor(acc);
+        return new JodaTimeVisitor(acc, true, new LinkedList<>());
     }
 
     @Getter

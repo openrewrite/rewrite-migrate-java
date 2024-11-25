@@ -32,7 +32,7 @@ import java.util.Optional;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
-public class JodaTimeVisitor extends ScopeAwareVisitor {
+class JodaTimeVisitor extends ScopeAwareVisitor {
 
     private final boolean safeMigration;
     private final JodaTimeRecipe.Accumulator acc;
@@ -41,18 +41,6 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         super(scopes);
         this.acc = acc;
         this.safeMigration = safeMigration;
-    }
-
-    public JodaTimeVisitor(JodaTimeRecipe.Accumulator acc, boolean safeMigration) {
-        this(acc, safeMigration, new LinkedList<>());
-    }
-
-    public JodaTimeVisitor(JodaTimeRecipe.Accumulator acc) {
-        this(acc, true);
-    }
-
-    public JodaTimeVisitor() {
-        this(new JodaTimeRecipe.Accumulator());
     }
 
     @Override

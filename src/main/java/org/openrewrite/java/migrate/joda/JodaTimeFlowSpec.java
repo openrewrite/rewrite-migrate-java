@@ -23,7 +23,7 @@ import org.openrewrite.java.tree.JavaType;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_CLASS_PATTERN;
 
-public class JodaTimeFlowSpec extends DataFlowSpec {
+class JodaTimeFlowSpec extends DataFlowSpec {
 
     @Override
     public boolean isSource(@NonNull DataFlowNode srcNode) {
