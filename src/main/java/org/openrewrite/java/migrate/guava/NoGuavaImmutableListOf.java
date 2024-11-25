@@ -15,12 +15,14 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import org.jspecify.annotations.Nullable;
+
 public class NoGuavaImmutableListOf extends AbstractNoGuavaImmutableOf {
     public NoGuavaImmutableListOf() {
         super("com.google.common.collect.ImmutableList", "java.util.List");
     }
 
-    public NoGuavaImmutableListOf(boolean convertReturnType) {
+    public NoGuavaImmutableListOf(@Nullable Boolean convertReturnType) {
         super("com.google.common.collect.ImmutableList", "java.util.List", convertReturnType);
     }
 }
