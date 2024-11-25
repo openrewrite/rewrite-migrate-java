@@ -19,12 +19,16 @@ import lombok.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.migrate.joda.templates.*;
+import org.openrewrite.java.migrate.joda.templates.AllTemplates;
+import org.openrewrite.java.migrate.joda.templates.MethodTemplate;
+import org.openrewrite.java.migrate.joda.templates.TimeClassMap;
+import org.openrewrite.java.migrate.joda.templates.VarTemplates;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
-import org.openrewrite.java.tree.MethodCall;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
@@ -33,7 +37,7 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
     private final boolean safeMigration;
     private final JodaTimeRecipe.Accumulator acc;
 
-    public JodaTimeVisitor(JodaTimeRecipe.Accumulator acc, boolean safeMigration,  LinkedList<VariablesInScope> scopes) {
+    public JodaTimeVisitor(JodaTimeRecipe.Accumulator acc, boolean safeMigration, LinkedList<VariablesInScope> scopes) {
         super(scopes);
         this.acc = acc;
         this.safeMigration = safeMigration;
@@ -96,14 +100,14 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
         if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return super.visitVariable(variable, ctx);
         }
-        if (acc.getUnsafeVars().contains(variable) || ! (variable.getType() instanceof JavaType.Class)) {
+        if (acc.getUnsafeVars().contains(variable) || !(variable.getType() instanceof JavaType.Class)) {
             return variable;
         }
         JavaType.Class jodaType = (JavaType.Class) variable.getType();
         return variable
                 .withType(TimeClassMap.getJavaTimeType(jodaType.getFullyQualifiedName()))
                 .withInitializer((Expression) visit(variable.getInitializer(), ctx));
-     }
+    }
 
     @Override
     public @NonNull J visitAssignment(@NonNull J.Assignment assignment, @NonNull ExecutionContext ctx) {
@@ -243,7 +247,7 @@ public class JodaTimeVisitor extends ScopeAwareVisitor {
     }
 
     private boolean isArgument(J expr) {
-        if ( !(getCursor().getParentTreeCursor().getValue() instanceof MethodCall)) {
+        if (!(getCursor().getParentTreeCursor().getValue() instanceof MethodCall)) {
             return false;
         }
         MethodCall methodCall = getCursor().getParentTreeCursor().getValue();

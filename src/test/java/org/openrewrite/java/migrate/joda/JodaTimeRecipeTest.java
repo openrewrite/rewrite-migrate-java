@@ -39,7 +39,7 @@ class JodaTimeRecipeTest implements RewriteTest {
           java(
             """
               import org.joda.time.DateTime;
-                            
+
               class A {
                   public void foo() {
                       DateTime dt = new DateTime();
@@ -69,7 +69,7 @@ class JodaTimeRecipeTest implements RewriteTest {
           java(
             """
               import org.joda.time.DateTime;
-                            
+
               class A {
                   public void foo() {
                       DateTime dt = new DateTime();
@@ -85,7 +85,7 @@ class JodaTimeRecipeTest implements RewriteTest {
               import org.joda.time.DateTime;
 
               import java.time.ZonedDateTime;
-                            
+
               class A {
                   public void foo() {
                       ZonedDateTime dt = ZonedDateTime.now();

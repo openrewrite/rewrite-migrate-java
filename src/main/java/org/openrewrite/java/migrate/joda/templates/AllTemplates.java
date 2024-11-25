@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.joda.templates;
 
 import lombok.Value;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.MethodCall;
 
 import java.util.ArrayList;
@@ -39,7 +38,7 @@ public class AllTemplates {
     private static final MethodMatcher ANY_ABSTRACT_DATE_TIME = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " *(..)");
     private static final MethodMatcher ANY_ABSTRACT_DURATION = new MethodMatcher(JODA_ABSTRACT_DURATION + " *(..)");
     private static final MethodMatcher ANY_INSTANT = new MethodMatcher(JODA_INSTANT + " *(..)");
-    private static final MethodMatcher ANY_NEW_INSTANT = new MethodMatcher(JODA_INSTANT +  "<constructor>(..)");
+    private static final MethodMatcher ANY_NEW_INSTANT = new MethodMatcher(JODA_INSTANT + "<constructor>(..)");
 
     private static List<MatcherAndTemplates> templates = new ArrayList<MatcherAndTemplates>() {
         {

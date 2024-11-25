@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.joda;
 
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.java.tree.J;
@@ -61,9 +62,9 @@ public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
 
         public void addVars(J.MethodDeclaration methodDeclaration) {
             JavaType type = methodDeclaration.getMethodType();
-
+            assert type != null;
             methodDeclaration.getParameters().forEach(p -> {
-                if (!(p instanceof J.VariableDeclarations) ) {
+                if (!(p instanceof J.VariableDeclarations)) {
                     return;
                 }
                 J.VariableDeclarations.NamedVariable namedVariable = ((J.VariableDeclarations) p).getVariables().get(0);
@@ -71,7 +72,7 @@ public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
             });
         }
 
-        public NamedVariable getVarByName(JavaType declaringType, String varName) {
+        public @Nullable NamedVariable getVarByName(@Nullable JavaType declaringType, String varName) {
             return vars.getOrDefault(declaringType, Collections.emptyList()).stream()
                     .filter(v -> v.getSimpleName().equals(varName))
                     .findFirst() // there should be only one variable with the same name
