@@ -54,9 +54,7 @@ public class ThreadStopUnsupported extends Recipe {
                 J j = super.visitMethodInvocation(method, ctx);
                 if (THREAD_STOP_MATCHER.matches(method) || THREAD_RESUME_MATCHER.matches(method) || THREAD_SUSPEND_MATCHER.matches(method)) {
                     if (usesJava21(ctx)) {
-                        JavaTemplate template = JavaTemplate.builder("throw new UnsupportedOperationException()")
-                                .contextSensitive().build();
-                        j = template.apply(getCursor(), method.getCoordinates().replace());
+                        j = JavaTemplate.apply("throw new UnsupportedOperationException()", getCursor(), method.getCoordinates().replace());
                     }
                     if (j.getComments().isEmpty()) {
                         j = getWithComment(j, method.getName().getSimpleName());

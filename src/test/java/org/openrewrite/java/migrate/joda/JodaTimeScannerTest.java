@@ -21,8 +21,6 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import java.util.HashSet;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.openrewrite.java.Assertions.java;
@@ -36,7 +34,7 @@ class JodaTimeScannerTest implements RewriteTest {
 
     @Test
     void noUnsafeVar() {
-        JodaTimeScanner scanner = new JodaTimeScanner(new HashSet<>());
+        JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
         // language=java
         rewriteRun(
           spec -> spec.recipe(toRecipe(() -> scanner)),
@@ -64,12 +62,12 @@ class JodaTimeScannerTest implements RewriteTest {
               """
           )
         );
-        assertTrue(scanner.getUnsafeVars().isEmpty());
+        assertTrue(scanner.getAcc().getUnsafeVars().isEmpty());
     }
 
     @Test
     void hasUnsafeVars() {
-        JodaTimeScanner scanner = new JodaTimeScanner(new HashSet<>());
+        JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
         // language=java
         rewriteRun(
           spec -> spec.recipe(toRecipe(() -> scanner)),
@@ -79,7 +77,7 @@ class JodaTimeScannerTest implements RewriteTest {
                import org.joda.time.DateTimeZone;
 
                class A {
-                   DateTime dateTime;
+                   DateTime dateTime; // class Variable not handled yet
                    public void foo(String city) {
                        DateTimeZone dtz;
                        if ("london".equals(city)) {
@@ -87,20 +85,20 @@ class JodaTimeScannerTest implements RewriteTest {
                        } else {
                            dtz = DateTimeZone.forID("America/New_York");
                        }
-                       DateTime dt = new DateTime(dtz);
-                       print(dt.toDateTime());
+                       dateTime = new DateTime(dtz);
+                       print(dateTime.toDateTime());
                    }
-                   private void print(DateTime dateTime) { // method parameter not handled yet
-                       System.out.println(dateTime);
+                   private void print(DateTime dt) {
+                       System.out.println(dt);
                    }
               }
               """
           )
         );
-        // The variable dtz is unsafe due to dt. The dt variable is unsafe because its associated expression
-        // is passed as argument to method, and migration of method parameters has not been implemented yet.
-        assertEquals(4, scanner.getUnsafeVars().size());
-        for (J.VariableDeclarations.NamedVariable var : scanner.getUnsafeVars()) {
+        // The variable 'dtz' is unsafe due to the class variable 'dateTime'.
+        // The parameter 'dt' in the 'print' method is also unsafe because one of its method calls is unsafe.
+        assertEquals(3, scanner.getAcc().getUnsafeVars().size());
+        for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
             assertTrue(var.getSimpleName().equals("dtz") ||
                        var.getSimpleName().equals("dt") ||
                        var.getSimpleName().equals("dateTime")
@@ -110,7 +108,7 @@ class JodaTimeScannerTest implements RewriteTest {
 
     @Test
     void localVarReferencingClassVar() { // not supported yet
-        JodaTimeScanner scanner = new JodaTimeScanner(new HashSet<>());
+        JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
         // language=java
         rewriteRun(
           spec -> spec.recipe(toRecipe(() -> scanner)),
@@ -136,15 +134,15 @@ class JodaTimeScannerTest implements RewriteTest {
           )
         );
         // The local variable dt is unsafe due to class var datetime.
-        assertEquals(2, scanner.getUnsafeVars().size());
-        for (J.VariableDeclarations.NamedVariable var : scanner.getUnsafeVars()) {
+        assertEquals(2, scanner.getAcc().getUnsafeVars().size());
+        for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
             assertTrue(var.getSimpleName().equals("dateTime") || var.getSimpleName().equals("dt"));
         }
     }
 
     @Test
     void localVarUsedReferencedInReturnStatement() { // not supported yet
-        JodaTimeScanner scanner = new JodaTimeScanner(new HashSet<>());
+        JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
         // language=java
         rewriteRun(
           spec -> spec.recipe(toRecipe(() -> scanner)),
@@ -169,9 +167,40 @@ class JodaTimeScannerTest implements RewriteTest {
           )
         );
         // The local variable dt used in return statement.
-        assertEquals(2, scanner.getUnsafeVars().size());
-        for (J.VariableDeclarations.NamedVariable var : scanner.getUnsafeVars()) {
+        assertEquals(2, scanner.getAcc().getUnsafeVars().size());
+        for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
             assertTrue(var.getSimpleName().equals("dtz") || var.getSimpleName().equals("dt"));
+        }
+    }
+
+    @Test
+    void unsafeMethodParam() {
+        JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
+        // language=java
+        rewriteRun(
+          spec -> spec.recipe(toRecipe(() -> scanner)),
+          java(
+            """
+               import org.joda.time.DateTime;
+
+              class A {
+                  public void foo() {
+                      new Bar().bar(new DateTime());
+                  }
+
+                  private static class Bar {
+                      public void bar(DateTime dt) {
+                          dt.toDateMidnight();
+                      }
+                  }
+              }
+              """
+          )
+        );
+        // The bar method parameter dt is unsafe because migration of toDateMidnight() is not yet implemented.
+        assertEquals(1, scanner.getAcc().getUnsafeVars().size());
+        for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
+            assertEquals("dt", var.getSimpleName());
         }
     }
 }

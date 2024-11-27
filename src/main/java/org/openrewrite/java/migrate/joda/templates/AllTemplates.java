@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.joda.templates;
 
 import lombok.Value;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.MethodCall;
 
 import java.util.ArrayList;
@@ -39,7 +38,7 @@ public class AllTemplates {
     private static final MethodMatcher ANY_ABSTRACT_DATE_TIME = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " *(..)");
     private static final MethodMatcher ANY_ABSTRACT_DURATION = new MethodMatcher(JODA_ABSTRACT_DURATION + " *(..)");
     private static final MethodMatcher ANY_INSTANT = new MethodMatcher(JODA_INSTANT + " *(..)");
-    private static final MethodMatcher ANY_NEW_INSTANT = new MethodMatcher(JODA_INSTANT +  "<constructor>(..)");
+    private static final MethodMatcher ANY_NEW_INSTANT = new MethodMatcher(JODA_INSTANT + "<constructor>(..)");
 
     private static List<MatcherAndTemplates> templates = new ArrayList<MatcherAndTemplates>() {
         {
@@ -59,15 +58,9 @@ public class AllTemplates {
         }
     };
 
-    public static MethodTemplate getTemplate(J.MethodInvocation method) {
+    public static MethodTemplate getTemplate(MethodCall method) {
         return getTemplateGroup(method).flatMap(templates -> templates.getTemplates().stream()
                 .filter(template -> template.getMatcher().matches(method) && templates.matchesMethodCall(method, template))
-                .findFirst()).orElse(null);
-    }
-
-    public static MethodTemplate getTemplate(J.NewClass newClass) {
-        return getTemplateGroup(newClass).flatMap(templates -> templates.getTemplates().stream()
-                .filter(template -> template.getMatcher().matches(newClass) && templates.matchesMethodCall(newClass, template))
                 .findFirst()).orElse(null);
     }
 

@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jspecify;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -82,6 +83,21 @@ class MigrateToJspecifyTest implements RewriteTest {
                     }
                   }
                   """
+              ),
+              // package-info.java
+              java(
+                """
+                  @ParametersAreNonnullByDefault
+                  package org.openrewrite.example;
+
+                  import javax.annotation.ParametersAreNonnullByDefault;
+                  """,
+                """
+                  @NullMarked
+                  package org.openrewrite.example;
+
+                  import org.jspecify.annotation.NullMarked;
+                  """
               )
             ),
             //language=xml
@@ -136,7 +152,7 @@ class MigrateToJspecifyTest implements RewriteTest {
                 """
                   import jakarta.annotation.Nonnull;
                   import jakarta.annotation.Nullable;
-                  
+
                   public class Test {
                       @Nonnull
                       public String field1;
@@ -145,7 +161,7 @@ class MigrateToJspecifyTest implements RewriteTest {
                       @Nullable
                       public Foo.Bar foobar;
                   }
-                  
+
                   interface Foo {
                     class Bar {
                       @Nonnull
@@ -156,16 +172,16 @@ class MigrateToJspecifyTest implements RewriteTest {
                 """
                   import org.jspecify.annotations.NonNull;
                   import org.jspecify.annotations.Nullable;
-                  
+
                   public class Test {
                       @NonNull
                       public String field1;
                       @Nullable
                       public String field2;
-                  
+
                       public Foo.@Nullable Bar foobar;
                   }
-                  
+
                   interface Foo {
                     class Bar {
                       @NonNull
@@ -228,7 +244,7 @@ class MigrateToJspecifyTest implements RewriteTest {
                 """
                   import org.jetbrains.annotations.NotNull;
                   import org.jetbrains.annotations.Nullable;
-                  
+
                   public class Test {
                       @NotNull
                       public String field1;
@@ -237,7 +253,7 @@ class MigrateToJspecifyTest implements RewriteTest {
                       @Nullable
                       public Foo.Bar foobar;
                   }
-                  
+
                   interface Foo {
                     class Bar {
                       @NotNull
@@ -248,16 +264,16 @@ class MigrateToJspecifyTest implements RewriteTest {
                 """
                   import org.jspecify.annotations.NonNull;
                   import org.jspecify.annotations.Nullable;
-                  
+
                   public class Test {
                       @NonNull
                       public String field1;
                       @Nullable
                       public String field2;
-                  
+
                       public Foo.@Nullable Bar foobar;
                   }
-                  
+
                   interface Foo {
                     class Bar {
                       @NonNull
@@ -309,9 +325,13 @@ class MigrateToJspecifyTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/602")
     @Test
     void migrateFromSpringFrameworkAnnotationsToJspecify() {
         rewriteRun(
+          spec -> spec.recipeFromResource(
+            "/META-INF/rewrite/jspecify.yml",
+            "org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations"),
           mavenProject("foo",
             //language=java
             srcMainJava(

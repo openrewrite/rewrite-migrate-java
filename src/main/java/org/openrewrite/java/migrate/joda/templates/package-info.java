@@ -13,16 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.guava;
+@NullMarked
+@NonNullFields
+package org.openrewrite.java.migrate.joda.templates;
 
-import org.jspecify.annotations.Nullable;
-
-public class NoGuavaImmutableSetOf extends AbstractNoGuavaImmutableOf {
-    public NoGuavaImmutableSetOf() {
-        super("com.google.common.collect.ImmutableSet", "java.util.Set");
-    }
-
-    public NoGuavaImmutableSetOf(@Nullable Boolean convertReturnType) {
-        super("com.google.common.collect.ImmutableSet", "java.util.Set", convertReturnType);
-    }
-}
+import org.jspecify.annotations.NullMarked;
+import org.openrewrite.internal.lang.NonNullFields;

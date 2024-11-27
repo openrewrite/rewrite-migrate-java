@@ -47,6 +47,11 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
   - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
   - org.openrewrite.java.migrate.UpgradePluginsForJava17
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.google.inject
+      artifactId: guice
+      newVersion: 5.x
+  - org.openrewrite.java.migrate.AddLombokMapstructBinding
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -155,7 +160,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedZipFinalizeMethods
 displayName: Replace `finalize` method in `java.util.zip.ZipFile`, `java.util.zip.Inflater` and `java.util.zip.Deflater`
 description: >-
-  The `finalize` method in `java.util.zip.ZipFile` is replaced with the `close` method and is replaced by the `end` method in 
+  The `finalize` method in `java.util.zip.ZipFile` is replaced with the `close` method and is replaced by the `end` method in
    `java.util.zip.Inflater` and `java.util.zip.Deflater` as it is no longer available in Java SE 12 and later.
 tags:
   - java17
@@ -177,8 +182,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
 displayName: Replace `SSLSession.getPeerCertificateChain()` method
 description: >-
-  The `javax.net.ssl.SSLSession.getPeerCertificateChain()` method implementation was removed from the SunJSSE provider and HTTP client implementation in Java SE 15. 
-  The default implementation will now throw an `UnsupportedOperationException`. 
+  The `javax.net.ssl.SSLSession.getPeerCertificateChain()` method implementation was removed from the SunJSSE provider and HTTP client implementation in Java SE 15.
+  The default implementation will now throw an `UnsupportedOperationException`.
   Applications using this method should be updated to use the `javax.net.ssl.SSLSession.getPeerCertificates()` method instead.
 tags:
   - java17
@@ -222,7 +227,7 @@ description: >-
 tags:
   - java17
 recipeList:
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: 'java.lang.Thread countStackFrames()'
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -272,12 +277,42 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
 displayName: Remove `Runtime.traceInstructions(boolean)` and `Runtime.traceMethodCalls` methods
 description: >-
-  The `traceInstructions` and `traceMethodCalls` methods in `java.lang.Runtime` were deprecated in Java SE 9 and are no longer available in Java SE 13 and later. 
+  The `traceInstructions` and `traceMethodCalls` methods in `java.lang.Runtime` were deprecated in Java SE 9 and are no longer available in Java SE 13 and later.
   The recipe removes the invocations of these methods since the method invocations do nothing functionally.
 tags:
   - java17
 recipeList:
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: 'java.lang.Runtime traceInstructions(boolean)'
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: 'java.lang.Runtime traceMethodCalls(boolean)'
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.AddLombokMapstructBinding
+displayName: Add `lombok-mapstruct-binding` when both MapStruct and Lombok are used
+description: Add the `lombok-mapstruct-binding` annotation processor as needed when both MapStruct and Lombok are used.
+tags:
+  - java17
+preconditions:
+  - org.openrewrite.java.dependencies.DependencyInsight:
+      groupIdPattern: org.projectlombok
+      artifactIdPattern: lombok
+  - org.openrewrite.java.dependencies.DependencyInsight:
+      groupIdPattern: org.mapstruct
+      artifactIdPattern: mapstruct
+recipeList:
+  - org.openrewrite.gradle.AddDependency:
+      groupId: org.projectlombok
+      artifactId: lombok-mapstruct-binding
+      version: 0.2.0
+      configuration: annotationProcessor
+      acceptTransitive: false
+  - org.openrewrite.maven.AddDependency:
+      groupId: org.projectlombok
+      artifactId: lombok-mapstruct-binding
+      version: 0.2.0
+      acceptTransitive: false
+  - org.openrewrite.maven.AddAnnotationProcessor:
+      groupId: org.projectlombok
+      artifactId: lombok-mapstruct-binding
+      version: 0.2.0

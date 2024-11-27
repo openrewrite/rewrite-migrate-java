@@ -20,7 +20,6 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.SourceSpec;
 
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
@@ -123,74 +122,64 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
     }
 
     @Test
-    void overrideRemoteParent() {
+    void updateLocalParent() {
         rewriteRun(
-          //language=xml
-          pomXml(
-            """
-              <project>
-                  <groupId>com.example</groupId>
-                  <artifactId>example-parent</artifactId>
-                  <version>1.0.0</version>
-                  <modelVersion>4.0</modelVersion>
-                  <properties>
-                      <java.version>11</java.version>
-                      <jdk.version>11</jdk.version>
-                      <javaVersion>11</javaVersion>
-                      <jdkVersion>11</jdkVersion>
-                      <maven.compiler.source>11</maven.compiler.source>
-                      <maven.compiler.target>11</maven.compiler.target>
-                      <maven.compiler.release>11</maven.compiler.release>
-                      <release.version>11</release.version>
-                  </properties>
-              </project>
-              """,
-            SourceSpec::skip),
-          mavenProject("example-child",
             //language=xml
             pomXml(
-              """
+                """
+                  <project>
+                      <groupId>com.example</groupId>
+                      <artifactId>example-parent</artifactId>
+                      <version>1.0.0</version>
+                      <modelVersion>4.0</modelVersion>
+                      <properties>
+                          <java.version>11</java.version>
+                          <jdk.version>11</jdk.version>
+                          <javaVersion>11</javaVersion>
+                          <jdkVersion>11</jdkVersion>
+                          <maven.compiler.source>11</maven.compiler.source>
+                          <maven.compiler.target>11</maven.compiler.target>
+                          <maven.compiler.release>11</maven.compiler.release>
+                          <release.version>11</release.version>
+                      </properties>
+                  </project>
+                  """,
+                """
                 <project>
-                    <parent>
-                        <groupId>com.example</groupId>
-                        <artifactId>example-parent</artifactId>
-                        <version>1.0.0</version>
-                        <!-- lookup parent from remote repository -->
-                        <relativePath/>
-                    </parent>
                     <groupId>com.example</groupId>
-                    <artifactId>example-child</artifactId>
-                    <version>1.0.0</version>
-                    <modelVersion>4.0</modelVersion>
-                </project>
-                """,
-              """
-                <project>
-                    <parent>
-                        <groupId>com.example</groupId>
-                        <artifactId>example-parent</artifactId>
-                        <version>1.0.0</version>
-                        <!-- lookup parent from remote repository -->
-                        <relativePath/>
-                    </parent>
-                    <groupId>com.example</groupId>
-                    <artifactId>example-child</artifactId>
+                    <artifactId>example-parent</artifactId>
                     <version>1.0.0</version>
                     <modelVersion>4.0</modelVersion>
                     <properties>
                         <java.version>17</java.version>
-                        <javaVersion>17</javaVersion>
                         <jdk.version>17</jdk.version>
+                        <javaVersion>17</javaVersion>
                         <jdkVersion>17</jdkVersion>
-                        <maven.compiler.release>17</maven.compiler.release>
                         <maven.compiler.source>17</maven.compiler.source>
                         <maven.compiler.target>17</maven.compiler.target>
+                        <maven.compiler.release>17</maven.compiler.release>
                         <release.version>17</release.version>
                     </properties>
                 </project>
-                """
+                """),
+            mavenProject("example-child",
+                //language=xml
+                pomXml(
+                    """
+                      <project>
+                          <parent>
+                              <groupId>com.example</groupId>
+                              <artifactId>example-parent</artifactId>
+                              <version>1.0.0</version>
+                          </parent>
+                          <groupId>com.example</groupId>
+                          <artifactId>example-child</artifactId>
+                          <version>1.0.0</version>
+                          <modelVersion>4.0</modelVersion>
+                      </project>
+                      """
+                )
             )
-          )
         );
     }
 
@@ -270,7 +259,7 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                   <version>3.3.3</version>
                   <relativePath/> <!-- lookup parent from repository -->
                 </parent>
-              
+
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
@@ -295,7 +284,7 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                   <version>3.3.3</version>
                   <relativePath/> <!-- lookup parent from repository -->
                 </parent>
-              
+
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
@@ -311,7 +300,7 @@ class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
                   <version>3.3.3</version>
                   <relativePath/> <!-- lookup parent from repository -->
                 </parent>
-              
+
                 <groupId>com.mycompany.app</groupId>
                 <artifactId>my-app</artifactId>
                 <version>1</version>
