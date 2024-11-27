@@ -84,7 +84,7 @@ class MigrateToJspecifyTest implements RewriteTest {
                   }
                   """
               ),
-              // package-info.java
+              //language=java
               java(
                 """
                   @ParametersAreNonnullByDefault
@@ -96,8 +96,9 @@ class MigrateToJspecifyTest implements RewriteTest {
                   @NullMarked
                   package org.openrewrite.example;
 
-                  import org.jspecify.annotation.NullMarked;
-                  """
+                  import org.jspecify.annotations.NullMarked;
+                  """,
+                spec -> spec.path("src/main/java/org/openrewrite/example/package-info.java")
               )
             ),
             //language=xml
