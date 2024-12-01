@@ -19,6 +19,7 @@ import lombok.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.JavadocVisitor;
 import org.openrewrite.java.migrate.joda.templates.AllTemplates;
 import org.openrewrite.java.migrate.joda.templates.MethodTemplate;
 import org.openrewrite.java.migrate.joda.templates.TimeClassMap;
@@ -41,6 +42,19 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         super(scopes);
         this.acc = acc;
         this.safeMigration = safeMigration;
+    }
+    
+    @Override
+    protected JavadocVisitor<ExecutionContext> getJavadocVisitor() {
+        return new JavadocVisitor<ExecutionContext>(this) {
+            /**
+             * Do not visit the method referenced from the Javadoc, may cause recipe to fail.
+             */
+            @Override
+            public Javadoc visitReference(Javadoc.Reference reference, ExecutionContext ctx) {
+                return reference;
+            }
+        };
     }
 
     @Override
@@ -70,17 +84,17 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
 
     @Override
     public @NonNull J visitVariableDeclarations(@NonNull J.VariableDeclarations multiVariable, @NonNull ExecutionContext ctx) {
-        if (!multiVariable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+        if (multiVariable.getTypeExpression() == null || !multiVariable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return super.visitVariableDeclarations(multiVariable, ctx);
         }
         if (multiVariable.getVariables().stream().anyMatch(acc.getUnsafeVars()::contains)) {
             return multiVariable;
         }
-        multiVariable = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
-        return VarTemplates.getTemplate(multiVariable).apply(
-                updateCursor(multiVariable),
-                multiVariable.getCoordinates().replace(),
-                VarTemplates.getTemplateArgs(multiVariable));
+        J.VariableDeclarations m = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
+        return VarTemplates.getTemplate(multiVariable).<J>map(t -> t.apply(
+                updateCursor(m),
+                m.getCoordinates().replace(),
+                VarTemplates.getTemplateArgs(m))).orElse(multiVariable);
     }
 
     @Override
@@ -111,11 +125,11 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         if (!mayBeVar.isPresent() || acc.getUnsafeVars().contains(mayBeVar.get())) {
             return assignment;
         }
-        return VarTemplates.getTemplate(a).apply(
+        return VarTemplates.getTemplate(assignment).<J>map(t -> t.apply(
                 updateCursor(a),
                 a.getCoordinates().replace(),
                 varName,
-                a.getAssignment());
+                a.getAssignment())).orElse(assignment);
     }
 
     @Override
