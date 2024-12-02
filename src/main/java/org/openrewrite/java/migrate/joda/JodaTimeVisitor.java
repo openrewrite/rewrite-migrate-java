@@ -43,7 +43,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         this.acc = acc;
         this.safeMigration = safeMigration;
     }
-    
+
     @Override
     protected JavadocVisitor<ExecutionContext> getJavadocVisitor() {
         return new JavadocVisitor<ExecutionContext>(this) {

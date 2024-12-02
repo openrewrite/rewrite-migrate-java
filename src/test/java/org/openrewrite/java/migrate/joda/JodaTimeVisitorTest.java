@@ -733,7 +733,7 @@ class JodaTimeVisitorTest implements RewriteTest {
           )
         );
     }
-    
+
     @Test
     void lambdaVarDeclaration() {
         //language=java
@@ -775,7 +775,7 @@ class JodaTimeVisitorTest implements RewriteTest {
           )
         );
     }
-    
+
     @Test
     void unhandledVarDeclaration() {
         //language=java
