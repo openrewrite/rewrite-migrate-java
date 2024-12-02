@@ -22,7 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
+class IllegalArgumentExceptionToAlreadyConnectedExceptionTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -36,41 +36,37 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
           //language=java
           java(
             """
-              import java.lang.annotation.*;
-              import java.util.*;
+              import java.nio.ByteBuffer;
+              import java.net.SocketAddress;
+              import java.nio.channels.DatagramChannel;
 
               public class Test {
-                  public void testMethod() {
+                  public void sendData() {
                       try {
-                          Object o = "test";
-                          o.getClass().getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
+                          DatagramChannel channel = DatagramChannel.open();
+                          channel.send(ByteBuffer.allocate(1024), new java.net.InetSocketAddress("localhost", 8080));
+                      } catch (IllegalArgumentException e) {
                           System.out.println("Caught Exception");
-                      }
-                      try {
-                          Object.class.getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
-                          System.out.println("Caught ArrayStoreException");
+                      } catch (IllegalArgumentException e) {
+                          throw new IllegalArgumentException("DatagramChannel already connected to a different address");
                       }
                   }
               }
               """,
             """
-              import java.lang.annotation.*;
-              import java.util.*;
+              import java.nio.ByteBuffer;
+              import java.net.SocketAddress;
+              import java.nio.channels.DatagramChannel;
 
               public class Test {
-                  public void testMethod() {
+                  public void sendData() {
                       try {
-                          Object o = "test";
-                          o.getClass().getAnnotation(Override.class);
-                      } catch (TypeNotPresentException e) {
+                          DatagramChannel channel = DatagramChannel.open();
+                          channel.send(ByteBuffer.allocate(1024), new java.net.InetSocketAddress("localhost", 8080));
+                      } catch (AlreadyConnectedException e) {
                           System.out.println("Caught Exception");
-                      }
-                      try {
-                          Object.class.getAnnotation(Override.class);
-                      } catch (TypeNotPresentException e) {
-                          System.out.println("Caught ArrayStoreException");
+                      } catch (AlreadyConnectedException e) {
+                          throw new AlreadyConnectedException("DatagramChannel already connected to a different address");
                       }
                   }
               }
@@ -85,12 +81,16 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
           //language=java
           java(
             """
+              import java.io.IOException;import java.nio.ByteBuffer;
+              import java.net.SocketAddress;
+              import java.nio.channels.DatagramChannel;
+
               public class Test {
-                  public void testMethod() {
+                  public void sendData() {
                       try {
-                          Object o = "test";
-                          o.getClass().getAnnotation(Override.class);
-                      } catch (NullPointerException e) {
+                          DatagramChannel channel = DatagramChannel.open();
+                          channel.send(ByteBuffer.allocate(1024), new java.net.InetSocketAddress("localhost", 8080));
+                      } catch (IOException e) {
                           System.out.println("Caught Exception");
                       }
                   }
@@ -101,16 +101,20 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
     }
 
     @Test
-    void retainArrayStoreExceptionWithoutClassGetAnnotation() {
+    void retainIllegalArgumentExceptionWithoutChannelSendAnnotation() {
         rewriteRun(
           //language=java
           java(
             """
+              import java.nio.ByteBuffer;
+              import java.net.SocketAddress;
+              import java.nio.channels.DatagramChannel;
+
               public class Test {
-                  public void testMethod() {
+                  public void sendData() {
                       try {
-                          Object o = "test";
-                      } catch (ArrayStoreException e) {
+                          DatagramChannel channel = DatagramChannel.open();
+                      } catch (IllegalArgumentException e) {
                           System.out.println("Caught Exception");
                       }
                   }

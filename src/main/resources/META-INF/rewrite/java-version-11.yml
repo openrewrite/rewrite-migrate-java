@@ -74,6 +74,7 @@ recipeList:
   - org.openrewrite.java.migrate.ReplaceComSunAWTUtilitiesMethods
   - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
   - org.openrewrite.java.migrate.ArrayStoreExceptionToTypeNotPresentException
+  - org.openrewrite.java.migrate.MethodExceptionReplacerRecipe
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -290,4 +291,20 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.nio.file.Path get(..)
       newMethodName: of
-
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.MethodExceptionReplacerRecipe
+displayName: Replace `javax.security.auth.Policy` with `java.security.Policy`
+description: The `javax.security.auth.Policy` class is not available from Java SE 11 onwards.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.migrate.MethodExceptionReplacerRecipe:
+      methodToExceptionMapping:
+        "java.nio.channels.DatagramChannel send(java.nio.ByteBuffer, java.net.SocketAddress)":
+          "java.lang.IllegalArgumentException": "java.nio.channels.AlreadyConnectedException"
+  - org.openrewrite.java.migrate.MethodExceptionReplacerRecipe:
+      methodToExceptionMapping:
+        "java.lang.Class getAnnotation(java.lang.Class)":
+          "java.lang.ArrayStoreException": "java.lang.TypeNotPresentException"
+---
