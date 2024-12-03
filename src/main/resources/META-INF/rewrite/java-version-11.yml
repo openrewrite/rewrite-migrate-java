@@ -74,7 +74,7 @@ recipeList:
   - org.openrewrite.java.migrate.ReplaceComSunAWTUtilitiesMethods
   - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
   - org.openrewrite.java.migrate.ArrayStoreExceptionToTypeNotPresentException
-  - org.openrewrite.java.migrate.MethodExceptionReplacerRecipe
+  - org.openrewrite.java.migrate.IllegalArgumentExceptionToAlreadyConnectedException
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
