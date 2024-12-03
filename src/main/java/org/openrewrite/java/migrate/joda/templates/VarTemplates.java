@@ -21,6 +21,7 @@ import org.openrewrite.java.tree.JavaType;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
@@ -37,9 +38,12 @@ public class VarTemplates {
         }
     };
 
-    public static JavaTemplate getTemplate(J.VariableDeclarations variable) {
+    public static Optional<JavaTemplate> getTemplate(J.VariableDeclarations variable) {
         JavaType.Class type = (JavaType.Class) variable.getTypeExpression().getType();
         String typeName = JodaToJavaTimeType.get(type.getFullyQualifiedName());
+        if (typeName == null) {
+            return Optional.empty(); // unhandled type
+        }
         StringBuilder template = new StringBuilder();
         String varName;
         try {
@@ -60,19 +64,21 @@ public class VarTemplates {
                 template.append(")}");
             }
         }
-        return JavaTemplate.builder(template.toString())
+        return Optional.of(JavaTemplate.builder(template.toString())
                 .imports(typeName)
-                .build();
+                .build());
     }
 
-    public static JavaTemplate getTemplate(J.Assignment assignment) {
+    public static Optional<JavaTemplate> getTemplate(J.Assignment assignment) {
         JavaType.Class type = (JavaType.Class) assignment.getAssignment().getType();
         JavaType.Class varType = (JavaType.Class) assignment.getVariable().getType();
         String typeName = JodaToJavaTimeType.get(type.getFullyQualifiedName());
         String varTypeName = JodaToJavaTimeType.get(varType.getFullyQualifiedName());
+        if (typeName == null || varTypeName == null) {
+            return Optional.empty(); // unhandled type
+        }
         String template = "#{any(" + varTypeName + ")} = #{any(" + typeName + ")}";
-        return JavaTemplate.builder(template)
-                .build();
+        return Optional.of(JavaTemplate.builder(template).build());
     }
 
     public static Object[] getTemplateArgs(J.VariableDeclarations variable) {
