@@ -39,6 +39,8 @@ public class AllTemplates {
     private static final MethodMatcher ANY_ABSTRACT_DURATION = new MethodMatcher(JODA_ABSTRACT_DURATION + " *(..)");
     private static final MethodMatcher ANY_INSTANT = new MethodMatcher(JODA_INSTANT + " *(..)");
     private static final MethodMatcher ANY_NEW_INSTANT = new MethodMatcher(JODA_INSTANT + "<constructor>(..)");
+    private static final MethodMatcher ANY_NEW_INTERVAL = new MethodMatcher(JODA_INTERVAL + "<constructor>(..)");
+    private static final MethodMatcher ANY_ABSTRACT_INTERVAL = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " *(..)");
 
     private static List<MatcherAndTemplates> templates = new ArrayList<MatcherAndTemplates>() {
         {
@@ -55,6 +57,8 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_DATE_TIMEZONE, new TimeZoneTemplates()));
             add(new MatcherAndTemplates(ANY_INSTANT, new InstantTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_INSTANT, new InstantTemplates()));
+            add(new MatcherAndTemplates(ANY_NEW_INTERVAL, new IntervalTemplates()));
+            add(new MatcherAndTemplates(ANY_ABSTRACT_INTERVAL, new AbstractIntervalTemplates()));
         }
     };
 

@@ -32,7 +32,7 @@ class JodaTimeVisitorTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(toRecipe(() -> new JodaTimeVisitor(new JodaTimeRecipe.Accumulator(), true, new LinkedList<>())))
-          .parser(JavaParser.fromJavaVersion().classpath("joda-time"));
+          .parser(JavaParser.fromJavaVersion().classpath("joda-time", "threeten-extra"));
     }
 
     @DocumentExample
@@ -695,11 +695,11 @@ class JodaTimeVisitorTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              import org.joda.time.Interval;
+              import org.joda.time.PeriodType;
 
               class A {
                   public void foo() {
-                      new Interval(100, 50);
+                      PeriodType.standard();
                   }
               }
               """
@@ -782,11 +782,90 @@ class JodaTimeVisitorTest implements RewriteTest {
         rewriteRun(
           java(
               """
+              import org.joda.time.PeriodType;
+
+              class A {
+                  public void foo(PeriodType periodType) {
+                      periodType = PeriodType.days();
+                  }
+              }
+              """
+          )
+        );
+    }
+    
+    @Test
+    void migrateInterval() {
+        // language=java
+        rewriteRun(
+          java(
+          """
+              import org.joda.time.DateTime;
+              import org.joda.time.Duration;
+              import org.joda.time.Interval;
+              import org.joda.time.DateTimeZone;
+    
+              class A {
+                  public void foo() {
+                      System.out.println(new Interval(50, 100));
+                      System.out.println(new Interval(50, 100, DateTimeZone.UTC));
+                      System.out.println(new Interval(DateTime.now(), DateTime.now().plusDays(1)));
+                      System.out.println(new Interval(DateTime.now(), Duration.standardDays(1)));
+                  }
+              }
+              """,
+            """
+              import org.threeten.extra.Interval;
+
+              import java.time.Duration;
+              import java.time.Instant;
+              import java.time.ZonedDateTime;
+    
+              class A {
+                  public void foo() {
+                      System.out.println(Interval.of(Instant.ofEpochMilli(50), Instant.ofEpochMilli(100)));
+                      System.out.println(Interval.of(Instant.ofEpochMilli(50), Instant.ofEpochMilli(100)));
+                      System.out.println(Interval.of(ZonedDateTime.now().toInstant(), ZonedDateTime.now().plusDays(1).toInstant()));
+                      System.out.println(Interval.of(ZonedDateTime.now().toInstant(), Duration.ofDays(1)));
+                  }
+              }
+              """
+          )
+        );
+    }
+    
+    @Test
+    void migrateAbstractInterval() {
+        // language=java
+        rewriteRun(
+          java(
+          """
+              import org.joda.time.DateTime;
               import org.joda.time.Interval;
 
               class A {
-                  public void foo(Interval interval) {
-                      interval = new Interval(100, 50);
+                  public void foo() {
+                      new Interval(50, 100).getStart();
+                      new Interval(50, 100).getEnd();
+                      new Interval(50, 100).toDuration();
+                      new Interval(50, 100).toDurationMillis();
+                      new Interval(50, 100).contains(75);
+                  }
+              }
+              """,
+            """
+              import org.threeten.extra.Interval;
+
+              import java.time.Instant;
+              import java.time.ZoneId;
+
+              class A {
+                  public void foo() {
+                      Interval.of(Instant.ofEpochMilli(50), Instant.ofEpochMilli(100)).getStart().atZone(ZoneId.systemDefault());
+                      Interval.of(Instant.ofEpochMilli(50), Instant.ofEpochMilli(100)).getEnd().atZone(ZoneId.systemDefault());
+                      Interval.of(Instant.ofEpochMilli(50), Instant.ofEpochMilli(100)).toDuration();
+                      Interval.of(Instant.ofEpochMilli(50), Instant.ofEpochMilli(100)).toDuration().toMillis();
+                      Interval.of(Instant.ofEpochMilli(50), Instant.ofEpochMilli(100)).contains(Instant.ofEpochMilli(75));
                   }
               }
               """

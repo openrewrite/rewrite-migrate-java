@@ -50,6 +50,7 @@ dependencies {
 
     testImplementation("com.google.guava:guava:33.0.0-jre")
     testImplementation("joda-time:joda-time:2.12.3")
+    testImplementation("org.threeten:threeten-extra:1.8.0")
 
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
