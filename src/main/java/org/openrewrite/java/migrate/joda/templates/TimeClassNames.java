@@ -58,7 +58,7 @@ public class TimeClassNames {
     public static final String JAVA_LOCAL_TIME = JAVA_TIME_PKG + ".LocalTime";
     public static final String JAVA_TEMPORAL_ISO_FIELDS = JAVA_TIME_PKG + ".temporal.IsoFields";
     public static final String JAVA_CHRONO_FIELD = JAVA_TIME_PKG + ".temporal.ChronoField";
-    
+
     // ThreeTen-Extra classes
     public static final String THREE_TEN_EXTRA_PKG = "org.threeten.extra";
     public static final String THREE_TEN_EXTRA_INTERVAL = THREE_TEN_EXTRA_PKG + ".Interval";

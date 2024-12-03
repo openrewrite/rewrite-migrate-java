@@ -31,7 +31,7 @@ public class IntervalTemplates implements Templates {
     private final MethodMatcher intervalWithTimeZone = new MethodMatcher(JODA_INTERVAL + " <constructor>(long, long, " + JODA_DATE_TIME_ZONE + ")");
     private final MethodMatcher intervalWithDateTime = new MethodMatcher(JODA_INTERVAL + " <constructor>(" + JODA_READABLE_INSTANT + ", " + JODA_READABLE_INSTANT + ")");
     private final MethodMatcher intervalWithDateTimeAndDuration = new MethodMatcher(JODA_INTERVAL + " <constructor>(" + JODA_READABLE_INSTANT + ", " + JODA_READABLE_DURATION + ")");
-    
+
     private final JavaTemplate intervalTemplate = JavaTemplate.builder("Interval.of(Instant.ofEpochMilli(#{any(long)}), Instant.ofEpochMilli(#{any(long)}))")
             .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
             .imports(JAVA_INSTANT, THREE_TEN_EXTRA_INTERVAL)
@@ -44,7 +44,7 @@ public class IntervalTemplates implements Templates {
             .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
             .imports(THREE_TEN_EXTRA_INTERVAL)
             .build();
-    
+
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {

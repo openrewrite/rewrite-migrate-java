@@ -31,7 +31,7 @@ public class AbstractIntervalTemplates implements Templates {
     private final MethodMatcher toDuration = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " toDuration()");
     private final MethodMatcher toDurationMillis = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " toDurationMillis()");
     private final MethodMatcher contains = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " contains(long)");
-    
+
     private final JavaTemplate getStartTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.getStart().atZone(ZoneId.systemDefault())")
             .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
             .imports(JAVA_ZONE_ID)
@@ -50,7 +50,7 @@ public class AbstractIntervalTemplates implements Templates {
             .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
             .imports(JAVA_INSTANT)
             .build();
-    
+
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {

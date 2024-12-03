@@ -793,7 +793,7 @@ class JodaTimeVisitorTest implements RewriteTest {
           )
         );
     }
-    
+
     @Test
     void migrateInterval() {
         // language=java
@@ -833,7 +833,7 @@ class JodaTimeVisitorTest implements RewriteTest {
           )
         );
     }
-    
+
     @Test
     void migrateAbstractInterval() {
         // language=java
