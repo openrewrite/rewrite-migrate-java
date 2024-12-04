@@ -65,6 +65,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         maybeRemoveImport(JODA_DURATION);
         maybeRemoveImport(JODA_ABSTRACT_INSTANT);
         maybeRemoveImport(JODA_INSTANT);
+        maybeRemoveImport(JODA_INTERVAL);
         maybeRemoveImport("java.util.Locale");
 
         maybeAddImport(JAVA_DATE_TIME);
@@ -79,6 +80,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         maybeAddImport(JAVA_TEMPORAL_ISO_FIELDS);
         maybeAddImport(JAVA_CHRONO_FIELD);
         maybeAddImport(JAVA_UTIL_DATE);
+        maybeAddImport(THREE_TEN_EXTRA_INTERVAL);
         return super.visitCompilationUnit(cu, ctx);
     }
 
@@ -168,9 +170,11 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         if (!isJodaVarRef(ident)) {
             return super.visitIdentifier(ident, ctx);
         }
-        Optional<NamedVariable> mayBeVar = findVarInScope(ident.getSimpleName());
-        if (!mayBeVar.isPresent() || acc.getUnsafeVars().contains(mayBeVar.get())) {
-            return ident;
+        if (this.safeMigration) {
+            Optional<NamedVariable> mayBeVar = findVarInScope(ident.getSimpleName());
+            if (!mayBeVar.isPresent() || acc.getUnsafeVars().contains(mayBeVar.get())) {
+                return ident;
+            }
         }
 
         JavaType.FullyQualified jodaType = ((JavaType.Class) ident.getType());

@@ -35,6 +35,7 @@ public class TimeClassMap {
             put(JODA_TIME_FORMATTER, javaTypeClass(JAVA_TIME_FORMATTER, object));
             put(JODA_DURATION, javaTypeClass(JAVA_DURATION, object));
             put(JODA_READABLE_DURATION, javaTypeClass(JAVA_DURATION, object));
+            put(JODA_INTERVAL, javaTypeClass(THREE_TEN_EXTRA_INTERVAL, object));
         }
     };
 

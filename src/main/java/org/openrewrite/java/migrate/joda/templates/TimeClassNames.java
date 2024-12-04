@@ -27,6 +27,7 @@ public class TimeClassNames {
     public static final String JODA_TIME_PKG = "org.joda.time";
     public static final String JODA_ABSTRACT_DATE_TIME = JODA_TIME_PKG + ".base.AbstractDateTime";
     public static final String JODA_ABSTRACT_DURATION = JODA_TIME_PKG + ".base.AbstractDuration";
+    public static final String JODA_ABSTRACT_INTERVAL = JODA_TIME_PKG + ".base.AbstractInterval";
     public static final String JODA_BASE_DATE_TIME = JODA_TIME_PKG + ".base.BaseDateTime";
     public static final String JODA_DATE_TIME = JODA_TIME_PKG + ".DateTime";
     public static final String JODA_DATE_TIME_ZONE = JODA_TIME_PKG + ".DateTimeZone";
@@ -39,7 +40,9 @@ public class TimeClassNames {
     public static final String JODA_DURATION = JODA_TIME_PKG + ".Duration";
     public static final String JODA_READABLE_DURATION = JODA_TIME_PKG + ".ReadableDuration";
     public static final String JODA_ABSTRACT_INSTANT = JODA_TIME_PKG + ".base.AbstractInstant";
+    public static final String JODA_READABLE_INSTANT = JODA_TIME_PKG + ".ReadableInstant";
     public static final String JODA_INSTANT = JODA_TIME_PKG + ".Instant";
+    public static final String JODA_INTERVAL = JODA_TIME_PKG + ".Interval";
 
     // Java Time classes
     public static final String JAVA_TIME_PKG = "java.time";
@@ -55,4 +58,8 @@ public class TimeClassNames {
     public static final String JAVA_LOCAL_TIME = JAVA_TIME_PKG + ".LocalTime";
     public static final String JAVA_TEMPORAL_ISO_FIELDS = JAVA_TIME_PKG + ".temporal.IsoFields";
     public static final String JAVA_CHRONO_FIELD = JAVA_TIME_PKG + ".temporal.ChronoField";
+
+    // ThreeTen-Extra classes
+    public static final String THREE_TEN_EXTRA_PKG = "org.threeten.extra";
+    public static final String THREE_TEN_EXTRA_INTERVAL = THREE_TEN_EXTRA_PKG + ".Interval";
 }
