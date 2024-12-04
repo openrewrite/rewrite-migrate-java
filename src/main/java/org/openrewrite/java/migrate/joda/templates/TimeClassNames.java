@@ -39,10 +39,12 @@ public class TimeClassNames {
     public static final String JODA_DURATION_FIELD_TYPE = JODA_TIME_PKG + ".DurationFieldType";
     public static final String JODA_DURATION = JODA_TIME_PKG + ".Duration";
     public static final String JODA_READABLE_DURATION = JODA_TIME_PKG + ".ReadableDuration";
+    public static final String JODA_BASE_DURATION = JODA_TIME_PKG + ".base.BaseDuration";
     public static final String JODA_ABSTRACT_INSTANT = JODA_TIME_PKG + ".base.AbstractInstant";
     public static final String JODA_READABLE_INSTANT = JODA_TIME_PKG + ".ReadableInstant";
     public static final String JODA_INSTANT = JODA_TIME_PKG + ".Instant";
     public static final String JODA_INTERVAL = JODA_TIME_PKG + ".Interval";
+    public static final String JODA_BASE_INTERVAL = JODA_TIME_PKG + ".base.BaseInterval";
 
     // Java Time classes
     public static final String JAVA_TIME_PKG = "java.time";

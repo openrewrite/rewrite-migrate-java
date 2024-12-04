@@ -872,4 +872,66 @@ class JodaTimeVisitorTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void migrateBaseDuration() {
+        // language=java
+        rewriteRun(
+          java(
+            """
+                import org.joda.time.Duration;
+  
+                class A {
+                    public void foo() {
+                        Duration d = new Duration(100);
+                        d.getMillis();
+                    }
+                }
+                """,
+            """
+              import java.time.Duration;
+
+              class A {
+                  public void foo() {
+                      Duration d = Duration.ofMillis(100);
+                      d.toMillis();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void migrateBaseInterval() {
+        // language=java
+        rewriteRun(
+          java(
+            """
+                import org.joda.time.Interval;
+  
+                class A {
+                    public void foo() {
+                        Interval i = new Interval(50, 100);
+                        long s = i.getStartMillis();
+                        long e = i.getEndMillis();
+                    }
+                }
+                """,
+            """
+              import org.threeten.extra.Interval;
+
+              import java.time.Instant;
+
+              class A {
+                  public void foo() {
+                      Interval i = Interval.of(Instant.ofEpochMilli(50), Instant.ofEpochMilli(100));
+                      long s = i.getStart().toEpochMilli();
+                      long e = i.getEnd().toEpochMilli();
+                  }
+              }
+              """
+          )
+        );
+    }
 }
