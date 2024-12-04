@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.joda;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -31,6 +32,8 @@ class NoJodaTimeTest implements RewriteTest {
           .recipeFromResource("/META-INF/rewrite/no-joda-time.yml", "org.openrewrite.java.migrate.joda.NoJodaTime")
           .parser(JavaParser.fromJavaVersion().classpath("joda-time", "threeten-extra"));
     }
+
+    @DocumentExample
     @Test
     void migrateJodaTime() {
         rewriteRun(
@@ -39,32 +42,32 @@ class NoJodaTimeTest implements RewriteTest {
               // language=java
               java(
                 """
-                import org.joda.time.DateTime;
-                import org.joda.time.Interval;
-                
-                public class A {
-                    public void foo() {
-                        DateTime dt = new DateTime();
-                        DateTime dt1 = new DateTime().plusDays(1);
-                        Interval i = new Interval(dt, dt1);
-                        System.out.println(i.toDuration());
-                    }
-                }
-                """,
-                """
-                import org.threeten.extra.Interval;
+                  import org.joda.time.DateTime;
+                  import org.joda.time.Interval;
 
-                import java.time.ZonedDateTime;
-
-                public class A {
-                    public void foo() {
-                        ZonedDateTime dt = ZonedDateTime.now();
-                        ZonedDateTime dt1 = ZonedDateTime.now().plusDays(1);
-                        Interval i = Interval.of(dt.toInstant(), dt1.toInstant());
-                        System.out.println(i.toDuration());
-                    }
-                }
+                  class A {
+                      void foo() {
+                          DateTime dt = new DateTime();
+                          DateTime dt1 = new DateTime().plusDays(1);
+                          Interval i = new Interval(dt, dt1);
+                          System.out.println(i.toDuration());
+                      }
+                  }
+                  """,
                 """
+                  import org.threeten.extra.Interval;
+
+                  import java.time.ZonedDateTime;
+
+                  class A {
+                      void foo() {
+                          ZonedDateTime dt = ZonedDateTime.now();
+                          ZonedDateTime dt1 = ZonedDateTime.now().plusDays(1);
+                          Interval i = Interval.of(dt.toInstant(), dt1.toInstant());
+                          System.out.println(i.toDuration());
+                      }
+                  }
+                  """
               ),
               //language=xml
               pomXml(
