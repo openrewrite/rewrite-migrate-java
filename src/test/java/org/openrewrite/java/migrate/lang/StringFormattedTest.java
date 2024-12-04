@@ -27,7 +27,7 @@ import static org.openrewrite.java.Assertions.version;
 class StringFormattedTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new StringFormatted());
+        spec.recipe(new StringFormatted(null));
     }
 
     @Test
@@ -72,12 +72,36 @@ class StringFormattedTest implements RewriteTest {
                 class A {
                     String str = String.format("foo"
                             + "%s", "a");
-                }""", """
+                }
+                """,
+              """
                 package com.example.app;
                 class A {
                     String str = ("foo"
                             + "%s").formatted("a");
-                }"""
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/616")
+    @Test
+    void concatenatedFormatStringNotConvertedIfIndicated() {
+        //language=java
+        rewriteRun(
+          spec -> spec.recipe(new StringFormatted(false)),
+          version(
+            java(
+              """
+                package com.example.app;
+                class A {
+                    String str = String.format("foo"
+                            + "%s", "a");
+                }
+                """
             ),
             17
           )
@@ -92,10 +116,10 @@ class StringFormattedTest implements RewriteTest {
             java(
               """
                 package com.example.app;
-                
+
                 class A {
                     String str = String.format(getTemplateString(), "a");
-                
+
                     private String getTemplateString() {
                         return "foo %s";
                     }
@@ -103,10 +127,10 @@ class StringFormattedTest implements RewriteTest {
                 """,
               """
                 package com.example.app;
-                
+
                 class A {
                     String str = getTemplateString().formatted("a");
-                
+
                     private String getTemplateString() {
                         return "foo %s";
                     }
