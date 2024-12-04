@@ -26,7 +26,7 @@ class IllegalArgumentExceptionToAlreadyConnectedExceptionTest implements Rewrite
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.MethodExceptionReplacerRecipe");
+        spec.recipe(new IllegalArgumentExceptionToAlreadyConnectedException());
     }
 
     @DocumentExample
