@@ -28,7 +28,6 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.Java8toJava11
   - org.openrewrite.java.migrate.UpgradeBuildToJava17
-  - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.staticanalysis.AddSerialAnnotationToSerialVersionUID
   - org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
@@ -36,6 +35,8 @@ recipeList:
   - org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
   - org.openrewrite.java.migrate.lang.UseTextBlocks:
       convertStringsWithoutNewlines: false
+  - org.openrewrite.java.migrate.lang.StringFormatted:
+      addParentheses: false
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
   - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
   - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
