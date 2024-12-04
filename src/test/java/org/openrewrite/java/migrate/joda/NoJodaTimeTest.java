@@ -23,7 +23,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-public class NoJodaTimeTest implements RewriteTest {
+class NoJodaTimeTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
