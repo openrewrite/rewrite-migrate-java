@@ -170,9 +170,11 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         if (!isJodaVarRef(ident)) {
             return super.visitIdentifier(ident, ctx);
         }
-        Optional<NamedVariable> mayBeVar = findVarInScope(ident.getSimpleName());
-        if (!mayBeVar.isPresent() || acc.getUnsafeVars().contains(mayBeVar.get())) {
-            return ident;
+        if (this.safeMigration) {
+            Optional<NamedVariable> mayBeVar = findVarInScope(ident.getSimpleName());
+            if (!mayBeVar.isPresent() || acc.getUnsafeVars().contains(mayBeVar.get())) {
+                return ident;
+            }
         }
 
         JavaType.FullyQualified jodaType = ((JavaType.Class) ident.getType());

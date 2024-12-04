@@ -33,15 +33,15 @@ public class IntervalTemplates implements Templates {
     private final MethodMatcher intervalWithDateTimeAndDuration = new MethodMatcher(JODA_INTERVAL + " <constructor>(" + JODA_READABLE_INSTANT + ", " + JODA_READABLE_DURATION + ")");
 
     private final JavaTemplate intervalTemplate = JavaTemplate.builder("Interval.of(Instant.ofEpochMilli(#{any(long)}), Instant.ofEpochMilli(#{any(long)}))")
-            .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
+            .javaParser(JavaParser.fromJavaVersion().classpath("threeten"))
             .imports(JAVA_INSTANT, THREE_TEN_EXTRA_INTERVAL)
             .build();
     private final JavaTemplate intervalWithDateTimeTemplate = JavaTemplate.builder("Interval.of(#{any(" + JAVA_DATE_TIME + ")}.toInstant(), #{any(" + JAVA_DATE_TIME + ")}.toInstant())")
-            .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
+            .javaParser(JavaParser.fromJavaVersion().classpath("threeten"))
             .imports(THREE_TEN_EXTRA_INTERVAL)
             .build();
     private final JavaTemplate intervalWithDateTimeAndDurationTemplate = JavaTemplate.builder("Interval.of(#{any(" + JAVA_DATE_TIME + ")}.toInstant(), #{any(" + JAVA_DURATION + ")})")
-            .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
+            .javaParser(JavaParser.fromJavaVersion().classpath("threeten"))
             .imports(THREE_TEN_EXTRA_INTERVAL)
             .build();
 

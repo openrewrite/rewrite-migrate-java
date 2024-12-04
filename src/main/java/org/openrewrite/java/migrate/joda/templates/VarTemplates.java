@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.joda.templates;
 
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -66,8 +67,9 @@ public class VarTemplates {
             }
         }
         return Optional.of(JavaTemplate.builder(template.toString())
-                .imports(typeName)
-                .build());
+          .imports(typeName)
+          .javaParser(JavaParser.fromJavaVersion().classpath("threeten"))
+          .build());
     }
 
     public static Optional<JavaTemplate> getTemplate(J.Assignment assignment) {
