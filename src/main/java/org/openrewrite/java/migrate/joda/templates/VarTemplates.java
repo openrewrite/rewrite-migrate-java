@@ -68,7 +68,7 @@ public class VarTemplates {
         }
         return Optional.of(JavaTemplate.builder(template.toString())
           .imports(typeName)
-          .javaParser(JavaParser.fromJavaVersion().classpath("threeten"))
+          .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
           .build());
     }
 

@@ -34,6 +34,7 @@ public class AllTemplates {
     private static final MethodMatcher ANY_TIME_FORMATTER = new MethodMatcher(JODA_TIME_FORMATTER + " *(..)");
     private static final MethodMatcher ANY_NEW_DURATION = new MethodMatcher(JODA_DURATION + "<constructor>(..)");
     private static final MethodMatcher ANY_DURATION = new MethodMatcher(JODA_DURATION + " *(..)");
+    private static final MethodMatcher ANY_BASE_DURATION = new MethodMatcher(JODA_BASE_DURATION + " *(..)");
     private static final MethodMatcher ANY_ABSTRACT_INSTANT = new MethodMatcher(JODA_ABSTRACT_INSTANT + " *(..)");
     private static final MethodMatcher ANY_ABSTRACT_DATE_TIME = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " *(..)");
     private static final MethodMatcher ANY_ABSTRACT_DURATION = new MethodMatcher(JODA_ABSTRACT_DURATION + " *(..)");
@@ -41,6 +42,7 @@ public class AllTemplates {
     private static final MethodMatcher ANY_NEW_INSTANT = new MethodMatcher(JODA_INSTANT + "<constructor>(..)");
     private static final MethodMatcher ANY_NEW_INTERVAL = new MethodMatcher(JODA_INTERVAL + "<constructor>(..)");
     private static final MethodMatcher ANY_ABSTRACT_INTERVAL = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " *(..)");
+    private static final MethodMatcher ANY_BASE_INTERVAL = new MethodMatcher(JODA_BASE_INTERVAL + " *(..)");
 
     private static List<MatcherAndTemplates> templates = new ArrayList<MatcherAndTemplates>() {
         {
@@ -54,11 +56,13 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_DATE_TIME, new DateTimeTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_DURATION, new DurationTemplates()));
             add(new MatcherAndTemplates(ANY_DURATION, new DurationTemplates()));
+            add(new MatcherAndTemplates(ANY_BASE_DURATION, new BaseDurationTemplates()));
             add(new MatcherAndTemplates(ANY_DATE_TIMEZONE, new TimeZoneTemplates()));
             add(new MatcherAndTemplates(ANY_INSTANT, new InstantTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_INSTANT, new InstantTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_INTERVAL, new IntervalTemplates()));
             add(new MatcherAndTemplates(ANY_ABSTRACT_INTERVAL, new AbstractIntervalTemplates()));
+            add(new MatcherAndTemplates(ANY_BASE_INTERVAL, new BaseIntervalTemplates()));
         }
     };
 
