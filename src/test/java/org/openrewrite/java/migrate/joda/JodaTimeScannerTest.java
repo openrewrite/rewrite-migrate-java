@@ -21,6 +21,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.openrewrite.java.Assertions.java;
@@ -202,5 +203,83 @@ class JodaTimeScannerTest implements RewriteTest {
         for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
             assertEquals("dt", var.getSimpleName());
         }
+    }
+
+    @Test
+    void detectUnsafeVarsInInitializer() {
+        JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
+        // language=java
+        rewriteRun(
+          spec -> spec.recipe(toRecipe(() -> scanner)),
+          java(
+            """
+              import org.joda.time.Interval;
+              import java.util.stream.Collectors;
+              import java.util.stream.Stream;
+              import java.util.List;
+              
+              class A {
+                  public Interval interval() {
+                      return new Interval(10, 20);
+                  }
+              
+                  public void foo() {
+                      List<Integer> list = Stream.of(1, 2, 3).peek(i -> {
+                            Interval i1 = interval();
+                            Interval i2 = new Interval(i, 100);
+                            if (i1 != null && !i1.contains(i2)) {
+                                System.out.println("i1 does not contain i2");
+                            }
+                      }).toList();
+                  }
+              }
+              """
+          )
+        );
+        assertThat(scanner.getAcc().getUnsafeVars().stream().map(J.VariableDeclarations.NamedVariable::getSimpleName))
+          .hasSize(2)
+          .containsExactlyInAnyOrder("i1", "i2");
+    }
+
+    @Test
+    void detectUnsafeVarsInChainedLambdaExpressions() {
+        JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
+        // language=java
+        rewriteRun(
+          spec -> spec.recipe(toRecipe(() -> scanner)),
+          java(
+            """
+              import org.joda.time.Interval;
+              import java.util.stream.Collectors;
+              import java.util.stream.Stream;
+              import java.util.List;
+              
+              class A {
+                  public Interval interval() {
+                      return new Interval(10, 20);
+                  }
+              
+                  public void foo() {
+                      List<Integer> list = Stream.of(1, 2, 3).peek(i -> {
+                            Interval i1 = interval();
+                            Interval i2 = new Interval(i, 100);
+                            if (i1 != null && !i1.contains(i2)) {
+                                System.out.println("i1 does not contain i2");
+                            }
+                      }).peek(i -> {
+                            Interval i3 = interval();
+                            Interval i4 = new Interval(i, 100);
+                            if (i3 != null && !i3.contains(i4)) {
+                                System.out.println("i3 does not contain i4");
+                            }
+                      }).toList();
+                  }
+              }
+              """
+          )
+        );
+        assertThat(scanner.getAcc().getUnsafeVars().stream().map(J.VariableDeclarations.NamedVariable::getSimpleName))
+          .hasSize(4)
+          .containsExactlyInAnyOrder("i1", "i2", "i3", "i4");
     }
 }

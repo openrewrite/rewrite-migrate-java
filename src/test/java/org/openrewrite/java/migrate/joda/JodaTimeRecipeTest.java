@@ -285,4 +285,30 @@ class JodaTimeRecipeTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void dontMigrateMethodInvocationIfSelectExprIsNotMigrated() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+             import org.joda.time.Interval;
+
+             class A {
+                 private Query query = new Query();
+                 public void foo() {
+                     query.interval().getEndMillis();
+                 }
+                 static class Query {
+                     private Interval interval;
+
+                     public Interval interval() {
+                         return interval;
+                     }
+                 }
+             }
+             """
+          )
+        );
+    }
 }
