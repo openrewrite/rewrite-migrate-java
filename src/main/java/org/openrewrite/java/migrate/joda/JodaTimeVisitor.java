@@ -249,6 +249,9 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         if (expr instanceof J.Identifier) {
             return ((J.Identifier) expr).getFieldType() != null;
         }
+        if (expr instanceof MethodCall) {
+            return expr.getType().isAssignableFrom(JODA_CLASS_PATTERN);
+        }
         return false;
     }
 
