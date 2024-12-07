@@ -242,8 +242,7 @@ class JodaTimeScannerTest implements RewriteTest {
     }
 
     @Test
-    // TODO remove when https://github.com/openrewrite/rewrite-analysis/issues/72 is fixed
-    void dataFlowBug() {
+    void detectUnsafeVarsInChainedLambdaExpressions() {
         JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
         // language=java
         rewriteRun(
@@ -280,9 +279,7 @@ class JodaTimeScannerTest implements RewriteTest {
           )
         );
         assertThat(scanner.getAcc().getUnsafeVars().stream().map(J.VariableDeclarations.NamedVariable::getSimpleName))
-          .hasSize(2)
-          // i3 and i4 are also unsafe but there is a bug in the data flow analysis. due to which it
-          // skips the second peek.
-          .containsExactlyInAnyOrder("i1", "i2");
+          .hasSize(4)
+          .containsExactlyInAnyOrder("i1", "i2", "i3", "i4");
     }
 }
