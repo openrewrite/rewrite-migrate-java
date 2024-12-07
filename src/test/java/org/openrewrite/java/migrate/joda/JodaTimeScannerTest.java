@@ -242,7 +242,7 @@ class JodaTimeScannerTest implements RewriteTest {
     }
 
     @Test
-    // remove when https://github.com/openrewrite/rewrite-analysis/issues/72 is fixed
+    // TODO remove when https://github.com/openrewrite/rewrite-analysis/issues/72 is fixed
     void dataFlowBug() {
         JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
         // language=java
