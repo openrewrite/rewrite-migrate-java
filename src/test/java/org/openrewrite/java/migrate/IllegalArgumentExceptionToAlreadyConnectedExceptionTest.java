@@ -40,8 +40,8 @@ class IllegalArgumentExceptionToAlreadyConnectedExceptionTest implements Rewrite
               import java.net.SocketAddress;
               import java.nio.channels.DatagramChannel;
 
-              public class Test {
-                  public void sendDataCatch() {
+              class Test {
+                  void sendDataCatch() {
                       try {
                           DatagramChannel channel = DatagramChannel.open();
                           channel.send(ByteBuffer.allocate(1024), new java.net.InetSocketAddress("localhost", 8080));
@@ -53,11 +53,12 @@ class IllegalArgumentExceptionToAlreadyConnectedExceptionTest implements Rewrite
               """,
             """
               import java.nio.ByteBuffer;
+              import java.nio.channels.AlreadyConnectedException;
               import java.net.SocketAddress;
               import java.nio.channels.DatagramChannel;
 
-              public class Test {
-                  public void sendDataCatch() {
+              class Test {
+                  void sendDataCatch() {
                       try {
                           DatagramChannel channel = DatagramChannel.open();
                           channel.send(ByteBuffer.allocate(1024), new java.net.InetSocketAddress("localhost", 8080));
@@ -81,8 +82,8 @@ class IllegalArgumentExceptionToAlreadyConnectedExceptionTest implements Rewrite
               import java.net.SocketAddress;
               import java.nio.channels.DatagramChannel;
 
-              public class Test {
-                  public void sendDataRethrow() {
+              class Test {
+                  void sendDataRethrow() {
                       try {
                           DatagramChannel channel = DatagramChannel.open();
                           channel.send(ByteBuffer.allocate(1024), new java.net.InetSocketAddress("localhost", 8080));
@@ -94,11 +95,12 @@ class IllegalArgumentExceptionToAlreadyConnectedExceptionTest implements Rewrite
               """,
             """
               import java.nio.ByteBuffer;
+              import java.nio.channels.AlreadyConnectedException;
               import java.net.SocketAddress;
               import java.nio.channels.DatagramChannel;
 
-              public class Test {
-                  public void sendDataRethrow() {
+              class Test {
+                  void sendDataRethrow() {
                       try {
                           DatagramChannel channel = DatagramChannel.open();
                           channel.send(ByteBuffer.allocate(1024), new java.net.InetSocketAddress("localhost", 8080));
@@ -118,12 +120,13 @@ class IllegalArgumentExceptionToAlreadyConnectedExceptionTest implements Rewrite
           //language=java
           java(
             """
-              import java.io.IOException;import java.nio.ByteBuffer;
+              import java.io.IOException;
+              import java.nio.ByteBuffer;
               import java.net.SocketAddress;
               import java.nio.channels.DatagramChannel;
 
-              public class Test {
-                  public void sendData() {
+              class Test {
+                  void sendData() {
                       try {
                           DatagramChannel channel = DatagramChannel.open();
                           channel.send(ByteBuffer.allocate(1024), new java.net.InetSocketAddress("localhost", 8080));

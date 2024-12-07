@@ -54,6 +54,7 @@ public class IllegalArgumentExceptionToAlreadyConnectedException extends Recipe 
                 }
                 return try_.withCatches(ListUtils.map(try_.getCatches(), catch_ -> {
                     if (TypeUtils.isOfClassType(catch_.getParameter().getType(), ILLEGAL_ARGUMENT_EXCEPTION)) {
+                        maybeAddImport(ALREADY_CONNECTED_EXCEPTION);
                         return (J.Try.Catch) new ChangeType(ILLEGAL_ARGUMENT_EXCEPTION, ALREADY_CONNECTED_EXCEPTION, true)
                                 .getVisitor().visit(catch_, ctx);
                     }
