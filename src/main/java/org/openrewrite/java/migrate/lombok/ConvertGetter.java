@@ -98,7 +98,7 @@ public class ConvertGetter extends Recipe {
                 J.Return return_ = (J.Return) method.getBody().getStatements().get(0);
                 Variable fieldType = ((J.Identifier) return_.getExpression()).getFieldType();
                 boolean nameMatch = method.getSimpleName().equals(LombokUtils.deriveGetterMethodName(fieldType));
-                if (nameMatch){
+                if (nameMatch) {
                     ((Set<Finding>) getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY))
                             .add(new Finding(fieldType.getName(), LombokUtils.getAccessLevel(method.getModifiers())));
                     return null; //delete
@@ -117,7 +117,7 @@ public class ConvertGetter extends Recipe {
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    static class FieldAnnotator extends JavaIsoVisitor<ExecutionContext>{
+    static class FieldAnnotator extends JavaIsoVisitor<ExecutionContext> {
 
         Set<Finding> fieldsToDecorate;
 
