@@ -42,8 +42,7 @@ public class LombokUtils {
             if (returnExpression instanceof J.Identifier) {
                 J.Identifier identifier = (J.Identifier) returnExpression;
                 JavaType.Variable fieldType = identifier.getFieldType();
-                boolean typeMatch = method.getType().equals(fieldType.getType());
-                return typeMatch;
+                return method.getType().equals(fieldType.getType());
             }
         }
         return false;
