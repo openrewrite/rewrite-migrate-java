@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.lombok;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -29,7 +30,6 @@ import org.openrewrite.java.tree.J;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 
 import static java.util.Comparator.comparing;
 import static org.openrewrite.java.tree.JavaType.Variable;
@@ -40,32 +40,24 @@ public class ConvertGetter extends Recipe {
 
     @Override
     public String getDisplayName() {
-        //language=markdown
         return "Convert getter methods to annotations";
     }
 
     @Override
     public String getDescription() {
         //language=markdown
-        return new StringJoiner("\n")
-                .add("Convert trivial getter methods to `@Getter` annotations on their respective fields.")
-                .add("")
-                .add("Limitations:")
-                .add("")
-                .add(" - Does not add a dependency to Lombok, users need to do that manually")
-                .add(" - Ignores fields that are declared on the same line as others, e.g. `private int foo, bar;" +
-                        "Users who have such fields are advised to separate them beforehand with " +
-                        "[org.openrewrite.staticanalysis.MultipleVariableDeclaration]" +
-                        "(https://docs.openrewrite.org/recipes/staticanalysis/multiplevariabledeclarations).")
-                .add(" - Does not offer any of the configuration keys listed in https://projectlombok.org/features/GetterSetter.")
-                .toString();
+        return "Convert trivial getter methods to `@Getter` annotations on their respective fields.\n\n" +
+                "Limitations:\n\n" +
+                " - Does not add a dependency to Lombok, users need to do that manually\n" +
+                " - Ignores fields that are declared on the same line as others, e.g. `private int foo, bar; " +
+                "Users who have such fields are advised to separate them beforehand with [org.openrewrite.staticanalysis.MultipleVariableDeclaration](https://docs.openrewrite.org/recipes/staticanalysis/multiplevariabledeclarations).\n" +
+                " - Does not offer any of the configuration keys listed in https://projectlombok.org/features/GetterSetter.";
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MethodRemover();
     }
-
 
     @Value
     @EqualsAndHashCode(callSuper = false)
@@ -91,7 +83,7 @@ public class ConvertGetter extends Recipe {
         }
 
         @Override
-        public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+        public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
             assert method.getMethodType() != null;
 
             if (LombokUtils.isEffectivelyGetter(method)) {
@@ -125,12 +117,11 @@ public class ConvertGetter extends Recipe {
             JavaTemplate.Builder builder = AccessLevel.PUBLIC.equals(accessLevel) ?
                     JavaTemplate.builder("@Getter\n") :
                     JavaTemplate.builder("@Getter(AccessLevel." + accessLevel.name() + ")\n")
-                    .imports("lombok.AccessLevel");
+                            .imports("lombok.AccessLevel");
 
             return builder
                     .imports("lombok.Getter")
-                    .javaParser(JavaParser.fromJavaVersion()
-                            .classpath("lombok"))
+                    .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
                     .build();
         }
 

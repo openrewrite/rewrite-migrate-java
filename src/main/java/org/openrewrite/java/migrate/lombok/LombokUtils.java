@@ -28,7 +28,7 @@ import java.util.Map;
 import static lombok.AccessLevel.*;
 import static org.openrewrite.java.tree.J.Modifier.Type.*;
 
-public class LombokUtils {
+class LombokUtils {
 
     public static boolean isEffectivelyGetter(J.MethodDeclaration method) {
         boolean takesNoParameters = method.getParameters().get(0) instanceof J.Empty;
@@ -49,19 +49,16 @@ public class LombokUtils {
     }
 
     public static String deriveGetterMethodName(JavaType.Variable fieldType) {
-        boolean isPrimitiveBoolean = JavaType.Variable.Primitive.Boolean.equals(fieldType.getType());
-
-        final String fieldName = fieldType.getName();
-
-        boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
-                fieldName.substring(0, 3).matches("is[A-Z]");
-
-        if (isPrimitiveBoolean)
-            if (alreadyStartsWithIs)
+        String fieldName = fieldType.getName();
+        if (fieldType.getType() == JavaType.Variable.Primitive.Boolean) {
+            boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
+                    fieldName.substring(0, 3).matches("is[A-Z]");
+            if (alreadyStartsWithIs) {
                 return fieldName;
-            else
+            } else {
                 return "is" + StringUtils.capitalize(fieldName);
-
+            }
+        }
         return "get" + StringUtils.capitalize(fieldName);
     }
 
