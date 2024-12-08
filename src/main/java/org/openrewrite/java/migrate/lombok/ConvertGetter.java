@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.lombok;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -92,7 +91,7 @@ public class ConvertGetter extends Recipe {
         }
 
         @Override
-        public @Nullable J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+        public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
             assert method.getMethodType() != null;
 
             if (LombokUtils.isEffectivelyGetter(method)) {
