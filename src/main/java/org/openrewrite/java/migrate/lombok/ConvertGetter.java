@@ -123,9 +123,9 @@ public class ConvertGetter extends Recipe {
         Set<Finding> fieldsToDecorate;
 
         private JavaTemplate getAnnotation(AccessLevel accessLevel) {
-            JavaTemplate.Builder builder = AccessLevel.PUBLIC.equals(accessLevel)
-                    ? JavaTemplate.builder("@Getter\n")
-                    : JavaTemplate.builder("@Getter(AccessLevel." + accessLevel.name() + ")\n")
+            JavaTemplate.Builder builder = AccessLevel.PUBLIC.equals(accessLevel) ?
+                    JavaTemplate.builder("@Getter\n") :
+                    JavaTemplate.builder("@Getter(AccessLevel." + accessLevel.name() + ")\n")
                     .imports("lombok.AccessLevel");
 
             return builder

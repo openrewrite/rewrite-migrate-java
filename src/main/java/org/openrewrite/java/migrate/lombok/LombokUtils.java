@@ -33,8 +33,8 @@ public class LombokUtils {
     public static boolean isEffectivelyGetter(J.MethodDeclaration method) {
         boolean takesNoParameters = method.getParameters().get(0) instanceof J.Empty;
         boolean singularReturn = method.getBody() != null //abstract methods can be null
-                && method.getBody().getStatements().size() == 1
-                && method.getBody().getStatements().get(0) instanceof J.Return;
+                && method.getBody().getStatements().size() == 1 &&
+                method.getBody().getStatements().get(0) instanceof J.Return;
 
         if (takesNoParameters && singularReturn) {
             Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
@@ -53,8 +53,8 @@ public class LombokUtils {
 
         final String fieldName = fieldType.getName();
 
-        boolean alreadyStartsWithIs = fieldName.length() >= 3
-                && fieldName.substring(0, 3).matches("is[A-Z]");
+        boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
+                fieldName.substring(0, 3).matches("is[A-Z]");
 
         if (isPrimitiveBoolean)
             if (alreadyStartsWithIs)
