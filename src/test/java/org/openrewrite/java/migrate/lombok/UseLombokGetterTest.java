@@ -22,11 +22,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class ConvertGetterTest implements RewriteTest {
+class UseLombokGetterTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new ConvertGetter());
+        spec.recipe(new UseLombokGetter());
     }
 
     @DocumentExample

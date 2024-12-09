@@ -27,6 +27,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -36,7 +37,7 @@ import static org.openrewrite.java.tree.JavaType.Variable;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class ConvertGetter extends Recipe {
+public class UseLombokGetter extends Recipe {
 
     @Override
     public String getDisplayName() {
@@ -52,6 +53,11 @@ public class ConvertGetter extends Recipe {
                 " - Ignores fields that are declared on the same line as others, e.g. `private int foo, bar; " +
                 "Users who have such fields are advised to separate them beforehand with [org.openrewrite.staticanalysis.MultipleVariableDeclaration](https://docs.openrewrite.org/recipes/staticanalysis/multiplevariabledeclarations).\n" +
                 " - Does not offer any of the configuration keys listed in https://projectlombok.org/features/GetterSetter.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("lombok");
     }
 
     @Override
@@ -84,9 +90,7 @@ public class ConvertGetter extends Recipe {
 
         @Override
         public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-            assert method.getMethodType() != null;
-
-            if (LombokUtils.isEffectivelyGetter(method)) {
+            if (method.getMethodType() != null && LombokUtils.isEffectivelyGetter(method)) {
                 J.Return return_ = (J.Return) method.getBody().getStatements().get(0);
                 Variable fieldType = ((J.Identifier) return_.getExpression()).getFieldType();
                 boolean nameMatch = method.getSimpleName().equals(LombokUtils.deriveGetterMethodName(fieldType));
@@ -105,7 +109,6 @@ public class ConvertGetter extends Recipe {
         String fieldName;
         AccessLevel accessLevel;
     }
-
 
     @Value
     @EqualsAndHashCode(callSuper = false)
