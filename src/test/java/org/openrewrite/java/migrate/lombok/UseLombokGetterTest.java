@@ -248,7 +248,7 @@ class UseLombokGetterTest implements RewriteTest {
                   public A() {
                   }
 
-                  long getfoo() {//return type wrong
+                  long getFoo() { //return type wrong
                       return foo;
                   }
               }

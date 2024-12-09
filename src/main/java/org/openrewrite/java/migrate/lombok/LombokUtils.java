@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lombok;
 
 import com.google.common.collect.ImmutableMap;
 import lombok.AccessLevel;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
@@ -41,21 +42,27 @@ class LombokUtils {
                 !(method.getBody().getStatements().get(0) instanceof J.Return)) {
             return false;
         }
+        // Check return: type and matching field name
         Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
-        //returns just an identifier
         if (returnExpression instanceof J.Identifier) {
             J.Identifier identifier = (J.Identifier) returnExpression;
-            JavaType.Variable fieldType = identifier.getFieldType();
-            return method.getType().equals(fieldType.getType());
+            return hasMatchingTypeAndName(method, identifier.getType(), identifier.getSimpleName());
         } else if (returnExpression instanceof J.FieldAccess) {
             J.FieldAccess fieldAccess = (J.FieldAccess) returnExpression;
-            JavaType fieldType = fieldAccess.getType();
-            return method.getType().equals(fieldType);
+            return hasMatchingTypeAndName(method, fieldAccess.getType(), fieldAccess.getSimpleName());
         }
         return false;
     }
 
-    static String deriveGetterMethodName(JavaType type, String fieldName) {
+    private static boolean hasMatchingTypeAndName(J.MethodDeclaration method, @Nullable JavaType type, String simpleName) {
+        if (method.getType().equals(type)) {
+            String deriveGetterMethodName = deriveGetterMethodName(type, simpleName);
+            return method.getSimpleName().equals(deriveGetterMethodName);
+        }
+        return false;
+    }
+
+    private static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {
         if (type == JavaType.Primitive.Boolean) {
             boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
                     fieldName.substring(0, 3).matches("is[A-Z]");
