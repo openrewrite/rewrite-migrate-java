@@ -481,4 +481,23 @@ class UseLombokGetterTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void noChangeNestedClassGetter() {
+        rewriteRun(// language=java
+          java(
+            """
+              class Outer {
+                  int foo = 9;
+
+                  class Inner {
+                      public int getFoo() {
+                          return foo;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
 }
