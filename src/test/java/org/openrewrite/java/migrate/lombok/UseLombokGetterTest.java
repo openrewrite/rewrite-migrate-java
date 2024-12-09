@@ -58,6 +58,33 @@ class UseLombokGetterTest implements RewriteTest {
     }
 
     @Test
+    void replaceGetterWithFieldAccess() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+
+                  public int getFoo() {
+                      return this.foo;
+                  }
+              }
+              """,
+            """
+              import lombok.Getter;
+
+              class A {
+
+                  @Getter
+                  int foo = 9;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void replacePackageGetter() {
         rewriteRun(// language=java
           java(

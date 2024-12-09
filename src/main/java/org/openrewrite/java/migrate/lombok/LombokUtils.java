@@ -30,27 +30,33 @@ import static org.openrewrite.java.tree.J.Modifier.Type.*;
 
 class LombokUtils {
 
-    public static boolean isEffectivelyGetter(J.MethodDeclaration method) {
-        boolean takesNoParameters = method.getParameters().get(0) instanceof J.Empty;
-        boolean singularReturn = method.getBody() != null //abstract methods can be null
-                && method.getBody().getStatements().size() == 1 &&
-                method.getBody().getStatements().get(0) instanceof J.Return;
-
-        if (takesNoParameters && singularReturn) {
-            Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
-            //returns just an identifier
-            if (returnExpression instanceof J.Identifier) {
-                J.Identifier identifier = (J.Identifier) returnExpression;
-                JavaType.Variable fieldType = identifier.getFieldType();
-                return method.getType().equals(fieldType.getType());
-            }
+    static boolean isEffectivelyGetter(J.MethodDeclaration method) {
+        // Check signature: no parameters
+        if (!(method.getParameters().get(0) instanceof J.Empty) || method.getReturnTypeExpression() == null) {
+            return false;
+        }
+        // Check body: just a return statement
+        if (method.getBody() == null ||
+                method.getBody().getStatements().size() != 1 ||
+                !(method.getBody().getStatements().get(0) instanceof J.Return)) {
+            return false;
+        }
+        Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
+        //returns just an identifier
+        if (returnExpression instanceof J.Identifier) {
+            J.Identifier identifier = (J.Identifier) returnExpression;
+            JavaType.Variable fieldType = identifier.getFieldType();
+            return method.getType().equals(fieldType.getType());
+        } else if (returnExpression instanceof J.FieldAccess) {
+            J.FieldAccess fieldAccess = (J.FieldAccess) returnExpression;
+            JavaType fieldType = fieldAccess.getType();
+            return method.getType().equals(fieldType);
         }
         return false;
     }
 
-    public static String deriveGetterMethodName(JavaType.Variable fieldType) {
-        String fieldName = fieldType.getName();
-        if (fieldType.getType() == JavaType.Variable.Primitive.Boolean) {
+    static String deriveGetterMethodName(JavaType type, String fieldName) {
+        if (type == JavaType.Primitive.Boolean) {
             boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
                     fieldName.substring(0, 3).matches("is[A-Z]");
             if (alreadyStartsWithIs) {
@@ -62,7 +68,7 @@ class LombokUtils {
         return "get" + StringUtils.capitalize(fieldName);
     }
 
-    public static AccessLevel getAccessLevel(Collection<J.Modifier> modifiers) {
+    static AccessLevel getAccessLevel(Collection<J.Modifier> modifiers) {
         Map<J.Modifier.Type, AccessLevel> map = ImmutableMap.<J.Modifier.Type, AccessLevel>builder()
                 .put(Public, PUBLIC)
                 .put(Protected, PROTECTED)

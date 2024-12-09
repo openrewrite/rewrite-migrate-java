@@ -25,6 +25,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 import java.util.Collections;
@@ -92,12 +93,23 @@ public class UseLombokGetter extends Recipe {
         public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
             if (method.getMethodType() != null && LombokUtils.isEffectivelyGetter(method)) {
                 J.Return return_ = (J.Return) method.getBody().getStatements().get(0);
-                Variable fieldType = ((J.Identifier) return_.getExpression()).getFieldType();
-                boolean nameMatch = method.getSimpleName().equals(LombokUtils.deriveGetterMethodName(fieldType));
-                if (nameMatch) {
-                    ((Set<Finding>) getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY))
-                            .add(new Finding(fieldType.getName(), LombokUtils.getAccessLevel(method.getModifiers())));
-                    return null; //delete
+                Expression returnExpression = return_.getExpression();
+                if (returnExpression instanceof J.Identifier) {
+                    J.Identifier identifier = (J.Identifier) returnExpression;
+                    String deriveGetterMethodName = LombokUtils.deriveGetterMethodName(identifier.getType(), identifier.getSimpleName());
+                    if (method.getSimpleName().equals(deriveGetterMethodName)) {
+                        ((Set<Finding>) getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY))
+                                .add(new Finding(identifier.getSimpleName(), LombokUtils.getAccessLevel(method.getModifiers())));
+                        return null;
+                    }
+                } else if (returnExpression instanceof J.FieldAccess) {
+                    J.FieldAccess fieldAccess = (J.FieldAccess) returnExpression;
+                    String deriveGetterMethodName = LombokUtils.deriveGetterMethodName(fieldAccess.getType(), fieldAccess.getSimpleName());
+                    if (method.getSimpleName().equals(deriveGetterMethodName)) {
+                        ((Set<Finding>) getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY))
+                                .add(new Finding(fieldAccess.getSimpleName(), LombokUtils.getAccessLevel(method.getModifiers())));
+                        return null;
+                    }
                 }
             }
             return method;
