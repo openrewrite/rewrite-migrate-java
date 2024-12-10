@@ -57,7 +57,7 @@ class LombokUtils {
         return false;
     }
 
-    public static boolean isEffectivelySetter(J.MethodDeclaration method) {
+    static boolean isEffectivelySetter(J.MethodDeclaration method) {
         boolean isVoid = "void".equals(method.getType().toString());
         List<Statement> actualParameters = method.getParameters().stream()
                 .filter(s -> !(s instanceof J.Empty))
@@ -112,7 +112,7 @@ class LombokUtils {
         return "get" + StringUtils.capitalize(fieldName);
     }
 
-    public static String deriveSetterMethodName(JavaType.Variable fieldType) {
+    static String deriveSetterMethodName(JavaType.Variable fieldType) {
         return "set" + StringUtils.capitalize(fieldType.getName());
     }
 
