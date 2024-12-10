@@ -26,17 +26,14 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 import static java.util.Comparator.comparing;
 import static org.openrewrite.java.tree.JavaType.Variable;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class ConvertSetter extends Recipe {
+public class UseLombokSetter extends Recipe {
 
     @Override
     public String getDisplayName() {
@@ -59,6 +56,11 @@ public class ConvertSetter extends Recipe {
                         "(https://docs.openrewrite.org/recipes/staticanalysis/multiplevariabledeclarations).")
                 .add(" - Does not offer any of the configuration keys listed in https://projectlombok.org/features/GetterSetter.")
                 .toString();
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.singleton("lombok");
     }
 
     @Override
