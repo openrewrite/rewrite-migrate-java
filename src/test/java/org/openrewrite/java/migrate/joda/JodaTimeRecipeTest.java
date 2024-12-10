@@ -198,13 +198,13 @@ class JodaTimeRecipeTest implements RewriteTest {
     }
 
     @Test
-    void localVarUsedReferencedInReturnStatement() { // not supported yet
+    void localVarUsedReferencedInReturnStatement() {
         // language=java
         rewriteRun(
           java(
             """
-               import org.joda.time.DateTime;
-               import org.joda.time.DateTimeZone;
+              import org.joda.time.DateTime;
+              import org.joda.time.DateTimeZone;
 
                class A {
                    public DateTime foo(String city) {
@@ -216,6 +216,24 @@ class JodaTimeRecipeTest implements RewriteTest {
                        }
                        DateTime dt = new DateTime(dtz);
                        return dt.plus(2);
+                   }
+              }
+              """,
+            """
+              import java.time.Duration;
+              import java.time.ZoneId;
+              import java.time.ZonedDateTime;
+              
+              class A {
+                   public ZonedDateTime foo(String city) {
+                       ZoneId dtz;
+                       if ("london".equals(city)) {
+                           dtz = ZoneId.of("Europe/London");
+                       } else {
+                           dtz = ZoneId.of("America/New_York");
+                       }
+                       ZonedDateTime dt = ZonedDateTime.now(dtz);
+                       return dt.plus(Duration.ofMillis(2));
                    }
               }
               """

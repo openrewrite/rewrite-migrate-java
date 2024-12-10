@@ -934,4 +934,31 @@ class JodaTimeVisitorTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void foo() {
+        // language=java
+        rewriteRun(
+          java(
+            """
+              import org.joda.time.Duration;
+              
+              class A {
+                  public void foo() {
+                      System.out.println(new Duration(1000L).getStandardDays());
+                  }
+              }
+              """,
+            """
+              import java.time.Duration;
+              
+              class A {
+                  public void foo() {
+                      System.out.println(Duration.ofMillis(1000L).toDays());
+                  }
+              }
+              """
+          )
+        );
+    }
 }
