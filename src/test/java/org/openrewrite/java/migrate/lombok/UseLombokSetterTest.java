@@ -464,6 +464,4 @@ class UseLombokSetterTest implements RewriteTest {
           )
         );
     }
-
-
 }

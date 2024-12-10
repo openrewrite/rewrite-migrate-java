@@ -57,6 +57,14 @@ class LombokUtils {
         return false;
     }
 
+    private static boolean hasMatchingTypeAndName(J.MethodDeclaration method, @Nullable JavaType type, String simpleName) {
+        if (method.getType().equals(type)) {
+            String deriveGetterMethodName = deriveGetterMethodName(type, simpleName);
+            return method.getSimpleName().equals(deriveGetterMethodName);
+        }
+        return false;
+    }
+
     static boolean isEffectivelySetter(J.MethodDeclaration method) {
         boolean isVoid = "void".equals(method.getType().toString());
         List<Statement> actualParameters = method.getParameters().stream()
@@ -89,14 +97,6 @@ class LombokUtils {
                         // type of parameter and field have to match
                         param.getType().equals(fieldAccess.getType());
 
-    }
-
-    private static boolean hasMatchingTypeAndName(J.MethodDeclaration method, @Nullable JavaType type, String simpleName) {
-        if (method.getType().equals(type)) {
-            String deriveGetterMethodName = deriveGetterMethodName(type, simpleName);
-            return method.getSimpleName().equals(deriveGetterMethodName);
-        }
-        return false;
     }
 
     private static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {

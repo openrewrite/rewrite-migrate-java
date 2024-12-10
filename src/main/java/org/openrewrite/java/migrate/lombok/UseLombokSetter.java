@@ -87,8 +87,6 @@ public class UseLombokSetter extends Recipe {
 
         @Override
         public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-            assert method.getMethodType() != null;
-
             if (LombokUtils.isEffectivelySetter(method)) {
                 J.Assignment assignment_ = (J.Assignment) method.getBody().getStatements().get(0);
                 J.FieldAccess fieldAccess = (J.FieldAccess) assignment_.getVariable();
@@ -96,8 +94,8 @@ public class UseLombokSetter extends Recipe {
                 Variable fieldType = fieldAccess.getName().getFieldType();
                 boolean nameMatch = method.getSimpleName().equals(LombokUtils.deriveSetterMethodName(fieldType));
                 if (nameMatch) {
-                    ((Set<Finding>) getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY))
-                            .add(new Finding(fieldType.getName(), LombokUtils.getAccessLevel(method.getModifiers())));
+                    Set<Finding> set = getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY);
+                    set.add(new Finding(fieldType.getName(), LombokUtils.getAccessLevel(method.getModifiers())));
                     return null; //delete
                 }
             }
@@ -151,9 +149,6 @@ public class UseLombokSetter extends Recipe {
             if (!field.isPresent()) {
                 return multiVariable; //not the field we are looking for
             }
-
-            //remove it from list
-            //fieldsToDecorate.remove(field.get());
 
             J.VariableDeclarations annotated = getAnnotation(field.get().getAccessLevel()).apply(
                     getCursor(),
