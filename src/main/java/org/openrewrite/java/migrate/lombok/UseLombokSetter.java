@@ -102,7 +102,7 @@ public class UseLombokSetter extends Recipe {
 
                 Variable fieldType = fieldAccess.getName().getFieldType();
                 boolean nameMatch = method.getSimpleName().equals(LombokUtils.deriveSetterMethodName(fieldType));
-                if (nameMatch){
+                if (nameMatch) {
                     ((Set<Finding>) getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY))
                             .add(new Finding(fieldType.getName(), LombokUtils.getAccessLevel(method.getModifiers())));
                     return null; //delete
@@ -121,7 +121,7 @@ public class UseLombokSetter extends Recipe {
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    static class FieldAnnotator extends JavaIsoVisitor<ExecutionContext>{
+    static class FieldAnnotator extends JavaIsoVisitor<ExecutionContext> {
 
         Set<Finding> fieldsToDecorate;
 
@@ -147,7 +147,7 @@ public class UseLombokSetter extends Recipe {
             }
 
             //we only want to annotate fields and not e.g. method parameters, so we require a lass declaration to be close in the cursor.
-            if (getCursor().getPathAsStream().limit( 4 ).noneMatch( e -> e instanceof J.ClassDeclaration )) {
+            if (getCursor().getPathAsStream().limit(4).noneMatch(e -> e instanceof J.ClassDeclaration)) {
                 return multiVariable;
             }
 
