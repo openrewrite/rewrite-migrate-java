@@ -22,9 +22,12 @@ import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Statement;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static lombok.AccessLevel.*;
 import static org.openrewrite.java.tree.J.Modifier.Type.*;
@@ -54,6 +57,39 @@ class LombokUtils {
         return false;
     }
 
+    public static boolean isEffectivelySetter(J.MethodDeclaration method) {
+        boolean isVoid = "void".equals(method.getType().toString());
+        List<Statement> actualParameters = method.getParameters().stream()
+                .filter(s -> !(s instanceof J.Empty))
+                .collect(Collectors.toList());
+        boolean oneParam = actualParameters.size() == 1;
+        if (!isVoid || !oneParam)
+            return false;
+
+        J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) actualParameters.get(0);
+        J.VariableDeclarations.NamedVariable param = variableDeclarations.getVariables().get(0);
+        String paramName = param.getName().toString();
+
+        boolean singularStatement = method.getBody() != null //abstract methods can be null
+                && method.getBody().getStatements().size() == 1
+                && method.getBody().getStatements().get(0) instanceof J.Assignment;
+
+        if (!singularStatement) {
+            return false;
+        }
+        J.Assignment assignment = (J.Assignment) method.getBody().getStatements().get(0);
+
+        J.FieldAccess fieldAccess = (J.FieldAccess) assignment.getVariable();
+
+        return
+                // assigned value is exactly the parameter
+                assignment.getAssignment().toString().equals(paramName)
+
+                        // type of parameter and field have to match
+                        && param.getType().equals(fieldAccess.getType());
+
+    }
+
     private static boolean hasMatchingTypeAndName(J.MethodDeclaration method, @Nullable JavaType type, String simpleName) {
         if (method.getType().equals(type)) {
             String deriveGetterMethodName = deriveGetterMethodName(type, simpleName);
@@ -73,6 +109,10 @@ class LombokUtils {
             }
         }
         return "get" + StringUtils.capitalize(fieldName);
+    }
+
+    public static String deriveSetterMethodName(JavaType.Variable fieldType) {
+        return "set" + StringUtils.capitalize(fieldType.getName());
     }
 
     static AccessLevel getAccessLevel(Collection<J.Modifier> modifiers) {
