@@ -71,8 +71,8 @@ class LombokUtils {
         String paramName = param.getName().toString();
 
         boolean singularStatement = method.getBody() != null //abstract methods can be null
-                && method.getBody().getStatements().size() == 1
-                && method.getBody().getStatements().get(0) instanceof J.Assignment;
+                && method.getBody().getStatements().size() == 1 &&
+                method.getBody().getStatements().get(0) instanceof J.Assignment;
 
         if (!singularStatement) {
             return false;
@@ -83,10 +83,11 @@ class LombokUtils {
 
         return
                 // assigned value is exactly the parameter
-                assignment.getAssignment().toString().equals(paramName)
+                assignment.getAssignment().toString().equals(paramName) // type of parameter and field have to match
+                        &&
 
                         // type of parameter and field have to match
-                        && param.getType().equals(fieldAccess.getType());
+                        param.getType().equals(fieldAccess.getType());
 
     }
 

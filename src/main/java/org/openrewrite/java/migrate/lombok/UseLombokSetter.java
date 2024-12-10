@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.lombok;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -93,7 +94,7 @@ public class UseLombokSetter extends Recipe {
         }
 
         @Override
-        public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+        public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
             assert method.getMethodType() != null;
 
             if (LombokUtils.isEffectivelySetter(method)) {
@@ -126,9 +127,9 @@ public class UseLombokSetter extends Recipe {
         Set<Finding> fieldsToDecorate;
 
         private JavaTemplate getAnnotation(AccessLevel accessLevel) {
-            JavaTemplate.Builder builder = AccessLevel.PUBLIC.equals(accessLevel)
-                    ? JavaTemplate.builder("@Setter\n")
-                    : JavaTemplate.builder("@Setter(AccessLevel." + accessLevel.name() + ")\n")
+            JavaTemplate.Builder builder = AccessLevel.PUBLIC.equals(accessLevel) ?
+                    JavaTemplate.builder("@Setter\n") :
+                    JavaTemplate.builder("@Setter(AccessLevel." + accessLevel.name() + ")\n")
                     .imports("lombok.AccessLevel");
 
             return builder
