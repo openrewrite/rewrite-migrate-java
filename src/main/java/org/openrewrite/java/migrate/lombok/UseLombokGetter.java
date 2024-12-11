@@ -90,7 +90,7 @@ public class UseLombokGetter extends Recipe {
 
         @Override
         public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-            if (method.getMethodType() != null && LombokUtils.isEffectivelyGetter(method)) {
+            if (method.getMethodType() != null && LombokUtils.isGetter(method)) {
                 Set<Finding> set = getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY);
                 Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
                 if (returnExpression instanceof J.Identifier) {

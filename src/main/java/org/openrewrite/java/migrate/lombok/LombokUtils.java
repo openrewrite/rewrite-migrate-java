@@ -31,7 +31,7 @@ import static org.openrewrite.java.tree.J.Modifier.Type.*;
 
 class LombokUtils {
 
-    static boolean isEffectivelyGetter(J.MethodDeclaration method) {
+    static boolean isGetter(J.MethodDeclaration method) {
         // Check signature: no parameters
         if (!(method.getParameters().get(0) instanceof J.Empty) || method.getReturnTypeExpression() == null) {
             return false;
