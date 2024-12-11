@@ -19,6 +19,7 @@ import fj.data.Option;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
@@ -43,6 +44,8 @@ class JodaTimeScanner extends ScopeAwareVisitor {
 
     private final Map<NamedVariable, Set<NamedVariable>> varDependencies = new HashMap<>();
     private final Map<JavaType, Set<String>> unsafeVarsByType = new HashMap<>();
+    private final Map<JavaType.Method, Set<NamedVariable>> methodReferencedVars = new HashMap<>();
+    private final Map<JavaType.Method, Set<UnresolvedVar>> methodUnresolvedReferencedVars = new HashMap<>();
 
     public JodaTimeScanner(JodaTimeRecipe.Accumulator acc) {
         super(new LinkedList<>());
@@ -57,13 +60,30 @@ class JodaTimeScanner extends ScopeAwareVisitor {
             dfs(var, allReachable);
         }
         acc.getUnsafeVars().addAll(allReachable);
+
+        Set<JavaType.Method> unsafeMethods = new HashSet<>();
+        acc.getSafeMethodMap().forEach((method, isSafe) -> {
+            if (!isSafe) {
+                unsafeMethods.add(method);
+                return;
+            }
+            Set<NamedVariable> intersection = new HashSet<>(methodReferencedVars.getOrDefault(method, Collections.emptySet()));
+            intersection.retainAll(acc.getUnsafeVars());
+            if (!intersection.isEmpty()) {
+                unsafeMethods.add(method);
+            }
+        });
+        for (JavaType.Method method : unsafeMethods) {
+            acc.getSafeMethodMap().put(method, false);
+            acc.getUnsafeVars().addAll(methodReferencedVars.getOrDefault(method, Collections.emptySet()));
+        }
         return cu;
     }
 
     @Override
-    public NamedVariable visitVariable(NamedVariable variable, ExecutionContext ctx) {
+    public J visitVariable(NamedVariable variable, ExecutionContext ctx) {
         if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
-            return (NamedVariable) super.visitVariable(variable, ctx);
+            return super.visitVariable(variable, ctx);
         }
         // TODO: handle class variables
         if (isClassVar(variable)) {
@@ -96,27 +116,27 @@ class JodaTimeScanner extends ScopeAwareVisitor {
     }
 
     @Override
-    public J.Assignment visitAssignment(J.Assignment assignment, ExecutionContext ctx) {
+    public J visitAssignment(J.Assignment assignment, ExecutionContext ctx) {
         Expression var = assignment.getVariable();
         // not joda expr or not local variable
         if (!isJodaExpr(var) || !(var instanceof J.Identifier)) {
-            return assignment;
+            return super.visitAssignment(assignment, ctx);
         }
         J.Identifier ident = (J.Identifier) var;
         Optional<NamedVariable> mayBeVar = findVarInScope(ident.getSimpleName());
         if (!mayBeVar.isPresent()) {
-            return assignment;
+            return super.visitAssignment(assignment, ctx);
         }
         NamedVariable variable = mayBeVar.get();
         Cursor varScope = findScope(variable);
         List<Expression> sinks = findSinks(new Cursor(getCursor(), assignment.getAssignment()));
         new AddSafeCheckMarker(sinks).visit(varScope.getValue(), ctx, varScope.getParentOrThrow());
         processMarkersOnExpression(sinks, variable);
-        return assignment;
+        return super.visitAssignment(assignment, ctx);
     }
 
     @Override
-    public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+    public J visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
         acc.getVarTable().addVars(method);
         unsafeVarsByType.getOrDefault(method.getMethodType(), Collections.emptySet()).forEach(varName -> {
             NamedVariable var = acc.getVarTable().getVarByName(method.getMethodType(), varName);
@@ -124,7 +144,84 @@ class JodaTimeScanner extends ScopeAwareVisitor {
                 acc.getUnsafeVars().add(var);
             }
         });
-        return (J.MethodDeclaration) super.visitMethodDeclaration(method, ctx);
+        Set<UnresolvedVar> unresolvedVars = methodUnresolvedReferencedVars.remove(method.getMethodType());
+        if (unresolvedVars != null) {
+            unresolvedVars.forEach(var -> {
+                NamedVariable namedVar = acc.getVarTable().getVarByName(var.getDeclaringType(), var.getVarName());
+                if (namedVar != null) {
+                    methodReferencedVars.computeIfAbsent(method.getMethodType(), k -> new HashSet<>()).add(namedVar);
+                }
+            });
+        }
+        return super.visitMethodDeclaration(method, ctx);
+    }
+
+    @Override
+    public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+        if (!isJodaExpr(method) || method.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return super.visitMethodInvocation(method, ctx);
+        }
+        Cursor boundary = findBoundaryCursorForJodaExpr(getCursor());
+        J j = new JodaTimeVisitor(new JodaTimeRecipe.Accumulator(), false, scopes)
+                .visit(boundary.getValue(), ctx, boundary.getParentTreeCursor());
+
+        boolean isSafe = j != boundary.getValue();
+        acc.getSafeMethodMap().compute(method.getMethodType(), (k, v) -> v == null ? isSafe : v && isSafe);
+        J parent = boundary.getParentTreeCursor().getValue();
+        if (parent instanceof NamedVariable) {
+            methodReferencedVars.computeIfAbsent(method.getMethodType(), k -> new HashSet<>())
+                    .add((NamedVariable) parent);
+        }
+        if (parent instanceof J.Assignment) {
+            J.Assignment assignment = (J.Assignment) parent;
+            if (assignment.getVariable() instanceof J.Identifier) {
+                J.Identifier ident = (J.Identifier) assignment.getVariable();
+                findVarInScope(ident.getSimpleName())
+                        .map(var -> methodReferencedVars.computeIfAbsent(method.getMethodType(), k -> new HashSet<>()).add(var));
+            }
+        }
+        if (parent instanceof MethodCall) {
+            MethodCall parentMethod = (MethodCall) parent;
+            int argPos = parentMethod.getArguments().indexOf(boundary.getValue());
+            if (argPos == -1) {
+                return method;
+            }
+            String paramName = parentMethod.getMethodType().getParameterNames().get(argPos);
+            NamedVariable var = acc.getVarTable().getVarByName(parentMethod.getMethodType(), paramName);
+            if (var != null) {
+                methodReferencedVars.computeIfAbsent(method.getMethodType(), k -> new HashSet<>()).add(var);
+            } else {
+                methodUnresolvedReferencedVars.computeIfAbsent(method.getMethodType(), k -> new HashSet<>())
+                        .add(new UnresolvedVar(parentMethod.getMethodType(), paramName));
+            }
+        }
+        return method;
+    }
+
+    @Override
+    public J.Return visitReturn(J.Return _return, ExecutionContext ctx) {
+        if (_return.getExpression() == null) {
+            return _return;
+        }
+        Expression expr = _return.getExpression();
+        if (!isJodaExpr(expr)) {
+            return _return;
+        }
+        J methodOrLambda = getCursor().dropParentUntil(j -> j instanceof J.MethodDeclaration || j instanceof J.Lambda).getValue();
+        if (methodOrLambda instanceof J.Lambda) {
+            return _return;
+        }
+        J.MethodDeclaration method = (J.MethodDeclaration) methodOrLambda;
+        Expression updatedExpr = (Expression) new JodaTimeVisitor(acc, true, scopes)
+                .visit(expr, ctx, getCursor().getParentTreeCursor());
+        boolean isSafe = !isJodaExpr(updatedExpr);
+
+        addReferencedVars(expr, method.getMethodType());
+        acc.getSafeMethodMap().compute(method.getMethodType(), (k, v) -> v == null ? isSafe : v && isSafe);
+        if (!isSafe) {
+            acc.getUnsafeVars().addAll(methodReferencedVars.get(method.getMethodType()));
+        }
+        return _return;
     }
 
     private void processMarkersOnExpression(List<Expression> expressions, NamedVariable var) {
@@ -146,7 +243,23 @@ class JodaTimeScanner extends ScopeAwareVisitor {
         }
     }
 
-    private boolean isJodaExpr(Expression expression) {
+    /**
+     * Traverses the cursor to find the first non-Joda expression in the path.
+     * If no non-Joda expression is found, it returns the cursor pointing
+     * to the last Joda expression whose parent is not an Expression.
+     */
+    private static Cursor findBoundaryCursorForJodaExpr(Cursor cursor) {
+        while (cursor.getValue() instanceof Expression && isJodaExpr(cursor.getValue())) {
+            Cursor parent = cursor.getParentTreeCursor();
+            if (parent.getValue() instanceof J && !(parent.getValue() instanceof Expression)) {
+                return cursor;
+            }
+            cursor = parent;
+        }
+        return cursor;
+    }
+
+    private static boolean isJodaExpr(Expression expression) {
         return expression.getType() != null && expression.getType().isAssignableFrom(JODA_CLASS_PATTERN);
     }
 
@@ -170,6 +283,13 @@ class JodaTimeScanner extends ScopeAwareVisitor {
         for (NamedVariable dep : varDependencies.getOrDefault(root, Collections.emptySet())) {
             dfs(dep, visited);
         }
+    }
+
+    private void addReferencedVars(Expression expr, JavaType.Method method) {
+        Set<@Nullable NamedVariable> referencedVars = new HashSet<>();
+        new FindVarReferences().visit(expr, referencedVars, getCursor().getParentTreeCursor());
+        referencedVars.remove(null);
+        methodReferencedVars.computeIfAbsent(method, k -> new HashSet<>()).addAll(referencedVars);
     }
 
     @RequiredArgsConstructor
@@ -205,11 +325,12 @@ class JodaTimeScanner extends ScopeAwareVisitor {
                 return mayBeMarker.get();
             }
 
-            Cursor boundary = findBoundaryCursorForJodaExpr();
+            Cursor boundary = findBoundaryCursorForJodaExpr(getCursor());
             boolean isSafe = true;
-            // TODO: handle return statement
             if (boundary.getParentTreeCursor().getValue() instanceof J.Return) {
-                isSafe = false;
+                // TODO: handle return statement in lambda
+                isSafe = boundary.dropParentUntil(j -> j instanceof J.MethodDeclaration || j instanceof J.Lambda)
+                  .getValue() instanceof J.MethodDeclaration;
             }
             Expression boundaryExpr = boundary.getValue();
             J j = new JodaTimeVisitor(new JodaTimeRecipe.Accumulator(), false, scopes)
@@ -221,23 +342,6 @@ class JodaTimeScanner extends ScopeAwareVisitor {
             isSafe = isSafe && !hasJodaType.get() && !referencedVars.contains(null);
             referencedVars.remove(null);
             return new SafeCheckMarker(UUID.randomUUID(), isSafe, referencedVars);
-        }
-
-        /**
-         * Traverses the cursor to find the first non-Joda expression in the path.
-         * If no non-Joda expression is found, it returns the cursor pointing
-         * to the last Joda expression whose parent is not an Expression.
-         */
-        private Cursor findBoundaryCursorForJodaExpr() {
-            Cursor cursor = getCursor();
-            while (cursor.getValue() instanceof Expression && isJodaExpr(cursor.getValue())) {
-                Cursor parent = cursor.getParentTreeCursor();
-                if (parent.getValue() instanceof J && !(parent.getValue() instanceof Expression)) {
-                    return cursor;
-                }
-                cursor = parent;
-            }
-            return cursor;
         }
 
         private Optional<Cursor> findArgumentExprCursor() {
@@ -282,5 +386,11 @@ class JodaTimeScanner extends ScopeAwareVisitor {
             }
             return super.visitExpression(expression, hasJodaType);
         }
+    }
+
+    @Value
+    private static class UnresolvedVar {
+        JavaType declaringType;
+        String varName;
     }
 }

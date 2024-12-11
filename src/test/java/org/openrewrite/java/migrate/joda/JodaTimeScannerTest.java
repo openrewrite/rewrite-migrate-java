@@ -21,6 +21,8 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -142,7 +144,7 @@ class JodaTimeScannerTest implements RewriteTest {
     }
 
     @Test
-    void localVarUsedReferencedInReturnStatement() { // not supported yet
+    void localVarUsedReferencedInReturnStatement() {
         JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
         // language=java
         rewriteRun(
@@ -167,11 +169,7 @@ class JodaTimeScannerTest implements RewriteTest {
               """
           )
         );
-        // The local variable dt used in return statement.
-        assertEquals(2, scanner.getAcc().getUnsafeVars().size());
-        for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
-            assertTrue(var.getSimpleName().equals("dtz") || var.getSimpleName().equals("dt"));
-        }
+        assertThat(scanner.getAcc().getUnsafeVars()).isEmpty();
     }
 
     @Test
@@ -213,22 +211,22 @@ class JodaTimeScannerTest implements RewriteTest {
           spec -> spec.recipe(toRecipe(() -> scanner)),
           java(
             """
-              import org.joda.time.Interval;
+              import org.joda.time.Period;
               import java.util.stream.Collectors;
               import java.util.stream.Stream;
               import java.util.List;
               
               class A {
-                  public Interval interval() {
-                      return new Interval(10, 20);
+                  public Period period() {
+                      return new Period();
                   }
               
                   public void foo() {
                       List<Integer> list = Stream.of(1, 2, 3).peek(i -> {
-                            Interval i1 = interval();
-                            Interval i2 = new Interval(i, 100);
-                            if (i1 != null && !i1.contains(i2)) {
-                                System.out.println("i1 does not contain i2");
+                            Period p1 = period();
+                            Period p2 = new Period(i, 100);
+                            if (p1 != null && p1.plus(p2).getDays() > 10) {
+                                System.out.println("Hello world!");
                             }
                       }).toList();
                   }
@@ -238,7 +236,7 @@ class JodaTimeScannerTest implements RewriteTest {
         );
         assertThat(scanner.getAcc().getUnsafeVars().stream().map(J.VariableDeclarations.NamedVariable::getSimpleName))
           .hasSize(2)
-          .containsExactlyInAnyOrder("i1", "i2");
+          .containsExactlyInAnyOrder("p1", "p2");
     }
 
     @Test
@@ -249,28 +247,28 @@ class JodaTimeScannerTest implements RewriteTest {
           spec -> spec.recipe(toRecipe(() -> scanner)),
           java(
             """
-              import org.joda.time.Interval;
+              import org.joda.time.Period;
               import java.util.stream.Collectors;
               import java.util.stream.Stream;
               import java.util.List;
               
               class A {
-                  public Interval interval() {
-                      return new Interval(10, 20);
+                  public Period period() {
+                      return new Period();
                   }
               
                   public void foo() {
                       List<Integer> list = Stream.of(1, 2, 3).peek(i -> {
-                            Interval i1 = interval();
-                            Interval i2 = new Interval(i, 100);
-                            if (i1 != null && !i1.contains(i2)) {
-                                System.out.println("i1 does not contain i2");
+                            Period p1 = period();
+                            Period p2 = new Period(i, 100);
+                            if (p1 != null && p1.plus(p2).getDays() > 10) {
+                                System.out.println("Hello world!");
                             }
                       }).peek(i -> {
-                            Interval i3 = interval();
-                            Interval i4 = new Interval(i, 100);
-                            if (i3 != null && !i3.contains(i4)) {
-                                System.out.println("i3 does not contain i4");
+                            Period p3 = period();
+                            Period p4 = new Period(i, 100);
+                            if (p3 != null && p3.plus(p4).getDays() > 10) {
+                                System.out.println("Hello world!");
                             }
                       }).toList();
                   }
@@ -280,6 +278,150 @@ class JodaTimeScannerTest implements RewriteTest {
         );
         assertThat(scanner.getAcc().getUnsafeVars().stream().map(J.VariableDeclarations.NamedVariable::getSimpleName))
           .hasSize(4)
-          .containsExactlyInAnyOrder("i1", "i2", "i3", "i4");
+          .containsExactlyInAnyOrder("p1", "p2", "p3", "p4");
+    }
+
+    @Test
+    void hasSafeMethods() {
+        JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
+        // language=java
+        rewriteRun(
+          spec -> spec.recipe(toRecipe(() -> scanner)),
+          java(
+            """
+               import org.joda.time.DateTime;
+
+               class A {
+                   private DateTime dateTime() {
+                       DateTime dt = new DateTime();
+                       return dt;
+                   }
+                   public void print() {
+                       System.out.println(dateTime());
+                   }
+              }
+              """
+          )
+        );
+        assertThat(scanner.getAcc().getSafeMethodMap()).hasSize(1);
+        assertThat(scanner.getAcc().getSafeMethodMap().entrySet().stream().filter(Map.Entry::getValue).map(e -> e.getKey().toString()))
+                .containsExactlyInAnyOrder("A{name=dateTime,return=org.joda.time.DateTime,parameters=[]}");
+        assertThat(scanner.getAcc().getUnsafeVars()).isEmpty();
+    }
+
+    @Test
+    void methodInvocationBeforeDeclaration() {
+        JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
+        // language=java
+        rewriteRun(
+          spec -> spec.recipe(toRecipe(() -> scanner)),
+          java(
+            """
+               import org.joda.time.DateTime;
+
+               class A {
+                   public void print() {
+                       System.out.println(dateTime());
+                   }
+                   private DateTime dateTime() {
+                       DateTime dt = new DateTime();
+                       return dt;
+                   }
+              }
+              """
+          )
+        );
+        assertThat(scanner.getAcc().getSafeMethodMap()).hasSize(1);
+        assertThat(scanner.getAcc().getSafeMethodMap().entrySet().stream().filter(Map.Entry::getValue).map(e -> e.getKey().toString()))
+          .containsExactlyInAnyOrder("A{name=dateTime,return=org.joda.time.DateTime,parameters=[]}");
+        assertThat(scanner.getAcc().getUnsafeVars()).isEmpty();
+    }
+
+    @Test
+    void safeMethodWithUnsafeParam() {
+        JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
+        // language=java
+        rewriteRun(
+          spec -> spec.recipe(toRecipe(() -> scanner)),
+          java(
+            """
+              import org.joda.time.DateTime;
+              import org.joda.time.Period;
+
+              class A {
+                  private DateTime dateTime(Period period) {
+                      DateTime dt = new DateTime();
+                      System.out.println(period);
+                      return dt;
+                  }
+                  public void print() {
+                      System.out.println(dateTime(new Period()));
+                  }
+              }
+              """
+          )
+        );
+        assertThat(scanner.getAcc().getSafeMethodMap()).hasSize(1);
+        assertThat(scanner.getAcc().getSafeMethodMap().entrySet().stream().filter(Map.Entry::getValue).map(e -> e.getKey().toString()))
+          .containsExactlyInAnyOrder("A{name=dateTime,return=org.joda.time.DateTime,parameters=[org.joda.time.Period]}");
+        assertThat(scanner.getAcc().getUnsafeVars().stream().map(J.VariableDeclarations.NamedVariable::getSimpleName))
+                .containsExactlyInAnyOrder("period");
+    }
+
+    @Test
+    void unsafeMethodDueToUnhandledUsage() {
+        JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
+        // language=java
+        rewriteRun(
+          spec -> spec.recipe(toRecipe(() -> scanner)),
+          java(
+            """
+              import org.joda.time.DateTime;
+
+              class A {
+                  private DateTime dateTime() {
+                      DateTime dt = new DateTime();
+                      return dt;
+                  }
+                  public void print() {
+                      dateTime().toDateMidnight();
+                  }
+              }
+              """
+          )
+        );
+        assertThat(scanner.getAcc().getSafeMethodMap()).hasSize(1);
+        assertThat(scanner.getAcc().getSafeMethodMap().entrySet().stream().filter(Map.Entry::getValue)).isEmpty();
+        assertThat(scanner.getAcc().getUnsafeVars().stream().map(J.VariableDeclarations.NamedVariable::getSimpleName))
+                .containsExactlyInAnyOrder("dt");
+    }
+
+    @Test
+    void unsafeMethodDueToIndirectUnhandledUsage() {
+        JodaTimeScanner scanner = new JodaTimeScanner(new JodaTimeRecipe.Accumulator());
+        // language=java
+        rewriteRun(
+          spec -> spec.recipe(toRecipe(() -> scanner)),
+          java(
+            """
+              import org.joda.time.DateTime;
+
+              class A {
+                  private DateTime dateTime() {
+                      DateTime dt = new DateTime();
+                      return dt;
+                  }
+                  public void print() {
+                      DateTime dt = dateTime();
+                      dt.toDateMidnight();
+                  }
+              }
+              """
+          )
+        );
+        assertThat(scanner.getAcc().getSafeMethodMap()).hasSize(1);
+        assertThat(scanner.getAcc().getSafeMethodMap().entrySet().stream().filter(Map.Entry::getValue)).isEmpty();
+        assertThat(scanner.getAcc().getUnsafeVars().stream().map(J.VariableDeclarations.NamedVariable::getSimpleName))
+          .containsExactlyInAnyOrder("dt", "dt");
     }
 }

@@ -85,6 +85,22 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
     }
 
     @Override
+    public @NonNull J visitMethodDeclaration(@NonNull J.MethodDeclaration method, @NonNull ExecutionContext ctx) {
+        J.MethodDeclaration m = (J.MethodDeclaration) super.visitMethodDeclaration(method, ctx);
+        if (m.getReturnTypeExpression() == null || !m.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return m;
+        }
+        if (safeMigration && !acc.getSafeMethodMap().getOrDefault(m.getMethodType(), false)) {
+            return m;
+        }
+
+        JavaType.Class returnType = TimeClassMap.getJavaTimeType(((JavaType.Class) m.getType()).getFullyQualifiedName());
+        J.Identifier returnExpr = TypeTree.build(returnType.getClassName()).withType(returnType).withPrefix(Space.format(" "));
+        return m.withReturnTypeExpression(returnExpr)
+          .withMethodType(m.getMethodType().withReturnType(returnType));
+    }
+
+    @Override
     public @NonNull J visitVariableDeclarations(@NonNull J.VariableDeclarations multiVariable, @NonNull ExecutionContext ctx) {
         if (multiVariable.getTypeExpression() == null || !multiVariable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return super.visitVariableDeclarations(multiVariable, ctx);
@@ -147,6 +163,13 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
     @Override
     public @NonNull J visitMethodInvocation(@NonNull J.MethodInvocation method, @NonNull ExecutionContext ctx) {
         J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
+
+        // internal method with Joda class as return type
+        if (!method.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN) &&
+                method.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return migrateNonJodaMethod(method, m);
+        }
+
         if (hasJodaType(m.getArguments()) || isJodaVarRef(m.getSelect())) {
             return method;
         }
@@ -179,7 +202,9 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
 
         JavaType.FullyQualified jodaType = ((JavaType.Class) ident.getType());
         JavaType.FullyQualified fqType = TimeClassMap.getJavaTimeType(jodaType.getFullyQualifiedName());
-
+        if (fqType == null) {
+            return ident;
+        }
         return ident.withType(fqType)
                 .withFieldType(ident.getFieldType().withType(fqType));
     }
@@ -216,6 +241,19 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             return updatedExpr;
         }
         return original;
+    }
+
+    private J.MethodInvocation migrateNonJodaMethod(J.MethodInvocation original, J.MethodInvocation updated) {
+        if (safeMigration && !acc.getSafeMethodMap().getOrDefault(updated.getMethodType(), false)) {
+            return original;
+        }
+        JavaType.Class returnType = (JavaType.Class) updated.getMethodType().getReturnType();
+        JavaType.Class updatedReturnType = TimeClassMap.getJavaTimeType(returnType.getFullyQualifiedName());
+        if (updatedReturnType == null) {
+            return original; // unhandled case
+        }
+        return updated.withMethodType(updated.getMethodType().withReturnType(updatedReturnType))
+                .withName(updated.getName().withType(updatedReturnType));
     }
 
     private boolean hasJodaType(List<Expression> exprs) {
