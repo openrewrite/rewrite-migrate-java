@@ -165,8 +165,8 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
 
         // internal method with Joda class as return type
-        if (!method.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN)
-                && method.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+        if (!method.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN) &&
+                method.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return migrateNonJodaMethod(method, m);
         }
 
