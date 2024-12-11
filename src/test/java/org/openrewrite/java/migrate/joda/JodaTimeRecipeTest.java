@@ -281,6 +281,105 @@ class JodaTimeRecipeTest implements RewriteTest {
     }
 
     @Test
+    void migrateMethodWithSafeReturnExpression() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import org.joda.time.DateTime;
+              import org.joda.time.Interval;
+
+              class A {
+                  public DateTime foo(DateTime dt) {
+                      Interval interval = new Interval(dt, dt.plusDays(1));
+                      return interval.getEnd();
+                  }
+
+                  private static class Bar {
+                      public void bar(DateTime dt) {
+                          DateTime d = foo(dt);
+                          System.out.println(d.getMillis());
+                      }
+                  }
+              }
+              """,
+            """
+              import org.threeten.extra.Interval;
+
+              import java.time.ZoneId;
+              import java.time.ZonedDateTime;
+
+              class A {
+                  public ZonedDateTime foo(ZonedDateTime dt) {
+                      Interval interval = Interval.of(dt.toInstant(), dt.plusDays(1).toInstant());
+                      return interval.getEnd().atZone(ZoneId.systemDefault());
+                  }
+
+                  private static class Bar {
+                      public void bar(ZonedDateTime dt) {
+                          ZonedDateTime d = foo(dt);
+                          System.out.println(d.toInstant().toEpochMilli());
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void migrateMethodWithSafeReturnExpressionAndUnsafeParam() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import org.joda.time.DateTime;
+              import org.joda.time.Interval;
+
+              class A {
+                  public DateTime foo(DateTime dt) {
+                      DateTime d = dt.toDateMidnight();
+                      DateTime d2 = DateTime.now();
+                      Interval interval = new Interval(d2, d2.plusDays(1));
+                      return interval.getEnd();
+                  }
+
+                  private static class Bar {
+                      public void bar() {
+                          DateTime d = foo(new DateTime());
+                          System.out.println(d.getMillis());
+                      }
+                  }
+              }
+              """,
+            """
+              import org.joda.time.DateTime;
+              import org.threeten.extra.Interval;
+
+              import java.time.ZoneId;
+              import java.time.ZonedDateTime;
+
+              class A {
+                  public ZonedDateTime foo(DateTime dt) {
+                      DateTime d = dt.toDateMidnight();
+                      ZonedDateTime d2 = ZonedDateTime.now();
+                      Interval interval = Interval.of(d2.toInstant(), d2.plusDays(1).toInstant());
+                      return interval.getEnd().atZone(ZoneId.systemDefault());
+                  }
+
+                  private static class Bar {
+                      public void bar() {
+                          ZonedDateTime d = foo(new DateTime());
+                          System.out.println(d.toInstant().toEpochMilli());
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void doNotMigrateUnsafeMethodParam() {
         //language=java
         rewriteRun(

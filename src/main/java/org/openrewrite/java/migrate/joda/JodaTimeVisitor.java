@@ -243,7 +243,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         return original;
     }
 
-    private MethodCall migrateNonJodaMethod(MethodCall original, MethodCall updated) {
+    private J.MethodInvocation migrateNonJodaMethod(J.MethodInvocation original, J.MethodInvocation updated) {
         if (safeMigration && !acc.getSafeMethodMap().getOrDefault(updated.getMethodType(), false)) {
             return original;
         }
@@ -252,7 +252,8 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         if (updatedReturnType == null) {
             return original; // unhandled case
         }
-        return updated.withMethodType(updated.getMethodType().withReturnType(updatedReturnType));
+        return updated.withMethodType(updated.getMethodType().withReturnType(updatedReturnType))
+                .withName(updated.getName().withType(updatedReturnType));
     }
 
     private boolean hasJodaType(List<Expression> exprs) {
