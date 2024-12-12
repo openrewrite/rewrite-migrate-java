@@ -52,6 +52,10 @@ recipeList:
       groupId: com.google.inject
       artifactId: guice
       newVersion: 5.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: commons-codec
+      artifactId: commons-codec
+      newVersion: 1.17.x
   - org.openrewrite.java.migrate.AddLombokMapstructBinding
 
 ---
