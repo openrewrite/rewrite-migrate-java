@@ -85,6 +85,34 @@ class UseLombokGetterTest implements RewriteTest {
     }
 
     @Test
+    void replaceGetterWithMultiVariable() {
+        // Technically this adds a new public getter not there previously, but we'll tolerate it
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo = 9, bar = 10;
+
+                  public int getFoo() {
+                      return foo;
+                  }
+              }
+              """,
+            """
+              import lombok.Getter;
+
+              class A {
+
+                  @Getter
+                  int foo = 9, bar = 10;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void replacePackageGetter() {
         rewriteRun(// language=java
           java(

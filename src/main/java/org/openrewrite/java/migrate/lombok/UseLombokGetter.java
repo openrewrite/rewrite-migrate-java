@@ -48,12 +48,7 @@ public class UseLombokGetter extends Recipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return "Convert trivial getter methods to `@Getter` annotations on their respective fields.\n\n" +
-                "Limitations:\n\n" +
-                " - Does not add a dependency to Lombok, users need to do that manually\n" +
-                " - Ignores fields that are declared on the same line as others, e.g. `private int foo, bar; " +
-                "Users who have such fields are advised to separate them beforehand with [org.openrewrite.staticanalysis.MultipleVariableDeclaration](https://docs.openrewrite.org/recipes/staticanalysis/multiplevariabledeclarations).\n" +
-                " - Does not offer any of the configuration keys listed in https://projectlombok.org/features/GetterSetter.";
+        return "Convert trivial getter methods to `@Getter` annotations on their respective fields.";
     }
 
     @Override
