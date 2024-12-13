@@ -32,6 +32,9 @@ import static org.openrewrite.java.tree.J.Modifier.Type.*;
 class LombokUtils {
 
     static boolean isGetter(J.MethodDeclaration method) {
+        if (method.getMethodType() == null) {
+            return false;
+        }
         // Check signature: no parameters
         if (!(method.getParameters().get(0) instanceof J.Empty) || method.getReturnTypeExpression() == null) {
             return false;
@@ -43,17 +46,12 @@ class LombokUtils {
             return false;
         }
         // Check field is declared on method type
-        JavaType.Method methodType = method.getMethodType();
-        if (methodType == null) {
-            return false;
-        }
-        JavaType.FullyQualified declaringType = methodType.getDeclaringType();
-
-        // Check return: type and matching field name
+        JavaType.FullyQualified declaringType = method.getMethodType().getDeclaringType();
         Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
         if (returnExpression instanceof J.Identifier) {
             J.Identifier identifier = (J.Identifier) returnExpression;
             if (identifier.getFieldType() != null && declaringType == identifier.getFieldType().getOwner()) {
+                // Check return: type and matching field name
                 return hasMatchingTypeAndName(method, identifier.getType(), identifier.getSimpleName());
             }
         } else if (returnExpression instanceof J.FieldAccess) {
@@ -61,6 +59,7 @@ class LombokUtils {
             Expression target = fieldAccess.getTarget();
             if (target instanceof J.Identifier && ((J.Identifier) target).getFieldType() != null &&
                     declaringType == ((J.Identifier) target).getFieldType().getOwner()) {
+                // Check return: type and matching field name
                 return hasMatchingTypeAndName(method, fieldAccess.getType(), fieldAccess.getSimpleName());
             }
         }

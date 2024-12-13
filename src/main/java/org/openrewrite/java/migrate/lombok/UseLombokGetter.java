@@ -68,44 +68,39 @@ public class UseLombokGetter extends Recipe {
     @Value
     @EqualsAndHashCode(callSuper = false)
     private static class MethodRemover extends JavaIsoVisitor<ExecutionContext> {
-        private static final String FIELDS_TO_DECORATE_KEY = "FIELDS_TO_DECORATE";
-
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            Set<Finding> fieldsToDecorate = new HashSet<>();
 
-            //initialize set of fields to annotate
-            getCursor().putMessage(FIELDS_TO_DECORATE_KEY, new HashSet<Finding>());
-
-            //delete methods, note down corresponding fields
-            J.ClassDeclaration classDeclAfterVisit = super.visitClassDeclaration(classDecl, ctx);
+            J.Block oldBody = classDecl.getBody();
+            J.Block newBody = (J.Block) new JavaIsoVisitor<ExecutionContext>() {
+                //delete methods, note down corresponding fields
+                @Override
+                public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+                    if (LombokUtils.isGetter(method)) {
+                        Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
+                        if (returnExpression instanceof J.Identifier) {
+                            fieldsToDecorate.add(new Finding(
+                                    ((J.Identifier) returnExpression).getSimpleName(),
+                                    LombokUtils.getAccessLevel(method.getModifiers())));
+                            return null;
+                        } else if (returnExpression instanceof J.FieldAccess) {
+                            fieldsToDecorate.add(new Finding(
+                                    ((J.FieldAccess) returnExpression).getSimpleName(),
+                                    LombokUtils.getAccessLevel(method.getModifiers())));
+                            return null;
+                        }
+                    }
+                    return method;
+                }
+            }.visitNonNull(oldBody, ctx);
 
             //only thing that can have changed is removal of getter methods
-            if (classDeclAfterVisit != classDecl) {
+            if (oldBody != newBody) {
                 //this set collects the fields for which existing methods have already been removed
-                Set<Finding> fieldsToDecorate = getCursor().pollNearestMessage(FIELDS_TO_DECORATE_KEY);
                 doAfterVisit(new FieldAnnotator(fieldsToDecorate));
             }
-            return classDeclAfterVisit;
-        }
-
-        @Override
-        public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-            if (method.getMethodType() != null && LombokUtils.isGetter(method)) {
-                Set<Finding> set = getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY);
-                Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
-                if (returnExpression instanceof J.Identifier) {
-                    set.add(new Finding(
-                            ((J.Identifier) returnExpression).getSimpleName(),
-                            LombokUtils.getAccessLevel(method.getModifiers())));
-                    return null;
-                } else if (returnExpression instanceof J.FieldAccess) {
-                    set.add(new Finding(
-                            ((J.FieldAccess) returnExpression).getSimpleName(),
-                            LombokUtils.getAccessLevel(method.getModifiers())));
-                    return null;
-                }
-            }
-            return method;
+            return super.visitClassDeclaration(classDecl.withBody(newBody), ctx);
         }
     }
 
