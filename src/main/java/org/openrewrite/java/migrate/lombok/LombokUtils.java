@@ -42,14 +42,27 @@ class LombokUtils {
                 !(method.getBody().getStatements().get(0) instanceof J.Return)) {
             return false;
         }
+        // Check field is declared on method type
+        JavaType.Method methodType = method.getMethodType();
+        if (methodType == null) {
+            return false;
+        }
+        JavaType.FullyQualified declaringType = methodType.getDeclaringType();
+
         // Check return: type and matching field name
         Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
         if (returnExpression instanceof J.Identifier) {
             J.Identifier identifier = (J.Identifier) returnExpression;
-            return hasMatchingTypeAndName(method, identifier.getType(), identifier.getSimpleName());
+            if (identifier.getFieldType() != null && declaringType == identifier.getFieldType().getOwner()) {
+                return hasMatchingTypeAndName(method, identifier.getType(), identifier.getSimpleName());
+            }
         } else if (returnExpression instanceof J.FieldAccess) {
             J.FieldAccess fieldAccess = (J.FieldAccess) returnExpression;
-            return hasMatchingTypeAndName(method, fieldAccess.getType(), fieldAccess.getSimpleName());
+            Expression target = fieldAccess.getTarget();
+            if (target instanceof J.Identifier && ((J.Identifier) target).getFieldType() != null &&
+                    declaringType == ((J.Identifier) target).getFieldType().getOwner()) {
+                return hasMatchingTypeAndName(method, fieldAccess.getType(), fieldAccess.getSimpleName());
+            }
         }
         return false;
     }
