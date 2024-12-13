@@ -72,13 +72,13 @@ public class UseLombokGetter extends Recipe {
                             ((J.Identifier) returnExpression).getFieldType() != null) {
                         doAfterVisit(new FieldAnnotator(
                                 ((J.Identifier) returnExpression).getFieldType(),
-                                LombokUtils.getAccessLevel(method.getModifiers())));
+                                LombokUtils.getAccessLevel(method)));
                         return null;
                     } else if (returnExpression instanceof J.FieldAccess &&
                             ((J.FieldAccess) returnExpression).getName().getFieldType() != null) {
                         doAfterVisit(new FieldAnnotator(
                                 ((J.FieldAccess) returnExpression).getName().getFieldType(),
-                                LombokUtils.getAccessLevel(method.getModifiers())));
+                                LombokUtils.getAccessLevel(method)));
                         return null;
                     }
                 }

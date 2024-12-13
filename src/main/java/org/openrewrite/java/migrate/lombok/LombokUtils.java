@@ -15,16 +15,12 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
-import com.google.common.collect.ImmutableMap;
 import lombok.AccessLevel;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-
-import java.util.Collection;
-import java.util.Map;
 
 import static lombok.AccessLevel.*;
 import static org.openrewrite.java.tree.J.Modifier.Type.*;
@@ -87,17 +83,15 @@ class LombokUtils {
         return "get" + StringUtils.capitalize(fieldName);
     }
 
-    static AccessLevel getAccessLevel(Collection<J.Modifier> modifiers) {
-        Map<J.Modifier.Type, AccessLevel> map = ImmutableMap.<J.Modifier.Type, AccessLevel>builder()
-                .put(Public, PUBLIC)
-                .put(Protected, PROTECTED)
-                .put(Private, PRIVATE)
-                .build();
-
-        return modifiers.stream()
-                .map(modifier -> map.getOrDefault(modifier.getType(), AccessLevel.NONE))
-                .filter(a -> a != AccessLevel.NONE)
-                .findAny().orElse(AccessLevel.PACKAGE);
+    static AccessLevel getAccessLevel(J.MethodDeclaration modifiers) {
+        if (modifiers.hasModifier(Public)) {
+            return PUBLIC;
+        } else if (modifiers.hasModifier(Protected)) {
+            return PROTECTED;
+        } else if (modifiers.hasModifier(Private)) {
+            return PRIVATE;
+        }
+        return PACKAGE;
     }
 
 }
