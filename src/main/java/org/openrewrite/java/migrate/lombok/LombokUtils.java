@@ -63,7 +63,7 @@ class LombokUtils {
     }
 
     private static boolean hasMatchingTypeAndName(J.MethodDeclaration method, @Nullable JavaType type, String simpleName) {
-        if (method.getType().equals(type)) {
+        if (method.getType() == type) {
             String deriveGetterMethodName = deriveGetterMethodName(type, simpleName);
             return method.getSimpleName().equals(deriveGetterMethodName);
         }
