@@ -27,13 +27,14 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 
 import static java.util.Comparator.comparing;
+import static lombok.AccessLevel.PUBLIC;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -62,95 +63,52 @@ public class UseLombokGetter extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MethodRemover();
-    }
-
-    @Value
-    @EqualsAndHashCode(callSuper = false)
-    private static class MethodRemover extends JavaIsoVisitor<ExecutionContext> {
-        @Override
-        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-            Set<Finding> fieldsToDecorate = new HashSet<>();
-
-            J.Block oldBody = classDecl.getBody();
-            J.Block newBody = (J.Block) new JavaIsoVisitor<ExecutionContext>() {
-                //delete methods, note down corresponding fields
-                @Override
-                public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                    if (LombokUtils.isGetter(method)) {
-                        Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
-                        if (returnExpression instanceof J.Identifier) {
-                            fieldsToDecorate.add(new Finding(
-                                    ((J.Identifier) returnExpression).getSimpleName(),
-                                    LombokUtils.getAccessLevel(method.getModifiers())));
-                            return null;
-                        } else if (returnExpression instanceof J.FieldAccess) {
-                            fieldsToDecorate.add(new Finding(
-                                    ((J.FieldAccess) returnExpression).getSimpleName(),
-                                    LombokUtils.getAccessLevel(method.getModifiers())));
-                            return null;
-                        }
+        return new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+                if (LombokUtils.isGetter(method)) {
+                    Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
+                    if (returnExpression instanceof J.Identifier &&
+                            ((J.Identifier) returnExpression).getFieldType() != null) {
+                        doAfterVisit(new FieldAnnotator(
+                                ((J.Identifier) returnExpression).getFieldType(),
+                                LombokUtils.getAccessLevel(method.getModifiers())));
+                        return null;
+                    } else if (returnExpression instanceof J.FieldAccess &&
+                            ((J.FieldAccess) returnExpression).getName().getFieldType() != null) {
+                        doAfterVisit(new FieldAnnotator(
+                                ((J.FieldAccess) returnExpression).getName().getFieldType(),
+                                LombokUtils.getAccessLevel(method.getModifiers())));
+                        return null;
                     }
-                    return method;
                 }
-            }.visitNonNull(oldBody, ctx);
-
-            //only thing that can have changed is removal of getter methods
-            if (oldBody != newBody) {
-                //this set collects the fields for which existing methods have already been removed
-                doAfterVisit(new FieldAnnotator(fieldsToDecorate));
+                return method;
             }
-            return super.visitClassDeclaration(classDecl.withBody(newBody), ctx);
-        }
+        };
     }
 
-    @Value
-    private static class Finding {
-        String fieldName;
-        AccessLevel accessLevel;
-    }
 
     @Value
     @EqualsAndHashCode(callSuper = false)
     static class FieldAnnotator extends JavaIsoVisitor<ExecutionContext> {
 
-        Set<Finding> fieldsToDecorate;
-
-        private JavaTemplate getAnnotation(AccessLevel accessLevel) {
-            JavaTemplate.Builder builder = AccessLevel.PUBLIC.equals(accessLevel) ?
-                    JavaTemplate.builder("@Getter\n") :
-                    JavaTemplate.builder("@Getter(AccessLevel." + accessLevel.name() + ")\n")
-                            .imports("lombok.AccessLevel");
-
-            return builder
-                    .imports("lombok.Getter")
-                    .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
-                    .build();
-        }
+        JavaType field;
+        AccessLevel accessLevel;
 
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-
-            //we accept only one var decl per line, see description
-            if (multiVariable.getVariables().size() > 1) {
-                return multiVariable;
+            for (J.VariableDeclarations.NamedVariable variable : multiVariable.getVariables()) {
+                if (variable.getName().getFieldType() == field) {
+                    maybeAddImport("lombok.Getter");
+                    maybeAddImport("lombok.AccessLevel");
+                    String suffix = accessLevel == PUBLIC ? "" : String.format("(AccessLevel.%s)", accessLevel.name());
+                    return JavaTemplate.builder("@Getter" + suffix)
+                            .imports("lombok.Getter", "lombok.AccessLevel")
+                            .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
+                            .build().apply(getCursor(), multiVariable.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+                }
             }
-
-            J.VariableDeclarations.NamedVariable variable = multiVariable.getVariables().get(0);
-            Optional<Finding> field = fieldsToDecorate.stream()
-                    .filter(f -> f.fieldName.equals(variable.getSimpleName()))
-                    .findFirst();
-
-            if (!field.isPresent()) {
-                return multiVariable; //not the field we are looking for
-            }
-
-            J.VariableDeclarations annotated = getAnnotation(field.get().getAccessLevel()).apply(
-                    getCursor(),
-                    multiVariable.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
-            maybeAddImport("lombok.Getter");
-            maybeAddImport("lombok.AccessLevel");
-            return annotated;
+            return multiVariable;
         }
     }
 }
