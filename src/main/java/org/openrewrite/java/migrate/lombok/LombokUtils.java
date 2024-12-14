@@ -98,7 +98,6 @@ class LombokUtils {
         return PACKAGE;
     }
 
-
     static boolean isEffectivelySetter(J.MethodDeclaration method) {
         boolean isVoid = "void".equals(method.getType().toString());
         List<Statement> actualParameters = method.getParameters().stream()
