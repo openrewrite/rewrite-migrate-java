@@ -54,6 +54,7 @@ public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
     @Getter
     public static class Accumulator {
         private final Set<NamedVariable> unsafeVars = new HashSet<>();
+        private final Map<JavaType.Method, Boolean> safeMethodMap = new HashMap<>();
         private final VarTable varTable = new VarTable();
     }
 
