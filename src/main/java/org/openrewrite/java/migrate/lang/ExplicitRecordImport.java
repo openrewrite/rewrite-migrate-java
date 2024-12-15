@@ -49,7 +49,7 @@ public class ExplicitRecordImport extends Recipe {
                                 if (type instanceof JavaType.FullyQualified) {
                                     JavaType.FullyQualified ref = (JavaType.FullyQualified) type;
                                     if ("Record".equals(ref.getClassName()) && !ref.getPackageName().startsWith("java.lang")) {
-                                        maybeAddImport(ref.getFullyQualifiedName(), false);
+                                        maybeAddImport(ref.getFullyQualifiedName());
                                     }
                                 }
                             }
