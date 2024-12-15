@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ public class SummarizeGetter extends Recipe {
 
     @Override
     public String getDisplayName() {
-        //language=markdown
         return "Summarize @Getter on fields to class level annotation";
     }
 
@@ -100,6 +99,7 @@ public class SummarizeGetter extends Recipe {
         }
 
         private J.VariableDeclarations fixFormat(J.VariableDeclarations initial, J.VariableDeclarations visited, ExecutionContext ctx) {
+            //as of August 2024 manual fixes to the format are necessary. Hopefully in the future this method becomes obsolete
 
             boolean isAnnotationOnLineAbove = initial.toString().contains("@Getter\n");
 
@@ -121,8 +121,8 @@ public class SummarizeGetter extends Recipe {
                     && annotation.getArguments() == null //no Access level, or other arguments
                     //should only trigger on field annotation, not class annotation
                     && getCursor().getParent().getValue() instanceof J.VariableDeclarations
-                    ? null
-                    : annotation;
+                    ? null // -> delete
+                    : annotation; // -> keep
         }
     }
 }

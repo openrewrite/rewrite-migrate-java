@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,16 @@ package org.openrewrite.java.migrate.lombok;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-// This is a test for the ConvertToNoArgsConstructor recipe, as an example of how to write a test for an imperative recipe.
 class SummarizeSetterTest implements RewriteTest {
 
-    // Note, you can define defaults for the RecipeSpec and these defaults will be used for all tests.
-    // In this case, the recipe and the parser are common. See below, on how the defaults can be overridden
-    // per test.
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new SummarizeSetter())
-          .parser(JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true).classpath("lombok"));
+        spec.recipe(new SummarizeSetter());
     }
 
     @DocumentExample
