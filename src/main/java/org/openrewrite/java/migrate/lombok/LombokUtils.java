@@ -83,10 +83,6 @@ class LombokUtils {
         return "get" + StringUtils.capitalize(fieldName);
     }
 
-    private static boolean hasMatchingSetterMethodName(J.MethodDeclaration method, String simpleName) {
-        return method.getSimpleName().equals("set" + StringUtils.capitalize(simpleName));
-    }
-
     static boolean isSetter(J.MethodDeclaration method) {
         // Check return type: void
         if (method.getType() != JavaType.Primitive.Void) {
@@ -102,7 +98,6 @@ class LombokUtils {
                 !(method.getBody().getStatements().get(0) instanceof J.Assignment)) {
             return false;
         }
-        JavaType.FullyQualified declaringType = method.getMethodType().getDeclaringType();
 
         // Method parameter
         J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) method.getParameters().get(0);
@@ -116,6 +111,7 @@ class LombokUtils {
         }
 
         // Method name has to match
+        JavaType.FullyQualified declaringType = method.getMethodType().getDeclaringType();
         if (variable instanceof J.Identifier) {
             J.Identifier assignedVar = (J.Identifier) variable;
             if (hasMatchingSetterMethodName(method, assignedVar.getSimpleName())) {
@@ -133,6 +129,10 @@ class LombokUtils {
         }
 
         return false;
+    }
+
+    private static boolean hasMatchingSetterMethodName(J.MethodDeclaration method, String simpleName) {
+        return method.getSimpleName().equals("set" + StringUtils.capitalize(simpleName));
     }
 
     static AccessLevel getAccessLevel(J.MethodDeclaration methodDeclaration) {
