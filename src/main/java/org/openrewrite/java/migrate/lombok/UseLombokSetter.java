@@ -16,7 +16,7 @@
 package org.openrewrite.java.migrate.lombok;
 
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Setter;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -29,21 +29,18 @@ import org.openrewrite.java.tree.J;
 import java.util.Collections;
 import java.util.Set;
 
-import static java.util.Comparator.comparing;
-
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class UseLombokGetter extends Recipe {
+public class UseLombokSetter extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Convert getter methods to annotations";
+        return "Convert setter methods to annotations";
     }
 
     @Override
     public String getDescription() {
-        //language=markdown
-        return "Convert trivial getter methods to `@Getter` annotations on their respective fields.";
+        return "Convert trivial setter methods to `@Setter` annotations on their respective fields.";
     }
 
     @Override
@@ -56,22 +53,21 @@ public class UseLombokGetter extends Recipe {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                if (LombokUtils.isGetter(method)) {
-                    Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
-                    if (returnExpression instanceof J.Identifier &&
-                            ((J.Identifier) returnExpression).getFieldType() != null) {
-                        doAfterVisit(new FieldAnnotator(
-                                Getter.class,
-                                ((J.Identifier) returnExpression).getFieldType(),
+                if (LombokUtils.isSetter(method)) {
+                    Expression assignmentVariable = ((J.Assignment) method.getBody().getStatements().get(0)).getVariable();
+                    if (assignmentVariable instanceof J.FieldAccess &&
+                            ((J.FieldAccess) assignmentVariable).getName().getFieldType() != null) {
+                        doAfterVisit(new FieldAnnotator(Setter.class,
+                                ((J.FieldAccess) assignmentVariable).getName().getFieldType(),
                                 LombokUtils.getAccessLevel(method)));
-                        return null;
-                    } else if (returnExpression instanceof J.FieldAccess &&
-                            ((J.FieldAccess) returnExpression).getName().getFieldType() != null) {
-                        doAfterVisit(new FieldAnnotator(
-                                Getter.class,
-                                ((J.FieldAccess) returnExpression).getName().getFieldType(),
+                        return null; //delete
+
+                    } else if (assignmentVariable instanceof J.Identifier &&
+                            ((J.Identifier) assignmentVariable).getFieldType() != null) {
+                        doAfterVisit(new FieldAnnotator(Setter.class,
+                                ((J.Identifier) assignmentVariable).getFieldType(),
                                 LombokUtils.getAccessLevel(method)));
-                        return null;
+                        return null; //delete
                     }
                 }
                 return method;
