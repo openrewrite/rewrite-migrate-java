@@ -66,38 +66,6 @@ class LombokUtils {
         return false;
     }
 
-    private static boolean hasMatchingTypeAndName(J.MethodDeclaration method, @Nullable JavaType type, String simpleName) {
-        if (method.getType() == type) {
-            String deriveGetterMethodName = deriveGetterMethodName(type, simpleName);
-            return method.getSimpleName().equals(deriveGetterMethodName);
-        }
-        return false;
-    }
-
-    private static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {
-        if (type == JavaType.Primitive.Boolean) {
-            boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
-                    fieldName.substring(0, 3).matches("is[A-Z]");
-            if (alreadyStartsWithIs) {
-                return fieldName;
-            } else {
-                return "is" + StringUtils.capitalize(fieldName);
-            }
-        }
-        return "get" + StringUtils.capitalize(fieldName);
-    }
-
-    static AccessLevel getAccessLevel(J.MethodDeclaration modifiers) {
-        if (modifiers.hasModifier(Public)) {
-            return PUBLIC;
-        } else if (modifiers.hasModifier(Protected)) {
-            return PROTECTED;
-        } else if (modifiers.hasModifier(Private)) {
-            return PRIVATE;
-        }
-        return PACKAGE;
-    }
-
     static boolean isEffectivelySetter(J.MethodDeclaration method) {
         boolean isVoid = "void".equals(method.getType().toString());
         List<Statement> actualParameters = method.getParameters().stream()
@@ -130,5 +98,41 @@ class LombokUtils {
                         // type of parameter and field have to match
                         param.getType().equals(fieldAccess.getType());
 
+    }
+
+    private static boolean hasMatchingTypeAndName(J.MethodDeclaration method, @Nullable JavaType type, String simpleName) {
+        if (method.getType() == type) {
+            String deriveGetterMethodName = deriveGetterMethodName(type, simpleName);
+            return method.getSimpleName().equals(deriveGetterMethodName);
+        }
+        return false;
+    }
+
+    private static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {
+        if (type == JavaType.Primitive.Boolean) {
+            boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
+                    fieldName.substring(0, 3).matches("is[A-Z]");
+            if (alreadyStartsWithIs) {
+                return fieldName;
+            } else {
+                return "is" + StringUtils.capitalize(fieldName);
+            }
+        }
+        return "get" + StringUtils.capitalize(fieldName);
+    }
+
+    static String deriveSetterMethodName(JavaType.Variable fieldType) {
+        return "set" + StringUtils.capitalize(fieldType.getName());
+    }
+
+    static AccessLevel getAccessLevel(J.MethodDeclaration methodDeclaration) {
+        if (methodDeclaration.hasModifier(Public)) {
+            return PUBLIC;
+        } else if (methodDeclaration.hasModifier(Protected)) {
+            return PROTECTED;
+        } else if (methodDeclaration.hasModifier(Private)) {
+            return PRIVATE;
+        }
+        return PACKAGE;
     }
 }

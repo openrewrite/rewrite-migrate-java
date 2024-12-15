@@ -95,7 +95,7 @@ public class UseLombokSetter extends Recipe {
                 boolean nameMatch = method.getSimpleName().equals(LombokUtils.deriveSetterMethodName(fieldType));
                 if (nameMatch) {
                     Set<Finding> set = getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY);
-                    set.add(new Finding(fieldType.getName(), LombokUtils.getAccessLevel(method.getModifiers())));
+                    set.add(new Finding(fieldType.getName(), LombokUtils.getAccessLevel(method)));
                     return null; //delete
                 }
             }
