@@ -48,7 +48,7 @@ class LombokUtils {
             J.Identifier identifier = (J.Identifier) returnExpression;
             if (identifier.getFieldType() != null && declaringType == identifier.getFieldType().getOwner()) {
                 // Check return: type and matching field name
-                return hasMatchingTypeAndName(method, identifier.getType(), identifier.getSimpleName());
+                return hasMatchingTypeAndGetterName(method, identifier.getType(), identifier.getSimpleName());
             }
         } else if (returnExpression instanceof J.FieldAccess) {
             J.FieldAccess fieldAccess = (J.FieldAccess) returnExpression;
@@ -56,13 +56,13 @@ class LombokUtils {
             if (target instanceof J.Identifier && ((J.Identifier) target).getFieldType() != null &&
                     declaringType == ((J.Identifier) target).getFieldType().getOwner()) {
                 // Check return: type and matching field name
-                return hasMatchingTypeAndName(method, fieldAccess.getType(), fieldAccess.getSimpleName());
+                return hasMatchingTypeAndGetterName(method, fieldAccess.getType(), fieldAccess.getSimpleName());
             }
         }
         return false;
     }
 
-    private static boolean hasMatchingTypeAndName(J.MethodDeclaration method, @Nullable JavaType type, String simpleName) {
+    private static boolean hasMatchingTypeAndGetterName(J.MethodDeclaration method, @Nullable JavaType type, String simpleName) {
         if (method.getType() == type) {
             String deriveGetterMethodName = deriveGetterMethodName(type, simpleName);
             return method.getSimpleName().equals(deriveGetterMethodName);
@@ -83,6 +83,10 @@ class LombokUtils {
         return "get" + StringUtils.capitalize(fieldName);
     }
 
+    private static boolean hasMatchingSetterMethodName(J.MethodDeclaration method, String simpleName) {
+        return method.getSimpleName().equals("set" + StringUtils.capitalize(simpleName));
+    }
+
     static boolean isSetter(J.MethodDeclaration method) {
         // Check return type: void
         if (method.getType() != JavaType.Primitive.Void) {
@@ -98,37 +102,37 @@ class LombokUtils {
                 !(method.getBody().getStatements().get(0) instanceof J.Assignment)) {
             return false;
         }
-        J.Assignment assignment = (J.Assignment) method.getBody().getStatements().get(0);
-        J.FieldAccess assignedField = (J.FieldAccess) assignment.getVariable();
-        if (!method.getSimpleName().equals(deriveSetterMethodName(assignedField))) {
-            return false;
-        }
+        JavaType.FullyQualified declaringType = method.getMethodType().getDeclaringType();
 
-        // Check argument is assigned to field
+        // Method parameter
         J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) method.getParameters().get(0);
         J.VariableDeclarations.NamedVariable param = variableDeclarations.getVariables().get(0);
 
-        // type of parameter and field have to match
-        if (!param.getType().equals(assignedField.getType())) {
+        // Check there's no up/down cast between parameter and field
+        J.Assignment assignment = (J.Assignment) method.getBody().getStatements().get(0);
+        Expression variable = assignment.getVariable();
+        if (param.getType() != variable.getType()) {
             return false;
         }
 
-        // Check field is declared on method type
-        JavaType.FullyQualified declaringType = method.getMethodType().getDeclaringType();
-        if (assignedField.getTarget() instanceof J.Identifier) {
-            J.Identifier target = (J.Identifier) assignedField.getTarget();
-            return target.getFieldType() != null && declaringType == target.getFieldType().getOwner();
-        } else if (assignedField.getTarget() instanceof J.FieldAccess) {
-            Expression target = ((J.FieldAccess) assignedField.getTarget()).getTarget();
-            return target instanceof J.Identifier && ((J.Identifier) target).getFieldType() != null &&
-                    declaringType == ((J.Identifier) target).getFieldType().getOwner();
+        // Method name has to match
+        if (variable instanceof J.Identifier) {
+            J.Identifier assignedVar = (J.Identifier) variable;
+            if (hasMatchingSetterMethodName(method, assignedVar.getSimpleName())) {
+                // Check field is declared on method type
+                return assignedVar.getFieldType() != null && declaringType == assignedVar.getFieldType().getOwner();
+            }
+        } else if (variable instanceof J.FieldAccess) {
+            J.FieldAccess assignedField = (J.FieldAccess) variable;
+            if (hasMatchingSetterMethodName(method, assignedField.getSimpleName())) {
+                Expression target = assignedField.getTarget();
+                // Check field is declared on method type
+                return target instanceof J.Identifier && ((J.Identifier) target).getFieldType() != null &&
+                        declaringType == ((J.Identifier) target).getFieldType().getOwner();
+            }
         }
 
         return false;
-    }
-
-    private static String deriveSetterMethodName(J.FieldAccess fieldAccess) {
-        return "set" + StringUtils.capitalize(fieldAccess.getSimpleName());
     }
 
     static AccessLevel getAccessLevel(J.MethodDeclaration methodDeclaration) {
