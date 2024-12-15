@@ -15,26 +15,21 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import static java.util.Comparator.comparing;
-import static lombok.AccessLevel.PUBLIC;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -66,12 +61,14 @@ public class UseLombokGetter extends Recipe {
                     if (returnExpression instanceof J.Identifier &&
                             ((J.Identifier) returnExpression).getFieldType() != null) {
                         doAfterVisit(new FieldAnnotator(
+                                Getter.class,
                                 ((J.Identifier) returnExpression).getFieldType(),
                                 LombokUtils.getAccessLevel(method)));
                         return null;
                     } else if (returnExpression instanceof J.FieldAccess &&
                             ((J.FieldAccess) returnExpression).getName().getFieldType() != null) {
                         doAfterVisit(new FieldAnnotator(
+                                Getter.class,
                                 ((J.FieldAccess) returnExpression).getName().getFieldType(),
                                 LombokUtils.getAccessLevel(method)));
                         return null;
@@ -80,30 +77,5 @@ public class UseLombokGetter extends Recipe {
                 return method;
             }
         };
-    }
-
-
-    @Value
-    @EqualsAndHashCode(callSuper = false)
-    static class FieldAnnotator extends JavaIsoVisitor<ExecutionContext> {
-
-        JavaType field;
-        AccessLevel accessLevel;
-
-        @Override
-        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-            for (J.VariableDeclarations.NamedVariable variable : multiVariable.getVariables()) {
-                if (variable.getName().getFieldType() == field) {
-                    maybeAddImport("lombok.Getter");
-                    maybeAddImport("lombok.AccessLevel");
-                    String suffix = accessLevel == PUBLIC ? "" : String.format("(AccessLevel.%s)", accessLevel.name());
-                    return JavaTemplate.builder("@Getter" + suffix)
-                            .imports("lombok.Getter", "lombok.AccessLevel")
-                            .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
-                            .build().apply(getCursor(), multiVariable.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
-                }
-            }
-            return multiVariable;
-        }
     }
 }
