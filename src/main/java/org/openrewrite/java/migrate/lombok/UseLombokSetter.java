@@ -42,12 +42,7 @@ public class UseLombokSetter extends Recipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return "Convert trivial setter methods to `@Setter` annotations on their respective fields.\n\n" +
-                "Limitations:\n\n" +
-                " - Does not add a dependency to Lombok, users need to do that manually\n" +
-                " - Ignores fields that are declared on the same line as others, e.g. `private int foo, bar; " +
-                "Users who have such fields are advised to separate them beforehand with [org.openrewrite.staticanalysis.MultipleVariableDeclaration](https://docs.openrewrite.org/recipes/staticanalysis/multiplevariabledeclarations).\n" +
-                " - Does not offer any of the configuration keys listed in https://projectlombok.org/features/GetterSetter.";
+        return "Convert trivial setter methods to `@Setter` annotations on their respective fields.";
     }
 
     @Override
@@ -57,31 +52,18 @@ public class UseLombokSetter extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MethodRemover();
-    }
-
-    @Value
-    @EqualsAndHashCode(callSuper = false)
-    private static class MethodRemover extends JavaIsoVisitor<ExecutionContext> {
-
-        @Override
-        public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-            if (LombokUtils.isEffectivelySetter(method)) {
-                J.Assignment assignment_ = (J.Assignment) method.getBody().getStatements().get(0);
-                J.FieldAccess fieldAccess = (J.FieldAccess) assignment_.getVariable();
-
-                Variable fieldType = fieldAccess.getName().getFieldType();
-                boolean nameMatch = method.getSimpleName().equals(LombokUtils.deriveSetterMethodName(fieldType));
-                if (nameMatch) {
-                    doAfterVisit(new FieldAnnotator(
-                            Setter.class,
-                            fieldType,
-                            LombokUtils.getAccessLevel(method)
-                    ));
+        return new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+                if (LombokUtils.isSetter(method)) {
+                    J.Assignment assignment_ = (J.Assignment) method.getBody().getStatements().get(0);
+                    J.FieldAccess fieldAccess = (J.FieldAccess) assignment_.getVariable();
+                    Variable fieldType = fieldAccess.getName().getFieldType();
+                    doAfterVisit(new FieldAnnotator(Setter.class, fieldType, LombokUtils.getAccessLevel(method)));
                     return null; //delete
                 }
+                return method;
             }
-            return method;
-        }
+        };
     }
 }
