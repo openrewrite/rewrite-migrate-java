@@ -67,6 +67,60 @@ class UseLombokSetterTest implements RewriteTest {
     }
 
     @Test
+    void replaceSetterWhenArgNameWithUnderscore() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+
+                  public void setFoo(int foo_) {
+                      this.foo = foo_;
+                  }
+              }
+              """,
+            """
+              import lombok.Setter;
+
+              class A {
+
+                  @Setter
+                  int foo = 9;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceSetterWhenArgNameWithUnderscoreAndUnqualifiedFieldAccess() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+
+                  public void setFoo(int foo_) {
+                      foo = foo_;
+                  }
+              }
+              """,
+            """
+              import lombok.Setter;
+
+              class A {
+
+                  @Setter
+                  int foo = 9;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void tolerantToNonstandardParameterNames() {
         rewriteRun(// language=java
           java(

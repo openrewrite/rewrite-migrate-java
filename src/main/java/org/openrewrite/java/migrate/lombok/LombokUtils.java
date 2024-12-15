@@ -99,26 +99,32 @@ class LombokUtils {
             return false;
         }
         J.Assignment assignment = (J.Assignment) method.getBody().getStatements().get(0);
-        J.FieldAccess fieldAccess = (J.FieldAccess) assignment.getVariable();
-        if (!method.getSimpleName().equals(deriveSetterMethodName(fieldAccess))) {
+        J.FieldAccess assignedField = (J.FieldAccess) assignment.getVariable();
+        if (!method.getSimpleName().equals(deriveSetterMethodName(assignedField))) {
             return false;
         }
 
         // Check argument is assigned to field
         J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) method.getParameters().get(0);
         J.VariableDeclarations.NamedVariable param = variableDeclarations.getVariables().get(0);
-        JavaType paramType = param.getType();
-        String paramName = param.getName().toString();
 
+        // type of parameter and field have to match
+        if (!param.getType().equals(assignedField.getType())) {
+            return false;
+        }
 
-        return
-                // assigned value is exactly the parameter
-                assignment.getAssignment().toString().equals(paramName) // type of parameter and field have to match
-                        &&
+        // Check field is declared on method type
+        JavaType.FullyQualified declaringType = method.getMethodType().getDeclaringType();
+        if (assignedField.getTarget() instanceof J.Identifier) {
+            J.Identifier target = (J.Identifier) assignedField.getTarget();
+            return target.getFieldType() != null && declaringType == target.getFieldType().getOwner();
+        } else if (assignedField.getTarget() instanceof J.FieldAccess) {
+            Expression target = ((J.FieldAccess) assignedField.getTarget()).getTarget();
+            return target instanceof J.Identifier && ((J.Identifier) target).getFieldType() != null &&
+                    declaringType == ((J.Identifier) target).getFieldType().getOwner();
+        }
 
-                        // type of parameter and field have to match
-                        param.getType().equals(fieldAccess.getType());
-
+        return false;
     }
 
     private static String deriveSetterMethodName(J.FieldAccess fieldAccess) {
