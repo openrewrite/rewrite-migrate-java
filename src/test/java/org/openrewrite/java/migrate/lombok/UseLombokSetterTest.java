@@ -464,4 +464,23 @@ class UseLombokSetterTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void noChangeNestedClassSetter() {
+        rewriteRun(// language=java
+          java(
+            """
+              class Outer {
+                  int foo = 9;
+
+                  class Inner {
+                      public void setFoo(int foo) {
+                          Outer.this.foo = foo;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
 }
