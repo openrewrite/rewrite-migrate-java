@@ -161,9 +161,9 @@ class LombokUtils {
 
         return
                 // assigned value is exactly the parameter
-                assignment.getAssignment().toString().equals(paramName)
-
-                        // type of parameter and field have to match
+                assignment.getAssignment().toString().equals(paramName) // type of parameter and field have to match
+                        &&
+                        param.getType().equals(fieldAccess.getType());
                         && param.getType().equals(fieldAccess.getType());
 
     }
