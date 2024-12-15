@@ -103,8 +103,8 @@ public class SummarizeGetter extends Recipe {
 
             boolean isAnnotationOnLineAbove = initial.toString().contains("@Getter\n");
 
-            boolean isTopAnnotationRemoved = !initial.getLeadingAnnotations().isEmpty()
-                    && initial.getLeadingAnnotations()
+            boolean isTopAnnotationRemoved = !initial.getLeadingAnnotations().isEmpty() &&
+                    initial.getLeadingAnnotations()
                     .get(0)
                     .getSimpleName().equals("Getter");
 
