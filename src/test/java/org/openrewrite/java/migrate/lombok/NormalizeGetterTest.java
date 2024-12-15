@@ -28,8 +28,7 @@ class NormalizeGetterTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new NormalizeGetter())
-          .parser(JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true));
+        spec.recipe(new NormalizeGetter());
     }
 
     @DocumentExample
