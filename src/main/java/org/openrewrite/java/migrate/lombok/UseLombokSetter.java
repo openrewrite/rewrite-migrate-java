@@ -15,21 +15,19 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Set;
 
-import static java.util.Comparator.comparing;
 import static org.openrewrite.java.tree.JavaType.Variable;
 
 @Value
@@ -65,25 +63,6 @@ public class UseLombokSetter extends Recipe {
     @Value
     @EqualsAndHashCode(callSuper = false)
     private static class MethodRemover extends JavaIsoVisitor<ExecutionContext> {
-        private static final String FIELDS_TO_DECORATE_KEY = "FIELDS_TO_DECORATE";
-
-        @Override
-        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-
-            //initialize set of fields to annotate
-            getCursor().putMessage(FIELDS_TO_DECORATE_KEY, new HashSet<Finding>());
-
-            //delete methods, note down corresponding fields
-            J.ClassDeclaration classDeclAfterVisit = super.visitClassDeclaration(classDecl, ctx);
-
-            //only thing that can have changed is removal of setter methods
-            if (classDeclAfterVisit != classDecl) {
-                //this set collects the fields for which existing methods have already been removed
-                Set<Finding> fieldsToDecorate = getCursor().pollNearestMessage(FIELDS_TO_DECORATE_KEY);
-                doAfterVisit(new FieldAnnotator(fieldsToDecorate));
-            }
-            return classDeclAfterVisit;
-        }
 
         @Override
         public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
@@ -94,68 +73,15 @@ public class UseLombokSetter extends Recipe {
                 Variable fieldType = fieldAccess.getName().getFieldType();
                 boolean nameMatch = method.getSimpleName().equals(LombokUtils.deriveSetterMethodName(fieldType));
                 if (nameMatch) {
-                    Set<Finding> set = getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY);
-                    set.add(new Finding(fieldType.getName(), LombokUtils.getAccessLevel(method)));
+                    doAfterVisit(new FieldAnnotator(
+                            Setter.class,
+                            fieldType,
+                            LombokUtils.getAccessLevel(method)
+                    ));
                     return null; //delete
                 }
             }
             return method;
-        }
-    }
-
-    @Value
-    private static class Finding {
-        String fieldName;
-        AccessLevel accessLevel;
-    }
-
-
-    @Value
-    @EqualsAndHashCode(callSuper = false)
-    static class FieldAnnotator extends JavaIsoVisitor<ExecutionContext> {
-
-        Set<Finding> fieldsToDecorate;
-
-        private JavaTemplate getAnnotation(AccessLevel accessLevel) {
-            JavaTemplate.Builder builder = AccessLevel.PUBLIC.equals(accessLevel) ?
-                    JavaTemplate.builder("@Setter\n") :
-                    JavaTemplate.builder("@Setter(AccessLevel." + accessLevel.name() + ")\n")
-                            .imports("lombok.AccessLevel");
-
-            return builder
-                    .imports("lombok.Setter")
-                    .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
-                    .build();
-        }
-
-        @Override
-        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-
-            //we accept only one var decl per line, see description
-            if (multiVariable.getVariables().size() > 1) {
-                return multiVariable;
-            }
-
-            //we only want to annotate fields and not e.g. method parameters, so we require a lass declaration to be close in the cursor.
-            if (getCursor().getPathAsStream().limit(4).noneMatch(e -> e instanceof J.ClassDeclaration)) {
-                return multiVariable;
-            }
-
-            J.VariableDeclarations.NamedVariable variable = multiVariable.getVariables().get(0);
-            Optional<Finding> field = fieldsToDecorate.stream()
-                    .filter(f -> f.fieldName.equals(variable.getSimpleName()))
-                    .findFirst();
-
-            if (!field.isPresent()) {
-                return multiVariable; //not the field we are looking for
-            }
-
-            J.VariableDeclarations annotated = getAnnotation(field.get().getAccessLevel()).apply(
-                    getCursor(),
-                    multiVariable.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
-            maybeAddImport("lombok.Setter");
-            maybeAddImport("lombok.AccessLevel");
-            return annotated;
         }
     }
 }
