@@ -29,70 +29,10 @@ class NormalizeSetterTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new NormalizeSetter())
-          .parser(JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true));
+        spec.recipe(new NormalizeSetter());
     }
 
     @DocumentExample
-
-    @Test
-    void applyDirectly() {//TODO remove again
-        rewriteRun(
-          spec -> spec
-            .recipe(new ChangeMethodName("com.yourorg.whatever.A giveFoo()", "getFoo", null, null))
-            .parser(JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true)),
-          // language=java
-          java(
-            """
-              package com.yourorg.whatever;
-              class A {
-                  int foo = 9;
-                  int giveFoo() { return foo; }
-              }
-              """,
-            """
-              package com.yourorg.whatever;
-              class A {
-                  int foo = 9;
-                  int getFoo() { return foo; }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void applyDirectlyOnSetter() {//TODO remove again
-        rewriteRun(
-          spec -> spec
-            .recipe(new ChangeMethodName("com.yourorg.whatever.A storeFoo(int)", "setFoo", null, null))
-            .parser(JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true)),
-          // language=java
-          java(
-            """
-              package com.yourorg.whatever;
-              class A {
-                  int foo = 9;
-                  public void storeFoo(int foo) {
-                      this.foo = foo;
-                  }
-              }
-              """,
-            """
-              package com.yourorg.whatever;
-              class A {
-                  int foo = 9;
-                  public void setFoo(int foo) {
-                      this.foo = foo;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-
-
     @Test
     void renameInSingleClass() {
         rewriteRun(// language=java
