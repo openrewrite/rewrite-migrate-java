@@ -92,8 +92,8 @@ public class SummarizeSetter extends Recipe {
             boolean hasSetterAnnotation = variableDecls != visited;
             if (hasSetterAnnotation) {
                 return fixFormat(variableDecls, visited, ctx);
-            } else if (variableDecls.hasModifier(J.Modifier.Type.Final)
-                    || variableDecls.hasModifier(J.Modifier.Type.Static)) {
+            } else if (variableDecls.hasModifier(J.Modifier.Type.Final) ||
+                    variableDecls.hasModifier(J.Modifier.Type.Static)) {
                 //final fields and static field don't need to have an annotation
                 return visited;
             } else {
@@ -107,8 +107,8 @@ public class SummarizeSetter extends Recipe {
 
             boolean isAnnotationOnLineAbove = initial.toString().contains("@Setter\n");
 
-            boolean isTopAnnotationRemoved = !initial.getLeadingAnnotations().isEmpty()
-                    && initial.getLeadingAnnotations()
+            boolean isTopAnnotationRemoved = !initial.getLeadingAnnotations().isEmpty() &&
+                    initial.getLeadingAnnotations()
                     .get(0)
                     .getSimpleName().equals("Setter");
 
