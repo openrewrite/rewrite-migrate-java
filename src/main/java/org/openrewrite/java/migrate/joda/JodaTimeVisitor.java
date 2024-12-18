@@ -210,7 +210,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
     }
 
     private J migrateMethodCall(MethodCall original, MethodCall updated) {
-        if (!original.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+        if (original.getMethodType() == null || !original.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return updated; // not a joda type, no need to migrate
         }
         MethodTemplate template = AllTemplates.getTemplate(original);
