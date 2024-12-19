@@ -467,4 +467,39 @@ class JodaTimeRecipeTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void migrateWithMethodReferenceInComment() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import org.joda.time.DateTime;
+
+              class A {
+                  public void foo() {
+                      /**
+                       * some method reference in comment
+                       * {@link java.util.List#add(DateTime)}
+                       */
+                      System.out.println(new DateTime());
+                  }
+              }
+              """,
+            """
+              import java.time.ZonedDateTime;
+
+              class A {
+                  public void foo() {
+                      /**
+                       * some method reference in comment
+                       * {@link java.util.List#add(DateTime)}
+                       */
+                      System.out.println(ZonedDateTime.now());
+                  }
+              }
+              """
+            )
+        );
+    }
 }

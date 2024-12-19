@@ -26,11 +26,9 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.analysis.dataflow.Dataflow;
 import org.openrewrite.analysis.dataflow.analysis.SinkFlowSummary;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
+import org.openrewrite.java.JavadocVisitor;
+import org.openrewrite.java.tree.*;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.MethodCall;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,6 +48,19 @@ class JodaTimeScanner extends ScopeAwareVisitor {
     public JodaTimeScanner(JodaTimeRecipe.Accumulator acc) {
         super(new LinkedList<>());
         this.acc = acc;
+    }
+
+    @Override
+    protected JavadocVisitor<ExecutionContext> getJavadocVisitor() {
+        return new JavadocVisitor<ExecutionContext>(this) {
+            /**
+             * Do not visit the method referenced from the Javadoc, may cause recipe to fail.
+             */
+            @Override
+            public Javadoc visitReference(Javadoc.Reference reference, ExecutionContext ctx) {
+                return reference;
+            }
+        };
     }
 
     @Override
