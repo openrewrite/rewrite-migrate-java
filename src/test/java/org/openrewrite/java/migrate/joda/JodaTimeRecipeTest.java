@@ -281,6 +281,45 @@ class JodaTimeRecipeTest implements RewriteTest {
     }
 
     @Test
+    void migrationWithRecord() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import org.joda.time.DateTime;
+
+              record A(String x) {
+                  public void foo() {
+                      new Bar().bar(new DateTime());
+                  }
+
+                  private static class Bar {
+                      public void bar(DateTime dt) {
+                          dt.getMillis();
+                      }
+                  }
+              }
+              """,
+            """
+              import java.time.ZonedDateTime;
+
+              record A(String x) {
+                  public void foo() {
+                      new Bar().bar(ZonedDateTime.now());
+                  }
+
+                  private static class Bar {
+                      public void bar(ZonedDateTime dt) {
+                          dt.toInstant().toEpochMilli();
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void migrateMethodWithSafeReturnExpression() {
         //language=java
         rewriteRun(
