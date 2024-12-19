@@ -34,6 +34,9 @@ class ScopeAwareVisitor extends JavaVisitor<ExecutionContext> {
 
     @Override
     public J preVisit(J j, ExecutionContext ctx) {
+        if (j instanceof J.ClassDeclaration) {
+            scopes.push(new VariablesInScope(getCursor()));
+        }
         if (j instanceof J.Block) {
             scopes.push(new VariablesInScope(getCursor()));
         }
@@ -50,7 +53,13 @@ class ScopeAwareVisitor extends JavaVisitor<ExecutionContext> {
 
     @Override
     public J postVisit(J j, ExecutionContext ctx) {
+        if (j instanceof J.ClassDeclaration) {
+            scopes.pop();
+        }
         if (j instanceof J.Block) {
+            scopes.pop();
+        }
+        if (j instanceof J.MethodDeclaration) {
             scopes.pop();
         }
         return super.postVisit(j, ctx);
