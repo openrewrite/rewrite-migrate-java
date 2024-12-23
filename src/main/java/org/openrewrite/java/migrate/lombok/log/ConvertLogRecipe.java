@@ -23,7 +23,6 @@ public abstract class ConvertLogRecipe extends Recipe {
             "If not specified, the field name is not checked and any field that satisfies the other checks is converted.";
 
     protected String getDisplayName(String annotation) {
-        //language=markdown
         return String.format("Use `%s` instead of defining the field yourself", annotation);
     }
 

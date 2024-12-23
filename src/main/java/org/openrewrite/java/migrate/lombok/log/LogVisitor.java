@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lombok.log;
 
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
@@ -69,7 +70,7 @@ abstract class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
     protected abstract String expectedLoggerPath();
 
     @Override
-    public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
+    public J.@Nullable VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
 
         //there must be exactly one Logger per line
         //declaring two or more in one line is possible, but I don't care to support that
