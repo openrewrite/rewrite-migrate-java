@@ -117,11 +117,11 @@ public class UseVarForPrimitive extends Recipe {
                 return initializer;
             }
 
-            boolean isLongLiteral = JavaType.Primitive.Long.equals(vd.getType());
+            boolean isLongLiteral = JavaType.Primitive.Long == vd.getType();
             boolean inferredAsLong = valueSource.endsWith("l") || valueSource.endsWith("L");
-            boolean isFloatLiteral = JavaType.Primitive.Float.equals(vd.getType());
+            boolean isFloatLiteral = JavaType.Primitive.Float == vd.getType();
             boolean inferredAsFloat = valueSource.endsWith("f") || valueSource.endsWith("F");
-            boolean isDoubleLiteral = JavaType.Primitive.Double.equals(vd.getType());
+            boolean isDoubleLiteral = JavaType.Primitive.Double == vd.getType();
             boolean inferredAsDouble = valueSource.endsWith("d") || valueSource.endsWith("D") || valueSource.contains(".");
 
             String typNotation = null;

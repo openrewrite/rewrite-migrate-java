@@ -117,7 +117,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
             List<J.Annotation> allAnnotations = classDeclaration.getAllAnnotations();
             return classDeclaration.getType() != null &&
-                   !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind()) &&
+                   J.ClassDeclaration.Kind.Type.Record != classDeclaration.getKind() &&
                    hasMatchingAnnotations(classDeclaration) &&
                    !hasGenericTypeParameter(classDeclaration) &&
                    classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField) &&
