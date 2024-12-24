@@ -17,8 +17,10 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.test.RewriteTest;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.openrewrite.test.SourceSpecs.text;
 
 
@@ -117,15 +119,7 @@ class UpdateSdkManTest implements RewriteTest {
 
     @Test
     void emptyOptions() {
-        rewriteRun(
-          spec -> spec.recipe(new UpdateSdkMan(null, null)),
-          text(
-            """
-            java=11.1.2-tem
-            """,
-            spec -> spec.path(".sdkmanrc")
-          )
-        );
+        assertTrue(new UpdateSdkMan(null, null).validate(new InMemoryExecutionContext()).isInvalid());
     }
 
     @Test
