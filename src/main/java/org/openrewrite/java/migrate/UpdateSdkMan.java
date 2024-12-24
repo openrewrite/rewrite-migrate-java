@@ -135,7 +135,9 @@ public class UpdateSdkMan extends Recipe {
                 Pattern pattern = Pattern.compile("java=([\\d.]+)-([a-zA-Z]+)");
                 Matcher matcher = pattern.matcher(plainText.getText());
 
-                if (!matcher.find()) return sourceFile;
+                if (!matcher.find()) {
+                    return sourceFile;
+                }
 
                 String currentVersion = matcher.group(1); // Extract the version (e.g., "21.0.2")
                 String currentDist = matcher.group(2); // Extract the distribution (e.g., "tem")
