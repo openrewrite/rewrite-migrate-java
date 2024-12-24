@@ -141,4 +141,19 @@ class UpdateSdkManTest implements RewriteTest {
         );
     }
 
+    @Test
+    void nonNumericalVersionPart() {
+        rewriteRun(
+          spec -> spec.recipe(new UpdateSdkMan("17", null)),
+          text(
+            """
+            java=11.0.25.fx-zulu
+            """,
+            """
+            java=17.0.13.fx-zulu
+            """,
+            spec -> spec.path(".sdkmanrc")
+          )
+        );
+    }
 }
