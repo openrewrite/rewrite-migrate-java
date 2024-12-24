@@ -50,6 +50,9 @@ dependencies {
     testImplementation("com.google.guava:guava:33.0.0-jre")
     testImplementation("joda-time:joda-time:2.12.3")
     testImplementation("org.threeten:threeten-extra:1.8.0")
+    testImplementation("org.apache.logging.log4j:log4j-api:2.23.1")
+    testImplementation("org.jboss.logging:jboss-logging:3.6.0.Final")
+    testImplementation("commons-logging:commons-logging:1.3.2")
 
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
