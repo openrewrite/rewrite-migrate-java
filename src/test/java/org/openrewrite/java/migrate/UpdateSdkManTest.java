@@ -23,6 +23,7 @@ import static org.openrewrite.test.SourceSpecs.text;
 
 class UpdateSdkManTest implements RewriteTest {
 
+    @DocumentExample
     @Test
     void updateVersionUsingMajorOnly() {
         rewriteRun(
