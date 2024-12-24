@@ -25,7 +25,7 @@ import org.openrewrite.java.JavaTemplate;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class ConvertJBoss extends ConvertLogRecipe {
+public class UseJBossLog extends UseLogRecipeTemplate {
 
     @Override
     public String getDisplayName() {

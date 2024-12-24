@@ -25,17 +25,17 @@ import org.openrewrite.java.JavaTemplate;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class ConvertSlf4j extends ConvertLogRecipe {
+public class UseCommonsLog extends UseLogRecipeTemplate {
 
     @Override
     public String getDisplayName() {
-        return getDisplayName("@Slf4");
+        return getDisplayName("@CommonsLog");
     }
 
     @Override
     public String getDescription() {
         //language=markdown
-        return getDescription("@Slf4", "org.slf4j.Logger");
+        return getDescription("@CommonsLog", "org.apache.commons.logging.Log");
     }
 
     @Option(displayName = "Name of the log field",
@@ -47,35 +47,35 @@ public class ConvertSlf4j extends ConvertLogRecipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new Slf4jVisitor(fieldName);
+        return new CommonsLogVisitor(fieldName);
     }
 
-    public static class Slf4jVisitor extends LogVisitor {
+    public static class CommonsLogVisitor extends LogVisitor {
 
-        Slf4jVisitor(String fieldName_) {
+        CommonsLogVisitor(String fieldName_) {
             super(fieldName_);
         }
 
         @Override
         protected void switchImports() {
-            maybeAddImport("lombok.extern.slf4j.Slf4j");
-            maybeRemoveImport("org.slf4j.Logger");
-            maybeRemoveImport("org.slf4j.LoggerFactory");
+            maybeAddImport("lombok.extern.apachecommons.CommonsLog");
+            maybeRemoveImport("org.apache.commons.logging.Log");
+            maybeRemoveImport("org.apache.commons.logging.LogFactory");
         }
 
         @Override
         protected JavaTemplate getLombokTemplate() {
-            return getLombokTemplate("Slf4j", "lombok.extern.slf4j.Slf4j");
+            return getLombokTemplate("CommonsLog", "lombok.extern.apachecommons.CommonsLog");
         }
 
         @Override
         protected String expectedLoggerPath() {
-            return "org.slf4j.Logger";
+            return "org.apache.commons.logging.Log";
         }
 
         @Override
         protected boolean methodPath(String path) {
-            return "org.slf4j.LoggerFactory.getLogger".equals(path);
+            return "org.apache.commons.logging.LogFactory.getLog".equals(path);
         }
     }
 }

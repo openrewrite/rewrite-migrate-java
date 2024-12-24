@@ -25,17 +25,17 @@ import org.openrewrite.java.JavaTemplate;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class ConvertUtilLog extends ConvertLogRecipe {
+public class UseLog4j2 extends UseLogRecipeTemplate {
 
     @Override
     public String getDisplayName() {
-        return getDisplayName("@Log");
+        return getDisplayName("@Log4j2");
     }
 
     @Override
     public String getDescription() {
         //language=markdown
-        return getDescription("@Log", "java.util.logging.Logger");
+        return getDescription("@Log4j2", "org.apache.logging.log4j.Logger");
     }
 
     @Option(displayName = "Name of the log field",
@@ -47,39 +47,35 @@ public class ConvertUtilLog extends ConvertLogRecipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new LogVanillaVisitor(fieldName);
+        return new Log4j2Visitor(fieldName);
     }
 
-    public static class LogVanillaVisitor extends LogVisitor {
+    public static class Log4j2Visitor extends LogVisitor {
 
-        LogVanillaVisitor(String fieldName_) {
+        Log4j2Visitor(String fieldName_) {
             super(fieldName_);
         }
 
         @Override
         protected void switchImports() {
-            maybeAddImport("lombok.extern.java.Log");
-            maybeRemoveImport("java.util.logging.Logger");
+            maybeAddImport("lombok.extern.log4j.Log4j2");
+            maybeRemoveImport("org.apache.logging.log4j.Logger");
+            maybeRemoveImport("org.apache.logging.log4j.LogManager");
         }
 
         @Override
         protected JavaTemplate getLombokTemplate() {
-            return getLombokTemplate("Log", "lombok.extern.java.Log");
+            return getLombokTemplate("Log4j2", "lombok.extern.log4j.Log4j2");
         }
 
         @Override
         protected String expectedLoggerPath() {
-            return "java.util.logging.Logger";
+            return "org.apache.logging.log4j.Logger";
         }
 
         @Override
         protected boolean methodPath(String path) {
-            return "java.util.logging.Logger.getLogger".equals(path);
-        }
-
-        @Override
-        protected String getFactoryParameter(String className) {
-            return className + ".class.getName()";
+            return "org.apache.logging.log4j.LogManager.getLogger".equals(path);
         }
     }
 }

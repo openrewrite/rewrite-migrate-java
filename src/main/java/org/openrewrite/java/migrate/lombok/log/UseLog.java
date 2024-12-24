@@ -25,17 +25,17 @@ import org.openrewrite.java.JavaTemplate;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class ConvertCommons extends ConvertLogRecipe {
+public class UseLog extends UseLogRecipeTemplate {
 
     @Override
     public String getDisplayName() {
-        return getDisplayName("@CommonsLog");
+        return getDisplayName("@Log");
     }
 
     @Override
     public String getDescription() {
         //language=markdown
-        return getDescription("@CommonsLog", "org.apache.commons.logging.Log");
+        return getDescription("@Log", "java.util.logging.Logger");
     }
 
     @Option(displayName = "Name of the log field",
@@ -47,35 +47,39 @@ public class ConvertCommons extends ConvertLogRecipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new CommonsLogVisitor(fieldName);
+        return new LogVanillaVisitor(fieldName);
     }
 
-    public static class CommonsLogVisitor extends LogVisitor {
+    public static class LogVanillaVisitor extends LogVisitor {
 
-        CommonsLogVisitor(String fieldName_) {
+        LogVanillaVisitor(String fieldName_) {
             super(fieldName_);
         }
 
         @Override
         protected void switchImports() {
-            maybeAddImport("lombok.extern.apachecommons.CommonsLog");
-            maybeRemoveImport("org.apache.commons.logging.Log");
-            maybeRemoveImport("org.apache.commons.logging.LogFactory");
+            maybeAddImport("lombok.extern.java.Log");
+            maybeRemoveImport("java.util.logging.Logger");
         }
 
         @Override
         protected JavaTemplate getLombokTemplate() {
-            return getLombokTemplate("CommonsLog", "lombok.extern.apachecommons.CommonsLog");
+            return getLombokTemplate("Log", "lombok.extern.java.Log");
         }
 
         @Override
         protected String expectedLoggerPath() {
-            return "org.apache.commons.logging.Log";
+            return "java.util.logging.Logger";
         }
 
         @Override
         protected boolean methodPath(String path) {
-            return "org.apache.commons.logging.LogFactory.getLog".equals(path);
+            return "java.util.logging.Logger.getLogger".equals(path);
+        }
+
+        @Override
+        protected String getFactoryParameter(String className) {
+            return className + ".class.getName()";
         }
     }
 }
