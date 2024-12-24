@@ -61,6 +61,21 @@ class NegligentlyConvertEqualsTest implements RewriteTest {
     }
 
     @Test
+    void noCostomMethodsNoAnnotation() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo;
+
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void replaceEqualsInPackage() {
         rewriteRun(// language=java
           java(
