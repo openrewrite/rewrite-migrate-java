@@ -55,7 +55,7 @@ final class DeclarationCheck {
         TypeTree typeExpression = vd.getTypeExpression();
 
         boolean definesSingleVariable = vd.getVariables().size() == 1;
-        boolean isPureAssigment = JavaType.Primitive.Null.equals(vd.getType());
+        boolean isPureAssigment = JavaType.Primitive.Null == vd.getType();
         if (!definesSingleVariable || isPureAssigment) {
             return false;
         }
