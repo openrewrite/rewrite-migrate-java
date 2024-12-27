@@ -59,7 +59,8 @@ public class UpgradeJavaVersion extends Recipe {
                 new UseMavenCompilerPluginReleaseConfiguration(version),
                 new UpdateMavenProjectPropertyJavaVersion(version),
                 new org.openrewrite.jenkins.UpgradeJavaVersion(version, null),
-                new UpdateJavaCompatibility(version, null, null, false, null)
+                new UpdateJavaCompatibility(version, null, null, false, null),
+                new UpdateSdkMan(String.valueOf(version), null)
         );
     }
 
