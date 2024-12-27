@@ -15,11 +15,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          cache: 'gradle'
-          distribution: 'temurin'
-          java-version: '17'
 
       - name: Update candidates
         run: curl https://api.sdkman.io/2/candidates/java/linux/versions/all | tr , '\n' > src/main/resources/sdkman-java.csv
