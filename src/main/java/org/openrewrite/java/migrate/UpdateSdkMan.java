@@ -40,11 +40,17 @@ import static java.util.Objects.requireNonNull;
 @EqualsAndHashCode(callSuper = false)
 public class UpdateSdkMan extends Recipe {
 
-    @Option(displayName = "Java version", description = "The Java version to update to.", example = "17")
+    @Option(displayName = "Java version",
+            description = "The Java version to update to.",
+            required = false,
+            example = "17")
     @Nullable
     String newVersion;
 
-    @Option(displayName = "Distribution", description = "The JVM distribution to use.", example = "tem")
+    @Option(displayName = "Distribution",
+            description = "The JVM distribution to use.",
+            required = false,
+            example = "tem")
     @Nullable
     String newDistribution;
 
