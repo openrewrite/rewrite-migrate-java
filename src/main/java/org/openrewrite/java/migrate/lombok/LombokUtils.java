@@ -117,7 +117,7 @@ class LombokUtils {
     }
 
     public static String deriveGetterMethodName(JavaType.Variable fieldType) {
-        boolean isPrimitiveBoolean = JavaType.Variable.Primitive.Boolean.equals(fieldType.getType());
+        boolean isPrimitiveBoolean = JavaType.Variable.Primitive.Boolean == fieldType.getType();
 
         final String fieldName = fieldType.getName();
 
