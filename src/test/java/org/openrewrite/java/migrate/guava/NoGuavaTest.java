@@ -17,22 +17,18 @@ package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
-import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class NoGuavaTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(
-            Environment.builder()
-              .scanRuntimeClasspath("org.openrewrite.java.migrate.guava")
-              .build()
-              .activateRecipes("org.openrewrite.java.migrate.guava.NoGuava")
-          )
+        spec
+          .recipeFromResource("/META-INF/rewrite/no-guava.yml", "org.openrewrite.java.migrate.guava.NoGuava")
           .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
@@ -98,6 +94,34 @@ class NoGuavaTest implements RewriteTest {
                   }
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void moreObjectsFirstNonNullToObjectsRequireNonNullElse() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.MoreObjects;
+
+              class A {
+                  Object foo(Object obj) {
+                      return MoreObjects.firstNonNull(obj, "default");
+                  }
+              }
+              """,
+            """
+              import java.util.Objects;
+
+              class A {
+                  Object foo(Object obj) {
+                      return Objects.requireNonNullElse(obj, "default");
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(11))
           )
         );
     }
