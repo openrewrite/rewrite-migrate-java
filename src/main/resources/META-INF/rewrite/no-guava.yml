@@ -64,6 +64,8 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
   - org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference
 
+  - tech.picnic.errorprone.refasterrules.InputStreamRulesRecipes
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaJava11

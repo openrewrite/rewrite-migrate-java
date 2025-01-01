@@ -35,6 +35,8 @@ dependencies {
     runtimeOnly("org.openrewrite:rewrite-java-17")
     runtimeOnly("org.openrewrite:rewrite-java-21")
 
+    runtimeOnly("tech.picnic.error-prone-support:error-prone-contrib:latest.release:recipes")
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-params:latest.release")
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
