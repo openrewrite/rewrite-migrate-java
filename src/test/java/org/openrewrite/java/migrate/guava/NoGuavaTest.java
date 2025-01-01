@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -30,6 +31,35 @@ class NoGuavaTest implements RewriteTest {
         spec
           .recipeFromResource("/META-INF/rewrite/no-guava.yml", "org.openrewrite.java.migrate.guava.NoGuava")
           .parser(JavaParser.fromJavaVersion().classpath("guava"));
+    }
+
+    @DocumentExample
+    @Test
+    void moreObjectsFirstNonNullToObjectsRequireNonNullElse() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.MoreObjects;
+
+              class A {
+                  Object foo(Object obj) {
+                      return MoreObjects.firstNonNull(obj, "default");
+                  }
+              }
+              """,
+            """
+              import java.util.Objects;
+
+              class A {
+                  Object foo(Object obj) {
+                      return Objects.requireNonNullElse(obj, "default");
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(11))
+          )
+        );
     }
 
     @Test
@@ -94,34 +124,6 @@ class NoGuavaTest implements RewriteTest {
                   }
               }
               """
-          )
-        );
-    }
-
-    @Test
-    void moreObjectsFirstNonNullToObjectsRequireNonNullElse() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import com.google.common.base.MoreObjects;
-
-              class A {
-                  Object foo(Object obj) {
-                      return MoreObjects.firstNonNull(obj, "default");
-                  }
-              }
-              """,
-            """
-              import java.util.Objects;
-
-              class A {
-                  Object foo(Object obj) {
-                      return Objects.requireNonNullElse(obj, "default");
-                  }
-              }
-              """,
-            spec -> spec.markers(javaVersion(11))
           )
         );
     }
