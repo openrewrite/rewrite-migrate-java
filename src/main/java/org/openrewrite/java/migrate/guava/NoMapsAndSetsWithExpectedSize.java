@@ -22,6 +22,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaCoordinates;
@@ -46,11 +47,14 @@ public class NoMapsAndSetsWithExpectedSize extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                Preconditions.or(
-                        new UsesMethod<>(NEW_HASHMAP),
-                        new UsesMethod<>(NEW_LINKED_HASHMAP),
-                        new UsesMethod<>(NEW_HASHSET),
-                        new UsesMethod<>(NEW_LINKED_HASHSET)
+                Preconditions.and(
+                        new UsesJavaVersion<>(19),
+                        Preconditions.or(
+                                new UsesMethod<>(NEW_HASHMAP),
+                                new UsesMethod<>(NEW_LINKED_HASHMAP),
+                                new UsesMethod<>(NEW_HASHSET),
+                                new UsesMethod<>(NEW_LINKED_HASHSET)
+                        )
                 ),
                 new JavaVisitor<ExecutionContext>() {
                     @Override

@@ -17,23 +17,17 @@ package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
-import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.*;
 
 class NoGuavaJava21Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(
-            Environment.builder()
-              .scanRuntimeClasspath("org.openrewrite.java.migrate.guava")
-              .build()
-              .activateRecipes("org.openrewrite.java.migrate.guava.NoGuavaJava21")
-          )
+        spec
+          .recipeFromResource("/META-INF/rewrite/no-guava.yml", "org.openrewrite.java.migrate.guava.NoGuava")
           .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
@@ -122,32 +116,30 @@ class NoGuavaJava21Test implements RewriteTest {
     @Test
     void noGuavaImmutableOfException() {
         rewriteRun(
-          version(
-            //language=java
-            java(
-              """
-                import com.google.common.collect.ImmutableSet;
-                import com.google.common.collect.ImmutableMap;
+          //language=java
+          java(
+            """
+              import com.google.common.collect.ImmutableSet;
+              import com.google.common.collect.ImmutableMap;
 
-                class A {
-                    public Object getMap() {
-                        return ImmutableMap.of("key", ImmutableSet.of("value1", "value2"));
-                    }
-                }
-                """,
-              """
-                import com.google.common.collect.ImmutableSet;
+              class A {
+                  public Object getMap() {
+                      return ImmutableMap.of("key", ImmutableSet.of("value1", "value2"));
+                  }
+              }
+              """,
+            """
+              import com.google.common.collect.ImmutableSet;
 
-                import java.util.Map;
+              import java.util.Map;
 
-                class A {
-                    public Object getMap() {
-                        return Map.of("key", ImmutableSet.of("value1", "value2"));
-                    }
-                }
-                """
-            ),
-            21
+              class A {
+                  public Object getMap() {
+                      return Map.of("key", ImmutableSet.of("value1", "value2"));
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(21))
           )
         );
     }

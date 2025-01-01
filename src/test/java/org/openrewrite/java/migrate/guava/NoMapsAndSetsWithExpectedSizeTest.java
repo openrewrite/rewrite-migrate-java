@@ -21,6 +21,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class NoMapsAndSetsWithExpectedSizeTest implements RewriteTest {
     @Override
@@ -60,7 +61,8 @@ class NoMapsAndSetsWithExpectedSizeTest implements RewriteTest {
                       Set<String> d = new LinkedHashSet<>(1);
                   }
               }
-              """
+              """,
+            spec -> spec.markers(javaVersion(21))
           )
         );
     }

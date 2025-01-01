@@ -79,7 +79,7 @@ tags:
   - java11
 preconditions:
   - org.openrewrite.java.search.HasJavaVersion:
-      version: 11
+      version: "[11,)"
 recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
@@ -103,7 +103,7 @@ tags:
   - java21
 preconditions:
   - org.openrewrite.java.search.HasJavaVersion:
-      version: 21
+      version: "[21,)"
 recipeList:
   - org.openrewrite.java.migrate.guava.NoMapsAndSetsWithExpectedSize
   - org.openrewrite.java.migrate.guava.PreferMathClamp
