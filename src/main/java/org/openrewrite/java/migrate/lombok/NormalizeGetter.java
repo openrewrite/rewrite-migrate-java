@@ -26,16 +26,14 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class NormalizeGetter extends ScanningRecipe<NormalizeGetter.MethodAcc> {
+public class NormalizeGetter extends ScanningRecipe<List<NormalizeGetter.RenameRecord>> {
 
     @Override
     public String getDisplayName() {
@@ -54,34 +52,29 @@ public class NormalizeGetter extends ScanningRecipe<NormalizeGetter.MethodAcc> {
                 ;
     }
 
-    public static class MethodAcc  {
-        List<RenameRecord> renameRecords = new ArrayList<>();
+    @Override
+    public List<RenameRecord> getInitialValue(ExecutionContext ctx) {
+        return new ArrayList<>();
     }
 
     @Override
-    public MethodAcc getInitialValue(ExecutionContext ctx) {
-        return new MethodAcc();
-    }
-
-    @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(MethodAcc acc) {
-        return new MethodRecorder(acc);
+    public TreeVisitor<?, ExecutionContext> getScanner(List<RenameRecord> renameRecords) {
+        return new MethodRecorder(renameRecords);
     }
 
     @Value
-    private static class RenameRecord {
+    public static class RenameRecord {
         String pathToClass_;
         String methodName_;
         String newMethodName_;
     }
-
 
     @RequiredArgsConstructor
     private static class MethodRecorder extends JavaIsoVisitor<ExecutionContext> {
 
         private final static String METHOD_BLACKLIST = "METHOD_BLACKLIST";
 
-        private final MethodAcc acc;
+        private final List<RenameRecord> renameRecords;
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
@@ -139,13 +132,7 @@ public class NormalizeGetter extends ScanningRecipe<NormalizeGetter.MethodAcc> {
 
             String pathToClass = method.getMethodType().getDeclaringType().getFullyQualifiedName().replace('$', '.');
             //todo write separate recipe for merging effective getters
-            acc.renameRecords.add(
-                    new RenameRecord(
-                            pathToClass,
-                            actualMethodName,
-                            expectedMethodName
-                    )
-            );
+            renameRecords.add(new RenameRecord(pathToClass, actualMethodName, expectedMethodName));
             blackList.remove(actualMethodName);//actual method name becomes available again
             blackList.add(expectedMethodName);//expected method name now blocked
             return method;
@@ -153,14 +140,11 @@ public class NormalizeGetter extends ScanningRecipe<NormalizeGetter.MethodAcc> {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(MethodAcc acc) {
-
+    public TreeVisitor<?, ExecutionContext> getVisitor(List<RenameRecord> renameRecords) {
         return new TreeVisitor<Tree, ExecutionContext>() {
-
             @Override
             public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
-
-                for (RenameRecord rr : acc.renameRecords) {
+                for (RenameRecord rr : renameRecords) {
                     String methodPattern = String.format("%s %s()", rr.pathToClass_, rr.methodName_);
                     tree = new ChangeMethodName(methodPattern, rr.newMethodName_, true, null)
                             .getVisitor().visit(tree, ctx);
