@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -276,8 +275,6 @@ class NormalizeGetterTest implements RewriteTest {
         );
     }
 
-
-    //@Disabled("For now, if it happens, user has to manually resolve...")
     @Test
     void shouldNotRenameToExistingMethods() {
         rewriteRun(// language=java
@@ -386,32 +383,28 @@ class NormalizeGetterTest implements RewriteTest {
           java(
             """
               class A {
-
                   class B {
+                      class C {
+                          private long foo;
 
-                  class C {
-
-                      private long foo;
-
-                      public long giveFoo() {
-                          return foo;
+                          public long giveFoo() {
+                              return foo;
+                          }
                       }
-                  }}
+                  }
               }
               """,
             """
               class A {
-
                   class B {
+                      class C {
+                          private long foo;
 
-                  class C {
-
-                      private long foo;
-
-                      public long getFoo() {
-                          return foo;
+                          public long getFoo() {
+                              return foo;
+                          }
                       }
-                  }}
+                  }
               }
               """
           )
@@ -520,7 +513,6 @@ class NormalizeGetterTest implements RewriteTest {
      * If existing method names need to be rotated in a loop the recipe should still work.
      * For now this is not planned.
      */
-    @Disabled("Not planned to fix but listed here for completeness")
     @Test
     void shouldWorkOnCircleCases() {
         rewriteRun(// language=java
@@ -540,23 +532,24 @@ class NormalizeGetterTest implements RewriteTest {
                   }
 
               }
-              """,
-            """
-              class A {
-
-                  int foo;
-                  int bar;
-
-                  public int getFoo() {
-                      return foo;
-                  }
-
-                  public int getBar() {
-                      return bar;
-                  }
-
-              }
               """
+//            ,
+//            """
+//              class A {
+//
+//                  int foo;
+//                  int bar;
+//
+//                  public int getFoo() {
+//                      return foo;
+//                  }
+//
+//                  public int getBar() {
+//                      return bar;
+//                  }
+//
+//              }
+//              """
           )
         );
     }
