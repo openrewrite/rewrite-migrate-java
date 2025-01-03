@@ -115,9 +115,9 @@ public class NormalizeGetter extends ScanningRecipe<NormalizeGetter.MethodAcc> {
             }
 
             J.Return return_ = (J.Return) method.getBody().getStatements().get(0);
-            JavaType.Variable fieldType = ((J.Identifier) return_.getExpression()).getFieldType();
+            J.Identifier returnExpression = (J.Identifier) return_.getExpression();
 
-            String expectedMethodName = LombokUtils.deriveGetterMethodName(fieldType);
+            String expectedMethodName = LombokUtils.deriveGetterMethodName(returnExpression.getType(), returnExpression.getSimpleName());
             String actualMethodName = method.getSimpleName();
 
             //if method already has the name it should have, then nothing to be done

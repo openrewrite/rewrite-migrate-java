@@ -103,7 +103,7 @@ class LombokUtils {
         return false;
     }
 
-    private static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {
+    public static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {
         if (type == JavaType.Primitive.Boolean) {
             boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
                     fieldName.substring(0, 3).matches("is[A-Z]");
@@ -113,22 +113,6 @@ class LombokUtils {
                 return "is" + StringUtils.capitalize(fieldName);
             }
         }
-        return "get" + StringUtils.capitalize(fieldName);
-    }
-
-    public static String deriveGetterMethodName(JavaType.Variable fieldType) {
-        boolean isPrimitiveBoolean = JavaType.Variable.Primitive.Boolean == fieldType.getType();
-
-        final String fieldName = fieldType.getName();
-
-        boolean alreadyStartsWithIs = fieldName.length() >= 3 && fieldName.substring(0, 3).matches("is[A-Z]");
-
-        if (isPrimitiveBoolean)
-            if (alreadyStartsWithIs)
-                return fieldName;
-            else
-                return "is" + StringUtils.capitalize(fieldName);
-
         return "get" + StringUtils.capitalize(fieldName);
     }
 
