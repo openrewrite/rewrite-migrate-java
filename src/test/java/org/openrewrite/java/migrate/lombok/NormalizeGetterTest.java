@@ -36,14 +36,12 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   int foo = 9;
                   int giveFoo() { return foo; }
               }
               """,
             """
-              package com.yourorg.whatever;
               class A {
                   int foo = 9;
                   int getFoo() { return foo; }
@@ -58,14 +56,12 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   boolean foo;
                   boolean giveFoo() { return foo; }
               }
               """,
             """
-              package com.yourorg.whatever;
               class A {
                   boolean foo;
                   boolean isFoo() { return foo; }
@@ -84,14 +80,12 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   boolean isFoo;
                   boolean giveFoo() { return isFoo; }
               }
               """,
             """
-              package com.yourorg.whatever;
               class A {
                   boolean isFoo;
                   boolean isFoo() { return isFoo; }
@@ -106,14 +100,12 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   Boolean Foo;
                   Boolean giveFoo() { return Foo; }
               }
               """,
             """
-              package com.yourorg.whatever;
               class A {
                   Boolean Foo;
                   Boolean getFoo() { return Foo; }
@@ -133,14 +125,12 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   Boolean isFoo;
                   Boolean giveFoo() { return isFoo; }
               }
               """,
             """
-              package com.yourorg.whatever;
               class A {
                   Boolean isFoo;
                   Boolean getIsFoo() { return isFoo; }
@@ -155,14 +145,12 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   int foo = 9;
                   int giveFoo() { return foo; }
               }
               """,
             """
-              package com.yourorg.whatever;
               class A {
                   int foo = 9;
                   int getFoo() { return foo; }
@@ -171,7 +159,6 @@ class NormalizeGetterTest implements RewriteTest {
           ),// language=java
           java(
             """
-              package com.yourorg.whatever;
               class B {
                   void useIt() {
                       var a = new A();
@@ -180,7 +167,6 @@ class NormalizeGetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
               class B {
                   void useIt() {
                       var a = new A();
@@ -197,7 +183,6 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
 
               import java.util.Date;
 
@@ -298,8 +283,6 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   private long foo;
@@ -329,8 +312,6 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   private long foo;
@@ -345,8 +326,6 @@ class NormalizeGetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   private long foo;
@@ -372,8 +351,6 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   class B {
@@ -387,8 +364,6 @@ class NormalizeGetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   class B {
@@ -410,8 +385,6 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   class B {
@@ -427,8 +400,6 @@ class NormalizeGetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   class B {
@@ -455,8 +426,6 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   private long foo;
@@ -476,8 +445,6 @@ class NormalizeGetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   private long foo;
@@ -508,8 +475,6 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   private long foo;
@@ -529,8 +494,6 @@ class NormalizeGetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   private long foo;
@@ -563,12 +526,9 @@ class NormalizeGetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   int foo;
-
                   int bar;
 
                   public int getBar() {
@@ -582,12 +542,9 @@ class NormalizeGetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
-
               class A {
 
                   int foo;
-
                   int bar;
 
                   public int getFoo() {
