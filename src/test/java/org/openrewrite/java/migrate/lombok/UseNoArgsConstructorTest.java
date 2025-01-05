@@ -27,8 +27,7 @@ class UseNoArgsConstructorTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new UseNoArgsConstructor())
-          .parser(JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true));
+        spec.recipe(new UseNoArgsConstructor());
     }
 
     @DocumentExample
@@ -44,7 +43,7 @@ class UseNoArgsConstructorTest implements RewriteTest {
             """
               import lombok.NoArgsConstructor;
 
-              @NoArgsConstructor()
+              @NoArgsConstructor
               class A {
               }
               """
@@ -55,6 +54,7 @@ class UseNoArgsConstructorTest implements RewriteTest {
     @Test
     void keepNonEmptyPublicConstructor() {
         rewriteRun(
+          //language=java
           java(
             """
               class A {
@@ -73,6 +73,7 @@ class UseNoArgsConstructorTest implements RewriteTest {
     @Test
     void replaceEmptyProtectedConstructor() {
         rewriteRun(
+          //language=java
           java(
             """
               class A {
@@ -93,6 +94,7 @@ class UseNoArgsConstructorTest implements RewriteTest {
     @Test
     void replaceEmptyPrivateConstructor() {
         rewriteRun(
+          //language=java
           java(
             """
               class A {
@@ -113,6 +115,7 @@ class UseNoArgsConstructorTest implements RewriteTest {
     @Test
     void replaceEmptyPackageConstructor() {
         rewriteRun(
+          //language=java
           java(
             """
               class A {
