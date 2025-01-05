@@ -33,7 +33,6 @@ public class UseCommonsLog extends UseLogRecipeTemplate {
 
     @Override
     public String getDescription() {
-        //language=markdown
         return getDescription("@CommonsLog", "org.apache.commons.logging.Log");
     }
 

@@ -33,7 +33,6 @@ public class UseSlf4j extends UseLogRecipeTemplate {
 
     @Override
     public String getDescription() {
-        //language=markdown
         return getDescription("@Slf4", "org.slf4j.Logger");
     }
 

@@ -33,7 +33,6 @@ public class UseLog extends UseLogRecipeTemplate {
 
     @Override
     public String getDescription() {
-        //language=markdown
         return getDescription("@Log", "java.util.logging.Logger");
     }
 

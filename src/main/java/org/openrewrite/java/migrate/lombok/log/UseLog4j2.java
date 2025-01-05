@@ -33,7 +33,6 @@ public class UseLog4j2 extends UseLogRecipeTemplate {
 
     @Override
     public String getDescription() {
-        //language=markdown
         return getDescription("@Log4j2", "org.apache.logging.log4j.Logger");
     }
 

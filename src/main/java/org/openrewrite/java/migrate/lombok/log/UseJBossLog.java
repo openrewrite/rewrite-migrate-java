@@ -33,7 +33,6 @@ public class UseJBossLog extends UseLogRecipeTemplate {
 
     @Override
     public String getDescription() {
-        //language=markdown
         return getDescription("@JBossLog", "org.jboss.logging.Logger");
     }
 

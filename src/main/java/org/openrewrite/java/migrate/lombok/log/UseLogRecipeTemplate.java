@@ -23,7 +23,7 @@ abstract class UseLogRecipeTemplate extends Recipe {
             "If not specified, the field name is not checked and any field that satisfies the other checks is converted.";
 
     protected String getDisplayName(String annotation) {
-        return String.format("Use `%s` instead of defining the field yourself", annotation);
+        return String.format("Use `%s` instead of explicit fields", annotation);
     }
 
     protected String getDescription(String annotation, String pathToLogger) {
