@@ -46,24 +46,10 @@ public class UseSlf4j extends UseLogRecipeTemplate {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        String fieldName_ = fieldName;
-        return new LogVisitor("lombok.extern.slf4j.Slf4j", fieldName_) {
-            @Override
-            protected void removeImports() {
-                maybeRemoveImport("org.slf4j.Logger");
-                maybeRemoveImport("org.slf4j.LoggerFactory");
-            }
-
-            @Override
-            protected String expectedLoggerPath() {
-                return "org.slf4j.Logger";
-            }
-
-            @Override
-            protected boolean methodPath(String path) {
-                return "org.slf4j.LoggerFactory.getLogger".equals(path);
-            }
-        };
+        return new LogVisitor("org.slf4j.Logger",
+                "org.slf4j.LoggerFactory getLogger(..)",
+                "lombok.extern.slf4j.Slf4j",
+                fieldName);
     }
 
 }

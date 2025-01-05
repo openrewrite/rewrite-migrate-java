@@ -46,24 +46,11 @@ public class UseCommonsLog extends UseLogRecipeTemplate {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        String fieldName_ = fieldName;
-        return new LogVisitor("lombok.extern.apachecommons.CommonsLog", fieldName_) {
-            @Override
-            protected void removeImports() {
-                maybeRemoveImport("org.apache.commons.logging.Log");
-                maybeRemoveImport("org.apache.commons.logging.LogFactory");
-            }
-
-            @Override
-            protected String expectedLoggerPath() {
-                return "org.apache.commons.logging.Log";
-            }
-
-            @Override
-            protected boolean methodPath(String path) {
-                return "org.apache.commons.logging.LogFactory.getLog".equals(path);
-            }
-        };
+        return new LogVisitor(
+                "org.apache.commons.logging.Log",
+                "org.apache.commons.logging.LogFactory getLog(..)",
+                "lombok.extern.apachecommons.CommonsLog",
+                fieldName);
     }
 
 }

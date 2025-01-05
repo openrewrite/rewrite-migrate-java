@@ -46,22 +46,11 @@ public class UseLog extends UseLogRecipeTemplate {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        String fieldName_ = fieldName;
-        return new LogVisitor("lombok.extern.java.Log", fieldName_) {
-            @Override
-            protected void removeImports() {
-                maybeRemoveImport("java.util.logging.Logger");
-            }
-
-            @Override
-            protected String expectedLoggerPath() {
-                return "java.util.logging.Logger";
-            }
-
-            @Override
-            protected boolean methodPath(String path) {
-                return "java.util.logging.Logger.getLogger".equals(path);
-            }
+        return new LogVisitor(
+                "java.util.logging.Logger",
+                "java.util.logging.Logger getLogger(String)",
+                "lombok.extern.java.Log",
+                fieldName) {
 
             @Override
             protected String getFactoryParameter(String className) {

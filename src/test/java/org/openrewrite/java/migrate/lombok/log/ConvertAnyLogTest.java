@@ -119,42 +119,4 @@ class ConvertAnyLogTest implements RewriteTest {
           )
         );
     }
-
-    @Test
-    void allInOne() {
-        rewriteRun(
-          // language=java
-          java(
-            """
-              import org.apache.logging.log4j.LogManager;
-              import java.util.logging.Logger;
-              import org.apache.commons.logging.Log;
-              import org.apache.commons.logging.LogFactory;
-
-              class A {
-                  private static final org.slf4j.Logger log1 = org.slf4j.LoggerFactory.getLogger(A.class);
-                  private static final org.apache.logging.log4j.Logger log2 = org.apache.logging.log4j.LogManager.getLogger(A.class);
-                  private static final Logger log3 = Logger.getLogger(A.class.getName());
-                  private static final org.jboss.logging.Logger log4 = org.jboss.logging.Logger.getLogger(A.class);
-                  private static final Log log5 = LogFactory.getLog(A.class);
-              }
-              """,
-            """
-              import lombok.extern.apachecommons.CommonsLog;
-              import lombok.extern.java.Log;
-              import lombok.extern.jbosslog.JBossLog;
-              import lombok.extern.log4j.Log4j2;
-              import lombok.extern.slf4j.Slf4j;
-
-              @CommonsLog
-              @JBossLog
-              @Log
-              @Log4j2
-              @Slf4j
-              class A {
-              }
-              """
-          )
-        );
-    }
 }

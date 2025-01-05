@@ -46,24 +46,11 @@ public class UseLog4j2 extends UseLogRecipeTemplate {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        String fieldName_ = fieldName;
-        return new LogVisitor("lombok.extern.log4j.Log4j2", fieldName_) {
-            @Override
-            protected void removeImports() {
-                maybeRemoveImport("org.apache.logging.log4j.Logger");
-                maybeRemoveImport("org.apache.logging.log4j.LogManager");
-            }
-
-            @Override
-            protected String expectedLoggerPath() {
-                return "org.apache.logging.log4j.Logger";
-            }
-
-            @Override
-            protected boolean methodPath(String path) {
-                return "org.apache.logging.log4j.LogManager.getLogger".equals(path);
-            }
-        };
+        return new LogVisitor(
+                "org.apache.logging.log4j.Logger",
+                "org.apache.logging.log4j.LogManager getLogger(..)",
+                "lombok.extern.log4j.Log4j2",
+                fieldName);
     }
 
 }

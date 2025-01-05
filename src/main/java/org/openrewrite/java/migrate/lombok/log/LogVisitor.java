@@ -22,16 +22,20 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import static java.util.Comparator.comparing;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-abstract class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
+class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
 
+    private final String logType;
+    private final String factoryMethodPattern;
     private final String logAnnotation;
     @Nullable
     private final String fieldName;
@@ -40,8 +44,9 @@ abstract class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
         J.ClassDeclaration visitClassDeclaration = super.visitClassDeclaration(classDecl, ctx);
         if (visitClassDeclaration != classDecl) {
+            maybeRemoveImport(logType);
+            maybeRemoveImport(factoryMethodPattern.substring(0, factoryMethodPattern.indexOf(' ')));
             maybeAddImport(logAnnotation);
-            removeImports();
             return JavaTemplate
                     .builder("@" + logAnnotation.substring(logAnnotation.lastIndexOf('.') + 1) + "\n")
                     .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
@@ -53,12 +58,6 @@ abstract class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
         }
         return classDecl;
     }
-
-    protected abstract void removeImports();
-
-    protected abstract boolean methodPath(String path);
-
-    protected abstract String expectedLoggerPath();
 
     @Override
     public J.@Nullable VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
@@ -75,25 +74,22 @@ abstract class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
             return multiVariable;
         }
 
-        JavaType.FullyQualified type0 = multiVariable.getTypeAsFullyQualified();
-        String path = type0.getFullyQualifiedName();
-        if (!expectedLoggerPath().equals(path))
+        if (!TypeUtils.isAssignableTo(logType, multiVariable.getType())) {
             return multiVariable;
+        }
 
         //name needs to match the name of the field that lombok creates todo write name normalization recipe
-        if (fieldName != null && !fieldName.equals(var.getSimpleName()))
+        if (fieldName != null && !fieldName.equals(var.getSimpleName())) {
             return multiVariable;
-
-        J.MethodInvocation methodCall = (J.MethodInvocation) var.getInitializer();
-
-        String leftSide = methodCall.getMethodType().getDeclaringType().getFullyQualifiedName() + "." + methodCall.getMethodType().getName();
+        }
 
         //method call must match
-        if (!methodPath(leftSide)) {
+        if (!new MethodMatcher(factoryMethodPattern).matches(var.getInitializer())) {
             return multiVariable;
         }
 
         //argument must match
+        J.MethodInvocation methodCall = (J.MethodInvocation) var.getInitializer();
         String className = getCursor().firstEnclosingOrThrow(J.ClassDeclaration.class).getSimpleName();
         if (methodCall.getArguments().size() != 1 ||
                 !methodCall.getArguments().get(0).toString().equals(getFactoryParameter(className)

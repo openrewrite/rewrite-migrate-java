@@ -46,23 +46,11 @@ public class UseJBossLog extends UseLogRecipeTemplate {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        String fieldName_ = fieldName;
-        return new LogVisitor("lombok.extern.jbosslog.JBossLog", fieldName_) {
-            @Override
-            protected void removeImports() {
-                maybeRemoveImport("org.jboss.logging.Logger");
-            }
-
-            @Override
-            protected String expectedLoggerPath() {
-                return "org.jboss.logging.Logger";
-            }
-
-            @Override
-            protected boolean methodPath(String path) {
-                return "org.jboss.logging.Logger.getLogger".equals(path);
-            }
-        };
+        return new LogVisitor(
+                "org.jboss.logging.Logger",
+                "org.jboss.logging.Logger getLogger(..)",
+                "lombok.extern.jbosslog.JBossLog",
+                fieldName);
     }
 
 }
