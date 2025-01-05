@@ -16,36 +16,41 @@
 package org.openrewrite.java.migrate.lombok.log;
 
 import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 import static java.util.Comparator.comparing;
 
-@RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
 
     private final String logType;
-    private final String factoryMethodPattern;
+    private final String factoryType;
+    private final MethodMatcher factoryMethodMatcher;
     private final String logAnnotation;
     @Nullable
     private final String fieldName;
+
+    LogVisitor(String logType, String factoryMethodPattern, String logAnnotation, @Nullable String fieldName) {
+        this.logType = logType;
+        this.factoryType = factoryMethodPattern.substring(0, factoryMethodPattern.indexOf(' '));
+        this.factoryMethodMatcher = new MethodMatcher(factoryMethodPattern);
+        this.logAnnotation = logAnnotation;
+        this.fieldName = fieldName;
+    }
 
     @Override
     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
         J.ClassDeclaration visitClassDeclaration = super.visitClassDeclaration(classDecl, ctx);
         if (visitClassDeclaration != classDecl) {
             maybeRemoveImport(logType);
-            maybeRemoveImport(factoryMethodPattern.substring(0, factoryMethodPattern.indexOf(' ')));
+            maybeRemoveImport(factoryType);
             maybeAddImport(logAnnotation);
             return JavaTemplate
                     .builder("@" + logAnnotation.substring(logAnnotation.lastIndexOf('.') + 1) + "\n")
@@ -61,40 +66,28 @@ class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
 
     @Override
     public J.@Nullable VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-
-        //there must be exactly one Logger per line
-        //declaring two or more in one line is possible, but I don't care to support that
-        if (multiVariable.getVariables().size() != 1) {
+        if (!multiVariable.hasModifier(J.Modifier.Type.Private) ||
+                !multiVariable.hasModifier(J.Modifier.Type.Static) ||
+                !multiVariable.hasModifier(J.Modifier.Type.Final) ||
+                multiVariable.getVariables().size() != 1 ||
+                !TypeUtils.isAssignableTo(logType, multiVariable.getType())) {
             return multiVariable;
         }
 
-        if (!multiVariable.hasModifier(J.Modifier.Type.Private)||
-            !multiVariable.hasModifier(J.Modifier.Type.Static)||
-            !multiVariable.hasModifier(J.Modifier.Type.Final)) {
-            return multiVariable;
-        }
-
-        if (!TypeUtils.isAssignableTo(logType, multiVariable.getType())) {
-            return multiVariable;
-        }
-
-        //name needs to match the name of the field that lombok creates
+        // name needs to match the name of the field that lombok creates
         J.VariableDeclarations.NamedVariable var = multiVariable.getVariables().get(0);
         if (fieldName != null && !fieldName.equals(var.getSimpleName())) {
             return multiVariable;
         }
 
-        //method call must match
-        if (!new MethodMatcher(factoryMethodPattern).matches(var.getInitializer())) {
+        if (!factoryMethodMatcher.matches(var.getInitializer())) {
             return multiVariable;
         }
 
-        //argument must match
         J.MethodInvocation methodCall = (J.MethodInvocation) var.getInitializer();
         String className = getCursor().firstEnclosingOrThrow(J.ClassDeclaration.class).getSimpleName();
         if (methodCall.getArguments().size() != 1 ||
-                !methodCall.getArguments().get(0).toString().equals(getFactoryParameter(className)
-                )) {
+                !getFactoryParameter(className).equals(methodCall.getArguments().get(0).toString())) {
             return multiVariable;
         }
 
