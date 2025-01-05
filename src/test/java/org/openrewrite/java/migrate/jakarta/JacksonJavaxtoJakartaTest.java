@@ -331,4 +331,27 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
           )
         );
     }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/653")
+    @Test
+    void thatJaxbJsonProviderIsRewritten() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
+              "jackson-databind",
+              "jackson-jaxrs-json-provider")),
+          //language=java
+          java(
+            """
+              import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+
+              public class A extends JacksonJaxbJsonProvider {}
+              """,
+            """
+              import com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider;
+
+              public class A extends JacksonXmlBindJsonProvider {}
+              """
+          )
+        );
+    }
 }
