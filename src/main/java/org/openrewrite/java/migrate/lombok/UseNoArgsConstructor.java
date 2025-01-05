@@ -62,6 +62,7 @@ public class UseNoArgsConstructor extends Recipe {
                             if (TypeUtils.isOfType(classDecl.getType(), enclosing.getType())) {
                                 String template = "@NoArgsConstructor" + (accessLevel == AccessLevel.PUBLIC ?
                                         "" : "(access = AccessLevel." + accessLevel.name() + ")");
+                                maybeAddImport("lombok.AccessLevel");
                                 maybeAddImport("lombok.NoArgsConstructor");
                                 return JavaTemplate.builder(template)
                                         .imports("lombok.*")

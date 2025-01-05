@@ -81,6 +81,7 @@ class UseNoArgsConstructorTest implements RewriteTest {
               }
               """,
             """
+              import lombok.AccessLevel;
               import lombok.NoArgsConstructor;
 
               @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -102,6 +103,7 @@ class UseNoArgsConstructorTest implements RewriteTest {
               }
               """,
             """
+              import lombok.AccessLevel;
               import lombok.NoArgsConstructor;
 
               @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -123,6 +125,7 @@ class UseNoArgsConstructorTest implements RewriteTest {
               }
               """,
             """
+              import lombok.AccessLevel;
               import lombok.NoArgsConstructor;
 
               @NoArgsConstructor(access = AccessLevel.PACKAGE)
