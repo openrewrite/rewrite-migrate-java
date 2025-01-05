@@ -921,6 +921,9 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider
       newFullyQualifiedTypeName: com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule
+      newFullyQualifiedTypeName: com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
