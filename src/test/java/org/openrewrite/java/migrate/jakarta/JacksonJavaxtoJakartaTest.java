@@ -294,4 +294,28 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void thatJaxbJsonProviderIsRewritten() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
+              "jackson-core",
+              "jackson-databind",
+              "jackson-jaxrs-json-provider",
+              "jackson-jakarta-rs-json-provider")),
+          //language=java
+          java(
+            """
+              import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+
+              public class A extends JacksonJaxbJsonProvider {}
+              """,
+            """
+              import com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider;
+
+              public class A extends JacksonXmlBindJsonProvider {}
+              """
+          )
+        );
+    }
 }
