@@ -294,4 +294,40 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void thatJaxbAnnotationModuleIsRewritten() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
+              "jackson-core",
+              "jackson-databind",
+              "jackson-module-jaxb-annotations",
+              "jackson-module-jakarta-xmlbind-annotations")),
+          //language=java
+          java(
+            """
+              import com.fasterxml.jackson.databind.ObjectMapper;
+              import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+
+              public class JacksonTest {
+                  void foo() {
+                      ObjectMapper mapper = new ObjectMapper();
+                      mapper.registerModule(new JaxbAnnotationModule());
+                  }
+              }
+              """,
+            """
+              import com.fasterxml.jackson.databind.ObjectMapper;
+              import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
+
+              public class JacksonTest {
+                  void foo() {
+                      ObjectMapper mapper = new ObjectMapper();
+                      mapper.registerModule(new JakartaXmlBindAnnotationModule());
+                  }
+              }
+              """
+          )
+        );
+    }
 }
