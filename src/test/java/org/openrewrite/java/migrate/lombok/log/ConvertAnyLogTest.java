@@ -27,7 +27,7 @@ class ConvertAnyLogTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("io.github.timoa.lombok.log.ConvertAnyLog")
+        spec.recipeFromResources("org.openrewrite.java.migrate.lombok.log.UseLombokLogAnnotations")
           .parser(JavaParser.fromJavaVersion()
             .classpath("slf4j-api", "log4j-api", "jboss-logging", "commons-logging"));
     }
