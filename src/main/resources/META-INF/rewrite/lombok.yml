@@ -43,3 +43,16 @@ recipeList:
       oldFullyQualifiedTypeName: lombok.experimental.val
       newFullyQualifiedTypeName: lombok.val
   - org.openrewrite.java.migrate.lombok.LombokValToFinalVar
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.lombok.log.UseLombokLogAnnotations
+displayName: Use Lombok logger annotations instead of explicit fields
+description: >-
+  Applies all recipes that replace logger declarations with class level annotations.
+recipeList:
+  - org.openrewrite.java.migrate.lombok.log.UseCommonsLog
+  - org.openrewrite.java.migrate.lombok.log.UseJBossLog
+  - org.openrewrite.java.migrate.lombok.log.UseLog
+  - org.openrewrite.java.migrate.lombok.log.UseLog4j2
+  - org.openrewrite.java.migrate.lombok.log.UseSlf4j
