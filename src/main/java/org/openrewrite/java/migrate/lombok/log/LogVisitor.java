@@ -64,13 +64,13 @@ class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
 
         //there must be exactly one Logger per line
         //declaring two or more in one line is possible, but I don't care to support that
-        if (multiVariable.getVariables().size() != 1)
+        if (multiVariable.getVariables().size() != 1) {
             return multiVariable;
+        }
 
-        J.VariableDeclarations.NamedVariable var = multiVariable.getVariables().get(0);
-
-        JavaType.Variable type = var.getVariableType();
-        if (type == null || !type.hasFlags(Flag.Private, Flag.Static, Flag.Final)) {
+        if (!multiVariable.hasModifier(J.Modifier.Type.Private)||
+            !multiVariable.hasModifier(J.Modifier.Type.Static)||
+            !multiVariable.hasModifier(J.Modifier.Type.Final)) {
             return multiVariable;
         }
 
@@ -78,7 +78,8 @@ class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
             return multiVariable;
         }
 
-        //name needs to match the name of the field that lombok creates todo write name normalization recipe
+        //name needs to match the name of the field that lombok creates
+        J.VariableDeclarations.NamedVariable var = multiVariable.getVariables().get(0);
         if (fieldName != null && !fieldName.equals(var.getSimpleName())) {
             return multiVariable;
         }

@@ -16,6 +16,8 @@
 package org.openrewrite.java.migrate.lombok.log;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -130,6 +132,31 @@ class ConvertToLogAnnotationTest implements RewriteTest {
                   private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(A.class);
               }
               """
+          )
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+      "public static final",
+      "protected static final",
+      "static final",
+      "private final",
+      "private static",
+    })
+    void shouldNotReplaceWhenNotPrivateStaticFinal(String modifiers) {
+        rewriteRun(
+          spec -> spec.recipe(new UseSlf4j(null))
+            .parser(JavaParser.fromJavaVersion()
+              .classpath("slf4j-api")),
+
+          // language=java
+          java(
+            """
+              class A {
+                  %s org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(A.class);
+              }
+              """.formatted(modifiers)
           )
         );
     }
