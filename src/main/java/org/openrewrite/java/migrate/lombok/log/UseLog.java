@@ -21,7 +21,6 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaTemplate;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -47,39 +46,27 @@ public class UseLog extends UseLogRecipeTemplate {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new LogVanillaVisitor(fieldName);
-    }
+        String fieldName_ = fieldName;
+        return new LogVisitor("lombok.extern.java.Log", fieldName_) {
+            @Override
+            protected void removeImports() {
+                maybeRemoveImport("java.util.logging.Logger");
+            }
 
-    public static class LogVanillaVisitor extends LogVisitor {
+            @Override
+            protected String expectedLoggerPath() {
+                return "java.util.logging.Logger";
+            }
 
-        LogVanillaVisitor(String fieldName_) {
-            super(fieldName_);
-        }
+            @Override
+            protected boolean methodPath(String path) {
+                return "java.util.logging.Logger.getLogger".equals(path);
+            }
 
-        @Override
-        protected void switchImports() {
-            maybeAddImport("lombok.extern.java.Log");
-            maybeRemoveImport("java.util.logging.Logger");
-        }
-
-        @Override
-        protected JavaTemplate getLombokTemplate() {
-            return getLombokTemplate("Log", "lombok.extern.java.Log");
-        }
-
-        @Override
-        protected String expectedLoggerPath() {
-            return "java.util.logging.Logger";
-        }
-
-        @Override
-        protected boolean methodPath(String path) {
-            return "java.util.logging.Logger.getLogger".equals(path);
-        }
-
-        @Override
-        protected String getFactoryParameter(String className) {
-            return className + ".class.getName()";
-        }
+            @Override
+            protected String getFactoryParameter(String className) {
+                return className + ".class.getName()";
+            }
+        };
     }
 }

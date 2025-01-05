@@ -21,7 +21,6 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaTemplate;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -47,35 +46,24 @@ public class UseCommonsLog extends UseLogRecipeTemplate {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new CommonsLogVisitor(fieldName);
+        String fieldName_ = fieldName;
+        return new LogVisitor("lombok.extern.apachecommons.CommonsLog", fieldName_) {
+            @Override
+            protected void removeImports() {
+                maybeRemoveImport("org.apache.commons.logging.Log");
+                maybeRemoveImport("org.apache.commons.logging.LogFactory");
+            }
+
+            @Override
+            protected String expectedLoggerPath() {
+                return "org.apache.commons.logging.Log";
+            }
+
+            @Override
+            protected boolean methodPath(String path) {
+                return "org.apache.commons.logging.LogFactory.getLog".equals(path);
+            }
+        };
     }
 
-    public static class CommonsLogVisitor extends LogVisitor {
-
-        CommonsLogVisitor(String fieldName_) {
-            super(fieldName_);
-        }
-
-        @Override
-        protected void switchImports() {
-            maybeAddImport("lombok.extern.apachecommons.CommonsLog");
-            maybeRemoveImport("org.apache.commons.logging.Log");
-            maybeRemoveImport("org.apache.commons.logging.LogFactory");
-        }
-
-        @Override
-        protected JavaTemplate getLombokTemplate() {
-            return getLombokTemplate("CommonsLog", "lombok.extern.apachecommons.CommonsLog");
-        }
-
-        @Override
-        protected String expectedLoggerPath() {
-            return "org.apache.commons.logging.Log";
-        }
-
-        @Override
-        protected boolean methodPath(String path) {
-            return "org.apache.commons.logging.LogFactory.getLog".equals(path);
-        }
-    }
 }

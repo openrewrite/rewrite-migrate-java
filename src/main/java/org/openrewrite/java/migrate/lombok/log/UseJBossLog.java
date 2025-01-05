@@ -21,7 +21,6 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaTemplate;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -47,34 +46,23 @@ public class UseJBossLog extends UseLogRecipeTemplate {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JbosslogVisitor(fieldName);
+        String fieldName_ = fieldName;
+        return new LogVisitor("lombok.extern.jbosslog.JBossLog", fieldName_) {
+            @Override
+            protected void removeImports() {
+                maybeRemoveImport("org.jboss.logging.Logger");
+            }
+
+            @Override
+            protected String expectedLoggerPath() {
+                return "org.jboss.logging.Logger";
+            }
+
+            @Override
+            protected boolean methodPath(String path) {
+                return "org.jboss.logging.Logger.getLogger".equals(path);
+            }
+        };
     }
 
-    public static class JbosslogVisitor extends LogVisitor {
-
-        JbosslogVisitor(String fieldName_) {
-            super(fieldName_);
-        }
-
-        @Override
-        protected void switchImports() {
-            maybeAddImport("lombok.extern.jbosslog.JBossLog");
-            maybeRemoveImport("org.jboss.logging.Logger");
-        }
-
-        @Override
-        protected JavaTemplate getLombokTemplate() {
-            return getLombokTemplate("JBossLog", "lombok.extern.jbosslog.JBossLog");
-        }
-
-        @Override
-        protected String expectedLoggerPath() {
-            return "org.jboss.logging.Logger";
-        }
-
-        @Override
-        protected boolean methodPath(String path) {
-            return "org.jboss.logging.Logger.getLogger".equals(path);
-        }
-    }
 }

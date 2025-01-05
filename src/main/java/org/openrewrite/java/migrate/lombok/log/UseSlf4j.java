@@ -21,7 +21,6 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaTemplate;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -47,35 +46,24 @@ public class UseSlf4j extends UseLogRecipeTemplate {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new Slf4jVisitor(fieldName);
+        String fieldName_ = fieldName;
+        return new LogVisitor("lombok.extern.slf4j.Slf4j", fieldName_) {
+            @Override
+            protected void removeImports() {
+                maybeRemoveImport("org.slf4j.Logger");
+                maybeRemoveImport("org.slf4j.LoggerFactory");
+            }
+
+            @Override
+            protected String expectedLoggerPath() {
+                return "org.slf4j.Logger";
+            }
+
+            @Override
+            protected boolean methodPath(String path) {
+                return "org.slf4j.LoggerFactory.getLogger".equals(path);
+            }
+        };
     }
 
-    public static class Slf4jVisitor extends LogVisitor {
-
-        Slf4jVisitor(String fieldName_) {
-            super(fieldName_);
-        }
-
-        @Override
-        protected void switchImports() {
-            maybeAddImport("lombok.extern.slf4j.Slf4j");
-            maybeRemoveImport("org.slf4j.Logger");
-            maybeRemoveImport("org.slf4j.LoggerFactory");
-        }
-
-        @Override
-        protected JavaTemplate getLombokTemplate() {
-            return getLombokTemplate("Slf4j", "lombok.extern.slf4j.Slf4j");
-        }
-
-        @Override
-        protected String expectedLoggerPath() {
-            return "org.slf4j.Logger";
-        }
-
-        @Override
-        protected boolean methodPath(String path) {
-            return "org.slf4j.LoggerFactory.getLogger".equals(path);
-        }
-    }
 }

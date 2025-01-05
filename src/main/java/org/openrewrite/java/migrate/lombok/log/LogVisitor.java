@@ -32,6 +32,7 @@ import static java.util.Comparator.comparing;
 @EqualsAndHashCode(callSuper = false)
 abstract class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
 
+    private final String logAnnotation;
     @Nullable
     private final String fieldName;
 
@@ -39,30 +40,24 @@ abstract class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
         J.ClassDeclaration visitClassDeclaration = super.visitClassDeclaration(classDecl, ctx);
         if (visitClassDeclaration != classDecl) {
-            switchImports();
-            return getLombokTemplate()
+            maybeAddImport(logAnnotation);
+            removeImports();
+            return JavaTemplate
+                    .builder("@" + logAnnotation.substring(logAnnotation.lastIndexOf('.') + 1) + "\n")
+                    .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
+                    .imports(logAnnotation)
+                    .build()
                     .apply(
-                    updateCursor(visitClassDeclaration),
-                    visitClassDeclaration.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+                            updateCursor(visitClassDeclaration),
+                            visitClassDeclaration.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
         }
-
         return classDecl;
     }
 
-    protected abstract JavaTemplate getLombokTemplate();
-
-    protected JavaTemplate getLombokTemplate(String name, String import_) {
-        return JavaTemplate
-                .builder("@"+name+"\n")
-                .javaParser(JavaParser.fromJavaVersion()
-                        .classpath("lombok"))
-                .imports(import_)
-                .build();
-    }
-
-    protected abstract void switchImports();
+    protected abstract void removeImports();
 
     protected abstract boolean methodPath(String path);
+
     protected abstract String expectedLoggerPath();
 
     @Override
@@ -91,7 +86,7 @@ abstract class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
 
         J.MethodInvocation methodCall = (J.MethodInvocation) var.getInitializer();
 
-        String leftSide = methodCall.getMethodType().getDeclaringType().getFullyQualifiedName() + "." +  methodCall.getMethodType().getName();
+        String leftSide = methodCall.getMethodType().getDeclaringType().getFullyQualifiedName() + "." + methodCall.getMethodType().getName();
 
         //method call must match
         if (!methodPath(leftSide)) {

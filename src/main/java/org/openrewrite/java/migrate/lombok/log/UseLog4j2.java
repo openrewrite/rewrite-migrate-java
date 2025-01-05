@@ -21,7 +21,6 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaTemplate;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -47,35 +46,24 @@ public class UseLog4j2 extends UseLogRecipeTemplate {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new Log4j2Visitor(fieldName);
+        String fieldName_ = fieldName;
+        return new LogVisitor("lombok.extern.log4j.Log4j2", fieldName_) {
+            @Override
+            protected void removeImports() {
+                maybeRemoveImport("org.apache.logging.log4j.Logger");
+                maybeRemoveImport("org.apache.logging.log4j.LogManager");
+            }
+
+            @Override
+            protected String expectedLoggerPath() {
+                return "org.apache.logging.log4j.Logger";
+            }
+
+            @Override
+            protected boolean methodPath(String path) {
+                return "org.apache.logging.log4j.LogManager.getLogger".equals(path);
+            }
+        };
     }
 
-    public static class Log4j2Visitor extends LogVisitor {
-
-        Log4j2Visitor(String fieldName_) {
-            super(fieldName_);
-        }
-
-        @Override
-        protected void switchImports() {
-            maybeAddImport("lombok.extern.log4j.Log4j2");
-            maybeRemoveImport("org.apache.logging.log4j.Logger");
-            maybeRemoveImport("org.apache.logging.log4j.LogManager");
-        }
-
-        @Override
-        protected JavaTemplate getLombokTemplate() {
-            return getLombokTemplate("Log4j2", "lombok.extern.log4j.Log4j2");
-        }
-
-        @Override
-        protected String expectedLoggerPath() {
-            return "org.apache.logging.log4j.Logger";
-        }
-
-        @Override
-        protected boolean methodPath(String path) {
-            return "org.apache.logging.log4j.LogManager.getLogger".equals(path);
-        }
-    }
 }

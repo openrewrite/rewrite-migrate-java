@@ -191,7 +191,7 @@ class ConvertToLogAnnotationTest implements RewriteTest {
             .parser(JavaParser.fromJavaVersion()
               .logCompilationWarningsAndErrors(true)),
 
-        // language=java
+          // language=java
           java(
             """
               import java.util.logging.Logger;
@@ -217,7 +217,7 @@ class ConvertToLogAnnotationTest implements RewriteTest {
             .parser(JavaParser.fromJavaVersion()
               .logCompilationWarningsAndErrors(true)
               .classpath("jboss-logging")),
-        // language=java
+          // language=java
           java(
             """
               import org.jboss.logging.Logger;
