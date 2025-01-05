@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.lombok.log;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -53,6 +56,49 @@ class ConvertToLogAnnotationTest implements RewriteTest {
               """
           )
         );
+    }
+
+    @Nested
+    class RenameField {
+
+        @BeforeAll
+        static void setUp() {
+            System.setProperty("rewrite.lombok", "true");
+        }
+
+        @AfterAll
+        static void tearDown() {
+            System.clearProperty("rewrite.lombok");
+        }
+
+        @Test
+        void replaceSlf4jAndRenameFieldUsages() {
+            rewriteRun(
+              // language=java
+              java(
+                """
+                  class A {
+                      private static final org.slf4j.Logger renamed = org.slf4j.LoggerFactory.getLogger(A.class);
+
+                      void test() {
+                          renamed.info("test");
+                      }
+                  }
+                  """,
+                """
+                  import lombok.extern.slf4j.Slf4j;
+
+                  @Slf4j
+                  class A {
+
+                      void test() {
+                          log.info("test");
+                      }
+                  }
+                  """
+              )
+            );
+        }
     }
 
     @Test
