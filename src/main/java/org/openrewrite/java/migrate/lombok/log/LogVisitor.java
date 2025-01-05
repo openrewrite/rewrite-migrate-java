@@ -31,26 +31,22 @@ import static java.util.Comparator.comparing;
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 abstract class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
-    public static final String CLASS_NAME = "CLASS_NAME";
 
-    final String fieldName;
+    @Nullable
+    private final String fieldName;
 
     @Override
     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-
-        getCursor().putMessage(CLASS_NAME, classDecl.getSimpleName());
-
         J.ClassDeclaration visitClassDeclaration = super.visitClassDeclaration(classDecl, ctx);
-
-        //if nothing changed -> return
-        if (visitClassDeclaration == classDecl) {
-            return classDecl;
+        if (visitClassDeclaration != classDecl) {
+            switchImports();
+            return getLombokTemplate()
+                    .apply(
+                    updateCursor(visitClassDeclaration),
+                    visitClassDeclaration.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
         }
 
-        switchImports();
-        return getLombokTemplate().apply(
-                updateCursor(visitClassDeclaration),
-                visitClassDeclaration.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+        return classDecl;
     }
 
     protected abstract JavaTemplate getLombokTemplate();
@@ -80,7 +76,7 @@ abstract class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
         J.VariableDeclarations.NamedVariable var = multiVariable.getVariables().get(0);
 
         JavaType.Variable type = var.getVariableType();
-        if (!type.hasFlags(Flag.Private, Flag.Static, Flag.Final)) {
+        if (type == null || !type.hasFlags(Flag.Private, Flag.Static, Flag.Final)) {
             return multiVariable;
         }
 
@@ -103,7 +99,7 @@ abstract class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
         }
 
         //argument must match
-        String className = getCursor().pollNearestMessage(CLASS_NAME);
+        String className = getCursor().firstEnclosingOrThrow(J.ClassDeclaration.class).getSimpleName();
         if (methodCall.getArguments().size() != 1 ||
                 !methodCall.getArguments().get(0).toString().equals(getFactoryParameter(className)
                 )) {
