@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -295,14 +296,14 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/652")
     @Test
     void thatJaxbAnnotationModuleIsRewritten() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
-              "jackson-core",
-              "jackson-databind",
-              "jackson-module-jaxb-annotations",
-              "jackson-module-jakarta-xmlbind-annotations")),
+            "jackson-core",
+            "jackson-databind",
+            "jackson-module-jaxb-annotations")),
           //language=java
           java(
             """
