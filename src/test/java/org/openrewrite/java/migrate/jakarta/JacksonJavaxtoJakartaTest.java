@@ -337,7 +337,6 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
     void thatJaxbJsonProviderIsRewritten() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
-              "jackson-core",
               "jackson-databind",
               "jackson-jaxrs-json-provider")),
           //language=java

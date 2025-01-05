@@ -56,6 +56,7 @@ dependencies {
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind")
+    testRuntimeOnly("com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider")
     testRuntimeOnly("com.fasterxml.jackson.module:jackson-module-jaxb-annotations")
     testRuntimeOnly("org.apache.johnzon:johnzon-core:1.2.18")
     testRuntimeOnly("org.codehaus.groovy:groovy:latest.release")
