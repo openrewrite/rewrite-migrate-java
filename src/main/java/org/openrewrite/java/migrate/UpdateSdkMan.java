@@ -25,16 +25,17 @@ import org.openrewrite.remote.Remote;
 import org.openrewrite.text.PlainText;
 import org.openrewrite.text.PlainTextParser;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -102,15 +103,14 @@ public class UpdateSdkMan extends Recipe {
             }
 
             private List<String> readSdkmanJavaCandidates() {
-                URL resource = getClass().getResource("/sdkman-java.csv");
-                if (resource != null) {
-                    try {
-                        return Files.readAllLines(Paths.get(resource.toURI()));
-                    } catch (IOException | URISyntaxException e) {
-                        throw new RuntimeException(e);
-                    }
+                try (InputStream resourceAsStream = UpdateSdkMan.class.getResourceAsStream("/sdkman-java.csv");
+                     InputStreamReader inputStreamReader = new InputStreamReader(resourceAsStream, StandardCharsets.UTF_8);
+                     BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+                    return bufferedReader.lines().collect(toList());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-                throw new IllegalStateException("Could not find /sdkman-java.csv file");
+
             }
         };
         return Preconditions.check(new FindSourceFiles(".sdkmanrc"), visitor);
