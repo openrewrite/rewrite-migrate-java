@@ -7,7 +7,7 @@ plugins {
 group = "org.openrewrite.recipe"
 description = "Migrate to later Java versions. Automatically."
 
-val rewriteVersion = rewriteRecipe.rewriteVersion.get()
+val rewriteVersion = "latest.release"
 dependencies {
     compileOnly("org.projectlombok:lombok:latest.release")
     compileOnly("org.codehaus.groovy:groovy:latest.release")
@@ -15,21 +15,21 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:latest.release")
     testImplementation("org.projectlombok:lombok:latest.release")
 
-    annotationProcessor("org.openrewrite:rewrite-templating:$rewriteVersion")
+    annotationProcessor("org.openrewrite:rewrite-templating:1.19.1")
     compileOnly("com.google.errorprone:error_prone_core:2.+") {
         exclude("com.google.auto.service", "auto-service-annotations")
     }
 
-    implementation(platform("org.openrewrite:rewrite-bom:${rewriteVersion}"))
+    implementation(platform("org.openrewrite:rewrite-bom:8.41.1"))
     implementation("org.openrewrite:rewrite-java")
     implementation("org.openrewrite:rewrite-maven")
     implementation("org.openrewrite:rewrite-gradle")
-    implementation("org.openrewrite.recipe:rewrite-github-actions:$rewriteVersion")
-    implementation("org.openrewrite.recipe:rewrite-java-dependencies:$rewriteVersion")
-    implementation("org.openrewrite.recipe:rewrite-static-analysis:$rewriteVersion")
-    implementation("org.openrewrite.recipe:rewrite-jenkins:$rewriteVersion")
-    implementation("org.openrewrite:rewrite-templating:$rewriteVersion")
-    implementation("org.openrewrite.meta:rewrite-analysis:$rewriteVersion")
+    implementation("org.openrewrite.recipe:rewrite-github-actions:2.10.1")
+    implementation("org.openrewrite.recipe:rewrite-java-dependencies:1.24.1")
+    implementation("org.openrewrite.recipe:rewrite-static-analysis:1.21.1")
+    implementation("org.openrewrite.recipe:rewrite-jenkins:0.18.1")
+    implementation("org.openrewrite:rewrite-templating:1.19.1")
+    implementation("org.openrewrite.meta:rewrite-analysis:2.13.1")
 
     runtimeOnly("org.openrewrite:rewrite-java-8")
     runtimeOnly("org.openrewrite:rewrite-java-11")
@@ -43,8 +43,8 @@ dependencies {
 
     testImplementation("org.openrewrite:rewrite-test")
     testImplementation("org.openrewrite:rewrite-java-tck")
-    testImplementation("org.openrewrite:rewrite-kotlin:$rewriteVersion")
-    testImplementation("org.openrewrite.gradle.tooling:model:$rewriteVersion")
+    testImplementation("org.openrewrite:rewrite-kotlin:1.23.1")
+    testImplementation("org.openrewrite.gradle.tooling:model:latest.release")
 
     testImplementation("org.assertj:assertj-core:latest.release")
 
