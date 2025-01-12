@@ -33,6 +33,9 @@ recipeList:
       groupId: org.projectlombok
       artifactId: lombok-mapstruct-binding
       newScope: provided
+  - org.openrewrite.maven.ExcludeDependency:
+      groupId: org.projectlombok
+      artifactId: lombok
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lombok.UpdateLombokToJava11

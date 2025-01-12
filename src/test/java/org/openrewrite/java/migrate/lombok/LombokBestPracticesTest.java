@@ -19,11 +19,13 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.SourceSpec;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class LombokBestPracticesTest implements RewriteTest {
@@ -87,6 +89,99 @@ class LombokBestPracticesTest implements RewriteTest {
                   </project>
                   """.formatted(version.group(0));
             })
+          )
+        );
+    }
+
+    @Test
+    void excludeTransitiveLombok() {
+        //language=xml
+        rewriteRun(
+          mavenProject(
+            "parent",
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>parent</artifactId>
+                    <version>1.0.0</version>
+                    <modules>
+                        <module>library</module>
+                        <module>project</module>
+                    </modules>
+                </project>
+                """
+            ),
+            mavenProject("library",
+              pomXml(
+                """
+                  <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <parent>
+                        <groupId>com.example</groupId>
+                        <artifactId>parent</artifactId>
+                        <version>1.0.0</version>
+                      </parent>
+                      <artifactId>library</artifactId>
+                      <dependencies>
+                          <dependency>
+                              <groupId>org.projectlombok</groupId>
+                              <artifactId>lombok</artifactId>
+                              <version>1.18.6</version>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """,
+                SourceSpec::skip // Keep as is, such that we trigger exclude below
+              )
+            ),
+            mavenProject("project",
+              pomXml(
+                """
+                  <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <parent>
+                        <groupId>com.example</groupId>
+                        <artifactId>parent</artifactId>
+                        <version>1.0.0</version>
+                      </parent>
+                      <artifactId>project</artifactId>
+                      <dependencies>
+                          <dependency>
+                              <groupId>com.example</groupId>
+                              <artifactId>library</artifactId>
+                              <version>1.0.0</version>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """,
+                """
+                  <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <parent>
+                        <groupId>com.example</groupId>
+                        <artifactId>parent</artifactId>
+                        <version>1.0.0</version>
+                      </parent>
+                      <artifactId>project</artifactId>
+                      <dependencies>
+                          <dependency>
+                              <groupId>com.example</groupId>
+                              <artifactId>library</artifactId>
+                              <version>1.0.0</version>
+                              <exclusions>
+                                  <exclusion>
+                                      <groupId>org.projectlombok</groupId>
+                                      <artifactId>lombok</artifactId>
+                                  </exclusion>
+                              </exclusions>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """
+              )
+            )
           )
         );
     }
