@@ -78,6 +78,8 @@ description: Updates plugins to version compatible with Java 17.
 tags:
   - java17
 recipeList:
+  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
+      minimumJavaMajorVersion: 17
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 7.3
       addIfMissing: false
