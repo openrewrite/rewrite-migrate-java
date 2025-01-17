@@ -17,40 +17,20 @@ package org.openrewrite.java.migrate.maven;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
-import org.openrewrite.maven.AddProperty;
-import org.openrewrite.maven.MavenIsoVisitor;
-import org.openrewrite.xml.XPathMatcher;
-import org.openrewrite.xml.tree.Xml;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
+import static java.util.Collections.singletonList;
+
+/**
+ * @deprecated in favor of {@link org.openrewrite.maven.UpdateMavenProjectPropertyJavaVersion}
+ */
 @Value
 @EqualsAndHashCode(callSuper = false)
+@Deprecated
 public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
-
-    private static final List<String> JAVA_VERSION_PROPERTIES = Arrays.asList(
-            "java.version",
-            "jdk.version",
-            "javaVersion",
-            "jdkVersion",
-            "maven.compiler.source",
-            "maven.compiler.target",
-            "maven.compiler.release",
-            "release.version");
-
-    private static final List<XPathMatcher> JAVA_VERSION_XPATH_MATCHERS =
-            JAVA_VERSION_PROPERTIES.stream()
-                    .map(property -> "/project/properties/" + property)
-                    .map(XPathMatcher::new).collect(Collectors.toList());
-
-    private static final XPathMatcher PLUGINS_MATCHER = new XPathMatcher("/project/build//plugins");
 
     @Option(displayName = "Java version",
             description = "The Java version to upgrade to.",
@@ -66,79 +46,19 @@ public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
     public String getDescription() {
         //language=markdown
         return "The Java version is determined by several project properties, including:\n\n" +
-               " * `java.version`\n" +
-               " * `jdk.version`\n" +
-               " * `javaVersion`\n" +
-               " * `jdkVersion`\n" +
-               " * `maven.compiler.source`\n" +
-               " * `maven.compiler.target`\n" +
-               " * `maven.compiler.release`\n" +
-               " * `release.version`\n\n" +
-               "If none of these properties are in use and the maven compiler plugin is not otherwise configured, adds the `maven.compiler.release` property.";
+                " * `java.version`\n" +
+                " * `jdk.version`\n" +
+                " * `javaVersion`\n" +
+                " * `jdkVersion`\n" +
+                " * `maven.compiler.source`\n" +
+                " * `maven.compiler.target`\n" +
+                " * `maven.compiler.release`\n" +
+                " * `release.version`\n\n" +
+                "If none of these properties are in use and the maven compiler plugin is not otherwise configured, adds the `maven.compiler.release` property.";
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MavenIsoVisitor<ExecutionContext>() {
-            boolean compilerPluginConfiguredExplicitly;
-
-            @Override
-            public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
-                // Update properties already defined in the current pom
-                Xml.Document d = super.visitDocument(document, ctx);
-
-                // Return early if the parent appears to be within the current repository, as properties defined there will be updated
-                if (getResolutionResult().parentPomIsProjectPom()) {
-                    return d;
-                }
-
-                // Otherwise override remote parent's properties locally
-                Map<String, String> currentProperties = getResolutionResult().getPom().getProperties();
-                boolean foundProperty = false;
-                for (String property : JAVA_VERSION_PROPERTIES) {
-                    String propertyValue = currentProperties.get(property);
-                    if (propertyValue != null) {
-                        foundProperty = true;
-                        try {
-                            if (Float.parseFloat(propertyValue) < version) {
-                                d = (Xml.Document) new AddProperty(property, String.valueOf(version), null, false)
-                                        .getVisitor()
-                                        .visitNonNull(d, ctx);
-                                maybeUpdateModel();
-                            }
-                        } catch (NumberFormatException ex) {
-                            // either an expression or something else, don't touch
-                        }
-                    }
-                }
-
-                // When none of the relevant properties are explicitly configured Maven defaults to Java 8
-                // The release option was added in 9
-                // If no properties have yet been updated then set release explicitly
-                if (!foundProperty && version >= 9 && !compilerPluginConfiguredExplicitly) {
-                    d = (Xml.Document) new AddProperty("maven.compiler.release", String.valueOf(version), null, false)
-                            .getVisitor()
-                            .visitNonNull(d, ctx);
-                    maybeUpdateModel();
-                }
-
-                return d;
-            }
-
-            @Override
-            public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
-                Xml.Tag t = super.visitTag(tag, ctx);
-                if (isPluginTag("org.apache.maven.plugins", "maven-compiler-plugin")) {
-                    t.getChild("configuration").ifPresent(compilerPluginConfig -> {
-                        if (compilerPluginConfig.getChildValue("source").isPresent() ||
-                            compilerPluginConfig.getChildValue("target").isPresent() ||
-                            compilerPluginConfig.getChildValue("release").isPresent()) {
-                            compilerPluginConfiguredExplicitly = true;
-                        }
-                    });
-                }
-                return t;
-            }
-        };
+    public List<Recipe> getRecipeList() {
+        return singletonList(new org.openrewrite.maven.UpdateMavenProjectPropertyJavaVersion(version));
     }
 }
