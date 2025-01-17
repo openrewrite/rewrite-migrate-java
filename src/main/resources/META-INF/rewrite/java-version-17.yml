@@ -122,7 +122,7 @@ description: The `com.sun.net.ssl.internal.ssl.Provider` provider name was remov
 tags:
   - java17
 recipeList:
-  - org.openrewrite.java.migrate.ReplaceStringLiteralValue:
+  - org.openrewrite.java.ReplaceStringLiteralValue:
       oldLiteralValue: com.sun.net.ssl.internal.ssl.Provider
       newLiteralValue: SunJSSE
 ---
@@ -136,7 +136,7 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.logging.LogRecord getThreadID()
       newMethodName: getLongThreadID
-  - org.openrewrite.java.migrate.ChangeMethodInvocationReturnType:
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
       methodPattern: java.util.logging.LogRecord getLongThreadID()
       newReturnType: long
   - org.openrewrite.java.ChangeMethodName:
