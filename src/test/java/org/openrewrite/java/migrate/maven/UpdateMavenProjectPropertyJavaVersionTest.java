@@ -24,6 +24,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
+@Deprecated(forRemoval = true)
 class UpdateMavenProjectPropertyJavaVersionTest implements RewriteTest {
 
     @Override

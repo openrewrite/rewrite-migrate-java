@@ -13,7 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.lombok.LombokBestPractices
+displayName: Lombok Best Practices
+description: >-
+  Applies all recipes that enforce best practices for using Lombok.
+recipeList:
+  - org.openrewrite.java.migrate.lombok.UpdateLombokToJava11
+  - org.openrewrite.java.migrate.lombok.log.UseLombokLogAnnotations
+  - org.openrewrite.java.migrate.lombok.UseLombokGetter
+  - org.openrewrite.java.migrate.lombok.UseLombokSetter
+  - org.openrewrite.java.migrate.lombok.UseNoArgsConstructor
+  - org.openrewrite.maven.ChangeDependencyScope:
+      groupId: org.projectlombok
+      artifactId: lombok
+      newScope: provided
+  - org.openrewrite.maven.ChangeDependencyScope:
+      groupId: org.projectlombok
+      artifactId: lombok-mapstruct-binding
+      newScope: provided
+  - org.openrewrite.maven.ExcludeDependency:
+      groupId: org.projectlombok
+      artifactId: lombok
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lombok.UpdateLombokToJava11
@@ -43,3 +65,16 @@ recipeList:
       oldFullyQualifiedTypeName: lombok.experimental.val
       newFullyQualifiedTypeName: lombok.val
   - org.openrewrite.java.migrate.lombok.LombokValToFinalVar
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.lombok.log.UseLombokLogAnnotations
+displayName: Use Lombok logger annotations instead of explicit fields
+description: >-
+  Applies all recipes that replace logger declarations with class level annotations.
+recipeList:
+  - org.openrewrite.java.migrate.lombok.log.UseCommonsLog
+  - org.openrewrite.java.migrate.lombok.log.UseJBossLog
+  - org.openrewrite.java.migrate.lombok.log.UseLog
+  - org.openrewrite.java.migrate.lombok.log.UseLog4j2
+  - org.openrewrite.java.migrate.lombok.log.UseSlf4j

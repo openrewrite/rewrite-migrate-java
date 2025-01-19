@@ -63,7 +63,7 @@ description: Do not use the `com.sun.net.ssl.internal.www.protocol` package.
 tags:
   - java11
 recipeList:
-  - org.openrewrite.java.migrate.ReplaceStringLiteralValue:
+  - org.openrewrite.java.ReplaceStringLiteralValue:
       oldLiteralValue: com.sun.net.ssl.internal.www.protocol
       newLiteralValue: com.ibm.net.ssl.www2.protocol
 ---

@@ -23,6 +23,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@Deprecated(forRemoval = true)
 class ChangeMethodInvocationReturnTypeTest implements RewriteTest {
 
     @Override
