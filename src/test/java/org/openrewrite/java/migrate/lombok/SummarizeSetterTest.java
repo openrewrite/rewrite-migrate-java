@@ -59,6 +59,40 @@ class SummarizeSetterTest implements RewriteTest {
     }
 
     @Test
+    void replaceOneFieldGetterWhenTheresUnrelatedVariableDeclarations() {
+        rewriteRun(// language=java
+          java(
+            """
+              import lombok.Setter;
+
+              class A {
+
+                  @Setter
+                  int foo;
+
+                  void bar() {
+                      int x = 0;
+                  }
+              }
+              """,
+            """
+              import lombok.Setter;
+
+              @Setter
+              class A {
+
+                  int foo;
+
+                  void bar() {
+                      int x = 0;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void replaceOneFieldGetterWhenInFront() {
         rewriteRun(// language=java
           java(
