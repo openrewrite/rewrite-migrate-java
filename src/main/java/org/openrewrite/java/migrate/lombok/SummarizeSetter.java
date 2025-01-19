@@ -34,7 +34,7 @@ public class SummarizeSetter extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Summarize @Setter on fields to class level annotation";
+        return "Summarize `@Setter` on fields to class level annotation";
     }
 
     @Override
@@ -122,8 +122,8 @@ public class SummarizeSetter extends Recipe {
 
         @Override
         public J.@Nullable Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-            boolean isSetterAnnotated = annotation.getSimpleName().equals("Setter")
-                    && annotation.getArguments() == null; //no Access level, or other arguments
+            boolean isSetterAnnotated = annotation.getSimpleName().equals("Setter") &&
+                    annotation.getArguments() == null; //no Access level, or other arguments
 
             return isSetterAnnotated &&
                     //should only trigger on field annotation, not class annotation
