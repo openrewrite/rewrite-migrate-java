@@ -1,11 +1,11 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lombok;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -120,15 +121,15 @@ public class SummarizeSetter extends Recipe {
         }
 
         @Override
-        public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
+        public J.@Nullable Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
             boolean isSetterAnnotated = annotation.getSimpleName().equals("Setter")
                     && annotation.getArguments() == null; //no Access level, or other arguments
 
-            return isSetterAnnotated
+            return isSetterAnnotated &&
                     //should only trigger on field annotation, not class annotation
-                    && getCursor().getParent().getValue() instanceof J.VariableDeclarations
-                    ? null // -> delete
-                    : annotation; // -> keep
+                    getCursor().getParent().getValue() instanceof J.VariableDeclarations ?
+                    null : // -> delete
+                    annotation; // -> keep
         }
     }
 }
