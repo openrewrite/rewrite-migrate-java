@@ -75,8 +75,8 @@ public class SummarizeSetter extends Recipe {
             if (classDeclAfterVisit != classDecl && allFieldsAnnotated) {
                 //Add annotation
                 JavaTemplate template = JavaTemplate.builder("@Setter\n")
-                            .imports("lombok.Setter")
-                            .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
+                        .imports("lombok.Setter")
+                        .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
                         .build();
 
                 return template.apply(
@@ -87,7 +87,7 @@ public class SummarizeSetter extends Recipe {
         }
 
         @Override
-        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations variableDecls, ExecutionContext ctx){
+        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations variableDecls, ExecutionContext ctx) {
 
             boolean allFieldsAnnotatedSoFar = getCursor().getNearestMessage(ALL_FIELDS_DECORATED_ACC);
             if (!allFieldsAnnotatedSoFar) {
@@ -112,11 +112,8 @@ public class SummarizeSetter extends Recipe {
             //as of August 2024 manual fixes to the format are necessary. Hopefully in the future this method becomes obsolete
 
             boolean isAnnotationOnLineAbove = initial.toString().contains("@Setter\n");
-
             boolean isTopAnnotationRemoved = !initial.getLeadingAnnotations().isEmpty() &&
-                    initial.getLeadingAnnotations()
-                    .get(0)
-                    .getSimpleName().equals("Setter");
+                    "Setter".equals(initial.getLeadingAnnotations().get(0).getSimpleName());
 
             if (isAnnotationOnLineAbove && isTopAnnotationRemoved) {
                 String minus1NewLine = visited.getPrefix().getWhitespace().replaceFirst("\n", "");
@@ -127,7 +124,7 @@ public class SummarizeSetter extends Recipe {
 
         @Override
         public J.@Nullable Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-            boolean isSetterAnnotated = annotation.getSimpleName().equals("Setter") &&
+            boolean isSetterAnnotated = "Setter".equals(annotation.getSimpleName()) &&
                     annotation.getArguments() == null; //no Access level, or other arguments
 
             return isSetterAnnotated &&

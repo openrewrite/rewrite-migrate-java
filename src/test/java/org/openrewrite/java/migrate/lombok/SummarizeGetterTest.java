@@ -306,7 +306,4 @@ class SummarizeGetterTest implements RewriteTest {
           )
         );
     }
-
-
-
 }

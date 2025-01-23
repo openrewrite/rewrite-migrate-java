@@ -449,6 +449,4 @@ class SummarizeSetterTest implements RewriteTest {
           )
         );
     }
-
-
 }
