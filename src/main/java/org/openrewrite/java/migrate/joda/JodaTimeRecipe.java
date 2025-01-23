@@ -18,7 +18,10 @@ package org.openrewrite.java.migrate.joda;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.ScanningRecipe;
+import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
 import org.openrewrite.java.tree.JavaType;
@@ -42,13 +45,14 @@ public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
     }
 
     @Override
-    public JodaTimeScanner getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
         return new JodaTimeScanner(acc);
     }
 
     @Override
-    public JodaTimeVisitor getVisitor(Accumulator acc) {
-        return new JodaTimeVisitor(acc, true, new LinkedList<>());
+    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+        JodaTimeVisitor jodaTimeVisitor = new JodaTimeVisitor(acc, true, new LinkedList<>());
+        return Preconditions.check(new UsesType<>("org.joda.time.*", true), jodaTimeVisitor);
     }
 
     @Getter
