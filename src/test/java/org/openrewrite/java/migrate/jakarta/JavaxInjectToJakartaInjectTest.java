@@ -53,13 +53,11 @@ class JavaxInjectToJakartaInjectTest implements RewriteTest {
                   </dependencies>
               </project>
               """,
-            spec -> spec.after(actual -> {
-                assertThat(actual)
-                  .contains("<groupId>jakarta.inject</groupId>")
-                  .contains("<artifactId>jakarta.inject-api</artifactId>")
-                  .containsPattern("<version>[0-9]+\\.[0-9]+\\.[0-9]+</version>");
-                return actual;
-            })
+            spec -> spec.after(actual -> assertThat(actual)
+              .contains("<groupId>jakarta.inject</groupId>")
+              .contains("<artifactId>jakarta.inject-api</artifactId>")
+              .containsPattern("<version>[0-9]+\\.[0-9]+\\.[0-9]+</version>")
+              .actual())
           )
         );
     }
