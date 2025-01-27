@@ -34,14 +34,14 @@ public class ChangeDefaultKeyStore extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Return String `JKS` when  `KeyStore.getDefaultType()` is called";
+        return "Return String `jks` when  `KeyStore.getDefaultType()` is called";
     }
 
     @Override
     public String getDescription() {
         return "In Java 11 the default keystore was updated from JKS to PKCS12." +
                 "As a result, applications relying on KeyStore.getDefaultType() may encounter issues after migrating, unless their JKS keystore has been converted to PKCS12." +
-                "This recipe returns default key store of `JKS` when `KeyStore.getDefaultType()` method is called to use the pre Java 11 default keystore.";
+                "This recipe returns default key store of `jks` when `KeyStore.getDefaultType()` method is called to use the pre Java 11 default keystore.";
     }
 
     @Override
@@ -50,7 +50,7 @@ public class ChangeDefaultKeyStore extends Recipe {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (KEYSTORE_METHOD_REF.matches(method)) {
-                    return new J.Literal(randomId(), Space.EMPTY, Markers.EMPTY, "\"JKS\"", "\"JKS\"", null, JavaType.Primitive.String);
+                    return new J.Literal(randomId(), Space.EMPTY, Markers.EMPTY, "\"jks\"", "\"jks\"", null, JavaType.Primitive.String);
                 }
                 return super.visitMethodInvocation(method, ctx);
             }

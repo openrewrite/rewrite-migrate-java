@@ -60,7 +60,7 @@ public class ChangeDefaultKeyStoreTest implements RewriteTest {
               class Foo {
                	void bar() {
                		try{
-               			KeyStore keystore = KeyStore.getInstance("JKS");
+               			KeyStore keystore = KeyStore.getInstance("jks");
                			char[] password = "your_keystore_password".toCharArray();
                			FileInputStream keystoreFile = new FileInputStream("path_to_your_keystore_file.jks");
                			keystore.load(keystoreFile, password);
