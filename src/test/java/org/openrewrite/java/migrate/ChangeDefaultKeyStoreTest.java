@@ -16,18 +16,23 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 public class ChangeDefaultKeyStoreTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new ChangeDefaultKeyStore());
+        spec.recipe(new ChangeDefaultKeyStore())
+          .allSources(src -> src.markers(javaVersion(11)));
     }
+
+    @DocumentExample
     @Test
-    void testKeyStore() {
+    void keyStore() {
         rewriteRun(
           //language=java
           java(
