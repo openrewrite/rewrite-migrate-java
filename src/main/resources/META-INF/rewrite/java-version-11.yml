@@ -76,7 +76,7 @@ recipeList:
   - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
   - org.openrewrite.java.migrate.ArrayStoreExceptionToTypeNotPresentException
   - org.openrewrite.java.migrate.IllegalArgumentExceptionToAlreadyConnectedException
-
+  - org.openrewrite.java.migrate.ChangeDefaultKeyStore
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11
@@ -292,3 +292,4 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.nio.file.Path get(..)
       newMethodName: of
+
