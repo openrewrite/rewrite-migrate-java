@@ -50,6 +50,7 @@ public class ChangeDefaultKeyStore extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesJavaVersion<>(11),
                 new JavaVisitor<ExecutionContext>() {
+                    @Override
                     public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         if (KEYSTORE_METHOD_REF.matches(method)) {
                             return new J.Literal(randomId(), Space.EMPTY, Markers.EMPTY, "\"jks\"", "\"jks\"", null, JavaType.Primitive.String);
