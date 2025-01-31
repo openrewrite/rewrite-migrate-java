@@ -15,14 +15,12 @@
  */
 package org.openrewrite.java.migrate;
 
-import org.openrewrite.Cursor;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
@@ -46,38 +44,39 @@ public class DeprecatedSecurityManager extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
-                MethodMatcher SETSECURITY_REF = new MethodMatcher("java.lang.System setSecurityManager(java.lang.SecurityManager) ", true);
-                List<Statement> statements = block.getStatements();
-                boolean propertySet = false;
-                for (int i = 0; i < statements.size() ; i++) {
-                    Statement stmt = statements.get(i);
-                    if (stmt instanceof J.MethodInvocation) {
-                        if (SETSECURITY_REF.matches((J.MethodInvocation) stmt)) {
-                            for (Statement statement : statements) {
-                                if (statement instanceof J.MethodInvocation &&
-                                        ((J.MethodInvocation) statement).getSimpleName().equals("setProperty") &&
-                                        ((J.MethodInvocation) statement).getArguments().get(0) instanceof J.Literal &&
-                                        ((J.Literal) ((J.MethodInvocation) statement).getArguments().get(0)).getValue().equals("java.security.manager")) {
-                                    propertySet = true;
-                                    break;
+        return Preconditions.check(new UsesJavaVersion<>(18),
+                new JavaIsoVisitor<ExecutionContext>() {
+                    public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
+                        MethodMatcher SETSECURITY_REF = new MethodMatcher("java.lang.System setSecurityManager(java.lang.SecurityManager) ", true);
+                        List<Statement> statements = block.getStatements();
+                        boolean propertySet = false;
+                        for (int i = 0; i < statements.size(); i++) {
+                            Statement stmt = statements.get(i);
+                            if (stmt instanceof J.MethodInvocation) {
+                                if (SETSECURITY_REF.matches((J.MethodInvocation) stmt)) {
+                                    for (Statement statement : statements) {
+                                        if (statement instanceof J.MethodInvocation &&
+                                                ((J.MethodInvocation) statement).getSimpleName().equals("setProperty") &&
+                                                ((J.MethodInvocation) statement).getArguments().get(0) instanceof J.Literal &&
+                                                ((J.Literal) ((J.MethodInvocation) statement).getArguments().get(0)).getValue().equals("java.security.manager")) {
+                                            propertySet = true;
+                                            break;
+                                        }
+                                    }
+                                    String templateString = "System.setProperty(\"java.security.manager\", \"allow\");";
+                                    if (!propertySet) {
+                                        stmt = JavaTemplate.builder(templateString)
+                                                .contextSensitive()
+                                                .build().apply(new Cursor(getCursor(), stmt),
+                                                        stmt.getCoordinates().replace());
+                                        statements = ListUtils.insert(statements, stmt, i);
+                                        return block.withStatements(statements);
+                                    }
                                 }
                             }
-                            String templateString = "System.setProperty(\"java.security.manager\", \"allow\");";
-                            if (!propertySet) {
-                                stmt = JavaTemplate.builder(templateString)
-                                        .contextSensitive()
-                                        .build().apply(new Cursor(getCursor(), stmt),
-                                                stmt.getCoordinates().replace());
-                                statements = ListUtils.insert(statements, stmt, i);
-                                return block.withStatements(statements);
-                            }
                         }
+                        return super.visitBlock(block, ctx);
                     }
-                }
-                return super.visitBlock(block, ctx);
-            }
-        };
+                });
     }
 }

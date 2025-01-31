@@ -27,7 +27,7 @@ class DeprecatedSecurityManagerTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new DeprecatedSecurityManager())
-          .allSources(src -> src.markers(javaVersion(11)));
+            .allSources(src -> src.markers(javaVersion(21)));
     }
     @Test
     @DocumentExample
