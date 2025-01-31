@@ -46,6 +46,7 @@ public class DeprecatedSecurityManager extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesJavaVersion<>(18),
                 new JavaIsoVisitor<ExecutionContext>() {
+                    @Override
                     public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
                         MethodMatcher SETSECURITY_REF = new MethodMatcher("java.lang.System setSecurityManager(java.lang.SecurityManager) ", true);
                         List<Statement> statements = block.getStatements();
