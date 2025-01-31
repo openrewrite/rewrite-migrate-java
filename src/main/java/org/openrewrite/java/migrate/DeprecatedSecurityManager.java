@@ -38,8 +38,8 @@ public class DeprecatedSecurityManager extends Recipe {
         return "The default value of the `java.security.manager` system property has been changed to disallow since Java 18." +
                 " Unless the system property is set to allow on the command line, any invocation of System.setSecurityManager(SecurityManager) " +
                 " with a non-null argument will throw an `UnsupportedOperationException`. " +
-                " You can set system property as `Djava.security.manager=allow.` to prevent the exception"
-                + "The recipe calls `System.setProperty(\"java.security.manager\")` before calling `java.lang.System setSecurityManager(SecurityManager)`.";
+                " You can set system property as `Djava.security.manager=allow.` to prevent the exception" +
+                "The recipe calls `System.setProperty(\"java.security.manager\")` before calling `java.lang.System setSecurityManager(SecurityManager)`.";
     }
 
     @Override
