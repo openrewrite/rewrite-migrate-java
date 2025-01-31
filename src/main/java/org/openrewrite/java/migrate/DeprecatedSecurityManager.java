@@ -39,7 +39,7 @@ public class DeprecatedSecurityManager extends Recipe {
                 " Unless the system property is set to allow on the command line, any invocation of System.setSecurityManager(SecurityManager) " +
                 " with a non-null argument will throw an `UnsupportedOperationException`. " +
                 " You can set system property as `Djava.security.manager=allow.` to prevent the exception" +
-                "The recipe calls `System.setProperty(\"java.security.manager\")` before calling `java.lang.System setSecurityManager(SecurityManager)`.";
+                "The recipe calls `System.setProperty(\"java.security.manager\",\"allow\")` before calling `java.lang.System setSecurityManager(SecurityManager)`.";
     }
 
     @Override
