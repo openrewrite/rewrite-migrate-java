@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -24,6 +25,29 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
 class ChangeDefaultKeyStoreTest implements RewriteTest {
+
+    @Language("java")
+    private static final String BEFORE = """
+      import java.io.FileInputStream;
+      import java.io.IOException;
+      import java.security.Key;
+      import java.security.KeyStore;
+
+      class Foo {
+       	void bar() {
+       		try{
+       			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+       			char[] password = "your_keystore_password".toCharArray();
+       			FileInputStream keystoreFile = new FileInputStream("path_to_your_keystore_file.jks");
+       			keystore.load(keystoreFile, password);
+       		}
+       		catch (Exception e) {
+       			e.printStackTrace();
+       		}
+       	}
+      }
+      """;
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new ChangeDefaultKeyStore())
@@ -32,30 +56,11 @@ class ChangeDefaultKeyStoreTest implements RewriteTest {
 
     @DocumentExample
     @Test
-    void keyStore() {
+    void keyStoreDefaultTypeChangedToExplicitType() {
         rewriteRun(
           //language=java
           java(
-            """
-              import java.io.FileInputStream;
-              import java.io.IOException;
-              import java.security.Key;
-              import java.security.KeyStore;
-
-              class Foo {
-               	void bar() {
-               		try{
-               			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-               			char[] password = "your_keystore_password".toCharArray();
-               			FileInputStream keystoreFile = new FileInputStream("path_to_your_keystore_file.jks");
-               			keystore.load(keystoreFile, password);
-               		}
-               		catch (Exception e) {
-               			e.printStackTrace();
-               		}
-               	}
-              }
-              """,
+            BEFORE,
             """
               import java.io.FileInputStream;
               import java.io.IOException;
@@ -81,7 +86,7 @@ class ChangeDefaultKeyStoreTest implements RewriteTest {
     }
 
     @Test
-    void keepString() {
+    void keepExplicitType() {
         rewriteRun(
           //language=java
           java(
@@ -113,27 +118,18 @@ class ChangeDefaultKeyStoreTest implements RewriteTest {
         rewriteRun(
           //language=java
           java(
-            """
-              import java.io.FileInputStream;
-              import java.io.IOException;
-              import java.security.Key;
-              import java.security.KeyStore;
-
-              class Foo {
-               	void bar() {
-               		try{
-               			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-               			char[] password = "your_keystore_password".toCharArray();
-               			FileInputStream keystoreFile = new FileInputStream("path_to_your_keystore_file.jks");
-               			keystore.load(keystoreFile, password);
-               		}
-               		catch (Exception e) {
-               			e.printStackTrace();
-               		}
-               	}
-              }
-              """,
+            BEFORE,
             spec -> spec.markers(javaVersion(8)))
+        );
+    }
+
+    @Test
+    void keepStringForJava17() {
+        rewriteRun(
+          //language=java
+          java(
+            BEFORE,
+            spec -> spec.markers(javaVersion(17)))
         );
     }
 }
