@@ -79,4 +79,61 @@ class ChangeDefaultKeyStoreTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void keepString() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.io.FileInputStream;
+              import java.io.IOException;
+              import java.security.Key;
+              import java.security.KeyStore;
+
+              class Foo {
+               	void bar() {
+               		try{
+               			KeyStore keystore = KeyStore.getInstance("jks");
+               			char[] password = "your_keystore_password".toCharArray();
+               			FileInputStream keystoreFile = new FileInputStream("path_to_your_keystore_file.jks");
+               			keystore.load(keystoreFile, password);
+               		}
+               		catch (Exception e) {
+               			e.printStackTrace();
+               		}
+               	}
+              }
+              """)
+        );
+    }
+
+    @Test
+    void keepStringForJava8() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.io.FileInputStream;
+              import java.io.IOException;
+              import java.security.Key;
+              import java.security.KeyStore;
+
+              class Foo {
+               	void bar() {
+               		try{
+               			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+               			char[] password = "your_keystore_password".toCharArray();
+               			FileInputStream keystoreFile = new FileInputStream("path_to_your_keystore_file.jks");
+               			keystore.load(keystoreFile, password);
+               		}
+               		catch (Exception e) {
+               			e.printStackTrace();
+               		}
+               	}
+              }
+              """,
+            spec -> spec.markers(javaVersion(8)))
+        );
+    }
 }
