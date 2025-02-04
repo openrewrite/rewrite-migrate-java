@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate;
 
-
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -31,7 +30,6 @@ import org.openrewrite.marker.Markers;
 
 import static org.openrewrite.Tree.randomId;
 
-
 public class ChangeDefaultKeyStore extends Recipe {
     private static final MethodMatcher KEYSTORE_METHOD_REF = new MethodMatcher("java.security.KeyStore getDefaultType()", true);
 
@@ -42,15 +40,19 @@ public class ChangeDefaultKeyStore extends Recipe {
 
     @Override
     public String getDescription() {
-        return "In Java 11 the default keystore was updated from JKS to PKCS12." + "As a result, applications relying on KeyStore.getDefaultType() may encounter issues after migrating, unless their JKS keystore has been converted to PKCS12." + "This recipe returns default key store of `jks` when `KeyStore.getDefaultType()` method is called to use the pre Java 11 default keystore.";
+        return "In Java 11 the default keystore was updated from JKS to PKCS12. " +
+                "As a result, applications relying on KeyStore.getDefaultType() may encounter issues after migrating," +
+                " unless their JKS keystore has been converted to PKCS12. " +
+                "This recipe returns default key store of `jks` when `KeyStore.getDefaultType()` method is called to" +
+                " use the pre Java 11 default keystore.";
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 Preconditions.and(
-                        new UsesJavaVersion<>(11),
-                        new UsesMethod<>("java.security.KeyStore getDefaultType()")),
+                        new UsesJavaVersion<>(11, 11),
+                        new UsesMethod<>(KEYSTORE_METHOD_REF)),
                 new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
