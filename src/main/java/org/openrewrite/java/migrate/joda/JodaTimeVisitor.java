@@ -182,7 +182,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
     @Override
     public @NonNull J visitFieldAccess(@NonNull J.FieldAccess fieldAccess, @NonNull ExecutionContext ctx) {
         J.FieldAccess f = (J.FieldAccess) super.visitFieldAccess(fieldAccess, ctx);
-        if (TypeUtils.isOfClassType(f.getType(), JODA_DATE_TIME_ZONE) && f.getSimpleName().equals("UTC")) {
+        if (TypeUtils.isOfClassType(f.getType(), JODA_DATE_TIME_ZONE) && "UTC".equals(f.getSimpleName())) {
             return JavaTemplate.builder("ZoneOffset.UTC")
                     .imports(JAVA_ZONE_OFFSET)
                     .build()
@@ -203,7 +203,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             }
         }
 
-        JavaType.FullyQualified jodaType = ((JavaType.Class) ident.getType());
+        JavaType.FullyQualified jodaType = (JavaType.Class) ident.getType();
         JavaType.FullyQualified fqType = TimeClassMap.getJavaTimeType(jodaType.getFullyQualifiedName());
         if (fqType == null) {
             return ident;

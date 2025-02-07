@@ -66,20 +66,20 @@ public class RemoveTemporalAnnotation extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         Pattern temporalPattern = Pattern.compile(".*TemporalType\\.(TIMESTAMP|DATE|TIME)");
-        final String JAVA_SQL_TIMESTAMP = "java.sql.Timestamp";
-        final String JAVA_SQL_TIME = "java.sql.Time";
-        final String JAVA_SQL_DATE = "java.sql.Date";
+        final String javaSqlTimestamp = "java.sql.Timestamp";
+        final String javaSqlTime = "java.sql.Time";
+        final String javaSqlDate = "java.sql.Date";
 
         Set<String> javaSqlDateTimeTypes = Stream.of(
-                JAVA_SQL_TIMESTAMP,
-                JAVA_SQL_TIME,
-                JAVA_SQL_DATE
+                javaSqlTimestamp,
+                javaSqlTime,
+                javaSqlDate
         ).collect(Collectors.toSet());
         // Combinations of TemporalType and java.sql classes that do not need removal
         Map<String, String> doNotRemove = Stream.of(new String[][]{
-                {"DATE", JAVA_SQL_TIMESTAMP},
-                {"TIME", JAVA_SQL_TIMESTAMP},
-                {"TIMESTAMP", JAVA_SQL_DATE}
+                {"DATE", javaSqlTimestamp},
+                {"TIME", javaSqlTimestamp},
+                {"TIMESTAMP", javaSqlDate}
         }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
         // TODO: maybe future recipe to handle these by creating a converter class
         // https://wiki.eclipse.org/EclipseLink/Examples/JPA/Migration/OpenJPA/Mappings#.40Temporal_on_java.sql.Date.2FTime.2FTimestamp_fields
@@ -88,9 +88,9 @@ public class RemoveTemporalAnnotation extends Recipe {
                 Preconditions.and(
                         new UsesType<>("javax.persistence.Temporal", true),
                         Preconditions.or(
-                                new UsesType<>(JAVA_SQL_DATE, true),
-                                new UsesType<>(JAVA_SQL_TIME, true),
-                                new UsesType<>(JAVA_SQL_TIMESTAMP, true)
+                                new UsesType<>(javaSqlDate, true),
+                                new UsesType<>(javaSqlTime, true),
+                                new UsesType<>(javaSqlTimestamp, true)
                         )
                 ),
                 new JavaIsoVisitor<ExecutionContext>() {

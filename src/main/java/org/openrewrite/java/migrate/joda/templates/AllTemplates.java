@@ -44,27 +44,27 @@ public class AllTemplates {
     private static final MethodMatcher ANY_ABSTRACT_INTERVAL = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " *(..)");
     private static final MethodMatcher ANY_BASE_INTERVAL = new MethodMatcher(JODA_BASE_INTERVAL + " *(..)");
 
-    private static List<MatcherAndTemplates> templates = new ArrayList<MatcherAndTemplates>() {
-        {
-            add(new MatcherAndTemplates(ANY_ABSTRACT_DATE_TIME, new AbstractDateTimeTemplates()));
-            add(new MatcherAndTemplates(ANY_ABSTRACT_DURATION, new AbstractDurationTemplates()));
-            add(new MatcherAndTemplates(ANY_ABSTRACT_INSTANT, new AbstractInstantTemplates()));
-            add(new MatcherAndTemplates(ANY_BASE_DATETIME, new BaseDateTime()));
-            add(new MatcherAndTemplates(ANY_TIME_FORMAT, new DateTimeFormatTemplates()));
-            add(new MatcherAndTemplates(ANY_TIME_FORMATTER, new DateTimeFormatterTemplates()));
-            add(new MatcherAndTemplates(ANY_NEW_DATE_TIME, new DateTimeTemplates()));
-            add(new MatcherAndTemplates(ANY_DATE_TIME, new DateTimeTemplates()));
-            add(new MatcherAndTemplates(ANY_NEW_DURATION, new DurationTemplates()));
-            add(new MatcherAndTemplates(ANY_DURATION, new DurationTemplates()));
-            add(new MatcherAndTemplates(ANY_BASE_DURATION, new BaseDurationTemplates()));
-            add(new MatcherAndTemplates(ANY_DATE_TIMEZONE, new TimeZoneTemplates()));
-            add(new MatcherAndTemplates(ANY_INSTANT, new InstantTemplates()));
-            add(new MatcherAndTemplates(ANY_NEW_INSTANT, new InstantTemplates()));
-            add(new MatcherAndTemplates(ANY_NEW_INTERVAL, new IntervalTemplates()));
-            add(new MatcherAndTemplates(ANY_ABSTRACT_INTERVAL, new AbstractIntervalTemplates()));
-            add(new MatcherAndTemplates(ANY_BASE_INTERVAL, new BaseIntervalTemplates()));
-        }
-    };
+    private static final List<MatcherAndTemplates> templates;
+    static {
+        templates = new ArrayList<>();
+        templates.add(new MatcherAndTemplates(ANY_ABSTRACT_DATE_TIME, new AbstractDateTimeTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_ABSTRACT_DURATION, new AbstractDurationTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_ABSTRACT_INSTANT, new AbstractInstantTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_BASE_DATETIME, new BaseDateTime()));
+        templates.add(new MatcherAndTemplates(ANY_TIME_FORMAT, new DateTimeFormatTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_TIME_FORMATTER, new DateTimeFormatterTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_NEW_DATE_TIME, new DateTimeTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_DATE_TIME, new DateTimeTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_NEW_DURATION, new DurationTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_DURATION, new DurationTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_BASE_DURATION, new BaseDurationTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_DATE_TIMEZONE, new TimeZoneTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_INSTANT, new InstantTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_NEW_INSTANT, new InstantTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_NEW_INTERVAL, new IntervalTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_ABSTRACT_INTERVAL, new AbstractIntervalTemplates()));
+        templates.add(new MatcherAndTemplates(ANY_BASE_INTERVAL, new BaseIntervalTemplates()));
+    }
 
     public static MethodTemplate getTemplate(MethodCall method) {
         return getTemplateGroup(method).flatMap(templates -> templates.getTemplates().stream()

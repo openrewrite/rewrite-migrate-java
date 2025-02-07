@@ -71,10 +71,10 @@ class SharedDataHolder {
     //   both shared-cache-mode and javax.persistence.sharedCache.mode are present
     //   None of the properties/elements are present
     public boolean shouldFlag() {
-        return (openJPACacheProperty != null ||
+        return openJPACacheProperty != null ||
                 ((sharedCacheModeElement != null && sharedCacheModeElementUnspecified) || (sharedCacheModeProperty != null && sharedCacheModePropertyUnspecified)) ||
                 (sharedCacheModeElement != null && sharedCacheModeProperty != null) ||
-                (sharedCacheModeElement == null && sharedCacheModeProperty == null && eclipselinkCacheProperty == null));
+                (sharedCacheModeElement == null && sharedCacheModeProperty == null && eclipselinkCacheProperty == null);
     }
 }
 

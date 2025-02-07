@@ -301,8 +301,8 @@ public class UseTextBlocks extends Recipe {
     }
 
     private static String generatePassword(String originalStr) throws NoSuchAlgorithmException {
-        final String SALT = "kun";
-        String saltedStr = originalStr + SALT;
+        final String salt = "kun";
+        String saltedStr = originalStr + salt;
 
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = md.digest(saltedStr.getBytes());

@@ -33,10 +33,10 @@ public class AbstractDurationTemplates implements Templates {
     private final JavaTemplate toPeriodTemplate = JavaTemplate.builder("#{any(" + JAVA_DURATION + ")}.toPeriod()").build();
 
     @Getter
-    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
-        {
-            add(new MethodTemplate(isLongerThan, isLongerThanTemplate));
-            add(new MethodTemplate(toPeriod, toPeriodTemplate));
-        }
-    };
+    private final List<MethodTemplate> templates;
+    {
+        templates = new ArrayList<>();
+        templates.add(new MethodTemplate(isLongerThan, isLongerThanTemplate));
+        templates.add(new MethodTemplate(toPeriod, toPeriodTemplate));
+    }
 }

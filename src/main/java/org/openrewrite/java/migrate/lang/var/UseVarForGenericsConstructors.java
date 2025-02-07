@@ -177,7 +177,7 @@ public class UseVarForGenericsConstructors extends Recipe {
                 initializer = ((J.NewClass) initializer).withClazz(typedInitializerClazz);
             }
 
-            J.VariableDeclarations result = template.<J.VariableDeclarations>apply(getCursor(), vd.getCoordinates().replace(), simpleName, initializer)
+            J.VariableDeclarations result = template.apply(getCursor(), vd.getCoordinates().replace(), simpleName, initializer)
                     .withPrefix(vd.getPrefix());
 
             // apply modifiers like final

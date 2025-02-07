@@ -71,27 +71,27 @@ public class AbstractInstantTemplates implements Templates {
     private final JavaTemplate toStringFormatterTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.format(#{any(" + JAVA_TIME_FORMATTER + ")})").build();
 
     @Getter
-    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
-        {
-            add(new MethodTemplate(equals, equalsTemplate));
-            add(new MethodTemplate(getZone, getZoneTemplate));
-            add(new MethodTemplate(isAfterLong, isAfterLongTemplate));
-            add(new MethodTemplate(isAfterLong, isAfterLongTemplateWithInstant));
-            add(new MethodTemplate(isAfter, isAfterTemplate));
-            add(new MethodTemplate(isAfter, isAfterTemplateWithInstant));
-            add(new MethodTemplate(isBeforeLong, isBeforeLongTemplate));
-            add(new MethodTemplate(isBeforeLong, isBeforeLongTemplateWithInstant));
-            add(new MethodTemplate(isBefore, isBeforTemplate));
-            add(new MethodTemplate(isBefore, isBeforeTemplateWithInstant));
-            add(new MethodTemplate(isBeforeNow, isBeforeNowTemplate));
-            add(new MethodTemplate(isEqualLong, isEqualLongTemplate));
-            add(new MethodTemplate(isEqualReadableInstant, isEqualReadableInstantTemplate));
-            add(new MethodTemplate(toDate, toDateTemplate));
-            add(new MethodTemplate(toInstant, toInstantTemplate));
-            add(new MethodTemplate(toString, toStringTemplate));
-            add(new MethodTemplate(toStringFormatter, toStringFormatterTemplate));
-        }
-    };
+    private final List<MethodTemplate> templates;
+    {
+        templates = new ArrayList<>();
+        templates.add(new MethodTemplate(equals, equalsTemplate));
+        templates.add(new MethodTemplate(getZone, getZoneTemplate));
+        templates.add(new MethodTemplate(isAfterLong, isAfterLongTemplate));
+        templates.add(new MethodTemplate(isAfterLong, isAfterLongTemplateWithInstant));
+        templates.add(new MethodTemplate(isAfter, isAfterTemplate));
+        templates.add(new MethodTemplate(isAfter, isAfterTemplateWithInstant));
+        templates.add(new MethodTemplate(isBeforeLong, isBeforeLongTemplate));
+        templates.add(new MethodTemplate(isBeforeLong, isBeforeLongTemplateWithInstant));
+        templates.add(new MethodTemplate(isBefore, isBeforTemplate));
+        templates.add(new MethodTemplate(isBefore, isBeforeTemplateWithInstant));
+        templates.add(new MethodTemplate(isBeforeNow, isBeforeNowTemplate));
+        templates.add(new MethodTemplate(isEqualLong, isEqualLongTemplate));
+        templates.add(new MethodTemplate(isEqualReadableInstant, isEqualReadableInstantTemplate));
+        templates.add(new MethodTemplate(toDate, toDateTemplate));
+        templates.add(new MethodTemplate(toInstant, toInstantTemplate));
+        templates.add(new MethodTemplate(toString, toStringTemplate));
+        templates.add(new MethodTemplate(toStringFormatter, toStringFormatterTemplate));
+    }
 
     @Override
     public boolean matchesMethodCall(MethodCall method, MethodTemplate template) {

@@ -31,9 +31,9 @@ public class BaseDateTime implements Templates {
             .build();
 
     @Getter
-    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
-        {
-            add(new MethodTemplate(getMillis, getMillisTemplate));
-        }
-    };
+    private final List<MethodTemplate> templates;
+    {
+        templates = new ArrayList<>();
+        templates.add(new MethodTemplate(getMillis, getMillisTemplate));
+    }
 }

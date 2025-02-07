@@ -80,21 +80,21 @@ public class DateTimeFormatTemplates implements Templates {
             .build();
 
     @Getter
-    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
-        {
-            add(new MethodTemplate(forPattern, ofPatternTemplate));
-            add(new MethodTemplate(shortDate, shortDateTemplate));
-            add(new MethodTemplate(mediumDate, mediumDateTemplate));
-            add(new MethodTemplate(longDate, longDateTemplate));
-            add(new MethodTemplate(fullDate, fullDateTemplate));
-            add(new MethodTemplate(shortTime, shortTimeTemplate));
-            add(new MethodTemplate(mediumTime, mediumTimeTemplate));
-            add(new MethodTemplate(longTime, longTimeTemplate));
-            add(new MethodTemplate(fullTime, fullTimeTemplate));
-            add(new MethodTemplate(shortDateTime, shortDateTimeTemplate));
-            add(new MethodTemplate(mediumDateTime, mediumDateTimeTemplate));
-            add(new MethodTemplate(longDateTime, longDateTimeTemplate));
-            add(new MethodTemplate(fullDateTime, fullDateTimeTemplate));
-        }
-    };
+    private final List<MethodTemplate> templates;
+    {
+        templates = new ArrayList<>();
+        templates.add(new MethodTemplate(forPattern, ofPatternTemplate));
+        templates.add(new MethodTemplate(shortDate, shortDateTemplate));
+        templates.add(new MethodTemplate(mediumDate, mediumDateTemplate));
+        templates.add(new MethodTemplate(longDate, longDateTemplate));
+        templates.add(new MethodTemplate(fullDate, fullDateTemplate));
+        templates.add(new MethodTemplate(shortTime, shortTimeTemplate));
+        templates.add(new MethodTemplate(mediumTime, mediumTimeTemplate));
+        templates.add(new MethodTemplate(longTime, longTimeTemplate));
+        templates.add(new MethodTemplate(fullTime, fullTimeTemplate));
+        templates.add(new MethodTemplate(shortDateTime, shortDateTimeTemplate));
+        templates.add(new MethodTemplate(mediumDateTime, mediumDateTimeTemplate));
+        templates.add(new MethodTemplate(longDateTime, longDateTimeTemplate));
+        templates.add(new MethodTemplate(fullDateTime, fullDateTimeTemplate));
+    }
 }

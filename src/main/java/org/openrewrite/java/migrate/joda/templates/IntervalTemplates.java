@@ -46,13 +46,13 @@ public class IntervalTemplates implements Templates {
             .build();
 
     @Getter
-    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
-        {
-            add(new MethodTemplate(interval, intervalTemplate));
-            add(new MethodTemplate(intervalWithTimeZone, intervalTemplate,
-                    m -> new Expression[]{m.getArguments().get(0), m.getArguments().get(1)}));
-            add(new MethodTemplate(intervalWithDateTime, intervalWithDateTimeTemplate));
-            add(new MethodTemplate(intervalWithDateTimeAndDuration, intervalWithDateTimeAndDurationTemplate));
-        }
-    };
+    private final List<MethodTemplate> templates;
+    {
+        templates = new ArrayList<>();
+        templates.add(new MethodTemplate(interval, intervalTemplate));
+        templates.add(new MethodTemplate(intervalWithTimeZone, intervalTemplate,
+                m -> new Expression[]{m.getArguments().get(0), m.getArguments().get(1)}));
+        templates.add(new MethodTemplate(intervalWithDateTime, intervalWithDateTimeTemplate));
+        templates.add(new MethodTemplate(intervalWithDateTimeAndDuration, intervalWithDateTimeAndDurationTemplate));
+    }
 }

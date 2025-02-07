@@ -51,19 +51,19 @@ public class AbstractDateTimeTemplates implements Templates {
     private final JavaTemplate toStringTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.toString()").build();
 
     @Getter
-    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
-        {
-            add(new MethodTemplate(getDayOfMonth, getDayOfMonthTemplate));
-            add(new MethodTemplate(getDayOfWeek, getDayOfWeekTemplate));
-            add(new MethodTemplate(getHourOfDay, getHourOfDayTemplate));
-            add(new MethodTemplate(getMillisOfSecond, getMillisOfSecondTemplate));
-            add(new MethodTemplate(getMinuteOfDay, getMinuteOfDayTemplate));
-            add(new MethodTemplate(getMinuteOfHour, getMinuteOfHourTemplate));
-            add(new MethodTemplate(getMonthOfYear, getMonthOfYearTemplate));
-            add(new MethodTemplate(getSecondOfDay, getSecondOfDayTemplate));
-            add(new MethodTemplate(getSecondOfMinute, getSecondOfMinuteTemplate));
-            add(new MethodTemplate(getWeekOfWeekyear, getWeekOfWeekyearTemplate));
-            add(new MethodTemplate(toString, toStringTemplate));
-        }
-    };
+    private final List<MethodTemplate> templates;
+    {
+        templates = new ArrayList<>();
+        templates.add(new MethodTemplate(getDayOfMonth, getDayOfMonthTemplate));
+        templates.add(new MethodTemplate(getDayOfWeek, getDayOfWeekTemplate));
+        templates.add(new MethodTemplate(getHourOfDay, getHourOfDayTemplate));
+        templates.add(new MethodTemplate(getMillisOfSecond, getMillisOfSecondTemplate));
+        templates.add(new MethodTemplate(getMinuteOfDay, getMinuteOfDayTemplate));
+        templates.add(new MethodTemplate(getMinuteOfHour, getMinuteOfHourTemplate));
+        templates.add(new MethodTemplate(getMonthOfYear, getMonthOfYearTemplate));
+        templates.add(new MethodTemplate(getSecondOfDay, getSecondOfDayTemplate));
+        templates.add(new MethodTemplate(getSecondOfMinute, getSecondOfMinuteTemplate));
+        templates.add(new MethodTemplate(getWeekOfWeekyear, getWeekOfWeekyearTemplate));
+        templates.add(new MethodTemplate(toString, toStringTemplate));
+    }
 }

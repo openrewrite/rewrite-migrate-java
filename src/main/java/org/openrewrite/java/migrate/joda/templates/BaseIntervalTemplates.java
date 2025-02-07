@@ -38,10 +38,10 @@ public class BaseIntervalTemplates implements Templates {
             .build();
 
     @Getter
-    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
-        {
-            add(new MethodTemplate(getStartMillis, getStartMillisTemplate));
-            add(new MethodTemplate(getEndMillis, getEndMillisTemplate));
-        }
-    };
+    private final List<MethodTemplate> templates;
+    {
+        templates = new ArrayList<>();
+        templates.add(new MethodTemplate(getStartMillis, getStartMillisTemplate));
+        templates.add(new MethodTemplate(getEndMillis, getEndMillisTemplate));
+    }
 }

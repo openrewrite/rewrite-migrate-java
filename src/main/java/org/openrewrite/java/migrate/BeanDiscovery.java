@@ -61,7 +61,7 @@ public class BeanDiscovery extends Recipe {
                 boolean hasBeanDiscoveryMode = false;
                 String idealVersion = null;
                 for (Xml.Attribute attribute : t.getAttributes()) {
-                    if (attribute.getKeyAsString().equals("bean-discovery-mode")) {
+                    if ("bean-discovery-mode".equals(attribute.getKeyAsString())) {
                         hasBeanDiscoveryMode = true;
                     } else if (attribute.getKeyAsString().endsWith("schemaLocation")) {
                         String schemaLocation = attribute.getValueAsString();
