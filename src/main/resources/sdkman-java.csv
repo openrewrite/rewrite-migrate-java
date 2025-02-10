@@ -41,6 +41,7 @@
 17.0.14-sapmchn
 17.0.14-tem
 17.0.14-zulu
+17.0.14.crac-librca
 17.0.14.fx-librca
 17.0.14.fx-zulu
 17.0.9-graalce
@@ -70,6 +71,7 @@
 21.0.6-sapmchn
 21.0.6-tem
 21.0.6-zulu
+21.0.6.crac-librca
 21.0.6.fx-librca
 21.0.6.fx-zulu
 22.0.2-oracle
@@ -125,6 +127,8 @@
 24.ea.32-open
 24.ea.33-open
 24.ea.34-open
+24.ea.35-open
+24.ea.36-open
 25.ea.4-graal
 25.ea.5-graal
 25.ea.5-open
@@ -133,6 +137,7 @@
 25.ea.7-graal
 25.ea.7-open
 25.ea.8-open
+25.ea.9-open
 6.0.119-zulu
 7.0.352-zulu
 8.0.282-trava
