@@ -29,8 +29,6 @@ import org.openrewrite.java.tree.J;
 import java.util.Collections;
 import java.util.Set;
 
-import static java.util.Comparator.comparing;
-
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UseLombokGetter extends Recipe {
