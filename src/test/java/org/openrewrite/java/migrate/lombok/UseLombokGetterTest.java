@@ -528,4 +528,52 @@ class UseLombokGetterTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void noChangeIfAnnotated() {
+        rewriteRun(// language=java
+          java("@interface MyOtherAnnotation {}"),
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+
+                  @MyOtherAnnotation
+                  public int getFoo() {
+                      return foo;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceGetterIfOverwrite() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+
+                  @Override
+                  public int getFoo() {
+                      return foo;
+                  }
+              }
+              """,
+            """
+              import lombok.Getter;
+
+              class A {
+
+                  @Getter
+                  int foo = 9;
+              }
+              """
+          )
+        );
+    }
 }

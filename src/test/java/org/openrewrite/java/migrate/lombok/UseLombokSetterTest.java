@@ -537,4 +537,52 @@ class UseLombokSetterTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void noChangeIfAnnotated() {
+        rewriteRun(// language=java
+          java("@interface MyOtherAnnotation {}"),
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+
+                  @MyOtherAnnotation
+                  public void setFoo(int fub) {
+                      this.foo = fub;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceSetterIfOverwrite() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+
+                  @Override
+                  public void setFoo(int foo) {
+                      this.foo = foo;
+                  }
+              }
+              """,
+            """
+              import lombok.Setter;
+
+              class A {
+
+                  @Setter
+                  int foo = 9;
+              }
+              """
+          )
+        );
+    }
 }

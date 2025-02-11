@@ -18,14 +18,19 @@ package org.openrewrite.java.migrate.lombok;
 import lombok.AccessLevel;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.internal.StringUtils;
+import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+
+import java.util.List;
 
 import static lombok.AccessLevel.*;
 import static org.openrewrite.java.tree.J.Modifier.Type.*;
 
 class LombokUtils {
+
+    private static final AnnotationMatcher overwriteMatcher = new AnnotationMatcher("java.lang.Override");
 
     static boolean isGetter(J.MethodDeclaration method) {
         if (method.getMethodType() == null) {
@@ -39,6 +44,10 @@ class LombokUtils {
         if (method.getBody() == null ||
                 method.getBody().getStatements().size() != 1 ||
                 !(method.getBody().getStatements().get(0) instanceof J.Return)) {
+            return false;
+        }
+        // Check there is no annotation except @Overwrite
+        if (noneAtAllOrOnlyOverwriteAnnotated(method)) {
             return false;
         }
         // Check field is declared on method type
@@ -99,6 +108,11 @@ class LombokUtils {
             return false;
         }
 
+        // Check there is no annotation except @Overwrite
+        if (noneAtAllOrOnlyOverwriteAnnotated(method)) {
+            return false;
+        }
+
         // Check there's no up/down cast between parameter and field
         J.VariableDeclarations.NamedVariable param = ((J.VariableDeclarations) method.getParameters().get(0)).getVariables().get(0);
         Expression variable = ((J.Assignment) method.getBody().getStatements().get(0)).getVariable();
@@ -140,5 +154,11 @@ class LombokUtils {
             return PRIVATE;
         }
         return PACKAGE;
+    }
+
+    private static boolean noneAtAllOrOnlyOverwriteAnnotated(J.MethodDeclaration method) {
+        List<J.Annotation> annotations = method.getLeadingAnnotations();
+        return !annotations.isEmpty() &&
+                !(annotations.size() == 1 && overwriteMatcher.matches(annotations.get(0)));
     }
 }
