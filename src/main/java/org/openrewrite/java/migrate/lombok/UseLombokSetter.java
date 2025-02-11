@@ -53,7 +53,7 @@ public class UseLombokSetter extends Recipe {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                if (LombokUtils.isSetter(method)) {
+                if (LombokUtils.isSetter(getCursor())) {
                     Expression assignmentVariable = ((J.Assignment) method.getBody().getStatements().get(0)).getVariable();
                     if (assignmentVariable instanceof J.FieldAccess &&
                             ((J.FieldAccess) assignmentVariable).getName().getFieldType() != null) {

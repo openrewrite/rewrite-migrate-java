@@ -17,8 +17,10 @@ package org.openrewrite.java.migrate.lombok;
 
 import lombok.AccessLevel;
 import org.jspecify.annotations.Nullable;
+import org.openrewrite.Cursor;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.AnnotationMatcher;
+import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -31,8 +33,15 @@ import static org.openrewrite.java.tree.J.Modifier.Type.*;
 class LombokUtils {
 
     private static final AnnotationMatcher overwriteMatcher = new AnnotationMatcher("java.lang.Override");
+    private static final AnnotationService annotationService = new AnnotationService();
 
-    static boolean isGetter(J.MethodDeclaration method) {
+
+    static boolean isGetter(Cursor cursor) {
+        if (!(cursor.getValue() instanceof J.MethodDeclaration)) {
+            return false;
+        }
+        J.MethodDeclaration method = cursor.getValue();
+
         if (method.getMethodType() == null) {
             return false;
         }
@@ -47,7 +56,7 @@ class LombokUtils {
             return false;
         }
         // Check there is no annotation except @Overwrite
-        if (noneAtAllOrOnlyOverwriteAnnotated(method)) {
+        if (noneAtAllOrOnlyOverwriteAnnotated(cursor)) {
             return false;
         }
         // Check field is declared on method type
@@ -92,7 +101,12 @@ class LombokUtils {
         return "get" + StringUtils.capitalize(fieldName);
     }
 
-    static boolean isSetter(J.MethodDeclaration method) {
+    static boolean isSetter(Cursor cursor) {
+        if (!(cursor.getValue() instanceof J.MethodDeclaration)) {
+            return false;
+        }
+        J.MethodDeclaration method = cursor.getValue();
+
         // Check return type: void
         if (method.getType() != JavaType.Primitive.Void) {
             return false;
@@ -109,7 +123,7 @@ class LombokUtils {
         }
 
         // Check there is no annotation except @Overwrite
-        if (noneAtAllOrOnlyOverwriteAnnotated(method)) {
+        if (noneAtAllOrOnlyOverwriteAnnotated(cursor)) {
             return false;
         }
 
@@ -156,8 +170,8 @@ class LombokUtils {
         return PACKAGE;
     }
 
-    private static boolean noneAtAllOrOnlyOverwriteAnnotated(J.MethodDeclaration method) {
-        List<J.Annotation> annotations = method.getLeadingAnnotations();
+    private static boolean noneAtAllOrOnlyOverwriteAnnotated(Cursor cursor) {
+        List<J.Annotation> annotations = annotationService.getAllAnnotations(cursor);
         return !annotations.isEmpty() &&
                 !(annotations.size() == 1 && overwriteMatcher.matches(annotations.get(0)));
     }

@@ -54,7 +54,7 @@ public class UseLombokGetter extends Recipe {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                if (LombokUtils.isGetter(method)) {
+                if (LombokUtils.isGetter(getCursor())) {
                     Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
                     if (returnExpression instanceof J.Identifier &&
                             ((J.Identifier) returnExpression).getFieldType() != null) {

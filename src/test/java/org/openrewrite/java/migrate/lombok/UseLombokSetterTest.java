@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lombok;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -539,6 +540,7 @@ class UseLombokSetterTest implements RewriteTest {
     }
 
     @Test
+    @Issue("https://github.com/openrewrite/rewrite/issues/5015")
     void noChangeIfAnnotated() {
         rewriteRun(// language=java
           java("@interface MyOtherAnnotation {}"),
@@ -559,6 +561,7 @@ class UseLombokSetterTest implements RewriteTest {
     }
 
     @Test
+    @Issue("https://github.com/openrewrite/rewrite/issues/5015")
     void replaceSetterIfOverwrite() {
         rewriteRun(// language=java
           java(
