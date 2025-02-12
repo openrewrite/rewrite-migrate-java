@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -290,6 +291,65 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
                       return new JSONPModule();
                   }
               }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/652")
+    @Test
+    void thatJaxbAnnotationModuleIsRewritten() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
+            "jackson-core",
+            "jackson-databind",
+            "jackson-module-jaxb-annotations")),
+          //language=java
+          java(
+            """
+              import com.fasterxml.jackson.databind.ObjectMapper;
+              import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+
+              public class JacksonTest {
+                  void foo() {
+                      ObjectMapper mapper = new ObjectMapper();
+                      mapper.registerModule(new JaxbAnnotationModule());
+                  }
+              }
+              """,
+            """
+              import com.fasterxml.jackson.databind.ObjectMapper;
+              import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
+
+              public class JacksonTest {
+                  void foo() {
+                      ObjectMapper mapper = new ObjectMapper();
+                      mapper.registerModule(new JakartaXmlBindAnnotationModule());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/653")
+    @Test
+    void thatJaxbJsonProviderIsRewritten() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
+              "jackson-databind",
+              "jackson-jaxrs-json-provider")),
+          //language=java
+          java(
+            """
+              import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+
+              public class A extends JacksonJaxbJsonProvider {}
+              """,
+            """
+              import com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider;
+
+              public class A extends JacksonXmlBindJsonProvider {}
               """
           )
         );

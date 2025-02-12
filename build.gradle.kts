@@ -35,6 +35,8 @@ dependencies {
     runtimeOnly("org.openrewrite:rewrite-java-17")
     runtimeOnly("org.openrewrite:rewrite-java-21")
 
+    runtimeOnly("tech.picnic.error-prone-support:error-prone-contrib:latest.release:recipes")
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-params:latest.release")
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
@@ -54,8 +56,13 @@ dependencies {
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind")
+    testRuntimeOnly("com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider")
+    testRuntimeOnly("com.fasterxml.jackson.module:jackson-module-jaxb-annotations")
+    testRuntimeOnly("commons-logging:commons-logging:1.3.2")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-api:2.23.1")
     testRuntimeOnly("org.apache.johnzon:johnzon-core:1.2.18")
     testRuntimeOnly("org.codehaus.groovy:groovy:latest.release")
+    testRuntimeOnly("org.jboss.logging:jboss-logging:3.6.0.Final")
     testRuntimeOnly("jakarta.annotation:jakarta.annotation-api:2.1.1")
     testRuntimeOnly("org.springframework:spring-core:6.1.13")
     testRuntimeOnly("com.google.code.findbugs:jsr305:3.0.2")

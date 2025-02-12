@@ -25,6 +25,8 @@ description: >-
 tags:
   - guava
 recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaJava11
+  - org.openrewrite.java.migrate.guava.NoGuavaJava21
   - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
@@ -62,6 +64,8 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
   - org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference
 
+  - tech.picnic.errorprone.refasterrules.InputStreamRulesRecipes
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaJava11
@@ -73,8 +77,10 @@ description: >-
 tags:
   - guava
   - java11
+preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[11,)"
 recipeList:
-  - org.openrewrite.java.migrate.guava.NoGuava
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
@@ -95,9 +101,13 @@ description: >-
 tags:
   - guava
   - java21
+preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[21,)"
 recipeList:
-  - org.openrewrite.java.migrate.guava.NoGuavaJava11
+  - org.openrewrite.java.migrate.guava.NoMapsAndSetsWithExpectedSize
   - org.openrewrite.java.migrate.guava.PreferMathClamp
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaNioCharsetStandardCharsets
