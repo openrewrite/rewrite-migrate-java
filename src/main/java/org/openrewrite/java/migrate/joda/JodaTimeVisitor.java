@@ -59,29 +59,32 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
 
     @Override
     public @NonNull J visitCompilationUnit(@NonNull J.CompilationUnit cu, @NonNull ExecutionContext ctx) {
-        maybeRemoveImport(JODA_DATE_TIME);
-        maybeRemoveImport(JODA_DATE_TIME_ZONE);
-        maybeRemoveImport(JODA_TIME_FORMAT);
-        maybeRemoveImport(JODA_DURATION);
-        maybeRemoveImport(JODA_ABSTRACT_INSTANT);
-        maybeRemoveImport(JODA_INSTANT);
-        maybeRemoveImport(JODA_INTERVAL);
-        maybeRemoveImport("java.util.Locale");
+        J j = super.visitCompilationUnit(cu, ctx);
+        if (j != cu) {
+            maybeRemoveImport(JODA_DATE_TIME);
+            maybeRemoveImport(JODA_DATE_TIME_ZONE);
+            maybeRemoveImport(JODA_TIME_FORMAT);
+            maybeRemoveImport(JODA_DURATION);
+            maybeRemoveImport(JODA_ABSTRACT_INSTANT);
+            maybeRemoveImport(JODA_INSTANT);
+            maybeRemoveImport(JODA_INTERVAL);
+            maybeRemoveImport("java.util.Locale");
 
-        maybeAddImport(JAVA_DATE_TIME);
-        maybeAddImport(JAVA_ZONE_OFFSET);
-        maybeAddImport(JAVA_ZONE_ID);
-        maybeAddImport(JAVA_INSTANT);
-        maybeAddImport(JAVA_TIME_FORMATTER);
-        maybeAddImport(JAVA_TIME_FORMAT_STYLE);
-        maybeAddImport(JAVA_DURATION);
-        maybeAddImport(JAVA_LOCAL_DATE);
-        maybeAddImport(JAVA_LOCAL_TIME);
-        maybeAddImport(JAVA_TEMPORAL_ISO_FIELDS);
-        maybeAddImport(JAVA_CHRONO_FIELD);
-        maybeAddImport(JAVA_UTIL_DATE);
-        maybeAddImport(THREE_TEN_EXTRA_INTERVAL);
-        return super.visitCompilationUnit(cu, ctx);
+            maybeAddImport(JAVA_DATE_TIME);
+            maybeAddImport(JAVA_ZONE_OFFSET);
+            maybeAddImport(JAVA_ZONE_ID);
+            maybeAddImport(JAVA_INSTANT);
+            maybeAddImport(JAVA_TIME_FORMATTER);
+            maybeAddImport(JAVA_TIME_FORMAT_STYLE);
+            maybeAddImport(JAVA_DURATION);
+            maybeAddImport(JAVA_LOCAL_DATE);
+            maybeAddImport(JAVA_LOCAL_TIME);
+            maybeAddImport(JAVA_TEMPORAL_ISO_FIELDS);
+            maybeAddImport(JAVA_CHRONO_FIELD);
+            maybeAddImport(JAVA_UTIL_DATE);
+            maybeAddImport(THREE_TEN_EXTRA_INTERVAL);
+        }
+        return j;
     }
 
     @Override
@@ -165,7 +168,8 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
 
         // internal method with Joda class as return type
-        if (!method.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN) &&
+        if (method.getMethodType() != null &&
+                !method.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN) &&
                 method.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return migrateNonJodaMethod(method, m);
         }

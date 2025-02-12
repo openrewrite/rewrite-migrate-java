@@ -23,13 +23,12 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 import java.util.Collections;
 import java.util.Set;
-
-import static java.util.Comparator.comparing;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -56,7 +55,7 @@ public class UseLombokGetter extends Recipe {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                if (LombokUtils.isGetter(method)) {
+                if (LombokUtils.isGetter(getCursor(), service(AnnotationService.class))) {
                     Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
                     if (returnExpression instanceof J.Identifier &&
                             ((J.Identifier) returnExpression).getFieldType() != null) {
