@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lombok;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -523,6 +524,56 @@ class UseLombokGetterTest implements RewriteTest {
                           return foo;
                       }
                   }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite/issues/5015")
+    void noChangeIfAnnotated() {
+        rewriteRun(// language=java
+          java("@interface MyOtherAnnotation {}"),
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+
+                  @MyOtherAnnotation
+                  public int getFoo() {
+                      return foo;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite/issues/5015")
+    void replaceGetterIfOverwrite() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+
+                  @Override
+                  public int getFoo() {
+                      return foo;
+                  }
+              }
+              """,
+            """
+              import lombok.Getter;
+
+              class A {
+
+                  @Getter
+                  int foo = 9;
               }
               """
           )
