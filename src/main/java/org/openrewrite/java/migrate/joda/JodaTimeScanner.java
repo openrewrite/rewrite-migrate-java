@@ -93,7 +93,7 @@ class JodaTimeScanner extends ScopeAwareVisitor {
 
     @Override
     public J visitVariable(NamedVariable variable, ExecutionContext ctx) {
-        if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+        if (variable.getType() == null || !variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return super.visitVariable(variable, ctx);
         }
         // TODO: handle class variables

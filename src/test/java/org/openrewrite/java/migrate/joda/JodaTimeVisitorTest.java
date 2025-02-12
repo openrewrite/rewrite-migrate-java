@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.joda;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
@@ -425,7 +424,8 @@ class JodaTimeVisitorTest implements RewriteTest {
           java(
             """
               import org.joda.time.DateTime;
-              import org.joda.time.Duration;import org.joda.time.Instant;
+              import org.joda.time.Duration;
+              import org.joda.time.Instant;
               import org.joda.time.format.DateTimeFormat;
 
               class A {
@@ -484,7 +484,6 @@ class JodaTimeVisitorTest implements RewriteTest {
         );
     }
 
-    @Disabled
     @Test
     void migrateAbstractDateTime() {
         // language=java
@@ -804,7 +803,7 @@ class JodaTimeVisitorTest implements RewriteTest {
               import org.joda.time.Duration;
               import org.joda.time.Interval;
               import org.joda.time.DateTimeZone;
-    
+
               class A {
                   public void foo() {
                       System.out.println(new Interval(50, 100));
@@ -820,7 +819,7 @@ class JodaTimeVisitorTest implements RewriteTest {
               import java.time.Duration;
               import java.time.Instant;
               import java.time.ZonedDateTime;
-    
+
               class A {
                   public void foo() {
                       System.out.println(Interval.of(Instant.ofEpochMilli(50), Instant.ofEpochMilli(100)));
@@ -880,7 +879,7 @@ class JodaTimeVisitorTest implements RewriteTest {
           java(
             """
                 import org.joda.time.Duration;
-  
+
                 class A {
                     public void foo() {
                         Duration d = new Duration(100);
@@ -909,7 +908,7 @@ class JodaTimeVisitorTest implements RewriteTest {
           java(
             """
                 import org.joda.time.Interval;
-  
+
                 class A {
                     public void foo() {
                         Interval i = new Interval(50, 100);
