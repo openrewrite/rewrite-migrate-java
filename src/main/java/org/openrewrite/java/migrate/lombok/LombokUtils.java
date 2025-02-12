@@ -53,7 +53,7 @@ class LombokUtils {
             return false;
         }
         // Check there is no annotation except @Overwrite
-        if (noneAtAllOrOnlyOverrideAnnotated(cursor, service)) {
+        if (hasAnyAnnotatioOtherThanOverride(cursor, service)) {
             return false;
         }
         // Check field is declared on method type
@@ -120,7 +120,7 @@ class LombokUtils {
         }
 
         // Check there is no annotation except @Overwrite
-        if (noneAtAllOrOnlyOverrideAnnotated(cursor, service)) {
+        if (hasAnyAnnotatioOtherThanOverride(cursor, service)) {
             return false;
         }
 
@@ -167,9 +167,8 @@ class LombokUtils {
         return PACKAGE;
     }
 
-    private static boolean noneAtAllOrOnlyOverrideAnnotated(Cursor cursor, AnnotationService service) {
+    private static boolean hasAnyAnnotatioOtherThanOverride(Cursor cursor, AnnotationService service) {
         List<J.Annotation> annotations = service.getAllAnnotations(cursor);
-        return !annotations.isEmpty() &&
-                !(annotations.size() == 1 && OVERRIDE_MATCHER.matches(annotations.get(0)));
+        return !(annotations.isEmpty() || (annotations.size() == 1 && OVERRIDE_MATCHER.matches(annotations.get(0))));
     }
 }
