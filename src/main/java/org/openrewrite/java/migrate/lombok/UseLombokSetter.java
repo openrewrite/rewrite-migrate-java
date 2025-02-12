@@ -23,6 +23,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
@@ -53,7 +54,7 @@ public class UseLombokSetter extends Recipe {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                if (LombokUtils.isSetter(getCursor())) {
+                if (LombokUtils.isSetter(getCursor(), service(AnnotationService.class))) {
                     Expression assignmentVariable = ((J.Assignment) method.getBody().getStatements().get(0)).getVariable();
                     if (assignmentVariable instanceof J.FieldAccess &&
                             ((J.FieldAccess) assignmentVariable).getName().getFieldType() != null) {

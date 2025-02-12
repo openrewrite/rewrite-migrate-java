@@ -32,16 +32,13 @@ import static org.openrewrite.java.tree.J.Modifier.Type.*;
 
 class LombokUtils {
 
-    private static final AnnotationMatcher overwriteMatcher = new AnnotationMatcher("java.lang.Override");
-    private static final AnnotationService annotationService = new AnnotationService();
+    private static final AnnotationMatcher OVERRIDE_MATCHER = new AnnotationMatcher("java.lang.Override");
 
-
-    static boolean isGetter(Cursor cursor) {
+    static boolean isGetter(Cursor cursor, AnnotationService service) {
         if (!(cursor.getValue() instanceof J.MethodDeclaration)) {
             return false;
         }
         J.MethodDeclaration method = cursor.getValue();
-
         if (method.getMethodType() == null) {
             return false;
         }
@@ -56,7 +53,7 @@ class LombokUtils {
             return false;
         }
         // Check there is no annotation except @Overwrite
-        if (noneAtAllOrOnlyOverwriteAnnotated(cursor)) {
+        if (noneAtAllOrOnlyOverrideAnnotated(cursor, service)) {
             return false;
         }
         // Check field is declared on method type
@@ -101,7 +98,7 @@ class LombokUtils {
         return "get" + StringUtils.capitalize(fieldName);
     }
 
-    static boolean isSetter(Cursor cursor) {
+    static boolean isSetter(Cursor cursor, AnnotationService service) {
         if (!(cursor.getValue() instanceof J.MethodDeclaration)) {
             return false;
         }
@@ -123,7 +120,7 @@ class LombokUtils {
         }
 
         // Check there is no annotation except @Overwrite
-        if (noneAtAllOrOnlyOverwriteAnnotated(cursor)) {
+        if (noneAtAllOrOnlyOverrideAnnotated(cursor, service)) {
             return false;
         }
 
@@ -170,9 +167,9 @@ class LombokUtils {
         return PACKAGE;
     }
 
-    private static boolean noneAtAllOrOnlyOverwriteAnnotated(Cursor cursor) {
-        List<J.Annotation> annotations = annotationService.getAllAnnotations(cursor);
+    private static boolean noneAtAllOrOnlyOverrideAnnotated(Cursor cursor, AnnotationService service) {
+        List<J.Annotation> annotations = service.getAllAnnotations(cursor);
         return !annotations.isEmpty() &&
-                !(annotations.size() == 1 && overwriteMatcher.matches(annotations.get(0)));
+                !(annotations.size() == 1 && OVERRIDE_MATCHER.matches(annotations.get(0)));
     }
 }
