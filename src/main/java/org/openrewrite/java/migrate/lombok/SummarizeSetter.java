@@ -47,91 +47,84 @@ public class SummarizeSetter extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(
-                new UsesType<>("lombok.Setter", false),
-                new Summarizer()
-        );
-    }
+        JavaIsoVisitor<ExecutionContext> v = new JavaIsoVisitor<ExecutionContext>() {
+            private static final String ALL_FIELDS_DECORATED_ACC = "ALL_FIELDS_DECORATED_ACC";
 
+            @Override
+            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
 
-    @Value
-    @EqualsAndHashCode(callSuper = false)
-    private static class Summarizer extends JavaIsoVisitor<ExecutionContext> {
-        private static final String ALL_FIELDS_DECORATED_ACC = "ALL_FIELDS_DECORATED_ACC";
+                //initialize variable to store if all encountered fields have setters
+                getCursor().putMessage(ALL_FIELDS_DECORATED_ACC, true);
 
-        @Override
-        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                //delete methods, note down corresponding fields
+                J.ClassDeclaration classDeclAfterVisit = super.visitClassDeclaration(classDecl, ctx);
 
-            //initialize variable to store if all encountered fields have setters
-            getCursor().putMessage(ALL_FIELDS_DECORATED_ACC, true);
+                boolean allFieldsAnnotated = getCursor().pollNearestMessage(ALL_FIELDS_DECORATED_ACC);
 
-            //delete methods, note down corresponding fields
-            J.ClassDeclaration classDeclAfterVisit = super.visitClassDeclaration(classDecl, ctx);
+                //only thing that can have changed is removal of setter methods
+                //and something needs to have changed before we add an annotation at class level
+                if (classDeclAfterVisit != classDecl && allFieldsAnnotated) {
+                    //Add annotation
+                    JavaTemplate template = JavaTemplate.builder("@Setter\n")
+                            .imports("lombok.Setter")
+                            .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
+                            .build();
 
-            boolean allFieldsAnnotated = getCursor().pollNearestMessage(ALL_FIELDS_DECORATED_ACC);
-
-            //only thing that can have changed is removal of setter methods
-            //and something needs to have changed before we add an annotation at class level
-            if (classDeclAfterVisit != classDecl && allFieldsAnnotated) {
-                //Add annotation
-                JavaTemplate template = JavaTemplate.builder("@Setter\n")
-                        .imports("lombok.Setter")
-                        .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
-                        .build();
-
-                return template.apply(
-                        updateCursor(classDeclAfterVisit),
-                        classDeclAfterVisit.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+                    return template.apply(
+                            updateCursor(classDeclAfterVisit),
+                            classDeclAfterVisit.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+                }
+                return classDecl;
             }
-            return classDecl;
-        }
 
-        @Override
-        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations variableDecls, ExecutionContext ctx) {
+            @Override
+            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations variableDecls, ExecutionContext ctx) {
 
-            boolean allFieldsAnnotatedSoFar = getCursor().getNearestMessage(ALL_FIELDS_DECORATED_ACC);
-            if (!allFieldsAnnotatedSoFar) {
+                boolean allFieldsAnnotatedSoFar = getCursor().getNearestMessage(ALL_FIELDS_DECORATED_ACC);
+                if (!allFieldsAnnotatedSoFar) {
+                    return variableDecls;
+                }
+                J.VariableDeclarations visited = super.visitVariableDeclarations(variableDecls, ctx);
+
+                boolean hasSetterAnnotation = variableDecls != visited;
+                if (hasSetterAnnotation) {
+                    return fixFormat(variableDecls, visited, ctx);
+                } else if (variableDecls.hasModifier(J.Modifier.Type.Final) ||
+                        variableDecls.hasModifier(J.Modifier.Type.Static)) {
+                    //final fields and static field don't need to have an annotation
+                    return visited;
+                } else {
+                    getCursor().putMessageOnFirstEnclosing(J.ClassDeclaration.class, ALL_FIELDS_DECORATED_ACC, false);
+                }
                 return variableDecls;
             }
-            J.VariableDeclarations visited = super.visitVariableDeclarations(variableDecls, ctx);
 
-            boolean hasSetterAnnotation = variableDecls != visited;
-            if (hasSetterAnnotation) {
-                return fixFormat(variableDecls, visited, ctx);
-            } else if (variableDecls.hasModifier(J.Modifier.Type.Final) ||
-                    variableDecls.hasModifier(J.Modifier.Type.Static)) {
-                //final fields and static field don't need to have an annotation
-                return visited;
-            } else {
-                getCursor().putMessageOnFirstEnclosing(J.ClassDeclaration.class, ALL_FIELDS_DECORATED_ACC, false);
+            private J.VariableDeclarations fixFormat(J.VariableDeclarations initial, J.VariableDeclarations visited, ExecutionContext ctx) {
+                //as of August 2024 manual fixes to the format are necessary. Hopefully in the future this method becomes obsolete
+
+                boolean isAnnotationOnLineAbove = initial.toString().contains("@Setter\n");
+                boolean isTopAnnotationRemoved = !initial.getLeadingAnnotations().isEmpty() &&
+                        "Setter".equals(initial.getLeadingAnnotations().get(0).getSimpleName());
+
+                if (isAnnotationOnLineAbove && isTopAnnotationRemoved) {
+                    String minus1NewLine = visited.getPrefix().getWhitespace().replaceFirst("\n", "");
+                    visited = visited.withPrefix(visited.getPrefix().withWhitespace(minus1NewLine));
+                }
+                return autoFormat(visited, ctx);
             }
-            return variableDecls;
-        }
 
-        private J.VariableDeclarations fixFormat(J.VariableDeclarations initial, J.VariableDeclarations visited, ExecutionContext ctx) {
-            //as of August 2024 manual fixes to the format are necessary. Hopefully in the future this method becomes obsolete
+            @Override
+            public J.@Nullable Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
+                boolean isSetterAnnotated = "Setter".equals(annotation.getSimpleName()) &&
+                        annotation.getArguments() == null; //no Access level, or other arguments
 
-            boolean isAnnotationOnLineAbove = initial.toString().contains("@Setter\n");
-            boolean isTopAnnotationRemoved = !initial.getLeadingAnnotations().isEmpty() &&
-                    "Setter".equals(initial.getLeadingAnnotations().get(0).getSimpleName());
-
-            if (isAnnotationOnLineAbove && isTopAnnotationRemoved) {
-                String minus1NewLine = visited.getPrefix().getWhitespace().replaceFirst("\n", "");
-                visited = visited.withPrefix(visited.getPrefix().withWhitespace(minus1NewLine));
+                return isSetterAnnotated &&
+                        //should only trigger on field annotation, not class annotation
+                        getCursor().getParent().getValue() instanceof J.VariableDeclarations ?
+                        null : // -> delete
+                        annotation; // -> keep
             }
-            return autoFormat(visited, ctx);
-        }
-
-        @Override
-        public J.@Nullable Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-            boolean isSetterAnnotated = "Setter".equals(annotation.getSimpleName()) &&
-                    annotation.getArguments() == null; //no Access level, or other arguments
-
-            return isSetterAnnotated &&
-                    //should only trigger on field annotation, not class annotation
-                    getCursor().getParent().getValue() instanceof J.VariableDeclarations ?
-                    null : // -> delete
-                    annotation; // -> keep
-        }
+        };
+        return Preconditions.check(new UsesType<>("lombok.Setter", false), v);
     }
 }

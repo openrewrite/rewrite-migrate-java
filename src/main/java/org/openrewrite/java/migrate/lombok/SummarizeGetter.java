@@ -36,7 +36,7 @@ public class SummarizeGetter extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Summarize @Getter on fields to class level annotation";
+        return "Summarize `@Getter` on fields to class level annotation";
     }
 
     @Override
@@ -47,88 +47,81 @@ public class SummarizeGetter extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(
-                new UsesType<>("lombok.Getter", false),
-                new Summarizer()
-        );
-    }
+        JavaIsoVisitor<ExecutionContext> visitor = new JavaIsoVisitor<ExecutionContext>() {
+            private static final String ALL_FIELDS_DECORATED_ACC = "ALL_FIELDS_DECORATED_ACC";
 
+            @Override
+            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
 
-    @Value
-    @EqualsAndHashCode(callSuper = false)
-    private static class Summarizer extends JavaIsoVisitor<ExecutionContext> {
-        private static final String ALL_FIELDS_DECORATED_ACC = "ALL_FIELDS_DECORATED_ACC";
+                //initialize variable to store if all encountered fields have getters
+                getCursor().putMessage(ALL_FIELDS_DECORATED_ACC, true);
 
-        @Override
-        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                //delete methods, note down corresponding fields
+                J.ClassDeclaration classDeclAfterVisit = super.visitClassDeclaration(classDecl, ctx);
 
-            //initialize variable to store if all encountered fields have getters
-            getCursor().putMessage(ALL_FIELDS_DECORATED_ACC, true);
+                boolean allFieldsAnnotated = getCursor().pollNearestMessage(ALL_FIELDS_DECORATED_ACC);
 
-            //delete methods, note down corresponding fields
-            J.ClassDeclaration classDeclAfterVisit = super.visitClassDeclaration(classDecl, ctx);
-
-            boolean allFieldsAnnotated = getCursor().pollNearestMessage(ALL_FIELDS_DECORATED_ACC);
-
-            //only thing that can have changed is removal of getter methods
-            //and something needs to have changed before we add an annotation at class level
-            if (classDeclAfterVisit != classDecl && allFieldsAnnotated) {
-                //Add annotation
-                JavaTemplate template = JavaTemplate.builder("@Getter\n")
+                //only thing that can have changed is removal of getter methods
+                //and something needs to have changed before we add an annotation at class level
+                if (classDeclAfterVisit != classDecl && allFieldsAnnotated) {
+                    //Add annotation
+                    JavaTemplate template = JavaTemplate.builder("@Getter\n")
                             .imports("lombok.Getter")
                             .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
-                        .build();
+                            .build();
 
-                return template.apply(
-                        updateCursor(classDeclAfterVisit),
-                        classDeclAfterVisit.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+                    return template.apply(
+                            updateCursor(classDeclAfterVisit),
+                            classDeclAfterVisit.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+                }
+                return classDecl;
             }
-            return classDecl;
-        }
 
-        @Override
-        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations variableDecls, ExecutionContext ctx){
+            @Override
+            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations variableDecls, ExecutionContext ctx) {
 
-            boolean allFieldsAnnotatedSoFar = getCursor().getNearestMessage(ALL_FIELDS_DECORATED_ACC);
-            if (!allFieldsAnnotatedSoFar) {
+                boolean allFieldsAnnotatedSoFar = getCursor().getNearestMessage(ALL_FIELDS_DECORATED_ACC);
+                if (!allFieldsAnnotatedSoFar) {
+                    return variableDecls;
+                }
+                J.VariableDeclarations visited = super.visitVariableDeclarations(variableDecls, ctx);
+
+                boolean hasGetterAnnotation = variableDecls != visited;
+                if (hasGetterAnnotation) {
+                    return fixFormat(variableDecls, visited, ctx);
+                } else {
+                    getCursor().putMessageOnFirstEnclosing(J.ClassDeclaration.class, ALL_FIELDS_DECORATED_ACC, false);
+                }
                 return variableDecls;
             }
-            J.VariableDeclarations visited = super.visitVariableDeclarations(variableDecls, ctx);
 
-            boolean hasGetterAnnotation = variableDecls != visited;
-            if (hasGetterAnnotation) {
-                return fixFormat(variableDecls, visited, ctx);
-            } else {
-                getCursor().putMessageOnFirstEnclosing(J.ClassDeclaration.class, ALL_FIELDS_DECORATED_ACC, false);
+            private J.VariableDeclarations fixFormat(J.VariableDeclarations initial, J.VariableDeclarations visited, ExecutionContext ctx) {
+                //as of August 2024 manual fixes to the format are necessary. Hopefully in the future this method becomes obsolete
+
+                boolean isAnnotationOnLineAbove = initial.toString().contains("@Getter\n");
+
+                boolean isTopAnnotationRemoved = !initial.getLeadingAnnotations().isEmpty() &&
+                        initial.getLeadingAnnotations()
+                                .get(0)
+                                .getSimpleName().equals("Getter");
+
+                if (isAnnotationOnLineAbove && isTopAnnotationRemoved) {
+                    String minus1NewLine = visited.getPrefix().getWhitespace().replaceFirst("\n", "");
+                    visited = visited.withPrefix(visited.getPrefix().withWhitespace(minus1NewLine));
+                }
+                return autoFormat(visited, ctx);
             }
-            return variableDecls;
-        }
 
-        private J.VariableDeclarations fixFormat(J.VariableDeclarations initial, J.VariableDeclarations visited, ExecutionContext ctx) {
-            //as of August 2024 manual fixes to the format are necessary. Hopefully in the future this method becomes obsolete
-
-            boolean isAnnotationOnLineAbove = initial.toString().contains("@Getter\n");
-
-            boolean isTopAnnotationRemoved = !initial.getLeadingAnnotations().isEmpty() &&
-                    initial.getLeadingAnnotations()
-                    .get(0)
-                    .getSimpleName().equals("Getter");
-
-            if (isAnnotationOnLineAbove && isTopAnnotationRemoved) {
-                String minus1NewLine = visited.getPrefix().getWhitespace().replaceFirst("\n", "");
-                visited = visited.withPrefix(visited.getPrefix().withWhitespace(minus1NewLine));
+            @Override
+            public J.@Nullable Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
+                return annotation.getSimpleName().equals("Getter") &&
+                        annotation.getArguments() == null && //no Access level, or other arguments
+                        //should only trigger on field annotation, not class annotation
+                        getCursor().getParent().getValue() instanceof J.VariableDeclarations ?
+                        null : // -> delete
+                        annotation; // -> keep
             }
-            return autoFormat(visited, ctx);
-        }
-
-        @Override
-        public J.@Nullable Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-            return annotation.getSimpleName().equals("Getter") &&
-                    annotation.getArguments() == null && //no Access level, or other arguments
-                    //should only trigger on field annotation, not class annotation
-                    getCursor().getParent().getValue() instanceof J.VariableDeclarations ?
-                    null : // -> delete
-                    annotation; // -> keep
-        }
+        };
+        return Preconditions.check(new UsesType<>("lombok.Getter", false), visitor);
     }
 }
