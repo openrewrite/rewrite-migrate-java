@@ -7,7 +7,7 @@ group = "org.openrewrite.recipe"
 description = "Migrate to later Java versions. Automatically."
 
 recipeDependencies {
-    parserClasspath("javax.persistence:javax.persistence-api:2.+")
+    parserClasspath("javax.persistence:javax.persistence-api:2.2.+")
     parserClasspath("jakarta.enterprise:jakarta.enterprise.cdi-api:3.0.0-M4")
     parserClasspath("org.glassfish:javax.servlet:3.0")
 }
