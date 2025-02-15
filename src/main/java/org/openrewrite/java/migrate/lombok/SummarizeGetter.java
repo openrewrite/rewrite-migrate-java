@@ -17,22 +17,25 @@ package org.openrewrite.java.migrate.lombok;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.jspecify.annotations.Nullable;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
+import org.openrewrite.internal.ListUtils;
+import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.J;
+
+import java.util.List;
 
 import static java.util.Comparator.comparing;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class SummarizeGetter extends Recipe {
+
+    private static final AnnotationMatcher ANNOTATION_MATCHER = new AnnotationMatcher("lombok.Getter");
 
     @Override
     public String getDisplayName() {
@@ -48,78 +51,44 @@ public class SummarizeGetter extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         JavaIsoVisitor<ExecutionContext> visitor = new JavaIsoVisitor<ExecutionContext>() {
-            private static final String ALL_FIELDS_DECORATED_ACC = "ALL_FIELDS_DECORATED_ACC";
 
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-
-                //initialize variable to store if all encountered fields have getters
-                getCursor().putMessage(ALL_FIELDS_DECORATED_ACC, true);
-
-                //delete methods, note down corresponding fields
-                J.ClassDeclaration classDeclAfterVisit = super.visitClassDeclaration(classDecl, ctx);
-
-                boolean allFieldsAnnotated = getCursor().pollNearestMessage(ALL_FIELDS_DECORATED_ACC);
-
-                //only thing that can have changed is removal of getter methods
-                //and something needs to have changed before we add an annotation at class level
-                if (classDeclAfterVisit != classDecl && allFieldsAnnotated) {
-                    //Add annotation
-                    JavaTemplate template = JavaTemplate.builder("@Getter\n")
-                            .imports("lombok.Getter")
-                            .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
-                            .build();
-
-                    return template.apply(
-                            updateCursor(classDeclAfterVisit),
-                            classDeclAfterVisit.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+                if (allFieldsHaveGetter(classDecl)) {
+                    return addGetterToClass(removeGetterFromFields(classDecl));
                 }
-                return classDecl;
+                return super.visitClassDeclaration(classDecl, ctx);
             }
 
-            @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations variableDecls, ExecutionContext ctx) {
-
-                boolean allFieldsAnnotatedSoFar = getCursor().getNearestMessage(ALL_FIELDS_DECORATED_ACC);
-                if (!allFieldsAnnotatedSoFar) {
-                    return variableDecls;
-                }
-                J.VariableDeclarations visited = super.visitVariableDeclarations(variableDecls, ctx);
-
-                boolean hasGetterAnnotation = variableDecls != visited;
-                if (hasGetterAnnotation) {
-                    return fixFormat(variableDecls, visited, ctx);
-                } else {
-                    getCursor().putMessageOnFirstEnclosing(J.ClassDeclaration.class, ALL_FIELDS_DECORATED_ACC, false);
-                }
-                return variableDecls;
+            private boolean allFieldsHaveGetter(J.ClassDeclaration classDecl) {
+                AnnotationService annotationService = service(AnnotationService.class);
+                return classDecl.getBody().getStatements().stream()
+                        .filter(J.VariableDeclarations.class::isInstance)
+                        .map(J.VariableDeclarations.class::cast)
+                        .allMatch(vd -> {
+                            List<J.Annotation> allAnnotations = annotationService.getAllAnnotations(new Cursor(getCursor(), vd));
+                            return !allAnnotations.isEmpty() &&
+                                    allAnnotations.stream().anyMatch(annotation -> ANNOTATION_MATCHER.matches(annotation) &&
+                                            (annotation.getArguments() == null || annotation.getArguments().isEmpty() || annotation.getArguments().get(0) instanceof J.Empty));
+                        });
             }
 
-            private J.VariableDeclarations fixFormat(J.VariableDeclarations initial, J.VariableDeclarations visited, ExecutionContext ctx) {
-                //as of August 2024 manual fixes to the format are necessary. Hopefully in the future this method becomes obsolete
-
-                boolean isAnnotationOnLineAbove = initial.toString().contains("@Getter\n");
-
-                boolean isTopAnnotationRemoved = !initial.getLeadingAnnotations().isEmpty() &&
-                        initial.getLeadingAnnotations()
-                                .get(0)
-                                .getSimpleName().equals("Getter");
-
-                if (isAnnotationOnLineAbove && isTopAnnotationRemoved) {
-                    String minus1NewLine = visited.getPrefix().getWhitespace().replaceFirst("\n", "");
-                    visited = visited.withPrefix(visited.getPrefix().withWhitespace(minus1NewLine));
-                }
-                return autoFormat(visited, ctx);
+            private J.ClassDeclaration removeGetterFromFields(J.ClassDeclaration classDecl) {
+                return classDecl.withBody(classDecl.getBody().withStatements(ListUtils.map(classDecl.getBody().getStatements(), s -> {
+                    if (s instanceof J.VariableDeclarations) {
+                        J.VariableDeclarations vd = (J.VariableDeclarations) s;
+                        return vd.withLeadingAnnotations(ListUtils.map(vd.getLeadingAnnotations(),
+                                a -> ANNOTATION_MATCHER.matches(a) ? null : a));
+                    }
+                    return s;
+                })));
             }
 
-            @Override
-            public J.@Nullable Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-                return annotation.getSimpleName().equals("Getter") &&
-                        annotation.getArguments() == null && //no Access level, or other arguments
-                        //should only trigger on field annotation, not class annotation
-                        getCursor().getParent().getValue() instanceof J.VariableDeclarations ?
-                        null : // -> delete
-                        annotation; // -> keep
+            private J.ClassDeclaration addGetterToClass(J.ClassDeclaration classDecl) {
+                return JavaTemplate.builder("@Getter")
+                        .imports("lombok.Getter")
+                        .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
+                        .build().apply(updateCursor(classDecl), classDecl.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
             }
         };
         return Preconditions.check(new UsesType<>("lombok.Getter", false), visitor);
