@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.joda.templates;
 
+import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
@@ -40,7 +41,7 @@ public class VarTemplates {
         }
     };
 
-    public static Optional<JavaTemplate> getTemplate(J.VariableDeclarations variable) {
+    public static Optional<JavaTemplate> getTemplate(J.VariableDeclarations variable, ExecutionContext ctx) {
         JavaType.Class type = (JavaType.Class) variable.getTypeExpression().getType();
         String typeName = JodaToJavaTimeType.get(type.getFullyQualifiedName());
         if (typeName == null) {
@@ -68,7 +69,7 @@ public class VarTemplates {
         }
         return Optional.of(JavaTemplate.builder(template.toString())
           .imports(typeName)
-          .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
+          .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "threeten-extra"))
           .build());
     }
 
