@@ -574,4 +574,25 @@ class NormalizeGetterTest implements RewriteTest {
         );
     }
 
+    /**
+     * The recipe should only be applied when the method return type and the field type match exactly.
+     */
+    @Test
+    void returnTypeHasToMatch() {
+        rewriteRun(// language=java
+          java(
+            """
+              import java.io.BufferedReader;
+              import java.io.LineNumberReader;
+              class A {
+
+                  LineNumberReader foo;
+
+                  public BufferedReader giveFoo() {
+                      return foo;
+                  }
+              }
+              """
+          ));
+    }
 }

@@ -105,8 +105,9 @@ public class NormalizeGetter extends ScanningRecipe<List<NormalizeGetter.RenameR
                 } else if (returnExpression instanceof J.FieldAccess) {
                     simpleName = ((J.FieldAccess) returnExpression).getSimpleName();
                 } else {
-                    throw new IllegalStateException();//only those two are possible
-                }//todo how about a trait?
+                    //only those types above are possible, see LombokUtils::isEffectivelyGetter
+                    throw new IllegalStateException("Unexpected type for returned variable");
+                }
 
                 String expectedMethodName = LombokUtils.deriveGetterMethodName(returnExpression.getType(), simpleName);
                 String actualMethodName = method.getSimpleName();

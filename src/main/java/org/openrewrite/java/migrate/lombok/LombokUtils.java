@@ -93,20 +93,16 @@ class LombokUtils {
 
         if (takesNoParameters && singularReturn) {
             Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
-            //returns just an identifier
+            // returns just an identifier
             // Check field is declared on method type
-            JavaType.FullyQualified declaringType = method.getMethodType().getDeclaringType();
-            if (returnExpression instanceof J.Identifier) {
-                J.Identifier identifier = (J.Identifier) returnExpression;
-                JavaType.Variable fieldType = identifier.getFieldType();
-                return method.getType().equals(fieldType.getType()); //type match todo check subtype
-            }
-            else if (returnExpression instanceof J.FieldAccess) {
-                J.FieldAccess fieldAccess = (J.FieldAccess) returnExpression;
-                Expression target = fieldAccess.getTarget();
-                return target instanceof J.Identifier &&
-                        ((J.Identifier) target).getFieldType() != null &&
-                        declaringType == ((J.Identifier) target).getFieldType().getOwner(); //type match todo check subtype
+            JavaType methodSignatureReturnType = method.getType();
+
+            if (returnExpression instanceof J.Identifier ||
+                    returnExpression instanceof J.FieldAccess) {
+                JavaType returnedVariableType = returnExpression.getType();
+                // compiler already guarantees that the returned variable is a subtype of the method type,
+                // but we want an exact match.
+                return methodSignatureReturnType == returnedVariableType;
             }
         }
         return false;
