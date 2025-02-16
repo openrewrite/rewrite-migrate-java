@@ -44,11 +44,10 @@ public class NormalizeGetter extends ScanningRecipe<List<NormalizeGetter.RenameR
 
     @Override
     public String getDescription() {
-        //language=markdown
         return "Rename methods that are effectively getter to the name lombok would give them.\n\n" +
                 "Limitations:\n" +
-                " - If two methods in a class are effectively the same getter then one's name will be corrected and the others name will be left as it is." +
-                " - If the correct name for a method is already taken by another method then the name will not be corrected." +
+                " - If two methods in a class are effectively the same getter then one's name will be corrected and the others name will be left as it is.\n" +
+                " - If the correct name for a method is already taken by another method then the name will not be corrected.\n" +
                 " - Method name swaps or circular renaming within a class cannot be performed because the names block each other. " +
                 "E.g. `int getFoo() { return ba; } int getBa() { return foo; }` stays as it is."
                 ;
@@ -103,12 +102,12 @@ public class NormalizeGetter extends ScanningRecipe<List<NormalizeGetter.RenameR
                 String expectedMethodName = LombokUtils.deriveGetterMethodName(returnExpression.getType(), returnExpression.getSimpleName());
                 String actualMethodName = method.getSimpleName();
 
-                //if method already has the name it should have, then nothing to be done
+                // If method already has the name it should have, then nothing to be done
                 if (expectedMethodName.equals(actualMethodName)) {
                     return method;
                 }
 
-                //If the desired method name is already taken by an existing method, the current method cannot be renamed
+                // If the desired method name is already taken by an existing method, the current method cannot be renamed
                 List<String> doNotRename = getCursor().getNearestMessage(DO_NOT_RENAME);
                 assert doNotRename != null;
                 if (doNotRename.contains(expectedMethodName)) {
