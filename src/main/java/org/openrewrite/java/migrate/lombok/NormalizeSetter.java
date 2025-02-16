@@ -113,9 +113,7 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
                 return method;
             }
 
-            J.Assignment assignment_ = (J.Assignment) method.getBody().getStatements().get(0);
-            J.FieldAccess fieldAccess = (J.FieldAccess) assignment_.getVariable();
-            JavaType.Variable fieldType = fieldAccess.getName().getFieldType();
+            JavaType.Variable fieldType = extractVariable(method);
 
             String expectedMethodName = LombokUtils.deriveSetterMethodName(fieldType);
             String parameterType =  fieldType.getType().toString();
@@ -152,6 +150,23 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
             blackList.add(expectedMethodName);//expected method name now blocked
             return method;
         }
+    }
+
+    private static JavaType. @Nullable Variable extractVariable(J.MethodDeclaration method) {
+        J.Assignment assignment_ = (J.Assignment) method.getBody().getStatements().get(0);
+
+        JavaType.Variable fieldType;
+        if (assignment_.getVariable() instanceof J.FieldAccess) {
+            J.FieldAccess fieldAccess = (J.FieldAccess) assignment_.getVariable();
+            fieldType = fieldAccess.getName().getFieldType();
+        } else if (assignment_.getVariable() instanceof J.Identifier) {
+            J.Identifier fieldAccess = (J.Identifier) assignment_.getVariable();
+            fieldType = fieldAccess.getFieldType();
+        } else {
+            //only those types above are possible, see LombokUtils::isEffectivelySetter
+            throw new IllegalStateException("Unexpected type for returned variable");
+        }
+        return fieldType;
     }
 
     @Override

@@ -58,6 +58,32 @@ class NormalizeSetterTest implements RewriteTest {
     }
 
     @Test
+    void renameWithoutFieldAccess() {
+        rewriteRun(// language=java
+          java(
+            """
+              package com.yourorg.whatever;
+              class A {
+                  int foo = 9;
+                  public void storeFoo(int newfoo) {
+                      foo = newfoo;
+                  }
+              }
+              """,
+            """
+              package com.yourorg.whatever;
+              class A {
+                  int foo = 9;
+                  public void setFoo(int newfoo) {
+                      foo = newfoo;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void renameInSingleClassWhitespace() {
         rewriteRun(// language=java
           java(
