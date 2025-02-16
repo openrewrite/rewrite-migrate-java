@@ -568,11 +568,11 @@ class NormalizeSetterTest implements RewriteTest {
 
                   int bar;
 
-                  public void setBar(long bar) {
+                  public void setBar(int bar) {
                       this.foo = bar;
                   }
 
-                  public void getFoo(long foo) {
+                  public void setFoo(int foo) {
                       this.bar = foo;
                   }
 
@@ -587,11 +587,11 @@ class NormalizeSetterTest implements RewriteTest {
 //
 //                  int bar;
 //
-//                  public void getFoo(long foo) {
+//                  public void setFoo(int foo) {
 //                      this.foo = foo;
 //                  }
 //
-//                  public void setBar(long bar) {
+//                  public void setBar(int bar) {
 //                      this.bar = bar;
 //                  }
 //
