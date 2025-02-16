@@ -24,6 +24,7 @@ import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 import java.util.ArrayList;
@@ -96,10 +97,18 @@ public class NormalizeGetter extends ScanningRecipe<List<NormalizeGetter.RenameR
                     return method;
                 }
 
-                J.Return return_ = (J.Return) method.getBody().getStatements().get(0);
-                J.Identifier returnExpression = (J.Identifier) return_.getExpression();
+                Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
 
-                String expectedMethodName = LombokUtils.deriveGetterMethodName(returnExpression.getType(), returnExpression.getSimpleName());
+                String simpleName;
+                if (returnExpression instanceof J.Identifier) {
+                    simpleName = ((J.Identifier) returnExpression).getSimpleName();
+                } else if (returnExpression instanceof J.FieldAccess) {
+                    simpleName = ((J.FieldAccess) returnExpression).getSimpleName();
+                } else {
+                    throw new IllegalStateException();//only those two are possible
+                }//todo how about a trait?
+
+                String expectedMethodName = LombokUtils.deriveGetterMethodName(returnExpression.getType(), simpleName);
                 String actualMethodName = method.getSimpleName();
 
                 // If method already has the name it should have, then nothing to be done

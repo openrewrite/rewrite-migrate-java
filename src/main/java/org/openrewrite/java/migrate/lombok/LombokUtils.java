@@ -94,16 +94,26 @@ class LombokUtils {
         if (takesNoParameters && singularReturn) {
             Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
             //returns just an identifier
+            // Check field is declared on method type
+            JavaType.FullyQualified declaringType = method.getMethodType().getDeclaringType();
             if (returnExpression instanceof J.Identifier) {
                 J.Identifier identifier = (J.Identifier) returnExpression;
                 JavaType.Variable fieldType = identifier.getFieldType();
-                return method.getType().equals(fieldType.getType()); //type match
+                return method.getType().equals(fieldType.getType()); //type match todo check subtype
+            }
+            else if (returnExpression instanceof J.FieldAccess) {
+                J.FieldAccess fieldAccess = (J.FieldAccess) returnExpression;
+                Expression target = fieldAccess.getTarget();
+                return target instanceof J.Identifier &&
+                        ((J.Identifier) target).getFieldType() != null &&
+                        declaringType == ((J.Identifier) target).getFieldType().getOwner(); //type match todo check subtype
             }
         }
         return false;
     }
 
     public static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {
+
         if (type == JavaType.Primitive.Boolean) {
             boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
                     fieldName.substring(0, 3).matches("is[A-Z]");

@@ -51,6 +51,26 @@ class NormalizeGetterTest implements RewriteTest {
     }
 
     @Test
+    void renameWithFieldAccess() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+                  int foo = 9;
+                  int giveFoo() { return this.foo; }
+              }
+              """,
+            """
+              class A {
+                  int foo = 9;
+                  int getFoo() { return this.foo; }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void renamePrimitiveBooleanInSingleClass() {
         rewriteRun(// language=java
           java(
