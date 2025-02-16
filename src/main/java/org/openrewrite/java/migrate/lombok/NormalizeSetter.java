@@ -44,11 +44,10 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
 
     @Override
     public String getDescription() {
-        //language=markdown
         return "Rename methods that are effectively setter to the name lombok would give them.\n" +
                "Limitations:\n" +
-               " - If two methods in a class are effectively the same setter then one's name will be corrected and the others name will be left as it is." +
-               " - If the correct name for a method is already taken by another method then the name will not be corrected." +
+               " - If two methods in a class are effectively the same setter then one's name will be corrected and the others name will be left as it is.\n" +
+               " - If the correct name for a method is already taken by another method then the name will not be corrected.\n" +
                " - Method name swaps or circular renaming within a class cannot be performed because the names block each other. " +
                "E.g. `int getFoo() { return ba; } int getBa() { return foo; }` stays as it is.";
     }
@@ -107,8 +106,8 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
                 return method;
             }
 
-            //return early if the method overrides another
-            //if the project defined both the original and the overridden method,
+            // return early if the method overrides another
+            // if the project defined both the original and the overridden method,
             // then the renaming of the "original" in the base class will cover the override
             if (method.getLeadingAnnotations().stream().anyMatch(a -> "Override".equals(a.getSimpleName()))) {
                 return method;
@@ -122,12 +121,12 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
             String parameterType =  fieldType.getType().toString();
             String actualMethodName = method.getSimpleName();
 
-            //if method already has the name it should have, then nothing to be done
+            // If method already has the name it should have, then nothing to be done
             if (expectedMethodName.equals(actualMethodName)) {
                 return method;
             }
 
-            //If the desired method name is already taken by an existing method, the current method cannot be renamed
+            // If the desired method name is already taken by an existing method, the current method cannot be renamed
             List<String> blackList = getCursor().getNearestMessage(METHOD_BLACKLIST);
             assert blackList != null;
             if (blackList.contains(expectedMethodName)) {
