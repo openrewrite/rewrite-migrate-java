@@ -111,12 +111,10 @@ public class UseDataParameterized extends Recipe {
 
         @Override
         public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-            return annotationsToReplace.contains(annotation.getSimpleName())
-                    && annotation.getArguments() == null //no arguments of any kind. Too strict?
+            return annotationsToReplace.contains(annotation.getSimpleName()) &&
+                    annotation.getArguments() == null //no arguments of any kind. Too strict?
                     //should only trigger on class annotation
-                    && getCursor().getParent().getValue() instanceof J.ClassDeclaration
-                    ? null
-                    : annotation;
+                    && getCursor().getParent().getValue() instanceof J.ClassDeclaration ? null : annotation;
         }
 
     }
