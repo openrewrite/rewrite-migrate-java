@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -557,9 +556,8 @@ class NormalizeSetterTest implements RewriteTest {
      * If existing method names need to be rotated in a loop the recipe should still work.
      * For now this is not planned.
      */
-    @Disabled("Not planned to fix but listed here for completeness")
     @Test
-    void shouldWorkOnCircleCases() {
+    void shouldWorkOnCircleCasesButDoesntYet() {
         rewriteRun(// language=java
           java(
             """
@@ -579,25 +577,26 @@ class NormalizeSetterTest implements RewriteTest {
                   }
 
               }
-              """,
-            """
-
-              class A {
-
-                  int foo;
-
-                  int bar;
-
-                  public void getFoo(long foo) {
-                      this.foo = foo;
-                  }
-
-                  public void setBar(long bar) {
-                      this.bar = bar;
-                  }
-
-              }
               """
+//            ,
+//            """
+//
+//              class A {
+//
+//                  int foo;
+//
+//                  int bar;
+//
+//                  public void getFoo(long foo) {
+//                      this.foo = foo;
+//                  }
+//
+//                  public void setBar(long bar) {
+//                      this.bar = bar;
+//                  }
+//
+//              }
+//              """
           )
         );
     }
