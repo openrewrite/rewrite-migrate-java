@@ -534,7 +534,7 @@ class NormalizeGetterTest implements RewriteTest {
      * For now this is not planned.
      */
     @Test
-    void shouldWorkOnCircleCases() {
+    void shouldWorkOnCircleCasesButDoesntYet() {
         rewriteRun(// language=java
           java(
             """
