@@ -36,7 +36,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   int foo = 9;
                   public void storeFoo(int foo) {
@@ -45,7 +44,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
               class A {
                   int foo = 9;
                   public void setFoo(int foo) {
@@ -62,7 +60,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   int foo = 9;
                   public void storeFoo(int newfoo) {
@@ -71,7 +68,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
               class A {
                   int foo = 9;
                   public void setFoo(int newfoo) {
@@ -88,7 +84,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   int foo = 9;
                   public void storeFoo( int  foo ) {
@@ -97,7 +92,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
               class A {
                   int foo = 9;
                   public void setFoo( int  foo ) {
@@ -114,14 +108,12 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   boolean foo;
                   void storeFoo(boolean foo) { this.foo = foo; }
               }
               """,
             """
-              package com.yourorg.whatever;
               class A {
                   boolean foo;
                   void setFoo(boolean foo) { this.foo = foo; }
@@ -136,14 +128,12 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   Boolean foo;
                   void storeFoo(Boolean foo) { this.foo = foo; }
               }
               """,
             """
-              package com.yourorg.whatever;
               class A {
                   Boolean foo;
                   void setFoo(Boolean foo) { this.foo = foo; }
@@ -158,7 +148,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   Boolean Foo;
                   void storeFoo(boolean foo) { this.foo = foo; }
@@ -173,7 +162,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   boolean Foo;
                   void storeFoo(Boolean foo) { this.foo = foo; }
@@ -188,14 +176,12 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
               class A {
                   int foo = 9;
                   void storeFoo(int foo) { this.foo = foo; }
               }
               """,
             """
-              package com.yourorg.whatever;
               class A {
                   int foo = 9;
                   void setFoo(int foo) { this.foo = foo; }
@@ -204,7 +190,6 @@ class NormalizeSetterTest implements RewriteTest {
           ),// language=java
           java(
             """
-              package com.yourorg.whatever;
               class B {
                   void useIt() {
                       var a = new A();
@@ -213,7 +198,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
               class B {
                   void useIt() {
                       var a = new A();
@@ -230,7 +214,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
 
               import java.util.Date;
 
@@ -327,7 +310,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
 
               class A {
 
@@ -357,7 +339,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
 
               class A {
 
@@ -373,7 +354,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
 
               class A {
 
@@ -400,7 +380,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
 
               class A {
 
@@ -415,7 +394,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
 
               class A {
 
@@ -438,7 +416,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
 
               class A {
 
@@ -455,7 +432,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
 
               class A {
 
@@ -483,7 +459,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
 
               class A {
 
@@ -504,7 +479,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
 
               class A {
 
@@ -536,7 +510,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
 
               class A {
 
@@ -557,7 +530,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
 
               class A {
 
@@ -591,7 +563,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              package com.yourorg.whatever;
 
               class A {
 
@@ -610,7 +581,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-              package com.yourorg.whatever;
 
               class A {
 
