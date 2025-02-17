@@ -68,7 +68,9 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeRemoveImport(JODA_ABSTRACT_INSTANT);
             maybeRemoveImport(JODA_INSTANT);
             maybeRemoveImport(JODA_INTERVAL);
-            maybeRemoveImport("java.util.Locale");
+            maybeRemoveImport(JODA_TIME_FORMATTER);
+            maybeRemoveImport(JAVA_UTIL_LOCALE);
+            maybeRemoveImport(JODA_LOCAL_DATE);
 
             maybeAddImport(JAVA_DATE_TIME);
             maybeAddImport(JAVA_ZONE_OFFSET);

@@ -22,6 +22,7 @@ public class TimeClassNames {
 
     // java util
     public static final String JAVA_UTIL_DATE = "java.util.Date";
+    public static final String JAVA_UTIL_LOCALE = "java.util.Locale";
 
     // Joda-Time classes
     public static final String JODA_TIME_PKG = "org.joda.time";
