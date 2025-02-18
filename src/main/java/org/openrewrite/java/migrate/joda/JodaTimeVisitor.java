@@ -71,6 +71,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeRemoveImport(JODA_TIME_FORMATTER);
             maybeRemoveImport(JAVA_UTIL_LOCALE);
             maybeRemoveImport(JODA_LOCAL_DATE);
+            maybeRemoveImport(JODA_LOCAL_DATE_TIME);
 
             maybeAddImport(JAVA_DATE_TIME);
             maybeAddImport(JAVA_ZONE_OFFSET);
@@ -80,6 +81,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeAddImport(JAVA_TIME_FORMAT_STYLE);
             maybeAddImport(JAVA_DURATION);
             maybeAddImport(JAVA_LOCAL_DATE);
+            maybeAddImport(JAVA_LOCAL_DATE_TIME);
             maybeAddImport(JAVA_LOCAL_TIME);
             maybeAddImport(JAVA_TEMPORAL_ISO_FIELDS);
             maybeAddImport(JAVA_CHRONO_FIELD);
@@ -221,10 +223,14 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         MethodTemplate template = AllTemplates.getTemplate(original);
         if (template == null) {
+            //is it a better way to print logs?
+            System.out.println("Joda usage is found but mapping is missing: " + original);
             return original; // unhandled case
         }
         Optional<J> maybeUpdated = applyTemplate(original, updated, template);
         if (!maybeUpdated.isPresent()) {
+            //is it a better way to print logs?
+            System.out.println("Can not apply template: " + template + " to " + original);
             return original; // unhandled case
         }
         Expression updatedExpr = (Expression) maybeUpdated.get();

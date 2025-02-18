@@ -33,6 +33,7 @@ public class VarTemplates {
             put(JODA_DATE_TIME, JAVA_DATE_TIME);
             put(JODA_TIME_FORMATTER, JAVA_TIME_FORMATTER);
             put(JODA_LOCAL_DATE, JAVA_LOCAL_DATE);
+            put(JODA_LOCAL_DATE_TIME, JAVA_LOCAL_DATE_TIME);
             put(JODA_LOCAL_TIME, JAVA_LOCAL_TIME);
             put(JODA_DATE_TIME_ZONE, JAVA_ZONE_ID);
             put(JODA_DURATION, JAVA_DURATION);

@@ -70,27 +70,27 @@ public class LocatDateTemplates implements Templates {
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
-            add(new MethodTemplate(newLocalDateNoArgs, buildJodaMapping(localDateNoArgsTemplate)));
-            add(new MethodTemplate(newLocalDateEpoch, buildJodaMapping(localDateEpochTemplate)));
-            add(new MethodTemplate(newLocalDateYmd, buildJodaMapping(localDateYmdTemplate)));
-            add(new MethodTemplate(now, buildJodaMapping(nowTemplate)));
-            add(new MethodTemplate(parse, buildJodaMapping(parseTemplate)));
-            add(new MethodTemplate(parseWithFormatter, buildJodaMapping(parseWithFormatterTemplate)));
-            add(new MethodTemplate(plusDays, buildJodaMapping(plusDaysTemplate)));
-            add(new MethodTemplate(plusWeeks, buildJodaMapping(plusWeeksTemplate)));
-            add(new MethodTemplate(plusMonths, buildJodaMapping(plusMonthsTemplate)));
-            add(new MethodTemplate(plusYears, buildJodaMapping(plusYearsTemplate)));
-            add(new MethodTemplate(minusDays, buildJodaMapping(minusDaysTemplate)));
-            add(new MethodTemplate(minusWeeks, buildJodaMapping(minusWeeksTemplate)));
-            add(new MethodTemplate(minusMonths, buildJodaMapping(minusMonthsTemplate)));
-            add(new MethodTemplate(minusYears, buildJodaMapping(minusYearsTemplate)));
-            add(new MethodTemplate(toDateMidnight, buildJodaMapping(toStartOfDayWithDefaultZoneTemplate),
+            add(new MethodTemplate(newLocalDateNoArgs, build(localDateNoArgsTemplate)));
+            add(new MethodTemplate(newLocalDateEpoch, build(localDateEpochTemplate)));
+            add(new MethodTemplate(newLocalDateYmd, build(localDateYmdTemplate)));
+            add(new MethodTemplate(now, build(nowTemplate)));
+            add(new MethodTemplate(parse, build(parseTemplate)));
+            add(new MethodTemplate(parseWithFormatter, build(parseWithFormatterTemplate)));
+            add(new MethodTemplate(plusDays, build(plusDaysTemplate)));
+            add(new MethodTemplate(plusWeeks, build(plusWeeksTemplate)));
+            add(new MethodTemplate(plusMonths, build(plusMonthsTemplate)));
+            add(new MethodTemplate(plusYears, build(plusYearsTemplate)));
+            add(new MethodTemplate(minusDays, build(minusDaysTemplate)));
+            add(new MethodTemplate(minusWeeks, build(minusWeeksTemplate)));
+            add(new MethodTemplate(minusMonths, build(minusMonthsTemplate)));
+            add(new MethodTemplate(minusYears, build(minusYearsTemplate)));
+            add(new MethodTemplate(toDateMidnight, build(toStartOfDayWithDefaultZoneTemplate),
                     m -> new Expression[]{ ((J.MethodInvocation)m).getSelect() })
             );
-            add(new MethodTemplate(toDateTimeAtStartOfDay, buildJodaMapping(toStartOfDayWithDefaultZoneTemplate),
+            add(new MethodTemplate(toDateTimeAtStartOfDay, build(toStartOfDayWithDefaultZoneTemplate),
                     m -> new Expression[]{ ((J.MethodInvocation)m).getSelect() })
             );
-            add(new MethodTemplate(toDateTimeAtStartOfDayWithZone, buildJodaMapping(toStartOfDateWithZoneTemplate),
+            add(new MethodTemplate(toDateTimeAtStartOfDayWithZone, build(toStartOfDateWithZoneTemplate),
                     m -> {
                         J.MethodInvocation mi = (J.MethodInvocation)m;
                         return new Expression[]{ mi.getSelect(), mi.getArguments().get(0) };
@@ -98,12 +98,7 @@ public class LocatDateTemplates implements Templates {
         }
     };
 
-    private JavaTemplate buildJodaMapping(JavaTemplate.Builder builder) {
+    private JavaTemplate build(JavaTemplate.Builder builder) {
         return buildWithImport(builder, JAVA_LOCAL_DATE);
-    }
-
-    //should we move it to Templates?
-    private JavaTemplate buildWithImport(JavaTemplate.Builder builder, String imports) {
-        return builder.imports(imports).build() ;
     }
 }

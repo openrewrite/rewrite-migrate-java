@@ -37,6 +37,7 @@ public class TimeClassMap {
             put(JODA_READABLE_DURATION, javaTypeClass(JAVA_DURATION, object));
             put(JODA_INTERVAL, javaTypeClass(THREE_TEN_EXTRA_INTERVAL, object));
             put(JODA_LOCAL_DATE, javaTypeClass(JAVA_LOCAL_DATE, object));
+            put(JODA_LOCAL_DATE_TIME, javaTypeClass(JAVA_LOCAL_DATE_TIME, object));
         }
     };
 
@@ -44,6 +45,7 @@ public class TimeClassMap {
         {
             put(JODA_DATE_TIME, "ZonedDateTime");
             put(JODA_LOCAL_DATE, "LocalDate");
+            put(JODA_LOCAL_DATE_TIME, "LocalDateTime");
         }
     };
 
