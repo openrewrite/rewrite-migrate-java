@@ -18,8 +18,12 @@ package org.openrewrite.java.migrate.net;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.*;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Statement;
 
 public class URLConstructorsToURI_mock extends Recipe {
     @Override
