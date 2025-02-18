@@ -36,12 +36,14 @@ public class TimeClassMap {
             put(JODA_DURATION, javaTypeClass(JAVA_DURATION, object));
             put(JODA_READABLE_DURATION, javaTypeClass(JAVA_DURATION, object));
             put(JODA_INTERVAL, javaTypeClass(THREE_TEN_EXTRA_INTERVAL, object));
+            put(JODA_LOCAL_DATE, javaTypeClass(JAVA_LOCAL_DATE, object));
         }
     };
 
     private final Map<String, String> jodaToJavaTimeShortName = new HashMap<String, String>() {
         {
             put(JODA_DATE_TIME, "ZonedDateTime");
+            put(JODA_LOCAL_DATE, "LocalDate");
         }
     };
 

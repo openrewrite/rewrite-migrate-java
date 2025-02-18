@@ -43,6 +43,7 @@ public class AllTemplates {
     private static final MethodMatcher ANY_NEW_INTERVAL = new MethodMatcher(JODA_INTERVAL + "<constructor>(..)");
     private static final MethodMatcher ANY_ABSTRACT_INTERVAL = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " *(..)");
     private static final MethodMatcher ANY_BASE_INTERVAL = new MethodMatcher(JODA_BASE_INTERVAL + " *(..)");
+    private static final MethodMatcher ANY_NEW_LOCAL_DATE = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>(..)");
     private static final MethodMatcher ANY_LOCAL_DATE = new MethodMatcher(JODA_LOCAL_DATE + " *(..)");
 
     private static List<MatcherAndTemplates> templates = new ArrayList<MatcherAndTemplates>() {
@@ -64,6 +65,7 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_NEW_INTERVAL, new IntervalTemplates()));
             add(new MatcherAndTemplates(ANY_ABSTRACT_INTERVAL, new AbstractIntervalTemplates()));
             add(new MatcherAndTemplates(ANY_BASE_INTERVAL, new BaseIntervalTemplates()));
+            add(new MatcherAndTemplates(ANY_NEW_LOCAL_DATE, new LocatDateTemplates()));
             add(new MatcherAndTemplates(ANY_LOCAL_DATE, new LocatDateTemplates()));
         }
     };

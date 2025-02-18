@@ -47,73 +47,63 @@ public class LocatDateTemplates implements Templates {
     final MethodMatcher toDateTimeAtStartOfDay = new MethodMatcher(JODA_LOCAL_DATE + " toDateTimeAtStartOfDay()");
     final MethodMatcher toDateTimeAtStartOfDayWithZone = new MethodMatcher(JODA_LOCAL_DATE + " toDateTimeAtStartOfDay(org.joda.time.DateTimeZone)");
 
-    final JavaTemplate localDateNoArgsTemplate = JavaTemplate.builder("LocalDate.now()")
-            .imports(JAVA_LOCAL_DATE)
-            .build();
-    final JavaTemplate localDateEpochTemplate = JavaTemplate.builder("LocalDate.ofEpochDay(#{any(long)})")
-            .imports(JAVA_LOCAL_DATE)
-            .build();
-    final JavaTemplate localDateYmdTemplate = JavaTemplate.builder("LocalDate.of(#{any(int)}, #{any(int)}, #{any(int)})")
-            .imports(JAVA_LOCAL_DATE)
-            .build();
-    final JavaTemplate nowTemplate = JavaTemplate.builder("LocalDate.now()").imports(JAVA_LOCAL_DATE).build();
-    final JavaTemplate parseTemplate = JavaTemplate.builder("LocalDate.parse(#{any(String)})").imports(JAVA_LOCAL_DATE).build();
-    final JavaTemplate parseWithFormatterTemplate = JavaTemplate.builder("LocalDate.parse(#{any(String)}, #{any(java.time.format.DateTimeFormatter)})")
-            .imports(JAVA_LOCAL_DATE)
-            .build();
-    final JavaTemplate plusDaysTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.plusDays(#{any(int)})")
-            .build();
-    final JavaTemplate plusWeeksTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.plusWeeks(#{any(int)})")
-            .build();
-    final JavaTemplate plusMonthsTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.plusMonths(#{any(int)})")
-            .build();
-    final JavaTemplate plusYearsTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.plusYears(#{any(int)})")
-            .build();
-    final JavaTemplate minusDaysTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.minusDays(#{any(int)})")
-            .build();
-    final JavaTemplate minusWeeksTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.minusWeeks(#{any(int)})")
-            .build();
-    final JavaTemplate minusMonthsTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.minusMonths(#{any(int)})")
-            .build();
-    final JavaTemplate minusYearsTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.minusYears(#{any(int)})")
-            .build();
-    final JavaTemplate toStartOfDayWithDefaultZoneTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.atStartOfDay(java.time.ZoneId.systemDefault())")
-            .imports(JAVA_ZONE_ID, JAVA_DATE_TIME)
-            .build();
-    final JavaTemplate toStartOfDateWithZoneTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.atStartOfDay(#{any(java.time.ZoneId)})")
-            .imports(JAVA_ZONE_ID, JAVA_DATE_TIME)
-            .build();
-
-
+    final JavaTemplate.Builder localDateNoArgsTemplate = JavaTemplate.builder("LocalDate.now()");
+    final JavaTemplate.Builder localDateEpochTemplate = JavaTemplate.builder("LocalDate.ofEpochDay(#{any(long)})");
+    final JavaTemplate.Builder localDateYmdTemplate = JavaTemplate.builder("LocalDate.of(#{any(int)}, #{any(int)}, #{any(int)})");
+    final JavaTemplate.Builder nowTemplate = JavaTemplate.builder("LocalDate.now()");
+    final JavaTemplate.Builder parseTemplate = JavaTemplate.builder("LocalDate.parse(#{any(String)})");
+    final JavaTemplate.Builder parseWithFormatterTemplate = JavaTemplate.builder("LocalDate.parse(#{any(String)}, #{any(java.time.format.DateTimeFormatter)})")
+            .imports(JAVA_TIME_FORMATTER);
+    final JavaTemplate.Builder plusDaysTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.plusDays(#{any(int)})");
+    final JavaTemplate.Builder plusWeeksTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.plusWeeks(#{any(int)})");
+    final JavaTemplate.Builder plusMonthsTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.plusMonths(#{any(int)})");
+    final JavaTemplate.Builder plusYearsTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.plusYears(#{any(int)})");
+    final JavaTemplate.Builder minusDaysTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.minusDays(#{any(int)})");
+    final JavaTemplate.Builder minusWeeksTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.minusWeeks(#{any(int)})");
+    final JavaTemplate.Builder minusMonthsTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.minusMonths(#{any(int)})");
+    final JavaTemplate.Builder minusYearsTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.minusYears(#{any(int)})");
+    final JavaTemplate.Builder toStartOfDayWithDefaultZoneTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.atStartOfDay(java.time.ZoneId.systemDefault())")
+            .imports(JAVA_ZONE_ID);
+    final JavaTemplate.Builder toStartOfDateWithZoneTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.atStartOfDay(#{any(java.time.ZoneId)})")
+            .imports(JAVA_ZONE_ID);
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
-            add(new MethodTemplate(newLocalDateNoArgs, localDateNoArgsTemplate));
-            add(new MethodTemplate(newLocalDateEpoch, localDateEpochTemplate));
-            add(new MethodTemplate(newLocalDateYmd, localDateYmdTemplate));
-            add(new MethodTemplate(now, nowTemplate));
-            add(new MethodTemplate(parse, parseTemplate));
-            add(new MethodTemplate(parseWithFormatter, parseWithFormatterTemplate));
-            add(new MethodTemplate(plusDays, plusDaysTemplate));
-            add(new MethodTemplate(plusWeeks, plusWeeksTemplate));
-            add(new MethodTemplate(plusMonths, plusMonthsTemplate));
-            add(new MethodTemplate(plusYears, plusYearsTemplate));
-            add(new MethodTemplate(minusDays, minusDaysTemplate));
-            add(new MethodTemplate(minusWeeks, minusWeeksTemplate));
-            add(new MethodTemplate(minusMonths, minusMonthsTemplate));
-            add(new MethodTemplate(minusYears, minusYearsTemplate));
-            add(new MethodTemplate(toDateMidnight, toStartOfDayWithDefaultZoneTemplate,
+            add(new MethodTemplate(newLocalDateNoArgs, buildJodaMapping(localDateNoArgsTemplate)));
+            add(new MethodTemplate(newLocalDateEpoch, buildJodaMapping(localDateEpochTemplate)));
+            add(new MethodTemplate(newLocalDateYmd, buildJodaMapping(localDateYmdTemplate)));
+            add(new MethodTemplate(now, buildJodaMapping(nowTemplate)));
+            add(new MethodTemplate(parse, buildJodaMapping(parseTemplate)));
+            add(new MethodTemplate(parseWithFormatter, buildJodaMapping(parseWithFormatterTemplate)));
+            add(new MethodTemplate(plusDays, buildJodaMapping(plusDaysTemplate)));
+            add(new MethodTemplate(plusWeeks, buildJodaMapping(plusWeeksTemplate)));
+            add(new MethodTemplate(plusMonths, buildJodaMapping(plusMonthsTemplate)));
+            add(new MethodTemplate(plusYears, buildJodaMapping(plusYearsTemplate)));
+            add(new MethodTemplate(minusDays, buildJodaMapping(minusDaysTemplate)));
+            add(new MethodTemplate(minusWeeks, buildJodaMapping(minusWeeksTemplate)));
+            add(new MethodTemplate(minusMonths, buildJodaMapping(minusMonthsTemplate)));
+            add(new MethodTemplate(minusYears, buildJodaMapping(minusYearsTemplate)));
+            add(new MethodTemplate(toDateMidnight, buildJodaMapping(toStartOfDayWithDefaultZoneTemplate),
                     m -> new Expression[]{ ((J.MethodInvocation)m).getSelect() })
             );
-            add(new MethodTemplate(toDateTimeAtStartOfDay, toStartOfDayWithDefaultZoneTemplate,
+            add(new MethodTemplate(toDateTimeAtStartOfDay, buildJodaMapping(toStartOfDayWithDefaultZoneTemplate),
                     m -> new Expression[]{ ((J.MethodInvocation)m).getSelect() })
             );
-            add(new MethodTemplate(toDateTimeAtStartOfDayWithZone, toStartOfDateWithZoneTemplate,
+            add(new MethodTemplate(toDateTimeAtStartOfDayWithZone, buildJodaMapping(toStartOfDateWithZoneTemplate),
                     m -> {
                         J.MethodInvocation mi = (J.MethodInvocation)m;
                         return new Expression[]{ mi.getSelect(), mi.getArguments().get(0) };
                     }));
         }
     };
+
+    private JavaTemplate buildJodaMapping(JavaTemplate.Builder builder) {
+        return buildWithImport(builder, JAVA_LOCAL_DATE);
+    }
+
+    //should we move it to Templates?
+    private JavaTemplate buildWithImport(JavaTemplate.Builder builder, String imports) {
+        return builder.imports(imports).build() ;
+    }
 }
