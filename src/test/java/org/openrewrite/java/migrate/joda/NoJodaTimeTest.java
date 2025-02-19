@@ -45,6 +45,7 @@ class NoJodaTimeTest implements RewriteTest {
                   import org.joda.time.DateTime;
                   import org.joda.time.LocalDate;
                   import org.joda.time.LocalDateTime;
+                  import org.joda.time.LocalTime;
                   import org.joda.time.Interval;
 
                   class A {
@@ -53,6 +54,7 @@ class NoJodaTimeTest implements RewriteTest {
                           DateTime dt1 = new DateTime().plusDays(1);
                           LocalDate ld = new LocalDate();
                           LocalDateTime ldt = new LocalDateTime();
+                          LocalTime lt = new LocalTime();
                           Interval i = new Interval(dt, dt1);
                           System.out.println(i.toDuration());
                       }
@@ -64,6 +66,7 @@ class NoJodaTimeTest implements RewriteTest {
                   import java.time.ZonedDateTime;
                   import java.time.LocalDate;
                   import java.time.LocalDateTime;
+                  import java.time.LocalTime;
 
                   class A {
                       void foo() {
@@ -71,6 +74,7 @@ class NoJodaTimeTest implements RewriteTest {
                           ZonedDateTime dt1 = ZonedDateTime.now().plusDays(1);
                           LocalDate ld = LocalDate.now();
                           LocalDateTime ldt = LocalDateTime.now();
+                          LocalTime lt = LocalTime.now();
                           Interval i = Interval.of(dt.toInstant(), dt1.toInstant());
                           System.out.println(i.toDuration());
                       }

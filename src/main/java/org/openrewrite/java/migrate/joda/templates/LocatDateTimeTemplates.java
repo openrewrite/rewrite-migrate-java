@@ -31,7 +31,7 @@ public class LocatDateTimeTemplates implements Templates {
     final MethodMatcher newLocalDateTimeEpoch = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(long)");
     final MethodMatcher newLocalDateTimeYmdHm = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(int,int,int,int,int)");
     final MethodMatcher newLocalDateTimeYmdHms = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(int,int,int,int,int,int)");
-    final MethodMatcher newLocalDateTimeYmdHmsMillis = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(int,int,int,int,int,int,int)");
+    final MethodMatcher newLocalDateTimeYmdHmsM = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(int,int,int,int,int,int,int)");
     final MethodMatcher now = new MethodMatcher(JODA_LOCAL_DATE_TIME + " now()");
     final MethodMatcher parse = new MethodMatcher(JODA_LOCAL_DATE_TIME + " parse(String)");
     final MethodMatcher parseWithFormatter = new MethodMatcher(JODA_LOCAL_DATE_TIME + " parse(String, org.joda.time.format.DateTimeFormatter)");
@@ -55,7 +55,7 @@ public class LocatDateTimeTemplates implements Templates {
             .imports(JAVA_INSTANT, JAVA_ZONE_ID);
     final JavaTemplate.Builder newLocalDateTimeYmdHmTemplate = JavaTemplate.builder("LocalDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)})");
     final JavaTemplate.Builder newLocalDateTimeYmdHmsTemplate = JavaTemplate.builder("LocalDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)})");
-    final JavaTemplate.Builder newLocalDateTimeYmdHmsMillisTemplate = JavaTemplate.builder("LocalDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)})");
+    final JavaTemplate.Builder newLocalDateTimeYmdHmsMTemplate = JavaTemplate.builder("LocalDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)})");
     final JavaTemplate.Builder nowTemplate = JavaTemplate.builder("LocalDateTime.now()");
     final JavaTemplate.Builder parseTemplate = JavaTemplate.builder("LocalDateTime.parse(#{any(String)})");
     final JavaTemplate.Builder parseWithFormatterTemplate = JavaTemplate.builder("LocalDateTime.parse(#{any(String)}, #{any(java.time.format.DateTimeFormatter)})");
@@ -81,7 +81,7 @@ public class LocatDateTimeTemplates implements Templates {
             add(new MethodTemplate(newLocalDateTimeEpoch, build(newLocalDateTimeEpochTemplate)));
             add(new MethodTemplate(newLocalDateTimeYmdHm, build(newLocalDateTimeYmdHmTemplate)));
             add(new MethodTemplate(newLocalDateTimeYmdHms, build(newLocalDateTimeYmdHmsTemplate)));
-            add(new MethodTemplate(newLocalDateTimeYmdHmsMillis, build(newLocalDateTimeYmdHmsMillisTemplate)));
+            add(new MethodTemplate(newLocalDateTimeYmdHmsM, build(newLocalDateTimeYmdHmsMTemplate)));
             add(new MethodTemplate(now, build(nowTemplate)));
             add(new MethodTemplate(parse, build(parseTemplate)));
             add(new MethodTemplate(parseWithFormatter, build(parseWithFormatterTemplate)));
