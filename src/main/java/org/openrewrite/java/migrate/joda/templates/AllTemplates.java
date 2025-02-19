@@ -49,6 +49,7 @@ public class AllTemplates {
     private static final MethodMatcher ANY_LOCAL_DATE_TIME = new MethodMatcher(JODA_LOCAL_DATE_TIME + " *(..)");
     private static final MethodMatcher ANY_NEW_LOCAL_TIME = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(..)");
     private static final MethodMatcher ANY_LOCAL_TIME = new MethodMatcher(JODA_LOCAL_TIME + " *(..)");
+    private static final MethodMatcher ANY_SECONDS = new MethodMatcher(JODA_SECONDS + " *(..)");
 
     private static List<MatcherAndTemplates> templates = new ArrayList<MatcherAndTemplates>() {
         {
@@ -75,6 +76,7 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_LOCAL_DATE_TIME, new LocatDateTimeTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_LOCAL_TIME, new LocatTimeTemplates()));
             add(new MatcherAndTemplates(ANY_LOCAL_TIME, new LocatTimeTemplates()));
+            add(new MatcherAndTemplates(ANY_SECONDS, new SecondsTemplates()));
         }
     };
 

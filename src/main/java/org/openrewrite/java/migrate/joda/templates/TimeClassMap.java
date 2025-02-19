@@ -39,6 +39,7 @@ public class TimeClassMap {
             put(JODA_LOCAL_DATE, javaTypeClass(JAVA_LOCAL_DATE, object));
             put(JODA_LOCAL_DATE_TIME, javaTypeClass(JAVA_LOCAL_DATE_TIME, object));
             put(JODA_LOCAL_TIME, javaTypeClass(JAVA_LOCAL_TIME, object));
+            put(JODA_SECONDS, javaTypeClass(JAVA_DURATION, object));
         }
     };
 
@@ -48,6 +49,7 @@ public class TimeClassMap {
             put(JODA_LOCAL_DATE, "LocalDate");
             put(JODA_LOCAL_DATE_TIME, "LocalDateTime");
             put(JODA_LOCAL_TIME, "LocalTime");
+            put(JODA_SECONDS, "Duration");
         }
     };
 

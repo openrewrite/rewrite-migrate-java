@@ -47,6 +47,7 @@ public class TimeClassNames {
     public static final String JODA_INSTANT = JODA_TIME_PKG + ".Instant";
     public static final String JODA_INTERVAL = JODA_TIME_PKG + ".Interval";
     public static final String JODA_BASE_INTERVAL = JODA_TIME_PKG + ".base.BaseInterval";
+    public static final String JODA_SECONDS = JODA_TIME_PKG + ".Seconds";
 
     // Java Time classes
     public static final String JAVA_TIME_PKG = "java.time";
