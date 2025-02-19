@@ -115,13 +115,22 @@ public class URLConstructorsToURI extends ScanningRecipe<Set<String>> {
 
                 if (methodMatcherSingleArg.matches(nc)) {
                     Expression arg = nc.getArguments().get(0);
+
                     if (arg instanceof J.Literal && arg.getType().toString().equals("String")) {
+                        // If the argument is a string literal, only convert the constructor if the argument is a valid input
+
                         String literalValue = ((J.Literal) arg).getValueSource();
 
                         if (literalValue == null) {
                             return nc;
                         }
 
+                        // Remove quotations from string
+                        literalValue = literalValue.substring(1);
+                        literalValue = literalValue.substring(0, literalValue.length() - 1);
+
+
+                        // Check that this string is a valid input for URI.create().toURL()
                         try {
                             //noinspection ResultOfMethodCallIgnored
                             URI.create(literalValue).toURL();
@@ -141,6 +150,7 @@ public class URLConstructorsToURI extends ScanningRecipe<Set<String>> {
                         maybeAddImport("java.net.URI");
                         return result;
                     } else {
+                        // If the argument is not a string literal, replace the constructor with the wrapper method
                         JavaTemplate template = JavaTemplate.builder("transformNonLiteralURIToValidURL(#{any(String)})")
                                 .imports("java.net.URI")
                                 .contextSensitive()

@@ -83,7 +83,7 @@ class URLConstructorsToURITest implements RewriteTest {
 
               class Test {
                   void urlConstructor(String spec) throws Exception {
-                      URL url1 = new URL("https://test.com/openrewrite/testCase/testCase/191");
+                      URL url1 = new URL("https://test.com");
                   }
               }
               """,
@@ -93,7 +93,7 @@ class URLConstructorsToURITest implements RewriteTest {
 
               class Test {
                   void urlConstructor(String spec) throws Exception {
-                      URL url1 = URI.create("https://test.com/openrewrite/testCase/testCase/191").toURL();
+                      URL url1 = URI.create("https://test.com").toURL();
                   }
               }
               """
