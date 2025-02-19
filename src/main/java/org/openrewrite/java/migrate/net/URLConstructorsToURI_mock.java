@@ -23,7 +23,6 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Statement;
 
 public class URLConstructorsToURI_mock extends Recipe {
     @Override
@@ -34,7 +33,7 @@ public class URLConstructorsToURI_mock extends Recipe {
     @Override
     public String getDescription() {
         return "Standardizes URL creation by replacing new `URL(String)` with `transformNonLiteralURIToValidURL(String)`," +
-               "ensuring consistent handling of absolute and relative paths.";
+                "ensuring consistent handling of absolute and relative paths.";
     }
 
     @Override
@@ -61,12 +60,12 @@ public class URLConstructorsToURI_mock extends Recipe {
                 if (!methodExists && methodAdded) {
                     JavaTemplate convertUriMethod = JavaTemplate.builder(
                                     "public URL transformNonLiteralURIToValidURL(String spec) {\n" +
-                                    "       if (URI.create(spec).isAbsolute()) {\n" +
-                                    "           return URI.create(spec).toURL();\n" +
-                                    "       } else {\n" +
-                                    "           return new URL(spec);\n" +
-                                    "       }\n" +
-                                    "}")
+                                            "       if (URI.create(spec).isAbsolute()) {\n" +
+                                            "           return URI.create(spec).toURL();\n" +
+                                            "       } else {\n" +
+                                            "           return new URL(spec);\n" +
+                                            "       }\n" +
+                                            "}")
                             .contextSensitive()
                             .imports("java.net.URI", "java.net.URL")
                             .javaParser(JavaParser.fromJavaVersion())
