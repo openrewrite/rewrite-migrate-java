@@ -59,9 +59,9 @@ class URLConstructorsToURITest implements RewriteTest {
                   }
 
                   public URL transformNonLiteralURIToValidURL(String spec) {
-                      if (URI.create(spec).isAbsolute()) {
+                      try {
                           return URI.create(spec).toURL();
-                      } else {
+                      } catch (Exception e) {
                           return new URL(spec);
                       }
                   }
@@ -106,6 +106,7 @@ class URLConstructorsToURITest implements RewriteTest {
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/191")
     void urlCheckRelativePath() {
         rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(0),
           //language=java
           java(
             """
@@ -114,16 +115,6 @@ class URLConstructorsToURITest implements RewriteTest {
               class Test {
                   void urlConstructor(String spec) throws Exception {
                       URL url1 = new URL("TEST-INF/test/testCase.wsdl");
-                  }
-              }
-              """,
-            """
-              import java.net.URI;
-              import java.net.URL;
-
-              class Test {
-                  void urlConstructor(String spec) throws Exception {
-                      URL url1 = URI.create("TEST-INF/test/testCase.wsdl").toURL();
                   }
               }
               """

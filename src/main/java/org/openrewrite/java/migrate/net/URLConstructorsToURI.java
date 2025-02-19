@@ -19,10 +19,12 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.*;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
 
+import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,9 +85,9 @@ public class URLConstructorsToURI extends ScanningRecipe<Set<String>> {
                 if (!wrapperMethodExists && wrapperMethodClasses.contains(cd.getType().getFullyQualifiedName())) {
                     JavaTemplate convertUriMethod = JavaTemplate.builder(
                                     "public URL transformNonLiteralURIToValidURL(String spec) {\n" +
-                                            "       if (URI.create(spec).isAbsolute()) {\n" +
+                                            "       try {\n" +
                                             "           return URI.create(spec).toURL();\n" +
-                                            "       } else {\n" +
+                                            "       } catch (Exception e) {\n" +
                                             "           return new URL(spec);\n" +
                                             "       }\n" +
                                             "}")
@@ -112,7 +114,21 @@ public class URLConstructorsToURI extends ScanningRecipe<Set<String>> {
                 }
 
                 if (methodMatcherSingleArg.matches(nc)) {
-                    if (nc.getArguments().get(0) instanceof J.Literal) {
+                    Expression arg = nc.getArguments().get(0);
+                    if (arg instanceof J.Literal && arg.getType().toString().equals("String")) {
+                        String literalValue = ((J.Literal) arg).getValueSource();
+
+                        if (literalValue == null) {
+                            return nc;
+                        }
+
+                        try {
+                            //noinspection ResultOfMethodCallIgnored
+                            URI.create(literalValue).toURL();
+                        } catch (Exception e) {
+                            return nc;
+                        }
+
                         JavaTemplate template = JavaTemplate.builder("URI.create(#{any(String)}).toURL()")
                                 .imports("java.net.URI")
                                 .contextSensitive()
