@@ -20,15 +20,13 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 
 class URLConstructorsToURITest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new URLConstructorsToURI_mock())
-          .typeValidationOptions(TypeValidation.none());
+        spec.recipe(new URLConstructorsToURI());
     }
 
     @Test
@@ -72,6 +70,7 @@ class URLConstructorsToURITest implements RewriteTest {
           )
         );
     }
+
     @Test
     @DocumentExample
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/191")
