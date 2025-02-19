@@ -20,7 +20,6 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -64,7 +63,6 @@ class LombokValToFinalVarTest implements RewriteTest {
     void replaceAssignmentVar() {
         //language=java
         rewriteRun(
-          spec -> spec.typeValidationOptions(TypeValidation.builder().identifiers(false).build()),
           version(
             java(
               """
@@ -88,12 +86,37 @@ class LombokValToFinalVarTest implements RewriteTest {
         );
     }
 
+    @Test
+    void preserveStarImport() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import lombok.*;
+
+                @Getter
+                @Setter
+                @NoArgsConstructor
+                @Data
+                @Value
+                class A {
+                    void bar() {
+                        var foo = "foo";
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
     @SuppressWarnings({"StatementWithEmptyBody", "RedundantOperationOnEmptyContainer"})
     @Test
     void valInForEachStatement() {
         //language=java
         rewriteRun(
-          spec -> spec.afterTypeValidationOptions(TypeValidation.builder().identifiers(false).build()),
           version(
             java(
               """
