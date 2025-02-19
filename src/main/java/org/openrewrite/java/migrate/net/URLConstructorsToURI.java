@@ -32,13 +32,12 @@ import java.util.Set;
 public class URLConstructorsToURI extends ScanningRecipe<Set<String>> {
     @Override
     public String getDisplayName() {
-        return "Custom Migration: Replace new `URL(String)` with `transformNonLiteralURIToValidURL(String)`";
+        return "Convert `new URL(String)` to `URI.create(String).toURL()`";
     }
 
     @Override
     public String getDescription() {
-        return "Standardizes URL creation by replacing new `URL(String)` with `transformNonLiteralURIToValidURL(String)`," +
-                "ensuring consistent handling of absolute and relative paths.";
+        return "Converts `new URL(String)` constructors to `URI.create(String).toURL()`.";
     }
 
     @Override
@@ -53,10 +52,13 @@ public class URLConstructorsToURI extends ScanningRecipe<Set<String>> {
 
             @Override
             public J.NewClass visitNewClass(J.NewClass nc, ExecutionContext ctx) {
-                if (methodMatcherSingleArg.matches(nc) && !(nc.getArguments().get(0) instanceof J.Literal)) {
-                    J.ClassDeclaration cd = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                    if (cd != null) {
-                        wrapperMethodClasses.add(cd.getType().getFullyQualifiedName());
+                if (methodMatcherSingleArg.matches(nc)) {
+                    Expression arg = nc.getArguments().get(0);
+                    if (!(arg instanceof J.Literal && arg.getType().toString().equals("String"))) {
+                        J.ClassDeclaration cd = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                        if (cd != null) {
+                            wrapperMethodClasses.add(cd.getType().getFullyQualifiedName());
+                        }
                     }
                 }
                 return super.visitNewClass(nc, ctx);

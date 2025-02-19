@@ -121,4 +121,34 @@ class URLConstructorsToURITest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    @DocumentExample
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/191")
+    void urlCheckNullPath() {
+        rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(0),
+          //language=java
+          java(
+            """
+              import java.net.URI;
+              import java.net.URL;
+
+              class Test {
+                  void urlConstructor(String spec) throws Exception {
+                      URL url1 = transformNonLiteralURIToValidURL(null);
+                  }
+
+                  public URL transformNonLiteralURIToValidURL(String spec) {
+                      try {
+                          return URI.create(spec).toURL();
+                      } catch (Exception e) {
+                          return new URL(spec);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
 }
