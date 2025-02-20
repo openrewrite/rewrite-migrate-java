@@ -48,11 +48,14 @@ public class TimeClassNames {
     public static final String JODA_INTERVAL = JODA_TIME_PKG + ".Interval";
     public static final String JODA_BASE_INTERVAL = JODA_TIME_PKG + ".base.BaseInterval";
     public static final String JODA_SECONDS = JODA_TIME_PKG + ".Seconds";
+    public static final String JODA_DAYS = JODA_TIME_PKG + ".Days";
+    public static final String JODA_HOURS = JODA_TIME_PKG + ".Hours";
 
     // Java Time classes
     public static final String JAVA_TIME_PKG = "java.time";
     public static final String JAVA_DATE_TIME = JAVA_TIME_PKG + ".ZonedDateTime";
     public static final String JAVA_DURATION = JAVA_TIME_PKG + ".Duration";
+    public static final String JAVA_PERIOD = JAVA_TIME_PKG + ".Period";
     public static final String JAVA_ZONE_OFFSET = JAVA_TIME_PKG + ".ZoneOffset";
     public static final String JAVA_ZONE_ID = JAVA_TIME_PKG + ".ZoneId";
     public static final String JAVA_INSTANT = JAVA_TIME_PKG + ".Instant";

@@ -26,6 +26,7 @@ import org.openrewrite.java.migrate.joda.templates.TimeClassMap;
 import org.openrewrite.java.migrate.joda.templates.VarTemplates;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
+import org.openrewrite.marker.SearchResult;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -74,6 +75,8 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeRemoveImport(JODA_LOCAL_DATE_TIME);
             maybeRemoveImport(JODA_LOCAL_TIME);
             maybeRemoveImport(JODA_SECONDS);
+            maybeRemoveImport(JODA_DAYS);
+            maybeRemoveImport(JODA_HOURS);
 
             maybeAddImport(JAVA_DATE_TIME);
             maybeAddImport(JAVA_ZONE_OFFSET);
@@ -82,6 +85,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeAddImport(JAVA_TIME_FORMATTER);
             maybeAddImport(JAVA_TIME_FORMAT_STYLE);
             maybeAddImport(JAVA_DURATION);
+            maybeAddImport(JAVA_PERIOD);
             maybeAddImport(JAVA_LOCAL_DATE);
             maybeAddImport(JAVA_LOCAL_DATE_TIME);
             maybeAddImport(JAVA_LOCAL_TIME);
@@ -226,14 +230,12 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         MethodTemplate template = AllTemplates.getTemplate(original);
         if (template == null) {
             //is it a better way to print logs?
-            System.out.println("Joda usage is found but mapping is missing: " + original);
-            return original; // unhandled case
+            return SearchResult.found(original, "Joda usage is found but mapping is missing: " + original); // unhandled case
         }
         Optional<J> maybeUpdated = applyTemplate(original, updated, template);
         if (!maybeUpdated.isPresent()) {
             //is it a better way to print logs?
-            System.out.println("Can not apply template: " + template + " to " + original);
-            return original; // unhandled case
+            return SearchResult.found(original, "Can not apply template: " + template + " to " + original); // unhandled case
         }
         Expression updatedExpr = (Expression) maybeUpdated.get();
         if (!safeMigration || !isArgument(original)) {
