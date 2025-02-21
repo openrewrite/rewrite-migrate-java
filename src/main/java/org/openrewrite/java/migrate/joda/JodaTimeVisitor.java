@@ -118,14 +118,18 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         if (multiVariable.getTypeExpression() == null || !multiVariable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return super.visitVariableDeclarations(multiVariable, ctx);
         }
+        /*
         if (multiVariable.getVariables().stream().anyMatch(acc.getUnsafeVars()::contains)) {
             return multiVariable;
         }
+         */
         J.VariableDeclarations m = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
-        return VarTemplates.getTemplate(multiVariable).<J>map(t -> t.apply(
+        J.VariableDeclarations j = VarTemplates.getTemplate(multiVariable).<J.VariableDeclarations>map(t -> t.apply(
                 updateCursor(m),
                 m.getCoordinates().replace(),
                 VarTemplates.getTemplateArgs(m))).orElse(multiVariable);
+
+        return autoFormat(j.withModifiers(m.getModifiers()), ctx);
     }
 
     @Override
@@ -133,7 +137,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return super.visitVariable(variable, ctx);
         }
-        if (acc.getUnsafeVars().contains(variable) || !(variable.getType() instanceof JavaType.Class)) {
+        if (/*acc.getUnsafeVars().contains(variable) || */ !(variable.getType() instanceof JavaType.Class)) {
             return variable;
         }
         JavaType.Class jodaType = (JavaType.Class) variable.getType();
@@ -153,7 +157,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         J.Identifier varName = (J.Identifier) a.getVariable();
         Optional<NamedVariable> mayBeVar = findVarInScope(varName.getSimpleName());
-        if (!mayBeVar.isPresent() || acc.getUnsafeVars().contains(mayBeVar.get())) {
+        if (!mayBeVar.isPresent() /*|| acc.getUnsafeVars().contains(mayBeVar.get())*/) {
             return assignment;
         }
         return VarTemplates.getTemplate(assignment).<J>map(t -> t.apply(
@@ -209,7 +213,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         if (this.safeMigration) {
             Optional<NamedVariable> mayBeVar = findVarInScope(ident.getSimpleName());
-            if (!mayBeVar.isPresent() || acc.getUnsafeVars().contains(mayBeVar.get())) {
+            if (!mayBeVar.isPresent() /* || acc.getUnsafeVars().contains(mayBeVar.get())*/) {
                 return ident;
             }
         }
@@ -253,7 +257,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         String paramName = parentMethod.getMethodType().getParameterNames().get(argPos);
         NamedVariable var = acc.getVarTable().getVarByName(parentMethod.getMethodType(), paramName);
-        if (var != null && !acc.getUnsafeVars().contains(var)) {
+        if (var != null /*&& !acc.getUnsafeVars().contains(var)*/) {
             return updatedExpr;
         }
         return original;
