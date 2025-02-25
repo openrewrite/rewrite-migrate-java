@@ -53,17 +53,9 @@ class URLConstructorsToURITest implements RewriteTest {
 
               class Test {
                   void urlConstructor(String spec) throws Exception {
-                      URL url1 = transformNonLiteralURIToValidURL(spec);
+                      URL url1 = new URL(spec);
                       URL url2 = new URI(spec, null, "localhost", -1, "file", null, null).toURL();
                       URL url3 = new URI(spec, null, "localhost", 8080, "file", null, null).toURL();
-                  }
-
-                  public URL transformNonLiteralURIToValidURL(String spec) {
-                      try {
-                          return URI.create(spec).toURL();
-                      } catch (Exception e) {
-                          return new URL(spec);
-                      }
                   }
               }
               """
@@ -72,8 +64,7 @@ class URLConstructorsToURITest implements RewriteTest {
     }
 
     @Test
-    @DocumentExample
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/191")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
     void urlCheckAbsolutePath() {
         rewriteRun(
           //language=java
@@ -82,7 +73,7 @@ class URLConstructorsToURITest implements RewriteTest {
               import java.net.URL;
 
               class Test {
-                  void urlConstructor(String spec) throws Exception {
+                  void urlConstructor() {
                       URL url1 = new URL("https://test.com");
                   }
               }
@@ -92,7 +83,7 @@ class URLConstructorsToURITest implements RewriteTest {
               import java.net.URL;
 
               class Test {
-                  void urlConstructor(String spec) throws Exception {
+                  void urlConstructor() {
                       URL url1 = URI.create("https://test.com").toURL();
                   }
               }
@@ -102,8 +93,61 @@ class URLConstructorsToURITest implements RewriteTest {
     }
 
     @Test
-    @DocumentExample
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/191")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
+    void urlCheckConstantAbsolutePath() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.net.URL;
+
+              class Test {
+                  private String goodURL = "https://test.com";
+                  private String badURL = "not/valid/url";
+                  void urlConstructor() {
+                      URL url1 = new URL(goodURL);
+                  }
+              }
+              """,
+            """
+              import java.net.URI;
+              import java.net.URL;
+
+              class Test {
+                  private String goodURL = "https://test.com";
+                  private String badURL = "not/valid/url";
+                  void urlConstructor() {
+                      URL url1 = URI.create(goodURL).toURL();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
+    void urlCheckConstantRelativePath() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.net.URL;
+
+              class Test {
+                  private String goodURL = "https://test.com";
+                  private String badURL = "not/valid/url";
+                  void urlConstructor() {
+                      URL url1 = new URL(badURL);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
     void urlCheckRelativePath() {
         rewriteRun(
           spec -> spec.expectedCyclesThatMakeChanges(0),
@@ -113,7 +157,7 @@ class URLConstructorsToURITest implements RewriteTest {
               import java.net.URL;
 
               class Test {
-                  void urlConstructor(String spec) throws Exception {
+                  void urlConstructor() {
                       URL url1 = new URL("TEST-INF/test/testCase.wsdl");
                   }
               }
@@ -123,8 +167,7 @@ class URLConstructorsToURITest implements RewriteTest {
     }
 
     @Test
-    @DocumentExample
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/191")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
     void urlCheckNullPath() {
         rewriteRun(
           //language=java
@@ -133,26 +176,31 @@ class URLConstructorsToURITest implements RewriteTest {
               import java.net.URL;
 
               class Test {
-                  void urlConstructor(String spec) throws Exception {
+                  void urlConstructor() {
                       URL url1 = new URL(null);
                   }
               }
-              """,
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
+    void urlCheckMethodInvocationParameter() {
+        rewriteRun(
+          //language=java
+          java(
             """
-              import java.net.URI;
               import java.net.URL;
 
               class Test {
                   void urlConstructor(String spec) throws Exception {
-                      URL url1 = transformNonLiteralURIToValidURL(null);
+                      URL url1 = new URL(getString());
                   }
 
-                  public URL transformNonLiteralURIToValidURL(String spec) {
-                      try {
-                          return URI.create(spec).toURL();
-                      } catch (Exception e) {
-                          return new URL(spec);
-                      }
+                  String getString() {
+                      return "myURL";
                   }
               }
               """

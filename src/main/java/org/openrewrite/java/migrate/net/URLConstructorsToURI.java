@@ -15,21 +15,24 @@
  */
 package org.openrewrite.java.migrate.net;
 
+import fj.data.Option;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.ScanningRecipe;
+import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.*;
+import org.openrewrite.analysis.constantfold.ConstantFold;
+import org.openrewrite.analysis.util.CursorUtil;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.Statement;
 
 import java.net.URI;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
-public class URLConstructorsToURI extends ScanningRecipe<Set<String>> {
+public class URLConstructorsToURI extends Recipe {
     @Override
     public String getDisplayName() {
         return "Convert `new URL(String)` to `URI.create(String).toURL()`";
@@ -41,88 +44,25 @@ public class URLConstructorsToURI extends ScanningRecipe<Set<String>> {
     }
 
     @Override
-    public Set<String> getInitialValue(ExecutionContext ctx) {
-        return new HashSet<>();
-    }
-
-    @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Set<String> wrapperMethodClasses) {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            private final MethodMatcher methodMatcherSingleArg = new MethodMatcher("java.net.URL <constructor>(java.lang.String)");
-
-            @Override
-            public J.NewClass visitNewClass(J.NewClass nc, ExecutionContext ctx) {
-                if (methodMatcherSingleArg.matches(nc)) {
-                    Expression arg = nc.getArguments().get(0);
-                    if (!(arg instanceof J.Literal && arg.getType().toString().equals("String"))) {
-                        J.ClassDeclaration cd = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                        if (cd != null) {
-                            wrapperMethodClasses.add(cd.getType().getFullyQualifiedName());
-                        }
-                    }
-                }
-                return super.visitNewClass(nc, ctx);
-            }
-        };
-    }
-
-    @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Set<String> wrapperMethodClasses) {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             private final MethodMatcher methodMatcherSingleArg = new MethodMatcher("java.net.URL <constructor>(java.lang.String)");
             private final MethodMatcher methodMatcherThreeArg = new MethodMatcher("java.net.URL <constructor>(java.lang.String, java.lang.String, java.lang.String)");
             private final MethodMatcher methodMatcherFourArg = new MethodMatcher("java.net.URL <constructor>(java.lang.String, java.lang.String, int, java.lang.String)");
-            JavaType.Method methodType;
-
-
-            @Override
-            public J visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
-                boolean wrapperMethodExists = cd.getBody()
-                        .getStatements()
-                        .stream()
-                        .filter(J.MethodDeclaration.class::isInstance)
-                        .map(J.MethodDeclaration.class::cast)
-                        .anyMatch(md -> md.getSimpleName().equals("transformNonLiteralURIToValidURL"));
-
-                if (!wrapperMethodExists && wrapperMethodClasses.contains(cd.getType().getFullyQualifiedName())) {
-                    JavaTemplate convertUriMethod = JavaTemplate.builder(
-                                    "public URL transformNonLiteralURIToValidURL(String spec) {\n" +
-                                            "       try {\n" +
-                                            "           return URI.create(spec).toURL();\n" +
-                                            "       } catch (Exception e) {\n" +
-                                            "           return new URL(spec);\n" +
-                                            "       }\n" +
-                                            "}")
-                            .contextSensitive()
-                            .imports("java.net.URI", "java.net.URL")
-                            .javaParser(JavaParser.fromJavaVersion())
-                            .build();
-                    maybeAddImport("java.net.URI");
-
-                    cd = convertUriMethod.apply(updateCursor(cd), cd.getBody().getCoordinates().lastStatement());
-
-                    List<Statement> statements = cd.getBody().getStatements();
-                    J.MethodDeclaration md = (J.MethodDeclaration) statements.get(statements.size() - 1);
-                    methodType = md.getMethodType();
-                }
-                return super.visitClassDeclaration(cd, ctx);
-            }
 
             @Override
             public J visitNewClass(J.NewClass nc, ExecutionContext ctx) {
-                J.MethodDeclaration enclosingMethod = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                if (enclosingMethod != null && enclosingMethod.getSimpleName().equals("transformNonLiteralURIToValidURL")) {
-                    return super.visitNewClass(nc, ctx);
-                }
-
                 if (methodMatcherSingleArg.matches(nc)) {
                     Expression arg = nc.getArguments().get(0);
 
-                    if (arg instanceof J.Literal && arg.getType().toString().equals("String")) {
-                        // If the argument is a string literal, only convert the constructor if the argument is a valid input
+                    if (arg instanceof J.Literal) {
+                        // Check if the literal is of type String
+                        if (!arg.getType().toString().equals("String")) {
+                            return nc;
+                        }
 
+                        // Check if value is null
                         String literalValue = ((J.Literal) arg).getValueSource();
-
                         if (literalValue == null) {
                             return nc;
                         }
@@ -133,39 +73,47 @@ public class URLConstructorsToURI extends ScanningRecipe<Set<String>> {
 
 
                         // Check that this string is a valid input for URI.create().toURL()
-                        try {
-                            //noinspection ResultOfMethodCallIgnored
-                            URI.create(literalValue).toURL();
-                        } catch (Exception e) {
+                        if (isNotValidPath(literalValue)) {
                             return nc;
                         }
 
-                        JavaTemplate template = JavaTemplate.builder("URI.create(#{any(String)}).toURL()")
-                                .imports("java.net.URI")
-                                .contextSensitive()
-                                .javaParser(JavaParser.fromJavaVersion())
-                                .build();
+                    } else if (arg instanceof J.Identifier) {
+                        // Check if type is String
+                        JavaType type = arg.getType();
+                        if (type == null || !type.toString().equals("java.lang.String")) {
+                            return nc;
+                        }
 
-                        J result = template.apply(getCursor(),
-                                nc.getCoordinates().replace(),
-                                nc.getArguments().get(0));
-                        maybeAddImport("java.net.URI");
-                        return result;
+
+                        // Check if constant value is valid
+                        String constantValue = null;
+                        Option<String> constant = CursorUtil.findCursorForTree(getCursor(), arg)
+                                .bind(c -> ConstantFold.findConstantLiteralValue(c, String.class));
+
+                        if (constant.isSome()) {
+                            constantValue = constant.some();
+                        }
+
+                        if (isNotValidPath(constantValue)) {
+                            return nc;
+                        }
+
                     } else {
-                        // If the argument is not a string literal, replace the constructor with the wrapper method
-                        JavaTemplate template = JavaTemplate.builder("transformNonLiteralURIToValidURL(#{any(String)})")
-                                .imports("java.net.URI")
-                                .contextSensitive()
-                                .javaParser(JavaParser.fromJavaVersion())
-                                .build();
-                        J.MethodInvocation result = template.apply(updateCursor(nc), nc.getCoordinates().replace(), nc.getArguments().get(0));
-                        result = result.withMethodType(methodType);
-                        J.Identifier name = result.getName();
-                        name = name.withType(methodType);
-                        result = result.withName(name);
-                        maybeAddImport("java.net.URI");
-                        return result;
+                        return nc;
                     }
+
+                    JavaTemplate template = JavaTemplate.builder("URI.create(#{any(String)}).toURL()")
+                            .imports("java.net.URI")
+                            .contextSensitive()
+                            .javaParser(JavaParser.fromJavaVersion())
+                            .build();
+
+                    J result = template.apply(getCursor(),
+                            nc.getCoordinates().replace(),
+                            nc.getArguments().get(0));
+                    maybeAddImport("java.net.URI");
+
+                    return result;
                 } else if (methodMatcherThreeArg.matches(nc)) {
                     JavaTemplate template = JavaTemplate.builder("new URI(#{any(String)}, null, #{any(String)}, -1, #{any(String)}, null, null).toURL()")
                             .imports("java.net.URI", "java.net.URL")
@@ -197,5 +145,20 @@ public class URLConstructorsToURI extends ScanningRecipe<Set<String>> {
                 return super.visitNewClass(nc, ctx);
             }
         };
+    }
+
+    private static boolean isNotValidPath(@Nullable String path) {
+        if (path == null) {
+            return true;
+        }
+
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            URI.create(path).toURL();
+        } catch (Exception e) {
+            return true;
+        }
+
+        return false;
     }
 }
