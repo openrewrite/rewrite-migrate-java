@@ -26,6 +26,7 @@ import org.openrewrite.java.migrate.joda.templates.TimeClassMap;
 import org.openrewrite.java.migrate.joda.templates.VarTemplates;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
+import org.openrewrite.marker.SearchResult;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -68,7 +69,14 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeRemoveImport(JODA_ABSTRACT_INSTANT);
             maybeRemoveImport(JODA_INSTANT);
             maybeRemoveImport(JODA_INTERVAL);
-            maybeRemoveImport("java.util.Locale");
+            maybeRemoveImport(JODA_TIME_FORMATTER);
+            maybeRemoveImport(JAVA_UTIL_LOCALE);
+            maybeRemoveImport(JODA_LOCAL_DATE);
+            maybeRemoveImport(JODA_LOCAL_DATE_TIME);
+            maybeRemoveImport(JODA_LOCAL_TIME);
+            maybeRemoveImport(JODA_SECONDS);
+            maybeRemoveImport(JODA_DAYS);
+            maybeRemoveImport(JODA_HOURS);
 
             maybeAddImport(JAVA_DATE_TIME);
             maybeAddImport(JAVA_ZONE_OFFSET);
@@ -77,7 +85,9 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeAddImport(JAVA_TIME_FORMATTER);
             maybeAddImport(JAVA_TIME_FORMAT_STYLE);
             maybeAddImport(JAVA_DURATION);
+            maybeAddImport(JAVA_PERIOD);
             maybeAddImport(JAVA_LOCAL_DATE);
+            maybeAddImport(JAVA_LOCAL_DATE_TIME);
             maybeAddImport(JAVA_LOCAL_TIME);
             maybeAddImport(JAVA_TEMPORAL_ISO_FIELDS);
             maybeAddImport(JAVA_CHRONO_FIELD);
@@ -108,14 +118,18 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         if (multiVariable.getTypeExpression() == null || !multiVariable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return super.visitVariableDeclarations(multiVariable, ctx);
         }
+        /*
         if (multiVariable.getVariables().stream().anyMatch(acc.getUnsafeVars()::contains)) {
             return multiVariable;
         }
+         */
         J.VariableDeclarations m = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
-        return VarTemplates.getTemplate(multiVariable).<J>map(t -> t.apply(
+        J.VariableDeclarations j = VarTemplates.getTemplate(multiVariable).<J.VariableDeclarations>map(t -> t.apply(
                 updateCursor(m),
                 m.getCoordinates().replace(),
                 VarTemplates.getTemplateArgs(m))).orElse(multiVariable);
+
+        return autoFormat(j.withModifiers(m.getModifiers()), ctx);
     }
 
     @Override
@@ -123,7 +137,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return super.visitVariable(variable, ctx);
         }
-        if (acc.getUnsafeVars().contains(variable) || !(variable.getType() instanceof JavaType.Class)) {
+        if (/*acc.getUnsafeVars().contains(variable) || */ !(variable.getType() instanceof JavaType.Class)) {
             return variable;
         }
         JavaType.Class jodaType = (JavaType.Class) variable.getType();
@@ -143,7 +157,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         J.Identifier varName = (J.Identifier) a.getVariable();
         Optional<NamedVariable> mayBeVar = findVarInScope(varName.getSimpleName());
-        if (!mayBeVar.isPresent() || acc.getUnsafeVars().contains(mayBeVar.get())) {
+        if (!mayBeVar.isPresent() /*|| acc.getUnsafeVars().contains(mayBeVar.get())*/) {
             return assignment;
         }
         return VarTemplates.getTemplate(assignment).<J>map(t -> t.apply(
@@ -199,7 +213,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         if (this.safeMigration) {
             Optional<NamedVariable> mayBeVar = findVarInScope(ident.getSimpleName());
-            if (!mayBeVar.isPresent() || acc.getUnsafeVars().contains(mayBeVar.get())) {
+            if (!mayBeVar.isPresent() /* || acc.getUnsafeVars().contains(mayBeVar.get())*/) {
                 return ident;
             }
         }
@@ -219,11 +233,13 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         MethodTemplate template = AllTemplates.getTemplate(original);
         if (template == null) {
-            return original; // unhandled case
+            //is it a better way to print logs?
+            return SearchResult.found(original, "Joda usage is found but mapping is missing: " + original); // unhandled case
         }
         Optional<J> maybeUpdated = applyTemplate(original, updated, template);
         if (!maybeUpdated.isPresent()) {
-            return original; // unhandled case
+            //is it a better way to print logs?
+            return SearchResult.found(original, "Can not apply template: " + template + " to " + original); // unhandled case
         }
         Expression updatedExpr = (Expression) maybeUpdated.get();
         if (!safeMigration || !isArgument(original)) {
@@ -241,7 +257,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         String paramName = parentMethod.getMethodType().getParameterNames().get(argPos);
         NamedVariable var = acc.getVarTable().getVarByName(parentMethod.getMethodType(), paramName);
-        if (var != null && !acc.getUnsafeVars().contains(var)) {
+        if (var != null /*&& !acc.getUnsafeVars().contains(var)*/) {
             return updatedExpr;
         }
         return original;

@@ -43,6 +43,15 @@ public class AllTemplates {
     private static final MethodMatcher ANY_NEW_INTERVAL = new MethodMatcher(JODA_INTERVAL + "<constructor>(..)");
     private static final MethodMatcher ANY_ABSTRACT_INTERVAL = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " *(..)");
     private static final MethodMatcher ANY_BASE_INTERVAL = new MethodMatcher(JODA_BASE_INTERVAL + " *(..)");
+    private static final MethodMatcher ANY_NEW_LOCAL_DATE = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>(..)");
+    private static final MethodMatcher ANY_LOCAL_DATE = new MethodMatcher(JODA_LOCAL_DATE + " *(..)");
+    private static final MethodMatcher ANY_NEW_LOCAL_DATE_TIME = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(..)");
+    private static final MethodMatcher ANY_LOCAL_DATE_TIME = new MethodMatcher(JODA_LOCAL_DATE_TIME + " *(..)");
+    private static final MethodMatcher ANY_NEW_LOCAL_TIME = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(..)");
+    private static final MethodMatcher ANY_LOCAL_TIME = new MethodMatcher(JODA_LOCAL_TIME + " *(..)");
+    private static final MethodMatcher ANY_SECONDS = new MethodMatcher(JODA_SECONDS + " *(..)");
+    private static final MethodMatcher ANY_DAYS = new MethodMatcher(JODA_DAYS + " *(..)");
+    private static final MethodMatcher ANY_HOURS = new MethodMatcher(JODA_HOURS + " *(..)");
 
     private static List<MatcherAndTemplates> templates = new ArrayList<MatcherAndTemplates>() {
         {
@@ -63,6 +72,15 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_NEW_INTERVAL, new IntervalTemplates()));
             add(new MatcherAndTemplates(ANY_ABSTRACT_INTERVAL, new AbstractIntervalTemplates()));
             add(new MatcherAndTemplates(ANY_BASE_INTERVAL, new BaseIntervalTemplates()));
+            add(new MatcherAndTemplates(ANY_NEW_LOCAL_DATE, new LocatDateTemplates()));
+            add(new MatcherAndTemplates(ANY_LOCAL_DATE, new LocatDateTemplates()));
+            add(new MatcherAndTemplates(ANY_NEW_LOCAL_DATE_TIME, new LocatDateTimeTemplates()));
+            add(new MatcherAndTemplates(ANY_LOCAL_DATE_TIME, new LocatDateTimeTemplates()));
+            add(new MatcherAndTemplates(ANY_NEW_LOCAL_TIME, new LocatTimeTemplates()));
+            add(new MatcherAndTemplates(ANY_LOCAL_TIME, new LocatTimeTemplates()));
+            add(new MatcherAndTemplates(ANY_SECONDS, new SecondsTemplates()));
+            add(new MatcherAndTemplates(ANY_DAYS, new DaysTemplates()));
+            add(new MatcherAndTemplates(ANY_HOURS, new HoursTemplates()));
         }
     };
 
