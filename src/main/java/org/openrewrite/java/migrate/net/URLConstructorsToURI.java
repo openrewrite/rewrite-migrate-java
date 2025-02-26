@@ -105,8 +105,7 @@ public class URLConstructorsToURI extends Recipe {
                         return super.visitNewClass(nc, ctx);
                     }
 
-                    @Nullable
-                    private String extractPath(Expression arg) {
+                    private @Nullable String extractPath(Expression arg) {
                         if (arg instanceof J.Literal &&
                                 TypeUtils.isOfType(arg.getType(), JavaType.Primitive.String)) {
                             // Check if value is not null
