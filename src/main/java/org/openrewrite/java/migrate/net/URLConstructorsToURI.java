@@ -15,9 +15,9 @@
  */
 package org.openrewrite.java.migrate.net;
 
-import fj.data.Option;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.analysis.constantfold.ConstantFold;
@@ -26,13 +26,22 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.net.URI;
 
 public class URLConstructorsToURI extends Recipe {
+
+    private static final String URI_FQN = "java.net.URI";
+    private static final String URL_FQN = "java.net.URL";
+    private static final MethodMatcher methodMatcherSingleArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String)");
+    private static final MethodMatcher methodMatcherThreeArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, java.lang.String)");
+    private static final MethodMatcher methodMatcherFourArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, int, java.lang.String)");
+
     @Override
     public String getDisplayName() {
         return "Convert `new URL(String)` to `URI.create(String).toURL()`";
@@ -45,120 +54,90 @@ public class URLConstructorsToURI extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
-            private final MethodMatcher methodMatcherSingleArg = new MethodMatcher("java.net.URL <constructor>(java.lang.String)");
-            private final MethodMatcher methodMatcherThreeArg = new MethodMatcher("java.net.URL <constructor>(java.lang.String, java.lang.String, java.lang.String)");
-            private final MethodMatcher methodMatcherFourArg = new MethodMatcher("java.net.URL <constructor>(java.lang.String, java.lang.String, int, java.lang.String)");
+        return Preconditions.check(new UsesType<>(URL_FQN, false),
+                new JavaVisitor<ExecutionContext>() {
+                    @Override
+                    public J visitNewClass(J.NewClass nc, ExecutionContext ctx) {
+                        if (methodMatcherSingleArg.matches(nc)) {
+                            String path = extractPath(nc.getArguments().get(0));
+                            if (isNotValidPath(path)) {
+                                return nc;
+                            }
 
-            @Override
-            public J visitNewClass(J.NewClass nc, ExecutionContext ctx) {
-                if (methodMatcherSingleArg.matches(nc)) {
-                    Expression arg = nc.getArguments().get(0);
+                            JavaTemplate template = JavaTemplate.builder("URI.create(#{any(String)}).toURL()")
+                                    .imports(URI_FQN)
+                                    .contextSensitive()
+                                    .javaParser(JavaParser.fromJavaVersion())
+                                    .build();
+                            maybeAddImport(URI_FQN);
 
-                    if (arg instanceof J.Literal) {
-                        // Check if the literal is of type String
-                        if (!arg.getType().toString().equals("String")) {
-                            return nc;
+                            return template.apply(getCursor(),
+                                    nc.getCoordinates().replace(),
+                                    nc.getArguments().get(0));
+                        } else {
+                            if (methodMatcherThreeArg.matches(nc)) {
+                                JavaTemplate template = JavaTemplate.builder("new URI(#{any(String)}, null, #{any(String)}, -1, #{any(String)}, null, null).toURL()")
+                                        .imports(URI_FQN, URL_FQN)
+                                        .contextSensitive()
+                                        .javaParser(JavaParser.fromJavaVersion())
+                                        .build();
+
+                                maybeAddImport(URI_FQN);
+                                return template.apply(getCursor(), nc.getCoordinates().replace(),
+                                        nc.getArguments().get(0),
+                                        nc.getArguments().get(1),
+                                        nc.getArguments().get(2));
+                            } else if (methodMatcherFourArg.matches(nc)) {
+                                JavaTemplate template = JavaTemplate.builder("new URI(#{any(String)}, null, #{any(String)}, #{any(int)}, #{any(String)}, null, null).toURL()")
+                                        .imports(URI_FQN, URL_FQN)
+                                        .contextSensitive()
+                                        .javaParser(JavaParser.fromJavaVersion())
+                                        .build();
+
+                                maybeAddImport(URI_FQN);
+                                return template.apply(getCursor(), nc.getCoordinates().replace(),
+                                        nc.getArguments().get(0),
+                                        nc.getArguments().get(1),
+                                        nc.getArguments().get(2),
+                                        nc.getArguments().get(3));
+                            }
                         }
-
-                        // Check if value is null
-                        String literalValue = ((J.Literal) arg).getValueSource();
-                        if (literalValue == null) {
-                            return nc;
-                        }
-
-                        // Remove quotations from string
-                        literalValue = literalValue.substring(1);
-                        literalValue = literalValue.substring(0, literalValue.length() - 1);
-
-
-                        // Check that this string is a valid input for URI.create().toURL()
-                        if (isNotValidPath(literalValue)) {
-                            return nc;
-                        }
-
-                    } else if (arg instanceof J.Identifier) {
-                        // Check if type is String
-                        JavaType type = arg.getType();
-                        if (type == null || !type.toString().equals("java.lang.String")) {
-                            return nc;
-                        }
-
-
-                        // Check if constant value is valid
-                        String constantValue = null;
-                        Option<String> constant = CursorUtil.findCursorForTree(getCursor(), arg)
-                                .bind(c -> ConstantFold.findConstantLiteralValue(c, String.class));
-
-                        if (constant.isSome()) {
-                            constantValue = constant.some();
-                        }
-
-                        if (isNotValidPath(constantValue)) {
-                            return nc;
-                        }
-
-                    } else {
-                        return nc;
+                        return super.visitNewClass(nc, ctx);
                     }
 
-                    JavaTemplate template = JavaTemplate.builder("URI.create(#{any(String)}).toURL()")
-                            .imports("java.net.URI")
-                            .contextSensitive()
-                            .javaParser(JavaParser.fromJavaVersion())
-                            .build();
+                    @Nullable
+                    private String extractPath(Expression arg) {
+                        if (arg instanceof J.Literal &&
+                                TypeUtils.isOfType(arg.getType(), JavaType.Primitive.String)) {
+                            // Check if value is not null
+                            String literalValueSource = ((J.Literal) arg).getValueSource();
+                            // Remove quotations from string
+                            return literalValueSource != null ? literalValueSource.substring(1, literalValueSource.length() - 1).trim() : null;
+                        } else if (arg instanceof J.Identifier &&
+                                TypeUtils.isOfType(arg.getType(), JavaType.Primitive.String)) {
+                            // find constant value of the identifier
+                            return CursorUtil.findCursorForTree(getCursor(), arg)
+                                    .bind(c -> ConstantFold.findConstantLiteralValue(c, String.class))
+                                    .toNull();
+                        } else {
+                            // null indicates no path extractable
+                            return null;
+                        }
+                    }
 
-                    J result = template.apply(getCursor(),
-                            nc.getCoordinates().replace(),
-                            nc.getArguments().get(0));
-                    maybeAddImport("java.net.URI");
+                    private boolean isNotValidPath(@Nullable String path) {
+                        if (path == null) {
+                            return true;
+                        }
 
-                    return result;
-                } else if (methodMatcherThreeArg.matches(nc)) {
-                    JavaTemplate template = JavaTemplate.builder("new URI(#{any(String)}, null, #{any(String)}, -1, #{any(String)}, null, null).toURL()")
-                            .imports("java.net.URI", "java.net.URL")
-                            .contextSensitive()
-                            .javaParser(JavaParser.fromJavaVersion())
-                            .build();
-
-                    J result = template.apply(getCursor(), nc.getCoordinates().replace(),
-                            nc.getArguments().get(0),
-                            nc.getArguments().get(1),
-                            nc.getArguments().get(2));
-                    maybeAddImport("java.net.URI");
-                    return result;
-                } else if (methodMatcherFourArg.matches(nc)) {
-                    JavaTemplate template = JavaTemplate.builder("new URI(#{any(String)}, null, #{any(String)}, #{any(int)}, #{any(String)}, null, null).toURL()")
-                            .imports("java.net.URI", "java.net.URL")
-                            .contextSensitive()
-                            .javaParser(JavaParser.fromJavaVersion())
-                            .build();
-
-                    J result = template.apply(getCursor(), nc.getCoordinates().replace(),
-                            nc.getArguments().get(0),
-                            nc.getArguments().get(1),
-                            nc.getArguments().get(2),
-                            nc.getArguments().get(3));
-                    maybeAddImport("java.net.URI");
-                    return result;
-                }
-                return super.visitNewClass(nc, ctx);
-            }
-        };
-    }
-
-    private static boolean isNotValidPath(@Nullable String path) {
-        if (path == null) {
-            return true;
-        }
-
-        try {
-            //noinspection ResultOfMethodCallIgnored
-            URI.create(path).toURL();
-        } catch (Exception e) {
-            return true;
-        }
-
-        return false;
+                        try {
+                            //noinspection ResultOfMethodCallIgnored
+                            URI.create(path).toURL();
+                            return false;
+                        } catch (Exception e) {
+                            return true;
+                        }
+                    }
+                });
     }
 }
