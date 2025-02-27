@@ -129,7 +129,7 @@ public class UseJavaUtilBase64 extends Recipe {
                     // noinspection Convert2MethodRef
                     JavaTemplate.Builder encoderTemplate = useMimeCoder ?
                             Semantics.expression(this, "getMimeEncoder", () -> Base64.getMimeEncoder()) :
-                            Semantics.expression(this, "getEncoder", () -> Base64.getEncoder());
+                            Semantics.expression(this, "getEncoder", Base64::getEncoder);
                     return encoderTemplate
                             .build()
                             .apply(updateCursor(c), c.getCoordinates().replace());

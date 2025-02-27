@@ -27,23 +27,23 @@ public class TimeClassMap {
 
     private static final JavaType.Class object = JavaType.ShallowClass.build("java.lang.Object");
 
-    private final Map<String, JavaType.Class> jodaToJavaTimeMap = new HashMap<String, JavaType.Class>() {
-        {
-            put(JODA_DATE_TIME, javaTypeClass(JAVA_DATE_TIME, object));
-            put(JODA_BASE_DATE_TIME, javaTypeClass(JAVA_DATE_TIME, object));
-            put(JODA_DATE_TIME_ZONE, javaTypeClass(JAVA_ZONE_ID, object));
-            put(JODA_TIME_FORMATTER, javaTypeClass(JAVA_TIME_FORMATTER, object));
-            put(JODA_DURATION, javaTypeClass(JAVA_DURATION, object));
-            put(JODA_READABLE_DURATION, javaTypeClass(JAVA_DURATION, object));
-            put(JODA_INTERVAL, javaTypeClass(THREE_TEN_EXTRA_INTERVAL, object));
-        }
-    };
+    private final Map<String, JavaType.Class> jodaToJavaTimeMap;
+    {
+        jodaToJavaTimeMap = new HashMap<>();
+        jodaToJavaTimeMap.put(JODA_DATE_TIME, jodaToJavaTimeMap.javaTypeClass(JAVA_DATE_TIME, object));
+        jodaToJavaTimeMap.put(JODA_BASE_DATE_TIME, jodaToJavaTimeMap.javaTypeClass(JAVA_DATE_TIME, object));
+        jodaToJavaTimeMap.put(JODA_DATE_TIME_ZONE, jodaToJavaTimeMap.javaTypeClass(JAVA_ZONE_ID, object));
+        jodaToJavaTimeMap.put(JODA_TIME_FORMATTER, jodaToJavaTimeMap.javaTypeClass(JAVA_TIME_FORMATTER, object));
+        jodaToJavaTimeMap.put(JODA_DURATION, jodaToJavaTimeMap.javaTypeClass(JAVA_DURATION, object));
+        jodaToJavaTimeMap.put(JODA_READABLE_DURATION, jodaToJavaTimeMap.javaTypeClass(JAVA_DURATION, object));
+        jodaToJavaTimeMap.put(JODA_INTERVAL, jodaToJavaTimeMap.javaTypeClass(THREE_TEN_EXTRA_INTERVAL, object));
+    }
 
-    private final Map<String, String> jodaToJavaTimeShortName = new HashMap<String, String>() {
-        {
-            put(JODA_DATE_TIME, "ZonedDateTime");
-        }
-    };
+    private final Map<String, String> jodaToJavaTimeShortName;
+    {
+        jodaToJavaTimeShortName = new HashMap<>();
+        jodaToJavaTimeShortName.put(JODA_DATE_TIME, "ZonedDateTime");
+    }
 
     private static JavaType.Class javaTypeClass(String fqn, JavaType.Class superType) {
         return new JavaType.Class(null, 0, fqn, JavaType.FullyQualified.Kind.Class, null, superType,

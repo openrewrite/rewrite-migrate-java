@@ -75,7 +75,7 @@ public class CastArraysAsListToList extends Recipe {
             String fullyQualifiedName = ((JavaType.FullyQualified) elementType).getFullyQualifiedName();
             J.ArrayType castType = (J.ArrayType) typeCast.getClazz().getTree();
 
-            if (fullyQualifiedName.equals("java.lang.Object") && !(castType.getElementType() instanceof J.ArrayType)) {
+            if ("java.lang.Object".equals(fullyQualifiedName) && !(castType.getElementType() instanceof J.ArrayType)) {
                 // we don't need to fix this case because toArray() does return Object[] type
                 return typeCast;
             }
