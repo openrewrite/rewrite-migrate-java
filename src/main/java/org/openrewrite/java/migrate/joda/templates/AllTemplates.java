@@ -50,8 +50,11 @@ public class AllTemplates {
     private static final MethodMatcher ANY_NEW_LOCAL_TIME = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(..)");
     private static final MethodMatcher ANY_LOCAL_TIME = new MethodMatcher(JODA_LOCAL_TIME + " *(..)");
     private static final MethodMatcher ANY_SECONDS = new MethodMatcher(JODA_SECONDS + " *(..)");
-    private static final MethodMatcher ANY_DAYS = new MethodMatcher(JODA_DAYS + " *(..)");
     private static final MethodMatcher ANY_HOURS = new MethodMatcher(JODA_HOURS + " *(..)");
+    private static final MethodMatcher ANY_DAYS = new MethodMatcher(JODA_DAYS + " *(..)");
+    private static final MethodMatcher ANY_WEEKS = new MethodMatcher(JODA_WEEKS + " *(..)");
+    private static final MethodMatcher ANY_MONTHS = new MethodMatcher(JODA_MONTHS + " *(..)");
+    private static final MethodMatcher ANY_YEARS = new MethodMatcher(JODA_YEARS + " *(..)");
 
     private static List<MatcherAndTemplates> templates = new ArrayList<MatcherAndTemplates>() {
         {
@@ -66,7 +69,7 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_NEW_DURATION, new DurationTemplates()));
             add(new MatcherAndTemplates(ANY_DURATION, new DurationTemplates()));
             add(new MatcherAndTemplates(ANY_BASE_DURATION, new BaseDurationTemplates()));
-            add(new MatcherAndTemplates(ANY_DATE_TIMEZONE, new TimeZoneTemplates()));
+            add(new MatcherAndTemplates(ANY_DATE_TIMEZONE, new DateTimeZoneTemplates()));
             add(new MatcherAndTemplates(ANY_INSTANT, new InstantTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_INSTANT, new InstantTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_INTERVAL, new IntervalTemplates()));
@@ -79,8 +82,11 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_NEW_LOCAL_TIME, new LocatTimeTemplates()));
             add(new MatcherAndTemplates(ANY_LOCAL_TIME, new LocatTimeTemplates()));
             add(new MatcherAndTemplates(ANY_SECONDS, new SecondsTemplates()));
-            add(new MatcherAndTemplates(ANY_DAYS, new DaysTemplates()));
             add(new MatcherAndTemplates(ANY_HOURS, new HoursTemplates()));
+            add(new MatcherAndTemplates(ANY_DAYS, new DaysTemplates()));
+            add(new MatcherAndTemplates(ANY_WEEKS, new WeeksTemplates()));
+            add(new MatcherAndTemplates(ANY_MONTHS, new MonthsTemplates()));
+            add(new MatcherAndTemplates(ANY_YEARS, new YearsTemplates()));
         }
     };
 

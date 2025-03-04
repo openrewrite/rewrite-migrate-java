@@ -32,7 +32,15 @@ public class LocatTimeTemplates implements Templates {
     final MethodMatcher newLocalTimeString = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(Object)");
     final MethodMatcher newLocalTimeHms = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(int,int,int)");
     final MethodMatcher newLocalTimeHmsM = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(int,int,int,int)");
+
     final MethodMatcher now = new MethodMatcher(JODA_LOCAL_TIME + " now()");
+
+    final MethodMatcher toDateTimeToday = new MethodMatcher(JODA_LOCAL_TIME + " toDateTimeToday()");
+
+    final MethodMatcher getHourOfDay = new MethodMatcher(JODA_LOCAL_TIME + " getHourOfDay()");
+    final MethodMatcher getMinuteOfHour = new MethodMatcher(JODA_LOCAL_TIME + " getMinuteOfHour()");
+    final MethodMatcher getSecondOfMinute = new MethodMatcher(JODA_LOCAL_TIME + " getSecondOfMinute()");
+
     final MethodMatcher parse = new MethodMatcher(JODA_LOCAL_TIME + " parse(String)");
     final MethodMatcher plusMinutes = new MethodMatcher(JODA_LOCAL_TIME + " plusMinutes(int)");
     final MethodMatcher plusSeconds = new MethodMatcher(JODA_LOCAL_TIME + " plusSeconds(int)");
@@ -45,7 +53,15 @@ public class LocatTimeTemplates implements Templates {
     final JavaTemplate.Builder localTimeStringTemplate = JavaTemplate.builder("LocalTime.parse(#{any(Object)})");
     final JavaTemplate.Builder localTimeHmsTemplate = JavaTemplate.builder("LocalTime.of(#{any(int)}, #{any(int)}, #{any(int)})");
     final JavaTemplate.Builder localTimeHmsMTemplate = JavaTemplate.builder("LocalTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)})");
+
     final JavaTemplate.Builder nowTemplate = JavaTemplate.builder("LocalTime.now()");
+
+    final JavaTemplate.Builder toZonedDateTimeStartOfDayTemplate = JavaTemplate.builder("#{any(java.time.LocalTime)}.atStartOfDay(ZoneId.systemDefault())");
+
+    final JavaTemplate.Builder getHourTemplate = JavaTemplate.builder("#{any(java.time.LocalTime)}.getHour()");
+    final JavaTemplate.Builder getMinuteTemplate = JavaTemplate.builder("#{any(java.time.LocalTime)}.getMinute()");
+    final JavaTemplate.Builder getSecondTemplate = JavaTemplate.builder("#{any(java.time.LocalTime)}.getSecond()");
+
     final JavaTemplate.Builder parseTemplate = JavaTemplate.builder("LocalTime.parse(#{any(String)})");
     final JavaTemplate.Builder plusMinutesTemplate = JavaTemplate.builder("#{any(java.time.LocalTime)}.plusMinutes(#{any(int)})");
     final JavaTemplate.Builder plusSecondsTemplate = JavaTemplate.builder("#{any(java.time.LocalTime)}.plusSeconds(#{any(int)})");
@@ -61,7 +77,15 @@ public class LocatTimeTemplates implements Templates {
             add(new MethodTemplate(newLocalTimeString, build(localTimeStringTemplate)));
             add(new MethodTemplate(newLocalTimeHms, build(localTimeHmsTemplate)));
             add(new MethodTemplate(newLocalTimeHmsM, build(localTimeHmsMTemplate)));
+
             add(new MethodTemplate(now, build(nowTemplate)));
+
+            add(new MethodTemplate(toDateTimeToday, build(toZonedDateTimeStartOfDayTemplate)));
+
+            add(new MethodTemplate(getHourOfDay, build(getHourTemplate)));
+            add(new MethodTemplate(getMinuteOfHour, build(getMinuteTemplate)));
+            add(new MethodTemplate(getSecondOfMinute, build(getSecondTemplate)));
+
             add(new MethodTemplate(parse, build(parseTemplate)));
             add(new MethodTemplate(plusMinutes, build(plusMinutesTemplate)));
             add(new MethodTemplate(plusSeconds, build(plusSecondsTemplate)));

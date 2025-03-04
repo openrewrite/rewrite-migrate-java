@@ -29,10 +29,16 @@ import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 public class LocatDateTimeTemplates implements Templates {
     final MethodMatcher newLocalDateTimeNoArgs = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>()");
     final MethodMatcher newLocalDateTimeEpoch = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(long)");
+    final MethodMatcher newLocalDateObject = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(Object)");
     final MethodMatcher newLocalDateTimeYmdHm = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(int,int,int,int,int)");
     final MethodMatcher newLocalDateTimeYmdHms = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(int,int,int,int,int,int)");
     final MethodMatcher newLocalDateTimeYmdHmsM = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(int,int,int,int,int,int,int)");
+
     final MethodMatcher now = new MethodMatcher(JODA_LOCAL_DATE_TIME + " now()");
+
+    final MethodMatcher toDate = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toDate()");
+    final MethodMatcher toDateTime = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toDateTime(org.joda.time.DateTimeZone)");
+
     final MethodMatcher parse = new MethodMatcher(JODA_LOCAL_DATE_TIME + " parse(String)");
     final MethodMatcher parseWithFormatter = new MethodMatcher(JODA_LOCAL_DATE_TIME + " parse(String, org.joda.time.format.DateTimeFormatter)");
     final MethodMatcher plusYears = new MethodMatcher(JODA_LOCAL_DATE_TIME + " plusYears(int)");
@@ -56,7 +62,12 @@ public class LocatDateTimeTemplates implements Templates {
     final JavaTemplate.Builder newLocalDateTimeYmdHmTemplate = JavaTemplate.builder("LocalDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)})");
     final JavaTemplate.Builder newLocalDateTimeYmdHmsTemplate = JavaTemplate.builder("LocalDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)})");
     final JavaTemplate.Builder newLocalDateTimeYmdHmsMTemplate = JavaTemplate.builder("LocalDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)})");
+
     final JavaTemplate.Builder nowTemplate = JavaTemplate.builder("LocalDateTime.now()");
+
+    final JavaTemplate.Builder toDateTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.atZone(ZoneId.systemDefault()).toInstant()");
+    final JavaTemplate.Builder toDateTimeTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.atZone(#{any(java.time.ZoneOffset)})");
+
     final JavaTemplate.Builder parseTemplate = JavaTemplate.builder("LocalDateTime.parse(#{any(String)})");
     final JavaTemplate.Builder parseWithFormatterTemplate = JavaTemplate.builder("LocalDateTime.parse(#{any(String)}, #{any(java.time.format.DateTimeFormatter)})");
     final JavaTemplate.Builder plusYearsTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.plusYears(#{any(int)})");
@@ -82,7 +93,12 @@ public class LocatDateTimeTemplates implements Templates {
             add(new MethodTemplate(newLocalDateTimeYmdHm, build(newLocalDateTimeYmdHmTemplate)));
             add(new MethodTemplate(newLocalDateTimeYmdHms, build(newLocalDateTimeYmdHmsTemplate)));
             add(new MethodTemplate(newLocalDateTimeYmdHmsM, build(newLocalDateTimeYmdHmsMTemplate)));
+
             add(new MethodTemplate(now, build(nowTemplate)));
+
+            add(new MethodTemplate(toDate, build(toDateTemplate)));
+            add(new MethodTemplate(toDateTime, build(toDateTimeTemplate)));
+
             add(new MethodTemplate(parse, build(parseTemplate)));
             add(new MethodTemplate(parseWithFormatter, build(parseWithFormatterTemplate)));
             add(new MethodTemplate(plusYears, build(plusYearsTemplate)));
@@ -99,6 +115,7 @@ public class LocatDateTimeTemplates implements Templates {
             add(new MethodTemplate(minusMinutes, build(minusMinutesTemplate)));
             add(new MethodTemplate(minusSeconds, build(minusSecondsTemplate)));
             add(new MethodTemplate(minusMillis, build(minusMillisTemplate)));
+            add(new MethodTemplate(newLocalDateObject, build(JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE)));
         }
     };
 

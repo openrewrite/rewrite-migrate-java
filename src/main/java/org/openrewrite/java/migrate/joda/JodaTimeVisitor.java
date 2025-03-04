@@ -26,7 +26,6 @@ import org.openrewrite.java.migrate.joda.templates.TimeClassMap;
 import org.openrewrite.java.migrate.joda.templates.VarTemplates;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
-import org.openrewrite.marker.SearchResult;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -75,8 +74,11 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeRemoveImport(JODA_LOCAL_DATE_TIME);
             maybeRemoveImport(JODA_LOCAL_TIME);
             maybeRemoveImport(JODA_SECONDS);
-            maybeRemoveImport(JODA_DAYS);
             maybeRemoveImport(JODA_HOURS);
+            maybeRemoveImport(JODA_DAYS);
+            maybeRemoveImport(JODA_WEEKS);
+            maybeRemoveImport(JODA_MONTHS);
+            maybeRemoveImport(JODA_YEARS);
 
             maybeAddImport(JAVA_DATE_TIME);
             maybeAddImport(JAVA_ZONE_OFFSET);
@@ -91,6 +93,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeAddImport(JAVA_LOCAL_TIME);
             maybeAddImport(JAVA_TEMPORAL_ISO_FIELDS);
             maybeAddImport(JAVA_CHRONO_FIELD);
+            maybeAddImport(JAVA_CHRONO_UNIT);
             maybeAddImport(JAVA_UTIL_DATE);
             maybeAddImport(THREE_TEN_EXTRA_INTERVAL);
         }
@@ -233,13 +236,17 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         MethodTemplate template = AllTemplates.getTemplate(original);
         if (template == null) {
-            //is it a better way to print logs?
-            return SearchResult.found(original, "Joda usage is found but mapping is missing: " + original); // unhandled case
+            System.out.println("Joda usage is found but mapping is missing: " + original);
+            return original; // unhandled case
+        }
+        if (template.getTemplate().getCode().equals(JODA_MULTIPLE_MAPPING_POSSIBLE)) {
+            System.out.println(JODA_MULTIPLE_MAPPING_POSSIBLE + ": " + original);
+            return original; // usage with no automated mapping
         }
         Optional<J> maybeUpdated = applyTemplate(original, updated, template);
         if (!maybeUpdated.isPresent()) {
-            //is it a better way to print logs?
-            return SearchResult.found(original, "Can not apply template: " + template + " to " + original); // unhandled case
+            System.out.println("Can not apply template: " + template + " to " + original);
+            return original; // unhandled case
         }
         Expression updatedExpr = (Expression) maybeUpdated.get();
         if (!safeMigration || !isArgument(original)) {

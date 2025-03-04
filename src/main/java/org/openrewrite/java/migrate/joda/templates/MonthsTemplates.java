@@ -23,25 +23,25 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_PERIOD;
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_DAYS;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 @NoArgsConstructor
-public class DaysTemplates implements Templates {
-    final MethodMatcher daysStaticMethod = new MethodMatcher(JODA_DAYS + " days(int)");
-    final MethodMatcher daysBetween = new MethodMatcher(JODA_DAYS + " daysBetween(org.joda.time.ReadablePartial, org.joda.time.ReadablePartial)");
-    final MethodMatcher getDays = new MethodMatcher(JODA_DAYS + " getDays()");
+public class MonthsTemplates implements Templates {
+    final MethodMatcher monthsStaticMethod = new MethodMatcher(JODA_MONTHS + " months(int)");
+    final MethodMatcher monthsBetween = new MethodMatcher(JODA_MONTHS + " monthsBetween(org.joda.time.ReadablePartial, org.joda.time.ReadablePartial)");
+    final MethodMatcher getMonths = new MethodMatcher(JODA_MONTHS + " getMonths()");
 
-    final JavaTemplate.Builder daysStaticMethodTemplate = JavaTemplate.builder("Period.ofDays(#{any(int)})");
-    final JavaTemplate.Builder daysBetweenTemplate = JavaTemplate.builder("Period.between(#{any(java.time.LocalDate)}, #{any(java.time.LocalDate)})");
-    final JavaTemplate.Builder getDaysTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.getDays()");
+    final JavaTemplate.Builder monthsStaticMethodTemplate = JavaTemplate.builder("Period.ofMonths(#{any(int)})");
+    final JavaTemplate.Builder monthsBetweenTemplate = JavaTemplate.builder("ChronoUnit.MONTHS.between(#{any(java.time.LocalDate)}, #{any(java.time.LocalDate)})")
+            .imports(JAVA_CHRONO_UNIT);
+    final JavaTemplate.Builder getMonthsTemplate = JavaTemplate.builder("(int)#{any(long)}");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
-            add(new MethodTemplate(daysStaticMethod, build(daysStaticMethodTemplate)));
-            add(new MethodTemplate(daysBetween, build(daysBetweenTemplate)));
-            add(new MethodTemplate(getDays, build(getDaysTemplate)));
+            add(new MethodTemplate(monthsStaticMethod, build(monthsStaticMethodTemplate)));
+            add(new MethodTemplate(monthsBetween, build(monthsBetweenTemplate)));
+            add(new MethodTemplate(getMonths, build(getMonthsTemplate)));
         }
     };
 

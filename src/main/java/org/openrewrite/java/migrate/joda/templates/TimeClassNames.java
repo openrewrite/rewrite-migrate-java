@@ -15,10 +15,14 @@
  */
 package org.openrewrite.java.migrate.joda.templates;
 
+import org.openrewrite.java.JavaTemplate;
+
 import java.util.regex.Pattern;
 
 public class TimeClassNames {
     public static final Pattern JODA_CLASS_PATTERN = Pattern.compile("org\\.joda\\.time\\..*");
+    public static final String JODA_MULTIPLE_MAPPING_POSSIBLE = "Multiple mapping is possible.Update manually";
+    public static final JavaTemplate.Builder JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE = JavaTemplate.builder(JODA_MULTIPLE_MAPPING_POSSIBLE);
 
     // java util
     public static final String JAVA_UTIL_DATE = "java.util.Date";
@@ -48,8 +52,11 @@ public class TimeClassNames {
     public static final String JODA_INTERVAL = JODA_TIME_PKG + ".Interval";
     public static final String JODA_BASE_INTERVAL = JODA_TIME_PKG + ".base.BaseInterval";
     public static final String JODA_SECONDS = JODA_TIME_PKG + ".Seconds";
-    public static final String JODA_DAYS = JODA_TIME_PKG + ".Days";
     public static final String JODA_HOURS = JODA_TIME_PKG + ".Hours";
+    public static final String JODA_DAYS = JODA_TIME_PKG + ".Days";
+    public static final String JODA_WEEKS = JODA_TIME_PKG + ".Weeks";
+    public static final String JODA_MONTHS = JODA_TIME_PKG + ".Months";
+    public static final String JODA_YEARS = JODA_TIME_PKG + ".Years";
 
     // Java Time classes
     public static final String JAVA_TIME_PKG = "java.time";
@@ -67,6 +74,7 @@ public class TimeClassNames {
     public static final String JAVA_LOCAL_DATE_TIME = JAVA_TIME_PKG + ".LocalDateTime";
     public static final String JAVA_TEMPORAL_ISO_FIELDS = JAVA_TIME_PKG + ".temporal.IsoFields";
     public static final String JAVA_CHRONO_FIELD = JAVA_TIME_PKG + ".temporal.ChronoField";
+    public static final String JAVA_CHRONO_UNIT = JAVA_TIME_PKG + ".temporal.ChronoUnit";
 
     // ThreeTen-Extra classes
     public static final String THREE_TEN_EXTRA_PKG = "org.threeten.extra";
