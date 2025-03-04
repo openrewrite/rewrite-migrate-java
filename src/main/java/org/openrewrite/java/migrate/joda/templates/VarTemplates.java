@@ -33,10 +33,17 @@ public class VarTemplates {
             put(JODA_DATE_TIME, JAVA_DATE_TIME);
             put(JODA_TIME_FORMATTER, JAVA_TIME_FORMATTER);
             put(JODA_LOCAL_DATE, JAVA_LOCAL_DATE);
+            put(JODA_LOCAL_DATE_TIME, JAVA_LOCAL_DATE_TIME);
             put(JODA_LOCAL_TIME, JAVA_LOCAL_TIME);
             put(JODA_DATE_TIME_ZONE, JAVA_ZONE_ID);
             put(JODA_DURATION, JAVA_DURATION);
             put(JODA_INTERVAL, THREE_TEN_EXTRA_INTERVAL);
+            put(JODA_SECONDS, JAVA_DURATION);
+            put(JODA_HOURS, JAVA_DURATION);
+            put(JODA_DAYS, JAVA_PERIOD);
+            put(JODA_WEEKS, JAVA_PERIOD);
+            put(JODA_MONTHS, JAVA_PERIOD);
+            put(JODA_YEARS, JAVA_PERIOD);
         }
     };
 

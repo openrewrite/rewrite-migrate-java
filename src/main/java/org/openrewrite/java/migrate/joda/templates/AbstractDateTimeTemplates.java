@@ -22,10 +22,10 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_DATE_TIME;
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_ABSTRACT_DATE_TIME;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 public class AbstractDateTimeTemplates implements Templates {
+    private final MethodMatcher getYear = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getYear()");
     private final MethodMatcher getDayOfMonth = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getDayOfMonth()");
     private final MethodMatcher getDayOfWeek = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getDayOfWeek()");
     private final MethodMatcher getHourOfDay = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getHourOfDay()");
@@ -36,8 +36,10 @@ public class AbstractDateTimeTemplates implements Templates {
     private final MethodMatcher getSecondOfDay = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getSecondOfDay()");
     private final MethodMatcher getSecondOfMinute = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getSecondOfMinute()");
     private final MethodMatcher getWeekOfWeekyear = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getWeekOfWeekyear()");
+    private final MethodMatcher getZone = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getZone()");
     private final MethodMatcher toString = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " toString()");
 
+    private final JavaTemplate getYearTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getYear()").build();
     private final JavaTemplate getDayOfMonthTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getDayOfMonth()").build();
     private final JavaTemplate getDayOfWeekTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getDayOfWeek().getValue()").build();
     private final JavaTemplate getHourOfDayTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getHour()").build();
@@ -48,11 +50,13 @@ public class AbstractDateTimeTemplates implements Templates {
     private final JavaTemplate getSecondOfDayTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.get(ChronoField.SECOND_OF_DAY)").imports("java.time.temporal.ChronoField").build();
     private final JavaTemplate getSecondOfMinuteTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getSecond()").build();
     private final JavaTemplate getWeekOfWeekyearTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.get(ChronoField.ALIGNED_WEEK_OF_YEAR)").imports("java.time.temporal.ChronoField").build();
+    private final JavaTemplate getZoneTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getZone()").build();
     private final JavaTemplate toStringTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.toString()").build();
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
+            add(new MethodTemplate(getYear, getDayOfMonthTemplate));
             add(new MethodTemplate(getDayOfMonth, getDayOfMonthTemplate));
             add(new MethodTemplate(getDayOfWeek, getDayOfWeekTemplate));
             add(new MethodTemplate(getHourOfDay, getHourOfDayTemplate));
@@ -63,6 +67,8 @@ public class AbstractDateTimeTemplates implements Templates {
             add(new MethodTemplate(getSecondOfDay, getSecondOfDayTemplate));
             add(new MethodTemplate(getSecondOfMinute, getSecondOfMinuteTemplate));
             add(new MethodTemplate(getWeekOfWeekyear, getWeekOfWeekyearTemplate));
+            add(new MethodTemplate(getZone, getZoneTemplate));
+
             add(new MethodTemplate(toString, toStringTemplate));
         }
     };
