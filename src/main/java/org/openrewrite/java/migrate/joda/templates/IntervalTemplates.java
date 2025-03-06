@@ -31,28 +31,42 @@ public class IntervalTemplates implements Templates {
     private final MethodMatcher intervalWithTimeZone = new MethodMatcher(JODA_INTERVAL + " <constructor>(long, long, " + JODA_DATE_TIME_ZONE + ")");
     private final MethodMatcher intervalWithDateTime = new MethodMatcher(JODA_INTERVAL + " <constructor>(" + JODA_READABLE_INSTANT + ", " + JODA_READABLE_INSTANT + ")");
     private final MethodMatcher intervalWithDateTimeAndDuration = new MethodMatcher(JODA_INTERVAL + " <constructor>(" + JODA_READABLE_INSTANT + ", " + JODA_READABLE_DURATION + ")");
+    private final MethodMatcher withEnd = new MethodMatcher(JODA_INTERVAL + " withEnd(org.joda.time.ReadableInstant)");
+    private final MethodMatcher withEndDateTime = new MethodMatcher(JODA_INTERVAL + " withEnd(org.joda.time.DateTime)");
+    private final MethodMatcher withStart = new MethodMatcher(JODA_INTERVAL + " withStart(org.joda.time.ReadableInstant)");
+    private final MethodMatcher abuts = new MethodMatcher(JODA_INTERVAL + " abuts(org.joda.time.ReadableInterval)");
+    private final MethodMatcher overlap = new MethodMatcher(JODA_INTERVAL + " overlap(org.joda.time.ReadableInterval)");
 
-    private final JavaTemplate intervalTemplate = JavaTemplate.builder("Interval.of(Instant.ofEpochMilli(#{any(long)}), Instant.ofEpochMilli(#{any(long)}))")
-            .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
-            .imports(JAVA_INSTANT, THREE_TEN_EXTRA_INTERVAL)
-            .build();
-    private final JavaTemplate intervalWithDateTimeTemplate = JavaTemplate.builder("Interval.of(#{any(" + JAVA_DATE_TIME + ")}.toInstant(), #{any(" + JAVA_DATE_TIME + ")}.toInstant())")
-            .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
-            .imports(THREE_TEN_EXTRA_INTERVAL)
-            .build();
-    private final JavaTemplate intervalWithDateTimeAndDurationTemplate = JavaTemplate.builder("Interval.of(#{any(" + JAVA_DATE_TIME + ")}.toInstant(), #{any(" + JAVA_DURATION + ")})")
-            .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
-            .imports(THREE_TEN_EXTRA_INTERVAL)
-            .build();
+    private final JavaTemplate.Builder intervalTemplate = JavaTemplate.builder("Interval.of(Instant.ofEpochMilli(#{any(long)}), Instant.ofEpochMilli(#{any(long)}))")
+            .imports(JAVA_INSTANT);
+    private final JavaTemplate.Builder intervalWithDateTimeTemplate = JavaTemplate.builder("Interval.of(#{any(" + JAVA_DATE_TIME + ")}.toInstant(), #{any(" + JAVA_DATE_TIME + ")}.toInstant())");
+    private final JavaTemplate.Builder intervalWithDateTimeAndDurationTemplate = JavaTemplate.builder("Interval.of(#{any(" + JAVA_DATE_TIME + ")}.toInstant(), #{any(" + JAVA_DURATION + ")})");;
+    private final JavaTemplate.Builder withEndTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.withEnd(#{any(java.time.Instant)})");
+    private final JavaTemplate.Builder withEndZonedDateTimeTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.withEnd(#{any(java.time.ZonedDateTime)}.toInstant())");
+    private final JavaTemplate.Builder withStartTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.withStart(#{any(java.time.Instant)})");
+    private final JavaTemplate.Builder abutsTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.abuts(#{any(org.threeten.extra.Interval)})");
+    private final JavaTemplate.Builder intersectionTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.intersection(#{any(org.threeten.extra.Interval)})");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
-            add(new MethodTemplate(interval, intervalTemplate));
-            add(new MethodTemplate(intervalWithTimeZone, intervalTemplate,
+            add(new MethodTemplate(interval, build(intervalTemplate)));
+            add(new MethodTemplate(intervalWithTimeZone, build(intervalTemplate),
                     m -> new Expression[]{m.getArguments().get(0), m.getArguments().get(1)}));
-            add(new MethodTemplate(intervalWithDateTime, intervalWithDateTimeTemplate));
-            add(new MethodTemplate(intervalWithDateTimeAndDuration, intervalWithDateTimeAndDurationTemplate));
+            add(new MethodTemplate(intervalWithDateTime, build(intervalWithDateTimeTemplate)));
+            add(new MethodTemplate(intervalWithDateTimeAndDuration, build(intervalWithDateTimeAndDurationTemplate)));
+            add(new MethodTemplate(withEnd, build(withEndTemplate)));
+            add(new MethodTemplate(withEndDateTime, build(withEndZonedDateTimeTemplate)));
+            add(new MethodTemplate(withStart, build(withStartTemplate)));
+            add(new MethodTemplate(abuts, build(abutsTemplate)));
+            add(new MethodTemplate(overlap, build(intersectionTemplate)));
         }
     };
+
+    private JavaTemplate build(JavaTemplate.Builder builder) {
+        return builder
+                .javaParser(JavaParser.fromJavaVersion().classpath("threeten-extra"))
+                .imports(THREE_TEN_EXTRA_INTERVAL)
+                .build();
+    }
 }

@@ -24,21 +24,20 @@ import java.util.List;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
-public class AbstractDurationTemplates implements Templates {
-    private final MethodMatcher isLongerThan = new MethodMatcher(JODA_ABSTRACT_DURATION + " isLongerThan(..)");
-    private final MethodMatcher toPeriod = new MethodMatcher(JODA_ABSTRACT_DURATION + " toPeriod()");
-    private final MethodMatcher toString = new MethodMatcher(JODA_ABSTRACT_DURATION + " toString()");
+public class DateTimeUtilsTemplates implements Templates {
+    private final MethodMatcher currentTimeMillis = new MethodMatcher(JODA_DATE_TIME_UTILS + " currentTimeMillis()");
 
-    private final JavaTemplate isLongerThanTemplate = JavaTemplate.builder("#{any(" + JAVA_DURATION + ")}.compareTo(#{any(" + JAVA_DURATION + ")}) > 0").build();
-    private final JavaTemplate toPeriodTemplate = JavaTemplate.builder("#{any(" + JAVA_DURATION + ")}.toPeriod()").build();
-    private final JavaTemplate toStringTemplate = JavaTemplate.builder("#{any(" + JAVA_DURATION + ")}.toString()").build();
+    private final JavaTemplate.Builder currentTimeMillisTemplate = JavaTemplate.builder("Instant.now().toEpochMilli();")
+            .imports(JAVA_INSTANT);
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
-            add(new MethodTemplate(isLongerThan, isLongerThanTemplate));
-            add(new MethodTemplate(toPeriod, toPeriodTemplate));
-            add(new MethodTemplate(toString, toStringTemplate));
+            add(new MethodTemplate(currentTimeMillis, build(currentTimeMillisTemplate)));
         }
     };
+
+    private JavaTemplate build(JavaTemplate.Builder builder) {
+        return builder.build();
+    }
 }

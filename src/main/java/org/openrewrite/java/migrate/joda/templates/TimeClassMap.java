@@ -31,6 +31,7 @@ public class TimeClassMap {
         {
             put(JODA_DATE_TIME, javaTypeClass(JAVA_DATE_TIME, object));
             put(JODA_BASE_DATE_TIME, javaTypeClass(JAVA_DATE_TIME, object));
+            put(JODA_DATE_MIDNIGHT, javaTypeClass(JAVA_DATE_TIME, object));
             put(JODA_DATE_TIME_ZONE, javaTypeClass(JAVA_ZONE_ID, object));
             put(JODA_TIME_FORMATTER, javaTypeClass(JAVA_TIME_FORMATTER, object));
             put(JODA_DURATION, javaTypeClass(JAVA_DURATION, object));
@@ -51,6 +52,7 @@ public class TimeClassMap {
     private final Map<String, String> jodaToJavaTimeShortName = new HashMap<String, String>() {
         {
             put(JODA_DATE_TIME, "ZonedDateTime");
+            put(JODA_DATE_MIDNIGHT, "ZonedDateTime");
             put(JODA_LOCAL_DATE, "LocalDate");
             put(JODA_LOCAL_DATE_TIME, "LocalDateTime");
             put(JODA_LOCAL_TIME, "LocalTime");

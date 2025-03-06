@@ -56,7 +56,7 @@ public class AbstractDateTimeTemplates implements Templates {
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
-            add(new MethodTemplate(getYear, getDayOfMonthTemplate));
+            add(new MethodTemplate(getYear, getYearTemplate));
             add(new MethodTemplate(getDayOfMonth, getDayOfMonthTemplate));
             add(new MethodTemplate(getDayOfWeek, getDayOfWeekTemplate));
             add(new MethodTemplate(getHourOfDay, getHourOfDayTemplate));

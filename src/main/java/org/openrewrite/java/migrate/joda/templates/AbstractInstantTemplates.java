@@ -34,6 +34,7 @@ public class AbstractInstantTemplates implements Templates {
     private final MethodMatcher getZone = new MethodMatcher(JODA_ABSTRACT_INSTANT + " getZone()");
     private final MethodMatcher isAfterLong = new MethodMatcher(JODA_ABSTRACT_INSTANT + " isAfter(long)");
     private final MethodMatcher isAfter = new MethodMatcher(JODA_ABSTRACT_INSTANT + " isAfter(org.joda.time.ReadableInstant)");
+    private final MethodMatcher isAfterNow = new MethodMatcher(JODA_ABSTRACT_INSTANT + " isAfterNow()");
     private final MethodMatcher isBeforeLong = new MethodMatcher(JODA_ABSTRACT_INSTANT + " isBefore(long)");
     private final MethodMatcher isBefore = new MethodMatcher(JODA_ABSTRACT_INSTANT + " isBefore(org.joda.time.ReadableInstant)");
     private final MethodMatcher isBeforeNow = new MethodMatcher(JODA_ABSTRACT_INSTANT + " isBeforeNow()");
@@ -43,6 +44,7 @@ public class AbstractInstantTemplates implements Templates {
     private final MethodMatcher toInstant = new MethodMatcher(JODA_ABSTRACT_INSTANT + " toInstant()");
     private final MethodMatcher toString = new MethodMatcher(JODA_ABSTRACT_INSTANT + " toString()");
     private final MethodMatcher toStringFormatter = new MethodMatcher(JODA_ABSTRACT_INSTANT + " toString(org.joda.time.format.DateTimeFormatter)");
+    private final MethodMatcher compareTo = new MethodMatcher(JODA_ABSTRACT_INSTANT + " compareTo(org.joda.time.ReadableInstant)");
 
     private final JavaTemplate equalsTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.equals(#{any(java.lang.Object)})").build();
     private final JavaTemplate getZoneTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getZone()").build();
@@ -52,6 +54,7 @@ public class AbstractInstantTemplates implements Templates {
             .imports(JAVA_INSTANT).build();
     private final JavaTemplate isAfterTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.isAfter(#{any(" + JAVA_DATE_TIME + ")})").build();
     private final JavaTemplate isAfterTemplateWithInstant = JavaTemplate.builder("#{any(" + JAVA_INSTANT + ")}.isAfter(#{any(" + JAVA_INSTANT + ")})").build();
+    private final JavaTemplate isAfterNowTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.isAfter(ZonedDateTime.now())").build();
     private final JavaTemplate isBeforeLongTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.isBefore(Instant.ofEpochMilli(#{any(long)}).atZone(ZoneId.systemDefault()))")
             .imports(JAVA_INSTANT, JAVA_ZONE_ID).build();
     private final JavaTemplate isBeforeLongTemplateWithInstant = JavaTemplate.builder("#{any(" + JAVA_INSTANT + ")}.isBefore(Instant.ofEpochMilli(#{any(long)}))")
@@ -69,6 +72,7 @@ public class AbstractInstantTemplates implements Templates {
     private final JavaTemplate toInstantTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.toInstant()").build();
     private final JavaTemplate toStringTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.toString()").build();
     private final JavaTemplate toStringFormatterTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.format(#{any(" + JAVA_TIME_FORMATTER + ")})").build();
+    private final JavaTemplate compareToTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.compareTo(#{any(java.time.ZonedDateTime)})").build();
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -79,6 +83,7 @@ public class AbstractInstantTemplates implements Templates {
             add(new MethodTemplate(isAfterLong, isAfterLongTemplateWithInstant));
             add(new MethodTemplate(isAfter, isAfterTemplate));
             add(new MethodTemplate(isAfter, isAfterTemplateWithInstant));
+            add(new MethodTemplate(isAfterNow, isAfterNowTemplate));
             add(new MethodTemplate(isBeforeLong, isBeforeLongTemplate));
             add(new MethodTemplate(isBeforeLong, isBeforeLongTemplateWithInstant));
             add(new MethodTemplate(isBefore, isBeforTemplate));
@@ -90,6 +95,7 @@ public class AbstractInstantTemplates implements Templates {
             add(new MethodTemplate(toInstant, toInstantTemplate));
             add(new MethodTemplate(toString, toStringTemplate));
             add(new MethodTemplate(toStringFormatter, toStringFormatterTemplate));
+            add(new MethodTemplate(compareTo, compareToTemplate));
         }
     };
 

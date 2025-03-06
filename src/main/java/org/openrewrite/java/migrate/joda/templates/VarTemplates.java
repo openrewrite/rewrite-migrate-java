@@ -31,6 +31,7 @@ public class VarTemplates {
     private static Map<String, String> JodaToJavaTimeType = new HashMap<String, String>() {
         {
             put(JODA_DATE_TIME, JAVA_DATE_TIME);
+            put(JODA_DATE_MIDNIGHT, JAVA_DATE_TIME);
             put(JODA_TIME_FORMATTER, JAVA_TIME_FORMATTER);
             put(JODA_LOCAL_DATE, JAVA_LOCAL_DATE);
             put(JODA_LOCAL_DATE_TIME, JAVA_LOCAL_DATE_TIME);

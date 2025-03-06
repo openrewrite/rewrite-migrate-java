@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 public class TimeClassNames {
     public static final Pattern JODA_CLASS_PATTERN = Pattern.compile("org\\.joda\\.time\\..*");
     public static final String JODA_MULTIPLE_MAPPING_POSSIBLE = "Multiple mapping is possible.Update manually";
-    public static final JavaTemplate.Builder JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE = JavaTemplate.builder(JODA_MULTIPLE_MAPPING_POSSIBLE);
+    public static final JavaTemplate JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE = JavaTemplate.builder(JODA_MULTIPLE_MAPPING_POSSIBLE).build();
 
     // java util
     public static final String JAVA_UTIL_DATE = "java.util.Date";
@@ -33,8 +33,10 @@ public class TimeClassNames {
     public static final String JODA_ABSTRACT_DATE_TIME = JODA_TIME_PKG + ".base.AbstractDateTime";
     public static final String JODA_ABSTRACT_DURATION = JODA_TIME_PKG + ".base.AbstractDuration";
     public static final String JODA_ABSTRACT_INTERVAL = JODA_TIME_PKG + ".base.AbstractInterval";
+    public static final String JODA_ABSTRACT_PARTIAL = JODA_TIME_PKG + ".base.AbstractPartial";
     public static final String JODA_BASE_DATE_TIME = JODA_TIME_PKG + ".base.BaseDateTime";
     public static final String JODA_DATE_TIME = JODA_TIME_PKG + ".DateTime";
+    public static final String JODA_DATE_MIDNIGHT = JODA_TIME_PKG + ".DateMidnight";
     public static final String JODA_DATE_TIME_ZONE = JODA_TIME_PKG + ".DateTimeZone";
     public static final String JODA_TIME_FORMAT = JODA_TIME_PKG + ".format.DateTimeFormat";
     public static final String JODA_TIME_FORMATTER = JODA_TIME_PKG + ".format.DateTimeFormatter";
@@ -57,6 +59,7 @@ public class TimeClassNames {
     public static final String JODA_WEEKS = JODA_TIME_PKG + ".Weeks";
     public static final String JODA_MONTHS = JODA_TIME_PKG + ".Months";
     public static final String JODA_YEARS = JODA_TIME_PKG + ".Years";
+    public static final String JODA_DATE_TIME_UTILS = JODA_TIME_PKG + ".DateTimeUtils";
 
     // Java Time classes
     public static final String JAVA_TIME_PKG = "java.time";

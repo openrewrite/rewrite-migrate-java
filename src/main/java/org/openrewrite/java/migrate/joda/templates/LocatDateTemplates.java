@@ -32,11 +32,16 @@ public class LocatDateTemplates implements Templates {
     final MethodMatcher newLocalDateNoArgs = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>()");
     final MethodMatcher newLocalDateEpoch = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>(long)");
     final MethodMatcher newLocalDateYmd = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>(int,int,int)");
-    final MethodMatcher newLocalDate = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>(java.lang.Object)"); //not working: see Date as Object
+    final MethodMatcher newLocalDate = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>(java.lang.Object)");
 
+    final MethodMatcher withDayOfMonth = new MethodMatcher(JODA_LOCAL_DATE + " withDayOfMonth(int)");
     final MethodMatcher now = new MethodMatcher(JODA_LOCAL_DATE + " now()");
     final MethodMatcher parse = new MethodMatcher(JODA_LOCAL_DATE + " parse(String)");
     final MethodMatcher parseWithFormatter = new MethodMatcher(JODA_LOCAL_DATE + " parse(String, org.joda.time.format.DateTimeFormatter)");
+
+    final MethodMatcher toDate = new MethodMatcher(JODA_LOCAL_DATE + " toDate()");
+
+    final MethodMatcher compareTo = new MethodMatcher(JODA_LOCAL_DATE + " compareTo(org.joda.time.ReadablePartial)");
     final MethodMatcher getYear = new MethodMatcher(JODA_LOCAL_DATE + " getYear()");
     final MethodMatcher getMonthOfYear = new MethodMatcher(JODA_LOCAL_DATE + " getMonthOfYear()");
     final MethodMatcher getDayOfMonth = new MethodMatcher(JODA_LOCAL_DATE + " getDayOfMonth()");
@@ -51,14 +56,22 @@ public class LocatDateTemplates implements Templates {
     final MethodMatcher toDateMidnight = new MethodMatcher(JODA_LOCAL_DATE + " toDateMidnight()");
     final MethodMatcher toDateTimeAtStartOfDay = new MethodMatcher(JODA_LOCAL_DATE + " toDateTimeAtStartOfDay()");
     final MethodMatcher toDateTimeAtStartOfDayWithZone = new MethodMatcher(JODA_LOCAL_DATE + " toDateTimeAtStartOfDay(org.joda.time.DateTimeZone)");
+    final MethodMatcher equals = new MethodMatcher(JODA_LOCAL_DATE + " equals(java.lang.Object)");
 
     final JavaTemplate.Builder localDateNoArgsTemplate = JavaTemplate.builder("LocalDate.now()");
     final JavaTemplate.Builder localDateEpochTemplate = JavaTemplate.builder("LocalDate.ofEpochDay(#{any(long)})");
     final JavaTemplate.Builder localDateYmdTemplate = JavaTemplate.builder("LocalDate.of(#{any(int)}, #{any(int)}, #{any(int)})");
+
+    final JavaTemplate.Builder withDayOfMonthTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.withDayOfMonth(#{any(int)})");
     final JavaTemplate.Builder nowTemplate = JavaTemplate.builder("LocalDate.now()");
     final JavaTemplate.Builder parseTemplate = JavaTemplate.builder("LocalDate.parse(#{any(String)})");
     final JavaTemplate.Builder parseWithFormatterTemplate = JavaTemplate.builder("LocalDate.parse(#{any(String)}, #{any(java.time.format.DateTimeFormatter)})")
             .imports(JAVA_TIME_FORMATTER);
+
+    final JavaTemplate.Builder toDateTemplate = JavaTemplate.builder("Date.from(#{any(java.time.LocalDate)}.atStartOfDay(ZoneId.systemDefault()).toInstant())")
+            .imports(JAVA_ZONE_ID);
+
+    final JavaTemplate.Builder compareToTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.compareTo(#{any(java.time.chrono.ChronoLocalDate)})");
     final JavaTemplate.Builder getYearTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.getYear()");
     final JavaTemplate.Builder getMonthValueTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.getMonthValue()");
     final JavaTemplate.Builder getDayOfMonthTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.getDayOfMonth()");
@@ -81,9 +94,15 @@ public class LocatDateTemplates implements Templates {
             add(new MethodTemplate(newLocalDateNoArgs, build(localDateNoArgsTemplate)));
             add(new MethodTemplate(newLocalDateEpoch, build(localDateEpochTemplate)));
             add(new MethodTemplate(newLocalDateYmd, build(localDateYmdTemplate)));
+            add(new MethodTemplate(withDayOfMonth, build(withDayOfMonthTemplate)));
+
             add(new MethodTemplate(now, build(nowTemplate)));
             add(new MethodTemplate(parse, build(parseTemplate)));
             add(new MethodTemplate(parseWithFormatter, build(parseWithFormatterTemplate)));
+
+            add(new MethodTemplate(toDate, build(toDateTemplate)));
+
+            add(new MethodTemplate(compareTo, build(compareToTemplate)));
             add(new MethodTemplate(getYear, build(getYearTemplate)));
             add(new MethodTemplate(getMonthOfYear, build(getMonthValueTemplate)));
             add(new MethodTemplate(getDayOfMonth, build(getDayOfMonthTemplate)));
@@ -106,7 +125,9 @@ public class LocatDateTemplates implements Templates {
                         J.MethodInvocation mi = (J.MethodInvocation)m;
                         return new Expression[]{ mi.getSelect(), mi.getArguments().get(0) };
                     }));
-            add(new MethodTemplate(newLocalDate, build(JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE)));
+
+            add(new MethodTemplate(newLocalDate, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
+            add(new MethodTemplate(equals, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
         }
     };
 

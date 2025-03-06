@@ -29,6 +29,8 @@ public class AllTemplates {
     private static final MethodMatcher ANY_BASE_DATETIME = new MethodMatcher(JODA_BASE_DATE_TIME + " *(..)");
     private static final MethodMatcher ANY_NEW_DATE_TIME = new MethodMatcher(JODA_DATE_TIME + "<constructor>(..)");
     private static final MethodMatcher ANY_DATE_TIME = new MethodMatcher(JODA_DATE_TIME + " *(..)");
+    private static final MethodMatcher ANY_NEW_DATE_MIDNIGHT = new MethodMatcher(JODA_DATE_MIDNIGHT + "<constructor>(..)");
+    private static final MethodMatcher ANY_DATE_MIDNIGHT = new MethodMatcher(JODA_DATE_MIDNIGHT + "*(..)");
     private static final MethodMatcher ANY_DATE_TIMEZONE = new MethodMatcher(JODA_DATE_TIME_ZONE + " *(..)");
     private static final MethodMatcher ANY_TIME_FORMAT = new MethodMatcher(JODA_TIME_FORMAT + " *(..)");
     private static final MethodMatcher ANY_TIME_FORMATTER = new MethodMatcher(JODA_TIME_FORMATTER + " *(..)");
@@ -41,7 +43,9 @@ public class AllTemplates {
     private static final MethodMatcher ANY_INSTANT = new MethodMatcher(JODA_INSTANT + " *(..)");
     private static final MethodMatcher ANY_NEW_INSTANT = new MethodMatcher(JODA_INSTANT + "<constructor>(..)");
     private static final MethodMatcher ANY_NEW_INTERVAL = new MethodMatcher(JODA_INTERVAL + "<constructor>(..)");
+    private static final MethodMatcher ANY_INTERVAL = new MethodMatcher(JODA_INTERVAL + "*(..)");
     private static final MethodMatcher ANY_ABSTRACT_INTERVAL = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " *(..)");
+    private static final MethodMatcher ANY_ABSTRACT_PARTIAL = new MethodMatcher(JODA_ABSTRACT_PARTIAL + " *(..)");
     private static final MethodMatcher ANY_BASE_INTERVAL = new MethodMatcher(JODA_BASE_INTERVAL + " *(..)");
     private static final MethodMatcher ANY_NEW_LOCAL_DATE = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>(..)");
     private static final MethodMatcher ANY_LOCAL_DATE = new MethodMatcher(JODA_LOCAL_DATE + " *(..)");
@@ -55,6 +59,7 @@ public class AllTemplates {
     private static final MethodMatcher ANY_WEEKS = new MethodMatcher(JODA_WEEKS + " *(..)");
     private static final MethodMatcher ANY_MONTHS = new MethodMatcher(JODA_MONTHS + " *(..)");
     private static final MethodMatcher ANY_YEARS = new MethodMatcher(JODA_YEARS + " *(..)");
+    private static final MethodMatcher ANY_JODA_DATE_TIME_UTILS = new MethodMatcher(JODA_DATE_TIME_UTILS + " *(..)");
 
     private static List<MatcherAndTemplates> templates = new ArrayList<MatcherAndTemplates>() {
         {
@@ -66,6 +71,8 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_TIME_FORMATTER, new DateTimeFormatterTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_DATE_TIME, new DateTimeTemplates()));
             add(new MatcherAndTemplates(ANY_DATE_TIME, new DateTimeTemplates()));
+            add(new MatcherAndTemplates(ANY_NEW_DATE_MIDNIGHT, new DateTimeTemplates()));
+            add(new MatcherAndTemplates(ANY_DATE_MIDNIGHT, new DateTimeTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_DURATION, new DurationTemplates()));
             add(new MatcherAndTemplates(ANY_DURATION, new DurationTemplates()));
             add(new MatcherAndTemplates(ANY_BASE_DURATION, new BaseDurationTemplates()));
@@ -73,7 +80,9 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_INSTANT, new InstantTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_INSTANT, new InstantTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_INTERVAL, new IntervalTemplates()));
+            add(new MatcherAndTemplates(ANY_INTERVAL, new IntervalTemplates()));
             add(new MatcherAndTemplates(ANY_ABSTRACT_INTERVAL, new AbstractIntervalTemplates()));
+            add(new MatcherAndTemplates(ANY_ABSTRACT_PARTIAL, new AbstractPartialTemplates()));
             add(new MatcherAndTemplates(ANY_BASE_INTERVAL, new BaseIntervalTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_LOCAL_DATE, new LocatDateTemplates()));
             add(new MatcherAndTemplates(ANY_LOCAL_DATE, new LocatDateTemplates()));
@@ -87,6 +96,7 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_WEEKS, new WeeksTemplates()));
             add(new MatcherAndTemplates(ANY_MONTHS, new MonthsTemplates()));
             add(new MatcherAndTemplates(ANY_YEARS, new YearsTemplates()));
+            add(new MatcherAndTemplates(ANY_JODA_DATE_TIME_UTILS, new DateTimeUtilsTemplates()));
         }
     };
 

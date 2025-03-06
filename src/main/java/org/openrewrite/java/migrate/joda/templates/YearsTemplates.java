@@ -31,7 +31,7 @@ public class YearsTemplates implements Templates {
     final MethodMatcher yearsBetween = new MethodMatcher(JODA_YEARS + " yearsBetween(org.joda.time.ReadablePartial, org.joda.time.ReadablePartial)");
     final MethodMatcher getYears = new MethodMatcher(JODA_YEARS + " getYears()");
 
-    final JavaTemplate.Builder yearsStaticMethodTemplate = JavaTemplate.builder("Period.ofyears(#{any(int)})");
+    final JavaTemplate.Builder yearsStaticMethodTemplate = JavaTemplate.builder("Period.ofYears(#{any(int)})");
     final JavaTemplate.Builder yearsBetweenTemplate = JavaTemplate.builder("ChronoUnit.YEARS.between(#{any(java.time.LocalDate)}, #{any(java.time.LocalDate)})")
             .imports(JAVA_CHRONO_UNIT);
     final JavaTemplate.Builder getYearsTemplate = JavaTemplate.builder("(int)#{any(long)}");
