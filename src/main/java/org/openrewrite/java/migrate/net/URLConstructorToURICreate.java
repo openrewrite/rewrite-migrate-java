@@ -34,13 +34,11 @@ import org.openrewrite.java.tree.TypeUtils;
 
 import java.net.URI;
 
-public class URLConstructorsToURI extends Recipe {
+public class URLConstructorToURICreate extends Recipe {
 
     private static final String URI_FQN = "java.net.URI";
     private static final String URL_FQN = "java.net.URL";
     private static final MethodMatcher methodMatcherSingleArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String)");
-    private static final MethodMatcher methodMatcherThreeArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, java.lang.String)");
-    private static final MethodMatcher methodMatcherFourArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, int, java.lang.String)");
 
     @Override
     public String getDisplayName() {
@@ -49,7 +47,7 @@ public class URLConstructorsToURI extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Converts `new URL(String)` constructors to `URI.create(String).toURL()`.";
+        return "Converts `new URL(String)` constructor to `URI.create(String).toURL()`.";
     }
 
     @Override
@@ -74,33 +72,6 @@ public class URLConstructorsToURI extends Recipe {
                             return template.apply(getCursor(),
                                     nc.getCoordinates().replace(),
                                     nc.getArguments().get(0));
-                        } else {
-                            if (methodMatcherThreeArg.matches(nc)) {
-                                JavaTemplate template = JavaTemplate.builder("new URI(#{any(String)}, null, #{any(String)}, -1, #{any(String)}, null, null).toURL()")
-                                        .imports(URI_FQN, URL_FQN)
-                                        .contextSensitive()
-                                        .javaParser(JavaParser.fromJavaVersion())
-                                        .build();
-
-                                maybeAddImport(URI_FQN);
-                                return template.apply(getCursor(), nc.getCoordinates().replace(),
-                                        nc.getArguments().get(0),
-                                        nc.getArguments().get(1),
-                                        nc.getArguments().get(2));
-                            } else if (methodMatcherFourArg.matches(nc)) {
-                                JavaTemplate template = JavaTemplate.builder("new URI(#{any(String)}, null, #{any(String)}, #{any(int)}, #{any(String)}, null, null).toURL()")
-                                        .imports(URI_FQN, URL_FQN)
-                                        .contextSensitive()
-                                        .javaParser(JavaParser.fromJavaVersion())
-                                        .build();
-
-                                maybeAddImport(URI_FQN);
-                                return template.apply(getCursor(), nc.getCoordinates().replace(),
-                                        nc.getArguments().get(0),
-                                        nc.getArguments().get(1),
-                                        nc.getArguments().get(2),
-                                        nc.getArguments().get(3));
-                            }
                         }
                         return super.visitNewClass(nc, ctx);
                     }

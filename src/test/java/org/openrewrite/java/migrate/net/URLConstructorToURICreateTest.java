@@ -23,10 +23,10 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class URLConstructorsToURITest implements RewriteTest {
+class URLConstructorToURICreateTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new URLConstructorsToURI());
+        spec.recipe(new URLConstructorToURICreate());
     }
 
     @Test
@@ -42,20 +42,6 @@ class URLConstructorsToURITest implements RewriteTest {
               class Test {
                   void urlConstructor(String spec) throws Exception {
                       URL url1 = new URL(spec);
-                      URL url2 = new URL(spec, "localhost", "file");
-                      URL url3 = new URL(spec, "localhost", 8080, "file");
-                  }
-              }
-              """,
-            """
-              import java.net.URI;
-              import java.net.URL;
-
-              class Test {
-                  void urlConstructor(String spec) throws Exception {
-                      URL url1 = new URL(spec);
-                      URL url2 = new URI(spec, null, "localhost", -1, "file", null, null).toURL();
-                      URL url3 = new URI(spec, null, "localhost", 8080, "file", null, null).toURL();
                   }
               }
               """
