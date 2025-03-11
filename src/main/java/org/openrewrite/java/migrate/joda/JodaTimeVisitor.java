@@ -112,7 +112,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             return multiVariable;
         }
         J.VariableDeclarations m = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
-        return VarTemplates.getTemplate(multiVariable).<J>map(t -> t.apply(
+        return VarTemplates.getTemplate(multiVariable, ctx).<J>map(t -> t.apply(
                 updateCursor(m),
                 m.getCoordinates().replace(),
                 VarTemplates.getTemplateArgs(m))).orElse(multiVariable);
