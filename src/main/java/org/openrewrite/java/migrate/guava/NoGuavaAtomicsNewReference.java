@@ -50,7 +50,6 @@ public class NoGuavaAtomicsNewReference extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesMethod<>(NEW_ATOMIC_REFERENCE), new JavaVisitor<ExecutionContext>() {
             private final JavaTemplate newAtomicReference = JavaTemplate.builder("new AtomicReference<>()")
-                    .contextSensitive()
                     .imports("java.util.concurrent.atomic.AtomicReference")
                     .build();
 
