@@ -24,6 +24,7 @@ tags:
   - faces
   - jsf
 recipeList:
+  - org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi4
   - org.openrewrite.java.migrate.jakarta.JakartaFacesXhtml
   - org.openrewrite.java.migrate.jakarta.JakartaFacesEcmaScript
   - org.openrewrite.java.migrate.jakarta.JavaxFacesConfigXmlToJakartaFacesConfigXml
@@ -37,6 +38,16 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
   - org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
   - org.openrewrite.java.migrate.jakarta.UpgradeFacesOpenSourceLibraries
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi4
+displayName: Update Jakarta EE Java Faces Dependencies to 4.0.x.
+description: Update Jakarta EE Java Faces Dependencies to 4.0.x.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.faces
+      artifactId: jakarta.faces-api
+      newVersion: 4.0.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtml
@@ -264,7 +275,7 @@ displayName: >-
   JNDI name `jsf/ClientSideSecretKey` has been renamed to `faces/ClientSideSecretKey`,
   and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`
 description: >-
-  The `jsf/ClientSideSecretKey` JNDI name has been renamed to `faces/ClientSideSecretKey`, 
+  The `jsf/ClientSideSecretKey` JNDI name has been renamed to `faces/ClientSideSecretKey`,
   and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.
   The JNDI keys that have been renamed are updated to allow use of the keys.
 recipeList:
@@ -281,7 +292,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesResourceResolver
 displayName: Replace `ResourceResolver` with `ResourceHandler`
 description: >-
-  The `ResourceResolver` class was removed in Jakarta Faces 4.0. 
+  The `ResourceResolver` class was removed in Jakarta Faces 4.0.
   The functionality provided by that class can be replaced by using the `jakarta.faces.application.ResourceHandler` class.
 recipeList:
   - org.openrewrite.java.ChangeType:

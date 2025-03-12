@@ -23,6 +23,7 @@ tags:
   - jakarta
 recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
+  - org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
   - org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakarta4x
   - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
   - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
@@ -37,7 +38,81 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml
   - org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
+displayName: Migrate Jakarta EE 9 api dependencies to Jakarta EE 10 versions
+description: Jakarta EE 10 updates some apis compared to Jakarta EE 9.
+tags:
+  - jakarta
+# NOTE: The spec versions in this section comes from https://github.com/jakartaee/jakartaee-api/blob/10.0.0/pom.xml
+recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaAnnotations2
+  - org.openrewrite.java.migrate.jakarta.UpdateJakartaXmlWsEE10
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.activation
+      artifactId: jakarta.activation-api
+      newVersion: 2.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.authentication
+      artifactId: jakarta.authentication-api
+      newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.authorization
+      artifactId: jakarta.authorization-api
+      newVersion: 2.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.batch
+      artifactId: jakarta.batch-api
+      newVersion: 2.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.validation
+      artifactId: jakarta.validation-api
+      newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.enterprise
+      artifactId: jakarta.enterprise.cdi-api
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.el
+      artifactId: jakarta.el-api
+      newVersion: 5.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.interceptor
+      artifactId: jakarta.interceptor-api
+      newVersion: 2.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.persistence
+      artifactId: jakarta.persistence-api
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.resource
+      artifactId: jakarta.resource-api
+      newVersion: 2.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.security.enterprise
+      artifactId: jakarta.security.enterprise-api
+      newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.servlet
+      artifactId: jakarta.servlet-api
+      newVersion: 6.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.websocket
+      artifactId: jakarta.websocket-api
+      newVersion: 2.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.jms
+      artifactId: jakarta.jms-api
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.json
+      artifactId: jakarta.json-api
+      newVersion: 2.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.ws.rs
+      artifactId: jakarta.ws.rs-api
+      newVersion: 3.1.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -301,3 +376,31 @@ recipeList:
       groupId: jakarta.annotations
       artifactId: jakarta.annotation-api
       newVersion: 2.1.x
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Nullable
+      newFullyQualifiedTypeName: jakarta.annotation.Nullable
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Nonnull
+      newFullyQualifiedTypeName: jakarta.annotation.Nonnull
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateJakartaXmlWsEE10
+displayName: Update Jakarta EE XML Web Services Dependencies for EE 10.
+description: Update Jakarta EE XML Web Services Dependencies for EE 10.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.xml.bind
+      artifactId: jakarta.xml.bind-api
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.xml.soap
+      artifactId: jakarta.xml.soap-api
+      newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.xml.ws
+      artifactId: jakarta.xml.ws-api
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.sun.xml.ws
+      artifactId: jaxws-rt
+      newVersion: 4.x
