@@ -31,6 +31,7 @@ public class DateTimeFormatterTemplates implements Templates {
     private final MethodMatcher parseMillis = new MethodMatcher(JODA_TIME_FORMATTER + " parseMillis(java.lang.String)");
     private final MethodMatcher printLong = new MethodMatcher(JODA_TIME_FORMATTER + " print(long)");
     private final MethodMatcher printDateTime = new MethodMatcher(JODA_TIME_FORMATTER + " print(org.joda.time.ReadableInstant)");
+    private final MethodMatcher printLocalDate = new MethodMatcher(JODA_TIME_FORMATTER + " print(org.joda.time.ReadablePartial)");
     private final MethodMatcher withZone = new MethodMatcher(JODA_TIME_FORMATTER + " withZone(org.joda.time.DateTimeZone)");
     private final MethodMatcher withZoneUTC = new MethodMatcher(JODA_TIME_FORMATTER + " withZoneUTC()");
 
@@ -42,6 +43,7 @@ public class DateTimeFormatterTemplates implements Templates {
             .imports(JAVA_DATE_TIME, JAVA_INSTANT, JAVA_ZONE_ID)
             .build();
     private final JavaTemplate printDateTimeTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.format(#{any(" + JAVA_TIME_FORMATTER + ")})").build();
+    private final JavaTemplate printLocalDateTemplate = JavaTemplate.builder("#{any(" + JAVA_LOCAL_DATE + ")}.format(#{any(" + JAVA_TIME_FORMATTER + ")})").build();
     private final JavaTemplate withZoneTemplate = JavaTemplate.builder("#{any(" + JAVA_TIME_FORMATTER + ")}.withZone(#{any(" + JAVA_ZONE_ID + ")})").build();
     private final JavaTemplate withZoneUTCTemplate = JavaTemplate.builder("#{any(" + JAVA_TIME_FORMATTER + ")}.withZone(ZoneOffset.UTC)")
             .imports(JAVA_ZONE_OFFSET).build();
@@ -62,6 +64,10 @@ public class DateTimeFormatterTemplates implements Templates {
                 return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
             }));
             add(new MethodTemplate(printDateTime, printDateTimeTemplate, m -> {
+                J.MethodInvocation mi = (J.MethodInvocation) m;
+                return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
+            }));
+            add(new MethodTemplate(printLocalDate, printLocalDateTemplate, m -> {
                 J.MethodInvocation mi = (J.MethodInvocation) m;
                 return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
             }));

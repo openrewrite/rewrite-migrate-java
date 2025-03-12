@@ -29,6 +29,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavadocVisitor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
+import org.openrewrite.marker.SearchResult;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -93,14 +94,19 @@ class JodaTimeScanner extends ScopeAwareVisitor {
 
     @Override
     public J visitVariable(NamedVariable variable, ExecutionContext ctx) {
-        if (variable.getType() == null || !variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+        if (variable.getType() == null){
+            return SearchResult.found(variable, "Variable with no type is found. Please check your code."); // unhandled case
+        }
+        if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return super.visitVariable(variable, ctx);
         }
         // TODO: handle class variables
+        // working fine with disabling for safe check in JodaTimeVisitor
         if (isClassVar(variable)) {
             acc.getUnsafeVars().add(variable);
             return variable;
         }
+
         variable = (NamedVariable) super.visitVariable(variable, ctx);
 
         if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {

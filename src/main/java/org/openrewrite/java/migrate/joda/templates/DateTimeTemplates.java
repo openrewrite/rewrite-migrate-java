@@ -30,15 +30,19 @@ import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 @NoArgsConstructor
 public class DateTimeTemplates implements Templates {
     private final MethodMatcher newDateTime = new MethodMatcher(JODA_DATE_TIME + "<constructor>()");
+    private final MethodMatcher newDateInstant = new MethodMatcher(JODA_DATE_TIME + "<constructor>(java.lang.Object)");
     private final MethodMatcher newDateTimeWithZone = new MethodMatcher(JODA_DATE_TIME + "<constructor>(" + JODA_DATE_TIME_ZONE + ")");
     private final MethodMatcher newDateTimeWithEpoch = new MethodMatcher(JODA_DATE_TIME + "<constructor>(long)");
     private final MethodMatcher newDateTimeWithEpochAndZone = new MethodMatcher(JODA_DATE_TIME + "<constructor>(long, " + JODA_DATE_TIME_ZONE + ")");
+    private final MethodMatcher newDateTimeWithEpochObjectAndZone = new MethodMatcher(JODA_DATE_TIME + "<constructor>(java.lang.Object, " + JODA_DATE_TIME_ZONE + ")");
     private final MethodMatcher newDateTimeWithMin = new MethodMatcher(JODA_DATE_TIME + "<constructor>(int, int, int, int, int)");
     private final MethodMatcher newDateTimeWithMinAndZone = new MethodMatcher(JODA_DATE_TIME + "<constructor>(int, int, int, int, int, " + JODA_DATE_TIME_ZONE + ")");
     private final MethodMatcher newDateTimeWithSec = new MethodMatcher(JODA_DATE_TIME + "<constructor>(int, int, int, int, int, int)");
     private final MethodMatcher newDateTimeWithSecAndZone = new MethodMatcher(JODA_DATE_TIME + "<constructor>(int, int, int, int, int, int, " + JODA_DATE_TIME_ZONE + ")");
     private final MethodMatcher newDateTimeWithMillis = new MethodMatcher(JODA_DATE_TIME + "<constructor>(int, int, int, int, int, int, int)");
     private final MethodMatcher newDateTimeWithMillisAndZone = new MethodMatcher(JODA_DATE_TIME + "<constructor>(int, int, int, int, int, int, int, " + JODA_DATE_TIME_ZONE + ")");
+    private final MethodMatcher newDateTimeWithObject = new MethodMatcher(JODA_DATE_TIME + "<constructor>(java.lang.Object)");
+    private final MethodMatcher newDateMidnight = new MethodMatcher(JODA_DATE_MIDNIGHT + "<constructor>(int, int, int)");
 
     private final MethodMatcher dateTimeNow = new MethodMatcher(JODA_DATE_TIME + " now()");
     private final MethodMatcher dateTimeNowWithZone = new MethodMatcher(JODA_DATE_TIME + " now(" + JODA_DATE_TIME_ZONE + ")");
@@ -122,225 +126,164 @@ public class DateTimeTemplates implements Templates {
     private final MethodMatcher millisOfSecond = new MethodMatcher(JODA_DATE_TIME + " millisOfSecond()");
 
 
-    private final JavaTemplate dateTimeTemplate = JavaTemplate.builder("ZonedDateTime.now()")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate dateTimeWithZoneTemplate = JavaTemplate.builder("ZonedDateTime.now(#{any(java.time.ZoneOffset)})")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate dateTimeWithEpochTemplate = JavaTemplate.builder("ZonedDateTime.ofInstant(Instant.ofEpochMilli(#{any(long)}), ZoneId.systemDefault())")
-            .imports(JAVA_DATE_TIME, JAVA_ZONE_ID, JAVA_INSTANT)
-            .build();
-    private final JavaTemplate dateTimeWithEpochAndZoneTemplate = JavaTemplate.builder("ZonedDateTime.ofInstant(Instant.ofEpochMilli(#{any(long)}), #{any(java.time.ZoneId)})")
-            .imports(JAVA_DATE_TIME, JAVA_ZONE_OFFSET, JAVA_ZONE_ID, JAVA_INSTANT)
-            .build();
-    private final JavaTemplate dateTimeWithMinTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, 0, 0, ZoneId.systemDefault())")
-            .imports(JAVA_DATE_TIME, JAVA_ZONE_ID)
-            .build();
-    private final JavaTemplate dateTimeWithMinAndZoneTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, 0, 0, #{any(java.time.ZoneId)})")
-            .imports(JAVA_DATE_TIME, JAVA_ZONE_ID)
-            .build();
-    private final JavaTemplate dateTimeWithSecTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, 0, ZoneId.systemDefault())")
-            .imports(JAVA_DATE_TIME, JAVA_ZONE_ID)
-            .build();
-    private final JavaTemplate dateTimeWithSecAndZoneTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, 0, #{any(java.time.ZoneId)})")
-            .imports(JAVA_DATE_TIME, JAVA_ZONE_ID)
-            .build();
-    private final JavaTemplate dateTimeWithMillisTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)} * 1_000_000, ZoneId.systemDefault())")
-            .imports(JAVA_DATE_TIME, JAVA_ZONE_ID)
-            .build();
-    private final JavaTemplate dateTimeWithMillisAndZoneTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)} * 1_000_000, #{any(java.time.ZoneId)})")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate dateTimeParseTemplate = JavaTemplate.builder("ZonedDateTime.parse(#{any(String)})")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate dateTimeParseWithFormatterTemplate = JavaTemplate.builder("ZonedDateTime.parse(#{any(String)}, #{any(java.time.format.DateTimeFormatter)})")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate toDateTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}")
-            .build();
-    private final JavaTemplate getMillisTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toInstant().toEpochMilli()")
-            .build();
-    private final JavaTemplate withMillisTemplate = JavaTemplate.builder("ZonedDateTime.ofInstant(Instant.ofEpochMilli(#{any(long)}),#{any(java.time.ZonedDateTime)}.getZone())")
-            .imports(JAVA_DATE_TIME, JAVA_INSTANT)
-            .build();
-    private final JavaTemplate withZoneTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withZoneSameInstant(#{any(java.time.ZoneId)})")
-            .build();
-    private final JavaTemplate withZoneRetainFieldsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withZoneSameLocal(#{any(java.time.ZoneId)})")
-            .build();
-    private final JavaTemplate withEarlierOffsetAtOverlapTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withEarlierOffsetAtOverlap()")
-            .build();
-    private final JavaTemplate withLaterOffsetAtOverlapTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withLaterOffsetAtOverlap()")
-            .build();
-    private final JavaTemplate withDateTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withYear(#{any(int)}).withMonth(#{any(int)}).withDayOfMonth(#{any(int)})")
-            .build();
-    private final JavaTemplate withTemporalAdjusterTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.with(#{any(java.time.temporal.TemporalAdjuster)})")
-            .imports(JAVA_TEMPORAL_ADJUSTER)
-            .build();
-    private final JavaTemplate withTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withHour(#{any(int)}).withMinute(#{any(int)}).withSecond(#{any(int)}).withNano(#{any(int)} * 1_000_000)")
-            .build();
-    private final JavaTemplate withTimeAtStartOfDayTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalDate().atStartOfDay(#{any(java.time.ZonedDateTime)}.getZone())")
-            .build();
-    private final JavaTemplate withDurationAddedTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plus(Duration.ofMillis(#{any(long)}).multipliedBy(#{any(int)}))")
-            .imports(JAVA_DURATION)
-            .build();
-    private final JavaTemplate plusReadableDurationTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plus(#{any(java.time.Duration)})")
-            .build();
-    private final JavaTemplate plusYearsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusYears(#{any(int)})")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate plusMonthsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusMonths(#{any(int)})")
-            .build();
-    private final JavaTemplate plusWeeksTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusWeeks(#{any(int)})")
-            .build();
-    private final JavaTemplate plusDaysTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusDays(#{any(int)})")
-            .build();
-    private final JavaTemplate plusHoursTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusHours(#{any(int)})")
-            .build();
-    private final JavaTemplate plusMinutesTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusMinutes(#{any(int)})")
-            .build();
-    private final JavaTemplate plusSecondsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusSeconds(#{any(int)})")
-            .build();
-    private final JavaTemplate plusMillisTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plus(Duration.ofMillis(#{any(int)}))")
-            .imports(JAVA_DURATION)
-            .build();
-    private final JavaTemplate minusMillisTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minus(Duration.ofMillis(#{any(int)}))")
-            .imports(JAVA_DURATION)
-            .build();
-    private final JavaTemplate minusReadableDurationTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minus(#{any(java.time.Duration)})")
-            .imports(JAVA_DATE_TIME, JAVA_DURATION)
-            .build();
-    private final JavaTemplate minusYearsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusYears(#{any(int)})")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate minusMonthsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusMonths(#{any(int)})")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate minusWeeksTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusWeeks(#{any(int)})")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate minusDaysTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusDays(#{any(int)})")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate minusHoursTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusHours(#{any(int)})")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate minusMinutesTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusMinutes(#{any(int)})")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate minusSecondsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusSeconds(#{any(int)})")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate toLocalDateTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalDateTime()")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate toLocalDateTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalDate()")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate toLocalTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalTime()")
-            .imports(JAVA_DATE_TIME)
-            .build();
-    private final JavaTemplate withYearTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withYear(#{any(int)})")
-            .build();
-    private final JavaTemplate withWeekyearTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.with(IsoFields.WEEK_BASED_YEAR, #{any(int)})")
-            .imports(JAVA_TEMPORAL_ISO_FIELDS)
-            .build();
-    private final JavaTemplate withMonthOfYearTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withMonth(#{any(int)})")
-            .build();
-    private final JavaTemplate withWeekOfWeekyearTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.with(ChronoField.ALIGNED_WEEK_OF_YEAR, #{any(int)})")
-            .imports(JAVA_CHRONO_FIELD)
-            .build();
-    private final JavaTemplate withDayOfYearTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withDayOfYear(#{any(int)})")
-            .build();
-    private final JavaTemplate withDayOfMonthTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withDayOfMonth(#{any(int)})")
-            .build();
-    private final JavaTemplate withDayOfWeekTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.with(ChronoField.DAY_OF_WEEK, #{any(int)})")
-            .imports(JAVA_CHRONO_FIELD)
-            .build();
-    private final JavaTemplate withHourOfDayTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withHour(#{any(int)})")
-            .build();
-    private final JavaTemplate withMinuteOfHourTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withMinute(#{any(int)})")
-            .build();
-    private final JavaTemplate withSecondOfMinuteTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withSecond(#{any(int)})")
-            .build();
-    private final JavaTemplate withMillisOfSecondTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withNano(#{any(int)} * 1_000_000)")
-            .build();
-    private final JavaTemplate withMillisOfDayTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.with(ChronoField.MILLI_OF_DAY, #{any(int)})")
-            .imports(JAVA_CHRONO_FIELD)
-            .build();
+    private final JavaTemplate.Builder dateTimeTemplate = JavaTemplate.builder("ZonedDateTime.now()");
+    private final JavaTemplate.Builder dateTimeWithZoneTemplate = JavaTemplate.builder("ZonedDateTime.now(#{any(java.time.ZoneOffset)})");
+    private final JavaTemplate.Builder dateTimeWithEpochTemplate = JavaTemplate.builder("ZonedDateTime.ofInstant(Instant.ofEpochMilli(#{any(long)}), ZoneId.systemDefault())")
+            .imports(JAVA_ZONE_ID, JAVA_INSTANT);
+    private final JavaTemplate.Builder dateTimeWithEpochAndZoneTemplate = JavaTemplate.builder("ZonedDateTime.ofInstant(Instant.ofEpochMilli(#{any(long)}), #{any(java.time.ZoneId)})")
+            .imports(JAVA_ZONE_ID, JAVA_INSTANT);
+    private final JavaTemplate.Builder dateTimeWithMinTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, 0, 0, ZoneId.systemDefault())")
+            .imports(JAVA_ZONE_ID);
+    private final JavaTemplate.Builder dateTimeWithMinAndZoneTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, 0, 0, #{any(java.time.ZoneId)})")
+            .imports(JAVA_ZONE_ID);
+    private final JavaTemplate.Builder dateTimeWithSecTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, 0, ZoneId.systemDefault())")
+            .imports(JAVA_ZONE_ID);
+    private final JavaTemplate.Builder dateTimeWithSecAndZoneTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, 0, #{any(java.time.ZoneId)})")
+            .imports(JAVA_ZONE_ID);
+    private final JavaTemplate.Builder dateTimeWithMillisTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)} * 1_000_000, ZoneId.systemDefault())")
+            .imports(JAVA_ZONE_ID);
+    private final JavaTemplate.Builder dateTimeWithMillisAndZoneTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)} * 1_000_000, #{any(java.time.ZoneId)})");
+    private final JavaTemplate.Builder dateTimeWithYMD = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, 0, 0, 0, 0, ZoneId.systemDefault())")
+            .imports(JAVA_ZONE_ID);
+    private final JavaTemplate.Builder dateTimeParseTemplate = JavaTemplate.builder("ZonedDateTime.parse(#{any(String)})");
+    private final JavaTemplate.Builder dateTimeParseWithFormatterTemplate = JavaTemplate.builder("ZonedDateTime.parse(#{any(String)}, #{any(java.time.format.DateTimeFormatter)})");
+    private final JavaTemplate.Builder toDateTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}");
+    private final JavaTemplate.Builder getMillisTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toInstant().toEpochMilli()");
+    private final JavaTemplate.Builder withMillisTemplate = JavaTemplate.builder("ZonedDateTime.ofInstant(Instant.ofEpochMilli(#{any(long)}),#{any(java.time.ZonedDateTime)}.getZone())")
+            .imports(JAVA_DATE_TIME, JAVA_INSTANT);
+    private final JavaTemplate.Builder withZoneTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withZoneSameInstant(#{any(java.time.ZoneId)})");
+    private final JavaTemplate.Builder withZoneRetainFieldsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withZoneSameLocal(#{any(java.time.ZoneId)})");
+    private final JavaTemplate.Builder withEarlierOffsetAtOverlapTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withEarlierOffsetAtOverlap()");
+    private final JavaTemplate.Builder withLaterOffsetAtOverlapTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withLaterOffsetAtOverlap()");
+    private final JavaTemplate.Builder withDateTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withYear(#{any(int)}).withMonth(#{any(int)}).withDayOfMonth(#{any(int)})");
+    private final JavaTemplate.Builder withTemporalAdjusterTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.with(#{any(java.time.temporal.TemporalAdjuster)})")
+            .imports(JAVA_TEMPORAL_ADJUSTER);
+    private final JavaTemplate.Builder withTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withHour(#{any(int)}).withMinute(#{any(int)}).withSecond(#{any(int)}).withNano(#{any(int)} * 1_000_000)");
+    private final JavaTemplate.Builder withTimeAtStartOfDayTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalDate().atStartOfDay(#{any(java.time.ZonedDateTime)}.getZone())");
+    private final JavaTemplate.Builder withDurationAddedTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plus(Duration.ofMillis(#{any(long)}).multipliedBy(#{any(int)}))")
+            .imports(JAVA_DURATION);
+    private final JavaTemplate.Builder plusReadableDurationTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plus(#{any(java.time.Duration)})")
+            .imports(JAVA_DURATION);
+    private final JavaTemplate.Builder plusYearsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusYears(#{any(int)})");
+    private final JavaTemplate.Builder plusMonthsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusMonths(#{any(int)})");
+    private final JavaTemplate.Builder plusWeeksTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusWeeks(#{any(int)})");
+    private final JavaTemplate.Builder plusDaysTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusDays(#{any(int)})");
+    private final JavaTemplate.Builder plusHoursTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusHours(#{any(int)})");
+    private final JavaTemplate.Builder plusMinutesTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusMinutes(#{any(int)})");
+    private final JavaTemplate.Builder plusSecondsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plusSeconds(#{any(int)})");
+    private final JavaTemplate.Builder plusMillisTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.plus(Duration.ofMillis(#{any(int)}))")
+            .imports(JAVA_DURATION);
+    private final JavaTemplate.Builder minusMillisTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minus(Duration.ofMillis(#{any(int)}))")
+            .imports(JAVA_DURATION);
+    private final JavaTemplate.Builder minusReadableDurationTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minus(#{any(java.time.Duration)})")
+            .imports(JAVA_DATE_TIME, JAVA_DURATION);
+    private final JavaTemplate.Builder minusYearsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusYears(#{any(int)})");
+    private final JavaTemplate.Builder minusMonthsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusMonths(#{any(int)})");
+    private final JavaTemplate.Builder minusWeeksTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusWeeks(#{any(int)})");
+    private final JavaTemplate.Builder minusDaysTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusDays(#{any(int)})");
+    private final JavaTemplate.Builder minusHoursTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusHours(#{any(int)})");
+    private final JavaTemplate.Builder minusMinutesTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusMinutes(#{any(int)})");
+    private final JavaTemplate.Builder minusSecondsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusSeconds(#{any(int)})");
+    private final JavaTemplate.Builder toLocalDateTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalDateTime()");
+    private final JavaTemplate.Builder toLocalDateTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalDate()");
+    private final JavaTemplate.Builder toLocalTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalTime()");
+    private final JavaTemplate.Builder withYearTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withYear(#{any(int)})");
+    private final JavaTemplate.Builder withWeekyearTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.with(IsoFields.WEEK_BASED_YEAR, #{any(int)})")
+            .imports(JAVA_TEMPORAL_ISO_FIELDS);
+    private final JavaTemplate.Builder withMonthOfYearTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withMonth(#{any(int)})");
+    private final JavaTemplate.Builder withWeekOfWeekyearTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.with(ChronoField.ALIGNED_WEEK_OF_YEAR, #{any(int)})")
+            .imports(JAVA_CHRONO_FIELD);
+    private final JavaTemplate.Builder withDayOfYearTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withDayOfYear(#{any(int)})");
+    private final JavaTemplate.Builder withDayOfMonthTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withDayOfMonth(#{any(int)})");
+    private final JavaTemplate.Builder withDayOfWeekTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.with(ChronoField.DAY_OF_WEEK, #{any(int)})")
+            .imports(JAVA_CHRONO_FIELD);
+    private final JavaTemplate.Builder withHourOfDayTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withHour(#{any(int)})");
+    private final JavaTemplate.Builder withMinuteOfHourTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withMinute(#{any(int)})");
+    private final JavaTemplate.Builder withSecondOfMinuteTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withSecond(#{any(int)})");
+    private final JavaTemplate.Builder withMillisOfSecondTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withNano(#{any(int)} * 1_000_000)");
+    private final JavaTemplate.Builder withMillisOfDayTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.with(ChronoField.MILLI_OF_DAY, #{any(int)})")
+            .imports(JAVA_CHRONO_FIELD);
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
-            add(new MethodTemplate(newDateTime, dateTimeTemplate));
-            add(new MethodTemplate(newDateTimeWithZone, dateTimeWithZoneTemplate));
-            add(new MethodTemplate(newDateTimeWithEpoch, dateTimeWithEpochTemplate));
-            add(new MethodTemplate(newDateTimeWithEpochAndZone, dateTimeWithEpochAndZoneTemplate));
-            add(new MethodTemplate(newDateTimeWithMin, dateTimeWithMinTemplate));
-            add(new MethodTemplate(newDateTimeWithMinAndZone, dateTimeWithMinAndZoneTemplate));
-            add(new MethodTemplate(newDateTimeWithSec, dateTimeWithSecTemplate));
-            add(new MethodTemplate(newDateTimeWithSecAndZone, dateTimeWithSecAndZoneTemplate));
-            add(new MethodTemplate(newDateTimeWithMillis, dateTimeWithMillisTemplate));
-            add(new MethodTemplate(newDateTimeWithMillisAndZone, dateTimeWithMillisAndZoneTemplate));
-            add(new MethodTemplate(dateTimeNow, dateTimeTemplate));
-            add(new MethodTemplate(dateTimeNowWithZone, dateTimeWithZoneTemplate));
-            add(new MethodTemplate(dateTimeParse, dateTimeParseTemplate));
-            add(new MethodTemplate(dateTimeParseWithFormatter, dateTimeParseWithFormatterTemplate));
-            add(new MethodTemplate(toDateTime, toDateTimeTemplate));
-            add(new MethodTemplate(toDateTimeWithZone, withZoneTemplate));
-            add(new MethodTemplate(withMillis, withMillisTemplate, m -> {
+            add(new MethodTemplate(newDateTime, build(dateTimeTemplate)));
+            add(new MethodTemplate(newDateInstant, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
+            add(new MethodTemplate(newDateTimeWithZone, build(dateTimeWithZoneTemplate)));
+            add(new MethodTemplate(newDateTimeWithEpoch, build(dateTimeWithEpochTemplate)));
+            add(new MethodTemplate(newDateTimeWithEpochAndZone, build(dateTimeWithEpochAndZoneTemplate)));
+            add(new MethodTemplate(newDateTimeWithEpochObjectAndZone, build(dateTimeWithEpochAndZoneTemplate)));
+            add(new MethodTemplate(newDateTimeWithMin, build(dateTimeWithMinTemplate)));
+            add(new MethodTemplate(newDateTimeWithMinAndZone, build(dateTimeWithMinAndZoneTemplate)));
+            add(new MethodTemplate(newDateTimeWithSec, build(dateTimeWithSecTemplate)));
+            add(new MethodTemplate(newDateTimeWithSecAndZone, build(dateTimeWithSecAndZoneTemplate)));
+            add(new MethodTemplate(newDateTimeWithMillis, build(dateTimeWithMillisTemplate)));
+            add(new MethodTemplate(newDateTimeWithMillisAndZone, build(dateTimeWithMillisAndZoneTemplate)));
+            add(new MethodTemplate(newDateMidnight, build(dateTimeWithYMD)));
+            add(new MethodTemplate(newDateTimeWithObject, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
+
+            add(new MethodTemplate(dateTimeNow, build(dateTimeTemplate)));
+            add(new MethodTemplate(dateTimeNowWithZone, build(dateTimeWithZoneTemplate)));
+            add(new MethodTemplate(dateTimeParse, build(dateTimeParseTemplate)));
+            add(new MethodTemplate(dateTimeParseWithFormatter, build(dateTimeParseWithFormatterTemplate)));
+            add(new MethodTemplate(toDateTime, build(toDateTimeTemplate)));
+            add(new MethodTemplate(toDateTimeWithZone, build(withZoneTemplate)));
+            add(new MethodTemplate(withMillis, build(withMillisTemplate), m -> {
                 J.MethodInvocation mi = (J.MethodInvocation) m;
                 return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
             }));
-            add(new MethodTemplate(withZone, withZoneTemplate));
-            add(new MethodTemplate(withZoneRetainFields, withZoneRetainFieldsTemplate));
-            add(new MethodTemplate(withEarlierOffsetAtOverlap, withEarlierOffsetAtOverlapTemplate));
-            add(new MethodTemplate(withLaterOffsetAtOverlap, withLaterOffsetAtOverlapTemplate));
-            add(new MethodTemplate(withDate, withDateTemplate));
-            add(new MethodTemplate(withDateLocalDate, withTemporalAdjusterTemplate));
-            add(new MethodTemplate(withTime, withTimeTemplate));
-            add(new MethodTemplate(withTimeLocalTime, withTemporalAdjusterTemplate));
-            add(new MethodTemplate(withTimeAtStartOfDay, withTimeAtStartOfDayTemplate, m -> {
+            add(new MethodTemplate(withZone, build(withZoneTemplate)));
+            add(new MethodTemplate(withZoneRetainFields, build(withZoneRetainFieldsTemplate)));
+            add(new MethodTemplate(withEarlierOffsetAtOverlap, build(withEarlierOffsetAtOverlapTemplate)));
+            add(new MethodTemplate(withLaterOffsetAtOverlap, build(withLaterOffsetAtOverlapTemplate)));
+            add(new MethodTemplate(withDate, build(withDateTemplate)));
+            add(new MethodTemplate(withDateLocalDate, build(withTemporalAdjusterTemplate)));
+            add(new MethodTemplate(withTime, build(withTimeTemplate)));
+            add(new MethodTemplate(withTimeLocalTime, build(withTemporalAdjusterTemplate)));
+            add(new MethodTemplate(withTimeAtStartOfDay, build(withTimeAtStartOfDayTemplate), m -> {
                 J.MethodInvocation mi = (J.MethodInvocation) m;
                 return new Expression[]{mi.getSelect(), mi.getSelect()};
             }));
-            add(new MethodTemplate(withDurationAdded, withDurationAddedTemplate));
-            add(new MethodTemplate(plusLong, plusMillisTemplate));
-            add(new MethodTemplate(plusReadableDuration, plusReadableDurationTemplate));
-            add(new MethodTemplate(plusYears, plusYearsTemplate));
-            add(new MethodTemplate(plusMonths, plusMonthsTemplate));
-            add(new MethodTemplate(plusWeeks, plusWeeksTemplate));
-            add(new MethodTemplate(plusDays, plusDaysTemplate));
-            add(new MethodTemplate(plusHours, plusHoursTemplate));
-            add(new MethodTemplate(plusMinutes, plusMinutesTemplate));
-            add(new MethodTemplate(plusSeconds, plusSecondsTemplate));
-            add(new MethodTemplate(plusMillis, plusMillisTemplate));
-            add(new MethodTemplate(minusLong, minusMillisTemplate));
-            add(new MethodTemplate(minusReadableDuration, minusReadableDurationTemplate));
-            add(new MethodTemplate(minusYears, minusYearsTemplate));
-            add(new MethodTemplate(minusMonths, minusMonthsTemplate));
-            add(new MethodTemplate(minusWeeks, minusWeeksTemplate));
-            add(new MethodTemplate(minusDays, minusDaysTemplate));
-            add(new MethodTemplate(minusHours, minusHoursTemplate));
-            add(new MethodTemplate(minusMinutes, minusMinutesTemplate));
-            add(new MethodTemplate(minusSeconds, minusSecondsTemplate));
-            add(new MethodTemplate(minusMillis, minusMillisTemplate));
-            add(new MethodTemplate(toLocalDateTime, toLocalDateTimeTemplate));
-            add(new MethodTemplate(toLocalDate, toLocalDateTemplate));
-            add(new MethodTemplate(toLocalTime, toLocalTimeTemplate));
-            add(new MethodTemplate(withYear, withYearTemplate));
-            add(new MethodTemplate(withWeekyear, withWeekyearTemplate));
-            add(new MethodTemplate(withMonthOfYear, withMonthOfYearTemplate));
-            add(new MethodTemplate(withWeekOfWeekyear, withWeekOfWeekyearTemplate));
-            add(new MethodTemplate(withDayOfYear, withDayOfYearTemplate));
-            add(new MethodTemplate(withDayOfMonth, withDayOfMonthTemplate));
-            add(new MethodTemplate(withDayOfWeek, withDayOfWeekTemplate));
-            add(new MethodTemplate(withHourOfDay, withHourOfDayTemplate));
-            add(new MethodTemplate(withMinuteOfHour, withMinuteOfHourTemplate));
-            add(new MethodTemplate(withSecondOfMinute, withSecondOfMinuteTemplate));
-            add(new MethodTemplate(withMillisOfSecond, withMillisOfSecondTemplate));
-            add(new MethodTemplate(withMillisOfDay, withMillisOfDayTemplate));
+            add(new MethodTemplate(withDurationAdded, build(withDurationAddedTemplate)));
+            add(new MethodTemplate(plusLong, build(plusMillisTemplate)));
+            add(new MethodTemplate(plusReadableDuration, build(plusReadableDurationTemplate)));
+            add(new MethodTemplate(plusYears, build(plusYearsTemplate)));
+            add(new MethodTemplate(plusMonths, build(plusMonthsTemplate)));
+            add(new MethodTemplate(plusWeeks, build(plusWeeksTemplate)));
+            add(new MethodTemplate(plusDays, build(plusDaysTemplate)));
+            add(new MethodTemplate(plusHours, build(plusHoursTemplate)));
+            add(new MethodTemplate(plusMinutes, build(plusMinutesTemplate)));
+            add(new MethodTemplate(plusSeconds, build(plusSecondsTemplate)));
+            add(new MethodTemplate(plusMillis, build(plusMillisTemplate)));
+            add(new MethodTemplate(minusLong, build(minusMillisTemplate)));
+            add(new MethodTemplate(minusReadableDuration, build(minusReadableDurationTemplate)));
+            add(new MethodTemplate(minusYears, build(minusYearsTemplate)));
+            add(new MethodTemplate(minusMonths, build(minusMonthsTemplate)));
+            add(new MethodTemplate(minusWeeks, build(minusWeeksTemplate)));
+            add(new MethodTemplate(minusDays, build(minusDaysTemplate)));
+            add(new MethodTemplate(minusHours, build(minusHoursTemplate)));
+            add(new MethodTemplate(minusMinutes, build(minusMinutesTemplate)));
+            add(new MethodTemplate(minusSeconds, build(minusSecondsTemplate)));
+            add(new MethodTemplate(minusMillis, build(minusMillisTemplate)));
+            add(new MethodTemplate(toLocalDateTime, build(toLocalDateTimeTemplate)));
+            add(new MethodTemplate(toLocalDate, build(toLocalDateTemplate)));
+            add(new MethodTemplate(toLocalTime, build(toLocalTimeTemplate)));
+            add(new MethodTemplate(withYear, build(withYearTemplate)));
+            add(new MethodTemplate(withWeekyear, build(withWeekyearTemplate)));
+            add(new MethodTemplate(withMonthOfYear, build(withMonthOfYearTemplate)));
+            add(new MethodTemplate(withWeekOfWeekyear, build(withWeekOfWeekyearTemplate)));
+            add(new MethodTemplate(withDayOfYear, build(withDayOfYearTemplate)));
+            add(new MethodTemplate(withDayOfMonth, build(withDayOfMonthTemplate)));
+            add(new MethodTemplate(withDayOfWeek, build(withDayOfWeekTemplate)));
+            add(new MethodTemplate(withHourOfDay, build(withHourOfDayTemplate)));
+            add(new MethodTemplate(withMinuteOfHour, build(withMinuteOfHourTemplate)));
+            add(new MethodTemplate(withSecondOfMinute, build(withSecondOfMinuteTemplate)));
+            add(new MethodTemplate(withMillisOfSecond, build(withMillisOfSecondTemplate)));
+            add(new MethodTemplate(withMillisOfDay, build(withMillisOfDayTemplate)));
         }
     };
+
+    private JavaTemplate build(JavaTemplate.Builder builder) {
+        return buildWithImport(builder, JAVA_DATE_TIME);
+    }
 }
