@@ -52,13 +52,13 @@ public class AbstractIntervalTemplates implements Templates {
             .build();
 
     @Getter
-    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
-        {
-            add(new MethodTemplate(getStart, getStartTemplate));
-            add(new MethodTemplate(getEnd, getEndTemplate));
-            add(new MethodTemplate(toDuration, toDurationTemplate));
-            add(new MethodTemplate(toDurationMillis, toDurationMillisTemplate));
-            add(new MethodTemplate(contains, containsTemplate));
-        }
-    };
+    private final List<MethodTemplate> templates;
+    {
+        templates = new ArrayList<>();
+        templates.add(new MethodTemplate(getStart, getStartTemplate));
+        templates.add(new MethodTemplate(getEnd, getEndTemplate));
+        templates.add(new MethodTemplate(toDuration, toDurationTemplate));
+        templates.add(new MethodTemplate(toDurationMillis, toDurationMillisTemplate));
+        templates.add(new MethodTemplate(contains, containsTemplate));
+    }
 }
