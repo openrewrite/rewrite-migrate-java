@@ -38,6 +38,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml
   - org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
+  - org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
@@ -404,3 +405,34 @@ recipeList:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
       newVersion: 4.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
+displayName: Update GlassFish Jersey Dependencies to 3.1.x
+description: Update GlassFish Jersey Dependencies to 3.1.x.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.jersey.core
+      artifactId: "*"
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.jersey.inject
+      artifactId: "*"
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.jersey.media
+      artifactId: "*"
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.jersey.containers
+      artifactId: "*"
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.jersey.server
+      artifactId: "*"
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.jersey.ext
+      artifactId: "*"
+      newVersion: 3.1.x
+---
