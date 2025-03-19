@@ -1016,6 +1016,12 @@ recipeList:
       newGroupId: jakarta.platform
       newArtifactId: jakarta.jakartaee-api
       newVersion: 9.1.0
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax
+      oldArtifactId: javaee-web-api
+      newGroupId: jakarta.platform
+      newArtifactId: jakarta.jakartaee-web-api
+      newVersion: 9.1.0
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.platform
       artifactId: "*"
