@@ -71,6 +71,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeRemoveImport(JODA_TIME_FORMATTER);
             maybeRemoveImport(JAVA_UTIL_LOCALE);
             maybeRemoveImport(JODA_LOCAL_DATE_TIME);
+            maybeRemoveImport(JODA_LOCAL_DATE);
             maybeRemoveImport(JODA_LOCAL_TIME);
             maybeRemoveImport(JODA_SECONDS);
             maybeRemoveImport(JODA_HOURS);
@@ -238,7 +239,6 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         MethodTemplate template = AllTemplates.getTemplate(original);
         if (template == null) {
             System.out.println("Joda usage is found but mapping is missing: " + original);
-            AllTemplates.getTemplate(original);
             return original; // unhandled case
         }
         if (template.getTemplate().getCode().equals(JODA_MULTIPLE_MAPPING_POSSIBLE)) {

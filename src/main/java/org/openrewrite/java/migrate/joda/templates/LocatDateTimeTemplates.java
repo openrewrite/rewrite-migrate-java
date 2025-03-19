@@ -68,6 +68,8 @@ public class LocatDateTimeTemplates implements Templates {
     final MethodMatcher minusSeconds = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusSeconds(int)");
     final MethodMatcher minusMillis = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusMillis(int)");
 
+    final MethodMatcher toFormatedString = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toString(java.lang.String)");
+
     final JavaTemplate.Builder newLocalDateTimeNoArgsTemplate = JavaTemplate.builder("LocalDateTime.now()");
     final JavaTemplate.Builder newLocalDateTimeEpochTemplate = JavaTemplate.builder("LocalDateTime.ofInstant(Instant.ofEpochMilli(#{any(long)}), ZoneId.systemDefault())")
             .imports(JAVA_INSTANT, JAVA_ZONE_ID);
@@ -107,6 +109,9 @@ public class LocatDateTimeTemplates implements Templates {
     final JavaTemplate.Builder minusMinutesTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusMinutes(#{any(int)})");
     final JavaTemplate.Builder minusSecondsTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusSeconds(#{any(int)})");
     final JavaTemplate.Builder minusMillisTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusNanos(#{any(int)} * 1_000_000L)");
+
+    final JavaTemplate.Builder toFormatedStringTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.format(DateTimeFormatter.ofPattern(#{any(String)}))")
+            .imports(JAVA_TIME_FORMATTER);
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -148,6 +153,8 @@ public class LocatDateTimeTemplates implements Templates {
             add(new MethodTemplate(minusMinutes, build(minusMinutesTemplate)));
             add(new MethodTemplate(minusSeconds, build(minusSecondsTemplate)));
             add(new MethodTemplate(minusMillis, build(minusMillisTemplate)));
+
+            add(new MethodTemplate(toFormatedString, build(toFormatedStringTemplate)));
 
             add(new MethodTemplate(newLocalDateObject, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
             add(new MethodTemplate(equals, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));

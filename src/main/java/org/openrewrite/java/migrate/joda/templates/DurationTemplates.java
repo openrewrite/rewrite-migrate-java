@@ -46,6 +46,7 @@ public class DurationTemplates implements Templates {
     private final MethodMatcher getStandardSeconds = new MethodMatcher(JODA_DURATION + " getStandardSeconds()");
 
     private final MethodMatcher toDuration = new MethodMatcher(JODA_DURATION + " toDuration()");
+    private final MethodMatcher toPeriod = new MethodMatcher(JODA_DURATION + " toPeriod()");
 
     private final MethodMatcher toStandardDays = new MethodMatcher(JODA_DURATION + " toStandardDays()");
     private final MethodMatcher toStandardHours = new MethodMatcher(JODA_DURATION + " toStandardHours()");
@@ -81,6 +82,9 @@ public class DurationTemplates implements Templates {
     private final JavaTemplate.Builder millisTemplate = JavaTemplate.builder("Duration.ofMillis(#{any(long)})");
 
     private final JavaTemplate.Builder toDurationTemplate = JavaTemplate.builder("#{any(java.time.Duration)}");
+    private final JavaTemplate.Builder toPeriodTemplate = JavaTemplate.builder("Period.from(#{any(java.time.Duration)})")
+            .imports(JAVA_PERIOD);
+
     private final JavaTemplate.Builder toDaysTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.toDays()");
     private final JavaTemplate.Builder toHoursTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.toHours()");
     private final JavaTemplate.Builder toMinutesTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.toMinutes()");
@@ -118,6 +122,7 @@ public class DurationTemplates implements Templates {
             add(new MethodTemplate(getStandardSeconds, build(getSecondsTemplate)));
 
             add(new MethodTemplate(toDuration, build(toDurationTemplate)));
+            add(new MethodTemplate(toPeriod, build(toPeriodTemplate)));
 
             add(new MethodTemplate(toStandardDays, build(toDaysTemplate)));
             add(new MethodTemplate(toStandardHours, build(toHoursTemplate)));

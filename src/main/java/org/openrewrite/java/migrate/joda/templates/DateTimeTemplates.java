@@ -41,7 +41,6 @@ public class DateTimeTemplates implements Templates {
     private final MethodMatcher newDateTimeWithSecAndZone = new MethodMatcher(JODA_DATE_TIME + "<constructor>(int, int, int, int, int, int, " + JODA_DATE_TIME_ZONE + ")");
     private final MethodMatcher newDateTimeWithMillis = new MethodMatcher(JODA_DATE_TIME + "<constructor>(int, int, int, int, int, int, int)");
     private final MethodMatcher newDateTimeWithMillisAndZone = new MethodMatcher(JODA_DATE_TIME + "<constructor>(int, int, int, int, int, int, int, " + JODA_DATE_TIME_ZONE + ")");
-    private final MethodMatcher newDateTimeWithObject = new MethodMatcher(JODA_DATE_TIME + "<constructor>(java.lang.Object)");
     private final MethodMatcher newDateMidnight = new MethodMatcher(JODA_DATE_MIDNIGHT + "<constructor>(int, int, int)");
 
     private final MethodMatcher dateTimeNow = new MethodMatcher(JODA_DATE_TIME + " now()");
@@ -220,7 +219,6 @@ public class DateTimeTemplates implements Templates {
             add(new MethodTemplate(newDateTimeWithMillis, build(dateTimeWithMillisTemplate)));
             add(new MethodTemplate(newDateTimeWithMillisAndZone, build(dateTimeWithMillisAndZoneTemplate)));
             add(new MethodTemplate(newDateMidnight, build(dateTimeWithYMD)));
-            add(new MethodTemplate(newDateTimeWithObject, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
 
             add(new MethodTemplate(dateTimeNow, build(dateTimeTemplate)));
             add(new MethodTemplate(dateTimeNowWithZone, build(dateTimeWithZoneTemplate)));

@@ -34,6 +34,9 @@ public class SecondsTemplates implements Templates {
     final MethodMatcher multipliedByMethod = new MethodMatcher(JODA_SECONDS + " multipliedBy(int)");
     final MethodMatcher dividedByMethod = new MethodMatcher(JODA_SECONDS + " dividedBy(int)");
     final MethodMatcher getSecondsMethod = new MethodMatcher(JODA_SECONDS + " getSeconds()");
+    final MethodMatcher isLessThan = new MethodMatcher(JODA_SECONDS + " isLessThan(org.joda.time.Seconds)");
+    final MethodMatcher isGreaterThan = new MethodMatcher(JODA_SECONDS + " isGreaterThan(org.joda.time.Seconds)");
+    final MethodMatcher toStandardDuration = new MethodMatcher(JODA_SECONDS + " toStandardDuration()");
 
     final JavaTemplate.Builder secondsStaticMethodTemplate = JavaTemplate.builder("Duration.ofSeconds(#{any(int)})");
     final JavaTemplate.Builder plusMethodTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.plus(#{any(java.time.Duration)})");
@@ -41,6 +44,9 @@ public class SecondsTemplates implements Templates {
     final JavaTemplate.Builder multipliedByMethodTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.multipliedBy(#{any(int)})");
     final JavaTemplate.Builder dividedByMethodTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.dividedBy(#{any(int)})");
     final JavaTemplate.Builder getSecondsMethodTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.getSeconds()");
+    final JavaTemplate.Builder minusIsNegativeTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.minus(#{any(java.time.Duration)}).isNegative()");
+    final JavaTemplate.Builder minusIsPositiveTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.minus(#{any(java.time.Duration)}).isPositive()");
+    final JavaTemplate.Builder asDurationTemplate = JavaTemplate.builder("#{any(java.time.Duration)}");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -51,6 +57,9 @@ public class SecondsTemplates implements Templates {
             add(new MethodTemplate(multipliedByMethod, build(multipliedByMethodTemplate)));
             add(new MethodTemplate(dividedByMethod, build(dividedByMethodTemplate)));
             add(new MethodTemplate(getSecondsMethod, build(getSecondsMethodTemplate)));
+            add(new MethodTemplate(isLessThan, build(minusIsNegativeTemplate)));
+            add(new MethodTemplate(isGreaterThan, build(minusIsPositiveTemplate)));
+            add(new MethodTemplate(toStandardDuration, build(asDurationTemplate)));
         }
     };
 

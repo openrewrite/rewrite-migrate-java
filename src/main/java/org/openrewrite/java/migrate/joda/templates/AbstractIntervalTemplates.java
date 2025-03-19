@@ -36,9 +36,11 @@ public class AbstractIntervalTemplates implements Templates {
     private final MethodMatcher containsInterval = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " contains(org.joda.time.ReadableInterval)");
     private final MethodMatcher equals = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " equals(java.lang.Object)");
     private final MethodMatcher isBefore = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " isBefore(org.joda.time.ReadableInstant)");
+    private final MethodMatcher isAfter = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " isAfter(org.joda.time.ReadableInstant)");
     private final MethodMatcher containsNow = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " containsNow()");
     private final MethodMatcher isAfterNow = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " isAfterNow()");
     private final MethodMatcher isBeforeNow = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " isBeforeNow()");
+    private final MethodMatcher toString = new MethodMatcher(JODA_ABSTRACT_INTERVAL + " toString()");
 
     private final JavaTemplate.Builder getStartTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.getStart().atZone(ZoneId.systemDefault())")
             .imports(JAVA_ZONE_ID);
@@ -53,9 +55,11 @@ public class AbstractIntervalTemplates implements Templates {
     private final JavaTemplate.Builder containsIntervalTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.encloses(#{any(org.threeten.extra.Interval)})");
     private final JavaTemplate.Builder equalsTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.equals(#{any(org.threeten.extra.Interval)})");
     private final JavaTemplate.Builder isBeforeTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.isBefore(#{any(java.time.ZonedDateTime)}.toInstant())");
+    private final JavaTemplate.Builder isAfterTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.isAfter(#{any(java.time.ZonedDateTime)}.toInstant())");
     private final JavaTemplate.Builder containsNowTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.contains(Instant.now())");
     private final JavaTemplate.Builder isAfterNowTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.isAfter(Instant.now())");
     private final JavaTemplate.Builder isBeforeNowTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.isBefore(Instant.now())");
+    private final JavaTemplate.Builder toStringTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.toString()");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -70,9 +74,11 @@ public class AbstractIntervalTemplates implements Templates {
             add(new MethodTemplate(containsInterval, build(containsIntervalTemplate)));
             add(new MethodTemplate(equals, build(equalsTemplate)));
             add(new MethodTemplate(isBefore, build(isBeforeTemplate)));
+            add(new MethodTemplate(isAfter, build(isAfterTemplate)));
             add(new MethodTemplate(containsNow, build(containsNowTemplate)));
             add(new MethodTemplate(isAfterNow, build(isAfterNowTemplate)));
             add(new MethodTemplate(isBeforeNow, build(isBeforeNowTemplate)));
+            add(new MethodTemplate(toString, build(toStringTemplate)));
         }
     };
 

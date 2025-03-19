@@ -30,6 +30,7 @@ public class AbstractDateTimeTemplates implements Templates {
     private final MethodMatcher getDayOfWeek = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getDayOfWeek()");
     private final MethodMatcher getHourOfDay = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getHourOfDay()");
     private final MethodMatcher getMillisOfSecond = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getMillisOfSecond()");
+    private final MethodMatcher getMillisOfDay = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getMillisOfDay()");
     private final MethodMatcher getMinuteOfDay = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getMinuteOfDay()");
     private final MethodMatcher getMinuteOfHour = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getMinuteOfHour()");
     private final MethodMatcher getMonthOfYear = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getMonthOfYear()");
@@ -44,6 +45,9 @@ public class AbstractDateTimeTemplates implements Templates {
     private final JavaTemplate getDayOfWeekTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getDayOfWeek().getValue()").build();
     private final JavaTemplate getHourOfDayTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getHour()").build();
     private final JavaTemplate getMillisOfSecondTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.get(ChronoField.MILLI_OF_SECOND)").imports("java.time.temporal.ChronoField").build();
+    private final JavaTemplate getMilliOfDayTemplate = JavaTemplate.builder("#{any(java. time. ZonedDateTime)}.get(ChronoField.MILLI_OF_DAY)")
+            .imports(JAVA_CHRONO_FIELD)
+            .build();
     private final JavaTemplate getMinuteOfDayTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.get(ChronoField.MINUTE_OF_DAY)").imports("java.time.temporal.ChronoField").build();
     private final JavaTemplate getMinuteOfHourTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getMinute()").build();
     private final JavaTemplate getMonthOfYearTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getMonthValue()").build();
@@ -61,6 +65,7 @@ public class AbstractDateTimeTemplates implements Templates {
             add(new MethodTemplate(getDayOfWeek, getDayOfWeekTemplate));
             add(new MethodTemplate(getHourOfDay, getHourOfDayTemplate));
             add(new MethodTemplate(getMillisOfSecond, getMillisOfSecondTemplate));
+            add(new MethodTemplate(getMillisOfDay, getMilliOfDayTemplate));
             add(new MethodTemplate(getMinuteOfDay, getMinuteOfDayTemplate));
             add(new MethodTemplate(getMinuteOfHour, getMinuteOfHourTemplate));
             add(new MethodTemplate(getMonthOfYear, getMonthOfYearTemplate));

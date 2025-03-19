@@ -22,6 +22,7 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,7 @@ public class LocatDateTemplates implements Templates {
     final MethodMatcher newLocalDateEpoch = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>(long)");
     final MethodMatcher newLocalDateYmd = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>(int,int,int)");
     final MethodMatcher newLocalDate = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>(java.lang.Object)");
+    final MethodMatcher fromDateFields = new MethodMatcher(JODA_LOCAL_DATE + " fromDateFields(java.util.Date)");
 
     final MethodMatcher withDayOfMonth = new MethodMatcher(JODA_LOCAL_DATE + " withDayOfMonth(int)");
     final MethodMatcher now = new MethodMatcher(JODA_LOCAL_DATE + " now()");
@@ -57,10 +59,12 @@ public class LocatDateTemplates implements Templates {
     final MethodMatcher toDateTimeAtStartOfDay = new MethodMatcher(JODA_LOCAL_DATE + " toDateTimeAtStartOfDay()");
     final MethodMatcher toDateTimeAtStartOfDayWithZone = new MethodMatcher(JODA_LOCAL_DATE + " toDateTimeAtStartOfDay(org.joda.time.DateTimeZone)");
     final MethodMatcher equals = new MethodMatcher(JODA_LOCAL_DATE + " equals(java.lang.Object)");
+    final MethodMatcher toString = new MethodMatcher(JODA_LOCAL_DATE + " toString()");
 
     final JavaTemplate.Builder localDateNoArgsTemplate = JavaTemplate.builder("LocalDate.now()");
     final JavaTemplate.Builder localDateEpochTemplate = JavaTemplate.builder("LocalDate.ofEpochDay(#{any(long)})");
     final JavaTemplate.Builder localDateYmdTemplate = JavaTemplate.builder("LocalDate.of(#{any(int)}, #{any(int)}, #{any(int)})");
+    final JavaTemplate.Builder toInstantTemplate = JavaTemplate.builder("#{any(java.util.Date)}.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()");
 
     final JavaTemplate.Builder withDayOfMonthTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.withDayOfMonth(#{any(int)})");
     final JavaTemplate.Builder nowTemplate = JavaTemplate.builder("LocalDate.now()");
@@ -87,6 +91,8 @@ public class LocatDateTemplates implements Templates {
             .imports(JAVA_ZONE_ID);
     final JavaTemplate.Builder toStartOfDateWithZoneTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.atStartOfDay(#{any(java.time.ZoneId)})")
             .imports(JAVA_ZONE_ID);
+    final JavaTemplate.Builder toStringTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.toString()")
+            .imports(JAVA_ZONE_ID);
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -94,8 +100,9 @@ public class LocatDateTemplates implements Templates {
             add(new MethodTemplate(newLocalDateNoArgs, build(localDateNoArgsTemplate)));
             add(new MethodTemplate(newLocalDateEpoch, build(localDateEpochTemplate)));
             add(new MethodTemplate(newLocalDateYmd, build(localDateYmdTemplate)));
-            add(new MethodTemplate(withDayOfMonth, build(withDayOfMonthTemplate)));
+            add(new MethodTemplate(fromDateFields, build(toInstantTemplate)));
 
+            add(new MethodTemplate(withDayOfMonth, build(withDayOfMonthTemplate)));
             add(new MethodTemplate(now, build(nowTemplate)));
             add(new MethodTemplate(parse, build(parseTemplate)));
             add(new MethodTemplate(parseWithFormatter, build(parseWithFormatterTemplate)));
@@ -125,6 +132,7 @@ public class LocatDateTemplates implements Templates {
                         J.MethodInvocation mi = (J.MethodInvocation)m;
                         return new Expression[]{ mi.getSelect(), mi.getArguments().get(0) };
                     }));
+            add(new MethodTemplate(toString, build(toStringTemplate)));
 
             add(new MethodTemplate(newLocalDate, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
             add(new MethodTemplate(equals, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));

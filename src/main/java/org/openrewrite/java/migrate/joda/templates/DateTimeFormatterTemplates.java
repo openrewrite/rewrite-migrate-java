@@ -34,6 +34,7 @@ public class DateTimeFormatterTemplates implements Templates {
     private final MethodMatcher printLocalDate = new MethodMatcher(JODA_TIME_FORMATTER + " print(org.joda.time.ReadablePartial)");
     private final MethodMatcher withZone = new MethodMatcher(JODA_TIME_FORMATTER + " withZone(org.joda.time.DateTimeZone)");
     private final MethodMatcher withZoneUTC = new MethodMatcher(JODA_TIME_FORMATTER + " withZoneUTC()");
+    private final MethodMatcher parseLocalDate = new MethodMatcher(JODA_TIME_FORMATTER + " parseLocalDate(java.lang.String)");
 
     private final JavaTemplate parseDateTimeTemplate = JavaTemplate.builder("ZonedDateTime.parse(#{any(java.lang.String)}, #{any(" + JAVA_TIME_FORMATTER + ")})")
             .imports(JAVA_DATE_TIME).build();
@@ -47,6 +48,7 @@ public class DateTimeFormatterTemplates implements Templates {
     private final JavaTemplate withZoneTemplate = JavaTemplate.builder("#{any(" + JAVA_TIME_FORMATTER + ")}.withZone(#{any(" + JAVA_ZONE_ID + ")})").build();
     private final JavaTemplate withZoneUTCTemplate = JavaTemplate.builder("#{any(" + JAVA_TIME_FORMATTER + ")}.withZone(ZoneOffset.UTC)")
             .imports(JAVA_ZONE_OFFSET).build();
+    private final JavaTemplate parseTemplate = JavaTemplate.builder("#{any(" + JAVA_TIME_FORMATTER + ")}.parse(java.lang.CharSequence)").build();
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -73,6 +75,7 @@ public class DateTimeFormatterTemplates implements Templates {
             }));
             add(new MethodTemplate(withZone, withZoneTemplate));
             add(new MethodTemplate(withZoneUTC, withZoneUTCTemplate));
+            add(new MethodTemplate(parseLocalDate, parseTemplate));
         }
     };
 }

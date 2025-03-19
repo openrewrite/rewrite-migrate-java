@@ -28,11 +28,13 @@ import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 @NoArgsConstructor
 public class LocatTimeTemplates implements Templates {
     final MethodMatcher newLocalTimeNoArgs = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>()");
+    final MethodMatcher newLocalTimeEpoch = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(long)");
     final MethodMatcher newLocalTimeString = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(Object)");
     final MethodMatcher newLocalTimeWithInstanceAndTimeZone = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(java.lang.Object,org.joda.time.DateTimeZone)");
     final MethodMatcher newLocalTimeHm = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(int,int)");
     final MethodMatcher newLocalTimeHms = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(int,int,int)");
     final MethodMatcher newLocalTimeHmsM = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(int,int,int,int)");
+    final MethodMatcher newLocalTimeFromSqlTime = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(java.sql.Time)");
 
     final MethodMatcher fromMillisOfDay = new MethodMatcher(JODA_LOCAL_TIME + " fromMillisOfDay(long)");
     final MethodMatcher now = new MethodMatcher(JODA_LOCAL_TIME + " now()");
@@ -56,16 +58,19 @@ public class LocatTimeTemplates implements Templates {
     final MethodMatcher equals = new MethodMatcher(JODA_LOCAL_TIME + " equals(java.lang.Object)");
 
     final JavaTemplate.Builder localTimeNoArgsTemplate = JavaTemplate.builder("LocalTime.now()");
+    final JavaTemplate.Builder localTimeEpochTemplate = JavaTemplate.builder("LocalDate.ofEpochDay(#{any(long)})");
     final JavaTemplate.Builder localTimeStringTemplate = JavaTemplate.builder("LocalTime.parse(#{any(Object)})");
     final JavaTemplate.Builder localTimeOfInstantTemplate = JavaTemplate.builder("LocalTime.ofInstant(#{any(Object)}, #{any(java.time.ZoneId)})");
     final JavaTemplate.Builder localTimeHmTemplate = JavaTemplate.builder("LocalTime.of(#{any(int)}, #{any(int)})");
     final JavaTemplate.Builder localTimeHmsTemplate = JavaTemplate.builder("LocalTime.of(#{any(int)}, #{any(int)}, #{any(int)})");
     final JavaTemplate.Builder localTimeHmsMTemplate = JavaTemplate.builder("LocalTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)})");
+    final JavaTemplate.Builder newLocalTimeFromSqlTimeTemplate = JavaTemplate.builder("#{any(java.sql.Time)}.toLocalTime()");
 
     final JavaTemplate.Builder ofSecondOfDayTemplate = JavaTemplate.builder("LocalTime.ofSecondOfDay(#{any(long)} / 1000)");
     final JavaTemplate.Builder nowTemplate = JavaTemplate.builder("LocalTime.now()");
 
-    final JavaTemplate.Builder toZonedDateTimeStartOfDayTemplate = JavaTemplate.builder("#{any(java.time.LocalTime)}.atStartOfDay(ZoneId.systemDefault())");
+    final JavaTemplate.Builder toLocalDateOfTodayTemplate = JavaTemplate.builder("#{any(java.time.LocalTime)}.atDate(LocalDate.now())")
+            .imports(JAVA_LOCAL_DATE);
     final JavaTemplate.Builder toStringTemplate = JavaTemplate.builder("#{any(java.time.LocalTime)}.toString()");
 
     final JavaTemplate.Builder getHourTemplate = JavaTemplate.builder("#{any(java.time.LocalTime)}.getHour()");
@@ -86,16 +91,18 @@ public class LocatTimeTemplates implements Templates {
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
             add(new MethodTemplate(newLocalTimeNoArgs, build(localTimeNoArgsTemplate)));
+            add(new MethodTemplate(newLocalTimeEpoch, build(localTimeEpochTemplate)));
             add(new MethodTemplate(newLocalTimeString, build(localTimeStringTemplate)));
             add(new MethodTemplate(newLocalTimeWithInstanceAndTimeZone, build(localTimeOfInstantTemplate)));
             add(new MethodTemplate(newLocalTimeHm, build(localTimeHmTemplate)));
             add(new MethodTemplate(newLocalTimeHms, build(localTimeHmsTemplate)));
             add(new MethodTemplate(newLocalTimeHmsM, build(localTimeHmsMTemplate)));
+            add(new MethodTemplate(newLocalTimeFromSqlTime, build(newLocalTimeFromSqlTimeTemplate)));
 
             add(new MethodTemplate(fromMillisOfDay, build(ofSecondOfDayTemplate)));
             add(new MethodTemplate(now, build(nowTemplate)));
 
-            add(new MethodTemplate(toDateTimeToday, build(toZonedDateTimeStartOfDayTemplate)));
+            add(new MethodTemplate(toDateTimeToday, build(toLocalDateOfTodayTemplate)));
             add(new MethodTemplate(toString, build(toStringTemplate)));
 
             add(new MethodTemplate(getHourOfDay, build(getHourTemplate)));
