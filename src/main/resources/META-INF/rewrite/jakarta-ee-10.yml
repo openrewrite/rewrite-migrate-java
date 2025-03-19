@@ -409,7 +409,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
 displayName: Update GlassFish Jersey Dependencies to 3.1.x
-description: Update GlassFish Jersey Dependencies to 3.1.x
+description: Update GlassFish Jersey Dependencies to 3.1.x.
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.glassfish.jersey.core
