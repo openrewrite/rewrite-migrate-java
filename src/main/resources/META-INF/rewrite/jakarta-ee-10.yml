@@ -33,6 +33,8 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
   - org.openrewrite.java.migrate.BeanDiscovery
   - org.openrewrite.java.migrate.jakarta.BeanValidationMessages
+  - org.openrewrite.java.migrate.jakarta.UpdateJmsDestinations
+  - org.openrewrite.java.migrate.jakarta.UpdateActivationConfigProperty
   - org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
   - org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml
   - org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml
