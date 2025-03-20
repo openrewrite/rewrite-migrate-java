@@ -39,7 +39,6 @@ public class UpdateJmsDestinations extends Recipe {
     }
 
     private static final AnnotationMatcher JMS_MATCHER = new AnnotationMatcher("@javax.jms..*");
-    
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
