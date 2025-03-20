@@ -39,6 +39,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
   - org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
+  - org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
@@ -435,4 +436,18 @@ recipeList:
       groupId: org.glassfish.jersey.ext
       artifactId: "*"
       newVersion: 3.1.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
+displayName: Update Apache Shiro Dependencies to 2.0.x
+description: Update Apache Shiro Dependencies to 2.0.x.
+recipeList:
+  - org.openrewrite.maven.ChangeDependencyClassifier:
+      groupId: org.apache.shiro
+      artifactId: "*"
+      newClassifier: jakarta
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.shiro
+      artifactId: "*"
+      newVersion: 2.0.x
 ---
