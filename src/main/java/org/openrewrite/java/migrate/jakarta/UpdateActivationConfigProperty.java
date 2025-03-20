@@ -39,7 +39,6 @@ public class UpdateActivationConfigProperty extends Recipe {
     }
 
     private static final AnnotationMatcher EJB_MATCHER = new AnnotationMatcher("@javax.ejb..*");
-    
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
