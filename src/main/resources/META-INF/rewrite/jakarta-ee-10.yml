@@ -40,6 +40,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
   - org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
+  - org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
@@ -450,4 +451,14 @@ recipeList:
       groupId: org.apache.shiro
       artifactId: "*"
       newVersion: 2.0.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
+displayName: Update EclipseLink Dependencies to 4.x
+description: Update EclipseLink Dependencies to 4.x.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.eclipse.persistence
+      artifactId: "*"
+      newVersion: 4.x
 ---
