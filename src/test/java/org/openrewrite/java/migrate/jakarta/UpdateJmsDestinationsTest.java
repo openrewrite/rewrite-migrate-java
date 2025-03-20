@@ -15,8 +15,6 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
-import static org.openrewrite.java.Assertions.java;
-
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
