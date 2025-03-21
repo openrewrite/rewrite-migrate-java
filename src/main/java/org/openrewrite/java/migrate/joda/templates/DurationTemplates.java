@@ -125,44 +125,44 @@ public class DurationTemplates implements Templates {
             .build();
 
     @Getter
-    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
-        {
-            add(new MethodTemplate(parse, parseTemplate));
-            add(new MethodTemplate(standardDays, standardDaysTemplate));
-            add(new MethodTemplate(standardHours, standardHoursTemplate));
-            add(new MethodTemplate(standardMinutes, standardMinutesTemplate));
-            add(new MethodTemplate(standardSeconds, standardSecondsTemplate));
-            add(new MethodTemplate(millis, millisTemplate));
+    private final List<MethodTemplate> templates;
+    {
+        templates = new ArrayList<>();
+        templates.add(new MethodTemplate(parse, parseTemplate));
+        templates.add(new MethodTemplate(standardDays, standardDaysTemplate));
+        templates.add(new MethodTemplate(standardHours, standardHoursTemplate));
+        templates.add(new MethodTemplate(standardMinutes, standardMinutesTemplate));
+        templates.add(new MethodTemplate(standardSeconds, standardSecondsTemplate));
+        templates.add(new MethodTemplate(millis, millisTemplate));
 
-            add(new MethodTemplate(newDuration, newDurationTemplate));
-            add(new MethodTemplate(newDurationWithInstants, newDurationWithInstantsTemplate));
+        templates.add(new MethodTemplate(newDuration, newDurationTemplate));
+        templates.add(new MethodTemplate(newDurationWithInstants, newDurationWithInstantsTemplate));
 
-            add(new MethodTemplate(getStandardDays, toDaysTemplate));
-            add(new MethodTemplate(getStandardHours, toHoursTemplate));
-            add(new MethodTemplate(getStandardMinutes, toMinutesTemplate));
-            add(new MethodTemplate(getStandardSeconds, getSecondsTemplate));
+        templates.add(new MethodTemplate(getStandardDays, toDaysTemplate));
+        templates.add(new MethodTemplate(getStandardHours, toHoursTemplate));
+        templates.add(new MethodTemplate(getStandardMinutes, toMinutesTemplate));
+        templates.add(new MethodTemplate(getStandardSeconds, getSecondsTemplate));
 
-            add(new MethodTemplate(toDuration, toDurationTemplate));
+        templates.add(new MethodTemplate(toDuration, toDurationTemplate));
 
-            add(new MethodTemplate(toStandardDays, toDaysTemplate));
-            add(new MethodTemplate(toStandardHours, toHoursTemplate));
-            add(new MethodTemplate(toStandardMinutes, toMinutesTemplate));
-            add(new MethodTemplate(toStandardSeconds, getSecondsTemplate));
+        templates.add(new MethodTemplate(toStandardDays, toDaysTemplate));
+        templates.add(new MethodTemplate(toStandardHours, toHoursTemplate));
+        templates.add(new MethodTemplate(toStandardMinutes, toMinutesTemplate));
+        templates.add(new MethodTemplate(toStandardSeconds, getSecondsTemplate));
 
-            add(new MethodTemplate(withMillis, ofMillisTemplate, m -> new Expression[]{m.getArguments().get(0)}));
-            add(new MethodTemplate(withDurationAdded, withDurationAddedTemplate));
-            add(new MethodTemplate(withDurationAddedReadable, withDurationAddedReadableTemplate));
+        templates.add(new MethodTemplate(withMillis, ofMillisTemplate, m -> new Expression[]{m.getArguments().get(0)}));
+        templates.add(new MethodTemplate(withDurationAdded, withDurationAddedTemplate));
+        templates.add(new MethodTemplate(withDurationAddedReadable, withDurationAddedReadableTemplate));
 
-            add(new MethodTemplate(plusLong, plusLongTemplate));
-            add(new MethodTemplate(plusReadable, plusReadableTemplate));
-            add(new MethodTemplate(minusLong, minusLongTemplate));
-            add(new MethodTemplate(minusReadable, minusReadableTemplate));
+        templates.add(new MethodTemplate(plusLong, plusLongTemplate));
+        templates.add(new MethodTemplate(plusReadable, plusReadableTemplate));
+        templates.add(new MethodTemplate(minusLong, minusLongTemplate));
+        templates.add(new MethodTemplate(minusReadable, minusReadableTemplate));
 
-            add(new MethodTemplate(multipliedBy, multipliedByTemplate));
-            add(new MethodTemplate(dividedBy, dividedByTemplate));
+        templates.add(new MethodTemplate(multipliedBy, multipliedByTemplate));
+        templates.add(new MethodTemplate(dividedBy, dividedByTemplate));
 
-            add(new MethodTemplate(negated, negatedTemplate));
-            add(new MethodTemplate(abs, absTemplate));
-        }
-    };
+        templates.add(new MethodTemplate(negated, negatedTemplate));
+        templates.add(new MethodTemplate(abs, absTemplate));
+    }
 }

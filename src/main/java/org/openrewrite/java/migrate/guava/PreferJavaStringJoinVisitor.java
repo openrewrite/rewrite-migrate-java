@@ -61,7 +61,7 @@ class PreferJavaStringJoinVisitor extends JavaIsoVisitor<ExecutionContext> {
 
             maybeRemoveImport("com.google.common.base.Joiner");
 
-            return JavaTemplate.<J.MethodInvocation>apply(
+            return JavaTemplate.apply(
                     "String.join(#{any(java.lang.CharSequence)}",
                     getCursor(),
                     mi.getCoordinates().replace(),

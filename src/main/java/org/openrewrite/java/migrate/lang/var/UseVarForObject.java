@@ -99,7 +99,7 @@ public class UseVarForObject extends Recipe {
                 return template.apply(getCursor(), vd.getCoordinates().replace(), simpleName, initializer)
                         .withPrefix(vd.getPrefix());
             } else {
-                J.VariableDeclarations result = template.<J.VariableDeclarations>apply(getCursor(), vd.getCoordinates().replace(), simpleName, initializer)
+                J.VariableDeclarations result = template.apply(getCursor(), vd.getCoordinates().replace(), simpleName, initializer)
                         .withModifiers(vd.getModifiers())
                         .withPrefix(vd.getPrefix());
                 TypeTree typeExpression = result.getTypeExpression();

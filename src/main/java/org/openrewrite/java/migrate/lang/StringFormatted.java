@@ -84,7 +84,7 @@ public class StringFormatted extends Recipe {
                 maybeRemoveImport("java.lang.String.format");
                 J.MethodInvocation mi = methodInvocation.withName(methodInvocation.getName().withSimpleName("formatted"));
                 mi = mi.withMethodType(methodInvocation.getMethodType().getDeclaringType().getMethods().stream()
-                        .filter(it -> it.getName().equals("formatted"))
+                        .filter(it -> "formatted".equals(it.getName()))
                         .findAny()
                         .orElse(null));
                 if (mi.getName().getType() != null) {

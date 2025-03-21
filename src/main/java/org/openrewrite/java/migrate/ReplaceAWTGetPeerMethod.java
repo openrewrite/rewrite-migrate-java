@@ -109,7 +109,7 @@ public class ReplaceAWTGetPeerMethod extends Recipe {
                 J.InstanceOf instanceOfVar = (J.InstanceOf) super.visitInstanceOf(instOf, ctx);
 
                 if (instanceOfVar.getExpression() instanceof J.MethodInvocation) {
-                    J.MethodInvocation mi = ((J.MethodInvocation) instanceOfVar.getExpression());
+                    J.MethodInvocation mi = (J.MethodInvocation) instanceOfVar.getExpression();
                     if (methodMatcherGetPeer.matches(mi) && TypeUtils.isAssignableTo(lightweightPeerFQCN, ((TypedTree) instanceOfVar.getClazz()).getType())) {
                         mi = (J.MethodInvocation) new ChangeMethodName(getPeerMethodPattern, "isLightweight", true, null)
                                 .getVisitor().visit(mi, ctx);
