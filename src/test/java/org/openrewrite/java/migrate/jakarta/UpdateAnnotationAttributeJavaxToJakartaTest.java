@@ -33,6 +33,34 @@ class UpdateAnnotationAttributeJavaxToJakartaTest implements RewriteTest {
             //language=java
             .dependsOn(
               """
+                package javax.ejb;
+
+                import java.lang.annotation.ElementType;
+                import java.lang.annotation.Retention;
+                import java.lang.annotation.RetentionPolicy;
+                import java.lang.annotation.Target;
+
+                /**
+                 * Specifies a name/value pair for a configuration property that is passed to
+                 * the endpoint deployment.
+                 *
+                 * @since EJB 3.0
+                 */
+                @Target({ ElementType.METHOD, ElementType.TYPE })
+                @Retention(RetentionPolicy.RUNTIME)
+                public @interface ActivationConfigProperty {
+                    /**
+                     * Name of the configuration property.
+                     */
+                    String propertyName();
+
+                    /**
+                     * Value of the configuration property.
+                     */
+                    String propertyValue();
+                }
+                """,
+              """
                 package javax.jms;
 
                 import java.lang.annotation.ElementType;
@@ -85,31 +113,16 @@ class UpdateAnnotationAttributeJavaxToJakartaTest implements RewriteTest {
                 }
                 """,
               """
-                package javax.ejb;
+                package javax.validation.constraints;
 
-                import java.lang.annotation.ElementType;
-                import java.lang.annotation.Retention;
-                import java.lang.annotation.RetentionPolicy;
-                import java.lang.annotation.Target;
+                import java.lang.annotation.*;
+                import static java.lang.annotation.ElementType.*;
+                import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-                /**
-                 * Specifies a name/value pair for a configuration property that is passed to
-                 * the endpoint deployment.
-                 *
-                 * @since EJB 3.0
-                 */
-                @Target({ ElementType.METHOD, ElementType.TYPE })
-                @Retention(RetentionPolicy.RUNTIME)
-                public @interface ActivationConfigProperty {
-                    /**
-                     * Name of the configuration property.
-                     */
-                    String propertyName();
-
-                    /**
-                     * Value of the configuration property.
-                     */
-                    String propertyValue();
+                @Target(value={METHOD,FIELD,ANNOTATION_TYPE,CONSTRUCTOR,PARAMETER})
+                @Retention(value=RUNTIME)
+                public @interface NotNull {
+                    String message() default "{javax.validation.constraints.NotNull.message}";
                 }
                 """
             )
@@ -139,6 +152,32 @@ class UpdateAnnotationAttributeJavaxToJakartaTest implements RewriteTest {
                           interfaceName = "jakarta.jms.Topic",
                           destinationName = "Testing")
               class Test {
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/374")
+    void replaceMessage() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.validation.constraints.*;
+
+              class Test {
+                 @NotNull(message = "Resource Code {javax.validation.constraints.NotNull.message}")
+                 private String resourceCode;
+              }
+              """,
+            """
+              import jakarta.validation.constraints.*;
+
+              class Test {
+                 @NotNull(message = "Resource Code {jakarta.validation.constraints.NotNull.message}")
+                 private String resourceCode;
               }
               """
           )
