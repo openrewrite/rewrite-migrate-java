@@ -1,12 +1,11 @@
 plugins {
     id("org.openrewrite.build.recipe-library") version "latest.release"
     id("org.openrewrite.build.moderne-source-available-license") version "latest.release"
-
-    id("maven-publish")
 }
 
 group = "org.openrewrite.recipe"
 description = "Migrate to later Java versions. Automatically."
+version = "3.3.0-SNAPSHOT"
 
 recipeDependencies {
     parserClasspath("javax.persistence:javax.persistence-api:2.2")
@@ -93,20 +92,15 @@ tasks.test {
 
 publishing {
     publications {
-        create<MavenPublication>("mavenJava") {
-            // Publish compiled Java artifacts (the main jar, source jar if configured, etc.)
-            from(components["java"])
-
-            // Use the project’s group/artifactId/version OR override them here
-            groupId = project.group.toString()
-            artifactId = project.name   // or set a custom name, e.g. "my-recipe-lib"
-            version = project.version.toString()
+        repositories {
+            maven {
+                name = "PrimionNexus"
+                url = uri("https://nexus.primion.eu/repository/maven-snapshots/")
+                credentials {
+                    username = System.getenv("NEXUS_USER")
+                    password = System.getenv("NEXUS_PASSWORD")
+                }
+            }
         }
-    }
-}
-
-repositories {
-    maven {
-        url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
     }
 }
