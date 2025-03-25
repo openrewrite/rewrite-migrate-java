@@ -40,6 +40,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
   - org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
+  - org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
@@ -450,4 +451,14 @@ recipeList:
       groupId: org.apache.shiro
       artifactId: "*"
       newVersion: 2.0.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
+displayName: Update Eclipse Yasson Dependencies to 3.0.x
+description: Update Eclipse Yasson Dependencies to 3.0.x.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.eclipse
+      artifactId: yasson
+      newVersion: 3.0.x
 ---
