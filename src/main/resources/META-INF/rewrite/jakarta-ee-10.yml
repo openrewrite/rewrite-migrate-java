@@ -458,6 +458,7 @@ recipeList:
       artifactId: "*"
       newVersion: 2.0.x
 ---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
 displayName: Update EclipseLink Dependencies to 4.x
 description: Update EclipseLink Dependencies to 4.x.
