@@ -44,6 +44,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
   - org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
+  - org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
 ---
@@ -442,6 +443,31 @@ recipeList:
       groupId: org.glassfish.jersey.ext
       artifactId: "*"
       newVersion: 3.1.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
+displayName: Update Apache Commons Email to Email2 for Jakarta
+description: Update Apache Commons Email to Email2 for Jakarta.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.apache.commons
+      oldArtifactId: commons-email
+      newGroupId: org.apache.commons
+      newArtifactId: commons-email2-jakarta
+      newVersion: 2.0.x
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.mail.EmailException
+      newFullyQualifiedTypeName: org.apache.commons.mail2.core.EmailException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.mail.EmailConstants 
+      newFullyQualifiedTypeName: org.apache.commons.mail2.core.EmailConstants
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.mail.EmailUtils 
+      newFullyQualifiedTypeName: org.apache.commons.mail2.core.EmailUtils
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.mail
+      newPackageName: org.apache.commons.mail2.jakarta
+      recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
