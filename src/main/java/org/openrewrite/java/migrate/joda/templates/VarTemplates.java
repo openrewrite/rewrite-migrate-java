@@ -81,6 +81,9 @@ public class VarTemplates {
     }
 
     public static Optional<JavaTemplate> getTemplate(J.Assignment assignment) {
+        if(assignment.getAssignment().getType() instanceof JavaType.Primitive) {
+            return Optional.empty();
+        }
         JavaType.Class type = (JavaType.Class) assignment.getAssignment().getType();
         JavaType.Class varType = (JavaType.Class) assignment.getVariable().getType();
         String typeName = JodaToJavaTimeType.get(type.getFullyQualifiedName());
