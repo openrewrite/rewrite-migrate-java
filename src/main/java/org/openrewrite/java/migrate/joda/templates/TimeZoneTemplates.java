@@ -43,12 +43,12 @@ public class TimeZoneTemplates implements Templates {
             .build();
 
     @Getter
-    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
-        {
-            add(new MethodTemplate(zoneForID, zoneIdOfTemplate));
-            add(new MethodTemplate(zoneForOffsetHours, zoneOffsetHoursTemplate));
-            add(new MethodTemplate(zoneForOffsetHoursMinutes, zoneOffsetHoursMinutesTemplate));
-            add(new MethodTemplate(zoneForTimeZone, timeZoneToZoneIdTemplate));
-        }
-    };
+    private final List<MethodTemplate> templates;
+    {
+        templates = new ArrayList<>();
+        templates.add(new MethodTemplate(zoneForID, zoneIdOfTemplate));
+        templates.add(new MethodTemplate(zoneForOffsetHours, zoneOffsetHoursTemplate));
+        templates.add(new MethodTemplate(zoneForOffsetHoursMinutes, zoneOffsetHoursMinutesTemplate));
+        templates.add(new MethodTemplate(zoneForTimeZone, timeZoneToZoneIdTemplate));
+    }
 }

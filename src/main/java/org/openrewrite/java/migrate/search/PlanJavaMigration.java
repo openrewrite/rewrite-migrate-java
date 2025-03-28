@@ -69,13 +69,10 @@ public class PlanJavaMigration extends ScanningRecipe<JavaVersionMigrationPlan.R
                         acc.targetCompatibility(javaVersion.getTargetCompatibility());
                     });
                     markers.findFirst(BuildTool.class).ifPresent(buildTool -> {
-                        switch (buildTool.getType()) {
-                            case Gradle:
-                                acc.gradleVersion(buildTool.getVersion());
-                                break;
-                            case Maven:
-                                acc.mavenVersion(buildTool.getVersion());
-                                break;
+                        if (buildTool.getType() == BuildTool.Type.Gradle) {
+                            acc.gradleVersion(buildTool.getVersion());
+                        } else if (buildTool.getType() == BuildTool.Type.Maven) {
+                            acc.mavenVersion(buildTool.getVersion());
                         }
                     });
                 }

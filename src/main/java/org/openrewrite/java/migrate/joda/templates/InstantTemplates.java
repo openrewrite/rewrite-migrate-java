@@ -47,16 +47,16 @@ public class InstantTemplates implements Templates {
     private final JavaTemplate plusDurationTemplate = JavaTemplate.builder("#{any(" + JAVA_INSTANT + ")}.plus(#{any(java.time.Duration)})").build();
 
     @Getter
-    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
-        {
-            add(new MethodTemplate(constructor, constructorTemplate));
-            add(new MethodTemplate(getMillis, getMillisTemplate));
-            add(new MethodTemplate(getMillis, getMillisTemplate));
-            add(new MethodTemplate(minusDuration, minusDurationTemplate));
-            add(new MethodTemplate(now, nowTemplate));
-            add(new MethodTemplate(ofEpochMilli, ofEpochMilliTemplate));
-            add(new MethodTemplate(parse, parseTemplate));
-            add(new MethodTemplate(plusDuration, plusDurationTemplate));
-        }
-    };
+    private final List<MethodTemplate> templates;
+    {
+        templates = new ArrayList<>();
+        templates.add(new MethodTemplate(constructor, constructorTemplate));
+        templates.add(new MethodTemplate(getMillis, getMillisTemplate));
+        templates.add(new MethodTemplate(getMillis, getMillisTemplate));
+        templates.add(new MethodTemplate(minusDuration, minusDurationTemplate));
+        templates.add(new MethodTemplate(now, nowTemplate));
+        templates.add(new MethodTemplate(ofEpochMilli, ofEpochMilliTemplate));
+        templates.add(new MethodTemplate(parse, parseTemplate));
+        templates.add(new MethodTemplate(plusDuration, plusDurationTemplate));
+    }
 }

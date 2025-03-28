@@ -54,7 +54,7 @@ public class AddDefaultConstructorToEntityClass extends Recipe {
 
                         // Exit if class already has default no-arg constructor
                         if (classDecl.getBody().getStatements().stream()
-                                .filter(statement -> statement instanceof J.MethodDeclaration)
+                                .filter(J.MethodDeclaration.class::isInstance)
                                 .map(J.MethodDeclaration.class::cast)
                                 .filter(J.MethodDeclaration::isConstructor)
                                 .anyMatch(constructor -> constructor.getParameters().get(0) instanceof J.Empty)) {

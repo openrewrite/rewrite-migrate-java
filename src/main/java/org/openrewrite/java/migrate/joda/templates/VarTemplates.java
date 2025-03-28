@@ -28,17 +28,17 @@ import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 public class VarTemplates {
 
-    private static Map<String, String> JodaToJavaTimeType = new HashMap<String, String>() {
-        {
-            put(JODA_DATE_TIME, JAVA_DATE_TIME);
-            put(JODA_TIME_FORMATTER, JAVA_TIME_FORMATTER);
-            put(JODA_LOCAL_DATE, JAVA_LOCAL_DATE);
-            put(JODA_LOCAL_TIME, JAVA_LOCAL_TIME);
-            put(JODA_DATE_TIME_ZONE, JAVA_ZONE_ID);
-            put(JODA_DURATION, JAVA_DURATION);
-            put(JODA_INTERVAL, THREE_TEN_EXTRA_INTERVAL);
-        }
-    };
+    private static final Map<String, String> JodaToJavaTimeType;
+    static {
+        JodaToJavaTimeType = new HashMap<>();
+        JodaToJavaTimeType.put(JODA_DATE_TIME, JAVA_DATE_TIME);
+        JodaToJavaTimeType.put(JODA_TIME_FORMATTER, JAVA_TIME_FORMATTER);
+        JodaToJavaTimeType.put(JODA_LOCAL_DATE, JAVA_LOCAL_DATE);
+        JodaToJavaTimeType.put(JODA_LOCAL_TIME, JAVA_LOCAL_TIME);
+        JodaToJavaTimeType.put(JODA_DATE_TIME_ZONE, JAVA_ZONE_ID);
+        JodaToJavaTimeType.put(JODA_DURATION, JAVA_DURATION);
+        JodaToJavaTimeType.put(JODA_INTERVAL, THREE_TEN_EXTRA_INTERVAL);
+    }
 
     public static Optional<JavaTemplate> getTemplate(J.VariableDeclarations variable) {
         JavaType.Class type = (JavaType.Class) variable.getTypeExpression().getType();

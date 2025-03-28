@@ -47,26 +47,26 @@ public class DateTimeFormatterTemplates implements Templates {
             .imports(JAVA_ZONE_OFFSET).build();
 
     @Getter
-    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
-        {
-            add(new MethodTemplate(parseDateTime, parseDateTimeTemplate, m -> {
-                J.MethodInvocation mi = (J.MethodInvocation) m;
-                return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
-            }));
-            add(new MethodTemplate(parseMillis, parseMillisTemplate, m -> {
-                J.MethodInvocation mi = (J.MethodInvocation) m;
-                return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
-            }));
-            add(new MethodTemplate(printLong, printLongTemplate, m -> {
-                J.MethodInvocation mi = (J.MethodInvocation) m;
-                return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
-            }));
-            add(new MethodTemplate(printDateTime, printDateTimeTemplate, m -> {
-                J.MethodInvocation mi = (J.MethodInvocation) m;
-                return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
-            }));
-            add(new MethodTemplate(withZone, withZoneTemplate));
-            add(new MethodTemplate(withZoneUTC, withZoneUTCTemplate));
-        }
-    };
+    private final List<MethodTemplate> templates;
+    {
+        templates = new ArrayList<>();
+        templates.add(new MethodTemplate(parseDateTime, parseDateTimeTemplate, m -> {
+            J.MethodInvocation mi = (J.MethodInvocation) m;
+            return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
+        }));
+        templates.add(new MethodTemplate(parseMillis, parseMillisTemplate, m -> {
+            J.MethodInvocation mi = (J.MethodInvocation) m;
+            return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
+        }));
+        templates.add(new MethodTemplate(printLong, printLongTemplate, m -> {
+            J.MethodInvocation mi = (J.MethodInvocation) m;
+            return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
+        }));
+        templates.add(new MethodTemplate(printDateTime, printDateTimeTemplate, m -> {
+            J.MethodInvocation mi = (J.MethodInvocation) m;
+            return new Expression[]{mi.getArguments().get(0), mi.getSelect()};
+        }));
+        templates.add(new MethodTemplate(withZone, withZoneTemplate));
+        templates.add(new MethodTemplate(withZoneUTC, withZoneUTCTemplate));
+    }
 }
