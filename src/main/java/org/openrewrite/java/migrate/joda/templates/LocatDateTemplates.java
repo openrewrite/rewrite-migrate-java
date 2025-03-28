@@ -58,8 +58,12 @@ public class LocatDateTemplates implements Templates {
     final MethodMatcher toDateMidnight = new MethodMatcher(JODA_LOCAL_DATE + " toDateMidnight()");
     final MethodMatcher toDateTimeAtStartOfDay = new MethodMatcher(JODA_LOCAL_DATE + " toDateTimeAtStartOfDay()");
     final MethodMatcher toDateTimeAtStartOfDayWithZone = new MethodMatcher(JODA_LOCAL_DATE + " toDateTimeAtStartOfDay(org.joda.time.DateTimeZone)");
-    final MethodMatcher equals = new MethodMatcher(JODA_LOCAL_DATE + " equals(java.lang.Object)");
+    final MethodMatcher dayOfMonth = new MethodMatcher(JODA_LOCAL_DATE + " dayOfMonth()");
+
+    final MethodMatcher toFormatedString = new MethodMatcher(JODA_LOCAL_DATE + " toString(java.lang.String)");
     final MethodMatcher toString = new MethodMatcher(JODA_LOCAL_DATE + " toString()");
+
+    final MethodMatcher equals = new MethodMatcher(JODA_LOCAL_DATE + " equals(java.lang.Object)");
 
     final JavaTemplate.Builder localDateNoArgsTemplate = JavaTemplate.builder("LocalDate.now()");
     final JavaTemplate.Builder localDateEpochTemplate = JavaTemplate.builder("LocalDate.ofEpochDay(#{any(long)})");
@@ -91,6 +95,9 @@ public class LocatDateTemplates implements Templates {
             .imports(JAVA_ZONE_ID);
     final JavaTemplate.Builder toStartOfDateWithZoneTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.atStartOfDay(#{any(java.time.ZoneId)})")
             .imports(JAVA_ZONE_ID);
+
+     final JavaTemplate.Builder toFormatedStringTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.format(DateTimeFormatter.ofPattern(#{any(String)}))")
+            .imports(JAVA_TIME_FORMATTER);
     final JavaTemplate.Builder toStringTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.toString()")
             .imports(JAVA_ZONE_ID);
 
@@ -132,8 +139,11 @@ public class LocatDateTemplates implements Templates {
                         J.MethodInvocation mi = (J.MethodInvocation)m;
                         return new Expression[]{ mi.getSelect(), mi.getArguments().get(0) };
                     }));
+
+            add(new MethodTemplate(toFormatedString, build(toFormatedStringTemplate)));
             add(new MethodTemplate(toString, build(toStringTemplate)));
 
+            add(new MethodTemplate(dayOfMonth, JODA_NO_AUTOMATIC_MAPPING_POSSIBLE_TEMPLATE));
             add(new MethodTemplate(newLocalDate, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
             add(new MethodTemplate(equals, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
         }

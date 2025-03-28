@@ -69,6 +69,7 @@ public class LocatDateTimeTemplates implements Templates {
     final MethodMatcher minusMillis = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusMillis(int)");
 
     final MethodMatcher toFormatedString = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toString(java.lang.String)");
+    final MethodMatcher toString = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toString()");
 
     final JavaTemplate.Builder newLocalDateTimeNoArgsTemplate = JavaTemplate.builder("LocalDateTime.now()");
     final JavaTemplate.Builder newLocalDateTimeEpochTemplate = JavaTemplate.builder("LocalDateTime.ofInstant(Instant.ofEpochMilli(#{any(long)}), ZoneId.systemDefault())")
@@ -112,6 +113,7 @@ public class LocatDateTimeTemplates implements Templates {
 
     final JavaTemplate.Builder toFormatedStringTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.format(DateTimeFormatter.ofPattern(#{any(String)}))")
             .imports(JAVA_TIME_FORMATTER);
+    final JavaTemplate.Builder toStringTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.toString()");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -155,6 +157,7 @@ public class LocatDateTimeTemplates implements Templates {
             add(new MethodTemplate(minusMillis, build(minusMillisTemplate)));
 
             add(new MethodTemplate(toFormatedString, build(toFormatedStringTemplate)));
+            add(new MethodTemplate(toString, build(toStringTemplate)));
 
             add(new MethodTemplate(newLocalDateObject, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
             add(new MethodTemplate(equals, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));

@@ -65,6 +65,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeRemoveImport(JODA_DATE_TIME_ZONE);
             maybeRemoveImport(JODA_TIME_FORMAT);
             maybeRemoveImport(JODA_DURATION);
+            maybeRemoveImport(JODA_PERIOD);
             maybeRemoveImport(JODA_ABSTRACT_INSTANT);
             maybeRemoveImport(JODA_INSTANT);
             maybeRemoveImport(JODA_INTERVAL);
@@ -243,6 +244,10 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         if (template.getTemplate().getCode().equals(JODA_MULTIPLE_MAPPING_POSSIBLE)) {
             System.out.println(JODA_MULTIPLE_MAPPING_POSSIBLE + ": " + original);
+            return original; // usage with no automated mapping
+        }
+        if (template.getTemplate().getCode().equals(JODA_NO_AUTOMATIC_MAPPING_POSSIBLE)) {
+            System.out.println(JODA_NO_AUTOMATIC_MAPPING_POSSIBLE + ": " + original);
             return original; // usage with no automated mapping
         }
         Optional<J> maybeUpdated = applyTemplate(original, updated, template);

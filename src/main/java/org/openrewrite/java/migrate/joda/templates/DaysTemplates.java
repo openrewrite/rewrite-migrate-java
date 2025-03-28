@@ -35,7 +35,7 @@ public class DaysTemplates implements Templates {
 
     final JavaTemplate.Builder daysStaticMethodTemplate = JavaTemplate.builder("Period.ofDays(#{any(int)})");
     final JavaTemplate.Builder daysBetweenTemplate = JavaTemplate.builder("Period.between(#{any(java.time.LocalDate)}, #{any(java.time.LocalDate)})");
-    final JavaTemplate.Builder getDaysTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.getDays()");
+    final JavaTemplate.Builder getDaysTemplate = JavaTemplate.builder("ChronoUnit.DAYS.between(java.time.LocalDate, java.time.LocalDate)");
     final JavaTemplate.Builder durationOfOneDayTemplate = JavaTemplate.builder("Period.ofDays(1)");
 
     @Getter

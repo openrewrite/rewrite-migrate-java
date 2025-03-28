@@ -22,7 +22,9 @@ import java.util.regex.Pattern;
 public class TimeClassNames {
     public static final Pattern JODA_CLASS_PATTERN = Pattern.compile("org\\.joda\\.time\\..*");
     public static final String JODA_MULTIPLE_MAPPING_POSSIBLE = "Multiple mapping is possible.Update manually";
+    public static final String JODA_NO_AUTOMATIC_MAPPING_POSSIBLE = "Not possible to migrate with recipe.Update manually";
     public static final JavaTemplate JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE = JavaTemplate.builder(JODA_MULTIPLE_MAPPING_POSSIBLE).build();
+    public static final JavaTemplate JODA_NO_AUTOMATIC_MAPPING_POSSIBLE_TEMPLATE = JavaTemplate.builder(JODA_NO_AUTOMATIC_MAPPING_POSSIBLE).build();
 
     // java util
     public static final String JAVA_UTIL_DATE = "java.util.Date";
@@ -41,11 +43,13 @@ public class TimeClassNames {
     public static final String JODA_TIME_FORMAT = JODA_TIME_PKG + ".format.DateTimeFormat";
     public static final String JODA_TIME_FORMATTER = JODA_TIME_PKG + ".format.DateTimeFormatter";
     public static final String JODA_LOCAL_DATE = JODA_TIME_PKG + ".LocalDate";
+    public static final String JODA_LOCAL_DATE_PROPERTY = JODA_TIME_PKG + ".LocalDate.Property";
     public static final String JODA_LOCAL_TIME = JODA_TIME_PKG + ".LocalTime";
     public static final String JODA_LOCAL_DATE_TIME = JODA_TIME_PKG + ".LocalDateTime";
     public static final String JODA_DATE_TIME_FIELD_TYPE = JODA_TIME_PKG + ".DateTimeFieldType";
     public static final String JODA_DURATION_FIELD_TYPE = JODA_TIME_PKG + ".DurationFieldType";
     public static final String JODA_DURATION = JODA_TIME_PKG + ".Duration";
+    public static final String JODA_PERIOD = JODA_TIME_PKG + ".Period";
     public static final String JODA_READABLE_DURATION = JODA_TIME_PKG + ".ReadableDuration";
     public static final String JODA_BASE_DURATION = JODA_TIME_PKG + ".base.BaseDuration";
     public static final String JODA_ABSTRACT_INSTANT = JODA_TIME_PKG + ".base.AbstractInstant";
