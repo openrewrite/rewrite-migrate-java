@@ -28,24 +28,27 @@ import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 @NoArgsConstructor
 public class MonthsTemplates implements Templates {
     final MethodMatcher monthsStaticMethod = new MethodMatcher(JODA_MONTHS + " months(int)");
-    final MethodMatcher monthsBetween = new MethodMatcher(JODA_MONTHS + " monthsBetween(org.joda.time.ReadablePartial, org.joda.time.ReadablePartial)");
+    final MethodMatcher monthsBetweenPartial = new MethodMatcher(JODA_MONTHS + " monthsBetween(org.joda.time.ReadablePartial, org.joda.time.ReadablePartial)");
+    final MethodMatcher monthsBetweenInstant = new MethodMatcher(JODA_MONTHS + " monthsBetween(org.joda.time.ReadableInstant, org.joda.time.ReadableInstant)");
     final MethodMatcher getMonths = new MethodMatcher(JODA_MONTHS + " getMonths()");
 
-    final JavaTemplate.Builder monthsStaticMethodTemplate = JavaTemplate.builder("Period.ofMonths(#{any(int)})");
-    final JavaTemplate.Builder monthsBetweenTemplate = JavaTemplate.builder("ChronoUnit.MONTHS.between(#{any(java.time.LocalDate)}, #{any(java.time.LocalDate)})")
+    final JavaTemplate.Builder monthsStaticMethodTemplate = JavaTemplate.builder("Months.of(#{any(int)})");
+    final JavaTemplate.Builder monthsBetweenLocalTemplate = JavaTemplate.builder("Months.between(#{any(java.time.LocalDate)}, #{any(java.time.LocalDate)})");
+    final JavaTemplate.Builder monthsBetweenZonedDateTimeTemplate = JavaTemplate.builder("Months.between(#{any(java.time.ZonedDateTime)}, #{any(java.time.ZonedDateTime)})");
+    final JavaTemplate.Builder getTemplate = JavaTemplate.builder("(int)#{any(org.threeten.extra.Months)}.get(ChronoUnit.MONTHS)")
             .imports(JAVA_CHRONO_UNIT);
-    final JavaTemplate.Builder getMonthsTemplate = JavaTemplate.builder("(int)#{any(long)}");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
             add(new MethodTemplate(monthsStaticMethod, build(monthsStaticMethodTemplate)));
-            add(new MethodTemplate(monthsBetween, build(monthsBetweenTemplate)));
-            add(new MethodTemplate(getMonths, build(getMonthsTemplate)));
+            add(new MethodTemplate(monthsBetweenPartial, build(monthsBetweenLocalTemplate)));
+            add(new MethodTemplate(monthsBetweenInstant, build(monthsBetweenZonedDateTimeTemplate)));
+            add(new MethodTemplate(getMonths, build(getTemplate)));
         }
     };
 
     private JavaTemplate build(JavaTemplate.Builder builder) {
-        return buildWithImport(builder, JAVA_PERIOD);
+        return buildWithImport(builder, THREE_TEN_EXTRA_MONTHS);
     }
 }

@@ -86,4 +86,8 @@ public class TimeClassNames {
     // ThreeTen-Extra classes
     public static final String THREE_TEN_EXTRA_PKG = "org.threeten.extra";
     public static final String THREE_TEN_EXTRA_INTERVAL = THREE_TEN_EXTRA_PKG + ".Interval";
+    public static final String THREE_TEN_EXTRA_DAYS = THREE_TEN_EXTRA_PKG + ".Days";
+    public static final String THREE_TEN_EXTRA_WEEKS = THREE_TEN_EXTRA_PKG + ".Weeks";
+    public static final String THREE_TEN_EXTRA_MONTHS = THREE_TEN_EXTRA_PKG + ".Months";
+    public static final String THREE_TEN_EXTRA_YEARS = THREE_TEN_EXTRA_PKG + ".Years";
 }

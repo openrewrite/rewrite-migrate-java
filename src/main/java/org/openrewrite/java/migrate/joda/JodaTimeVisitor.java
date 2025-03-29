@@ -99,6 +99,10 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeAddImport(JAVA_CHRONO_UNIT);
             maybeAddImport(JAVA_UTIL_DATE);
             maybeAddImport(THREE_TEN_EXTRA_INTERVAL);
+            maybeAddImport(THREE_TEN_EXTRA_DAYS);
+            maybeAddImport(THREE_TEN_EXTRA_WEEKS);
+            maybeAddImport(THREE_TEN_EXTRA_MONTHS);
+            maybeAddImport(THREE_TEN_EXTRA_YEARS);
         }
         return j;
     }

@@ -28,24 +28,27 @@ import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 @NoArgsConstructor
 public class YearsTemplates implements Templates {
     final MethodMatcher yearsStaticMethod = new MethodMatcher(JODA_YEARS + " years(int)");
-    final MethodMatcher yearsBetween = new MethodMatcher(JODA_YEARS + " yearsBetween(org.joda.time.ReadablePartial, org.joda.time.ReadablePartial)");
+    final MethodMatcher yearsBetweenPartial = new MethodMatcher(JODA_YEARS + " yearsBetween(org.joda.time.ReadablePartial, org.joda.time.ReadablePartial)");
+    final MethodMatcher yearsBetweenInstant = new MethodMatcher(JODA_YEARS + " yearsBetween(org.joda.time.ReadableInstant, org.joda.time.ReadableInstant)");
     final MethodMatcher getYears = new MethodMatcher(JODA_YEARS + " getYears()");
 
-    final JavaTemplate.Builder yearsStaticMethodTemplate = JavaTemplate.builder("Period.ofYears(#{any(int)})");
-    final JavaTemplate.Builder yearsBetweenTemplate = JavaTemplate.builder("ChronoUnit.YEARS.between(#{any(java.time.LocalDate)}, #{any(java.time.LocalDate)})")
+    final JavaTemplate.Builder yearsStaticMethodTemplate = JavaTemplate.builder("Years.of(#{any(int)})");
+    final JavaTemplate.Builder yearsBetweenLocalTemplate = JavaTemplate.builder("Years.between(#{any(java.time.LocalDate)}, #{any(java.time.LocalDate)})");
+    final JavaTemplate.Builder yearsBetweenZonedDateTimeTemplate = JavaTemplate.builder("Years.between(#{any(java.time.ZonedDateTime)}, #{any(java.time.ZonedDateTime)})");
+    final JavaTemplate.Builder getTemplate = JavaTemplate.builder("(int)#{any(org.threeten.extra.Years)}.get(ChronoUnit.YEARS)")
             .imports(JAVA_CHRONO_UNIT);
-    final JavaTemplate.Builder getYearsTemplate = JavaTemplate.builder("(int)#{any(long)}");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
             add(new MethodTemplate(yearsStaticMethod, build(yearsStaticMethodTemplate)));
-            add(new MethodTemplate(yearsBetween, build(yearsBetweenTemplate)));
-            add(new MethodTemplate(getYears, build(getYearsTemplate)));
+            add(new MethodTemplate(yearsBetweenPartial, build(yearsBetweenLocalTemplate)));
+            add(new MethodTemplate(yearsBetweenInstant, build(yearsBetweenZonedDateTimeTemplate)));
+            add(new MethodTemplate(getYears, build(getTemplate)));
         }
     };
 
     private JavaTemplate build(JavaTemplate.Builder builder) {
-        return buildWithImport(builder, JAVA_PERIOD);
+        return buildWithImport(builder, THREE_TEN_EXTRA_YEARS);
     }
 }

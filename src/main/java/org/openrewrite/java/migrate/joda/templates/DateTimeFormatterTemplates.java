@@ -48,7 +48,7 @@ public class DateTimeFormatterTemplates implements Templates {
     private final JavaTemplate withZoneTemplate = JavaTemplate.builder("#{any(" + JAVA_TIME_FORMATTER + ")}.withZone(#{any(" + JAVA_ZONE_ID + ")})").build();
     private final JavaTemplate withZoneUTCTemplate = JavaTemplate.builder("#{any(" + JAVA_TIME_FORMATTER + ")}.withZone(ZoneOffset.UTC)")
             .imports(JAVA_ZONE_OFFSET).build();
-    private final JavaTemplate parseTemplate = JavaTemplate.builder("#{any(" + JAVA_TIME_FORMATTER + ")}.parse(java.lang.CharSequence)").build();
+    private final JavaTemplate parseTemplate = JavaTemplate.builder("#{any(" + JAVA_TIME_FORMATTER + ")}.parse(#{any(java.lang.String)})").build();
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {

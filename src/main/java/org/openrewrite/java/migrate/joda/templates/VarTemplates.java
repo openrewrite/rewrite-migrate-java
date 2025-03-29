@@ -42,10 +42,10 @@ public class VarTemplates {
             put(JODA_INTERVAL, THREE_TEN_EXTRA_INTERVAL);
             put(JODA_SECONDS, JAVA_DURATION);
             put(JODA_HOURS, JAVA_DURATION);
-            put(JODA_DAYS, JAVA_PERIOD);
-            put(JODA_WEEKS, JAVA_PERIOD);
-            put(JODA_MONTHS, JAVA_PERIOD);
-            put(JODA_YEARS, JAVA_PERIOD);
+            put(JODA_DAYS, THREE_TEN_EXTRA_DAYS);
+            put(JODA_WEEKS, THREE_TEN_EXTRA_WEEKS);
+            put(JODA_MONTHS, THREE_TEN_EXTRA_MONTHS);
+            put(JODA_YEARS, THREE_TEN_EXTRA_YEARS);
         }
     };
 

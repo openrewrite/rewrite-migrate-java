@@ -23,32 +23,35 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_PERIOD;
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_DAYS;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 @NoArgsConstructor
 public class DaysTemplates implements Templates {
     final MethodMatcher daysStaticMethod = new MethodMatcher(JODA_DAYS + " days(int)");
-    final MethodMatcher daysBetween = new MethodMatcher(JODA_DAYS + " daysBetween(org.joda.time.ReadablePartial, org.joda.time.ReadablePartial)");
+    final MethodMatcher daysBetweenPartial = new MethodMatcher(JODA_DAYS + " daysBetween(org.joda.time.ReadablePartial, org.joda.time.ReadablePartial)");
+    final MethodMatcher daysBetweenInstant = new MethodMatcher(JODA_DAYS + " daysBetween(org.joda.time.ReadableInstant, org.joda.time.ReadableInstant)");
     final MethodMatcher getDays = new MethodMatcher(JODA_DAYS + " getDays()");
     final MethodMatcher daysOne = new MethodMatcher(JODA_DAYS + " ONE");
 
-    final JavaTemplate.Builder daysStaticMethodTemplate = JavaTemplate.builder("Period.ofDays(#{any(int)})");
-    final JavaTemplate.Builder daysBetweenTemplate = JavaTemplate.builder("Period.between(#{any(java.time.LocalDate)}, #{any(java.time.LocalDate)})");
-    final JavaTemplate.Builder getDaysTemplate = JavaTemplate.builder("ChronoUnit.DAYS.between(java.time.LocalDate, java.time.LocalDate)");
-    final JavaTemplate.Builder durationOfOneDayTemplate = JavaTemplate.builder("Period.ofDays(1)");
+    final JavaTemplate.Builder daysStaticMethodTemplate = JavaTemplate.builder("Days.of(#{any(int)})");
+    final JavaTemplate.Builder daysBetweenLocalTimeTemplate = JavaTemplate.builder("Days.between(#{any(java.time.LocalDate)}, #{any(java.time.LocalDate)})");
+    final JavaTemplate.Builder daysBetweenZonedDateTimeTemplate = JavaTemplate.builder("Days.between(#{any(java.time.ZonedDateTime)}, #{any(java.time.ZonedDateTime)})");
+    final JavaTemplate.Builder getTemplate = JavaTemplate.builder("(int)#{any(org.threeten.extra.Days)}.get(ChronoUnit.DAYS)")
+            .imports(JAVA_CHRONO_UNIT);
+    final JavaTemplate.Builder durationOfOneDayTemplate = JavaTemplate.builder("ONE");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
             add(new MethodTemplate(daysStaticMethod, build(daysStaticMethodTemplate)));
-            add(new MethodTemplate(daysBetween, build(daysBetweenTemplate)));
-            add(new MethodTemplate(getDays, build(getDaysTemplate)));
+            add(new MethodTemplate(daysBetweenPartial, build(daysBetweenLocalTimeTemplate)));
+            add(new MethodTemplate(daysBetweenInstant, build(daysBetweenZonedDateTimeTemplate)));
+            add(new MethodTemplate(getDays, build(getTemplate)));
             add(new MethodTemplate(daysOne, build(durationOfOneDayTemplate)));
         }
     };
 
     private JavaTemplate build(JavaTemplate.Builder builder) {
-        return buildWithImport(builder, JAVA_PERIOD);
+        return buildWithImport(builder, THREE_TEN_EXTRA_DAYS);
     }
 }
