@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.JavaTemplate;
@@ -34,6 +35,7 @@ import java.util.Base64;
 public class UseJavaUtilBase64 extends Recipe {
     private final String sunPackage;
 
+    @Getter
     @Option(displayName = "Use Mime Coder", description = "Use `Base64.getMimeEncoder()/getMimeDecoder()` instead of `Base64.getEncoder()/getDecoder()`.", required = false, example = "false")
     boolean useMimeCoder;
 
