@@ -56,12 +56,15 @@ public class AllTemplates {
     private static final MethodMatcher ANY_NEW_LOCAL_TIME = new MethodMatcher(JODA_LOCAL_TIME + "<constructor>(..)");
     private static final MethodMatcher ANY_LOCAL_TIME = new MethodMatcher(JODA_LOCAL_TIME + " *(..)");
     private static final MethodMatcher ANY_SECONDS = new MethodMatcher(JODA_SECONDS + " *(..)");
+    private static final MethodMatcher ANY_MINUTES = new MethodMatcher(JODA_MINUTES + " *(..)");
     private static final MethodMatcher ANY_HOURS = new MethodMatcher(JODA_HOURS + " *(..)");
     private static final MethodMatcher ANY_DAYS = new MethodMatcher(JODA_DAYS + " *(..)");
     private static final MethodMatcher ANY_WEEKS = new MethodMatcher(JODA_WEEKS + " *(..)");
     private static final MethodMatcher ANY_MONTHS = new MethodMatcher(JODA_MONTHS + " *(..)");
     private static final MethodMatcher ANY_YEARS = new MethodMatcher(JODA_YEARS + " *(..)");
     private static final MethodMatcher ANY_JODA_DATE_TIME_UTILS = new MethodMatcher(JODA_DATE_TIME_UTILS + " *(..)");
+    private static final MethodMatcher ANY_JODA_BASIC_CHRONOLOGY = new MethodMatcher(JODA_BASIC_CHRONOLOGY + " *(..)");
+    private static final MethodMatcher ANY_JODA_GEORGIAN_CHRONOLOGY = new MethodMatcher(JODA_GEORGIAN_CHRONOLOGY + " *(..)");
 
     private static List<MatcherAndTemplates> templates = new ArrayList<MatcherAndTemplates>() {
         {
@@ -95,12 +98,15 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_NEW_LOCAL_TIME, new LocatTimeTemplates()));
             add(new MatcherAndTemplates(ANY_LOCAL_TIME, new LocatTimeTemplates()));
             add(new MatcherAndTemplates(ANY_SECONDS, new SecondsTemplates()));
+            add(new MatcherAndTemplates(ANY_MINUTES, new MinutesTemplates()));
             add(new MatcherAndTemplates(ANY_HOURS, new HoursTemplates()));
             add(new MatcherAndTemplates(ANY_DAYS, new DaysTemplates()));
             add(new MatcherAndTemplates(ANY_WEEKS, new WeeksTemplates()));
             add(new MatcherAndTemplates(ANY_MONTHS, new MonthsTemplates()));
             add(new MatcherAndTemplates(ANY_YEARS, new YearsTemplates()));
             add(new MatcherAndTemplates(ANY_JODA_DATE_TIME_UTILS, new DateTimeUtilsTemplates()));
+            add(new MatcherAndTemplates(ANY_JODA_BASIC_CHRONOLOGY, new ChronologyTemplates()));
+            add(new MatcherAndTemplates(ANY_JODA_GEORGIAN_CHRONOLOGY, new ChronologyTemplates()));
         }
     };
 

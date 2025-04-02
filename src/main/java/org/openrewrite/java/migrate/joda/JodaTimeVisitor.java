@@ -75,6 +75,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeRemoveImport(JODA_LOCAL_DATE);
             maybeRemoveImport(JODA_LOCAL_TIME);
             maybeRemoveImport(JODA_SECONDS);
+            maybeRemoveImport(JODA_MINUTES);
             maybeRemoveImport(JODA_HOURS);
             maybeRemoveImport(JODA_DAYS);
             maybeRemoveImport(JODA_WEEKS);
@@ -82,6 +83,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeRemoveImport(JODA_YEARS);
             maybeRemoveImport(JODA_DATE_TIME_UTILS);
             maybeRemoveImport(JODA_DATE_MIDNIGHT);
+            maybeRemoveImport(JODA_GEORGIAN_CHRONOLOGY);
 
             maybeAddImport(JAVA_DATE_TIME);
             maybeAddImport(JAVA_ZONE_OFFSET);
@@ -98,6 +100,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeAddImport(JAVA_CHRONO_FIELD);
             maybeAddImport(JAVA_CHRONO_UNIT);
             maybeAddImport(JAVA_UTIL_DATE);
+            maybeAddImport(JAVA_ISA_CHRONOLOGY);
             maybeAddImport(THREE_TEN_EXTRA_INTERVAL);
             maybeAddImport(THREE_TEN_EXTRA_DAYS);
             maybeAddImport(THREE_TEN_EXTRA_WEEKS);

@@ -68,7 +68,8 @@ public class LocatDateTemplates implements Templates {
     final JavaTemplate.Builder localDateNoArgsTemplate = JavaTemplate.builder("LocalDate.now()");
     final JavaTemplate.Builder localDateEpochTemplate = JavaTemplate.builder("LocalDate.ofEpochDay(#{any(long)})");
     final JavaTemplate.Builder localDateYmdTemplate = JavaTemplate.builder("LocalDate.of(#{any(int)}, #{any(int)}, #{any(int)})");
-    final JavaTemplate.Builder toInstantTemplate = JavaTemplate.builder("#{any(java.util.Date)}.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()");
+    final JavaTemplate.Builder toInstantTemplate = JavaTemplate.builder("#{any(java.util.Date)}.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()")
+            .imports(JAVA_ZONE_ID);
 
     final JavaTemplate.Builder withDayOfMonthTemplate = JavaTemplate.builder("#{any(java.time.LocalDate)}.withDayOfMonth(#{any(int)})");
     final JavaTemplate.Builder nowTemplate = JavaTemplate.builder("LocalDate.now()");

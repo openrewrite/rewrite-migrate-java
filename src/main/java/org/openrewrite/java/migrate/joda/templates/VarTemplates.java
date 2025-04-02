@@ -41,6 +41,7 @@ public class VarTemplates {
             put(JODA_PERIOD, JAVA_PERIOD);
             put(JODA_INTERVAL, THREE_TEN_EXTRA_INTERVAL);
             put(JODA_SECONDS, JAVA_DURATION);
+            put(JODA_MINUTES, JAVA_DURATION);
             put(JODA_HOURS, JAVA_DURATION);
             put(JODA_DAYS, THREE_TEN_EXTRA_DAYS);
             put(JODA_WEEKS, THREE_TEN_EXTRA_WEEKS);
