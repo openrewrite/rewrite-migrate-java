@@ -102,9 +102,9 @@ class JodaTimeScannerTest implements RewriteTest {
         // The parameter 'dt' in the 'print' method is also unsafe because one of its method calls is unsafe.
         assertEquals(3, scanner.getAcc().getUnsafeVars().size());
         for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
-            assertTrue(var.getSimpleName().equals("dtz") ||
-                       var.getSimpleName().equals("dt") ||
-                       var.getSimpleName().equals("dateTime")
+            assertTrue("dtz".equals(var.getSimpleName()) ||
+                       "dt".equals(var.getSimpleName()) ||
+                       "dateTime".equals(var.getSimpleName())
             );
         }
     }
@@ -139,7 +139,7 @@ class JodaTimeScannerTest implements RewriteTest {
         // The local variable dt is unsafe due to class var datetime.
         assertEquals(2, scanner.getAcc().getUnsafeVars().size());
         for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
-            assertTrue(var.getSimpleName().equals("dateTime") || var.getSimpleName().equals("dt"));
+            assertTrue("dateTime".equals(var.getSimpleName()) || "dt".equals(var.getSimpleName()));
         }
     }
 
