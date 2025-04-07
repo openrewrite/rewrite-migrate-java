@@ -27,6 +27,7 @@ tags:
 # TODO: Rename bootstrapping files if necessary.
 # NOTE: The spec versions in this section comes from https://github.com/jakartaee/jakartaee-api/blob/9.1.0/pom.xml
 recipeList:
+  - org.openrewrite.java.migrate.javaee8
   - org.openrewrite.java.migrate.jakarta.JavaxActivationMigrationToJakartaActivation
   - org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
   - org.openrewrite.java.migrate.jakarta.JavaxAuthenticationMigrationToJakartaAuthentication
@@ -62,7 +63,6 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RestAssuredJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.ApplicationPathWildcardNoLongerAccepted
   - org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
-  - org.openrewrite.java.migrate.javaee8
   - org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
   - org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependency
 
@@ -117,17 +117,17 @@ recipeList:
       newPackageName: jakarta.annotation
       recursive: true
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: jakarta.annotation.processing
-      newPackageName: javax.annotation.processing
+      oldPackageName: javax.annotation.processing
+      newPackageName: jakarta.annotation.processing
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: jakarta.annotation.concurrent
-      newPackageName: javax.annotation.concurrent
+      oldPackageName: javax.annotation.concurrent
+      newPackageName: jakarta.annotation.concurrent
   - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.annotation.Nullable
-      newFullyQualifiedTypeName: javax.annotation.Nullable
+      oldFullyQualifiedTypeName: javax.annotation.Nullable
+      newFullyQualifiedTypeName: jakarta.annotation.Nullable
   - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.annotation.Nonnull
-      newFullyQualifiedTypeName: javax.annotation.Nonnull
+      oldFullyQualifiedTypeName: javax.annotation.Nonnull
+      newFullyQualifiedTypeName: jakarta.annotation.Nonnull
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -1015,6 +1015,12 @@ recipeList:
       oldArtifactId: javaee-api
       newGroupId: jakarta.platform
       newArtifactId: jakarta.jakartaee-api
+      newVersion: 9.1.0
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax
+      oldArtifactId: javaee-web-api
+      newGroupId: jakarta.platform
+      newArtifactId: jakarta.jakartaee-web-api
       newVersion: 9.1.0
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.platform
