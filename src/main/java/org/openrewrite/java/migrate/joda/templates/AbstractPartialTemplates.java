@@ -29,20 +29,16 @@ public class AbstractPartialTemplates implements Templates {
     private final MethodMatcher isBefore = new MethodMatcher(JODA_ABSTRACT_PARTIAL + " isBefore(org.joda.time.ReadablePartial)");
     private final MethodMatcher isEqual = new MethodMatcher(JODA_ABSTRACT_PARTIAL + " isEqual(org.joda.time.ReadablePartial)");
 
-    private final JavaTemplate.Builder isAfterTemplate = JavaTemplate.builder("#{any(java.time.chrono.ChronoLocalDate)}.isAfter(#{any(java.time.chrono.ChronoLocalDate)})");
-    private final JavaTemplate.Builder isBeforeTemplate = JavaTemplate.builder("#{any(java.time.chrono.ChronoLocalDate)}.isBefore(#{any(java.time.chrono.ChronoLocalDate)})");
-    private final JavaTemplate.Builder isEqualTemplate = JavaTemplate.builder("#{any(java.time.chrono.ChronoLocalDate)}.isEqual(#{any(java.time.chrono.ChronoLocalDate)})");
+    private final JavaTemplate isAfterTemplate = JavaTemplate.builder("#{any(java.time.chrono.ChronoLocalDate)}.isAfter(#{any(java.time.chrono.ChronoLocalDate)})").build();
+    private final JavaTemplate isBeforeTemplate = JavaTemplate.builder("#{any(java.time.chrono.ChronoLocalDate)}.isBefore(#{any(java.time.chrono.ChronoLocalDate)})").build();
+    private final JavaTemplate isEqualTemplate = JavaTemplate.builder("#{any(java.time.chrono.ChronoLocalDate)}.isEqual(#{any(java.time.chrono.ChronoLocalDate)})").build();
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
-            add(new MethodTemplate(isAfter, build(isAfterTemplate)));
-            add(new MethodTemplate(isBefore, build(isBeforeTemplate)));
-            add(new MethodTemplate(isEqual, build(isEqualTemplate)));
+            add(new MethodTemplate(isAfter, isAfterTemplate));
+            add(new MethodTemplate(isBefore, isBeforeTemplate));
+            add(new MethodTemplate(isEqual, isEqualTemplate));
         }
     };
-
-    private JavaTemplate build(JavaTemplate.Builder builder) {
-        return builder.build();
-    }
 }

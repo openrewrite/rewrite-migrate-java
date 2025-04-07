@@ -49,6 +49,7 @@ public class TimeClassNames {
     public static final String JODA_DATE_TIME_FIELD_TYPE = JODA_TIME_PKG + ".DateTimeFieldType";
     public static final String JODA_DURATION_FIELD_TYPE = JODA_TIME_PKG + ".DurationFieldType";
     public static final String JODA_DURATION = JODA_TIME_PKG + ".Duration";
+    public static final String JODA_ABSTRACT_PERIOD = JODA_TIME_PKG + ".AbstractPeriod";
     public static final String JODA_PERIOD = JODA_TIME_PKG + ".Period";
     public static final String JODA_READABLE_DURATION = JODA_TIME_PKG + ".ReadableDuration";
     public static final String JODA_BASE_DURATION = JODA_TIME_PKG + ".base.BaseDuration";

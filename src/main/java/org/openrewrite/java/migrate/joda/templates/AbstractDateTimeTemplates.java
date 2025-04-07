@@ -38,7 +38,9 @@ public class AbstractDateTimeTemplates implements Templates {
     private final MethodMatcher getSecondOfMinute = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getSecondOfMinute()");
     private final MethodMatcher getWeekOfWeekyear = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getWeekOfWeekyear()");
     private final MethodMatcher getZone = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " getZone()");
+    private final MethodMatcher toCalendar = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " toCalendar(java.util.Locale)");
     private final MethodMatcher toString = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " toString()");
+    private final MethodMatcher toStringWithPattern = new MethodMatcher(JODA_ABSTRACT_DATE_TIME + " toString(java.lang.String)");
 
     private final JavaTemplate getYearTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getYear()").build();
     private final JavaTemplate getDayOfMonthTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getDayOfMonth()").build();
@@ -55,7 +57,11 @@ public class AbstractDateTimeTemplates implements Templates {
     private final JavaTemplate getSecondOfMinuteTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getSecond()").build();
     private final JavaTemplate getWeekOfWeekyearTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.get(ChronoField.ALIGNED_WEEK_OF_YEAR)").imports("java.time.temporal.ChronoField").build();
     private final JavaTemplate getZoneTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.getZone()").build();
+    private final JavaTemplate toCalendarTemplate = JavaTemplate.builder("GregorianCalendar.from(#{any(" + JAVA_DATE_TIME + ")})").build();
     private final JavaTemplate toStringTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.toString()").build();
+    private final JavaTemplate toStringWithPatternTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.format(DateTimeFormatter.ofPattern(#{any(String)})")
+            .imports(JAVA_TIME_FORMATTER)
+            .build();
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -73,7 +79,9 @@ public class AbstractDateTimeTemplates implements Templates {
             add(new MethodTemplate(getSecondOfMinute, getSecondOfMinuteTemplate));
             add(new MethodTemplate(getWeekOfWeekyear, getWeekOfWeekyearTemplate));
             add(new MethodTemplate(getZone, getZoneTemplate));
+            add(new MethodTemplate(toCalendar, toCalendarTemplate));
 
+            add(new MethodTemplate(toStringWithPattern, toStringWithPatternTemplate));
             add(new MethodTemplate(toString, toStringTemplate));
         }
     };

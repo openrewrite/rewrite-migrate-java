@@ -41,6 +41,7 @@ public class AbstractInstantTemplates implements Templates {
     private final MethodMatcher isEqualLong = new MethodMatcher(JODA_ABSTRACT_INSTANT + " isEqual(long)");
     private final MethodMatcher isEqualReadableInstant = new MethodMatcher(JODA_ABSTRACT_INSTANT + " isEqual(org.joda.time.ReadableInstant)");
     private final MethodMatcher toDate = new MethodMatcher(JODA_ABSTRACT_INSTANT + " toDate()");
+    private final MethodMatcher toDateTime = new MethodMatcher(JODA_ABSTRACT_INSTANT + " toDateTime()");
     private final MethodMatcher toInstant = new MethodMatcher(JODA_ABSTRACT_INSTANT + " toInstant()");
     private final MethodMatcher toString = new MethodMatcher(JODA_ABSTRACT_INSTANT + " toString()");
     private final MethodMatcher toStringFormatter = new MethodMatcher(JODA_ABSTRACT_INSTANT + " toString(org.joda.time.format.DateTimeFormatter)");
@@ -69,6 +70,7 @@ public class AbstractInstantTemplates implements Templates {
     private final JavaTemplate toDateTemplate = JavaTemplate.builder("Date.from(#{any(" + JAVA_DATE_TIME + ")}.toInstant())")
             .imports(JAVA_UTIL_DATE)
             .build();
+    private final JavaTemplate toDateTimeTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")").build();
     private final JavaTemplate toInstantTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.toInstant()").build();
     private final JavaTemplate toStringTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.toString()").build();
     private final JavaTemplate toStringFormatterTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.format(#{any(" + JAVA_TIME_FORMATTER + ")})").build();
@@ -92,6 +94,7 @@ public class AbstractInstantTemplates implements Templates {
             add(new MethodTemplate(isEqualLong, isEqualLongTemplate));
             add(new MethodTemplate(isEqualReadableInstant, isEqualReadableInstantTemplate));
             add(new MethodTemplate(toDate, toDateTemplate));
+            add(new MethodTemplate(toDateTime, toDateTimeTemplate));
             add(new MethodTemplate(toInstant, toInstantTemplate));
             add(new MethodTemplate(toString, toStringTemplate));
             add(new MethodTemplate(toStringFormatter, toStringFormatterTemplate));

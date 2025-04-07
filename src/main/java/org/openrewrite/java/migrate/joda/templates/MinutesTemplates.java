@@ -23,8 +23,7 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_DURATION;
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_MINUTES;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 @NoArgsConstructor
 public class MinutesTemplates implements Templates {
@@ -37,13 +36,14 @@ public class MinutesTemplates implements Templates {
     final MethodMatcher isLessThan = new MethodMatcher(JODA_MINUTES + " isLessThan(org.joda.time.Minutes)");
     final MethodMatcher isGreaterThan = new MethodMatcher(JODA_MINUTES + " isGreaterThan(org.joda.time.Minutes)");
     final MethodMatcher toStandardDuration = new MethodMatcher(JODA_MINUTES + " toStandardDuration()");
+    //Minutes.ZERO
 
     final JavaTemplate.Builder minutesStaticMethodTemplate = JavaTemplate.builder("Duration.ofMinutes(#{any(int)})");
     final JavaTemplate.Builder plusMethodTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.plus(#{any(java.time.Duration)})");
     final JavaTemplate.Builder minusMethodTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.minus(#{any(java.time.Duration)})");
     final JavaTemplate.Builder multipliedByMethodTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.multipliedBy(#{any(int)})");
     final JavaTemplate.Builder dividedByMethodTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.dividedBy(#{any(int)})");
-    final JavaTemplate.Builder getMinutesMethodTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.getMinutes()");
+    final JavaTemplate.Builder getMinutesMethodTemplate = JavaTemplate.builder("(int)#{any(java.time.Duration)}.toMinutes()");
     final JavaTemplate.Builder minusIsNegativeTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.minus(#{any(java.time.Duration)}).isNegative()");
     final JavaTemplate.Builder minusIsPositiveTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.minus(#{any(java.time.Duration)}).isPositive()");
     final JavaTemplate.Builder asDurationTemplate = JavaTemplate.builder("#{any(java.time.Duration)}");

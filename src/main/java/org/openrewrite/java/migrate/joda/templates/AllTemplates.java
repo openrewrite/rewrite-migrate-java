@@ -37,6 +37,7 @@ public class AllTemplates {
     private static final MethodMatcher ANY_NEW_DURATION = new MethodMatcher(JODA_DURATION + "<constructor>(..)");
     private static final MethodMatcher ANY_DURATION = new MethodMatcher(JODA_DURATION + " *(..)");
     private static final MethodMatcher ANY_NEW_PERIOD = new MethodMatcher(JODA_PERIOD + "<constructor>(..)");
+    private static final MethodMatcher ANY_ABSTRACT_PERIOD = new MethodMatcher(JODA_ABSTRACT_PERIOD + " *(..)");
     private static final MethodMatcher ANY_PERIOD = new MethodMatcher(JODA_PERIOD + " *(..)");
     private static final MethodMatcher ANY_BASE_DURATION = new MethodMatcher(JODA_BASE_DURATION + " *(..)");
     private static final MethodMatcher ANY_ABSTRACT_INSTANT = new MethodMatcher(JODA_ABSTRACT_INSTANT + " *(..)");
@@ -81,6 +82,7 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_NEW_DURATION, new DurationTemplates()));
             add(new MatcherAndTemplates(ANY_DURATION, new DurationTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_PERIOD, new PeriodTemplates()));
+            add(new MatcherAndTemplates(ANY_ABSTRACT_PERIOD, new AbstractPeriodTemplates()));
             add(new MatcherAndTemplates(ANY_PERIOD, new PeriodTemplates()));
             add(new MatcherAndTemplates(ANY_BASE_DURATION, new BaseDurationTemplates()));
             add(new MatcherAndTemplates(ANY_DATE_TIMEZONE, new DateTimeZoneTemplates()));

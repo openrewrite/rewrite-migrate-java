@@ -29,11 +29,15 @@ public class AbstractDurationTemplates implements Templates {
     private final MethodMatcher toPeriod = new MethodMatcher(JODA_ABSTRACT_DURATION + " toPeriod()");
     private final MethodMatcher toString = new MethodMatcher(JODA_ABSTRACT_DURATION + " toString()");
     private final MethodMatcher compareTo = new MethodMatcher(JODA_ABSTRACT_DURATION + " compareTo(org.joda.time.ReadableDuration)");
+    private final MethodMatcher isEquals = new MethodMatcher(JODA_ABSTRACT_DURATION + " isEqual(org.joda.time.ReadableDuration)");
+    private final MethodMatcher equals = new MethodMatcher(JODA_ABSTRACT_DURATION + " equals(Object)");
 
     private final JavaTemplate isLongerThanTemplate = JavaTemplate.builder("#{any(" + JAVA_DURATION + ")}.compareTo(#{any(" + JAVA_DURATION + ")}) > 0").build();
     private final JavaTemplate toPeriodTemplate = JavaTemplate.builder("#{any(" + JAVA_DURATION + ")}.toPeriod()").build();
     private final JavaTemplate toStringTemplate = JavaTemplate.builder("#{any(" + JAVA_DURATION + ")}.toString()").build();
     private final JavaTemplate compareToTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.compareTo(#{any(java.time.Duration)})").build();
+    private final JavaTemplate equalsTemplate = JavaTemplate.builder("#{any(" + JAVA_DURATION + ")}.equals(#{any(Object)})").build();
+
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
@@ -41,6 +45,8 @@ public class AbstractDurationTemplates implements Templates {
             add(new MethodTemplate(toPeriod, toPeriodTemplate));
             add(new MethodTemplate(toString, toStringTemplate));
             add(new MethodTemplate(compareTo, compareToTemplate));
+            add(new MethodTemplate(isEquals, equalsTemplate));
+            add(new MethodTemplate(equals, equalsTemplate));
         }
     };
 }

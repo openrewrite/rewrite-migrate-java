@@ -67,6 +67,8 @@ public class LocatDateTimeTemplates implements Templates {
     final MethodMatcher minusMinutes = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusMinutes(int)");
     final MethodMatcher minusSeconds = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusSeconds(int)");
     final MethodMatcher minusMillis = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusMillis(int)");
+    final MethodMatcher plus = new MethodMatcher(JODA_LOCAL_DATE_TIME + " plus(org.joda.time.ReadableDuration)");
+    final MethodMatcher minus = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minus(org.joda.time.ReadableDuration)");
 
     final MethodMatcher toFormatedString = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toString(java.lang.String)");
     final MethodMatcher toString = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toString()");
@@ -110,6 +112,8 @@ public class LocatDateTimeTemplates implements Templates {
     final JavaTemplate.Builder minusMinutesTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusMinutes(#{any(int)})");
     final JavaTemplate.Builder minusSecondsTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusSeconds(#{any(int)})");
     final JavaTemplate.Builder minusMillisTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusNanos(#{any(int)} * 1_000_000L)");
+    final JavaTemplate.Builder plusTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.plus(#{any(java.time.Duration)})");
+    final JavaTemplate.Builder minusTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minus(#{any(java.time.Duration)})");
 
     final JavaTemplate.Builder toFormatedStringTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.format(DateTimeFormatter.ofPattern(#{any(String)}))")
             .imports(JAVA_TIME_FORMATTER);
@@ -155,6 +159,8 @@ public class LocatDateTimeTemplates implements Templates {
             add(new MethodTemplate(minusMinutes, build(minusMinutesTemplate)));
             add(new MethodTemplate(minusSeconds, build(minusSecondsTemplate)));
             add(new MethodTemplate(minusMillis, build(minusMillisTemplate)));
+            add(new MethodTemplate(plus, build(plusTemplate)));
+            add(new MethodTemplate(minus, build(minusTemplate)));
 
             add(new MethodTemplate(toFormatedString, build(toFormatedStringTemplate)));
             add(new MethodTemplate(toString, build(toStringTemplate)));
