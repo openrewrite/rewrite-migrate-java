@@ -88,6 +88,7 @@
 24.0.2.r22-mandrel
 24.1.2.r23-mandrel
 24.1.2.r23-nik
+24.2.r24-mandrel
 24.crac-zulu
 24.ea.32-graal
 24.ea.36-open
@@ -97,7 +98,9 @@
 25.ea.13-graal
 25.ea.14-graal
 25.ea.14-open
+25.ea.15-graal
 25.ea.15-open
+25.ea.16-open
 25.ea.8-graal
 6.0.119-zulu
 7.0.352-zulu
