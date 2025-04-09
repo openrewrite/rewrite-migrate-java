@@ -353,10 +353,7 @@ recipeList:
       oldPackageName: javax.faces
       newPackageName: jakarta.faces
       recursive: true
-  - org.openrewrite.text.FindAndReplace:
-      find: "javax.faces"
-      replace: "jakarta.faces"
-      filePattern: '**/*.java'
+      visitStringLiterals: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
