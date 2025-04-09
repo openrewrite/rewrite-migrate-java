@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,9 +54,7 @@ public class ThreadStopUnsupported extends Recipe {
                 J j = super.visitMethodInvocation(method, ctx);
                 if (THREAD_STOP_MATCHER.matches(method) || THREAD_RESUME_MATCHER.matches(method) || THREAD_SUSPEND_MATCHER.matches(method)) {
                     if (usesJava21(ctx)) {
-                        JavaTemplate template = JavaTemplate.builder("throw new UnsupportedOperationException()")
-                                .contextSensitive().build();
-                        j = template.apply(getCursor(), method.getCoordinates().replace());
+                        j = JavaTemplate.apply("throw new UnsupportedOperationException()", getCursor(), method.getCoordinates().replace());
                     }
                     if (j.getComments().isEmpty()) {
                         j = getWithComment(j, method.getName().getSimpleName());

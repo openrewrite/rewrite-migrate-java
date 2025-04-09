@@ -1,11 +1,11 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -49,7 +49,7 @@ public class MigrateCollectionsSingletonList extends Recipe {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
-                if (SINGLETON_LIST.matches(method)) {
+                if (SINGLETON_LIST.matches(m) && isNotLiteralNull(m)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.List");
 
@@ -64,6 +64,11 @@ public class MigrateCollectionsSingletonList extends Recipe {
                             .withPrefix(Space.EMPTY);
                 }
                 return m;
+            }
+
+            private boolean isNotLiteralNull(J.MethodInvocation m) {
+                return !(m.getArguments().get(0) instanceof J.Literal &&
+                         ((J.Literal) m.getArguments().get(0)).getValue() == null);
             }
         });
     }

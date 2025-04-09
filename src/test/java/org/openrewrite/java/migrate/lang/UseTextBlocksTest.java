@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
+import static org.openrewrite.kotlin.Assertions.kotlin;
 
+@SuppressWarnings({"ConcatenationWithEmptyString", "TextBlockMigration", "EscapedSpace"})
 class UseTextBlocksTest implements RewriteTest {
 
     @Override
@@ -86,8 +88,7 @@ class UseTextBlocksTest implements RewriteTest {
                       String query = \"""
                           SELECT * FROM   \\s
                           my_table   \\s
-                          WHERE something = 1; \\
-                          \""";
+                          WHERE something = 1; \""";
               }
               """
           )
@@ -115,6 +116,32 @@ class UseTextBlocksTest implements RewriteTest {
                                  ""\";
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void worksOnNewerJavaVersions() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  String color = "red\\n" +
+                                 "green\\n" +
+                                 "blue\\n";
+              }
+              """,
+            """
+              class Test {
+                  String color = \"""
+                                 red
+                                 green
+                                 blue
+                                 ""\";
+              }
+              """,
+              spec -> spec.markers(javaVersion(21))
           )
         );
     }
@@ -179,7 +206,7 @@ class UseTextBlocksTest implements RewriteTest {
                   String query = \"""
                          SELECT * FROM
                          my_table
-                         \""" + 
+                         \""" +
                          "WHERE something = 1;";
               }
               """
@@ -462,40 +489,40 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Disabled("""
-            This test is to demonstrate that the text block conversion is correct.
-            In this test, s1, s2, and s3 are equivalent, and we translate s1 to s2.
-            """)
+      This test is to demonstrate that the text block conversion is correct.
+      In this test, s1, s2, and s3 are equivalent, and we translate s1 to s2.
+      """)
     @Test
     void textBlockDemo() {
-        String s1 = "\n========================================================="
-                    + "\n                                                         "
-                    + "\n          Welcome to Spring Integration!                 "
-                    + "\n                                                         "
-                    + "\n    For more information please visit:                   "
-                    + "\n    https://www.springsource.org/spring-integration      "
-                    + "\n                                                         "
-                    + "\n=========================================================";
+        String s1 = "\n=========================================================" +
+                    "\n                                                         " +
+                    "\n          Welcome to Spring Integration!                 " +
+                    "\n                                                         " +
+                    "\n    For more information please visit:                   " +
+                    "\n    https://www.springsource.org/spring-integration      " +
+                    "\n                                                         " +
+                    "\n=========================================================";
         String s2 = """
-                    
-                    =========================================================
-                                                                            \s
-                              Welcome to Spring Integration!                \s
-                                                                            \s
-                        For more information please visit:                  \s
-                        https://www.springsource.org/spring-integration     \s
-                                                                            \s
-                    =========================================================\
-                    """;
+
+          =========================================================
+                                                                  \s
+                    Welcome to Spring Integration!                \s
+                                                                  \s
+              For more information please visit:                  \s
+              https://www.springsource.org/spring-integration     \s
+                                                                  \s
+          =========================================================\
+          """;
         String s3 = """
-                    \n=========================================================\
-                    \n                                                         \
-                    \n          Welcome to Spring Integration!                 \
-                    \n                                                         \
-                    \n    For more information please visit:                   \
-                    \n    https://www.springsource.org/spring-integration      \
-                    \n                                                         \
-                    \n=========================================================\
-                    """;
+          \n=========================================================\
+          \n                                                         \
+          \n          Welcome to Spring Integration!                 \
+          \n                                                         \
+          \n    For more information please visit:                   \
+          \n    https://www.springsource.org/spring-integration      \
+          \n                                                         \
+          \n=========================================================\
+          """;
         assertThat(s1).isEqualTo(s2).isEqualTo(s3);
     }
 
@@ -550,7 +577,7 @@ class UseTextBlocksTest implements RewriteTest {
             """
               class Test {
                   String s1 = "line1\\n\\n" +
-                              "line3\\n\\n\\n" + 
+                              "line3\\n\\n\\n" +
                               "line6\\n";
               }
               """,
@@ -710,8 +737,7 @@ class UseTextBlocksTest implements RewriteTest {
               class Test {
                   String eightQuotes = ""\"
                                  ""\\""\"\\""\"\\
-                                 after 8 quotes\\
-                                 ""\";
+                                 after 8 quotes""\";
               }
               """
           )
@@ -816,5 +842,46 @@ class UseTextBlocksTest implements RewriteTest {
               """
           )
         );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/501")
+    void shouldNotUpdateKotlinCode() {
+        rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(0),
+          kotlin(
+            """
+              const val MULTI_LINE_MESSAGE =
+                 \s"This is a multi-line message and should not be updated. " +
+                         \s"This is the second sentence of such message."
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/555")
+    void textBlockTrailingEscape() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks()),
+          java(
+            """
+             package com.helloworld;
+
+             public class Main {
+                 String foo =
+                     "hello\\n"
+                         + "world";
+            }""",
+            """
+             package com.helloworld;
+
+             public class Main {
+                 String foo =
+                     \"""
+                     hello
+                     world\""";
+            }""",
+            src -> src.markers(javaVersion(17))));
     }
 }

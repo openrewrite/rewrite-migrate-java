@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -72,8 +72,8 @@ class JakartaFacesXhtmlTest implements RewriteTest {
                       xmlns:h="jakarta.faces.html"
                       xmlns:ui="jakarta.faces.facelets"
                       xmlns:c="jakarta.tags.core"
-                      xmlns:p="http://primefaces.org/ui"
-                      xmlns:pe="http://primefaces.org/ui/extensions">
+                      xmlns:p="primefaces"
+                      xmlns:pe="primefaces.extensions">
               <script src="https://www.gstatic.com/charts/loader.js"></script>
               <p:outputPanel id="container" layout="block">
                   <h:panelGrid columns="4">
@@ -144,8 +144,8 @@ class JakartaFacesXhtmlTest implements RewriteTest {
                       xmlns:pt="jakarta.faces.passthrough"
                       xmlns:fn="jakarta.tags.functions"
                       xmlns:cc="jakarta.faces.composite"
-                      xmlns:p="http://primefaces.org/ui"
-                      xmlns:pe="http://primefaces.org/ui/extensions">
+                      xmlns:p="primefaces"
+                      xmlns:pe="primefaces.extensions">
               <script src="https://www.gstatic.com/charts/loader.js"></script>
               <div pt:id="container">
                   <h:panelGrid columns="4">

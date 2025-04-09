@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -117,11 +117,11 @@ public class UseVarForPrimitive extends Recipe {
                 return initializer;
             }
 
-            boolean isLongLiteral = JavaType.Primitive.Long.equals(vd.getType());
+            boolean isLongLiteral = JavaType.Primitive.Long == vd.getType();
             boolean inferredAsLong = valueSource.endsWith("l") || valueSource.endsWith("L");
-            boolean isFloatLiteral = JavaType.Primitive.Float.equals(vd.getType());
+            boolean isFloatLiteral = JavaType.Primitive.Float == vd.getType();
             boolean inferredAsFloat = valueSource.endsWith("f") || valueSource.endsWith("F");
-            boolean isDoubleLiteral = JavaType.Primitive.Double.equals(vd.getType());
+            boolean isDoubleLiteral = JavaType.Primitive.Double == vd.getType();
             boolean inferredAsDouble = valueSource.endsWith("d") || valueSource.endsWith("D") || valueSource.contains(".");
 
             String typNotation = null;

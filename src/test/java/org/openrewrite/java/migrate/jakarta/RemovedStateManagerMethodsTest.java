@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,13 +42,13 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
         rewriteRun(
           //language=java
           java(
-            """             
+            """
               import jakarta.faces.application.StateManager;
               import jakarta.faces.component.UIViewRoot;
               import jakarta.faces.context.FacesContext;
-                          
+
               class StateManagerParent extends StateManager {
-                          
+
                   @Override
                   public UIViewRoot restoreView(FacesContext arg0, String arg1, String arg2) {
                       UIViewRoot uv = null;
@@ -57,16 +57,16 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
                       super.restoreComponentState(arg0, uv, arg2);
                       super.restoreTreeStructure(arg0, arg1, arg2);
                       return null;
-                  }            
+                  }
               }
               """,
             """
               import jakarta.faces.component.UIViewRoot;
               import jakarta.faces.context.FacesContext;
               import jakarta.faces.view.StateManagementStrategy;
-                          
+
               class StateManagerParent extends StateManagementStrategy {
-                          
+
                   @Override
                   public UIViewRoot restoreView(FacesContext arg0, String arg1, String arg2) {
                       UIViewRoot uv = null;
@@ -75,7 +75,7 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
                       super.restoreView(arg0, uv, arg2);
                       super.restoreView(arg0, arg1, arg2);
                       return null;
-                  }            
+                  }
               }
               """
           )
@@ -87,15 +87,15 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
         rewriteRun(
           //language=java
           java(
-            """             
-              import jakarta.faces.application.StateManager;            
+            """
+              import jakarta.faces.application.StateManager;
               import jakarta.faces.context.FacesContext;
               import java.io.IOException;
-               
+
                class StateMgrTest {
-               
+
                    public void test() throws IOException {
-               
+
                        StateManager st = null;
                        FacesContext fc = null;
                        String var1 = null;
@@ -109,15 +109,15 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
                }
               """,
             """
-              import jakarta.faces.context.FacesContext;            
+              import jakarta.faces.context.FacesContext;
               import jakarta.faces.view.StateManagementStrategy;
-                          
+
               import java.io.IOException;
-                        
+
               class StateMgrTest {
-               
+
                    public void test() throws IOException {
-               
+
                        StateManagementStrategy st = null;
                        FacesContext fc = null;
                        String var1 = null;

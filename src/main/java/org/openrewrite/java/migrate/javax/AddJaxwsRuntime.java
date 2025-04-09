@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -26,7 +27,6 @@ import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.search.FindGradleProject;
 import org.openrewrite.groovy.GroovyIsoVisitor;
 import org.openrewrite.groovy.tree.G;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.maven.AddDependencyVisitor;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.MavenResolutionResult;
@@ -116,11 +116,11 @@ public class AddJaxwsRuntime extends Recipe {
                         Set<String> runtimeConfigurations = getTransitiveDependencyConfiguration(gp, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
                         if (runtimeConfigurations.isEmpty()) {
                             if (gp.getConfiguration("compileOnly") != null) {
-                                g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, "compileOnly", null, null, null)
+                                g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, "compileOnly", null, null, null, null)
                                         .visitNonNull(g, ctx);
                             }
                             if (gp.getConfiguration("testImplementation") != null) {
-                                g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, "testImplementation", null, null, null)
+                                g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, "testImplementation", null, null, null, null)
                                         .visitNonNull(g, ctx);
                             }
                         } else {
@@ -131,7 +131,7 @@ public class AddJaxwsRuntime extends Recipe {
                                     GradleDependencyConfiguration runtimeGdc = gp.getConfiguration(runtimeConfiguration);
                                     List<GradleDependencyConfiguration> runtimeTransitives = gp.configurationsExtendingFrom(runtimeGdc, true);
                                     if (apiTransitives.stream().noneMatch(runtimeTransitives::contains)) {
-                                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, apiConfiguration, null, null, null)
+                                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, apiConfiguration, null, null, null, null)
                                                 .visitNonNull(g, ctx);
                                     }
                                 }
@@ -225,14 +225,13 @@ public class AddJaxwsRuntime extends Recipe {
          * @param artifactId The artifact ID of the dependency
          * @return The highest scope of the given dependency or null if the dependency does not exist.
          */
-        @Nullable
-        private Scope getTransitiveDependencyScope(MavenResolutionResult mavenModel, String groupId, String artifactId) {
+        private @Nullable Scope getTransitiveDependencyScope(MavenResolutionResult mavenModel, String groupId, String artifactId) {
             Scope maxScope = null;
             for (Map.Entry<Scope, List<ResolvedDependency>> entry : mavenModel.getDependencies().entrySet()) {
                 for (ResolvedDependency dependency : entry.getValue()) {
                     if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
                         maxScope = Scope.maxPrecedence(maxScope, entry.getKey());
-                        if (Scope.Compile.equals(maxScope)) {
+                        if (Scope.Compile == maxScope) {
                             return maxScope;
                         }
                         break;

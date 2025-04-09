@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,7 @@ class UseJavaUtilBase64Test implements RewriteTest {
             .dependsOn(
               """
                 package test.sun.misc;
-                                                
+
                 import java.io.InputStream;
                 import java.io.ByteArrayInputStream;
                 import java.io.OutputStream;
@@ -42,7 +42,7 @@ class UseJavaUtilBase64Test implements RewriteTest {
                 import java.io.PrintStream;
                 import java.io.IOException;
                 import java.nio.ByteBuffer;
-                             
+
                 @SuppressWarnings("RedundantThrows")
                 class CharacterEncoder {
                     public void encode(InputStream inStream, OutputStream outStream) throws IOException {
@@ -50,31 +50,31 @@ class UseJavaUtilBase64Test implements RewriteTest {
 
                     public void encode(byte[] aBuffer, OutputStream aStream) throws IOException {
                     }
-                
+
                     public String encode(byte[] aBuffer) {
                         return "";
                     }
 
                     public void encode(ByteBuffer aBuffer, OutputStream aStream) throws IOException {
                     }
-                
+
                     public String encode(ByteBuffer aBuffer) {
                         return "";
                     }
-                
+
                     public void encodeBuffer(InputStream inStream, OutputStream outStream) throws IOException {
                     }
-                
+
                     public void encodeBuffer(byte[] aBuffer, OutputStream aStream) throws IOException {
                     }
-                
+
                     public String encodeBuffer(byte[] aBuffer) {
                         return "";
                     }
-                
+
                     public void encodeBuffer(ByteBuffer aBuffer, OutputStream aStream) throws IOException {
                     }
-                
+
                     public String encodeBuffer(ByteBuffer aBuffer) {
                         return "";
                     }
@@ -82,7 +82,7 @@ class UseJavaUtilBase64Test implements RewriteTest {
                 """,
               """
                 package test.sun.misc;
-                                                
+
                 import java.io.InputStream;
                 import java.io.ByteArrayInputStream;
                 import java.io.OutputStream;
@@ -90,25 +90,25 @@ class UseJavaUtilBase64Test implements RewriteTest {
                 import java.io.PrintStream;
                 import java.io.IOException;
                 import java.nio.ByteBuffer;
-                
+
                 @SuppressWarnings("RedundantThrows")
                 class CharacterDecoder {
                     public void decode(InputStream inStream, OutputStream outStream) throws IOException {
                     }
-                
+
                     public void decode(String inString, OutputStream outStream) throws IOException {
                     }
-                
+
                     public void decodeBuffer(InputStream inStream, OutputStream outStream) throws IOException {
                     }
-                
+
                     public void decodeBuffer(String inString, OutputStream outStream) throws IOException {
                     }
-                
+
                     public byte[] decodeBuffer(String inString) throws IOException {
                         return new byte[0];
                     }
-                
+
                     public byte[] decodeBuffer(InputStream inStream) throws IOException {
                         return new byte[0];
                     }
@@ -136,7 +136,7 @@ class UseJavaUtilBase64Test implements RewriteTest {
           java(
             """
               package test.sun.misc;
-                          
+
               import test.sun.misc.BASE64Encoder;
               import test.sun.misc.BASE64Decoder;
               import java.io.IOException;
@@ -156,9 +156,9 @@ class UseJavaUtilBase64Test implements RewriteTest {
               """,
             """
               package test.sun.misc;
-                          
+
               import java.util.Base64;
-                          
+
               class Test {
                   void test(byte[] bBytes) {
                       Base64.Encoder encoder = Base64.getEncoder();
@@ -182,7 +182,7 @@ class UseJavaUtilBase64Test implements RewriteTest {
           java(
             """
               package test.sun.misc;
-                          
+
               import test.sun.misc.BASE64Encoder;
               import test.sun.misc.BASE64Decoder;
               import java.io.IOException;
@@ -202,9 +202,9 @@ class UseJavaUtilBase64Test implements RewriteTest {
               """,
             """
               package test.sun.misc;
-                          
+
               import java.util.Base64;
-                          
+
               class Test {
                   void test(byte[] bBytes) {
                       Base64.Encoder encoder = Base64.getMimeEncoder();
@@ -226,25 +226,25 @@ class UseJavaUtilBase64Test implements RewriteTest {
           java(
             """
               package test.sun.misc;
-              
+
               public class App {
                   public static void main(String[] args) {
                       String encode = new BASE64Encoder().encode(new byte[16]);
                   }
               }
-              
+
               class Base64 {
               }
               """,
             """
               /*~~(Already using a class named Base64 other than java.util.Base64. Manual intervention required.)~~>*/package test.sun.misc;
-              
+
               public class App {
                   public static void main(String[] args) {
                       String encode = new BASE64Encoder().encode(new byte[16]);
                   }
               }
-              
+
               class Base64 {
               }
               """

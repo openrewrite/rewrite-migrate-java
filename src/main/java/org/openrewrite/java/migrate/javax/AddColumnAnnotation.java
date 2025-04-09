@@ -1,11 +1,11 @@
 /*
  * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -73,8 +73,8 @@ public class AddColumnAnnotation extends Recipe {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         // Exit if var does not have @ElementCollection or has @Transient
-                        if (FindAnnotations.find(multiVariable, "@javax.persistence.ElementCollection").isEmpty()
-                            || !FindAnnotations.find(multiVariable, "@javax.persistence.Transient").isEmpty()) {
+                        if (FindAnnotations.find(multiVariable, "@javax.persistence.ElementCollection").isEmpty() ||
+                            !FindAnnotations.find(multiVariable, "@javax.persistence.Transient").isEmpty()) {
                             return multiVariable;
                         }
 
@@ -90,8 +90,8 @@ public class AddColumnAnnotation extends Recipe {
 
                         // Update existing @Column annotation
                         J.VariableDeclarations updatedVariable = (J.VariableDeclarations) new AddOrUpdateAnnotationAttribute(
-                                "javax.persistence.Column", "name", "element", true)
-                                .getVisitor().visit(multiVariable, ctx, getCursor());
+                                "javax.persistence.Column", "name", "element", null, true, null)
+                                .getVisitor().visit(multiVariable, ctx, getCursor().getParentTreeCursor());
                         return super.visitVariableDeclarations(updatedVariable, ctx);
                     }
                 }

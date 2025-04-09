@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -49,7 +49,7 @@ class AddJaxbDependenciesTest implements RewriteTest {
     // language=java
     private static final String CLASS_USING_XML_BIND = """
       import javax.xml.bind.annotation.XmlElement;
-      
+
       public class Test {
           @XmlElement
           private String name;
@@ -68,11 +68,11 @@ class AddJaxbDependenciesTest implements RewriteTest {
               plugins {
                   id "java-library"
               }
-              
+
               repositories {
                   mavenCentral()
               }
-              
+
               dependencies {
                   implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
               }
@@ -87,14 +87,14 @@ class AddJaxbDependenciesTest implements RewriteTest {
                   plugins {
                       id "java-library"
                   }
-                  
+
                   repositories {
                       mavenCentral()
                   }
-                  
+
                   dependencies {
                       implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
-                    
+
                       runtimeOnly "org.glassfish.jaxb:jaxb-runtime:%s"
                   }
                   """.formatted(bindApiVersion, runtimeVersion);
@@ -160,16 +160,16 @@ class AddJaxbDependenciesTest implements RewriteTest {
               plugins {
                   id "java-library"
               }
-              
+
               repositories {
                   mavenCentral()
               }
-              
+
               dependencies {
                   implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3"
-              
+
                   compileOnly "com.sun.xml.bind:jaxb-impl:2.3.3"
-              
+
                   testImplementation "com.sun.xml.bind:jaxb-impl:2.3.3"
               }
               """,
@@ -183,18 +183,18 @@ class AddJaxbDependenciesTest implements RewriteTest {
                   plugins {
                       id "java-library"
                   }
-                  
+
                   repositories {
                       mavenCentral()
                   }
-                  
+
                   dependencies {
                       implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
-                  
+
                       runtimeOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-                  
+
                       compileOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-                  
+
                       testImplementation "org.glassfish.jaxb:jaxb-runtime:%s"
                   }
                   """.formatted(bindApiVersion, runtimeVersion, runtimeVersion, runtimeVersion);
@@ -266,16 +266,16 @@ class AddJaxbDependenciesTest implements RewriteTest {
               plugins {
                   id "java-library"
               }
-              
+
               repositories {
                   mavenCentral()
               }
-              
+
               dependencies {
                   implementation "javax.xml.bind:jaxb-api:2.3.1"
-              
+
                   compileOnly "org.glassfish.jaxb:jaxb-runtime:2.3.1"
-              
+
                   testImplementation "org.glassfish.jaxb:jaxb-runtime:2.3.1"
               }
               """,
@@ -289,18 +289,18 @@ class AddJaxbDependenciesTest implements RewriteTest {
                   plugins {
                       id "java-library"
                   }
-                  
+
                   repositories {
                       mavenCentral()
                   }
-                  
+
                   dependencies {
                       implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
-                  
+
                       runtimeOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-                  
+
                       compileOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-                  
+
                       testImplementation "org.glassfish.jaxb:jaxb-runtime:%s"
                   }
                   """.formatted(bindApiVersion, runtimeVersion, runtimeVersion, runtimeVersion);
@@ -451,11 +451,11 @@ class AddJaxbDependenciesTest implements RewriteTest {
               plugins {
                   id "java-library"
               }
-              
+
               repositories {
                   mavenCentral()
               }
-              
+
               dependencies {
                   api("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.16.0")
               }
@@ -475,6 +475,58 @@ class AddJaxbDependenciesTest implements RewriteTest {
                           <version>2.16.0</version>
                       </dependency>
                   </dependencies>
+              </project>
+              """
+          )
+        );
+    }
+
+    @Test
+    void dontAddWhenTransientPresent() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          java(XML_ELEMENT_STUB),
+          java(CLASS_USING_XML_BIND),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+
+              repositories {
+                  mavenCentral()
+              }
+
+              dependencies {
+                  implementation("jakarta.xml.bind:jakarta.xml.bind-api:2.3.3")
+                  implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.3'
+              }
+              """
+          ),
+          pomXml(
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>org.springframework.samples</groupId>
+                <artifactId>spring-petclinic</artifactId>
+                <version>2.7.3</version>
+                <parent>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-parent</artifactId>
+                  <version>2.7.3</version>
+                </parent>
+                <name>petclinic</name>
+                <properties>
+                  <java.version>11</java.version>
+                </properties>
+                <dependencies>
+                  <dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-data-jpa</artifactId>
+                  </dependency>
+                </dependencies>
               </project>
               """
           )

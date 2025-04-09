@@ -1,11 +1,11 @@
 #
-# Copyright 2023 the original author or authors.
+# Copyright 2024 the original author or authors.
 # <p>
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Moderne Source Available License (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # <p>
-# https://www.apache.org/licenses/LICENSE-2.0
+# https://docs.moderne.io/licensing/moderne-source-available-license
 # <p>
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8
@@ -22,6 +23,12 @@ tags:
   - javaee8
   - deprecated
 recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.servlet
+      oldArtifactId: servlet-api
+      newGroupId: javax.servlet
+      newArtifactId: javax.servlet-api
+      newVersion: 3.x
   - org.openrewrite.java.migrate.javaee7
   - org.openrewrite.java.migrate.javaee8.ServletIsRequestedSessionIdFromURL
   - org.openrewrite.java.migrate.javaee8.ApacheDefaultProvider
@@ -29,8 +36,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8.ServletIsRequestedSessionIdFromURL
-displayName: Replace `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` with `HttpServletRequestWrapper.isRequestedSessionIdFromURL()`
-description: The  method `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` is deprecated in JavaEE8 and is replaced by `HttpServletRequestWrapper.isRequestedSessionIdFromURL()`
+displayName: Replace `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` with `isRequestedSessionIdFromURL()`
+description: The  method `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` is deprecated in JavaEE8 and is replaced by `HttpServletRequestWrapper.isRequestedSessionIdFromURL()`.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: javax.servlet.http.HttpServletRequestWrapper isRequestedSessionIdFromUrl()
@@ -40,10 +47,10 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8.ApacheDefaultProvider
 displayName: Flags any `org.apache.bval.jsr*` (bval 1.1) and `org.apache.bval.jsr303*` (bval 1.0) package references
-description: >
-  This recipe flags any `org.apache.bval.jsr*` (bval 1.1) and `org.apache.bval.jsr303*` (bval 1.0) package references in validation.xml deployment descriptors. 
-  Bean Validation 2.0 and later use the Hibernate Validator implementation instead of the 
-  Apache BVal implementation which was used for Bean Validation 1.0 and 1.1
+description: >-
+  This recipe flags any `org.apache.bval.jsr*` (bval 1.1) and `org.apache.bval.jsr303*` (bval 1.0) package references in validation.xml deployment descriptors.
+  Bean Validation 2.0 and later use the Hibernate Validator implementation instead of the
+  Apache BVal implementation which was used for Bean Validation 1.0 and 1.1.
 recipeList:
   - org.openrewrite.xml.ChangeTagValue:
       elementName: /validation-config/default-provider
@@ -59,4 +66,3 @@ recipeList:
       newValue: org.hibernate.validator.engine.ConstraintValidatorFactoryImpl
   - org.openrewrite.xml.RemoveXmlTag:
       xPath: /validation-config/parameter-name-provider
-      

@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,9 +17,9 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Content;
@@ -54,11 +54,16 @@ public class JpaCacheProperties extends Recipe {
 class SharedDataHolder {
     boolean sharedCacheModePropertyUnspecified;
     boolean sharedCacheModeElementUnspecified;
-    @Nullable Xml.Tag sharedCacheModeElement;
-    @Nullable Xml.Tag propertiesElement;
-    @Nullable Xml.Tag sharedCacheModeProperty;
-    @Nullable Xml.Tag openJPACacheProperty;
-    @Nullable Xml.Tag eclipselinkCacheProperty;
+
+    Xml.@Nullable Tag sharedCacheModeElement;
+
+    Xml.@Nullable Tag propertiesElement;
+
+    Xml.@Nullable Tag sharedCacheModeProperty;
+
+    Xml.@Nullable Tag openJPACacheProperty;
+
+    Xml.@Nullable Tag eclipselinkCacheProperty;
 
     // Flag in the following conditions:
     //   an openjpa.DataCache property is present
@@ -213,8 +218,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
         return sdh;
     }
 
-    @Nullable
-    private String getAttributeValue(String attrName, Xml.Tag node) {
+    private @Nullable String getAttributeValue(String attrName, Xml.Tag node) {
         for (Xml.Attribute attribute : node.getAttributes()) {
             if (attribute.getKeyAsString().equals(attrName)) {
                 return attribute.getValue().getValue();
@@ -267,8 +271,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
         }
     }
 
-    @Nullable
-    private String getTextContent(@Nullable Xml.Tag node) {
+    private @Nullable String getTextContent(Xml.@Nullable Tag node) {
         if (node != null) {
             String textContent = null;
             Optional<String> optionalValue = node.getValue();
@@ -280,8 +283,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
         return null;
     }
 
-    @Nullable
-    private String interpretOpenJPAPropertyValue(@Nullable String propVal) {
+    private @Nullable String interpretOpenJPAPropertyValue(@Nullable String propVal) {
         if (propVal != null) {
             if ("false".equalsIgnoreCase(propVal)) {
                 return "NONE";
@@ -298,8 +300,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
 
     // convert the scmValue to either true or false.
     // return null for complex values.
-    @Nullable
-    private String convertScmValue(String scmValue) {
+    private @Nullable String convertScmValue(String scmValue) {
         if ("NONE".equals(scmValue)) {
             return "false";
         } else if ("ALL".equals(scmValue)) {

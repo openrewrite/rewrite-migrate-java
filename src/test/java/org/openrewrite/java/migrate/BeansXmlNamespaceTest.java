@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -61,17 +61,17 @@ class BeansXmlNamespaceTest implements RewriteTest {
           xml(
             """
               <?xml version="1.0" encoding="UTF-8"?>
-              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
+              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xsi:schemaLocation="http://xmlns.jcp.org/DDDDxml/ns/javaee22 http://xmlns.jcp.org11/xml/ns/javaee777/beans_1_1.xsd">
-              </beans> 
+              </beans>
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
-              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
+              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd">
-              </beans> 
+              </beans>
               """,
             sourceSpecs -> sourceSpecs.path("beans.xml")
           )
@@ -86,10 +86,10 @@ class BeansXmlNamespaceTest implements RewriteTest {
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee" 
+                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans> 
+                  </beans>
                   """,
                 sourceSpecs -> sourceSpecs.path("not-beans.xml")
               )
@@ -102,10 +102,10 @@ class BeansXmlNamespaceTest implements RewriteTest {
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee" 
+                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans> 
+                  </beans>
                   """,
                 sourceSpecs -> sourceSpecs.path("beans.xml")
               )
@@ -118,9 +118,9 @@ class BeansXmlNamespaceTest implements RewriteTest {
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
+                  <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd" 
+                      xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd"
                       bean-discovery-mode="all" version="1.1">
                   </beans>
                   """,

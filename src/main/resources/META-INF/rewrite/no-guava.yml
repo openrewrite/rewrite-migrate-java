@@ -1,11 +1,11 @@
 #
-# Copyright 2021 the original author or authors.
+# Copyright 2024 the original author or authors.
 # <p>
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Moderne Source Available License (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # <p>
-# https://www.apache.org/licenses/LICENSE-2.0
+# https://docs.moderne.io/licensing/moderne-source-available-license
 # <p>
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,22 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuava
 displayName: Prefer the Java standard library instead of Guava
-description: >
+description: >-
   Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface
   area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they
   migrate to standard library for these functions.
 tags:
   - guava
 recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaJava11
+  - org.openrewrite.java.migrate.guava.NoGuavaJava21
   - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList
+  - org.openrewrite.java.migrate.guava.NoGuavaMapsNewTreeMap
+  - org.openrewrite.java.migrate.guava.NoGuavaPrimitiveAsList
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet
@@ -39,7 +45,6 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsEquals
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsHashCode
-  - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNull
   - org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsUnmodifiableNavigableMap
   - org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsSynchronizedNavigableMap
   - org.openrewrite.java.migrate.guava.PreferCharCompare
@@ -58,23 +63,27 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferMathSubtractExact
   - org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
   - org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference
-  - org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
-  - org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
-  - org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
+
+  - tech.picnic.errorprone.refasterrules.InputStreamRulesRecipes
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaJava11
 displayName: Prefer the Java 11 standard library instead of Guava
-description: >
+description: >-
   Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface
   area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they
   migrate to standard library for these functions.
 tags:
   - guava
   - java11
+preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[11,)"
 recipeList:
-  - org.openrewrite.java.migrate.guava.NoGuava
+  - org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
+  - org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
+  - org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNullElse
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: io.springfox
@@ -85,16 +94,20 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaJava21
 displayName: Prefer the Java 21 standard library instead of Guava
-description: >
+description: >-
   Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface
   area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they
   migrate to standard library for these functions.
 tags:
   - guava
   - java21
+preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[21,)"
 recipeList:
-  - org.openrewrite.java.migrate.guava.NoGuavaJava11
+  - org.openrewrite.java.migrate.guava.NoMapsAndSetsWithExpectedSize
   - org.openrewrite.java.migrate.guava.PreferMathClamp
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaNioCharsetStandardCharsets
@@ -161,6 +174,10 @@ tags:
   - guava
   - RSPEC-S4738
 recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.base.Predicate apply(..)
+      newMethodName: test
+      matchOverrides: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Predicate
       newFullyQualifiedTypeName: java.util.function.Predicate
@@ -206,21 +223,6 @@ recipeList:
       newMethodName: hash
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.base.Objects hash(..)
-      fullyQualifiedTargetTypeName: java.util.Objects
-
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNull
-displayName: Prefer `java.util.Objects#requireNonNull`
-description: Prefer `java.util.Objects#requireNonNull` instead of using `com.google.common.base.Preconditions#checkNotNull`.
-tags:
-  - guava
-recipeList:
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: com.google.common.base.Preconditions checkNotNull(Object)
-      newMethodName: requireNonNull
-  - org.openrewrite.java.ChangeMethodTargetToStatic:
-      methodPattern: com.google.common.base.Preconditions requireNonNull(Object)
       fullyQualifiedTargetTypeName: java.util.Objects
 
 ---
@@ -315,7 +317,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerCompareUnsigned
 displayName: Prefer `Integer#compareUnsigned`
-description: >
+description: >-
   Prefer `java.lang.Integer#compareUnsigned` instead of using `com.google.common.primitives.UnsignedInts#compare` or
   `com.google.common.primitives.UnsignedInts#compareUnsigned`.
 tags:
@@ -332,7 +334,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerDivideUnsigned
 displayName: Prefer `Integer#divideUnsigned`
-description: >
+description: >-
   Prefer `java.lang.Integer#divideUnsigned` instead of using `com.google.common.primitives.UnsignedInts#divide` or
   `com.google.common.primitives.UnsignedInts#divideUnsigned`.
 tags:
@@ -373,7 +375,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongCompareUnsigned
 displayName: Prefer `Long#compareUnsigned`
-description: >
+description: >-
   Prefer `java.lang.Long#compareUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#compare` or
   `com.google.common.primitives.UnsignedLongs#compareUnsigned`.
 tags:
@@ -389,7 +391,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongDivideUnsigned
 displayName: Prefer `Long#divideUnsigned`
-description: >
+description: >-
   Prefer `java.lang.Long#divideUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#divide` or
   `com.google.common.primitives.UnsignedLongs#divideUnsigned`.
 tags:
@@ -430,7 +432,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathAddExact
 displayName: Prefer `Math#addExact`
-description: Prefer `java.lang.Math#addExact` instead of using `com.google.common.math.IntMath#checkedAdd` or `com.google.common.math.IntMath#addExact`
+description: Prefer `java.lang.Math#addExact` instead of using `com.google.common.math.IntMath#checkedAdd` or `com.google.common.math.IntMath#addExact`.
 tags:
   - guava
 recipeList:
@@ -445,7 +447,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathSubtractExact
 displayName: Prefer `Math#subtractExact`
-description: >
+description: >-
   Prefer `java.lang.Math#subtractExact` instead of using `com.google.common.primitives.IntMath#checkedSubtract`
   or `com.google.common.primitives.IntMath#subtractExact`.
 tags:
@@ -462,7 +464,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
 displayName: Prefer `Math#multiplyExact`
-description: >
+description: >-
   Prefer `java.lang.Math#multiplyExact` instead of using `com.google.common.primitives.IntMath#checkedMultiply`
   or `com.google.common.primitives.IntMath#multiplyExact`.
 tags:

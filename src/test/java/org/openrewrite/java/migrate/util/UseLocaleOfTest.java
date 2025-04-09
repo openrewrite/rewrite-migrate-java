@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,24 +38,24 @@ class UseLocaleOfTest implements RewriteTest {
           spec -> spec.typeValidationOptions(TypeValidation.none()),
           version(
             java(
-            """
-              import java.util.Locale;
-                            
-              class Test {
-                  Locale locale1 = new Locale("english");
-                  Locale locale2 = new Locale("english", "us");
-                  Locale locale3 = new Locale("english", "us", "");
-              }
-              """,
-            """
-              import java.util.Locale;
-                            
-              class Test {
-                  Locale locale1 = Locale.of("english");
-                  Locale locale2 = Locale.of("english", "us");
-                  Locale locale3 = Locale.of("english", "us", "");
-              }
               """
+                import java.util.Locale;
+
+                class Test {
+                    Locale locale1 = new Locale("english");
+                    Locale locale2 = new Locale("english", "us");
+                    Locale locale3 = new Locale("english", "us", "");
+                }
+                """,
+              """
+                import java.util.Locale;
+
+                class Test {
+                    Locale locale1 = Locale.of("english");
+                    Locale locale2 = Locale.of("english", "us");
+                    Locale locale3 = Locale.of("english", "us", "");
+                }
+                """
             ), 19)
         );
     }

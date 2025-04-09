@@ -1,11 +1,11 @@
 #
-# Copyright 2022 the original author or authors.
+# Copyright 2024 the original author or authors.
 # <p>
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Moderne Source Available License (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # <p>
-# https://www.apache.org/licenses/LICENSE-2.0
+# https://docs.moderne.io/licensing/moderne-source-available-license
 # <p>
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.Java8toJava11
 displayName: Migrate to Java 11
-description: >
+description: >-
   This recipe will apply changes commonly needed when upgrading to Java 11. Specifically, for those applications that
   are built on Java 8, this recipe will update and add dependencies on J2EE libraries that are no longer directly
   bundled with the JDK. This recipe will also replace deprecated API with equivalents when there is a clear migration
@@ -43,42 +44,72 @@ recipeList:
   - org.openrewrite.staticanalysis.PrimitiveWrapperClassConstructorToValueOf
   - org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
   - org.openrewrite.java.migrate.lang.JavaLangAPIs
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.lang.Runtime runFinalizersOnExit(boolean)
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
+  - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.lang.System runFinalizersOnExit(boolean)
   - org.openrewrite.java.migrate.logging.JavaLoggingAPIs
   - org.openrewrite.java.migrate.lombok.UpdateLombokToJava11
   - org.openrewrite.java.migrate.net.JavaNetAPIs
+  - org.openrewrite.java.migrate.nio.file.PathsGetToPathOf
   - org.openrewrite.java.migrate.sql.JavaSqlAPIs
   - org.openrewrite.java.migrate.javax.JavaxLangModelUtil
   - org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
   - org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
-  - org.openrewrite.java.migrate.wro4j.UpgradeWro4jMavenPluginVersion
-  - org.openrewrite.java.migrate.jacoco.UpgradeJaCoCoMavenPluginVersion
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 11
-  - org.openrewrite.maven.UpgradePluginVersion:
-      groupId: org.apache.maven.plugins
-      artifactId: maven-compiler-plugin
-      newVersion: 3.6.2
+  - org.openrewrite.java.migrate.UpgradeBuildToJava11
 # Disabled due to null safety issues in the current implementation
 # https://github.com/openrewrite/rewrite-migrate-java/issues/250
 #  - org.openrewrite.java.migrate.util.JavaUtilAPIs
   - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
   - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
   - org.openrewrite.java.migrate.util.OptionalStreamRecipe
+  - org.openrewrite.java.migrate.InternalBindPackages
+  - org.openrewrite.java.migrate.RemovedSecurityManagerMethods
+  - org.openrewrite.java.migrate.UpgradePluginsForJava11
+  - org.openrewrite.java.migrate.RemovedPolicy
+  - org.openrewrite.java.migrate.ReferenceCloneMethod
+  - org.openrewrite.java.migrate.ThreadStopDestroy
+  - org.openrewrite.java.migrate.ReplaceAWTGetPeerMethod
+  - org.openrewrite.scala.migrate.UpgradeScala_2_12
+  - org.openrewrite.java.migrate.ReplaceComSunAWTUtilitiesMethods
+  - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
+  - org.openrewrite.java.migrate.ArrayStoreExceptionToTypeNotPresentException
+  - org.openrewrite.java.migrate.IllegalArgumentExceptionToAlreadyConnectedException
+  - org.openrewrite.java.migrate.ChangeDefaultKeyStore
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava11
+displayName: Upgrade build to Java 11
+description: Updates build files to use Java 11 as the target/source.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 11
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradePluginsForJava11
+displayName: Upgrade plugins to Java 11 compatible versions
+description: Updates plugins to version compatible with Java 11.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-compiler-plugin
+      newVersion: 3.6.2
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 11
-  - org.openrewrite.java.migrate.InternalBindContextFactory
-  - org.openrewrite.java.migrate.RemovedSecurityManagerMethods
-
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: ro.isdc.wro4j
+      artifactId: wro4j-maven-plugin
+      newVersion: 1.10.1
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxbDependencies
 displayName: Add explicit JAXB dependencies
-description: >
+description: >-
   This recipe will add explicit dependencies for Jakarta EE 8 when a Java 8 application is using JAXB. Any existing
   dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 version 2.x
   which allows for the continued use of the `javax.xml.bind` namespace. Running a full javax to Jakarta migration
@@ -147,7 +178,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxwsDependencies
 displayName: Add explicit JAX-WS dependencies
-description: >
+description: >-
   This recipe will add explicit dependencies for Jakarta EE 8 when a Java 8 application is using JAX-WS. Any existing
   dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 but the
   application can continue to use the `javax.xml.bind` namespace.
@@ -209,13 +240,56 @@ recipeList:
       onlyIfVersionsMatch: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.InternalBindContextFactory
-displayName: Use `com.sun.xml.bind.v2.ContextFactory` instead of `com.sun.xml.internal.bind.v2.ContextFactory`
-description: Do not use the `com.sun.xml.internal.bind.v2.ContextFactory` class.
+name: org.openrewrite.java.migrate.InternalBindPackages
+displayName: Use `com.sun.xml.bind.*` instead of `com.sun.xml.internal.bind.*`
+description: Do not use APIs from `com.sun.xml.internal.bind.*` packages.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: com.sun.xml.internal.bind
+      newPackageName: com.sun.xml.bind
+      recursive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedPolicy
+displayName: Replace `javax.security.auth.Policy` with `java.security.Policy`
+description: The `javax.security.auth.Policy` class is not available from Java SE 11 onwards.
 tags:
   - java11
 recipeList:
   - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: com.sun.xml.internal.bind.v2.ContextFactory
-      newFullyQualifiedTypeName: com.sun.xml.bind.v2.ContextFactory
+      oldFullyQualifiedTypeName: javax.security.auth.Policy
+      newFullyQualifiedTypeName: java.security.Policy
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.ThreadStopDestroy
+displayName: Remove `Thread.destroy()` and `Thread.stop(Throwable)`
+description: >-
+  The `java.lang.Thread.destroy()` method was never implemented, and the `java.lang.Thread.stop(java.lang.Throwable)`
+  method has been unusable since Java SE 8. This recipe removes any usage of these methods from your application.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: java.lang.Thread destroy()
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: java.lang.Thread stop(java.lang.Throwable)
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.nio.file.PathsGetToPathOf
+displayName: Replace `Paths.get` with `Path.of`
+description: >-
+  The `java.nio.file.Paths.get` method was introduced in Java SE 7. The `java.nio.file.Path.of` method was introduced in
+  Java SE 11. This recipe replaces all usages of `Paths.get` with `Path.of` for consistency.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: java.nio.file.Paths get(..)
+      fullyQualifiedTargetTypeName: java.nio.file.Path
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.nio.file.Path get(..)
+      newMethodName: of
+

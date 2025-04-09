@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,9 +24,9 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.UpdateJavaCompatibility;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.marker.JavaVersion;
-import org.openrewrite.java.migrate.maven.UpdateMavenProjectPropertyJavaVersion;
-import org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.maven.UpdateMavenProjectPropertyJavaVersion;
+import org.openrewrite.maven.UseMavenCompilerPluginReleaseConfiguration;
 
 import java.time.Duration;
 import java.util.*;
@@ -48,9 +48,9 @@ public class UpgradeJavaVersion extends Recipe {
     @Override
     public String getDescription() {
         return "Upgrade build plugin configuration to use the specified Java version. " +
-               "This recipe changes `java.toolchain.languageVersion` in `build.gradle(.kts)` of gradle projects, " +
-               "or maven-compiler-plugin target version and related settings. " +
-               "Will not downgrade if the version is newer than the specified version.";
+                "This recipe changes `java.toolchain.languageVersion` in `build.gradle(.kts)` of gradle projects, " +
+                "or maven-compiler-plugin target version and related settings. " +
+                "Will not downgrade if the version is newer than the specified version.";
     }
 
     @Override
@@ -58,7 +58,9 @@ public class UpgradeJavaVersion extends Recipe {
         return Arrays.asList(
                 new UseMavenCompilerPluginReleaseConfiguration(version),
                 new UpdateMavenProjectPropertyJavaVersion(version),
-                new UpdateJavaCompatibility(version, null, null, false, null)
+                new org.openrewrite.jenkins.UpgradeJavaVersion(version, null),
+                new UpdateJavaCompatibility(version, null, null, false, null),
+                new UpdateSdkMan(String.valueOf(version), null)
         );
     }
 

@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,10 +15,10 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
@@ -52,9 +52,11 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
-                for (JavaType.Variable variable : cd.getType().getMembers()) {
-                    if (variableTypeRequiresScope(variable)) {
-                        injectedTypes.add(((JavaType.FullyQualified) variable.getType()).getFullyQualifiedName());
+                if(cd.getType() != null) {
+                    for (JavaType.Variable variable : cd.getType().getMembers()) {
+                        if (variableTypeRequiresScope(variable)) {
+                            injectedTypes.add(((JavaType.FullyQualified) variable.getType()).getFullyQualifiedName());
+                        }
                     }
                 }
                 return cd;
@@ -62,7 +64,7 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
 
             private final AnnotationMatcher matcher = new AnnotationMatcher('@' + JAVAX_INJECT_INJECT);
 
-            private boolean variableTypeRequiresScope(@Nullable JavaType.Variable memberVariable) {
+            private boolean variableTypeRequiresScope(JavaType.@Nullable Variable memberVariable) {
                 if (memberVariable == null) {
                     return false;
                 }
@@ -85,7 +87,7 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
                 for (J.ClassDeclaration aClass : cu.getClasses()) {
                     if (aClass.getType() != null && injectedTypes.contains(aClass.getType().getFullyQualifiedName())) {
                         return (J.CompilationUnit) new AnnotateTypesVisitor(JAVAX_ENTERPRISE_CONTEXT_DEPENDENT)
-                                .visit(cu, injectedTypes, getCursor().getParent());
+                                .visitNonNull(cu, injectedTypes, getCursor().getParentTreeCursor());
                     }
                 }
                 return cu;

@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.migrate.table.JavaVersionTable;
 import org.openrewrite.test.RecipeSpec;
@@ -33,7 +34,8 @@ class FindJavaVersionTest implements RewriteTest {
     }
 
     @Test
-    void test() {
+    @DocumentExample
+    void twoClassesWithSameMarkerLeadToOneRow() {
         JavaVersion jv = new JavaVersion(randomId(), "Sam", "Shelter", "17", "8");
         rewriteRun(
           spec -> spec.dataTable(JavaVersionTable.Row.class, rows -> {
@@ -43,17 +45,17 @@ class FindJavaVersionTest implements RewriteTest {
           }),
           //language=java
           java(
-                """
-            class A {
-            }
-            """,
+            """
+              class A {
+              }
+              """,
             spec -> spec.markers(jv)),
           //language=java
           java(
-                """
-            class B {
-            }
-            """,
+            """
+              class B {
+              }
+              """,
             spec -> spec.markers(jv))
         );
     }

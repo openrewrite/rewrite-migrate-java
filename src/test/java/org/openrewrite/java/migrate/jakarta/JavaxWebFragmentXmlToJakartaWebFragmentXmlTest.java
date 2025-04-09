@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,7 +46,7 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
                      <listener>
                          <listener-class>javax.faces.UploadedFileCleanerListener</listener-class>
                      </listener>
-              </web-fragment>   
+              </web-fragment>
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
@@ -57,7 +57,7 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
                      <listener>
                          <listener-class>jakarta.faces.UploadedFileCleanerListener</listener-class>
                      </listener>
-              </web-fragment> 
+              </web-fragment>
               """,
             sourceSpecs -> sourceSpecs.path("web-fragment.xml")
           )
@@ -78,7 +78,7 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
                      <listener>
                          <listener-class>javax.faces.UploadedFileCleanerListener</listener-class>
                      </listener>
-              </web-fragment>   
+              </web-fragment>
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
@@ -89,7 +89,43 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
                      <listener>
                          <listener-class>jakarta.faces.UploadedFileCleanerListener</listener-class>
                      </listener>
-              </web-fragment> 
+              </web-fragment>
+              """,
+            sourceSpecs -> sourceSpecs.path("web-fragment.xml")
+          )
+        );
+    }
+
+    @Test
+    void migrateWithDatasource() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            version="4.0"
+                            xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                            xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_4_0.xsd">
+                  <resource-ref>
+                     <res-ref-name>myDataSource</res-ref-name>
+                     <res-type>javax.sql.DataSource</res-type>
+                     <res-auth>CONTAINER</res-auth>
+                  </resource-ref>
+              </web-fragment>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            version="5.0"
+                            xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_5_0.xsd">
+                  <resource-ref>
+                     <res-ref-name>myDataSource</res-ref-name>
+                     <res-type>javax.sql.DataSource</res-type>
+                     <res-auth>CONTAINER</res-auth>
+                  </resource-ref>
+              </web-fragment>
               """,
             sourceSpecs -> sourceSpecs.path("web-fragment.xml")
           )
@@ -104,10 +140,10 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee" 
+                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans> 
+                  </beans>
                   """,
                 sourceSpecs -> sourceSpecs.path("not-web-fragment.xml")
               )

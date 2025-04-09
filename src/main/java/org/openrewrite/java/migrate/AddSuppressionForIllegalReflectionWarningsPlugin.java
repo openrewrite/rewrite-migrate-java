@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.intellij.lang.annotations.Language;
 import org.openrewrite.*;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.maven.AddPlugin;
@@ -37,7 +38,7 @@ public class AddSuppressionForIllegalReflectionWarningsPlugin extends Recipe {
 
     private static final XPathMatcher PACKAGING_MATCHER = new XPathMatcher("/project/packaging");
 
-    @Option(displayName = "version",
+    @Option(displayName = "Version",
             description = "An exact version number, or node-style semver selector used to select the version number.",
             required = false,
             example = "29.X")
@@ -45,7 +46,7 @@ public class AddSuppressionForIllegalReflectionWarningsPlugin extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Add Maven Jar Plugin to suppress Illegal Reflection Warnings";
+        return "Add maven jar plugin to suppress illegal reflection warnings";
     }
 
     @Override
@@ -66,6 +67,7 @@ public class AddSuppressionForIllegalReflectionWarningsPlugin extends Recipe {
                         String artifactId = "maven-jar-plugin";
                         // TODO: Prioritize managedPlugin version.
                         String version = StringUtils.isNullOrEmpty(getVersion()) ? "3.2.0" : getVersion();
+                        @Language("xml")
                         String configuration =
                                 "<configuration>\n" +
                                         "    <archive>\n" +

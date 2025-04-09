@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,8 +16,6 @@
 package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
@@ -27,7 +25,6 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
 @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
-@EnabledForJreRange(min = JRE.JAVA_21)
 class IteratorNextTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
@@ -43,7 +40,7 @@ class IteratorNextTest implements RewriteTest {
           java(
             """
               import java.util.*;
-                            
+
               class Foo {
                   String bar(List<String> collection) {
                       return collection.iterator().next();
@@ -52,7 +49,7 @@ class IteratorNextTest implements RewriteTest {
               """,
             """
               import java.util.*;
-                            
+
               class Foo {
                   String bar(List<String> collection) {
                       return collection.getFirst();
@@ -70,7 +67,7 @@ class IteratorNextTest implements RewriteTest {
           java(
             """
               import java.util.*;
-                  
+
               class Foo {
                   void bar(Collection<String> collection) {
                       String first = collection.iterator().next();
@@ -88,7 +85,7 @@ class IteratorNextTest implements RewriteTest {
           java(
             """
               import java.util.*;
-                  
+
               class Foo {
                   void bar(List<String> collection) {
                       String first = collection
@@ -100,7 +97,7 @@ class IteratorNextTest implements RewriteTest {
               """,
             """
               import java.util.*;
-                  
+
               class Foo {
                   void bar(List<String> collection) {
                       String first = collection
@@ -119,7 +116,7 @@ class IteratorNextTest implements RewriteTest {
           java(
             """
               import java.util.*;
-                  
+
               class Foo {
                   void bar(List<String> collection) {
                       String first = collection
@@ -131,7 +128,7 @@ class IteratorNextTest implements RewriteTest {
               """,
             """
               import java.util.*;
-                  
+
               class Foo {
                   void bar(List<String> collection) {
                       String first = collection

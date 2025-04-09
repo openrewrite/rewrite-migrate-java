@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.JavaTemplate;
@@ -34,6 +35,7 @@ import java.util.Base64;
 public class UseJavaUtilBase64 extends Recipe {
     private final String sunPackage;
 
+    @Getter
     @Option(displayName = "Use Mime Coder", description = "Use `Base64.getMimeEncoder()/getMimeDecoder()` instead of `Base64.getEncoder()/getDecoder()`.", required = false, example = "false")
     boolean useMimeCoder;
 
@@ -72,19 +74,6 @@ public class UseJavaUtilBase64 extends Recipe {
         MethodMatcher newBase64Decoder = new MethodMatcher(sunPackage + ".BASE64Decoder <constructor>()");
 
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
-            final JavaTemplate getDecoderTemplate = JavaTemplate.builder(useMimeCoder ? "Base64.getMimeDecoder()" : "Base64.getDecoder()")
-                    .contextSensitive()
-                    .imports("java.util.Base64")
-                    .build();
-
-            final JavaTemplate encodeToString = JavaTemplate.builder(useMimeCoder ? "Base64.getMimeEncoder().encodeToString(#{anyArray(byte)})" : "Base64.getEncoder().encodeToString(#{anyArray(byte)})")
-                    .imports("java.util.Base64")
-                    .build();
-
-            final JavaTemplate decode = JavaTemplate.builder(useMimeCoder ? "Base64.getMimeDecoder().decode(#{any(String)})" : "Base64.getDecoder().decode(#{any(String)})")
-                    .imports("java.util.Base64")
-                    .build();
-
             @Override
             public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
                 if (alreadyUsingIncompatibleBase64(cu)) {
@@ -93,9 +82,9 @@ public class UseJavaUtilBase64 extends Recipe {
                 }
                 J.CompilationUnit c = (J.CompilationUnit) super.visitCompilationUnit(cu, ctx);
 
-                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Encoder", "java.util.Base64$Encoder", true)
+                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Encoder", "java.util.Base64$Encoder", true, null)
                         .getVisitor().visitNonNull(c, ctx);
-                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Decoder", "java.util.Base64$Decoder", true)
+                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Decoder", "java.util.Base64$Decoder", true, null)
                         .getVisitor().visitNonNull(c, ctx);
                 return c;
             }
@@ -105,19 +94,25 @@ public class UseJavaUtilBase64 extends Recipe {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (base64EncodeMethod.matches(m) &&
                     ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
-                    m = encodeToString.apply(updateCursor(m), m.getCoordinates().replace(), method.getArguments().get(0));
+                    m = JavaTemplate.builder(useMimeCoder ? "Base64.getMimeEncoder().encodeToString(#{anyArray(byte)})" : "Base64.getEncoder().encodeToString(#{anyArray(byte)})")
+                            .imports("java.util.Base64")
+                            .build()
+                            .apply(updateCursor(m), m.getCoordinates().replace(), method.getArguments().get(0));
                     if (method.getSelect() instanceof J.Identifier) {
                         m = m.withSelect(method.getSelect());
                     }
                 } else if (base64DecodeBuffer.matches(method)) {
-                    m = decode.apply(updateCursor(m), m.getCoordinates().replace(), method.getArguments().get(0));
+                    m = JavaTemplate.builder(useMimeCoder ? "Base64.getMimeDecoder().decode(#{any(String)})" : "Base64.getDecoder().decode(#{any(String)})")
+                            .imports("java.util.Base64")
+                            .build()
+                            .apply(updateCursor(m), m.getCoordinates().replace(), method.getArguments().get(0));
                     if (method.getSelect() instanceof J.Identifier) {
                         m = m.withSelect(method.getSelect());
                     }
                     // Note: The sun.misc.CharacterDecoder#decodeBuffer throws an IOException, whereas the java
                     // Base64Decoder.decode does not throw a checked exception. If this recipe converts decode, we
                     // may need to remove the catch or completely unwrap a try/catch.
-                    doAfterVisit(new UnnecessaryCatch(false).getVisitor());
+                    doAfterVisit(new UnnecessaryCatch(false, false).getVisitor());
                 }
                 return m;
             }
@@ -127,15 +122,19 @@ public class UseJavaUtilBase64 extends Recipe {
                 J.NewClass c = (J.NewClass) super.visitNewClass(newClass, ctx);
                 if (newBase64Encoder.matches(c)) {
                     // noinspection Convert2MethodRef
-                    JavaTemplate.Builder encoderTemplate = useMimeCoder
-                            ? Semantics.expression(this, "getMimeEncoder", () -> Base64.getMimeEncoder())
-                            : Semantics.expression(this, "getEncoder", () -> Base64.getEncoder());
+                    JavaTemplate.Builder encoderTemplate = useMimeCoder ?
+                            Semantics.expression(this, "getMimeEncoder", () -> Base64.getMimeEncoder()) :
+                            Semantics.expression(this, "getEncoder", () -> Base64.getEncoder());
                     return encoderTemplate
                             .build()
                             .apply(updateCursor(c), c.getCoordinates().replace());
 
                 } else if (newBase64Decoder.matches(c)) {
-                    return getDecoderTemplate.apply(updateCursor(c), c.getCoordinates().replace());
+                    return JavaTemplate.builder(useMimeCoder ? "Base64.getMimeDecoder()" : "Base64.getDecoder()")
+                            .contextSensitive()
+                            .imports("java.util.Base64")
+                            .build()
+                            .apply(updateCursor(c), c.getCoordinates().replace());
                 }
                 return c;
             }

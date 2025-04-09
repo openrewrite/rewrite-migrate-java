@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,17 +19,20 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
+import org.jspecify.annotations.NonNull;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.lang.NonNull;
-import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 
+import java.util.List;
+
+import static java.util.Collections.singletonList;
+
+/**
+ * @deprecated in favor of {@link org.openrewrite.java.ReplaceStringLiteralValue}.
+ */
 @Value
 @EqualsAndHashCode(callSuper = false)
+@Deprecated
 public class ReplaceStringLiteralValue extends Recipe {
 
     @Option(displayName = "Old literal `String` value",
@@ -61,19 +64,7 @@ public class ReplaceStringLiteralValue extends Recipe {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.Literal visitLiteral(J.Literal literal, ExecutionContext ctx) {
-                J.Literal l = super.visitLiteral(literal, ctx);
-                if (l.getType() != JavaType.Primitive.String || !oldLiteralValue.equals(literal.getValue())) {
-                    return l;
-                }
-                return literal
-                        .withValue(newLiteralValue)
-                        .withValueSource('"' + newLiteralValue + '"');
-            }
-        };
+    public List<Recipe> getRecipeList() {
+        return singletonList(new org.openrewrite.java.ReplaceStringLiteralValue(oldLiteralValue, newLiteralValue));
     }
-
 }

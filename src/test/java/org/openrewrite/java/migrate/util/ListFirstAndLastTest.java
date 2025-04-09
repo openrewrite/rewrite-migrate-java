@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,8 +17,6 @@ package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -27,7 +25,6 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
 @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
-@EnabledForJreRange(min = JRE.JAVA_21)
 class ListFirstAndLastTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
@@ -44,7 +41,7 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       String bar(List<String> collection) {
                           return collection.get(0);
@@ -53,7 +50,7 @@ class ListFirstAndLastTest implements RewriteTest {
                   """,
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       String bar(List<String> collection) {
                           return collection.getFirst();
@@ -72,12 +69,12 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       List<String> collection() {
                           return new ArrayList<>();
                       }
-                  
+
                       String bar() {
                           return collection().get(0);
                       }
@@ -85,12 +82,12 @@ class ListFirstAndLastTest implements RewriteTest {
                   """,
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       List<String> collection() {
                           return new ArrayList<>();
                       }
-                  
+
                       String bar() {
                           return collection().getFirst();
                       }
@@ -107,7 +104,7 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       void bar(List<String> collection) {
                           collection.add(0, "first");
@@ -116,7 +113,7 @@ class ListFirstAndLastTest implements RewriteTest {
                   """,
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       void bar(List<String> collection) {
                           collection.addFirst("first");
@@ -135,7 +132,7 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       List<String> collection() {
                           return new ArrayList<>();
@@ -147,7 +144,7 @@ class ListFirstAndLastTest implements RewriteTest {
                   """,
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       List<String> collection() {
                           return new ArrayList<>();
@@ -168,7 +165,7 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       String bar(List<String> collection) {
                           return collection.remove(0);
@@ -177,7 +174,7 @@ class ListFirstAndLastTest implements RewriteTest {
                   """,
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       String bar(List<String> collection) {
                           return collection.removeFirst();
@@ -196,12 +193,12 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       List<String> collection() {
                           return new ArrayList<>();
                       }
-                  
+
                       String bar() {
                           return collection().remove(0);
                       }
@@ -209,12 +206,12 @@ class ListFirstAndLastTest implements RewriteTest {
                   """,
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       List<String> collection() {
                           return new ArrayList<>();
                       }
-                  
+
                       String bar() {
                           return collection().removeFirst();
                       }
@@ -234,7 +231,7 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       String bar(List<String> collection) {
                           return collection.get(collection.size() - 1);
@@ -243,7 +240,7 @@ class ListFirstAndLastTest implements RewriteTest {
                   """,
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       String bar(List<String> collection) {
                           return collection.getLast();
@@ -261,7 +258,7 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       String bar(List<String> collection) {
                           return collection.remove(collection.size() - 1);
@@ -270,7 +267,7 @@ class ListFirstAndLastTest implements RewriteTest {
                   """,
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       String bar(List<String> collection) {
                           return collection.removeLast();
@@ -291,7 +288,7 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       String bar(List<String> collection) {
                           return collection.get(1);
@@ -309,7 +306,7 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.List;
-                                
+
                   class Foo {
                       String bar(List<String> collection) {
                           return collection.get(collection.size() - 2);
@@ -327,7 +324,7 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       String bar(List<String> a, List<String> b) {
                           return a.get(b.size() - 1);
@@ -345,7 +342,7 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       String bar(List<Integer> collection) {
                           return collection.add(0);
@@ -363,7 +360,7 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       void bar(List<String> collection) {
                           collection.add(collection.size(), "last");
@@ -381,7 +378,7 @@ class ListFirstAndLastTest implements RewriteTest {
               java(
                 """
                   import java.util.*;
-                                
+
                   class Foo {
                       void bar(List<String> collection) {
                           collection.add(collection.size() - 1, "last");

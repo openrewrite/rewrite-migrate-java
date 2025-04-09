@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,11 +17,11 @@ package org.openrewrite.java.migrate.lang;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.StringUtils;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.search.HasJavaVersion;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.style.IntelliJ;
 import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.java.tree.Expression;
@@ -29,6 +29,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.requireNonNull;
 import static org.openrewrite.Tree.randomId;
 
 @Value
@@ -46,10 +48,9 @@ import static org.openrewrite.Tree.randomId;
 public class UseTextBlocks extends Recipe {
     @Option(displayName = "Whether to convert strings without newlines (the default value is true).",
             description = "Whether or not strings without newlines should be converted to text block when processing code. " +
-                    "The default value is true.",
+                          "The default value is true.",
             example = "true",
             required = false)
-    @Nullable
     boolean convertStringsWithoutNewlines;
 
     public UseTextBlocks() {
@@ -77,7 +78,11 @@ public class UseTextBlocks extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new HasJavaVersion("17", true), new JavaVisitor<ExecutionContext>() {
+        TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
+                Preconditions.not(new KotlinFileChecker<>()),
+                new UsesJavaVersion<>(17)
+        );
+        return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitBinary(J.Binary binary, ExecutionContext ctx) {
                 List<J.Literal> stringLiterals = new ArrayList<>();
@@ -120,21 +125,21 @@ public class UseTextBlocks extends Recipe {
 
                 StringBuilder sb = new StringBuilder();
                 StringBuilder originalContent = new StringBuilder();
-                stringLiterals = stringLiterals.stream().filter(s -> !s.getValue().toString().isEmpty()).collect(Collectors.toList());
+                stringLiterals = stringLiterals.stream()
+                        .filter(s -> s.getValue() != null && !s.getValue().toString().isEmpty())
+                        .collect(Collectors.toList());
                 for (int i = 0; i < stringLiterals.size(); i++) {
-                    String s = stringLiterals.get(i).getValue().toString();
+                    String s = requireNonNull(stringLiterals.get(i).getValue()).toString();
                     sb.append(s);
                     originalContent.append(s);
                     if (i != stringLiterals.size() - 1) {
-                        String nextLine = stringLiterals.get(i + 1).getValue().toString();
+                        String nextLine = requireNonNull(stringLiterals.get(i + 1).getValue()).toString();
                         char nextChar = nextLine.charAt(0);
                         if (!s.endsWith("\n") && nextChar != '\n') {
                             sb.append(passPhrase);
                         }
                     }
                 }
-
-                content = sb.toString();
 
                 TabsAndIndentsStyle tabsAndIndentsStyle = Optional.ofNullable(getCursor().firstEnclosingOrThrow(SourceFile.class)
                         .getStyle(TabsAndIndentsStyle.class)).orElse(IntelliJ.tabsAndIndents());
@@ -143,12 +148,11 @@ public class UseTextBlocks extends Recipe {
 
                 String indentation = getIndents(concatenation, useTab, tabSize);
 
-                boolean isEndsWithNewLine = content.endsWith("\n");
-
                 // references:
                 //  - https://docs.oracle.com/en/java/javase/14/docs/specs/text-blocks-jls.html
                 //  - https://javaalmanac.io/features/textblocks/
 
+                content = sb.toString();
                 // escape backslashes
                 content = content.replace("\\", "\\\\");
                 // escape triple quotes
@@ -165,20 +169,27 @@ public class UseTextBlocks extends Recipe {
 
                 // add last line to ensure the closing delimiter is in a new line to manage indentation & remove the
                 // need to escape ending quote in the content
-                if (!isEndsWithNewLine) {
+                if (isEndsWithSpecialCharacters(sb.toString())) {
                     content = content + "\\\n" + indentation;
                 }
 
                 return new J.Literal(randomId(), binary.getPrefix(), Markers.EMPTY, originalContent.toString(),
                         String.format("\"\"\"%s\"\"\"", content), null, JavaType.Primitive.String);
             }
+
+            private boolean isEndsWithSpecialCharacters(String content) {
+                return content.endsWith("\"") ||
+                       content.endsWith("=") ||
+                       content.endsWith("}") ||
+                       content.endsWith(";");
+            }
         });
     }
 
     private static boolean allLiterals(Expression exp) {
-        return isRegularStringLiteral(exp) || exp instanceof J.Binary
-                && ((J.Binary) exp).getOperator() == J.Binary.Type.Addition
-                && allLiterals(((J.Binary) exp).getLeft()) && allLiterals(((J.Binary) exp).getRight());
+        return isRegularStringLiteral(exp) || exp instanceof J.Binary &&
+                                              ((J.Binary) exp).getOperator() == J.Binary.Type.Addition &&
+                                              allLiterals(((J.Binary) exp).getLeft()) && allLiterals(((J.Binary) exp).getRight());
     }
 
     private static boolean flatAdditiveStringLiterals(Expression expression,
@@ -192,12 +203,12 @@ public class UseTextBlocks extends Recipe {
             }
             concatenationSb.append(b.getPrefix().getWhitespace()).append("-");
             concatenationSb.append(b.getPadding().getOperator().getBefore().getWhitespace()).append("-");
-            return flatAdditiveStringLiterals(b.getLeft(), stringLiterals, contentSb, concatenationSb)
-                    && flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
+            return flatAdditiveStringLiterals(b.getLeft(), stringLiterals, contentSb, concatenationSb) &&
+                   flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
         } else if (isRegularStringLiteral(expression)) {
             J.Literal l = (J.Literal) expression;
             stringLiterals.add(l);
-            contentSb.append(l.getValue().toString());
+            contentSb.append(requireNonNull(l.getValue()));
             concatenationSb.append(l.getPrefix().getWhitespace()).append("-");
             return true;
         }
@@ -209,8 +220,8 @@ public class UseTextBlocks extends Recipe {
         if (expr instanceof J.Literal) {
             J.Literal l = (J.Literal) expr;
             return TypeUtils.isString(l.getType()) &&
-                    l.getValueSource() != null &&
-                    !l.getValueSource().startsWith("\"\"\"");
+                   l.getValueSource() != null &&
+                   !l.getValueSource().startsWith("\"\"\"");
         }
         return false;
     }
@@ -232,7 +243,7 @@ public class UseTextBlocks extends Recipe {
         int spaceCount = tabAndSpaceCounts[1];
         if (useTabCharacter) {
             return StringUtils.repeat("\t", tabCount) +
-                    StringUtils.repeat(" ", spaceCount);
+                   StringUtils.repeat(" ", spaceCount);
         } else {
             // replace tab with spaces if the style is using spaces
             return StringUtils.repeat(" ", tabCount * tabSize + spaceCount);
@@ -291,13 +302,12 @@ public class UseTextBlocks extends Recipe {
 
     private static String generatePassword(String originalStr) throws NoSuchAlgorithmException {
         final String SALT = "kun";
-        String password = "";
         String saltedStr = originalStr + SALT;
 
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = md.digest(saltedStr.getBytes());
 
-        password = Base64.getEncoder().encodeToString(hashBytes);
+        String password = Base64.getEncoder().encodeToString(hashBytes);
 
         while (originalStr.contains(password)) {
             hashBytes = md.digest(password.getBytes());

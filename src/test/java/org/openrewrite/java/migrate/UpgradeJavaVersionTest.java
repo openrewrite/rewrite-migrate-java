@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,13 +44,13 @@ class UpgradeJavaVersionTest implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-                     
+
                     <properties>
                       <java.version>1.8</java.version>
                       <maven.compiler.source>1.8</maven.compiler.source>
                       <maven.compiler.target>1.8</maven.compiler.target>
                     </properties>
-                    
+
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -60,13 +60,13 @@ class UpgradeJavaVersionTest implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-                     
+
                     <properties>
                       <java.version>17</java.version>
                       <maven.compiler.source>17</maven.compiler.source>
                       <maven.compiler.target>17</maven.compiler.target>
                     </properties>
-                    
+
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>

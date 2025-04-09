@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,18 +35,20 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
     @Test
     void doNotChangeReturnsImmutableList() {
         rewriteRun(
-          //language=java
-          java(
-            """
-              import com.google.common.collect.ImmutableList;
-                            
-              class Test {
-                  ImmutableList<String> getList() {
-                      return ImmutableList.of();
-                  }
-              }
+          version(
+            //language=java
+            java(
               """
-          )
+                import com.google.common.collect.ImmutableList;
+
+                class Test {
+                    ImmutableList<String> getList() {
+                        return ImmutableList.of();
+                    }
+                }
+                """
+            )
+            , 9)
         );
 
     }
@@ -54,40 +56,44 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
     @Test
     void doNotChangeFieldAssignmentToImmutableList() {
         rewriteRun(
-          //language=java
-          java(
-            """
-              import com.google.common.collect.ImmutableList;
-                            
-              class Test {
-                  ImmutableList<String> m;
-                            
-                  {
-                      this.m = ImmutableList.of();
-                  }
-              }
+          version(
+            //language=java
+            java(
               """
-          )
+                import com.google.common.collect.ImmutableList;
+
+                class Test {
+                    ImmutableList<String> m;
+
+                    {
+                        this.m = ImmutableList.of();
+                    }
+                }
+                """
+            )
+            , 9)
         );
     }
 
     @Test
     void doNotChangeAssignsToImmutableList() {
         rewriteRun(
-          //language=java
-          java(
-            """
-              import com.google.common.collect.ImmutableList;
-                            
-              class Test {
-                  ImmutableList<String> m;
-                            
-                  void init() {
-                      m = ImmutableList.of();
-                  }
-              }
+          version(
+            //language=java
+            java(
               """
-          )
+                import com.google.common.collect.ImmutableList;
+
+                class Test {
+                    ImmutableList<String> m;
+
+                    void init() {
+                        m = ImmutableList.of();
+                    }
+                }
+                """
+            )
+            , 9)
         );
     }
 
@@ -98,7 +104,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
           java(
             """
               import com.google.common.collect.ImmutableList;
-                              
+
               public class A {
                   ImmutableList<String> immutableList;
                   public A(ImmutableList<String> immutableList) {
@@ -107,15 +113,17 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
               }
               """
           ),
-          //language=java
-          java(
-            """
-              import com.google.common.collect.ImmutableList;
-                            
-              class Test {
-                  A a = new A(ImmutableList.of());
-              }
-              """)
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class Test {
+                    A a = new A(ImmutableList.of());
+                }
+                """)
+            , 9)
         );
     }
 
@@ -129,7 +137,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                 //language=java
                 """
                   import com.google.common.collect.ImmutableList;
-                                  
+
                   public class A {
                       ImmutableList<String> immutableList;
                       public void method(ImmutableList<String> immutableList) {
@@ -139,19 +147,21 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                   """
               )
           ),
-          //language=java
-          java(
-            """
-              import com.google.common.collect.ImmutableList;
-                      
-              class Test {
-                  void method() {
-                      A a = new A();
-                      a.method(ImmutableList.of());
-                  }
-              }
+          version(
+            //language=java
+            java(
               """
-          )
+                import com.google.common.collect.ImmutableList;
+
+                class Test {
+                    void method() {
+                        A a = new A();
+                        a.method(ImmutableList.of());
+                    }
+                }
+                """
+            )
+            , 9)
         );
     }
 
@@ -164,14 +174,14 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
               """
                 import java.util.List;
                 import com.google.common.collect.ImmutableList;
-                                
+
                 class Test {
                     List<String> m = ImmutableList.of("A", "B", "C", "D");
                 }
                 """,
               """
                 import java.util.List;
-                                
+
                 class Test {
                     List<String> m = List.of("A", "B", "C", "D");
                 }
@@ -191,7 +201,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
               """
                 import java.util.List;
                 import com.google.common.collect.ImmutableList;
-                                
+
                 class Test {
                     List<String> m;
                     {
@@ -201,7 +211,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                 """,
               """
                 import java.util.List;
-                                
+
                 class Test {
                     List<String> m;
                     {
@@ -224,14 +234,14 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
               """
                 import java.util.List;
                 import com.google.common.collect.ImmutableList;
-                                
+
                 class Test {
                     List<String> m = ImmutableList.of();
                 }
                 """,
               """
                 import java.util.List;
-                                
+
                 class Test {
                     List<String> m = List.of();
                 }
@@ -251,7 +261,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
               """
                 import java.util.List;
                 import com.google.common.collect.ImmutableList;
-                                
+
                 class Test {
                     List<String> list() {
                         return ImmutableList.of();
@@ -260,7 +270,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                 """,
               """
                 import java.util.List;
-                                
+
                 class Test {
                     List<String> list() {
                         return List.of();
@@ -280,7 +290,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
           java(
             """
               import java.util.List;
-                  
+
               public class A {
                   List<String> list;
                   public A(List<String> list) {
@@ -294,17 +304,62 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
             java(
               """
                   import com.google.common.collect.ImmutableList;
-                  
+
                   class Test {
                       A a = new A(ImmutableList.of());
                   }
                 """,
               """
                   import java.util.List;
-                  
+
                   class Test {
                       A a = new A(List.of());
                   }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
+    void doChangeMethodInvocationWithSelect() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.List;
+
+              public class A {
+                  Object[] list;
+                  public void method(Object[] list ) {
+                      this.list = list;
+                  }
+              }
+              """
+          ),
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class Test {
+                    void method() {
+                        A a = new A();
+                        a.method(ImmutableList.of().toArray());
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+
+                class Test {
+                    void method() {
+                        A a = new A();
+                        a.method(List.of().toArray());
+                    }
+                }
                 """
             ),
             11
@@ -319,7 +374,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
           java(
             """
               import java.util.List;
-                  
+
               public class A {
                   List<String> list;
                   public void method(List<String> list) {
@@ -333,7 +388,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
             java(
               """
                 import com.google.common.collect.ImmutableList;
-                                
+
                 class Test {
                     void method() {
                         A a = new A();
@@ -343,7 +398,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                 """,
               """
                 import java.util.List;
-                                
+
                 class Test {
                     void method() {
                         A a = new A();
@@ -367,7 +422,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
               """
                 import java.util.List;
                 import com.google.common.collect.ImmutableList;
-                                
+
                 class Test {
                     List<Integer> list() {
                         return ImmutableList.of(1, 2, 3);
@@ -376,7 +431,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                 """,
               """
                 import java.util.List;
-                                
+
                 class Test {
                     List<Integer> list() {
                         return List.of(1, 2, 3);
@@ -398,7 +453,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
             java(
               """
                 import com.google.common.collect.ImmutableList;
-                                
+
                 class A {
                     Object[] o = new Object[] {
                             ImmutableList.of(1, 2, 3)
@@ -407,7 +462,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                 """,
               """
                 import java.util.List;
-                                
+
                 class A {
                     Object[] o = new Object[] {
                             List.of(1, 2, 3)
@@ -429,14 +484,14 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
             java(
               """
                 import com.google.common.collect.ImmutableList;
-                                
+
                 class A {
                     Object o = ImmutableList.of(1, 2, 3);
                 }
                 """,
               """
                 import java.util.List;
-                                
+
                 class A {
                     Object o = List.of(1, 2, 3);
                 }
@@ -449,7 +504,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
     @Test
-    void doNotChangeNestedLists() {
+    void doChangeAssignToImmutableMap() {
         //language=java
         rewriteRun(
           version(
@@ -457,7 +512,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
               """
                 import com.google.common.collect.ImmutableList;
                 import java.util.List;
-                                
+
                 class A {
                     Object o = List.of(ImmutableList.of(1, 2), ImmutableList.of(2, 3));
                 }
@@ -468,22 +523,141 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
         );
     }
 
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/256")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/489")
     @Test
-    void doNotchangeAssignToImmutableList() {
+    void doChangeWithStreamOperation() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class A {
+                    void test() {
+                        final List<Integer> list = ImmutableList.of(1, 2).stream().toList();
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+
+                class A {
+                    void test() {
+                        final List<Integer> list = List.of(1, 2).stream().toList();
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/489")
+    @Test
+    void doNotChangeWithImmutableListMethod() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class A {
+                    void test() {
+                        ImmutableList.of(1, 2).asList();
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
+    void doChangeAllAssignToImmutableMap() {
         //language=java
         rewriteRun(
+          spec -> spec.recipe(new NoGuavaImmutableListOf(true)),
           version(
             java(
               """
                 import com.google.common.collect.ImmutableList;
-                                
-                class Test {
-                    ImmutableList<String> l = ImmutableList.of();
+                import java.util.List;
+
+                class A {
+                    Object o = List.of(ImmutableList.of(1, 2), ImmutableList.of(2, 3));
+                }
+                """,
+              """
+                import java.util.List;
+
+                class A {
+                    Object o = List.of(List.of(1, 2), List.of(2, 3));
                 }
                 """
             ),
             9
+          )
+        );
+    }
+
+    @Test
+    void doChangeNestedListsWithVariableType() {
+        //language=java
+        rewriteRun(
+          spec -> spec.recipe(new NoGuavaImmutableListOf(true)),
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class A {
+                    ImmutableList<ImmutableList<Integer>> o = ImmutableList.of(ImmutableList.of(1, 2), ImmutableList.of(2, 3));
+                }
+                """,
+              """
+                import java.util.List;
+
+                class A {
+                    List<List<Integer>> o = List.of(List.of(1, 2), List.of(2, 3));
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Test
+    void doChangeAssignFromImmutableListToList() {
+        rewriteRun(
+          spec -> spec.recipe(new NoGuavaImmutableListOf(true)),
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class A {
+                    void test() {
+                        ImmutableList<Integer> o = ImmutableList.of(1, 2);
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+
+                class A {
+                    void test() {
+                        List<Integer> o = List.of(1, 2);
+                    }
+                }
+                """
+            ),
+            11
           )
         );
     }

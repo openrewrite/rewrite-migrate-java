@@ -1,11 +1,11 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -48,40 +48,41 @@ public class UseMapOf extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(10), new UsesMethod<>(NEW_HASH_MAP)), new JavaVisitor<ExecutionContext>() {
-            @Override
-            public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
-                J.NewClass n = (J.NewClass) super.visitNewClass(newClass, ctx);
-                J.Block body = n.getBody();
-                if (NEW_HASH_MAP.matches(n) && body != null) {
-                    if (body.getStatements().size() == 1) {
-                        Statement statement = body.getStatements().get(0);
-                        if (statement instanceof J.Block) {
-                            List<Expression> args = new ArrayList<>();
-                            StringJoiner mapOf = new StringJoiner(", ", "Map.of(", ")");
-                            for (Statement stat : ((J.Block) statement).getStatements()) {
-                                if (stat instanceof J.MethodInvocation && MAP_PUT.matches((Expression) stat)) {
-                                    J.MethodInvocation put = (J.MethodInvocation) stat;
-                                    args.addAll(put.getArguments());
-                                    mapOf.add("#{}");
-                                    mapOf.add("#{}");
-                                } else {
-                                    return n;
-                                }
-                            }
+        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(10),
+            new UsesMethod<>(NEW_HASH_MAP)), new UseMapOfVisitor());
+    }
 
-                            maybeRemoveImport("java.util.HashMap");
-                            maybeAddImport("java.util.Map");
-                            return JavaTemplate.builder(mapOf.toString())
-                                    .contextSensitive()
-                                    .imports("java.util.Map")
-                                    .build()
-                                    .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
+    private static class UseMapOfVisitor extends JavaVisitor<ExecutionContext> {
+        @Override
+        public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
+            J.NewClass n = (J.NewClass) super.visitNewClass(newClass, ctx);
+            J.Block body = n.getBody();
+            if (NEW_HASH_MAP.matches(n) && body != null && body.getStatements().size() == 1) {
+                Statement statement = body.getStatements().get(0);
+                if (statement instanceof J.Block) {
+                    List<Expression> args = new ArrayList<>();
+                    StringJoiner mapOf = new StringJoiner(", ", "Map.of(", ")");
+                    for (Statement stat : ((J.Block) statement).getStatements()) {
+                        if (!(stat instanceof J.MethodInvocation) || !MAP_PUT.matches((Expression) stat)) {
+                            return n;
                         }
+                        J.MethodInvocation put = (J.MethodInvocation) stat;
+                        args.addAll(put.getArguments());
+                        mapOf.add("#{any()}");
+                        mapOf.add("#{any()}");
                     }
+
+                    maybeRemoveImport("java.util.HashMap");
+                    maybeAddImport("java.util.Map");
+                    return JavaTemplate.builder(mapOf.toString())
+                        .contextSensitive()
+                        .imports("java.util.Map")
+                        .build()
+                        .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
                 }
-                return n;
             }
-        });
+
+            return n;
+        }
     }
 }

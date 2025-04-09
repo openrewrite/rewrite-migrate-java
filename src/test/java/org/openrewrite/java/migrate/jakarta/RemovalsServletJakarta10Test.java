@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -56,41 +56,41 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.http.HttpSession;
               import jakarta.servlet.http.HttpSessionContext;
               import jakarta.servlet.http.HttpUtils;
-                            
+
               class TestJakarta extends HttpServlet implements SingleThreadModel {
                   protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                       req.isRequestedSessionIdFromUrl();
-                         
+
                       res.encodeUrl("");
                       res.encodeRedirectUrl("");
-                     
+
                       res.setStatus(0,  "");
-                         
+
                       res.setStatus(0);
-                        
+
                       HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
                       reqWrapper.isRequestedSessionIdFromUrl();
-                         
+
                       HttpServletResponseWrapper resWrapper = new HttpServletResponseWrapper(res);
-                  
+
                       resWrapper.encodeUrl("");
                       resWrapper.encodeRedirectUrl("");
-                 
+
                       resWrapper.setStatus(0,  "");
-                
+
                       HttpSession httpSession = req.getSession();
                       httpSession.getSessionContext();
                       httpSession.getValue("");
                       httpSession.getValueNames();
                       httpSession.putValue("", null);
                       httpSession.removeValue("");
-                  
+
                       ServletContext servletContext = getServletContext();
-               
+
                       servletContext.getServlet("");
                       servletContext.getServlets();
                       servletContext.getServletNames();
-                
+
                       servletContext.log(null, "");
                   }
               }
@@ -110,41 +110,41 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.http.HttpSession;
               import jakarta.servlet.http.HttpSessionContext;
               import jakarta.servlet.http.HttpUtils;
-                            
+
               class TestJakarta extends HttpServlet implements SingleThreadModel {
                   protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                       req.isRequestedSessionIdFromURL();
-                         
+
                       res.encodeURL("");
                       res.encodeRedirectURL("");
-                
+
                       res.setStatus(0);
-                         
+
                       res.setStatus(0);
-                       
+
                       HttpServletRequestWrapper reqWrapper = new HttpServletRequestWrapper(req);
                       reqWrapper.isRequestedSessionIdFromURL();
-                         
+
                       HttpServletResponseWrapper resWrapper = new HttpServletResponseWrapper(res);
-                
+
                       resWrapper.encodeURL("");
                       resWrapper.encodeRedirectURL("");
-                
+
                       resWrapper.setStatus(0);
-               
+
                       HttpSession httpSession = req.getSession();
                       httpSession.getSessionContext();
                       httpSession.getAttribute("");
                       httpSession.getAttributeNames();
                       httpSession.setAttribute("", null);
                       httpSession.removeAttribute("");
-                     
+
                       ServletContext servletContext = getServletContext();
-               
+
                       servletContext.getServlet("");
                       servletContext.getServlets();
                       servletContext.getServletNames();
-                 
+
                       servletContext.log("", null);
                   }
               }
@@ -162,7 +162,7 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.UnavailableException;
               import jakarta.servlet.http.HttpServletRequest;
               import jakarta.servlet.http.HttpServletResponse;
-                
+
               class Test {
                   void doGet(HttpServletRequest req, HttpServletResponse res) throws Exception {
                       jakarta.servlet.Servlet servlet ;
@@ -176,13 +176,13 @@ class RemovalsServletJakarta10Test implements RewriteTest {
               import jakarta.servlet.UnavailableException;
               import jakarta.servlet.http.HttpServletRequest;
               import jakarta.servlet.http.HttpServletResponse;
-                
+
               class Test {
                   void doGet(HttpServletRequest req, HttpServletResponse res) throws Exception {
                       jakarta.servlet.Servlet servlet ;
                       UnavailableException unavailableEx1 = new UnavailableException("x", 0);
                       UnavailableException unavailableEx2 = new UnavailableException("x", 0);
-                      UnavailableException unavailableEx3 = new UnavailableException( "x");
+                      UnavailableException unavailableEx3 = new UnavailableException("x");
                   }
               }
               """

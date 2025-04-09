@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -50,10 +50,6 @@ public class OptionalStreamRecipe extends Recipe {
     }
 
     private static class OptionalStreamVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private static final JavaTemplate template =
-                JavaTemplate.builder("#{any(java.util.stream.Stream)}.flatMap(Optional::stream)")
-                        .imports("java.util.Optional")
-                        .build();
 
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation invocation, ExecutionContext ctx) {
@@ -77,6 +73,10 @@ public class OptionalStreamRecipe extends Recipe {
             JRightPadded<Expression> mapSelect = mapInvocation.getPadding().getSelect();
             JavaType.Method mapInvocationType = mapInvocation.getMethodType();
             Space flatMapComments = getFlatMapComments(mapSelect, filterSelect);
+            JavaTemplate template =
+                    JavaTemplate.builder("#{any(java.util.stream.Stream)}.flatMap(Optional::stream)")
+                            .imports("java.util.Optional")
+                            .build();
             J.MethodInvocation flatMapInvocation = template
                     .apply(updateCursor(mapInvocation), mapInvocation.getCoordinates().replace(), filterInvocation.getSelect());
             return flatMapInvocation.getPadding()

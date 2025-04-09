@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,47 +41,47 @@ class ServletCookieBehaviorChangeRFC6265Test implements RewriteTest {
         rewriteRun(
           //language=java
           java(
-                """
-            package com.test;
-            import jakarta.servlet.ServletContext;
-            import jakarta.servlet.SessionCookieConfig;
-            import jakarta.servlet.http.HttpServlet;
-              
-            import jakarta.servlet.http.Cookie;
-              
-            public class TestJakarta extends HttpServlet {
-                            
-                public void test() {
-                      Cookie cookie = new Cookie("test", "cookie");
-                      cookie.setComment("comment");
-                      cookie.getComment();
-                      cookie.setVersion(1);
-                      cookie.getVersion();
-                        
-                      ServletContext servletContext = getServletContext();
-                      SessionCookieConfig config = servletContext.getSessionCookieConfig();
-                      config.getComment();
-                      config.setComment("comment");
-                }
-            }     
-            """, """
-            package com.test;
-            import jakarta.servlet.ServletContext;
-            import jakarta.servlet.SessionCookieConfig;
-            import jakarta.servlet.http.HttpServlet;
-                                                        
-            import jakarta.servlet.http.Cookie;
-             
-            public class TestJakarta extends HttpServlet {
-                            
-                public void test() {
-                      Cookie cookie = new Cookie("test", "cookie");            
-                        
-                      ServletContext servletContext = getServletContext();
-                      SessionCookieConfig config = servletContext.getSessionCookieConfig();          
-                }
-            }     
-            """));
+            """
+              package com.test;
+              import jakarta.servlet.ServletContext;
+              import jakarta.servlet.SessionCookieConfig;
+              import jakarta.servlet.http.HttpServlet;
+
+              import jakarta.servlet.http.Cookie;
+
+              public class TestJakarta extends HttpServlet {
+
+                  public void test() {
+                        Cookie cookie = new Cookie("test", "cookie");
+                        cookie.setComment("comment");
+                        cookie.getComment();
+                        cookie.setVersion(1);
+                        cookie.getVersion();
+
+                        ServletContext servletContext = getServletContext();
+                        SessionCookieConfig config = servletContext.getSessionCookieConfig();
+                        config.getComment();
+                        config.setComment("comment");
+                  }
+              }
+              """, """
+              package com.test;
+              import jakarta.servlet.ServletContext;
+              import jakarta.servlet.SessionCookieConfig;
+              import jakarta.servlet.http.HttpServlet;
+
+              import jakarta.servlet.http.Cookie;
+
+              public class TestJakarta extends HttpServlet {
+
+                  public void test() {
+                        Cookie cookie = new Cookie("test", "cookie");
+
+                        ServletContext servletContext = getServletContext();
+                        SessionCookieConfig config = servletContext.getSessionCookieConfig();
+                  }
+              }
+              """));
     }
 
 }

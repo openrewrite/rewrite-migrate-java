@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,22 +44,22 @@ class UpdateLombokToJava11Test implements RewriteTest {
             JavaParser.fromJavaVersion().dependsOn(
               """
                 package lombok.experimental;
-                  
+
                 import java.lang.annotation.ElementType;
                 import java.lang.annotation.Retention;
                 import java.lang.annotation.RetentionPolicy;
                 import java.lang.annotation.Target;
-                  
+
                 @Target({ElementType.FIELD, ElementType.TYPE})
                 @Retention(RetentionPolicy.SOURCE)
                 public @interface Wither {
                 }
-                              
+
                 @Target(ElementType.TYPE)
                 @Retention(RetentionPolicy.SOURCE)
                 public @interface Value {
                 }
-                              
+
                 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR})
                 @Retention(RetentionPolicy.SOURCE)
                 public @interface Builder {
@@ -117,7 +117,7 @@ class UpdateLombokToJava11Test implements RewriteTest {
               import lombok.experimental.Wither;
               import lombok.experimental.Builder;
               import lombok.experimental.Value;
-                            
+
               @Wither
               @Builder
               @Value
@@ -130,7 +130,7 @@ class UpdateLombokToJava11Test implements RewriteTest {
               import lombok.Value;
               import lombok.With;
               import lombok.Builder;
-                            
+
               @With
               @Builder
               @Value

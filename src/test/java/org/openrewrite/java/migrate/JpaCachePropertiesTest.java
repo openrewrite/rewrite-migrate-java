@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,6 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.xml.Assertions.xml;
 
+@SuppressWarnings({"CheckTagEmptyBody", "JpaConfigDomFacetInspection", "JpaDomInspection"})
 class JpaCachePropertiesTest implements RewriteTest {
     private static final String PERSISTENCE_FILENAME = "persistence.xml";
 
@@ -53,10 +54,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_set_set1">
-                      <!-- flag -->
-                      <shared-cache-mode>NONE</shared-cache-mode>
-                      <!-- leave -->
+                  <persistence-unit name="set_set_set1"><!-- flag -->
+                      <shared-cache-mode>NONE</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -93,10 +92,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_set_set2">
-                      <!-- flag -->
-                      <shared-cache-mode>ALL</shared-cache-mode>
-                      <!-- leave -->
+                  <persistence-unit name="set_set_set2"><!-- flag -->
+                      <shared-cache-mode>ALL</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -133,10 +130,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_set_set3">
-                      <!-- flag -->
-                      <shared-cache-mode>ALL</shared-cache-mode>
-                      <!-- leave, change to ALL -->
+                  <persistence-unit name="set_set_set3"><!-- flag -->
+                      <shared-cache-mode>ALL</shared-cache-mode><!-- leave, change to ALL -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -173,10 +168,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_set_set4">
-                      <!-- flag -->
-                      <shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode>
-                      <!-- leave -->
+                  <persistence-unit name="set_set_set4"><!-- flag -->
+                      <shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -212,10 +205,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_set_notset1">
-                      <!-- flag -->
-                      <shared-cache-mode>NONE</shared-cache-mode>
-                      <!-- leave -->
+                  <persistence-unit name="set_set_notset1"><!-- flag -->
+                      <shared-cache-mode>NONE</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -250,10 +241,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_set_notset2">
-                      <!-- flag -->
-                      <shared-cache-mode>ALL</shared-cache-mode>
-                      <!-- leave -->
+                  <persistence-unit name="set_set_notset2"><!-- flag -->
+                      <shared-cache-mode>ALL</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -288,10 +277,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_set_notset3">
-                      <!-- flag -->
-                      <shared-cache-mode>NONE</shared-cache-mode>
-                      <!-- change to NONE -->
+                  <persistence-unit name="set_set_notset3"><!-- flag -->
+                      <shared-cache-mode>NONE</shared-cache-mode><!-- change to NONE -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -326,10 +313,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_set_notset4">
-                      <!-- flag -->
-                      <shared-cache-mode>ALL</shared-cache-mode>
-                      <!-- leave -->
+                  <persistence-unit name="set_set_notset4"><!-- flag -->
+                      <shared-cache-mode>ALL</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -363,10 +348,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_set_notset5">
-                      <!-- flag -->
-                      <shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode>
-                      <!-- leave -->
+                  <persistence-unit name="set_set_notset5"><!-- flag -->
+                      <shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- remove -->
@@ -423,10 +406,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_notset_set2">
-                      <!-- flag -->
-                      <shared-cache-mode>ALL</shared-cache-mode>
-                      <!-- leave -->
+                  <persistence-unit name="set_notset_set2"><!-- flag -->
+                      <shared-cache-mode>ALL</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -461,10 +442,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_notset_set3">
-                      <!-- flag -->
-                      <shared-cache-mode>ALL</shared-cache-mode>
-                      <!-- change to ALL -->
+                  <persistence-unit name="set_notset_set3"><!-- flag -->
+                      <shared-cache-mode>ALL</shared-cache-mode><!-- change to ALL -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -498,10 +477,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_notset_set4">
-                      <!-- flag -->
-                      <shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode>
-                      <!-- leave -->
+                  <persistence-unit name="set_notset_set4"><!-- flag -->
+                      <shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- remove -->   \s
@@ -572,10 +549,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="set_notset_notset3">
-                      <!-- flag -->
-                      <shared-cache-mode>NONE</shared-cache-mode>
-                      <!-- change to NONE -->
+                  <persistence-unit name="set_notset_notset3"><!-- flag -->
+                      <shared-cache-mode>NONE</shared-cache-mode><!-- change to NONE -->
                       <validation-mode>NONE</validation-mode>
                   </persistence-unit>
               </persistence>
@@ -627,8 +602,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="notset_set_set1">
-                      <!-- flag -->
+                  <persistence-unit name="notset_set_set1"><!-- flag -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -665,8 +639,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="notset_set_set2">
-                      <!-- flag -->
+                  <persistence-unit name="notset_set_set2"><!-- flag -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -703,8 +676,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="notset_set_set3">
-                      <!-- flag -->
+                  <persistence-unit name="notset_set_set3"><!-- flag -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -807,8 +779,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="notset_set_notset3">
-                      <!-- flag -->
+                  <persistence-unit name="notset_set_notset3"><!-- flag -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -1099,10 +1070,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="openjpa_cache1_flagged">
-                      <!-- flag -->
-                      <shared-cache-mode>NONE</shared-cache-mode>
-                      <!-- set to NONE -->
+                  <persistence-unit name="openjpa_cache1_flagged"><!-- flag -->
+                      <shared-cache-mode>NONE</shared-cache-mode><!-- set to NONE -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
@@ -1136,10 +1105,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="openjpa_cache2_flagged">
-                      <!-- flag -->
-                      <shared-cache-mode>ALL</shared-cache-mode>
-                      <!-- set to ALL -->
+                  <persistence-unit name="openjpa_cache2_flagged"><!-- flag -->
+                      <shared-cache-mode>ALL</shared-cache-mode><!-- set to ALL -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- remove -->
@@ -1207,8 +1174,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="openjpa_cache4_flagged">
-                      <!-- flag -->
+                  <persistence-unit name="openjpa_cache4_flagged"> <!-- flag -->
                       <shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
@@ -1242,8 +1208,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="openjpa_cache5_flagged">
-                      <!-- flag -->
+                  <persistence-unit name="openjpa_cache5_flagged"> <!-- flag -->
                       <shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
@@ -1276,10 +1241,8 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="openjpa_cache6_flagged">
-                      <!-- flag -->
-                      <shared-cache-mode>NONE</shared-cache-mode>
-                      <!-- change to NONE -->
+                  <persistence-unit name="openjpa_cache6_flagged"><!-- flag -->
+                      <shared-cache-mode>NONE</shared-cache-mode><!-- change to NONE -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
                       </properties>
@@ -1355,8 +1318,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="openjpa_cache9_flagged">
-                      <!-- flag -->
+                  <persistence-unit name="openjpa_cache9_flagged">  <!-- flag -->
                       <shared-cache-mode>NONE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>

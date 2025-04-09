@@ -1,11 +1,11 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,14 +39,14 @@ class MigrateCollectionsUnmodifiableListTest implements RewriteTest {
             java(
               """
                 import java.util.*;
-                                
+
                 class Test {
                     List<Integer> l = Collections.unmodifiableList(Arrays.asList(1, 2, 3));
                 }
                 """,
               """
                 import java.util.List;
-                                
+
                 class Test {
                     List<Integer> l = List.of(1, 2, 3);
                 }
@@ -67,7 +67,7 @@ class MigrateCollectionsUnmodifiableListTest implements RewriteTest {
               """
                 import java.util.*;
                 import java.time.LocalDate;
-                                
+
                 class Test {
                     List<LocalDate> s = Collections.unmodifiableList(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now()));
                 }
@@ -75,7 +75,7 @@ class MigrateCollectionsUnmodifiableListTest implements RewriteTest {
               """
                 import java.util.List;
                 import java.time.LocalDate;
-                                
+
                 class Test {
                     List<LocalDate> s = List.of(LocalDate.of(2010, 1, 1), LocalDate.now());
                 }

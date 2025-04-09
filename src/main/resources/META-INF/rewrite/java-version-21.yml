@@ -1,11 +1,11 @@
 #
-# Copyright 2023 the original author or authors.
+# Copyright 2024 the original author or authors.
 # <p>
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Moderne Source Available License (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # <p>
-# https://www.apache.org/licenses/LICENSE-2.0
+# https://docs.moderne.io/licensing/moderne-source-available-license
 # <p>
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeToJava21
 displayName: Migrate to Java 21
-description: >
+description: >-
   This recipe will apply changes commonly needed when migrating to Java 21. This recipe will also replace deprecated API
   with equivalents when there is a clear migration strategy. Build files will also be updated to use Java 21 as the
   target/source and plugins will be also be upgraded to versions that are compatible with Java 21.
@@ -25,23 +26,42 @@ tags:
   - java21
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 21
+  - org.openrewrite.java.migrate.UpgradeBuildToJava21
   - org.openrewrite.java.migrate.RemoveIllegalSemicolons
   - org.openrewrite.java.migrate.lang.ThreadStopUnsupported
-  - org.openrewrite.java.migrate.net.URLConstructorsToURIRecipes
+  - org.openrewrite.java.migrate.net.URLConstructorToURICreate
+  # Fails to introduce new exception handling https://github.com/openrewrite/rewrite-migrate-java/issues/467
+  #- org.openrewrite.java.migrate.net.URLConstructorsToNewURI
   - org.openrewrite.java.migrate.util.SequencedCollection
   - org.openrewrite.java.migrate.util.UseLocaleOf
   - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion
+  - org.openrewrite.java.migrate.UpgradePluginsForJava21
+  - org.openrewrite.java.migrate.DeleteDeprecatedFinalize
+  - org.openrewrite.java.migrate.RemovedSubjectMethods
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava21
+displayName: Upgrade build to Java 21
+description: Updates build files to use Java 21 as the target/source.
+tags:
+  - java21
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 21
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradePluginsForJava21
+displayName: Upgrade plugins to Java 21 compatible versions
+description: Updates plugins and dependencies to version compatible with Java 21.
+tags:
+  - java21
+recipeList:
   # GitHub Actions bump needs Gradle Wrapper bump too https://docs.gradle.org/current/userguide/compatibility.html#java
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 8.5
       addIfMissing: false
-  - org.openrewrite.maven.UpgradePluginVersion:
-      groupId: org.jacoco
-      artifactId: jacoco-maven-plugin
-      newVersion: 0.8.+
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: com.sonatype.clm
       artifactId: clm-maven-plugin
@@ -59,7 +79,6 @@ recipeList:
       groupId: org.modelmapper
       artifactId: modelmapper
       newVersion: 3.2.x
-
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.util.SequencedCollection
@@ -81,6 +100,33 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.NavigableSet descendingSet()
       newMethodName: reversed
-  # XXX convert additional patterns to sequenced collections
-  # list.listIterator() -> ???
-  # list.listIterator(int) -> ???
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedSubjectMethods
+displayName: Adopt `javax.security.auth.Subject.current()` and `javax.security.auth.Subject.callAs()` methods`
+description: >-
+  Replaces the `javax.security.auth.Subject.getSubject()` and `javax.security.auth.Subject.doAs()` methods
+  with `javax.security.auth.Subject.current()` and `javax.security.auth.Subject.callAs()`.
+tags:
+  - java21
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: javax.security.auth.Subject getSubject()
+      newMethodName: current
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: javax.security.auth.Subject doAs()
+      newMethodName: callAs
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.DeleteDeprecatedFinalize
+displayName: Avoid using the deprecated empty `finalize()` method in `java.desktop`
+description: The java.desktop module had a few implementations of finalize() that did nothing and have been removed. This recipe will remove these methods.
+tags:
+  - java21
+recipeList:
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: java.awt.color.ICC_Profile finalize()
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: java.awt.image.ColorModel finalize()
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: java.awt.image.IndexColorModel finalize()

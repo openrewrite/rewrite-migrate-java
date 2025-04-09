@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,11 +17,13 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@Deprecated(forRemoval = true)
 class ChangeMethodInvocationReturnTypeTest implements RewriteTest {
 
     @Override
@@ -73,6 +75,48 @@ class ChangeMethodInvocationReturnTypeTest implements RewriteTest {
                       int zero = Integer.valueOf("0");
                       long one = Integer.parseInt("1");
                       int two = Integer.valueOf("2");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceVariableAssignmentFullyQualified() {
+        rewriteRun(
+          spec -> spec.recipe(new ChangeMethodInvocationReturnType("bar.Bar bar()", "java.math.BigInteger"))
+            .parser(JavaParser.fromJavaVersion()
+              //language=java
+              .dependsOn(
+                """
+                  package bar;
+                  public class Bar {
+                      public static Integer bar() {
+                          return null;
+                      }
+                  }
+                  """
+              )
+            ),
+          //language=java
+          java(
+            """
+              import bar.Bar;
+              class Foo {
+                  void foo() {
+                      Integer one = Bar.bar();
+                  }
+              }
+              """,
+            """
+              import bar.Bar;
+
+              import java.math.BigInteger;
+
+              class Foo {
+                  void foo() {
+                      BigInteger one = Bar.bar();
                   }
               }
               """

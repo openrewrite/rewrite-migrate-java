@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -50,18 +50,18 @@ class LombokValueToRecordTest implements RewriteTest {
           java(
             """
               import lombok.Value;
-              
+
               @Value
               public class Test {
                   String field1;
-              
+
                   String field2;
               }
               """,
             """
               public record Test(
                   String field1,
-              
+
                   String field2) {
                   @Override
                   public String toString() {
@@ -86,9 +86,9 @@ class LombokValueToRecordTest implements RewriteTest {
           java(
             """
               package example;
-              
+
               import lombok.Value;
-              
+
               @Value
               public class A {
                  String test;
@@ -96,7 +96,7 @@ class LombokValueToRecordTest implements RewriteTest {
               """,
             """
               package example;
-              
+
               public record A(
                  String test) {
               }
@@ -105,15 +105,15 @@ class LombokValueToRecordTest implements RewriteTest {
           java(
             """
               package example;
-              
+
               public class UserOfA {
-              
+
                   private final A record;
-              
+
                   public UserOfA() {
                       this.record = new A("some value");
                   }
-              
+
                   public String getRecordValue() {
                       return record.getTest();
                   }
@@ -121,15 +121,15 @@ class LombokValueToRecordTest implements RewriteTest {
               """,
             """
               package example;
-              
+
               public class UserOfA {
-              
+
                   private final A record;
-              
+
                   public UserOfA() {
                       this.record = new A("some value");
                   }
-              
+
                   public String getRecordValue() {
                       return record.test();
                   }
@@ -147,15 +147,15 @@ class LombokValueToRecordTest implements RewriteTest {
           java(
             """
               package example;
-              
+
               import lombok.ToString;
               import lombok.Value;
-              
+
               @Value
               public class A {
                   String test;
               }
-              
+
               @Value
               @ToString
               public class B {
@@ -164,14 +164,14 @@ class LombokValueToRecordTest implements RewriteTest {
               """,
             """
               package example;
-              
+
               import lombok.ToString;
               import lombok.Value;
-              
+
               public record A(
                   String test) {
               }
-              
+
               @Value
               @ToString
               public class B {
@@ -190,9 +190,9 @@ class LombokValueToRecordTest implements RewriteTest {
           java(
             """
               package example;
-              
+
               import lombok.Value;
-              
+
               public class A {
                   @Value
                   static class B {
@@ -202,7 +202,7 @@ class LombokValueToRecordTest implements RewriteTest {
               """,
             """
               package example;
-              
+
               public class A {
                   record B(
                       String test) {
@@ -223,10 +223,10 @@ class LombokValueToRecordTest implements RewriteTest {
           java(
             """
               package example;
-              
+
               import lombok.Value;
               import java.io.Serializable;
-              
+
               @Value
               public class A implements Serializable {
                 String test;
@@ -234,15 +234,48 @@ class LombokValueToRecordTest implements RewriteTest {
               """,
             """
               package example;
-              
+
               import java.io.Serializable;
-              
+
               public record A(
                 String test) implements Serializable {
               }
               """
           )
         );
+    }
+
+    @Test
+    void plainLombokBuilder() {
+        //language=java
+        rewriteRun(
+          s -> s.typeValidationOptions(TypeValidation.none()),
+          java(
+            """
+              package example;
+
+              import lombok.Value;
+              import lombok.Builder;
+
+              @Value
+              @Builder
+              public class A implements Serializable {
+                String test;
+              }
+              """,
+            """
+              package example;
+
+              import lombok.Builder;
+
+              @Builder
+              public record A(
+                String test) implements Serializable {
+              }
+              """
+          )
+        );
+
     }
 
     public static class A  {
@@ -324,11 +357,11 @@ class LombokValueToRecordTest implements RewriteTest {
               java(
                 """
                   import lombok.Value;
-                  
+
                   @Value
                   public class A {
                      String test;
-                  
+
                      public A() {
                          this.test = "test";
                      }
@@ -347,10 +380,10 @@ class LombokValueToRecordTest implements RewriteTest {
                 """
                   import com.fasterxml.jackson.annotation.JsonProperty;
                   import lombok.Value;
-                  
+
                   @Value
                   public class A {
-                  
+
                      @JsonProperty
                      String test;
                   }
@@ -366,11 +399,11 @@ class LombokValueToRecordTest implements RewriteTest {
               java(
                 """
                   import lombok.Value;
-                  
+
                   @Value
                   public class A {
                      String test;
-                  
+
                      public String getTest() {
                          return test;
                      }
@@ -387,7 +420,7 @@ class LombokValueToRecordTest implements RewriteTest {
               java(
                 """
                   import lombok.Value;
-                  
+
                   @Value
                   public class A<T extends Object> {
                      T test;
@@ -405,7 +438,7 @@ class LombokValueToRecordTest implements RewriteTest {
                 java(
                   """
                     import lombok.Value;
-                    
+
                     @Value
                     public class A {
                        String test;
@@ -425,7 +458,7 @@ class LombokValueToRecordTest implements RewriteTest {
                 """
                   import lombok.Value;
                   import lombok.experimental.Accessors;
-                  
+
                   @Value
                   @Accessors(fluent = true)
                   public class A {
@@ -456,7 +489,7 @@ class LombokValueToRecordTest implements RewriteTest {
               java(
                 """
                   import lombok.Value;
-                  
+
                   @Value
                   public class A {
                       static String disqualifyingField;
@@ -475,9 +508,9 @@ class LombokValueToRecordTest implements RewriteTest {
               java(
                 """
                   package example;
-                  
+
                   import lombok.Value;
-                  
+
                   public class A {
                       @Value
                       class B {
@@ -497,9 +530,9 @@ class LombokValueToRecordTest implements RewriteTest {
               java(
                 """
                   package example;
-                  
+
                   import lombok.Value;
-                  
+
                   @Value(staticConstructor = "of")
                   public class A {
                       String test;
@@ -516,13 +549,13 @@ class LombokValueToRecordTest implements RewriteTest {
               java(
                 """
                   package example;
-                  
+
                   import lombok.Value;
-                  
+
                   interface I {
                       String getTest();
                   }
-                  
+
                   @Value
                   public class A implements I {
                       String test;
@@ -540,16 +573,16 @@ class LombokValueToRecordTest implements RewriteTest {
               java(
                 """
                   package example;
-                  
+
                   import lombok.Value;
-                  
+
                   interface I {
                       String getTest();
                   }
-                  
+
                   interface J extends I {
                   }
-                  
+
                   @Value
                   public class A implements J {
                       String test;

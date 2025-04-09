@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -138,7 +139,7 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
                       </dependency>
                   </dependencies>
               </project>
-                """
+              """
           )
         );
     }
@@ -249,7 +250,7 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
                       </dependencies>
                   </dependencyManagement>
               </project>
-                            """
+              """
           )
         );
     }
@@ -267,11 +268,11 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
               import com.fasterxml.jackson.databind.ObjectMapper;
               import com.fasterxml.jackson.databind.json.JsonMapper;
               import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
-                            
+
               public class JacksonTest {
                   ObjectMapper mapper = JsonMapper.builder().addModule(new JSR353Module()).build();
                   ObjectMapper mapper2 = JsonMapper.builder().addModule(getModule()).build();
-                
+
                   private JSR353Module getModule() {
                       return new JSR353Module();
                   }
@@ -281,15 +282,74 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
               import com.fasterxml.jackson.databind.ObjectMapper;
               import com.fasterxml.jackson.databind.json.JsonMapper;
               import com.fasterxml.jackson.datatype.jsonp.JSONPModule;
-                            
+
               public class JacksonTest {
                   ObjectMapper mapper = JsonMapper.builder().addModule(new JSONPModule()).build();
                   ObjectMapper mapper2 = JsonMapper.builder().addModule(getModule()).build();
-                
+
                   private JSONPModule getModule() {
                       return new JSONPModule();
                   }
               }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/652")
+    @Test
+    void thatJaxbAnnotationModuleIsRewritten() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
+            "jackson-core",
+            "jackson-databind",
+            "jackson-module-jaxb-annotations")),
+          //language=java
+          java(
+            """
+              import com.fasterxml.jackson.databind.ObjectMapper;
+              import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+
+              public class JacksonTest {
+                  void foo() {
+                      ObjectMapper mapper = new ObjectMapper();
+                      mapper.registerModule(new JaxbAnnotationModule());
+                  }
+              }
+              """,
+            """
+              import com.fasterxml.jackson.databind.ObjectMapper;
+              import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
+
+              public class JacksonTest {
+                  void foo() {
+                      ObjectMapper mapper = new ObjectMapper();
+                      mapper.registerModule(new JakartaXmlBindAnnotationModule());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/653")
+    @Test
+    void thatJaxbJsonProviderIsRewritten() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
+              "jackson-databind",
+              "jackson-jaxrs-json-provider")),
+          //language=java
+          java(
+            """
+              import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+
+              public class A extends JacksonJaxbJsonProvider {}
+              """,
+            """
+              import com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider;
+
+              public class A extends JacksonXmlBindJsonProvider {}
               """
           )
         );

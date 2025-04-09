@@ -1,0 +1,121 @@
+#
+# Copyright 2024 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.jspecify.MigrateToJspecify
+displayName: Migrate to JSpecify
+description: >-
+  This recipe will migrate to JSpecify annotations from various other nullability annotation standards.
+tags:
+  - java
+recipeList:
+  - org.openrewrite.java.jspecify.MigrateFromJavaxAnnotationApi
+  - org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
+  - org.openrewrite.java.jspecify.MigrateFromJetbrainsAnnotations
+  # Running the following recipe on current versions of Spring can cause Spring to misunderstand a nullable field.
+  #   For instance, a custom Prometheus scrape endpoint with @Nullable Set<String> includedNames will fail if 
+  #   includedNames is null and if @Nullable is @org.jspecify.annotations.Nullable.
+  # - org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.jspecify.MigrateFromJavaxAnnotationApi
+displayName: Migrate from javax annotation API to JSpecify
+description: Migrate from javax annotation API to JSpecify.
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.jspecify
+      artifactId: jspecify
+      version: latest.release
+      onlyIfUsing: javax.annotation.*ull*
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Nullable
+      newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Nonnull
+      newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.ParametersAreNonnullByDefault
+      newFullyQualifiedTypeName: org.jspecify.annotations.NullMarked
+      ignoreDefinition: true
+  - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
+      annotationType: org.jspecify.annotations.*
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
+displayName: Migrate from Jakarta annotation API to JSpecify
+description: Migrate from Jakarta annotation API to JSpecify.
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.jspecify
+      artifactId: jspecify
+      version: 1.0.0
+      onlyIfUsing: jakarta.annotation.*ull*
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.annotation.Nullable
+      newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.annotation.Nonnull
+      newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
+      ignoreDefinition: true
+  - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
+      annotationType: org.jspecify.annotations.*
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.jspecify.MigrateFromJetbrainsAnnotations
+displayName: Migrate from JetBrains annotations to JSpecify
+description: Migrate from JetBrains annotations to JSpecify.
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.jspecify
+      artifactId: jspecify
+      version: 1.0.0
+      onlyIfUsing: org.jetbrains.annotations.*ull*
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.jetbrains.annotations.Nullable
+      newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.jetbrains.annotations.NotNull
+      newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
+      ignoreDefinition: true
+  - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
+      annotationType: org.jspecify.annotations.*
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations
+displayName: Migrate from Spring Framework annotations to JSpecify
+description: Migrate from Spring Framework annotations to JSpecify.
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.jspecify
+      artifactId: jspecify
+      version: 1.0.0
+      onlyIfUsing: org.springframework.lang.*ull*
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.springframework.lang.Nullable
+      newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.springframework.lang.NonNull
+      newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
+      ignoreDefinition: true
+  - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
+      annotationType: org.jspecify.annotations.*

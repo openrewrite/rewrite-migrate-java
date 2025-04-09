@@ -1,11 +1,11 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,14 +39,14 @@ class MigrateCollectionsSingletonMapTest implements RewriteTest {
             java(
               """
                 import java.util.*;
-                                
+
                 class Test {
                     Map<String,String> set = Collections.singletonMap("hello", "world");
                 }
                 """,
               """
                 import java.util.Map;
-                                
+
                 class Test {
                     Map<String,String> set = Map.of("hello", "world");
                 }
@@ -67,7 +67,7 @@ class MigrateCollectionsSingletonMapTest implements RewriteTest {
               """
                 import java.util.*;
                 import java.time.LocalDate;
-                                
+
                 class Test {
                     Map<String,LocalDate> map = Collections.singletonMap("date", LocalDate.now());
                 }
@@ -75,7 +75,7 @@ class MigrateCollectionsSingletonMapTest implements RewriteTest {
               """
                 import java.util.Map;
                 import java.time.LocalDate;
-                                
+
                 class Test {
                     Map<String,LocalDate> map = Map.of("date", LocalDate.now());
                 }

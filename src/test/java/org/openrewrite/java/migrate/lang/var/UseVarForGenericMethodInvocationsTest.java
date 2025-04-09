@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,17 +39,17 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-                package com.example.app;
-                                    
-                class A {
-                  static String myString(String ... values) {
-                      return String.join("",values);
+                  package com.example.app;
+
+                  class A {
+                    static String myString(String ... values) {
+                        return String.join("",values);
+                    }
+                    void m() {
+                        String strs = myString();
+                    }
                   }
-                  void m() {
-                      String strs = myString();
-                  }
-                }
-                """),
+                  """),
                 10
               )
             );
@@ -65,23 +65,24 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                 rewriteRun(
                   version(
                     java("""
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  static List<String> myList() {
-                      return List.of("one", "two");
-                  }
-                  void m() {
-                      List<String> strs = myList();
-                  }
-                }
-                """),
+                      package com.example.app;
+
+                      import java.util.List;
+
+                      class A {
+                        static List<String> myList() {
+                            return List.of("one", "two");
+                        }
+                        void m() {
+                            List<String> strs = myList();
+                        }
+                      }
+                      """),
                     10
                   )
                 );
             }
+
             @Test
             void withEmptyOnwNonStaticFactoryMethods() {
                 //if detectable this could be `var strs = this.<String>myList();`
@@ -89,23 +90,24 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                 rewriteRun(
                   version(
                     java("""
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  <T> List<T> myList(T ... values) {
-                      return List.of(values);
-                  }
-                  void m() {
-                      List<String> strs = myList();
-                  }
-                }
-                """),
+                      package com.example.app;
+
+                      import java.util.List;
+
+                      class A {
+                        <T> List<T> myList(T ... values) {
+                            return List.of(values);
+                        }
+                        void m() {
+                            List<String> strs = myList();
+                        }
+                      }
+                      """),
                     10
                   )
                 );
             }
+
             @Test
             void withEmptyOnwFactoryMethods() {
                 // if detectable this could be `var strs = A.<String>myList();`
@@ -113,23 +115,24 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                 rewriteRun(
                   version(
                     java("""
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  static <T> List<T> myList(T ... values) {
-                      return List.of(values);
-                  }
-                  void m() {
-                      List<String> strs = myList();
-                  }
-                }
-                """),
+                      package com.example.app;
+
+                      import java.util.List;
+
+                      class A {
+                        static <T> List<T> myList(T ... values) {
+                            return List.of(values);
+                        }
+                        void m() {
+                            List<String> strs = myList();
+                        }
+                      }
+                      """),
                     10
                   )
                 );
             }
+
             @Test
             void forEmptyJDKFactoryMethod() {
                 // if detectable this could be `var strs = List.<String>of();`
@@ -139,9 +142,9 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                     java(
                       """
                           package com.example.app;
-                          
+
                           import java.util.List;
-                          
+
                           class A {
                             void m() {
                                 List<String> strs = List.of();
@@ -164,26 +167,26 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  void m() {
-                      List<String> strs = List.of("one", "two");
+                  package com.example.app;
+
+                  import java.util.List;
+
+                  class A {
+                    void m() {
+                        List<String> strs = List.of("one", "two");
+                    }
                   }
-                }
-                """, """
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  void m() {
-                      var strs = List.of("one", "two");
+                  """, """
+                  package com.example.app;
+
+                  import java.util.List;
+
+                  class A {
+                    void m() {
+                        var strs = List.of("one", "two");
+                    }
                   }
-                }
-                """),
+                  """),
                 10
               )
             );
@@ -195,26 +198,26 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  void m() {
-                      List<? extends String> lst = List.of("Test");
+                  package com.example.app;
+
+                  import java.util.List;
+
+                  class A {
+                    void m() {
+                        List<? extends String> lst = List.of("Test");
+                    }
                   }
-                }
-                """, """
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  void m() {
-                      var lst = List.of("Test");
+                  """, """
+                  package com.example.app;
+
+                  import java.util.List;
+
+                  class A {
+                    void m() {
+                        var lst = List.of("Test");
+                    }
                   }
-                }
-                """),
+                  """),
                 10
               )
             );
@@ -226,32 +229,32 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
             rewriteRun(
               version(
                 java("""
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  static <T> List<T> myList(T ... values) {
-                      return List.of(values);
+                  package com.example.app;
+
+                  import java.util.List;
+
+                  class A {
+                    static <T> List<T> myList(T ... values) {
+                        return List.of(values);
+                    }
+                    void m() {
+                        List<String> strs = myList("one", "two");
+                    }
                   }
-                  void m() {
-                      List<String> strs = myList("one", "two");
+                  """, """
+                  package com.example.app;
+
+                  import java.util.List;
+
+                  class A {
+                    static <T> List<T> myList(T ... values) {
+                        return List.of(values);
+                    }
+                    void m() {
+                        var strs = myList("one", "two");
+                    }
                   }
-                }
-                """, """
-                package com.example.app;
-                                    
-                import java.util.List;
-                                    
-                class A {
-                  static <T> List<T> myList(T ... values) {
-                      return List.of(values);
-                  }
-                  void m() {
-                      var strs = myList("one", "two");
-                  }
-                }
-                """),
+                  """),
                 10
               )
             );

@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,30 +43,30 @@ class RemovedIsParmetersProvidedMethodTest implements RewriteTest {
         rewriteRun(
           //language=java
           java(
-                """
-            package com.test;
-             
-            import jakarta.el.MethodExpression;
-                        
-            public class Test {
-                void test(MethodExpression methodExpression){
-                    if(methodExpression.isParmetersProvided()){
-                        System.out.println("test");
-                    }
-                }
-            }
-            """, """
-            package com.test;
-             
-            import jakarta.el.MethodExpression;
-                        
-            public class Test {
-                void test(MethodExpression methodExpression){
-                    if(methodExpression.isParametersProvided()){
-                        System.out.println("test");
-                    }
-                }
-            }
-            """));
+            """
+              package com.test;
+
+              import jakarta.el.MethodExpression;
+
+              public class Test {
+                  void test(MethodExpression methodExpression){
+                      if(methodExpression.isParmetersProvided()){
+                          System.out.println("test");
+                      }
+                  }
+              }
+              """, """
+              package com.test;
+
+              import jakarta.el.MethodExpression;
+
+              public class Test {
+                  void test(MethodExpression methodExpression){
+                      if(methodExpression.isParametersProvided()){
+                          System.out.println("test");
+                      }
+                  }
+              }
+              """));
     }
 }

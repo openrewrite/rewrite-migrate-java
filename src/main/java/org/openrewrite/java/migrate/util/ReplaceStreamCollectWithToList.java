@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +18,8 @@ package org.openrewrite.java.migrate.util;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
@@ -96,8 +96,8 @@ public class ReplaceStreamCollectWithToList extends Recipe {
                 return result;
             }
             Expression command = method.getArguments().get(0);
-            if (COLLECT_TO_UNMODIFIABLE_LIST.matches(command)
-                || convertToList && COLLECT_TO_LIST.matches(command)) {
+            if (COLLECT_TO_UNMODIFIABLE_LIST.matches(command) ||
+                convertToList && COLLECT_TO_LIST.matches(command)) {
                 maybeRemoveImport("java.util.stream.Collectors");
                 J.MethodInvocation toList = template.apply(updateCursor(result), result.getCoordinates().replace(), result.getSelect());
                 return toList.getPadding().withSelect(result.getPadding().getSelect());

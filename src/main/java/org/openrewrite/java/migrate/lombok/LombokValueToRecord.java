@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,9 +18,9 @@ package org.openrewrite.java.migrate.lombok;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -31,6 +31,7 @@ import org.openrewrite.java.tree.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,6 +42,7 @@ import static java.util.stream.Collectors.toList;
 public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>> {
 
     private static final AnnotationMatcher LOMBOK_VALUE_MATCHER = new AnnotationMatcher("@lombok.Value()");
+    private static final AnnotationMatcher LOMBOK_BUILDER_MATCHER = new AnnotationMatcher("@lombok.Builder()");
 
     @Option(displayName = "Add a `toString()` implementation matching Lombok",
             description = "When set the `toString` format from Lombok is used in the migrated record.",
@@ -114,13 +116,29 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
         private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
             List<J.Annotation> allAnnotations = classDeclaration.getAllAnnotations();
-            return classDeclaration.getType() != null
-                   && !J.ClassDeclaration.Kind.Type.Record.equals(classDeclaration.getKind())
-                   && !allAnnotations.isEmpty()
-                   && allAnnotations.stream().allMatch(ann -> LOMBOK_VALUE_MATCHER.matches(ann) && (ann.getArguments() == null || ann.getArguments().isEmpty()))
-                   && !hasGenericTypeParameter(classDeclaration)
-                   && classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField)
-                   && !hasIncompatibleModifier(classDeclaration);
+            return classDeclaration.getType() != null &&
+                   J.ClassDeclaration.Kind.Type.Record != classDeclaration.getKind() &&
+                   hasMatchingAnnotations(classDeclaration) &&
+                   !hasGenericTypeParameter(classDeclaration) &&
+                   classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField) &&
+                   !hasIncompatibleModifier(classDeclaration);
+        }
+
+        private static Predicate<J.Annotation> matchAnnotationWithNoArguments(AnnotationMatcher matcher) {
+            return ann -> matcher.matches(ann) && (ann.getArguments() == null || ann.getArguments().isEmpty());
+        }
+
+        private static boolean hasMatchingAnnotations(J.ClassDeclaration classDeclaration) {
+            List<J.Annotation> allAnnotations = classDeclaration.getAllAnnotations();
+            if (allAnnotations.stream().anyMatch(matchAnnotationWithNoArguments(LOMBOK_VALUE_MATCHER))) {
+                // Tolerate a limited set of other annotations like Builder, that work well with records too
+                return allAnnotations.stream().allMatch(
+                        matchAnnotationWithNoArguments(LOMBOK_VALUE_MATCHER)
+                                // compatible annotations can be added here
+                                .or(matchAnnotationWithNoArguments(LOMBOK_BUILDER_MATCHER))
+                );
+            }
+            return false;
         }
 
         /**
@@ -272,9 +290,9 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             String methodName = methodInvocation.getName().getSimpleName();
             String classFqn = classType.getFullyQualifiedName();
 
-            return recordTypeToMembers.containsKey(classFqn)
-                   && methodName.startsWith(STANDARD_GETTER_PREFIX)
-                   && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
+            return recordTypeToMembers.containsKey(classFqn) &&
+                   methodName.startsWith(STANDARD_GETTER_PREFIX) &&
+                   recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
         }
 
         private static boolean isClassExpression(@Nullable Expression expression) {

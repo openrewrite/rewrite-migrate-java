@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,7 +36,7 @@ class CastArraysAsListToListTest implements RewriteTest {
           java(
             """
               import java.util.Arrays;
-              
+
               class Foo {
                   void bar() {
                       Integer[] array1 = (Integer[]) Arrays.asList(1, 2, 3).toArray();
@@ -47,7 +47,7 @@ class CastArraysAsListToListTest implements RewriteTest {
               """,
             """
               import java.util.Arrays;
-              
+
               class Foo {
                   void bar() {
                       Integer[] array1 = Arrays.asList(1, 2, 3).toArray(new Integer[0]);
@@ -68,7 +68,7 @@ class CastArraysAsListToListTest implements RewriteTest {
             """
               import java.util.Arrays;
               import java.util.Collections;
-              
+
               class Foo {
                   void bar() {
                       Object[] array1 = (Object[]) Arrays.asList("a","b").toArray();

@@ -1,11 +1,11 @@
 #
 # Copyright 2024 the original author or authors.
 # <p>
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Moderne Source Available License (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # <p>
-# https://www.apache.org/licenses/LICENSE-2.0
+# https://docs.moderne.io/licensing/moderne-source-available-license
 # <p>
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeToJava17
 displayName: Migrate to Java 17
-description: >
+description: >-
   This recipe will apply changes commonly needed when migrating to Java 17. Specifically, for those
   applications that are built on Java 8, this recipe will update and add dependencies on J2EE libraries that are no
   longer directly bundled with the JDK. This recipe will also replace deprecated API with equivalents when there is a
@@ -27,35 +28,81 @@ tags:
   - java17
 recipeList:
   - org.openrewrite.java.migrate.Java8toJava11
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 17
-  - org.openrewrite.java.migrate.lang.StringFormatted
-  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
-      minimumJavaMajorVersion: 17
+  - org.openrewrite.java.migrate.UpgradeBuildToJava17
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
-      methodPattern: java.lang.Runtime traceInstructions(boolean)
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
-      methodPattern: java.lang.System traceMethodCalls(boolean)
-  - org.openrewrite.java.migrate.lang.UseTextBlocks
+  - org.openrewrite.staticanalysis.AddSerialAnnotationToSerialVersionUID
+  - org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
+  - org.openrewrite.java.migrate.RemovedToolProviderConstructor
+  - org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
+  - org.openrewrite.java.migrate.lang.ExplicitRecordImport
+  - org.openrewrite.java.migrate.lang.UseTextBlocks:
+      convertStringsWithoutNewlines: false
+  - org.openrewrite.java.migrate.lang.StringFormatted:
+      addParentheses: false
   - org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
   - org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
   - org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
   - org.openrewrite.java.migrate.Jre17AgentMainPreMainPublic
-  - org.openrewrite.maven.UpgradePluginVersion:
-      groupId: org.apache.maven.plugins
-      artifactId: maven-checkstyle-plugin
-      newVersion: 3.x
-  - org.openrewrite.maven.UpgradePluginVersion:
-      groupId: com.sonatype.clm
-      artifactId: clm-maven-plugin
-      newVersion: 2.47.6-01
   - org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
   - org.openrewrite.java.migrate.RemovedZipFinalizeMethods
   - org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
   - org.openrewrite.java.migrate.SunNetSslPackageUnavailable
   - org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
   - org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
+  - org.openrewrite.java.migrate.UpgradePluginsForJava17
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.google.inject
+      artifactId: guice
+      newVersion: 5.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: commons-codec
+      artifactId: commons-codec
+      newVersion: 1.17.x
+  - org.openrewrite.java.migrate.AddLombokMapstructBinding
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava17
+displayName: Upgrade build to Java 17
+description: Updates build files to use Java 17 as the target/source.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 17
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradePluginsForJava17
+displayName: Upgrade plugins to Java 17 compatible versions
+description: Updates plugins to version compatible with Java 17.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
+      minimumJavaMajorVersion: 17
+  - org.openrewrite.gradle.UpdateGradleWrapper:
+      version: 7.3
+      addIfMissing: false
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-checkstyle-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-compiler-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-war-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: com.sonatype.clm
+      artifactId: clm-maven-plugin
+      newVersion: 2.47.6-01
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: ro.isdc.wro4j
+      artifactId: wro4j-maven-plugin
+      newVersion: 2.1.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
@@ -75,21 +122,21 @@ description: The `com.sun.net.ssl.internal.ssl.Provider` provider name was remov
 tags:
   - java17
 recipeList:
-  - org.openrewrite.java.migrate.ReplaceStringLiteralValue:
+  - org.openrewrite.java.ReplaceStringLiteralValue:
       oldLiteralValue: com.sun.net.ssl.internal.ssl.Provider
       newLiteralValue: SunJSSE
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
 displayName: Adopt `setLongThreadID` in `java.util.logging.LogRecord`
-description: Avoid using the deprecated methods in `java.util.logging.LogRecord`
+description: Avoid using the deprecated methods in `java.util.logging.LogRecord`.
 tags:
   - java17
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.logging.LogRecord getThreadID()
       newMethodName: getLongThreadID
-  - org.openrewrite.java.migrate.ChangeMethodInvocationReturnType:
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
       methodPattern: java.util.logging.LogRecord getLongThreadID()
       newReturnType: long
   - org.openrewrite.java.ChangeMethodName:
@@ -119,8 +166,8 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedZipFinalizeMethods
 displayName: Replace `finalize` method in `java.util.zip.ZipFile`, `java.util.zip.Inflater` and `java.util.zip.Deflater`
-description: >
-  The `finalize` method in `java.util.zip.ZipFile` is replaced with the `close` method and is replaced by the `end` method in 
+description: >-
+  The `finalize` method in `java.util.zip.ZipFile` is replaced with the `close` method and is replaced by the `end` method in
    `java.util.zip.Inflater` and `java.util.zip.Deflater` as it is no longer available in Java SE 12 and later.
 tags:
   - java17
@@ -141,9 +188,9 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedSSLSessionGetPeerCertificateChainMethodImpl
 displayName: Replace `SSLSession.getPeerCertificateChain()` method
-description: >
-  The `javax.net.ssl.SSLSession.getPeerCertificateChain()` method implementation was removed from the SunJSSE provider and HTTP client implementation in Java SE 15. 
-  The default implementation will now throw an `UnsupportedOperationException`. 
+description: >-
+  The `javax.net.ssl.SSLSession.getPeerCertificateChain()` method implementation was removed from the SunJSSE provider and HTTP client implementation in Java SE 15.
+  The default implementation will now throw an `UnsupportedOperationException`.
   Applications using this method should be updated to use the `javax.net.ssl.SSLSession.getPeerCertificates()` method instead.
 tags:
   - java17
@@ -156,7 +203,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.SunNetSslPackageUnavailable
 displayName: Replace `com.sun.net.ssl` package
-description: >
+description: >-
   The internal API `com.sun.net.ssl` is removed. The package was intended for internal use only and replacement APIs can be found in the `javax.net.ssl` package.
 tags:
   - java17
@@ -168,7 +215,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConstant
 displayName: Replace `RMIConnectorServer.CREDENTIAL_TYPES` constant
-description: >
+description: >-
   This recipe replaces the `RMIConnectorServer.CREDENTIAL_TYPES` constant with the `RMIConnectorServer.CREDENTIALS_FILTER_PATTERN` constant.
 tags:
   - java17
@@ -180,20 +227,20 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
 displayName: Remove `Thread.countStackFrames()` method
-description: >
-   `Thread.countStackFrames()` has been removed in Java SE 14 and has been changed in this release to unconditionally throw `UnsupportedOperationException`
-    This recipe removes the usage of this method in your application as long as the method is not assigned to a variable.
-    For more information on the Java SE 14 deprecation of this method, see https://bugs.java.com/bugdatabase/view_bug?bug_id=8205132.
+description: >-
+  `Thread.countStackFrames()` has been removed in Java SE 14 and has been changed in this release to unconditionally throw `UnsupportedOperationException`
+   This recipe removes the usage of this method in your application as long as the method is not assigned to a variable.
+   For more information on the Java SE 14 deprecation of this method, see https://bugs.java.com/bugdatabase/view_bug?bug_id=8205132.
 tags:
   - java17
 recipeList:
-  - org.openrewrite.java.migrate.RemoveMethodInvocation:
-       methodPattern: 'java.lang.Thread countStackFrames()'
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: 'java.lang.Thread countStackFrames()'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
 displayName: Replace `finalize` method in `java.io.FileInputStream`  and `java.io.FileOutputStream`
-description: >
+description: >-
   The `finalize` method in `java.io.FileInputStream` and `java.io.FileOutputStream` is no longer available in Java SE 12 and later. The recipe replaces it with the `close` method.
 tags:
   - java17
@@ -206,3 +253,73 @@ recipeList:
       methodPattern: "java.io.FileOutputStream finalize()"
       newMethodName: close
       ignoreDefinition: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedToolProviderConstructor
+displayName: Change `javax.tools.ToolProvider` methods calls to static
+description: >-
+  The `javax.tools.ToolProvider()` constructor has been removed in Java SE 16 since the class only contains static methods.
+  The recipe converts `javax.tools.ToolProvider getSystemJavaCompiler()`, `javax.tools.ToolProvider getSystemDocumentationTool()` and `javax.tools.ToolProvider getSystemToolClassLoader()` to static methods.
+recipeList:
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: javax.tools.ToolProvider *()
+      fullyQualifiedTargetTypeName: javax.tools.ToolProvider
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
+displayName: Change `java.lang.reflect.Modifier` and ` java.lang.invoke.ConstantBootstraps` method calls to static
+description: >-
+  The `java.lang.reflect.Modifier()` and `java.lang.invoke.ConstantBootstraps()` constructors have been removed in Java SE 15 because both classes only contain static methods.
+  This recipe converts the usage of all methods in the two classes to be  static.
+  See https://docs.oracle.com/en/java/javase/15/migrate/index.html#GUID-233853B8-0782-429E-BEF7-7532EE610E63 for more information on these changes.
+recipeList:
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: java.lang.reflect.Modifier *(..)
+      fullyQualifiedTargetTypeName: java.lang.reflect.Modifier
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: java.lang.invoke.ConstantBootstraps *(..)
+      fullyQualifiedTargetTypeName: java.lang.invoke.ConstantBootstraps
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
+displayName: Remove `Runtime.traceInstructions(boolean)` and `Runtime.traceMethodCalls` methods
+description: >-
+  The `traceInstructions` and `traceMethodCalls` methods in `java.lang.Runtime` were deprecated in Java SE 9 and are no longer available in Java SE 13 and later.
+  The recipe removes the invocations of these methods since the method invocations do nothing functionally.
+tags:
+  - java17
+recipeList:
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: 'java.lang.Runtime traceInstructions(boolean)'
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: 'java.lang.Runtime traceMethodCalls(boolean)'
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.AddLombokMapstructBinding
+displayName: Add `lombok-mapstruct-binding` when both MapStruct and Lombok are used
+description: Add the `lombok-mapstruct-binding` annotation processor as needed when both MapStruct and Lombok are used.
+tags:
+  - java17
+preconditions:
+  - org.openrewrite.java.dependencies.DependencyInsight:
+      groupIdPattern: org.projectlombok
+      artifactIdPattern: lombok
+  - org.openrewrite.java.dependencies.DependencyInsight:
+      groupIdPattern: org.mapstruct
+      artifactIdPattern: mapstruct
+recipeList:
+  - org.openrewrite.gradle.AddDependency:
+      groupId: org.projectlombok
+      artifactId: lombok-mapstruct-binding
+      version: 0.2.0
+      configuration: annotationProcessor
+      acceptTransitive: false
+  - org.openrewrite.maven.AddDependency:
+      groupId: org.projectlombok
+      artifactId: lombok-mapstruct-binding
+      version: 0.2.0
+      acceptTransitive: false
+  - org.openrewrite.maven.AddAnnotationProcessor:
+      groupId: org.projectlombok
+      artifactId: lombok-mapstruct-binding
+      version: 0.2.0

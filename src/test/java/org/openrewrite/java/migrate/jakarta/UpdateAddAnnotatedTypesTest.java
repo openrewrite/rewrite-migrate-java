@@ -1,11 +1,11 @@
 /*
  * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +29,7 @@ class UpdateAddAnnotatedTypesTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.enterprise.cdi-api-3.0.0-M4", "jakarta.enterprise.cdi-api-4.0.1"))
+            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.enterprise.cdi-api-3.0.0-M4"))
           .recipe(new UpdateAddAnnotatedTypes());
     }
 
@@ -43,7 +43,7 @@ class UpdateAddAnnotatedTypesTest implements RewriteTest {
               import jakarta.enterprise.inject.spi.AnnotatedType;
               import jakarta.enterprise.inject.spi.BeanManager;
               import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
-              
+
               class Foo {
                 void bar(BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
                   AnnotatedType<String> producerType = beanManager.createAnnotatedType(String.class);
@@ -57,7 +57,7 @@ class UpdateAddAnnotatedTypesTest implements RewriteTest {
               import jakarta.enterprise.inject.spi.AnnotatedType;
               import jakarta.enterprise.inject.spi.BeanManager;
               import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
-              
+
               class Foo {
                 void bar(BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
                   AnnotatedType<String> producerType = beanManager.createAnnotatedType(String.class);

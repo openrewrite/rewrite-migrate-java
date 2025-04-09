@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -108,9 +108,9 @@ public class MXBeanRule extends Recipe {
             }
 
             List<Modifier> modifiers = new ArrayList<>(cd.getModifiers());
-            modifiers.removeIf(modifier -> modifier.getType() == Modifier.Type.Private
-                    || modifier.getType() == Modifier.Type.Protected
-                    || modifier.getType() == Modifier.Type.Abstract);
+            modifiers.removeIf(modifier -> modifier.getType() == Modifier.Type.Private ||
+                    modifier.getType() == Modifier.Type.Protected ||
+                    modifier.getType() == Modifier.Type.Abstract);
             modifiers.add(new J.Modifier(randomId(), Space.EMPTY, Markers.EMPTY, Modifier.Type.Public, emptyList()));
             return maybeAutoFormat(cd, cd.withModifiers(sortModifiers(modifiers)), ctx);
         }

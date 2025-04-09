@@ -1,0 +1,32 @@
+---
+name: Update SDKMAN! candidates
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: 0 10 * * MON
+
+jobs:
+  update-candidates:
+    if: github.event_name != 'schedule' || github.repository_owner == 'openrewrite'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update candidates
+        run: curl https://api.sdkman.io/2/candidates/java/linux/versions/all | tr , '\n' > src/main/resources/sdkman-java.csv
+
+      # Commit and push
+      - name: configure-git-user
+        run: |
+          git config user.email "team@moderne.io"
+          git config user.name "team-moderne[bot]"
+      - name: Create timestamp
+        run: echo "NOW=$(date +'%Y-%m-%dT%H%M')" >> $GITHUB_ENV
+      - name: Commit and push
+        run: |
+          git add src/main/resources/sdkman-java.csv
+          git diff --quiet HEAD || (git commit -m "[Auto] SDKMAN! Java candidates as of ${{ env.NOW }}" && git push origin main)

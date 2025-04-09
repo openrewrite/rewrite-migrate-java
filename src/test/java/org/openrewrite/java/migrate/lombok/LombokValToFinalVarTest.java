@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +20,6 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -87,19 +86,44 @@ class LombokValToFinalVarTest implements RewriteTest {
         );
     }
 
+    @Test
+    void preserveStarImport() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import lombok.*;
+
+                @Getter
+                @Setter
+                @NoArgsConstructor
+                @Data
+                @Value
+                class A {
+                    void bar() {
+                        var foo = "foo";
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
     @SuppressWarnings({"StatementWithEmptyBody", "RedundantOperationOnEmptyContainer"})
     @Test
     void valInForEachStatement() {
         //language=java
         rewriteRun(
-          spec -> spec.afterTypeValidationOptions(TypeValidation.builder().identifiers(false).build()),
           version(
             java(
               """
                 import lombok.val;
                 import java.util.List;
                 import java.util.ArrayList;
-                                
+
                 class A {
                     void bar() {
                         List<String> lst = new ArrayList<>();
@@ -110,7 +134,7 @@ class LombokValToFinalVarTest implements RewriteTest {
               """
                 import java.util.List;
                 import java.util.ArrayList;
-                                
+
                 class A {
                     void bar() {
                         List<String> lst = new ArrayList<>();

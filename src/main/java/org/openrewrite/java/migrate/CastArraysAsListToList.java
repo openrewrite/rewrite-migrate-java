@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -63,11 +63,11 @@ public class CastArraysAsListToList extends Recipe {
                 elementType = ((JavaType.Array) elementType).getElemType();
             }
 
-            boolean matches = (elementType instanceof JavaType.Class || elementType instanceof JavaType.Parameterized)
-                              && ((JavaType.FullyQualified) elementType).getOwningClass() == null // does not support inner class now
-                              && LIST_TO_ARRAY.matches(typeCast.getExpression())
-                              && typeCast.getExpression() instanceof J.MethodInvocation
-                              && ARRAYS_AS_LIST.matches(((J.MethodInvocation) typeCast.getExpression()).getSelect());
+            boolean matches = (elementType instanceof JavaType.Class || elementType instanceof JavaType.Parameterized) &&
+                              ((JavaType.FullyQualified) elementType).getOwningClass() == null // does not support inner class now
+                              && LIST_TO_ARRAY.matches(typeCast.getExpression()) &&
+                              typeCast.getExpression() instanceof J.MethodInvocation &&
+                              ARRAYS_AS_LIST.matches(((J.MethodInvocation) typeCast.getExpression()).getSelect());
             if (!matches) {
                 return typeCast;
             }

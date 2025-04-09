@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,8 +47,8 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>javax.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment> 
-                 """,
+              </web-fragment>
+              """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
@@ -59,8 +59,8 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>jakarta.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment> 
-                 """,
+              </web-fragment>
+              """,
             sourceSpecs -> sourceSpecs.path("web.xml")
           )
         );
@@ -81,8 +81,8 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>javax.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment> 
-                 """,
+              </web-fragment>
+              """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
@@ -93,8 +93,53 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>jakarta.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment> 
-                 """,
+              </web-fragment>
+              """,
+            sourceSpecs -> sourceSpecs.path("web.xml")
+          )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void migrateWithSQLDataSource() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-app xmlns="http://java.sun.com/xml/ns/javaee"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_0.xsd"
+                       version="2.0">
+                  <context-param>
+                      <param-name>javax.faces.PROJECT_STAGE</param-name>
+                      <param-value>Production</param-value>
+                  </context-param>
+                  <resource-ref>
+                     <res-ref-name>myDataSource</res-ref-name>
+                     <res-type>javax.sql.DataSource</res-type>
+                     <res-auth>CONTAINER</res-auth>
+                  </resource-ref>
+              </web-fragment>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+                       version="6.0">
+                  <context-param>
+                      <param-name>jakarta.faces.PROJECT_STAGE</param-name>
+                      <param-value>Production</param-value>
+                  </context-param>
+                  <resource-ref>
+                     <res-ref-name>myDataSource</res-ref-name>
+                     <res-type>javax.sql.DataSource</res-type>
+                     <res-auth>CONTAINER</res-auth>
+                  </resource-ref>
+              </web-fragment>
+              """,
             sourceSpecs -> sourceSpecs.path("web.xml")
           )
         );
@@ -108,10 +153,10 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee" 
+                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans> 
+                  </beans>
                   """,
                 sourceSpecs -> sourceSpecs.path("not-web.xml")
               )

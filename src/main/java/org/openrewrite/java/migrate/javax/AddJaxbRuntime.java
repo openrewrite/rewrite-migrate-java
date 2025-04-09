@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,13 +17,13 @@ package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.search.FindGradleProject;
 import org.openrewrite.groovy.GroovyIsoVisitor;
 import org.openrewrite.groovy.tree.G;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
@@ -97,7 +97,7 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                 if (acc.get()) {
                     return (J) tree;
                 }
-                J t = new UsesType<ExecutionContext>("javax.xml.bind..*", true).visit(tree, ctx);
+                Tree t = new UsesType<ExecutionContext>("javax.xml.bind..*", true).visit(tree, ctx);
                 if (t != tree) {
                     acc.set(true);
                 }
@@ -147,16 +147,20 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
 
                     GradleProject gp = maybeGp.get();
                     GradleDependencyConfiguration rc = gp.getConfiguration("runtimeClasspath");
-                    if (rc == null || rc.findResolvedDependency(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT) == null
-                        || rc.findResolvedDependency(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT) != null) {
+                    if (rc == null || rc.findResolvedDependency(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT) == null ||
+                        rc.findResolvedDependency(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT) != null) {
                         return g;
                     }
 
+                    String groupId = GLASSFISH_JAXB_RUNTIME_GROUP;
+                    String artifactId = GLASSFISH_JAXB_RUNTIME_ARTIFACT;
+                    String version = "2.3.x";
                     if ("sun".equals(runtime)) {
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, "runtimeOnly", null, null, null)
-                                .visitNonNull(g, ctx);
-                    } else {
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, "runtimeOnly", null, null, null)
+                        groupId = SUN_JAXB_RUNTIME_GROUP;
+                        artifactId = SUN_JAXB_RUNTIME_ARTIFACT;
+                    }
+                    if (rc.findResolvedDependency(groupId, artifactId) == null) {
+                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(groupId, artifactId, version, null, "runtimeOnly", null, null, null, null)
                                 .visitNonNull(g, ctx);
                     }
                     return g;
@@ -185,16 +189,23 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                         return d;
                     }
                     MavenResolutionResult mavenModel = getResolutionResult();
-                    if (!mavenModel.findDependencies(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT, Scope.Runtime).isEmpty()
-                        || mavenModel.findDependencies(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT, Scope.Runtime).isEmpty()) {
+                    if (!mavenModel.findDependencies(JACKSON_GROUP, JACKSON_JAXB_ARTIFACT, Scope.Runtime).isEmpty() ||
+                        mavenModel.findDependencies(JAKARTA_API_GROUP, JAKARTA_API_ARTIFACT, Scope.Runtime).isEmpty()) {
                         return d;
                     }
 
+                    String groupId = GLASSFISH_JAXB_RUNTIME_GROUP;
+                    String artifactId = GLASSFISH_JAXB_RUNTIME_ARTIFACT;
+                    String version = "2.3.x";
                     if ("sun".equals(runtime)) {
-                        d = (Xml.Document) new org.openrewrite.maven.AddDependencyVisitor(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, Scope.Runtime.name().toLowerCase(), null, null, null, null, null)
+                        groupId = SUN_JAXB_RUNTIME_GROUP;
+                        artifactId = SUN_JAXB_RUNTIME_ARTIFACT;
+                    }
+                    if (getResolutionResult().findDependencies(groupId, artifactId, Scope.Runtime).isEmpty()) {
+                        d = (Xml.Document) new org.openrewrite.maven.AddDependencyVisitor(groupId, artifactId, version, null, Scope.Runtime.name().toLowerCase(), null, null, null, null, null)
                                 .visitNonNull(d, ctx);
                     } else {
-                        d = (Xml.Document) new org.openrewrite.maven.AddDependencyVisitor(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, Scope.Runtime.name().toLowerCase(), null, null, null, null, null)
+                        d = (Xml.Document) new org.openrewrite.maven.UpgradeDependencyVersion(groupId, artifactId, version, null, false, null).getVisitor()
                                 .visitNonNull(d, ctx);
                     }
                     return d;

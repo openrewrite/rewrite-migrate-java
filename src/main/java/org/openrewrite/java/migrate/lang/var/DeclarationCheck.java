@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
 import org.openrewrite.java.tree.*;
 
@@ -54,7 +55,7 @@ final class DeclarationCheck {
         TypeTree typeExpression = vd.getTypeExpression();
 
         boolean definesSingleVariable = vd.getVariables().size() == 1;
-        boolean isPureAssigment = JavaType.Primitive.Null.equals(vd.getType());
+        boolean isPureAssigment = JavaType.Primitive.Null == vd.getType();
         if (!definesSingleVariable || isPureAssigment) {
             return false;
         }
@@ -113,8 +114,8 @@ final class DeclarationCheck {
         }
         initializer = initializer.unwrap();
 
-        return initializer instanceof J.NewClass
-               && ((J.NewClass) initializer).getClazz() instanceof J.ParameterizedType;
+        return initializer instanceof J.NewClass &&
+               ((J.NewClass) initializer).getClazz() instanceof J.ParameterizedType;
     }
 
     /**
@@ -197,5 +198,31 @@ final class DeclarationCheck {
         }
 
         return isInsideInitializer(requireNonNull(cursor.getParent()), nestedBlockLevel);
+    }
+
+    /**
+     * Checks whether the initializer {@linkplain Expression} is a {@linkplain J.MethodInvocation} targeting a static method.
+     *
+     * @param initializer {@linkplain J.VariableDeclarations.NamedVariable#getInitializer()} value
+     * @return true iff is initialized by static method
+     */
+    public static boolean initializedByStaticMethod(@Nullable Expression initializer) {
+        if (initializer == null) {
+            return false;
+        }
+        initializer = initializer.unwrap();
+
+        if (!(initializer instanceof J.MethodInvocation)) {
+            // no MethodInvocation -> false
+            return false;
+        }
+
+        J.MethodInvocation invocation = (J.MethodInvocation) initializer;
+        if (invocation.getMethodType() == null) {
+            // not a static method -> false
+            return false;
+        }
+
+        return invocation.getMethodType().hasFlags(Flag.Static);
     }
 }

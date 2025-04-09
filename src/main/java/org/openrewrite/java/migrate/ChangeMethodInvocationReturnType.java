@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * https://docs.moderne.io/licensing/moderne-source-available-license
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,22 +17,19 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.ListUtils;
-import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.TypeUtils;
-import org.openrewrite.marker.Markers;
 
-import static java.util.Collections.emptyList;
+import java.util.List;
 
+import static java.util.Collections.singletonList;
+
+/**
+ * @deprecated in favor of {@link org.openrewrite.java.ChangeMethodInvocationReturnType}.
+ */
 @Value
 @EqualsAndHashCode(callSuper = false)
+@Deprecated
 public class ChangeMethodInvocationReturnType extends Recipe {
 
     @Option(displayName = "Method pattern",
@@ -41,7 +38,7 @@ public class ChangeMethodInvocationReturnType extends Recipe {
     String methodPattern;
 
     @Option(displayName = "New method invocation return type",
-            description = "The return return type of method invocation.",
+            description = "The fully qualified new return type of method invocation.",
             example = "long")
     String newReturnType;
 
@@ -56,63 +53,7 @@ public class ChangeMethodInvocationReturnType extends Recipe {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            private final MethodMatcher methodMatcher = new MethodMatcher(methodPattern, false);
-
-            private boolean methodUpdated;
-
-            @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
-                JavaType.Method type = m.getMethodType();
-                if (methodMatcher.matches(method) && type != null && !newReturnType.equals(type.getReturnType().toString())) {
-                    type = type.withReturnType(JavaType.buildType(newReturnType));
-                    m = m.withMethodType(type);
-                    if (m.getName().getType() != null) {
-                        m = m.withName(m.getName().withType(type));
-                    }
-                    methodUpdated = true;
-                }
-                return m;
-            }
-
-            @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                methodUpdated = false;
-                JavaType.FullyQualified originalType = multiVariable.getTypeAsFullyQualified();
-                J.VariableDeclarations mv = super.visitVariableDeclarations(multiVariable, ctx);
-
-                if (methodUpdated) {
-                    JavaType newType = JavaType.buildType(newReturnType);
-                    JavaType.FullyQualified newFieldType = TypeUtils.asFullyQualified(newType);
-
-                    maybeAddImport(newFieldType);
-                    maybeRemoveImport(originalType);
-
-                    mv = mv.withTypeExpression(mv.getTypeExpression() == null ?
-                            null :
-                            new J.Identifier(mv.getTypeExpression().getId(),
-                                    mv.getTypeExpression().getPrefix(),
-                                    Markers.EMPTY,
-                                    emptyList(),
-                                    newReturnType,
-                                    newType,
-                                    null
-                            )
-                    );
-
-                    mv = mv.withVariables(ListUtils.map(mv.getVariables(), var -> {
-                        JavaType.FullyQualified varType = TypeUtils.asFullyQualified(var.getType());
-                        if (varType != null && !varType.equals(newType)) {
-                            return var.withType(newType).withName(var.getName().withType(newType));
-                        }
-                        return var;
-                    }));
-                }
-
-                return mv;
-            }
-        };
+    public List<Recipe> getRecipeList() {
+        return singletonList(new org.openrewrite.java.ChangeMethodInvocationReturnType(methodPattern, newReturnType));
     }
 }
