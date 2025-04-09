@@ -54,7 +54,7 @@ public class ArrayStoreExceptionToTypeNotPresentException extends Recipe {
                 }
                 return try_.withCatches(ListUtils.map(try_.getCatches(), catch_ -> {
                     if (TypeUtils.isOfClassType(catch_.getParameter().getType(), ARRAY_STORE_EXCEPTION)) {
-                        return (J.Try.Catch) new ChangeType(ARRAY_STORE_EXCEPTION, TYPE_NOT_PRESENT_EXCEPTION, true)
+                        return (J.Try.Catch) new ChangeType(ARRAY_STORE_EXCEPTION, TYPE_NOT_PRESENT_EXCEPTION, true, null)
                                 .getVisitor().visit(catch_, ctx);
                     }
                     return catch_;
