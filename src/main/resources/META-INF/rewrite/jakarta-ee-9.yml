@@ -353,7 +353,6 @@ recipeList:
       oldPackageName: javax.faces
       newPackageName: jakarta.faces
       recursive: true
-      visitStringLiterals: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
