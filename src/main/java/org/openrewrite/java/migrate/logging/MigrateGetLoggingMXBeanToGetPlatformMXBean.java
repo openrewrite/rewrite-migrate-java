@@ -60,7 +60,7 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
                         "java.util.logging.LoggingMXBean",
                         "java.lang.management.PlatformLoggingMXBean",
                         false
-                , null).getVisitor().visitNonNull(cu, ctx);
+                ).getVisitor().visitNonNull(cu, ctx);
                 return super.visitCompilationUnit(cu, ctx);
             }
 
