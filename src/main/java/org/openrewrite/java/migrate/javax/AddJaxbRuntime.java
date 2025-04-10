@@ -160,7 +160,7 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                         artifactId = SUN_JAXB_RUNTIME_ARTIFACT;
                     }
                     if (rc.findResolvedDependency(groupId, artifactId) == null) {
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(groupId, artifactId, version, null, "runtimeOnly", null, null, null, null, null)
+                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(groupId, artifactId, version, null, "runtimeOnly", null, null, null, null)
                                 .visitNonNull(g, ctx);
                     }
                     return g;
