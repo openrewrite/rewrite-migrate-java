@@ -23,6 +23,7 @@ dependencies {
     annotationProcessor("org.openrewrite:rewrite-templating:$rewriteVersion")
     compileOnly("com.google.errorprone:error_prone_core:2.+") {
         exclude("com.google.auto.service", "auto-service-annotations")
+        exclude("io.github.eisop","dataflow-errorprone")
     }
 
     implementation(platform("org.openrewrite:rewrite-bom:${rewriteVersion}"))
@@ -49,8 +50,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
 
     testImplementation("org.openrewrite:rewrite-test")
-    testImplementation("org.openrewrite:rewrite-java-tck")
-    testImplementation("org.openrewrite:rewrite-kotlin:$rewriteVersion")
+    testImplementation("org.openrewrite:rewrite-kotlin")
     testImplementation("org.openrewrite.gradle.tooling:model:$rewriteVersion")
 
     testImplementation("org.assertj:assertj-core:latest.release")

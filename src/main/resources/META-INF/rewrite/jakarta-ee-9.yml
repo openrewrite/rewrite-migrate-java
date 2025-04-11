@@ -699,6 +699,29 @@ recipeList:
       groupId: org.codehaus.mojo
       artifactId: jaxb-maven-plugin
       newVersion: 4.x
+  - org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
+displayName: Migrate XJC Bindings to Jakata XML
+description: Java EE has been rebranded to Jakarta EE, migrates the namespace and version in XJC bindings.
+tags:
+  - jaxb
+  - javax
+  - jakarta
+recipeList:
+  - org.openrewrite.xml.ChangeTagAttribute:
+      #language=xpath
+      elementName: "//*[namespace-uri() = 'http://java.sun.com/xml/ns/jaxb' and local-name() = 'bindings']"
+      attributeName: version
+      oldValue: 1.0
+      newValue: 3.0
+  - org.openrewrite.xml.ChangeTagAttribute:
+      #language=xpath
+      elementName: "//*[namespace-uri() = 'http://java.sun.com/xml/ns/jaxb' and local-name() = 'bindings']"
+      attributeName: xmlns:jxb
+      oldValue: http://java.sun.com/xml/ns/jaxb
+      newValue: https://jakarta.ee/xml/ns/jaxb
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
