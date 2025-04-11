@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RewriteTest;
 
 class JakartaEE11Test implements RewriteTest {
-    
     @Test
     void loadRecipesToDetectPotentialIssues() {
         rewriteRun(
