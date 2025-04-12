@@ -21,8 +21,6 @@ import org.openrewrite.test.RewriteTest;
 class JakartaEE11Test implements RewriteTest {
     @Test
     void loadRecipesToDetectPotentialIssues() {
-        rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JakartaEE11")
-        );
+        rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JakartaEE11"));
     }
 }

@@ -31,14 +31,14 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi41
-displayName: Update Jakarta EE Java Faces Dependencies to 4.1.x.
+displayName: Update Jakarta EE Java Faces Dependencies to 4.1.x
 description: Update Jakarta EE Java Faces Dependencies to 4.1.x.
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.faces
       artifactId: jakarta.faces-api
       newVersion: 4.1.x
---- 
+---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.OmniFacesNamespaceMigration
 displayName: OmniFaces Namespace Migration
