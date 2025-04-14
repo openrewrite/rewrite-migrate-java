@@ -22,7 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.xml.Assertions.xml;
 
-public class UpdateXJCBindingsToJakartaEE implements RewriteTest {
+class UpdateXJCBindingsToJakartaEE implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding");
