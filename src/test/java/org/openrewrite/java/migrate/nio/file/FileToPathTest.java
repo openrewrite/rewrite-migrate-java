@@ -404,4 +404,153 @@ class FileToPathTest implements RewriteTest {
             );
         }
     }
+    @Nested
+    class AdditionalCases {
+
+        @Test
+        void fileAsMethodReturnType() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.io.File;
+                  class A {
+                      File getFile() {
+                          return new File("example.txt");
+                      }
+                  }
+                  """,
+                """
+                  import java.nio.file.Path;
+                  class A {
+                      Path getFile() {
+                          return Path.of("example.txt");
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void fileAsMethodArgument() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.io.File;
+                  class A {
+                      void save(File file) {}
+                      void test() {
+                          save(new File("data.txt"));
+                      }
+                  }
+                  """,
+                """
+                  import java.nio.file.Path;
+                  class A {
+                      void save(Path file) {}
+                      void test() {
+                          save(Path.of("data.txt"));
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void castToFile() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.io.File;
+                  class A {
+                      File file = (File) getFileObject();
+                      Object getFileObject() { return null; }
+                  }
+                  """,
+                """
+                  import java.nio.file.Path;
+                  class A {
+                      Path file = (Path) getFileObject();
+                      Object getFileObject() { return null; }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void fileArrayInitialization() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.io.File;
+                  class A {
+                      File[] files = new File[] { new File("a"), new File("b") };
+                  }
+                  """,
+                """
+                  import java.nio.file.Path;
+                  class A {
+                      Path[] files = new Path[] { Path.of("a"), Path.of("b") };
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void legacyApiUsesFile() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.io.File;
+                  import java.awt.Desktop;
+                  class A {
+                      void open() throws Exception {
+                          Desktop.getDesktop().open(new File("report.pdf"));
+                      }
+                  }
+                  """,
+                """
+                  import java.nio.file.Path;
+                  import java.awt.Desktop;
+                  import java.io.IOException;
+                  class A {
+                      void open() throws IOException {
+                          Desktop.getDesktop().open(Path.of("report.pdf").toFile());
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void nestedTernaryConversion() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.io.File;
+                  class A {
+                      File file = condition1 ? new File("a") : condition2 ? new File("b") : new File("c");
+                  }
+                  """,
+                """
+                  import java.nio.file.Path;
+                  class A {
+                      Path file = condition1 ? Path.of("a") : condition2 ? Path.of("b") : Path.of("c");
+                  }
+                  """
+              )
+            );
+        }
+    }
+
 }
