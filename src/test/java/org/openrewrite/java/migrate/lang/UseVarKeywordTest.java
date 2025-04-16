@@ -18,7 +18,7 @@ package org.openrewrite.java.migrate.lang;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.openrewrite.Example;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -381,7 +381,7 @@ class UseVarKeywordTest implements RewriteTest {
         @Nested
         class Applicable {
             @Test
-            @Example
+            @DocumentExample
             void forString() {
                 //language=java
                 rewriteRun(
@@ -761,7 +761,7 @@ class UseVarKeywordTest implements RewriteTest {
             }
 
             @Test
-            @Example
+            @DocumentExample
             void withDiamondOperator() {
                 //language=java
                 rewriteRun(
