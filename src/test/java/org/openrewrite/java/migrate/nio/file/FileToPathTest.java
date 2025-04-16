@@ -552,5 +552,279 @@ class FileToPathTest implements RewriteTest {
             );
         }
     }
+    @Nested
+    class AdvancedScenarios {
+        @Test
+        void fileInAnnotations() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                import java.io.File;
+                class A {
+                    @Deprecated(since = "1.0", forRemoval = File.separator.equals("/"))
+                    void legacyMethod() {}
+                }
+                """,
+                """
+                import java.nio.file.FileSystems;
+                class A {
+                    @Deprecated(since = "1.0", forRemoval = FileSystems.getDefault().getSeparator().equals("/"))
+                    void legacyMethod() {}
+                }
+                """
+              )
+            );
+        }
 
+        @Test
+        void complexGenerics() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                import java.io.File;
+                import java.util.Map;
+                class A {
+                    Map<String, List<File>> fileMap;
+                }
+                """,
+                """
+                import java.nio.file.Path;
+                import java.util.Map;
+                class A {
+                    Map<String, List<Path>> fileMap;
+                }
+                """
+              )
+            );
+        }
+
+        @Test
+        void switchExpression() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                import java.io.File;
+                class A {
+                    String getType(File f) {
+                        return switch(f.getName()) {
+                            case ".txt" -> "Text";
+                            case ".jpg" -> "Image";
+                            default -> "Unknown";
+                        };
+                    }
+                }
+                """,
+                """
+                import java.nio.file.Path;
+                class A {
+                    String getType(Path f) {
+                        return switch(f.getFileName().toString()) {
+                            case ".txt" -> "Text";
+                            case ".jpg" -> "Image";
+                            default -> "Unknown";
+                        };
+                    }
+                }
+                """
+              )
+            );
+        }
+
+        @Test
+        void recordClass() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                import java.io.File;
+                record FileRecord(File source, File target) {}
+                """,
+                """
+                import java.nio.file.Path;
+                record FileRecord(Path source, Path target) {}
+                """
+              )
+            );
+        }
+
+        @Test
+        void sealedClass() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                import java.io.File;
+                sealed interface FileSystemEntity permits File, Directory {}
+                final class Directory extends File implements FileSystemEntity {
+                    Directory(String path) { super(path); }
+                }
+                """,
+                """
+                import java.nio.file.Path;
+                sealed interface FileSystemEntity permits Path, Directory {}
+                final class Directory implements FileSystemEntity {
+                    private final Path path;
+                    Directory(String path) { this.path = Path.of(path); }
+                }
+                """
+              )
+            );
+        }
+
+        @Test
+        void patternMatching() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                import java.io.File;
+                class A {
+                    void process(Object obj) {
+                        if (obj instanceof File f) {
+                            System.out.println(f.getName());
+                        }
+                    }
+                }
+                """,
+                """
+                import java.nio.file.Path;
+                class A {
+                    void process(Object obj) {
+                        if (obj instanceof Path p) {
+                            System.out.println(p.getFileName());
+                        }
+                    }
+                }
+                """
+              )
+            );
+        }
+
+        @Test
+        void fileSeparator() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                import java.io.File;
+                class A {
+                    String sep = File.separator;
+                }
+                """,
+                """
+                import java.nio.file.FileSystems;
+                class A {
+                    String sep = FileSystems.getDefault().getSeparator();
+                }
+                """
+              )
+            );
+        }
+
+        @Test
+        void listFiles() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                import java.io.File;
+                class A {
+                    File[] children = new File(".").listFiles();
+                }
+                """,
+                """
+                import java.nio.file.Files;
+                import java.nio.file.Path;
+                import java.util.stream.Stream;
+                class A {
+                    Path[] children;
+                    {
+                        try (Stream<Path> paths = Files.list(Path.of("."))) {
+                            children = paths.toArray(Path[]::new);
+                        }
+                    }
+                }
+                """
+              )
+            );
+        }
+
+        @Test
+        void filePermissions() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                import java.io.File;
+                class A {
+                    boolean canWrite = new File(".").canWrite();
+                }
+                """,
+                """
+                import java.nio.file.Files;
+                import java.nio.file.Path;
+                class A {
+                    boolean canWrite = Files.isWritable(Path.of("."));
+                }
+                """
+              )
+            );
+        }
+
+        @Test
+        void renameFile() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                import java.io.File;
+                class A {
+                    boolean success = new File("old").renameTo(new File("new"));
+                }
+                """,
+                """
+                import java.nio.file.Files;
+                import java.nio.file.Path;
+                import java.nio.file.StandardCopyOption;
+                class A {
+                    boolean success;
+                    {
+                        try {
+                            Files.move(Path.of("old"), Path.of("new"), StandardCopyOption.REPLACE_EXISTING);
+                            success = true;
+                        } catch (Exception e) {
+                            success = false;
+                        }
+                    }
+                }
+                """
+              )
+            );
+        }
+
+        @Test
+        void tempFileCreation() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                import java.io.File;
+                class A {
+                    File temp = File.createTempFile("prefix", ".suffix");
+                }
+                """,
+                """
+                import java.nio.file.Files;
+                import java.nio.file.Path;
+                class A {
+                    Path temp = Files.createTempFile("prefix", ".suffix");
+                }
+                """
+              )
+            );
+        }
+    }
 }
