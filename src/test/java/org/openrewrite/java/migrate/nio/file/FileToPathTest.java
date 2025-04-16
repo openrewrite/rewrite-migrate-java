@@ -54,6 +54,29 @@ class FileToPathTest implements RewriteTest {
         }
 
         @Test
+        @DocumentExample
+        void toPath() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.io.File;
+                  import java.nio.file.Path;
+                  class A {
+                      Path file = new File("").toPath();
+                  }
+                  """,
+                """
+                  import java.nio.file.Path;
+                  class A {
+                      Path file = Path.of("");
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
         void constructorConversion() {
             rewriteRun(
               //language=java
