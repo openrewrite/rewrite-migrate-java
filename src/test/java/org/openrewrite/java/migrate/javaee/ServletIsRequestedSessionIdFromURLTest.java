@@ -47,7 +47,8 @@ class ServletIsRequestedSessionIdFromURLTest implements RewriteTest {
                       foo.isRequestedSessionIdFromUrl();
                   }
               }
-              """, """
+              """,
+                """
               import javax.servlet.http.HttpServletRequestWrapper;
               class Foo {
                   void bar(HttpServletRequestWrapper foo) {
