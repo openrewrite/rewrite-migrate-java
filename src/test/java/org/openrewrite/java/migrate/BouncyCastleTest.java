@@ -17,30 +17,30 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
+import org.openrewrite.maven.tree.MavenResolutionResult;
+import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static java.util.function.UnaryOperator.identity;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.openrewrite.java.Assertions.*;
+import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class BouncyCastleTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder()
-          .scanRuntimeClasspath("org.openrewrite.java.migrate")
-          .build()
-          .activateRecipes("org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On"));
+        spec.recipeFromResource(
+          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
+          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On");
     }
 
     @DocumentExample
     @Test
-    void updateBouncyCastle() {
+    void document() {
         rewriteRun(
           mavenProject("project",
             //language=xml
@@ -67,12 +67,20 @@ class BouncyCastleTest implements RewriteTest {
                   </dependencies>
                 </project>
                 """,
-              spec -> spec.after(str -> assertThat(str)
-                .doesNotContainPattern("\\h*<groupId>org\\.bouncycastle<\\/groupId>\\s+<artifactId>bcprov-jdk15on<\\/artifactId>\\s+<version>.*<\\/version>")
-                .doesNotContainPattern("\\h*<groupId>org\\.bouncycastle<\\/groupId>\\s+<artifactId>bcpkix-jdk15on<\\/artifactId>\\s+<version>.*<\\/version>")
-                .containsPattern("\\h*<groupId>org\\.bouncycastle<\\/groupId>\\s+<artifactId>bcprov-jdk18on<\\/artifactId>\\s+<version>.*<\\/version>")
-                .containsPattern("\\h*<groupId>org\\.bouncycastle<\\/groupId>\\s+<artifactId>bcpkix-jdk18on<\\/artifactId>\\s+<version>.*<\\/version>")
-                .actual())
+              spec -> spec
+                .after(identity())
+                .afterRecipe(doc -> assertThat(doc.getMarkers().findFirst(MavenResolutionResult.class)
+                  .get().getDependencies().get(Scope.Compile))
+                  .filteredOn(rd -> rd.getDepth() == 0)
+                  .satisfiesExactly(
+                    rd -> {
+                        assertThat(rd.getGroupId()).isEqualTo("org.bouncycastle");
+                        assertThat(rd.getArtifactId()).isEqualTo("bcprov-jdk18on");
+                    },
+                    rd -> {
+                        assertThat(rd.getGroupId()).isEqualTo("org.bouncycastle");
+                        assertThat(rd.getArtifactId()).isEqualTo("bcpkix-jdk18on");
+                    }))
             )
           )
         );
@@ -80,8 +88,8 @@ class BouncyCastleTest implements RewriteTest {
 
 
     @ParameterizedTest
-    @ValueSource(strings={"bcprov", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
-    void testUpdateBouncyCastle(String value) {
+    @ValueSource(strings = {"bcprov", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
+    void updateBouncyCastle(String value) {
         rewriteRun(
           mavenProject("project",
             //language=xml
@@ -103,10 +111,16 @@ class BouncyCastleTest implements RewriteTest {
                   </dependencies>
                 </project>
                 """, value),
-              spec -> spec.after(str -> assertThat(str)
-                .doesNotContainPattern(String.format("\\h*<groupId>org\\.bouncycastle<\\/groupId>\\s+<artifactId>%s-jdk15on<\\/artifactId>\\s+<version>.*<\\/version>", value))
-                .containsPattern(String.format("\\h*<groupId>org\\.bouncycastle<\\/groupId>\\s+<artifactId>%s-jdk18on<\\/artifactId>\\s+<version>.*<\\/version>", value))
-                .actual())
+              spec -> spec
+                .after(identity())
+                .afterRecipe(doc -> assertThat(doc.getMarkers().findFirst(MavenResolutionResult.class)
+                  .get().getDependencies().get(Scope.Compile))
+                  .filteredOn(rd -> rd.getDepth() == 0)
+                  .singleElement()
+                  .satisfies(rd -> {
+                      assertThat(rd.getGroupId()).isEqualTo("org.bouncycastle");
+                      assertThat(rd.getArtifactId()).isEqualTo(value + "-jdk18on");
+                  }))
             )
           )
         );
