@@ -85,7 +85,31 @@ class LombokUtils {
         return false;
     }
 
-    private static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {
+    public static boolean isEffectivelyGetter(J.MethodDeclaration method) {
+        boolean takesNoParameters = method.getParameters().get(0) instanceof J.Empty;
+        boolean singularReturn = method.getBody() != null //abstract methods can be null
+                && method.getBody().getStatements().size() == 1 //
+                && method.getBody().getStatements().get(0) instanceof J.Return;
+
+        if (takesNoParameters && singularReturn) {
+            Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
+            // returns just an identifier
+            // Check field is declared on method type
+            JavaType methodSignatureReturnType = method.getType();
+
+            if (returnExpression instanceof J.Identifier ||
+                    returnExpression instanceof J.FieldAccess) {
+                JavaType returnedVariableType = returnExpression.getType();
+                // compiler already guarantees that the returned variable is a subtype of the method type,
+                // but we want an exact match.
+                return methodSignatureReturnType == returnedVariableType;
+            }
+        }
+        return false;
+    }
+
+    public static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {
+
         if (type == JavaType.Primitive.Boolean) {
             boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
                     fieldName.substring(0, 3).matches("is[A-Z]");
