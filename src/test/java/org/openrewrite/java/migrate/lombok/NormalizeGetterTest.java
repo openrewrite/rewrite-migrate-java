@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lombok;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -348,6 +349,7 @@ class NormalizeGetterTest implements RewriteTest {
     /**
      * Methods on top level should be renamed just as well when there is an inner class.
      */
+    @ExpectedToFail("We use `cu.getTypesInUse().getDeclaredMethods()` as a performance optimization to avoid visits")
     @Test
     void shouldWorkDespiteInnerClassesSameNameMethods() {
         rewriteRun(// language=java
