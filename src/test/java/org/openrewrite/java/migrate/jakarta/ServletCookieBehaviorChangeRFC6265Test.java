@@ -64,7 +64,8 @@ class ServletCookieBehaviorChangeRFC6265Test implements RewriteTest {
                         config.setComment("comment");
                   }
               }
-              """, """
+              """,
+                """
               package com.test;
               import jakarta.servlet.ServletContext;
               import jakarta.servlet.SessionCookieConfig;
@@ -81,7 +82,8 @@ class ServletCookieBehaviorChangeRFC6265Test implements RewriteTest {
                         SessionCookieConfig config = servletContext.getSessionCookieConfig();
                   }
               }
-              """));
+              """
+          ));
     }
 
 }

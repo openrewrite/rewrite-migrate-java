@@ -63,7 +63,6 @@ public class AddMissingMethodImplementation extends Recipe {
 
     public class ClassImplementationVisitor extends JavaIsoVisitor<ExecutionContext> {
 
-        private final JavaTemplate methodTemplate = JavaTemplate.builder(methodTemplateString).build();
         private final MethodMatcher methodMatcher = new MethodMatcher(methodPattern, true);
 
         @Override
@@ -87,8 +86,10 @@ public class AddMissingMethodImplementation extends Recipe {
                 return classDecl;
             }
 
-            return classDecl.withBody(methodTemplate.apply(new Cursor(getCursor(), classDecl.getBody()),
-                    classDecl.getBody().getCoordinates().lastStatement()));
+            return classDecl.withBody(JavaTemplate.builder(methodTemplateString)
+                    .build()
+                    .apply(new Cursor(getCursor(), classDecl.getBody()),
+                            classDecl.getBody().getCoordinates().lastStatement()));
         }
     }
 }

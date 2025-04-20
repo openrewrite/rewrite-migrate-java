@@ -32,12 +32,22 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10
   - org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
   - org.openrewrite.java.migrate.BeanDiscovery
-  - org.openrewrite.java.migrate.jakarta.BeanValidationMessages
+  - org.openrewrite.java.migrate.jakarta.UpdateAnnotationAttributeJavaxToJakarta:
+      signature: "@jakarta.ejb..*"
+  - org.openrewrite.java.migrate.jakarta.UpdateAnnotationAttributeJavaxToJakarta:
+      signature: "@jakarta.jms..*"
+  - org.openrewrite.java.migrate.jakarta.UpdateAnnotationAttributeJavaxToJakarta:
+      signature: "@jakarta.validation.constraints..*"
   - org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
   - org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml
   - org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml
   - org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
+  - org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
+  - org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
+  - org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
+  - org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
+  - org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
@@ -404,3 +414,93 @@ recipeList:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
       newVersion: 4.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
+displayName: Update GlassFish Jersey Dependencies to 3.1.x
+description: Update GlassFish Jersey Dependencies to 3.1.x.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.jersey.core
+      artifactId: "*"
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.jersey.inject
+      artifactId: "*"
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.jersey.media
+      artifactId: "*"
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.jersey.containers
+      artifactId: "*"
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.jersey.server
+      artifactId: "*"
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.jersey.ext
+      artifactId: "*"
+      newVersion: 3.1.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
+displayName: Update Apache Commons Email to Email2 for Jakarta
+description: Update Apache Commons Email to Email2 for Jakarta.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.apache.commons
+      oldArtifactId: commons-email
+      newGroupId: org.apache.commons
+      newArtifactId: commons-email2-jakarta
+      newVersion: 2.0.x
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.mail.EmailException
+      newFullyQualifiedTypeName: org.apache.commons.mail2.core.EmailException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.mail.EmailConstants 
+      newFullyQualifiedTypeName: org.apache.commons.mail2.core.EmailConstants
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.mail.EmailUtils 
+      newFullyQualifiedTypeName: org.apache.commons.mail2.core.EmailUtils
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.mail
+      newPackageName: org.apache.commons.mail2.jakarta
+      recursive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
+displayName: Update Apache Shiro Dependencies to 2.0.x
+description: Update Apache Shiro Dependencies to 2.0.x.
+recipeList:
+  - org.openrewrite.maven.ChangeDependencyClassifier:
+      groupId: org.apache.shiro
+      artifactId: "*"
+      newClassifier: jakarta
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.shiro
+      artifactId: "*"
+      newVersion: 2.0.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
+displayName: Update EclipseLink Dependencies to 4.x
+description: Update EclipseLink Dependencies to 4.x.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.eclipse.persistence
+      artifactId: "*"
+      newVersion: 4.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
+displayName: Update Eclipse Yasson Dependencies to 3.0.x
+description: Update Eclipse Yasson Dependencies to 3.0.x.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.eclipse
+      artifactId: yasson
+      newVersion: 3.0.x
+---
