@@ -86,26 +86,20 @@ class LombokUtils {
     }
 
     public static boolean isEffectivelyGetter(J.MethodDeclaration method) {
-        boolean takesNoParameters = method.getParameters().get(0) instanceof J.Empty;
-        boolean singularReturn = method.getBody() != null //abstract methods can be null
-                && method.getBody().getStatements().size() == 1 //
-                && method.getBody().getStatements().get(0) instanceof J.Return;
-
-        if (takesNoParameters && singularReturn) {
-            Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
-            // returns just an identifier
-            // Check field is declared on method type
-            JavaType methodSignatureReturnType = method.getType();
-
-            if (returnExpression instanceof J.Identifier ||
-                    returnExpression instanceof J.FieldAccess) {
-                JavaType returnedVariableType = returnExpression.getType();
-                // compiler already guarantees that the returned variable is a subtype of the method type,
-                // but we want an exact match.
-                return methodSignatureReturnType == returnedVariableType;
-            }
+        if (!method.getParameters().isEmpty() && !(method.getParameters().get(0) instanceof J.Empty)) {
+            return false;
         }
-        return false;
+        if (method.getBody() == null ||
+                method.getBody().getStatements().size() != 1 ||
+                !(method.getBody().getStatements().get(0) instanceof J.Return)) {
+            return false;
+        }
+        Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
+        if (!(returnExpression instanceof J.Identifier) && !(returnExpression instanceof J.FieldAccess)) {
+            return false;
+        }
+        // compiler already guarantees that the returned variable is a subtype of the method type, but we want an exact match
+        return method.getType() == returnExpression.getType();
     }
 
     public static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {
