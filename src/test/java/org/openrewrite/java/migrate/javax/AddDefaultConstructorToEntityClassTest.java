@@ -90,7 +90,8 @@ class AddDefaultConstructorToEntityClassTest implements RewriteTest {
                       this.id = id;
                   }
               }
-              """, """
+              """,
+                """
               import javax.persistence.MappedSuperclass;
               import javax.persistence.Id;
 
@@ -132,7 +133,8 @@ class AddDefaultConstructorToEntityClassTest implements RewriteTest {
                       this.id = id;
                   }
               }
-              """)
+              """
+          )
         );
     }
 
@@ -153,7 +155,8 @@ class AddDefaultConstructorToEntityClassTest implements RewriteTest {
                       this.id = id;
                   }
               }
-              """)
+              """
+          )
         );
     }
 
@@ -198,7 +201,8 @@ class AddDefaultConstructorToEntityClassTest implements RewriteTest {
                   public void doNothing() {
                   }
               }
-              """)
+              """
+          )
         );
     }
 }

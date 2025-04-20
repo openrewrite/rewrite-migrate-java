@@ -56,7 +56,8 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
                         ValueBinding valueBinding = null;
                    }
               }
-              """, """
+              """,
+                """
               package com.test;
 
               import jakarta.el.ELResolver;
@@ -71,7 +72,8 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
                         ValueExpression valueBinding = null;
                    }
               }
-              """));
+              """
+          ));
     }
 
     @Test
@@ -98,7 +100,8 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
                     ReferenceSyntaxException referenceSyntaxException = null;
                 }
             }
-            """, """
+            """,
+                """
             package com.test;
 
             import jakarta.el.ELException;
@@ -116,7 +119,8 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
                     ELException referenceSyntaxException = null;
                 }
             }
-            """));
+            """
+          ));
     }
 
     @Test
@@ -139,7 +143,8 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
                         ValueBinding valueBinding = null;
                    }
               }
-              """, """
+              """,
+                """
               package com.test;
 
               import jakarta.el.ELResolver;
@@ -154,7 +159,8 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
                         ValueExpression valueBinding = null;
                    }
               }
-              """));
+              """
+          ));
     }
 
     @Test
@@ -181,7 +187,8 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
                     ReferenceSyntaxException referenceSyntaxException = null;
                 }
             }
-            """, """
+            """,
+                """
             package com.test;
 
             import jakarta.el.ELException;
@@ -199,7 +206,8 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
                     ELException referenceSyntaxException = null;
                 }
             }
-            """));
+            """
+          ));
     }
 
 }
