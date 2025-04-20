@@ -31,9 +31,9 @@ public class RemovedSecurityManagerMethods extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Replace `SecurityManager` methods `checkAwtEventQueueAccess()`, `checkSystemClipboardAccess()`," +
-               " `checkMemberAccess()` and `checkTopLevelWindow()` deprecated in Java SE 11 by" +
-               " `checkPermission(new java.security.AllPermission())`.";
+        return "Replace `SecurityManager` methods `checkAwtEventQueueAccess()`, `checkSystemClipboardAccess()`, " +
+               "`checkMemberAccess()` and `checkTopLevelWindow()` deprecated in Java SE 11 by " +
+               "`checkPermission(new java.security.AllPermission())`.";
     }
 
     @Override

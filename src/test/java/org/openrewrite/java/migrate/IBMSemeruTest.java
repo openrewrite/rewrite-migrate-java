@@ -74,12 +74,12 @@ class IBMSemeruTest implements RewriteTest {
 
               class Foo{
                 void bar() {
-                    com.ibm.net.ssl.www2.protocol.https.Handler handler_1 =           //flag
-                        new com.ibm.net.ssl.www2.protocol.https.Handler();            //flag
+                    Handler handler_1 =           //flag
+                        new Handler();            //flag
                     Handler handler_2 =   new Handler("String", 1); //flag (2)
                     testMethod(handler_1);
                     testMethod(handler_2);
-                    if (handler_1 instanceof com.ibm.net.ssl.www2.protocol.https.Handler){ //flag
+                    if (handler_1 instanceof Handler){ //flag
                         //do nothing
                     }
 
@@ -88,7 +88,7 @@ class IBMSemeruTest implements RewriteTest {
                     }
                 }
 
-                public static com.ibm.net.ssl.www2.protocol.https.Handler testMethod(Handler handler){ //flag (2)
+                public static Handler testMethod(Handler handler){ //flag (2)
                     return handler;
                 }
               }

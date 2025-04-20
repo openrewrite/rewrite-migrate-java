@@ -42,6 +42,7 @@ class UseStringIsEmptyTest implements RewriteTest {
                       boolean c = 0 < s.length();
                       boolean d = 0 != s.length();
                       boolean e = s.length() != 0;
+                      boolean f = (s + "!").length() != 0;
                   }
               }
               """,
@@ -52,6 +53,7 @@ class UseStringIsEmptyTest implements RewriteTest {
                       boolean c = !s.isEmpty();
                       boolean d = !s.isEmpty();
                       boolean e = !s.isEmpty();
+                      boolean f = !(s + "!").isEmpty();
                   }
               }
               """

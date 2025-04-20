@@ -19,7 +19,6 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.AddImport;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
@@ -62,9 +61,7 @@ public class MigrateURLDecoderDecode extends Recipe {
                                     getCursor(),
                                     m.getCoordinates().replaceArguments(),
                                     m.getArguments().toArray());
-                    // forcing an import, otherwise maybeAddImport appears to be having trouble recognizing importing this
-                    // believe it may have to do with this being a field, or possibly this is incorrect usage // todo
-                    doAfterVisit(new AddImport<>("java.nio.charset.StandardCharsets", null, false));
+                    maybeAddImport("java.nio.charset.StandardCharsets", null, false);
                 }
                 return super.visitMethodInvocation(m, ctx);
             }

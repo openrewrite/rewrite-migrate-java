@@ -85,7 +85,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                         boolean b = true;
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -112,7 +113,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                         char ch = '\ufffd';
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -138,7 +140,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                         double d = 2.0;
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -164,7 +167,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                         float f = 2.0;
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -190,7 +194,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                         long l = 2;
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -216,7 +221,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                         double d = 2.0D;
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -242,7 +248,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                         float f = 2.0F;
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -268,7 +275,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                         long l = 2L;
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -292,7 +300,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                         final int i = 42;
                     }
                   }
-                  """, """
+                  """,
+                    """
                   class A {
                     void m() {
                         final var i = 42;

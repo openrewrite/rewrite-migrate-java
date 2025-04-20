@@ -26,5 +26,6 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava7
   - org.openrewrite.java.migrate.MXBeanRule
+  - org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.lang.Thread destroy()

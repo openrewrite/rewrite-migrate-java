@@ -48,7 +48,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         Object o = new Object();
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -56,7 +57,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         var o = new Object();
                     }
                   }
-                  """)
+                  """
+              )
             );
         }
 
@@ -75,7 +77,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         Object innerO = o;
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -101,7 +104,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         final Object o = new Object();
                     }
                   }
-                  """, """
+                  """,
+                    """
                   class A {
                     void m() {
                         final var o = new Object();
@@ -126,7 +130,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         String o = true ? "isTrue" : "Test";
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -152,7 +157,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         Object o = new Object();
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -178,7 +184,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         Object o = new Object();
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -401,7 +408,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         String[] dictionary = {"aa", "b", "aba", "ba"};
                     }
                   }
-                  """)
+                  """
+              )
             );
         }
 

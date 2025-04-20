@@ -17,7 +17,7 @@ package org.openrewrite.java.migrate.lang.var;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.openrewrite.Example;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -420,7 +420,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         }
 
         @Test
-        @Example
+        @DocumentExample
         void withTypeParameterInDefinitionOnly() {
             //language=java
             rewriteRun(

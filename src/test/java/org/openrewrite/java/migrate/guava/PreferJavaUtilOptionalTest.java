@@ -54,7 +54,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                     return Optional.absent();
                 }
             }
-            """, """
+            """,
+                """
             import java.util.Optional;
 
             class A {
@@ -78,7 +79,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                     return optional.orNull();
                 }
             }
-            """, """
+            """,
+                """
             import java.util.Optional;
 
             class A {
@@ -101,7 +103,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                     return optional.or("other");
                 }
             }
-            """, """
+            """,
+                """
             import java.util.Optional;
 
             class A {
@@ -124,7 +127,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                     return optional.or(() -> "other");
                 }
             }
-            """, """
+            """,
+                """
             import java.util.Optional;
 
             class A {
@@ -149,7 +153,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                       return optional.or(supplier);
                   }
               }
-              """, """
+              """,
+                """
               import java.util.Optional;
               import java.util.function.Supplier;
 
@@ -158,7 +163,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                       return optional.orElseGet(supplier);
                   }
               }
-              """));
+              """
+          ));
     }
 
     @Test
@@ -173,7 +179,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                     return optional.transform(String::toUpperCase);
                 }
             }
-            """, """
+            """,
+                """
             import java.util.Optional;
 
             class A {
@@ -196,7 +203,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                     return Optional.fromJavaUtil(optional);
                 }
             }
-            """, """
+            """,
+                """
             import java.util.Optional;
 
             class A {
@@ -219,7 +227,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                     return Optional.absent().toJavaUtil().isEmpty();
                 }
             }
-            """, """
+            """,
+                """
             import java.util.Optional;
 
             class A {
@@ -245,7 +254,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                       return firstChoice.or(secondChoice);
                   }
               }
-              """, """
+              """,
+                """
               import java.util.Optional;
 
               class A {
@@ -253,7 +263,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                       return firstChoice.or(() -> secondChoice);
                   }
               }
-              """));
+              """
+          ));
     }
 
     @Nested
@@ -279,7 +290,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                         }
                     }
                 }
-                """, """
+                """,
+                    """
                 import java.util.Optional;
 
                 class A {
@@ -308,7 +320,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                         return optional.asSet();
                     }
                 }
-                """, """
+                """,
+                    """
                 import java.util.Optional;
                 import java.util.Set;
                 import java.util.stream.Collectors;
@@ -335,7 +348,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                         return Optional.presentInstances(optionals);
                     }
                 }
-                """, """
+                """,
+                    """
                 import java.util.Optional;
                 import java.util.stream.Collectors;
 

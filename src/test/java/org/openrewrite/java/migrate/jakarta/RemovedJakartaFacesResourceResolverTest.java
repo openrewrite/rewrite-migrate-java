@@ -58,7 +58,8 @@ class RemovedJakartaFacesResourceResolverTest implements RewriteTest {
                       return null;
                   }
               }
-              """, """
+              """,
+                """
               package com.test;
               import java.net.URL;
 
@@ -75,7 +76,8 @@ class RemovedJakartaFacesResourceResolverTest implements RewriteTest {
                       return null;
                   }
               }
-              """));
+              """
+          ));
     }
 
     void removedJavaxFacesResourceResolver_1() {
@@ -99,7 +101,8 @@ class RemovedJakartaFacesResourceResolverTest implements RewriteTest {
                       return null;
                   }
               }
-              """, """
+              """,
+                """
               package com.test;
               import java.net.URL;
 
@@ -116,7 +119,8 @@ class RemovedJakartaFacesResourceResolverTest implements RewriteTest {
                       return null;
                   }
               }
-              """));
+              """
+          ));
     }
 
 }

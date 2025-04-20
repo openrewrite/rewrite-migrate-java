@@ -62,7 +62,8 @@ class RemovedSOAPElementFactoryTest implements RewriteTest {
                       sfe.create(n);
                   }
               }
-              """, """
+              """,
+                """
               package com.test;
 
               import jakarta.xml.soap.Name;
@@ -81,7 +82,8 @@ class RemovedSOAPElementFactoryTest implements RewriteTest {
                       sfe.createElement(n);
                   }
               }
-              """));
+              """
+          ));
     }
 
 

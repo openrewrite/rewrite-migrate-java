@@ -55,7 +55,8 @@ class RemovedIsParmetersProvidedMethodTest implements RewriteTest {
                       }
                   }
               }
-              """, """
+              """,
+                """
               package com.test;
 
               import jakarta.el.MethodExpression;
@@ -67,6 +68,7 @@ class RemovedIsParmetersProvidedMethodTest implements RewriteTest {
                       }
                   }
               }
-              """));
+              """
+          ));
     }
 }

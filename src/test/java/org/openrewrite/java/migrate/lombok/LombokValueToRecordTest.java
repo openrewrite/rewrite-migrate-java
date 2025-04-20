@@ -69,7 +69,8 @@ class LombokValueToRecordTest implements RewriteTest {
                               ")";
                   }
               }
-              """)
+              """
+          )
         );
     }
 

@@ -32,13 +32,13 @@ public class UseVarForGenericMethodInvocations extends Recipe {
     @Override
     public String getDisplayName() {
         //language=markdown
-        return "Apply `var` to Generic Method Invocations";
+        return "Apply `var` to generic method invocations";
     }
 
     @Override
     public String getDescription() {
         //language=markdown
-        return "Apply `var` to variables initialized by invocations of Generic Methods. " +
+        return "Apply `var` to variables initialized by invocations of generic methods. " +
                "This recipe ignores generic factory methods without parameters, because open rewrite cannot handle them correctly ATM.";
     }
 

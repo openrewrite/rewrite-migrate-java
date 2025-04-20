@@ -96,7 +96,8 @@ class AddColumnAnnotationTest implements RewriteTest {
                   @Column
                   private List<String> listofStrings;
               }
-              """, """
+              """,
+                """
               import java.util.List;
               import javax.persistence.ElementCollection;
               import javax.persistence.Entity;

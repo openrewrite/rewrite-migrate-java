@@ -188,7 +188,8 @@ class OptionalStreamRecipeTest implements RewriteTest {
                           .toList();
                               }
               }
-              """));
+              """
+          ));
     }
 
     @Test
