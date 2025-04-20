@@ -49,7 +49,7 @@ public class NormalizeGetter extends ScanningRecipe<List<NormalizeGetter.RenameR
                 "Limitations:\n" +
                 " - If two methods in a class are effectively the same getter then one's name will be corrected and the others name will be left as it is.\n" +
                 " - If the correct name for a method is already taken by another method then the name will not be corrected.\n" +
-                " - Method name swaps or circular renaming within a class cannot be performed because the names block each other. " +
+                " - Method name swaps or circular renaming within a class cannot be performed because the names block each other.\n" +
                 "E.g. `int getFoo() { return ba; } int getBa() { return foo; }` stays as it is."
                 ;
     }
