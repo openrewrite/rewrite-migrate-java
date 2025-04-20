@@ -26,6 +26,7 @@ import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +41,12 @@ public class NormalizeGetter extends ScanningRecipe<List<NormalizeGetter.RenameR
 
     @Override
     public String getDisplayName() {
-        return "Rename getter methods to fit lombok";
+        return "Rename getter methods to fit Lombok";
     }
 
     @Override
     public String getDescription() {
-        return "Rename methods that are effectively getter to the name lombok would give them.\n\n" +
+        return "Rename methods that are effectively getter to the name Lombok would give them.\n\n" +
                 "Limitations:\n" +
                 " - If two methods in a class are effectively the same getter then one's name will be corrected and the others name will be left as it is.\n" +
                 " - If the correct name for a method is already taken by another method then the name will not be corrected.\n" +
@@ -84,29 +85,20 @@ public class NormalizeGetter extends ScanningRecipe<List<NormalizeGetter.RenameR
 
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                assert method.getMethodType() != null;
-
-                if (!LombokUtils.isEffectivelyGetter(method)) {
+                if (method.getMethodType() == null || method.getBody() == null ||
+                        !LombokUtils.isEffectivelyGetter(method) ||
+                        TypeUtils.isOverride(method.getMethodType())) {
                     return method;
                 }
-
-                //return early if the method overrides another
-                //if the project defined both the original and the overridden method,
-                // then the renaming of the "original" in the base class will cover the override
-                if (method.getLeadingAnnotations().stream().anyMatch(a -> "Override".equals(a.getSimpleName()))) {
-                    return method;
-                }
-
-                Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
 
                 String simpleName;
+                Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
                 if (returnExpression instanceof J.Identifier) {
                     simpleName = ((J.Identifier) returnExpression).getSimpleName();
                 } else if (returnExpression instanceof J.FieldAccess) {
                     simpleName = ((J.FieldAccess) returnExpression).getSimpleName();
                 } else {
-                    //only those types above are possible, see LombokUtils::isEffectivelyGetter
-                    throw new IllegalStateException("Unexpected type for returned variable");
+                    return method;
                 }
 
                 String expectedMethodName = LombokUtils.deriveGetterMethodName(returnExpression.getType(), simpleName);
