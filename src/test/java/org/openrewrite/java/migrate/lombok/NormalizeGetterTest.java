@@ -490,6 +490,49 @@ class NormalizeGetterTest implements RewriteTest {
         );
     }
 
+    /**
+     * If two methods are effectively the same getter then only one can be renamed.
+     * Renaming both would result in a duplicate method definition, so we cannot do this.
+     * Ideally the other effective getter would have their usages renamed but be themselves deleted...
+     * TODO: create a second cleanup recipe that identifies redundant getters (isEffectiveGetter + field already has the getter annotation)
+     *  and redirects their usage (ChangeMethodName with both flags true) and then deletes them.
+     */
+    @Test
+    void twoMethodsWithSameName() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  private long foo;
+
+                  public long firstToBeRenamed() {
+                      return foo;
+                  }
+
+                  public long secondToBeRenamed() {
+                      return foo;
+                  }
+              }
+              """,
+            """
+              class A {
+
+                  private long foo;
+
+                  public long getFoo() {
+                      return foo;
+                  }
+
+                  public long secondToBeRenamed() {
+                      return foo;
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class NoChange {
 
@@ -563,49 +606,6 @@ class NormalizeGetterTest implements RewriteTest {
 
                       public long getFoo() {
                           return 8;
-                      }
-                  }
-                  """
-              )
-            );
-        }
-
-        /**
-         * If two methods are effectively the same getter then only one can be renamed.
-         * Renaming both would result in a duplicate method definition, so we cannot do this.
-         * Ideally the other effective getter would have their usages renamed but be themselves deleted...
-         * TODO: create a second cleanup recipe that identifies redundant getters (isEffectiveGetter + field already has the getter annotation)
-         *  and redirects their usage (ChangeMethodName with both flags true) and then deletes them.
-         */
-        @Test
-        void twoMethodsWithSameName() {
-            rewriteRun(// language=java
-              java(
-                """
-                  class A {
-
-                      private long foo;
-
-                      public long firstToBeRenamed() {
-                          return foo;
-                      }
-
-                      public long secondToBeRenamed() {
-                          return foo;
-                      }
-                  }
-                  """,
-                """
-                  class A {
-
-                      private long foo;
-
-                      public long getFoo() {
-                          return foo;
-                      }
-
-                      public long secondToBeRenamed() {
-                          return foo;
                       }
                   }
                   """
