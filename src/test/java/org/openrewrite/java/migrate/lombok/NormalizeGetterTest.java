@@ -449,6 +449,7 @@ class NormalizeGetterTest implements RewriteTest {
      * If existing method names need to be rotated in a loop the recipe should still work.
      * For now this is not planned.
      */
+    @ExpectedToFail("Not implemented yet")
     @Test
     void shouldWorkOnCircleCasesButDoesntYet() {
         rewriteRun(// language=java
@@ -468,24 +469,23 @@ class NormalizeGetterTest implements RewriteTest {
                   }
 
               }
+              """,
+            """
+              class A {
+
+                  int foo;
+                  int bar;
+
+                  public int getFoo() {
+                      return foo;
+                  }
+
+                  public int getBar() {
+                      return bar;
+                  }
+
+              }
               """
-//            ,
-//            """
-//              class A {
-//
-//                  int foo;
-//                  int bar;
-//
-//                  public int getFoo() {
-//                      return foo;
-//                  }
-//
-//                  public int getBar() {
-//                      return bar;
-//                  }
-//
-//              }
-//              """
           )
         );
     }
