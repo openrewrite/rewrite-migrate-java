@@ -34,8 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
-
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class NormalizeGetter extends ScanningRecipe<List<NormalizeGetter.RenameRecord>> {
