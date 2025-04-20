@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -198,28 +199,6 @@ class NormalizeGetterTest implements RewriteTest {
     }
 
     @Test
-    void shouldNotChangeOverridesOfExternalMethods() {
-        rewriteRun(// language=java
-          java(
-            """
-
-              import java.util.Date;
-
-              class A extends Date {
-
-                  private long foo;
-
-                  @Override
-                  public long getTime() {
-                      return foo;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
     void withoutPackage() {
         rewriteRun(// language=java
           java(
@@ -288,71 +267,6 @@ class NormalizeGetterTest implements RewriteTest {
                   @Override
                   public long getFoo() {
                       return 0;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void shouldNotRenameToExistingMethods() {
-        rewriteRun(// language=java
-          java(
-            """
-              class A {
-
-                  private long foo;
-
-                  public long getTime() {
-                      return foo;
-                  }
-
-                  public long getFoo() {
-                      return 8;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    /**
-     * If two methods are effectively the same getter then only one can be renamed.
-     * Renaming both would result in a duplicate method definition, so we cannot do this.
-     * Ideally the other effective getter would have their usages renamed but be themselves deleted...
-     * TODO: create a second cleanup recipe that identifies redundant getters (isEffectiveGetter + field already has the getter annotation)
-     *  and redirects their usage (ChangeMethodName with both flags true) and then deletes them.
-     */
-    @Test
-    void shouldNotRenameTwoToTheSame() {
-        rewriteRun(// language=java
-          java(
-            """
-              class A {
-
-                  private long foo;
-
-                  public long firstToBeRenamed() {
-                      return foo;
-                  }
-
-                  public long secondToBeRenamed() {
-                      return foo;
-                  }
-              }
-              """,
-            """
-              class A {
-
-                  private long foo;
-
-                  public long getFoo() {
-                      return foo;
-                  }
-
-                  public long secondToBeRenamed() {
-                      return foo;
                   }
               }
               """
@@ -574,25 +488,127 @@ class NormalizeGetterTest implements RewriteTest {
         );
     }
 
-    /**
-     * The recipe should only be applied when the method return type and the field type match exactly.
-     */
-    @Test
-    void returnTypeHasToMatch() {
-        rewriteRun(// language=java
-          java(
-            """
-              import java.io.BufferedReader;
-              import java.io.LineNumberReader;
-              class A {
+    @Nested
+    class NoChange {
 
-                  LineNumberReader foo;
-
-                  public BufferedReader giveFoo() {
-                      return foo;
+        @Test
+        void upcastIntToLong() {
+            rewriteRun(// language=java
+              java(
+                """
+                  class A {
+                      int foo = 9;
+                      long getFoo() { return foo; }
                   }
-              }
-              """
-          ));
+                  """
+              )
+            );
+        }
+
+        @Test
+        void returnTypeHasToMatch() {
+            rewriteRun(// language=java
+              java(
+                """
+                  import java.io.BufferedReader;
+                  import java.io.LineNumberReader;
+                  class A {
+
+                      LineNumberReader foo;
+
+                      public BufferedReader giveFoo() {
+                          return foo;
+                      }
+                  }
+                  """
+              ));
+        }
+
+        @Test
+        void overridesOfExternalMethods() {
+            rewriteRun(// language=java
+              java(
+                """
+
+                  import java.util.Date;
+
+                  class A extends Date {
+
+                      private long foo;
+
+                      @Override
+                      public long getTime() {
+                          return foo;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void existingMethodsWithName() {
+            rewriteRun(// language=java
+              java(
+                """
+                  class A {
+
+                      private long foo;
+
+                      public long getTime() {
+                          return foo;
+                      }
+
+                      public long getFoo() {
+                          return 8;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        /**
+         * If two methods are effectively the same getter then only one can be renamed.
+         * Renaming both would result in a duplicate method definition, so we cannot do this.
+         * Ideally the other effective getter would have their usages renamed but be themselves deleted...
+         * TODO: create a second cleanup recipe that identifies redundant getters (isEffectiveGetter + field already has the getter annotation)
+         *  and redirects their usage (ChangeMethodName with both flags true) and then deletes them.
+         */
+        @Test
+        void twoMethodsWithSameName() {
+            rewriteRun(// language=java
+              java(
+                """
+                  class A {
+
+                      private long foo;
+
+                      public long firstToBeRenamed() {
+                          return foo;
+                      }
+
+                      public long secondToBeRenamed() {
+                          return foo;
+                      }
+                  }
+                  """,
+                """
+                  class A {
+
+                      private long foo;
+
+                      public long getFoo() {
+                          return foo;
+                      }
+
+                      public long secondToBeRenamed() {
+                          return foo;
+                      }
+                  }
+                  """
+              )
+            );
+        }
     }
 }
