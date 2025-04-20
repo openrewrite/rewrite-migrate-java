@@ -6,6 +6,12 @@ plugins {
 group = "org.openrewrite.recipe"
 description = "Migrate to later Java versions. Automatically."
 
+recipeDependencies {
+    parserClasspath("javax.persistence:javax.persistence-api:2.2")
+    parserClasspath("jakarta.enterprise:jakarta.enterprise.cdi-api:3.0.0-M4")
+    parserClasspath("org.glassfish:javax.servlet:3.0")
+}
+
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
 dependencies {
     compileOnly("org.projectlombok:lombok:latest.release")
@@ -17,6 +23,7 @@ dependencies {
     annotationProcessor("org.openrewrite:rewrite-templating:$rewriteVersion")
     compileOnly("com.google.errorprone:error_prone_core:2.+") {
         exclude("com.google.auto.service", "auto-service-annotations")
+        exclude("io.github.eisop","dataflow-errorprone")
     }
 
     implementation(platform("org.openrewrite:rewrite-bom:${rewriteVersion}"))
@@ -43,8 +50,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
 
     testImplementation("org.openrewrite:rewrite-test")
-    testImplementation("org.openrewrite:rewrite-java-tck")
-    testImplementation("org.openrewrite:rewrite-kotlin:$rewriteVersion")
+    testImplementation("org.openrewrite:rewrite-kotlin")
     testImplementation("org.openrewrite.gradle.tooling:model:$rewriteVersion")
 
     testImplementation("org.assertj:assertj-core:latest.release")
