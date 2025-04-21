@@ -24,11 +24,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class NormalizeGetterTest implements RewriteTest {
+class AdoptLombokGetterMethodNamesTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new NormalizeGetter());
+        spec.recipe(new AdoptLombokGetterMethodNames());
     }
 
     @DocumentExample
