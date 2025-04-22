@@ -1,6 +1,7 @@
 package org.openrewrite.java.migrate.jacoco;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.gradle.Assertions.buildGradle;
@@ -39,6 +40,7 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
     }
 
     @Test
+    @DocumentExample
     void enabledDeprecatedInNormalSyntax() {
         rewriteRun(
           spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
@@ -257,6 +259,7 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
         );
     }
 
+    @DocumentExample
     @Test
     void destinationDeprecatedInNormalSyntax() {
         rewriteRun(

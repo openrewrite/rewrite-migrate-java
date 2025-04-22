@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.jacoco;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,21 +31,21 @@ import org.openrewrite.java.tree.J;
 public class Gradle8JacocoReportDeprecations extends Recipe {
 
     @Override
-    public @NotNull String getDisplayName() {
+    public String getDisplayName() {
         return "Replace gradle 8 introduced deprecations in jacoco report task";
     }
 
     @Override
-    public @NotNull String getDescription() {
+    public String getDescription() {
         return "Set the `enabled` to `required` and the `destination` to `outputLocation` for Reports deprecations that were removed in gradle 8. " +
                 "See [the gradle docs on this topic](https://docs.gradle.org/current/userguide/upgrading_version_7.html#report_and_testreport_api_cleanup).";
     }
 
     @Override
-    public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new IsBuildGradle<>(), new GroovyIsoVisitor<ExecutionContext>() {
             @Override
-            public J.@NotNull Assignment visitAssignment(J.@NotNull Assignment assignment, @NotNull ExecutionContext ctx) {
+            public J. Assignment visitAssignment(J. Assignment assignment, ExecutionContext ctx) {
                 String prefix = getCursor().getNearestMessage("path");
                 String prefixOrEmpty = prefix == null ? "" : prefix + ".";
                 if (assignment.getVariable() instanceof J.FieldAccess) {
@@ -61,17 +60,17 @@ public class Gradle8JacocoReportDeprecations extends Recipe {
             }
 
             @Override
-            public J.@NotNull MethodInvocation visitMethodInvocation(J.@NotNull MethodInvocation method, @NotNull ExecutionContext executionContext) {
+            public J. MethodInvocation visitMethodInvocation(J. MethodInvocation method, ExecutionContext ctx) {
                 String parent = getCursor().getNearestMessage("path");
                 if (parent == null) {
                     getCursor().putMessage("path", method.getSimpleName());
                 } else {
                     getCursor().putMessage("path", parent + "." + method.getSimpleName());
                 }
-                return super.visitMethodInvocation(method, executionContext);
+                return super.visitMethodInvocation(method, ctx);
             }
 
-            private @NotNull J.Assignment replaceDeprecations(J.@NotNull Assignment assignment, String path) {
+            private J.Assignment replaceDeprecations(J. Assignment assignment, String path) {
                 String[] parts = path.split("\\.");
                 if (parts.length == 4 && "jacocoTestReport".equalsIgnoreCase(parts[0]) && "reports".equalsIgnoreCase(parts[1])) {
                     String reportType = parts[2];
@@ -96,7 +95,7 @@ public class Gradle8JacocoReportDeprecations extends Recipe {
                 return assignment;
             }
 
-            private @NotNull String getFieldName(J.@NotNull FieldAccess fieldAccess) {
+            private String getFieldName(J. FieldAccess fieldAccess) {
                 String fieldName = fieldAccess.getSimpleName();
                 Expression target = fieldAccess;
                 while (target instanceof J.FieldAccess) {
