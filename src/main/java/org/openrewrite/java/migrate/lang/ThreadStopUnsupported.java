@@ -42,7 +42,7 @@ public class ThreadStopUnsupported extends Recipe {
     @Override
     public String getDescription() {
         return "`Thread.resume()`, `Thread.stop()`, and `Thread.suspend()` always throws a `new UnsupportedOperationException` in Java 21+. " +
-                "This recipe makes that explicit, as the migration is more complicated." +
+                "This recipe makes that explicit, as the migration is more complicated. " +
                 "See https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html .";
     }
 
