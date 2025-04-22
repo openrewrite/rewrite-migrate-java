@@ -32,7 +32,7 @@ public class Gradle8JacocoReportDeprecations extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Replace gradle 8 introduced deprecations in jacoco report task";
+        return "Replace Gradle 8 introduced deprecations in JaCoCo report task";
     }
 
     @Override
