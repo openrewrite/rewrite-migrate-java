@@ -34,3 +34,4 @@ recipeList:
       groupId: org.jacoco
       artifactId: jacoco-maven-plugin
       newVersion: 0.8.x
+  - org.openrewrite.java.migrate.jacoco.Gradle8JacocoReportDeprecations
