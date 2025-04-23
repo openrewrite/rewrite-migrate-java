@@ -80,6 +80,25 @@ class URLConstructorToURICreateTest implements RewriteTest {
     }
 
     @Test
+    void lambdaParameter() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.net.URL;
+              import java.util.function.Consumer;
+
+              class Test {
+                  Consumer<String> foo() {
+                      return (url) -> System.out.println(new URL(url));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void removeUrlImport() {
         rewriteRun(
           //language=java

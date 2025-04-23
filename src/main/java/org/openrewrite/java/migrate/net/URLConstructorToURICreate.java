@@ -22,6 +22,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.analysis.constantfold.ConstantFold;
 import org.openrewrite.analysis.util.CursorUtil;
+import org.openrewrite.internal.RecipeRunException;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
@@ -86,9 +87,14 @@ public class URLConstructorToURICreate extends Recipe {
                         } else if (arg instanceof J.Identifier &&
                                 TypeUtils.isOfType(arg.getType(), JavaType.Primitive.String)) {
                             // find constant value of the identifier
-                            return CursorUtil.findCursorForTree(getCursor(), arg)
-                                    .bind(c -> ConstantFold.findConstantLiteralValue(c, String.class))
-                                    .toNull();
+                            try {
+                                return CursorUtil.findCursorForTree(getCursor(), arg)
+                                        .bind(c -> ConstantFold.findConstantLiteralValue(c, String.class))
+                                        .toNull();
+                            } catch (RecipeRunException e) {
+                                // `ConstantFold` does not support lambdas
+                                return null;
+                            }
                         } else {
                             // null indicates no path extractable
                             return null;
