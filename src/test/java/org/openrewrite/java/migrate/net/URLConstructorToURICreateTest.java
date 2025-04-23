@@ -21,6 +21,7 @@ import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.java.Assertions.java;
 
 class URLConstructorToURICreateTest implements RewriteTest {
@@ -73,6 +74,58 @@ class URLConstructorToURICreateTest implements RewriteTest {
                       URL url1 = URI.create("https://test.com").toURL();
                   }
               }
+              """
+          )
+        );
+    }
+
+    @Test
+    void removeUrlImport() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.net.URL;
+
+              class Test {
+                  void foo() {
+                      System.out.println(new URL("https://test.com"));
+                  }
+              }
+              """,
+            """
+              import java.net.URI;
+
+              class Test {
+                  void foo() {
+                      System.out.println(URI.create("https://test.com").toURL());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
+    void gradleUrl() {
+        rewriteRun(
+          //language=groovy
+          buildGradle(
+            """
+              import java.net.URL
+              import java.util.concurrent.atomic.AtomicReference
+
+              def url = new AtomicReference<URL>()
+              url.set(new URL('https://www.reactive-streams.org/reactive-streams-1.0.3-javadoc/'))
+              """,
+            """
+              import java.net.URI
+              import java.net.URL
+              import java.util.concurrent.atomic.AtomicReference
+
+              def url = new AtomicReference<URL>()
+              url.set(URI.create('https://www.reactive-streams.org/reactive-streams-1.0.3-javadoc/').toURL())
               """
           )
         );

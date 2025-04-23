@@ -38,7 +38,7 @@ public class URLConstructorToURICreate extends Recipe {
 
     private static final String URI_FQN = "java.net.URI";
     private static final String URL_FQN = "java.net.URL";
-    private static final MethodMatcher methodMatcherSingleArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String)");
+    private static final MethodMatcher methodMatcherSingleArg = new MethodMatcher(URL_FQN + "#<init>(java.lang.String)");
 
     @Override
     public String getDisplayName() {
@@ -47,7 +47,7 @@ public class URLConstructorToURICreate extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Converts `new URL(String)` constructor to `URI.create(String).toURL()`.";
+        return "Converts `new URL(String)` constructor to `URI.create(String).toURL()`. The URL constructor has been deprecated due to security vulnerabilities when handling malformed URLs. Using `URI.create(String)` provides stronger validation and safer URL handling in modern Java applications.";
     }
 
     @Override
@@ -64,10 +64,10 @@ public class URLConstructorToURICreate extends Recipe {
 
                             JavaTemplate template = JavaTemplate.builder("URI.create(#{any(String)}).toURL()")
                                     .imports(URI_FQN)
-                                    .contextSensitive()
                                     .javaParser(JavaParser.fromJavaVersion())
                                     .build();
                             maybeAddImport(URI_FQN);
+                            maybeRemoveImport(URL_FQN);
 
                             return template.apply(getCursor(),
                                     nc.getCoordinates().replace(),
