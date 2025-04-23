@@ -23,12 +23,15 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.IsBuildGradle;
 import org.openrewrite.groovy.GroovyIsoVisitor;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class Gradle8JacocoReportDeprecations extends Recipe {
+
+    private static final String JACOCO_SETTINGS_PATH = "JACOCO_SETTINGS_PATH";
 
     @Override
     public String getDisplayName() {
@@ -46,7 +49,7 @@ public class Gradle8JacocoReportDeprecations extends Recipe {
         return Preconditions.check(new IsBuildGradle<>(), new GroovyIsoVisitor<ExecutionContext>() {
             @Override
             public J. Assignment visitAssignment(J. Assignment assignment, ExecutionContext ctx) {
-                String prefix = getCursor().getNearestMessage("path");
+                String prefix = getCursor().getNearestMessage(JACOCO_SETTINGS_PATH);
                 String prefixOrEmpty = prefix == null ? "" : prefix + ".";
                 if (assignment.getVariable() instanceof J.FieldAccess) {
                     J.FieldAccess fieldAccess = (J.FieldAccess) assignment.getVariable();
@@ -61,38 +64,61 @@ public class Gradle8JacocoReportDeprecations extends Recipe {
 
             @Override
             public J. MethodInvocation visitMethodInvocation(J. MethodInvocation method, ExecutionContext ctx) {
-                String parent = getCursor().getNearestMessage("path");
+                String parent = getCursor().getNearestMessage(JACOCO_SETTINGS_PATH);
+                String message;
                 if (parent == null) {
-                    getCursor().putMessage("path", method.getSimpleName());
+                    message = method.getSimpleName();
                 } else {
-                    getCursor().putMessage("path", parent + "." + method.getSimpleName());
+                    message = parent + "." + method.getSimpleName();
                 }
-                return super.visitMethodInvocation(method, ctx);
+                if (isDeprecatedPath(message)) {
+                    getCursor().putMessage(JACOCO_SETTINGS_PATH, message);
+
+                    return super.visitMethodInvocation(method, ctx);
+                }
+                return method;
             }
 
             private J.Assignment replaceDeprecations(J. Assignment assignment, String path) {
-                String[] parts = path.split("\\.");
-                if (parts.length == 4 && "jacocoTestReport".equalsIgnoreCase(parts[0]) && "reports".equalsIgnoreCase(parts[1])) {
-                    String reportType = parts[2];
-                    if ("xml".equalsIgnoreCase(reportType) || "csv".equalsIgnoreCase(reportType) || "html".equalsIgnoreCase(reportType)) {
-                        if (assignment.getVariable() instanceof J.FieldAccess) {
-                            J.FieldAccess fieldAccess = (J.FieldAccess) assignment.getVariable();
-                            if ("enabled".equalsIgnoreCase(parts[3])) {
-                                return assignment.withVariable(fieldAccess.withName(fieldAccess.getName().withSimpleName("required")));
-                            } else if ("destination".equalsIgnoreCase(parts[3])) {
-                                return assignment.withVariable(fieldAccess.withName(fieldAccess.getName().withSimpleName("outputLocation")));
-                            }
-                        } else if (assignment.getVariable() instanceof J.Identifier) {
-                            J.Identifier identifier = (J.Identifier) assignment.getVariable();
-                            if ("enabled".equalsIgnoreCase(parts[3])) {
-                                return assignment.withVariable(identifier.withSimpleName("required"));
-                            } else if ("destination".equalsIgnoreCase(parts[3])) {
-                                return assignment.withVariable(identifier.withSimpleName("outputLocation"));
-                            }
+                if (isDeprecatedPath(path)) {
+                    String field = path.substring(path.lastIndexOf(".") + 1);
+                    if (assignment.getVariable() instanceof J.FieldAccess) {
+                        J.FieldAccess fieldAccess = (J.FieldAccess) assignment.getVariable();
+                        if ("enabled".equalsIgnoreCase(field)) {
+                            return assignment.withVariable(fieldAccess.withName(fieldAccess.getName().withSimpleName("required")));
+                        } else if ("destination".equalsIgnoreCase(field)) {
+                            return assignment.withVariable(fieldAccess.withName(fieldAccess.getName().withSimpleName("outputLocation")));
+                        }
+                    } else if (assignment.getVariable() instanceof J.Identifier) {
+                        J.Identifier identifier = (J.Identifier) assignment.getVariable();
+                        if ("enabled".equalsIgnoreCase(field)) {
+                            return assignment.withVariable(identifier.withSimpleName("required"));
+                        } else if ("destination".equalsIgnoreCase(field)) {
+                            return assignment.withVariable(identifier.withSimpleName("outputLocation"));
                         }
                     }
                 }
                 return assignment;
+            }
+
+            private boolean isDeprecatedPath(String path) {
+                if (StringUtils.isNullOrEmpty(path)) {
+                    return false;
+                }
+                String[] parts = path.split("\\.");
+                if (parts.length >= 1 && !"jacocoTestReport".equalsIgnoreCase(parts[0])) {
+                    return false;
+                }
+                if (parts.length >= 2 && !"reports".equalsIgnoreCase(parts[1])) {
+                    return false;
+                }
+                if (parts.length >= 3 && !"xml".equalsIgnoreCase(parts[2]) && !"csv".equalsIgnoreCase(parts[2]) && !"html".equalsIgnoreCase(parts[2])) {
+                    return false;
+                }
+                if (parts.length >= 4 && !"enabled".equalsIgnoreCase(parts[3]) && !"destination".equalsIgnoreCase(parts[3])) {
+                    return false;
+                }
+                return parts.length < 5;
             }
 
             private String getFieldName(J. FieldAccess fieldAccess) {

@@ -17,16 +17,21 @@ package org.openrewrite.java.migrate.jacoco;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.gradle.Assertions.buildGradle;
 
 class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
 
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.recipe(new Gradle8JacocoReportDeprecations());
+    }
+
     @Test
     void enabledDeprecatedInCollapsedSyntax() {
         rewriteRun(
-          spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
           buildGradle(
             """
               plugins {
@@ -58,7 +63,6 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
     @DocumentExample
     void enabledDeprecatedInNormalSyntax() {
         rewriteRun(
-          spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
           buildGradle(
             """
               plugins {
@@ -97,7 +101,6 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
     @Test
     void enabledDeprecatedInElapsedSyntax() {
         rewriteRun(
-          spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
           buildGradle(
             """
               plugins {
@@ -148,7 +151,6 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
     @Test
     void enabledDeprecatedInMixedSyntax() {
         rewriteRun(
-          spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
           buildGradle(
             """
               plugins {
@@ -191,7 +193,6 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
     @Test
     void enabledDeprecatedInSemiCollapsedSyntax() {
         rewriteRun(
-          spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
           buildGradle(
             """
               plugins {
@@ -226,7 +227,6 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
     @Test
     void enabledInAnotherExtensionNotTouched() {
         rewriteRun(
-          spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
           buildGradle(
             """
               plugins {
@@ -246,7 +246,6 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
     @Test
     void destinationDeprecatedInCollapsedSyntax() {
         rewriteRun(
-          spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
           buildGradle(
             """
               plugins {
@@ -278,7 +277,6 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
     @Test
     void destinationDeprecatedInNormalSyntax() {
         rewriteRun(
-          spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
           buildGradle(
             """
               plugins {
@@ -317,7 +315,6 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
     @Test
     void destinationDeprecatedInElapsedSyntax() {
         rewriteRun(
-          spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
           buildGradle(
             """
               plugins {
@@ -368,7 +365,6 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
     @Test
     void destinationDeprecatedInMixedSyntax() {
         rewriteRun(
-          spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
           buildGradle(
             """
               plugins {
@@ -411,7 +407,6 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
     @Test
     void destinationDeprecatedInSemiCollapsedSyntax() {
         rewriteRun(
-          spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
           buildGradle(
             """
               plugins {
@@ -446,7 +441,6 @@ class Gradle8JacocoReportDeprecationsTest implements RewriteTest {
     @Test
     void destinationInAnotherExtensionNotTouched() {
         rewriteRun(
-          spec -> spec.recipe(new Gradle8JacocoReportDeprecations()),
           buildGradle(
             """
               plugins {
