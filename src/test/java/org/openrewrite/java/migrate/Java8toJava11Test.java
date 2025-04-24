@@ -16,12 +16,13 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
+import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import java.util.regex.Pattern;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
@@ -33,9 +34,10 @@ class Java8toJava11Test implements RewriteTest {
         spec.recipe(Environment.builder()
           .scanRuntimeClasspath("org.openrewrite.java.migrate")
           .build()
-          .activateRecipes("org.openrewrite.java.migrate.Java8toJava11"));
+          .activateRecipes("org.openrewrite.java.migrate.UpgradePluginsForJava11"));
     }
 
+    @DocumentExample
     @Test
     void needToJaxb2MavenPlugin() {
         rewriteRun(
@@ -59,26 +61,9 @@ class Java8toJava11Test implements RewriteTest {
                     </build>
                   </project>
                   """,
-                after -> after.after(pomXml -> """
-                  <project>
-                    <groupId>com.mycompany.app</groupId>
-                    <artifactId>my-app</artifactId>
-                    <version>1</version>
-                    <properties>
-                      <maven.compiler.release>11</maven.compiler.release>
-                    </properties>
-                    <build>
-                      <plugins>
-                        <plugin>
-                          <groupId>org.codehaus.mojo</groupId>
-                          <artifactId>jaxb2-maven-plugin</artifactId>
-                          <version>%s</version>
-                        </plugin>
-                      </plugins>
-                    </build>
-                  </project>
-                  """.formatted(Pattern.compile("<version>(2\\.5.*)</version>").matcher(pomXml)
-                  .results().findFirst().orElseThrow().group(1)))
+                after -> after.after(pomXml -> pomXml)
+                  .afterRecipe(doc -> assertThat(doc.getMarkers().findFirst(MavenResolutionResult.class))
+                    .hasValueSatisfying(mrr -> mrr.getPom().getPlugins().get(0).getVersion().startsWith("2.5.")))
               )
             ),
             8)
