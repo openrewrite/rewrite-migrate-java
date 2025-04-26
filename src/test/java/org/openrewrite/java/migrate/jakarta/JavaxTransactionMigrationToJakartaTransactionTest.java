@@ -60,22 +60,6 @@ class JavaxTransactionMigrationToJakartaTransactionTest implements RewriteTest {
         );
     }
 
-    @Test
-    void doNotChangeImportWhenPackageFromJavaSE() {
-        rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax_transaction_xa)),
-          //language=java
-          java(
-            """
-              import javax.transaction.xa.*;
-              public class A {
-                  XAResource xa;
-              }
-              """
-          )
-        );
-    }
-
     @DocumentExample
     @Test
     void changeImportWhenPackageFromJakartaTransaction() {
@@ -95,6 +79,22 @@ class JavaxTransactionMigrationToJakartaTransactionTest implements RewriteTest {
               @Transactional
               public class A {
                   public void foo() {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeImportWhenPackageFromJavaSE() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax_transaction_xa)),
+          //language=java
+          java(
+            """
+              import javax.transaction.xa.*;
+              public class A {
+                  XAResource xa;
               }
               """
           )

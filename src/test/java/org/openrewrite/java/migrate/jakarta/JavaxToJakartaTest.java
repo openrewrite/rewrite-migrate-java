@@ -69,13 +69,6 @@ class JavaxToJakartaTest implements RewriteTest {
         );
     }
 
-    @Test
-    void doNotAddImportWhenNoChangesWereMade() {
-        rewriteRun(
-          java("public class B {}")
-        );
-    }
-
     @DocumentExample
     @Test
     void changeImport() {
@@ -94,6 +87,13 @@ class JavaxToJakartaTest implements RewriteTest {
               }
               """
           )
+        );
+    }
+
+    @Test
+    void doNotAddImportWhenNoChangesWereMade() {
+        rewriteRun(
+          java("public class B {}")
         );
     }
 

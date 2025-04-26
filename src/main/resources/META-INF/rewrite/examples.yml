@@ -6358,6 +6358,23 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lombok.AdoptLombokGetterMethodNames
+examples:
+- description: ''
+  sources:
+  - before: |
+      class A {
+          int foo = 9;
+          int giveFoo() { return foo; }
+      }
+    after: |
+      class A {
+          int foo = 9;
+          int getFoo() { return foo; }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.LombokBestPractices
 examples:
 - description: ''
