@@ -999,6 +999,27 @@ examples:
         <groupId>com.mycompany.app</groupId>
         <artifactId>my-app</artifactId>
         <version>1</version>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>jaxb2-maven-plugin</artifactId>
+              <version>2.3.1</version>
+            </plugin>
+          </plugins>
+        </build>
+      </project>
+    path: pom.xml
+    language: xml
+  - before: project
+    language: mavenProject
+- description: ''
+  sources:
+  - before: |
+      <project>
+        <groupId>com.mycompany.app</groupId>
+        <artifactId>my-app</artifactId>
+        <version>1</version>
         <properties>
           <wro4j.version>1.8.0</wro4j.version>
         </properties>
@@ -6354,6 +6375,23 @@ examples:
           public void method() {
               logger.logrb(Level.parse("0"), "sourceClass", "sourceMethod", ResourceBundle.getBundle("bundleName"), "msg");
           }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lombok.AdoptLombokGetterMethodNames
+examples:
+- description: ''
+  sources:
+  - before: |
+      class A {
+          int foo = 9;
+          int giveFoo() { return foo; }
+      }
+    after: |
+      class A {
+          int foo = 9;
+          int getFoo() { return foo; }
       }
     language: java
 ---
