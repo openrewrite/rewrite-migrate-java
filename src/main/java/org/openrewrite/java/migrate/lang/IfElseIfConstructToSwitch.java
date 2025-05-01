@@ -79,6 +79,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
         private J.@Nullable Identifier nullCheckedParameter = null;
         private @Nullable Statement nullCheckedStatement = null;
         private @Nullable Statement elze = null;
+
         @Getter
         private boolean potentialCandidate = true;
 
