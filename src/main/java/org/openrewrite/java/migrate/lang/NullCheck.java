@@ -67,7 +67,7 @@ public class NullCheck implements Trait<J.If> {
                 J.If iff = cursor.getValue();
                 if (iff.getIfCondition().getTree() instanceof J.Binary) {
                     J.Binary binary = (J.Binary) iff.getIfCondition().getTree();
-                    if (J.Binary.Type.Equal.equals(binary.getOperator())) {
+                    if (J.Binary.Type.Equal == binary.getOperator()) {
                         if (binary.getLeft() instanceof J.Literal && ((J.Literal) binary.getLeft()).getValue() == null && binary.getRight() instanceof J.Identifier) {
                             return new NullCheck(cursor, (J.Identifier) binary.getRight());
                         } else if (binary.getRight() instanceof J.Literal && ((J.Literal) binary.getRight()).getValue() == null && binary.getLeft() instanceof J.Identifier) {

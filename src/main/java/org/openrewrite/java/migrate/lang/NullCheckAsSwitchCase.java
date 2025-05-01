@@ -21,7 +21,6 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.TreeVisitingPrinter;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
@@ -58,13 +57,7 @@ public class NullCheckAsSwitchCase extends Recipe {
         return Preconditions.check(Preconditions.not(new KotlinFileChecker<>()), new JavaVisitor<ExecutionContext>() {
 
             @Override
-            public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
-                System.out.println(TreeVisitingPrinter.printTree(getCursor()));
-                return super.visitCompilationUnit(cu, executionContext);
-            }
-
-            @Override
-            public J visitBlock(J.Block block, ExecutionContext executionContext) {
+            public J visitBlock(J.Block block, ExecutionContext ctx) {
                 List<Statement> newStatements = new ArrayList<>();
                 for (int i = 0; i < block.getStatements().size(); i++) {
                     J statement = block.getStatements().get(i);
@@ -74,10 +67,10 @@ public class NullCheckAsSwitchCase extends Recipe {
                         J.Identifier nullCheckedVariable = nullCheck.getNullCheckedParameter();
                         J nextStatement = i < block.getStatements().size() - 1 ? block.getStatements().get(i + 1) : null;
                         // If there is no Return in the if-body, it's not reassigning the switched variable, and it's checking null on the same variable as the switch is switching on.
-                        if (!nullCheck.returns()
-                                && !nullCheck.assigns(nullCheckedVariable)
-                                && nextStatement instanceof J.Switch
-                                && ((J.Switch) nextStatement).getSelector().getTree() instanceof J.Identifier && ((J.Identifier)((J.Switch) nextStatement).getSelector().getTree()).getSimpleName().equals(nullCheckedVariable.getSimpleName())) {
+                        if (!nullCheck.returns() &&
+                                !nullCheck.assigns(nullCheckedVariable) &&
+                                nextStatement instanceof J.Switch &&
+                                ((J.Switch) nextStatement).getSelector().getTree() instanceof J.Identifier && ((J.Identifier)((J.Switch) nextStatement).getSelector().getTree()).getSimpleName().equals(nullCheckedVariable.getSimpleName())) {
                             Statement nullBlock = nullCheck.whenNull();
                             String semicolon = "";
                             if (nullBlock instanceof J.Block && ((J.Block) nullBlock).getStatements().size() == 1) {
@@ -101,7 +94,7 @@ public class NullCheckAsSwitchCase extends Recipe {
                         newStatements.add((Statement) statement);
                     }
                 }
-                return super.visitBlock(block.withStatements(newStatements), executionContext);
+                return super.visitBlock(block.withStatements(newStatements), ctx);
             }
         });
     }
