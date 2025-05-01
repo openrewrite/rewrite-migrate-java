@@ -7,11 +7,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class PatternMatchingIfElseConstructToSwitchTest implements RewriteTest {
+class IfElseIfConstructToSwitchTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new PatternMatchingIfElseConstructToSwitch());
+        spec.recipe(new IfElseIfConstructToSwitch());
     }
 
     @Test

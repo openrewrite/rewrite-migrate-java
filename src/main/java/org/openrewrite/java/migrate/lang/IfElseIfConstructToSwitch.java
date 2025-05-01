@@ -37,7 +37,7 @@ import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class PatternMatchingIfElseConstructToSwitch extends Recipe {
+public class IfElseIfConstructToSwitch extends Recipe {
     @Override
     public String getDisplayName() {
         return "Use pattern matching in switch cases";
