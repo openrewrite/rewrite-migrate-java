@@ -39,10 +39,10 @@ preconditions:
       version: 24
 recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
-      methodPattern: java.security.AccessController#checkPermission(*)
+      methodPattern: java.security.AccessController#checkPermission(..)
   - org.openrewrite.java.RemoveMethodInvocations:
-      methodPattern: import java.security.Policy#setPolicy(*)
+      methodPattern: import java.security.Policy#setPolicy(..)
   - org.openrewrite.java.RemoveMethodInvocations:
-      methodPattern: import java.lang.SecurityManager#check*(*)
+      methodPattern: import java.lang.SecurityManager#check*(..)
   - org.openrewrite.staticanalysis.UnnecessaryCatch
   - org.openrewrite.staticanalysis.UnnecessaryThrows
