@@ -34,14 +34,71 @@ displayName: Remove Security Manager API
 description: The Security Manager API is unsupported in Java 24. This recipe will remove the API and any usages of it.
 tags:
   - java25
+  - security
+  - deprecation
 preconditions:
   - org.openrewrite.java.migrate.search.FindJavaVersion:
       version: 24
 recipeList:
+  - org.openrewrite.java.migrate.RemoveSecurityPolicy
+  - org.openrewrite.java.migrate.RemoveSecurityAccessController
+  - org.openrewrite.java.migrate.RemoveSecurityManager
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.AccessController
+displayName: Remove Security AccessController
+description: The Security Manager API is unsupported in Java 24. This recipe will remove the usage of `java.security.AccessController`.
+tags:
+  - java25
+  - security
+  - deprecation
+preconditions:
+  - org.openrewrite.java.migrate.search.FindJavaVersion:
+      version: 24
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: java.security.AccessController
+recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.security.AccessController#checkPermission(..)
+  - org.openrewrite.staticanalysis.UnnecessaryCatch
+  - org.openrewrite.staticanalysis.UnnecessaryThrows
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemoveSecurityPolicy
+displayName: Remove Security Policy
+description: The Security Manager API is unsupported in Java 24. This recipe will remove the use of `java.security.Policy`.
+tags:
+  - java25
+  - security
+  - deprecation
+preconditions:
+  - org.openrewrite.java.migrate.search.FindJavaVersion:
+      version: 24
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: java.security.Policy
+recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.security.Policy#setPolicy(..)
+  - org.openrewrite.staticanalysis.UnnecessaryCatch
+  - org.openrewrite.staticanalysis.UnnecessaryThrows
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemoveSecurityManager
+displayName: Remove Security SecurityManager
+description: The Security Manager API is unsupported in Java 24. This recipe will remove the usage of `java.security.SecurityManager`.
+tags:
+  - java25
+  - security
+  - deprecation
+preconditions:
+  - org.openrewrite.java.migrate.search.FindJavaVersion:
+      version: 24
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: java.security.SecurityManager
+recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.lang.SecurityManager#check*(..)
   - org.openrewrite.staticanalysis.UnnecessaryCatch
