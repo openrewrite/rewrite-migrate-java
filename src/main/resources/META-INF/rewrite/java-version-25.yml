@@ -88,3 +88,25 @@ recipeList:
       methodPattern: java.lang.SecurityManager#check*(..)
   - org.openrewrite.staticanalysis.UnnecessaryCatch
   - org.openrewrite.staticanalysis.UnnecessaryThrows
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
+displayName: Replace `System.getSecurityManager()` with `null`
+description: >-
+    The Security Manager API is unsupported in Java 24. This recipe will replace `System.getSecurityManager()` with `null`
+    to make its behavior more obvious and try to simplify execution paths afterwards.
+tags:
+  - java25
+  - security
+  - deprecation
+preconditions:
+  - org.openrewrite.java.migrate.search.FindJavaVersion:
+      version: 24
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.lang.System#getSecurityManager()
+recipeList:
+  - org.openrewrite.java.ReplaceMethodInvocationWithConstant
+      methodPattern: java.lang.System#getSecurityManager()
+      constant: "null"
+  - org.openrewrite.staticanalysis.SimplifyConstantIfBranchExecution
