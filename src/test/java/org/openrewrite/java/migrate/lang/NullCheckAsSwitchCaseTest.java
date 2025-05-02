@@ -33,6 +33,7 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
     @DocumentExample
     void mergeNullCheckWithSwitch() {
         rewriteRun(
+          //language=java
           java(
             """
               package org.openrewrite.java.migrate.lang;
@@ -59,17 +60,13 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
 
             class Test {
 
-                static String formatter(Object obj) {
-                    String formatted = "initialValue";
+                static String score(String obj) {
+                    String formatted = "Score not translated yet";
                     switch (obj) {
-                        case null -> formatted = "null";
-                        case Integer i -> formatted = String.format("int %d", i);
-                        case Long l -> formatted = String.format("long %d", l);
-                        case Double d -> formatted = String.format("double %f", d);
-                        case String s -> {
-                            String str = "String";
-                            formatted = String.format("%s %s", str, s);
-                        }
+                        case null -> formatted = "You did not enter the test yet";
+                        case "A", "B" -> formatted = "Very good";
+                        case "C" -> formatted = "Good";
+                        case "D" -> formatted = "Hmmm...";
                         default -> formatted = "unknown";
                     }
                     return formatted;
