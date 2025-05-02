@@ -91,12 +91,12 @@ public class NullCheckAsSwitchCase extends Recipe {
 
                         J.Switch aSwitch = (J.Switch) statement;
                         J.Block cases = aSwitch.getCases();
-                        J.Switch switchWithNullCase = JavaTemplate.builder("switch(obj) {" +
+                        J.Switch switchWithNullCase = JavaTemplate.builder("switch(#{}) {" +
                                         "    case null -> #{}" +
                                         "}")
                                 .contextSensitive()
                                 .build()
-                                .apply(new Cursor(getCursor(), aSwitch), aSwitch.getCoordinates().replace(), nullBlock.withPrefix(Space.EMPTY).print(getCursor()) + semicolon);
+                                .apply(new Cursor(getCursor(), aSwitch), aSwitch.getCoordinates().replace(), check.getNullCheckedParameter().getSimpleName(), nullBlock.withPrefix(Space.EMPTY).print(getCursor()) + semicolon);
 
                         Statement nullCase = switchWithNullCase.getCases().getStatements().get(0);
                         nullCheck.set(null);
