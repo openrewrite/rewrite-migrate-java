@@ -41,8 +41,8 @@ tags:
 preconditions:
   - org.openrewrite.java.migrate.search.FindJavaVersion:
       version: 24
-  - org.openrewrite.java.search.FindTypes:
-      fullyQualifiedTypeName: java.security.AccessController
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.security.AccessController#checkPermission(..)
 recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.security.AccessController#checkPermission(..)
@@ -61,8 +61,8 @@ tags:
 preconditions:
   - org.openrewrite.java.migrate.search.FindJavaVersion:
       version: 24
-  - org.openrewrite.java.search.FindTypes:
-      fullyQualifiedTypeName: java.security.Policy
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.security.Policy#setPolicy(..)
 recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.security.Policy#setPolicy(..)
@@ -81,8 +81,8 @@ tags:
 preconditions:
   - org.openrewrite.java.migrate.search.FindJavaVersion:
       version: 24
-  - org.openrewrite.java.search.FindTypes:
-      fullyQualifiedTypeName: java.security.SecurityManager
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.lang.SecurityManager#check*(..)
 recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.lang.SecurityManager#check*(..)
