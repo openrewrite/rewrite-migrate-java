@@ -106,7 +106,7 @@ preconditions:
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.lang.System#getSecurityManager()
 recipeList:
-  - org.openrewrite.java.ReplaceMethodInvocationWithConstant
+  - org.openrewrite.java.ReplaceMethodInvocationWithConstant:
       methodPattern: java.lang.System#getSecurityManager()
       constant: "null"
   - org.openrewrite.staticanalysis.SimplifyConstantIfBranchExecution
