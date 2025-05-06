@@ -5,7 +5,6 @@ plugins {
 
 group = "org.openrewrite.recipe"
 description = "Migrate to later Java versions. Automatically."
-version = "3.3.0-SNAPSHOT"
 
 recipeDependencies {
     parserClasspath("javax.persistence:javax.persistence-api:2.2")
@@ -88,19 +87,4 @@ tasks.withType(Javadoc::class.java) {
 
 tasks.test {
     maxHeapSize = "2g"  // Set max heap size to 2GB or adjust as necessary
-}
-
-publishing {
-    publications {
-        repositories {
-            maven {
-                name = "PrimionNexus"
-                url = uri("https://nexus.primion.eu/repository/maven-snapshots/")
-                credentials {
-                    username = System.getenv("NEXUS_USER")
-                    password = System.getenv("NEXUS_PASSWORD")
-                }
-            }
-        }
-    }
 }
