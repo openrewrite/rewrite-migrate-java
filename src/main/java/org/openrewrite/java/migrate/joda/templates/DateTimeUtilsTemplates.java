@@ -22,7 +22,8 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_INSTANT;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_DATE_TIME_UTILS;
 
 public class DateTimeUtilsTemplates implements Templates {
     private final MethodMatcher currentTimeMillis = new MethodMatcher(JODA_DATE_TIME_UTILS + " currentTimeMillis()");

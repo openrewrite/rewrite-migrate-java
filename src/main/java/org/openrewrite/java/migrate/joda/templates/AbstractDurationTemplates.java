@@ -22,7 +22,8 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_DURATION;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_ABSTRACT_DURATION;
 
 public class AbstractDurationTemplates implements Templates {
     private final MethodMatcher isLongerThan = new MethodMatcher(JODA_ABSTRACT_DURATION + " isLongerThan(..)");

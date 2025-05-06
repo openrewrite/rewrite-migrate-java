@@ -23,7 +23,8 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_PERIOD;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_DAYS;
 
 @NoArgsConstructor
 public class DaysTemplates implements Templates {

@@ -19,8 +19,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.tree.Expression;
-
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_DURATION;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_SECONDS;
 import java.util.ArrayList;
 import java.util.List;
 
