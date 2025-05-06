@@ -46,11 +46,11 @@ class NoGuavaRefasterTest implements RewriteTest {
               }
               """,
             """
-              import java.util.Objects;
+              import static java.util.Objects.requireNonNull;
 
               class A {
                   Object foo(Object obj) {
-                      return Objects.requireNonNull(obj);
+                      return requireNonNull(obj);
                   }
               }
               """
@@ -73,11 +73,11 @@ class NoGuavaRefasterTest implements RewriteTest {
               }
               """,
             """
-              import java.util.Objects;
+              import static java.util.Objects.requireNonNull;
 
               class A {
                   String foo(String str) {
-                      return Objects.requireNonNull(str);
+                      return requireNonNull(str);
                   }
               }
               """
@@ -100,11 +100,11 @@ class NoGuavaRefasterTest implements RewriteTest {
               }
               """,
             """
-              import java.util.Objects;
+              import static java.util.Objects.requireNonNull;
 
               class A {
                   Object foo(Object obj) {
-                      return Objects.requireNonNull(obj, "foo");
+                      return requireNonNull(obj, "foo");
                   }
               }
               """
@@ -127,11 +127,11 @@ class NoGuavaRefasterTest implements RewriteTest {
               }
               """,
             """
-              import java.util.Objects;
+              import static java.util.Objects.requireNonNull;
 
               class A {
                   Object foo(Object obj, StringBuilder description) {
-                      return Objects.requireNonNull(obj, String.valueOf(description));
+                      return requireNonNull(obj, String.valueOf(description));
                   }
               }
               """
@@ -154,11 +154,11 @@ class NoGuavaRefasterTest implements RewriteTest {
               }
               """,
             """
-              import java.util.Objects;
+              import static java.util.Objects.requireNonNull;
 
               class A {
                   Object foo(Object obj) {
-                      return Objects.requireNonNull(obj);
+                      return requireNonNull(obj);
                   }
               }
               """

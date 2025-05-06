@@ -332,6 +332,39 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         }
 
         @Test
+        @DocumentExample
+        void withTypeParameterInDefinitionOnly() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  package com.example.app;
+
+                  import java.util.List;
+                  import java.util.ArrayList;
+
+                  class A {
+                    void m() {
+                        List<String> strs = new ArrayList<>();
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  import java.util.ArrayList;
+
+                  class A {
+                    void m() {
+                        var strs = new ArrayList<String>();
+                    }
+                  }
+                  """),
+                10
+              )
+            );
+        }
+
+        @Test
         void ifWelldefined() {
             //language=java
             rewriteRun(
@@ -412,39 +445,6 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                       void twoParams() {
                           Map<Class<? extends AbstractOAuth2Configurer>, AbstractOAuth2Configurer> configurers = new LinkedHashMap<>();
                       }
-                  }
-                  """),
-                10
-              )
-            );
-        }
-
-        @Test
-        @DocumentExample
-        void withTypeParameterInDefinitionOnly() {
-            //language=java
-            rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
-                  import java.util.List;
-                  import java.util.ArrayList;
-
-                  class A {
-                    void m() {
-                        List<String> strs = new ArrayList<>();
-                    }
-                  }
-                  """, """
-                  package com.example.app;
-
-                  import java.util.ArrayList;
-
-                  class A {
-                    void m() {
-                        var strs = new ArrayList<String>();
-                    }
                   }
                   """),
                 10

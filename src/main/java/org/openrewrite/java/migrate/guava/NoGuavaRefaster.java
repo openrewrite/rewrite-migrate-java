@@ -15,8 +15,10 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import com.google.errorprone.refaster.ImportPolicy;
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
+import com.google.errorprone.refaster.annotation.UseImportPolicy;
 import org.openrewrite.java.template.RecipeDescriptor;
 
 @RecipeDescriptor(
@@ -36,6 +38,7 @@ public class NoGuavaRefaster {
         }
 
         @AfterTemplate
+        @UseImportPolicy(ImportPolicy.STATIC_IMPORT_ALWAYS)
         Object after(Object object) {
             return java.util.Objects.requireNonNull(object);
         }
@@ -53,6 +56,7 @@ public class NoGuavaRefaster {
         }
 
         @AfterTemplate
+        @UseImportPolicy(ImportPolicy.STATIC_IMPORT_ALWAYS)
         Object after(Object object, String message) {
             return java.util.Objects.requireNonNull(object, message);
         }
@@ -69,6 +73,7 @@ public class NoGuavaRefaster {
         }
 
         @AfterTemplate
+        @UseImportPolicy(ImportPolicy.STATIC_IMPORT_ALWAYS)
         Object after(Object object, Object message) {
             return java.util.Objects.requireNonNull(object, String.valueOf(message));
         }

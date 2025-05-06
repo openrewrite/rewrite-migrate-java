@@ -696,6 +696,39 @@ class UseVarKeywordTest implements RewriteTest {
 
         @Nested
         class Applicable {
+
+            @Test
+            @DocumentExample
+            void withDiamondOperator() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      package com.example.app;
+
+                      import java.util.List;
+                      import java.util.ArrayList;
+
+                      class A {
+                        void m() {
+                            List<String> strs = new ArrayList<>();
+                        }
+                      }
+                      """,
+                    """
+                      package com.example.app;
+
+                      import java.util.ArrayList;
+
+                      class A {
+                        void m() {
+                            var strs = new ArrayList<String>();
+                        }
+                      }
+                      """
+                  )
+                );
+            }
             @Test
             void ifWelldefined() {
                 //language=java
@@ -753,39 +786,6 @@ class UseVarKeywordTest implements RewriteTest {
                       class A {
                         void m() {
                             var strs = new ArrayList();
-                        }
-                      }
-                      """
-                  )
-                );
-            }
-
-            @Test
-            @DocumentExample
-            void withDiamondOperator() {
-                //language=java
-                rewriteRun(
-                  java(
-                    """
-                      package com.example.app;
-
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
-                        void m() {
-                            List<String> strs = new ArrayList<>();
-                        }
-                      }
-                      """,
-                    """
-                      package com.example.app;
-
-                      import java.util.ArrayList;
-
-                      class A {
-                        void m() {
-                            var strs = new ArrayList<String>();
                         }
                       }
                       """

@@ -73,33 +73,6 @@ class UseVarForPrimitiveTest extends VarBaseTest {
     class Applicable {
 
         @Test
-        void forBoolean() {
-            //language=java
-            rewriteRun(
-              java(
-                """
-                  package com.example.app;
-
-                  class A {
-                    void m() {
-                        boolean b = true;
-                    }
-                  }
-                  """,
-                    """
-                  package com.example.app;
-
-                  class A {
-                    void m() {
-                        var b = true;
-                    }
-                  }
-                  """
-              )
-            );
-        }
-
-        @Test
         @DocumentExample
         void forChar() {
             //language=java
@@ -120,6 +93,33 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                   class A {
                     void m() {
                         var ch = '\ufffd';
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void forBoolean() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        boolean b = true;
+                    }
+                  }
+                  """,
+                    """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var b = true;
                     }
                   }
                   """

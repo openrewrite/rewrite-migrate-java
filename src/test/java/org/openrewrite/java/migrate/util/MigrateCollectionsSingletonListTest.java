@@ -33,6 +33,31 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(9)));
     }
 
+    @DocumentExample
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
+    @Test
+    void singletonList() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+
+              class Test {
+                  List<String> list = Collections.singletonList("ABC");
+              }
+              """,
+            """
+              import java.util.List;
+
+              class Test {
+                  List<String> list = List.of("ABC");
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/186")
     @Test
     void templateError() {
@@ -77,31 +102,6 @@ class MigrateCollectionsSingletonListTest implements RewriteTest {
                           }
                       }));
                   }
-              }
-              """
-          )
-        );
-    }
-
-    @DocumentExample
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
-    @Test
-    void singletonList() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.*;
-
-              class Test {
-                  List<String> list = Collections.singletonList("ABC");
-              }
-              """,
-            """
-              import java.util.List;
-
-              class Test {
-                  List<String> list = List.of("ABC");
               }
               """
           )

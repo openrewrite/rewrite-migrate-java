@@ -34,6 +34,27 @@ class AddMissingMethodImplementationTest implements RewriteTest {
           .allSources(src -> src.markers(javaVersion(21)));
     }
 
+    @DocumentExample
+    @Test
+    void happyPath() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              interface I1 {}
+              class C2 implements I1 {}
+              """,
+            """
+              interface I1 {}
+              class C2 implements I1 {
+                  public void m1() {
+                      System.out.println("m1");
+                  }}
+              """
+          )
+        );
+    }
+
     @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/459")
     void skipInterfaces() {
@@ -56,27 +77,6 @@ class AddMissingMethodImplementationTest implements RewriteTest {
             """
               interface I1 {}
               abstract class AC2 implements I1 {}
-              """
-          )
-        );
-    }
-
-    @DocumentExample
-    @Test
-    void happyPath() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              interface I1 {}
-              class C2 implements I1 {}
-              """,
-            """
-              interface I1 {}
-              class C2 implements I1 {
-                  public void m1() {
-                      System.out.println("m1");
-                  }}
               """
           )
         );

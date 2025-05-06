@@ -105,6 +105,10 @@ recipeList:
       groupId: ro.isdc.wro4j
       artifactId: wro4j-maven-plugin
       newVersion: 1.10.1
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.codehaus.mojo
+      artifactId: jaxb2-maven-plugin
+      newVersion: 2.5.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxbDependencies
