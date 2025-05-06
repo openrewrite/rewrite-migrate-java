@@ -32,25 +32,6 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
           .allSources(s -> s.markers(javaVersion(9)));
     }
 
-    @Test
-    void doesNotThrowExceptionOrThrowable() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              package com.abc;
-
-              class A {
-                 public void test() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-                     Class<?> class_ = Class.forName("org.openrewrite.Test");
-                     class_.newInstance();
-                 }
-              }
-              """
-          )
-        );
-    }
-
     @DocumentExample
     @Test
     void methodThrowsThrowable() {
@@ -74,6 +55,25 @@ class MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest implements 
                  public void test() throws Throwable {
                      Class<?> class_ = Class.forName("org.openrewrite.Test");
                      class_.getDeclaredConstructor().newInstance();
+                 }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doesNotThrowExceptionOrThrowable() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package com.abc;
+
+              class A {
+                 public void test() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+                     Class<?> class_ = Class.forName("org.openrewrite.Test");
+                     class_.newInstance();
                  }
               }
               """

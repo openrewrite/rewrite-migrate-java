@@ -62,6 +62,30 @@ class UseVarForObjectsTest extends VarBaseTest {
             );
         }
 
+        @Test
+        @DocumentExample
+        void withModifier() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  class A {
+                    void m() {
+                        final Object o = new Object();
+                    }
+                  }
+                  """,
+                    """
+                  class A {
+                    void m() {
+                        final var o = new Object();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
 
         @Test
         void reassignment() {
@@ -85,30 +109,6 @@ class UseVarForObjectsTest extends VarBaseTest {
                     Object o = new Object();
                     void m() {
                         var innerO = o;
-                    }
-                  }
-                  """
-              )
-            );
-        }
-
-        @Test
-        @DocumentExample
-        void withModifier() {
-            //language=java
-            rewriteRun(
-              java(
-                """
-                  class A {
-                    void m() {
-                        final Object o = new Object();
-                    }
-                  }
-                  """,
-                    """
-                  class A {
-                    void m() {
-                        final var o = new Object();
                     }
                   }
                   """

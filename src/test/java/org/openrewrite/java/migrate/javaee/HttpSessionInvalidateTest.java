@@ -32,6 +32,42 @@ class HttpSessionInvalidateTest implements RewriteTest {
           .recipe(new HttpSessionInvalidate());
     }
 
+    @DocumentExample
+    @Test
+    void useLogoutWhenHttpServletRequestExistsInScope() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.servlet.http.HttpServletResponse;
+              import javax.servlet.http.HttpServletRequest;
+              import javax.servlet.http.HttpSession;
+
+              class Foo {
+                  void logOut(HttpServletRequest req, HttpServletResponse res) {
+                      HttpSession session = req.getSession(false);
+                      session.invalidate();
+                      res.sendRedirect("login.html");
+                  }
+              }
+              """,
+            """
+              import javax.servlet.http.HttpServletResponse;
+              import javax.servlet.http.HttpServletRequest;
+              import javax.servlet.http.HttpSession;
+
+              class Foo {
+                  void logOut(HttpServletRequest req, HttpServletResponse res) {
+                      HttpSession session = req.getSession(false);
+                      req.logout();
+                      res.sendRedirect("login.html");
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Test
     void noChangeNeeded() {
         rewriteRun(
@@ -66,42 +102,6 @@ class HttpSessionInvalidateTest implements RewriteTest {
               class Foo {
                   void logOut(HttpSession session, HttpServletResponse res) {
                       session.invalidate();
-                      res.sendRedirect("login.html");
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @DocumentExample
-    @Test
-    void useLogoutWhenHttpServletRequestExistsInScope() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import javax.servlet.http.HttpServletResponse;
-              import javax.servlet.http.HttpServletRequest;
-              import javax.servlet.http.HttpSession;
-
-              class Foo {
-                  void logOut(HttpServletRequest req, HttpServletResponse res) {
-                      HttpSession session = req.getSession(false);
-                      session.invalidate();
-                      res.sendRedirect("login.html");
-                  }
-              }
-              """,
-            """
-              import javax.servlet.http.HttpServletResponse;
-              import javax.servlet.http.HttpServletRequest;
-              import javax.servlet.http.HttpSession;
-
-              class Foo {
-                  void logOut(HttpServletRequest req, HttpServletResponse res) {
-                      HttpSession session = req.getSession(false);
-                      req.logout();
                       res.sendRedirect("login.html");
                   }
               }

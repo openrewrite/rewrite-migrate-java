@@ -71,6 +71,49 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
+    @DocumentExample
+    @Test
+    void newlineAtBeginningOfLines() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class A {
+                  void welcome() {
+                      log("\\n========================================================="
+                          + "\\n                                                         "
+                          + "\\n          Welcome to Spring Integration!                 "
+                          + "\\n                                                         "
+                          + "\\n    For more information please visit:                   "
+                          + "\\n    https://www.springsource.org/spring-integration      "
+                          + "\\n                                                         "
+                          + "\\n=========================================================");
+                  }
+                  void log(String s) {}
+              }
+              """,
+            """
+              class A {
+                  void welcome() {
+                      log(\"""
+                         \s
+                          =========================================================
+                                                                                  \\s
+                                    Welcome to Spring Integration!                \\s
+                                                                                  \\s
+                              For more information please visit:                  \\s
+                              https://www.springsource.org/spring-integration     \\s
+                                                                                  \\s
+                          =========================================================\\
+                          \""");
+                  }
+                  void log(String s) {}
+              }
+              """
+          )
+        );
+    }
+
     @Test
     void preserveTrailingWhiteSpaces() {
         rewriteRun(
@@ -524,49 +567,6 @@ class UseTextBlocksTest implements RewriteTest {
           \n=========================================================\
           """;
         assertThat(s1).isEqualTo(s2).isEqualTo(s3);
-    }
-
-    @DocumentExample
-    @Test
-    void newlineAtBeginningOfLines() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class A {
-                  void welcome() {
-                      log("\\n========================================================="
-                          + "\\n                                                         "
-                          + "\\n          Welcome to Spring Integration!                 "
-                          + "\\n                                                         "
-                          + "\\n    For more information please visit:                   "
-                          + "\\n    https://www.springsource.org/spring-integration      "
-                          + "\\n                                                         "
-                          + "\\n=========================================================");
-                  }
-                  void log(String s) {}
-              }
-              """,
-            """
-              class A {
-                  void welcome() {
-                      log(\"""
-                         \s
-                          =========================================================
-                                                                                  \\s
-                                    Welcome to Spring Integration!                \\s
-                                                                                  \\s
-                              For more information please visit:                  \\s
-                              https://www.springsource.org/spring-integration     \\s
-                                                                                  \\s
-                          =========================================================\\
-                          \""");
-                  }
-                  void log(String s) {}
-              }
-              """
-          )
-        );
     }
 
     @Test
