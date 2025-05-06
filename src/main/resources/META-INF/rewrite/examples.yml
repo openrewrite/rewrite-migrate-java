@@ -18,6 +18,17 @@ examples:
 - description: ''
   sources:
   - before: |
+      @ParametersAreNonnullByDefault
+      package org.openrewrite.example;
+
+      import javax.annotation.ParametersAreNonnullByDefault;
+    after: |
+      @NullMarked
+      package org.openrewrite.example;
+
+      import org.jspecify.annotations.NullMarked;
+    language: java
+  - before: |
       import javax.annotation.Nonnull;
       import javax.annotation.Nullable;
 
@@ -56,17 +67,8 @@ examples:
         }
       }
     language: java
-  - before: |
-      @ParametersAreNonnullByDefault
-      package org.openrewrite.example;
-
-      import javax.annotation.ParametersAreNonnullByDefault;
-    after: |
-      @NullMarked
-      package org.openrewrite.example;
-
-      import org.jspecify.annotations.NullMarked;
-    language: java
+  - before: foo
+    language: mavenProject
   - before: |
       <project>
           <modelVersion>4.0.0</modelVersion>
@@ -102,8 +104,6 @@ examples:
       </project>
     path: pom.xml
     language: xml
-  - before: foo
-    language: mavenProject
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.AddMissingMethodImplementation
@@ -213,6 +213,8 @@ recipeName: org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On
 examples:
 - description: ''
   sources:
+  - before: project
+    language: mavenProject
   - before: |
       <project>
         <modelVersion>4.0.0</modelVersion>
@@ -236,8 +238,6 @@ examples:
       </project>
     path: pom.xml
     language: xml
-  - before: project
-    language: mavenProject
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.CastArraysAsListToList
@@ -487,25 +487,6 @@ examples:
       }
     language: java
   - before: |
-      import com.sun.xml.internal.bind.v2.ContextFactory;
-
-      class Foo2 {
-        void bar() {
-            ContextFactory factory = null;
-            factory.hashCode();
-        }
-      }
-    after: |
-      import com.sun.xml.bind.v2.ContextFactory;
-
-      class Foo2 {
-        void bar() {
-            ContextFactory factory = null;
-            factory.hashCode();
-        }
-      }
-    language: java
-  - before: |
       import com.sun.xml.internal.bind.v2.*;
 
       class Foo3 {
@@ -526,6 +507,25 @@ examples:
 
       }
     language: java
+  - before: |
+      import com.sun.xml.internal.bind.v2.ContextFactory;
+
+      class Foo2 {
+        void bar() {
+            ContextFactory factory = null;
+            factory.hashCode();
+        }
+      }
+    after: |
+      import com.sun.xml.bind.v2.ContextFactory;
+
+      class Foo2 {
+        void bar() {
+            ContextFactory factory = null;
+            factory.hashCode();
+        }
+      }
+    language: java
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.JREThrowableFinalMethods
@@ -535,6 +535,23 @@ examples:
   - '*..* add1Suppressed(Throwable)'
   - '*..* get1Suppressed()'
   sources:
+  - before: |
+      import com.test.ThrowableWithIllegalOverrrides;
+      class ClassUsingException {
+          void methodUsingException(ThrowableWithIllegalOverrrides t1) {
+              t1.add1Suppressed(null);
+              t1.get1Suppressed();
+          }
+      }
+    after: |
+      import com.test.ThrowableWithIllegalOverrrides;
+      class ClassUsingException {
+          void methodUsingException(ThrowableWithIllegalOverrrides t1) {
+              t1.myAddSuppressed(null);
+              t1.myGetSuppressed();
+          }
+      }
+    language: java
   - before: |
       package com.test;
       public class ThrowableWithIllegalOverrrides extends Throwable {
@@ -553,23 +570,6 @@ examples:
 
           public Throwable[] myGetSuppressed() {
               return null;
-          }
-      }
-    language: java
-  - before: |
-      import com.test.ThrowableWithIllegalOverrrides;
-      class ClassUsingException {
-          void methodUsingException(ThrowableWithIllegalOverrrides t1) {
-              t1.add1Suppressed(null);
-              t1.get1Suppressed();
-          }
-      }
-    after: |
-      import com.test.ThrowableWithIllegalOverrrides;
-      class ClassUsingException {
-          void methodUsingException(ThrowableWithIllegalOverrrides t1) {
-              t1.myAddSuppressed(null);
-              t1.myGetSuppressed();
           }
       }
     language: java
@@ -994,6 +994,27 @@ recipeName: org.openrewrite.java.migrate.UpgradePluginsForJava11
 examples:
 - description: ''
   sources:
+  - before: project
+    language: mavenProject
+  - before: |
+      <project>
+        <groupId>com.mycompany.app</groupId>
+        <artifactId>my-app</artifactId>
+        <version>1</version>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>jaxb2-maven-plugin</artifactId>
+              <version>2.3.1</version>
+            </plugin>
+          </plugins>
+        </build>
+      </project>
+    path: pom.xml
+    language: xml
+- description: ''
+  sources:
   - before: |
       <project>
         <groupId>com.mycompany.app</groupId>
@@ -1039,6 +1060,25 @@ examples:
 - description: ''
   sources:
   - before: |
+      package com.abc;
+
+      class A {
+         public String test() {
+             return String.format("Hello %s", "world");
+         }
+      }
+    after: |
+      package com.abc;
+
+      class A {
+         public String test() {
+             return "Hello %s".formatted("world");
+         }
+      }
+    language: java
+  - before: project
+    language: mavenProject
+  - before: |
       <project>
         <modelVersion>4.0.0</modelVersion>
 
@@ -1068,25 +1108,6 @@ examples:
       </project>
     path: pom.xml
     language: xml
-  - before: |
-      package com.abc;
-
-      class A {
-         public String test() {
-             return String.format("Hello %s", "world");
-         }
-      }
-    after: |
-      package com.abc;
-
-      class A {
-         public String test() {
-             return "Hello %s".formatted("world");
-         }
-      }
-    language: java
-  - before: project
-    language: mavenProject
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradeToJava6
@@ -3124,29 +3145,6 @@ examples:
 - description: ''
   sources:
   - before: |
-      <project>
-        <modelVersion>4.0.0</modelVersion>
-
-        <groupId>com.mycompany.app</groupId>
-        <artifactId>my-app</artifactId>
-        <version>1</version>
-
-        <dependencies>
-          <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.70</version>
-          </dependency>
-          <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
-            <version>1.70</version>
-          </dependency>
-        </dependencies>
-      </project>
-    path: pom.xml
-    language: xml
-  - before: |
       package com.abc;
 
       interface SomeMBean {
@@ -3174,6 +3172,29 @@ examples:
     language: java
   - before: project
     language: mavenProject
+  - before: |
+      <project>
+        <modelVersion>4.0.0</modelVersion>
+
+        <groupId>com.mycompany.app</groupId>
+        <artifactId>my-app</artifactId>
+        <version>1</version>
+
+        <dependencies>
+          <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.70</version>
+          </dependency>
+          <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.70</version>
+          </dependency>
+        </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UseJavaUtilBase64
@@ -3587,11 +3608,11 @@ examples:
           }
       }
     after: |
-      import java.util.Objects;
+      import static java.util.Objects.requireNonNull;
 
       class A {
           Object foo(Object obj) {
-              return Objects.requireNonNull(obj);
+              return requireNonNull(obj);
           }
       }
     language: java
@@ -5593,16 +5614,6 @@ examples:
 - description: ''
   sources:
   - before: |
-      import javax.persistence.EmbeddedId;
-      import javax.persistence.Entity;
-
-      @Entity
-      public class MainEntity {
-         @EmbeddedId
-         private EmbeddableObject eo;
-      }
-    language: java
-  - before: |
       import javax.persistence.Embeddable;
       import javax.persistence.Id;
 
@@ -5617,6 +5628,16 @@ examples:
       @Embeddable
       public class EmbeddableObject {
           private int field;
+      }
+    language: java
+  - before: |
+      import javax.persistence.EmbeddedId;
+      import javax.persistence.Entity;
+
+      @Entity
+      public class MainEntity {
+         @EmbeddedId
+         private EmbeddableObject eo;
       }
     language: java
 ---
@@ -5772,6 +5793,8 @@ examples:
           }
       }
     language: java
+  - before: foo
+    language: mavenProject
   - before: |
       <project>
           <modelVersion>4.0.0</modelVersion>
@@ -5807,8 +5830,6 @@ examples:
       </project>
     path: pom.xml
     language: xml
-  - before: foo
-    language: mavenProject
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.ExplicitRecordImport
@@ -6358,6 +6379,23 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lombok.AdoptLombokGetterMethodNames
+examples:
+- description: ''
+  sources:
+  - before: |
+      class A {
+          int foo = 9;
+          int giveFoo() { return foo; }
+      }
+    after: |
+      class A {
+          int foo = 9;
+          int getFoo() { return foo; }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.LombokBestPractices
 examples:
 - description: ''
@@ -6541,19 +6579,6 @@ examples:
       }
     language: java
   - before: |
-      import org.apache.logging.log4j.Logger;
-      import org.apache.logging.log4j.LogManager;
-      class B {
-          private static final Logger log = LogManager.getLogger(B.class);
-      }
-    after: |
-      import lombok.extern.log4j.Log4j2;
-
-      @Log4j2
-      class B {
-      }
-    language: java
-  - before: |
       import java.util.logging.Logger;
       class C {
           private static final Logger log = Logger.getLogger(C.class.getName());
@@ -6563,18 +6588,6 @@ examples:
 
       @Log
       class C {
-      }
-    language: java
-  - before: |
-      import org.jboss.logging.Logger;
-      class D {
-          private static final Logger log = Logger.getLogger(D.class);
-      }
-    after: |
-      import lombok.extern.jbosslog.JBossLog;
-
-      @JBossLog
-      class D {
       }
     language: java
   - before: |
@@ -6588,6 +6601,31 @@ examples:
 
       @CommonsLog
       class E {
+      }
+    language: java
+  - before: |
+      import org.apache.logging.log4j.Logger;
+      import org.apache.logging.log4j.LogManager;
+      class B {
+          private static final Logger log = LogManager.getLogger(B.class);
+      }
+    after: |
+      import lombok.extern.log4j.Log4j2;
+
+      @Log4j2
+      class B {
+      }
+    language: java
+  - before: |
+      import org.jboss.logging.Logger;
+      class D {
+          private static final Logger log = Logger.getLogger(D.class);
+      }
+    after: |
+      import lombok.extern.jbosslog.JBossLog;
+
+      @JBossLog
+      class D {
       }
     language: java
 ---
