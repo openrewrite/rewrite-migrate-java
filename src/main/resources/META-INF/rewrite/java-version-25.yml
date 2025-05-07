@@ -25,9 +25,10 @@ description: >-
 tags:
   - java25
 recipeList:
-  - org.openrewrite.java.migrate.RemoveSecurityPolicy
   - org.openrewrite.java.migrate.RemoveSecurityAccessController
+  - org.openrewrite.java.migrate.RemoveSecurityPolicy
   - org.openrewrite.java.migrate.RemoveSecurityManager
+  - org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
