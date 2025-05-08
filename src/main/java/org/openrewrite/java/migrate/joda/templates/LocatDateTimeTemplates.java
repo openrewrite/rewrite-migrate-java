@@ -1,0 +1,176 @@
+/*
+ * Copyright 2024 the original author or authors.
+ * <p>
+ * Licensed under the Moderne Source Available License (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * https://docs.moderne.io/licensing/moderne-source-available-license
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.openrewrite.java.migrate.joda.templates;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.MethodMatcher;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
+
+@NoArgsConstructor
+public class LocatDateTimeTemplates implements Templates {
+    final MethodMatcher newLocalDateTimeNoArgs = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>()");
+    final MethodMatcher newLocalDateTimeEpoch = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(long)");
+    final MethodMatcher newLocalDateObject = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(Object)");
+    final MethodMatcher newLocalDateTimeYmdHm = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(int,int,int,int,int)");
+    final MethodMatcher newLocalDateTimeYmdHms = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(int,int,int,int,int,int)");
+    final MethodMatcher newLocalDateTimeYmdHmsM = new MethodMatcher(JODA_LOCAL_DATE_TIME + "<constructor>(int,int,int,int,int,int,int)");
+
+    final MethodMatcher now = new MethodMatcher(JODA_LOCAL_DATE_TIME + " now()");
+
+    final MethodMatcher toDate = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toDate()");
+    final MethodMatcher toDateTimeAtDefaultZone = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toDateTime()");
+    final MethodMatcher toDateTime = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toDateTime(org.joda.time.DateTimeZone)");
+
+    final MethodMatcher equals = new MethodMatcher(JODA_LOCAL_DATE_TIME + " equals(java.lang.Object)");
+
+    final MethodMatcher getYear = new MethodMatcher(JODA_LOCAL_DATE_TIME + " getYear()");
+    final MethodMatcher getMonthOfYear = new MethodMatcher(JODA_LOCAL_DATE_TIME + " getMonthOfYear()");
+    final MethodMatcher getDayOfMonth = new MethodMatcher(JODA_LOCAL_DATE_TIME + " getDayOfMonth()");
+    final MethodMatcher getHourOfDay = new MethodMatcher(JODA_LOCAL_DATE_TIME + " getHourOfDay()");
+    final MethodMatcher getMinuteOfHour = new MethodMatcher(JODA_LOCAL_DATE_TIME + " getMinuteOfHour()");
+    final MethodMatcher getSecondOfMinute = new MethodMatcher(JODA_LOCAL_DATE_TIME + " getSecondOfMinute()");
+    final MethodMatcher getMillisOfDay = new MethodMatcher(JODA_LOCAL_DATE_TIME + " getMillisOfDay()");
+    final MethodMatcher getMillisOfSecond = new MethodMatcher(JODA_LOCAL_DATE_TIME + " getMillisOfSecond()");
+
+    final MethodMatcher parse = new MethodMatcher(JODA_LOCAL_DATE_TIME + " parse(String)");
+    final MethodMatcher parseWithFormatter = new MethodMatcher(JODA_LOCAL_DATE_TIME + " parse(String, org.joda.time.format.DateTimeFormatter)");
+    final MethodMatcher plusYears = new MethodMatcher(JODA_LOCAL_DATE_TIME + " plusYears(int)");
+    final MethodMatcher plusMonths = new MethodMatcher(JODA_LOCAL_DATE_TIME + " plusMonths(int)");
+    final MethodMatcher plusDays = new MethodMatcher(JODA_LOCAL_DATE_TIME + " plusDays(int)");
+    final MethodMatcher plusHours = new MethodMatcher(JODA_LOCAL_DATE_TIME + " plusHours(int)");
+    final MethodMatcher plusMinutes = new MethodMatcher(JODA_LOCAL_DATE_TIME + " plusMinutes(int)");
+    final MethodMatcher plusSeconds = new MethodMatcher(JODA_LOCAL_DATE_TIME + " plusSeconds(int)");
+    final MethodMatcher plusMillis = new MethodMatcher(JODA_LOCAL_DATE_TIME + " plusMillis(int)");
+    final MethodMatcher minusYears = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusYears(int)");
+    final MethodMatcher minusMonths = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusMonths(int)");
+    final MethodMatcher minusDays = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusDays(int)");
+    final MethodMatcher minusHours = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusHours(int)");
+    final MethodMatcher minusMinutes = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusMinutes(int)");
+    final MethodMatcher minusSeconds = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusSeconds(int)");
+    final MethodMatcher minusMillis = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusMillis(int)");
+    final MethodMatcher plus = new MethodMatcher(JODA_LOCAL_DATE_TIME + " plus(org.joda.time.ReadableDuration)");
+    final MethodMatcher minus = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minus(org.joda.time.ReadableDuration)");
+
+    final MethodMatcher toFormatedString = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toString(java.lang.String)");
+    final MethodMatcher toString = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toString()");
+
+    final JavaTemplate.Builder newLocalDateTimeNoArgsTemplate = JavaTemplate.builder("LocalDateTime.now()");
+    final JavaTemplate.Builder newLocalDateTimeEpochTemplate = JavaTemplate.builder("LocalDateTime.ofInstant(Instant.ofEpochMilli(#{any(long)}), ZoneId.systemDefault())")
+            .imports(JAVA_INSTANT, JAVA_ZONE_ID);
+    final JavaTemplate.Builder newLocalDateTimeYmdHmTemplate = JavaTemplate.builder("LocalDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)})");
+    final JavaTemplate.Builder newLocalDateTimeYmdHmsTemplate = JavaTemplate.builder("LocalDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)})");
+    final JavaTemplate.Builder newLocalDateTimeYmdHmsMTemplate = JavaTemplate.builder("LocalDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)})");
+
+    final JavaTemplate.Builder nowTemplate = JavaTemplate.builder("LocalDateTime.now()");
+
+    final JavaTemplate.Builder toDateTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.atZone(ZoneId.systemDefault()).toInstant()");
+    final JavaTemplate.Builder toDateTimeAtSystemDefaultTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.atZone(ZoneId.systemDefault())");
+    final JavaTemplate.Builder toDateTimeTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.atZone(#{any(java.time.ZoneOffset)})");
+
+    final JavaTemplate.Builder getYearTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.getYear()");
+    final JavaTemplate.Builder getMonthValueTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.getMonthValue()");
+    final JavaTemplate.Builder getDayOfMonthTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.getDayOfMonth()");
+    final JavaTemplate.Builder getHourTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.getHour()");
+    final JavaTemplate.Builder getMinuteTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.getMinute()");
+    final JavaTemplate.Builder getSecondTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.getSecond()");
+    final JavaTemplate.Builder getMilliOfDayTemplate = JavaTemplate.builder("#{any(java.time.LocalTime)}.get(ChronoField.MILLI_OF_DAY)")
+            .imports(JAVA_CHRONO_FIELD);
+    final JavaTemplate.Builder getMillisOfSecondTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.getSecond() * 1000");
+
+    final JavaTemplate.Builder parseTemplate = JavaTemplate.builder("LocalDateTime.parse(#{any(String)})");
+    final JavaTemplate.Builder parseWithFormatterTemplate = JavaTemplate.builder("LocalDateTime.parse(#{any(String)}, #{any(java.time.format.DateTimeFormatter)})");
+    final JavaTemplate.Builder plusYearsTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.plusYears(#{any(int)})");
+    final JavaTemplate.Builder plusMonthsTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.plusMonths(#{any(int)})");
+    final JavaTemplate.Builder plusDaysTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.plusDays(#{any(int)})");
+    final JavaTemplate.Builder plusHoursTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.plusHours(#{any(int)})");
+    final JavaTemplate.Builder plusMinutesTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.plusMinutes(#{any(int)})");
+    final JavaTemplate.Builder plusSecondsTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.plusSeconds(#{any(int)})");
+    final JavaTemplate.Builder plusMillisTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.plusNanos(#{any(int)} * 1_000_000L)");
+    final JavaTemplate.Builder minusYearsTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusYears(#{any(int)})");
+    final JavaTemplate.Builder minusMonthsTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusMonths(#{any(int)})");
+    final JavaTemplate.Builder minusDaysTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusDays(#{any(int)})");
+    final JavaTemplate.Builder minusHoursTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusHours(#{any(int)})");
+    final JavaTemplate.Builder minusMinutesTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusMinutes(#{any(int)})");
+    final JavaTemplate.Builder minusSecondsTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusSeconds(#{any(int)})");
+    final JavaTemplate.Builder minusMillisTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusNanos(#{any(int)} * 1_000_000L)");
+    final JavaTemplate.Builder plusTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.plus(#{any(java.time.Duration)})");
+    final JavaTemplate.Builder minusTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minus(#{any(java.time.Duration)})");
+
+    final JavaTemplate.Builder toFormatedStringTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.format(DateTimeFormatter.ofPattern(#{any(String)}))")
+            .imports(JAVA_TIME_FORMATTER);
+    final JavaTemplate.Builder toStringTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.toString()");
+
+    @Getter
+    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
+        {
+            add(new MethodTemplate(newLocalDateTimeNoArgs, build(newLocalDateTimeNoArgsTemplate)));
+            add(new MethodTemplate(newLocalDateTimeEpoch, build(newLocalDateTimeEpochTemplate)));
+            add(new MethodTemplate(newLocalDateTimeYmdHm, build(newLocalDateTimeYmdHmTemplate)));
+            add(new MethodTemplate(newLocalDateTimeYmdHms, build(newLocalDateTimeYmdHmsTemplate)));
+            add(new MethodTemplate(newLocalDateTimeYmdHmsM, build(newLocalDateTimeYmdHmsMTemplate)));
+
+            add(new MethodTemplate(now, build(nowTemplate)));
+
+            add(new MethodTemplate(toDate, build(toDateTemplate)));
+            add(new MethodTemplate(toDateTimeAtDefaultZone, build(toDateTimeAtSystemDefaultTemplate)));
+            add(new MethodTemplate(toDateTime, build(toDateTimeTemplate)));
+
+            add(new MethodTemplate(getYear, build(getYearTemplate)));
+            add(new MethodTemplate(getMonthOfYear, build(getMonthValueTemplate)));
+            add(new MethodTemplate(getDayOfMonth, build(getDayOfMonthTemplate)));
+            add(new MethodTemplate(getHourOfDay, build(getHourTemplate)));
+            add(new MethodTemplate(getMinuteOfHour, build(getMinuteTemplate)));
+            add(new MethodTemplate(getSecondOfMinute, build(getSecondTemplate)));
+            add(new MethodTemplate(getMillisOfDay, build(getMilliOfDayTemplate)));
+            add(new MethodTemplate(getMillisOfSecond, build(getMillisOfSecondTemplate)));
+
+            add(new MethodTemplate(parse, build(parseTemplate)));
+            add(new MethodTemplate(parseWithFormatter, build(parseWithFormatterTemplate)));
+            add(new MethodTemplate(plusYears, build(plusYearsTemplate)));
+            add(new MethodTemplate(plusMonths, build(plusMonthsTemplate)));
+            add(new MethodTemplate(plusDays, build(plusDaysTemplate)));
+            add(new MethodTemplate(plusHours, build(plusHoursTemplate)));
+            add(new MethodTemplate(plusMinutes, build(plusMinutesTemplate)));
+            add(new MethodTemplate(plusSeconds, build(plusSecondsTemplate)));
+            add(new MethodTemplate(plusMillis, build(plusMillisTemplate)));
+            add(new MethodTemplate(minusYears, build(minusYearsTemplate)));
+            add(new MethodTemplate(minusMonths, build(minusMonthsTemplate)));
+            add(new MethodTemplate(minusDays, build(minusDaysTemplate)));
+            add(new MethodTemplate(minusHours, build(minusHoursTemplate)));
+            add(new MethodTemplate(minusMinutes, build(minusMinutesTemplate)));
+            add(new MethodTemplate(minusSeconds, build(minusSecondsTemplate)));
+            add(new MethodTemplate(minusMillis, build(minusMillisTemplate)));
+            add(new MethodTemplate(plus, build(plusTemplate)));
+            add(new MethodTemplate(minus, build(minusTemplate)));
+
+            add(new MethodTemplate(toFormatedString, build(toFormatedStringTemplate)));
+            add(new MethodTemplate(toString, build(toStringTemplate)));
+
+            add(new MethodTemplate(newLocalDateObject, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
+            add(new MethodTemplate(equals, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
+        }
+    };
+
+    private JavaTemplate build(JavaTemplate.Builder builder) {
+        return buildWithImport(builder, JODA_LOCAL_DATE_TIME);
+    }
+}
