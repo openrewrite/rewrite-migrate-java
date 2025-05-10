@@ -33,7 +33,7 @@ import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 
-public class ComIntelliJAnnotationsToOrgJetbrainsAnnotationsTest implements RewriteTest {
+class ComIntelliJAnnotationsToOrgJetbrainsAnnotationsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.beforeRecipe(withToolingApi());
