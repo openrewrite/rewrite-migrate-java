@@ -5858,8 +5858,6 @@ examples:
 - description: ''
   sources:
   - before: |
-      package org.openrewrite.java.migrate.lang;
-
       class Test {
 
           static String formatter(Object obj) {
@@ -5882,8 +5880,6 @@ examples:
           }
       }
     after: |
-      package org.openrewrite.java.migrate.lang;
-
       class Test {
 
           static String formatter(Object obj) {
@@ -6016,8 +6012,6 @@ examples:
 - description: ''
   sources:
   - before: |
-      package org.openrewrite.java.migrate.lang;
-
       class Test {
 
           static String score(String obj) {
@@ -6035,8 +6029,6 @@ examples:
           }
       }
     after: |
-      package org.openrewrite.java.migrate.lang;
-
       class Test {
 
           static String score(String obj) {
@@ -6049,6 +6041,53 @@ examples:
                   default -> formatted = "unknown";
               }
               return formatted;
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.RefineSwitchCases
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+
+          static void score(Object obj) {
+              switch (obj) {
+                  case null -> System.out.println("You did not enter the test yet");
+                  case Integer i -> {
+                      if (i >= 5 && i <= 10)
+                          System.out.println("You got it");
+                      else if (i >= 0 && i < 5)
+                          System.out.println("Shame");
+                      else
+                          System.out.println("Sorry?");
+                  }
+                  case String s -> {
+                      if (s.equalsIgnoreCase("YES"))
+                          System.out.println("You got it");
+                      else if ("NO".equalsIgnoreCase(s))
+                          System.out.println("Shame");
+                      else
+                          System.out.println("Sorry?");
+                  }
+              }
+          }
+      }
+    after: |
+      class Test {
+
+          static void score(Object obj) {
+              switch (obj) {
+                  case null -> System.out.println("You did not enter the test yet");
+                  case Integer i when i >= 5 && i <= 10 -> System.out.println("You got it");
+                  case Integer i when i >= 0 && i < 5 -> System.out.println("Shame");
+                  case Integer i -> System.out.println("Sorry?");
+                  case String s when s.equalsIgnoreCase("YES") -> System.out.println("You got it");
+                  case String s when "NO".equalsIgnoreCase(s) -> System.out.println("Shame");
+                  case String s -> System.out.println("Sorry?");
+              }
           }
       }
     language: java
@@ -6067,6 +6106,55 @@ examples:
       class Test {
           String s1 = "hello";
           String s2 = "hello";
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.SwitchCaseEnumGuardToLabel
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+
+          public enum Suit { CLUBS, DIAMONDS, HEARTS, SPADES, JOKER }
+
+          static void score(Object obj) {
+              switch (obj) {
+                  case null -> System.out.println("You did not enter the test yet");
+                  case Suit s when s == Suit.CLUBS -> System.out.println("Clubs");
+                  case Suit s when s.equals(Suit.DIAMONDS) -> System.out.println("Diamonds");
+                  case Suit s when Suit.HEARTS.equals(s) -> {
+                      System.out.println("Hearts");
+                  }
+                  case Suit s when Suit.SPADES == s -> System.out.println("Spades");
+                  case Suit s when Suit.JOKER == s -> System.out.println(s);
+                  case Integer i -> System.out.println("Sorry?");
+                  case String s -> System.out.println("Sorry?");
+                  default -> System.out.println("Sorry?");
+              }
+          }
+      }
+    after: |
+      class Test {
+
+          public enum Suit { CLUBS, DIAMONDS, HEARTS, SPADES, JOKER }
+
+          static void score(Object obj) {
+              switch (obj) {
+                  case null -> System.out.println("You did not enter the test yet");
+                  case Suit.CLUBS -> System.out.println("Clubs");
+                  case Suit.DIAMONDS -> System.out.println("Diamonds");
+                  case Suit.HEARTS -> {
+                      System.out.println("Hearts");
+                  }
+                  case Suit.SPADES -> System.out.println("Spades");
+                  case Suit.JOKER -> System.out.println(Suit.JOKER);
+                  case Integer i -> System.out.println("Sorry?");
+                  case String s -> System.out.println("Sorry?");
+                  default -> System.out.println("Sorry?");
+              }
+          }
       }
     language: java
 ---

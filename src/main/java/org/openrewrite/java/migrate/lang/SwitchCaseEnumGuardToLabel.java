@@ -88,7 +88,7 @@ public class SwitchCaseEnumGuardToLabel extends Recipe {
                         }
                     } else if (guard instanceof J.Binary) {
                         J.Binary binaryGuard = (J.Binary) guard;
-                        if (J.Binary.Type.Equal.equals(binaryGuard.getOperator())) {
+                        if (J.Binary.Type.Equal == binaryGuard.getOperator()) {
                             select = binaryGuard.getLeft();
                             equalTo = binaryGuard.getRight();
                         }
@@ -119,8 +119,8 @@ public class SwitchCaseEnumGuardToLabel extends Recipe {
     private JavaVisitor<ExecutionContext> enumReferencesToEnumValue(String name, J.FieldAccess enumReference) {
         return new JavaVisitor<ExecutionContext>() {
             @Override
-            public J visitIdentifier(J.Identifier ident, ExecutionContext executionContext) {
-                J.Identifier identifier = (J.Identifier) super.visitIdentifier(ident, executionContext);
+            public J visitIdentifier(J.Identifier ident, ExecutionContext ctx) {
+                J.Identifier identifier = (J.Identifier) super.visitIdentifier(ident, ctx);
                 if (identifier.getSimpleName().equals(name) && TypeUtils.isOfType(identifier.getType(), enumReference.getType())) {
                     return enumReference.withPrefix(identifier.getPrefix());
                 }
