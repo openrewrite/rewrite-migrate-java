@@ -37,7 +37,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
           java(
             """
               class Test {
-
                   static String formatter(Object obj) {
                       String formatted = "initialValue";
                       if (obj == null) {
@@ -60,7 +59,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
               """,
               """
               class Test {
-
                   static String formatter(Object obj) {
                       String formatted = "initialValue";
                       switch (obj) {
@@ -89,7 +87,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
           java(
             """
               class Test {
-
                   static String formatter(Object obj) {
                       String formatted = "initialValue";
                       if (obj == null) {
@@ -144,7 +141,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
           java(
             """
               class Test {
-
                   static String formatter(Object obj) {
                       String formatted = "initialValue";
                       if (obj == null) {
@@ -193,7 +189,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
           java(
             """
               class Test {
-
                   static String formatter(Object obj) {
                       String formatted = "initialValue";
                       if (obj instanceof Integer i)
@@ -242,7 +237,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
           java(
             """
               class Test {
-
                   static String formatter(Object obj) {
                       String formatted = "initialValue";
                       if (obj == null) {
@@ -294,7 +288,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
           java(
             """
               class Test {
-
                   static String nullCheckAndIf(Object obj) {
                       String formatted = "initialValue";
                       if (obj == null) {

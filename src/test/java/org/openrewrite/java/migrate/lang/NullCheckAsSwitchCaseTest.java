@@ -37,7 +37,6 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
           java(
             """
               class Test {
-
                   static String score(String obj) {
                       String formatted = "Score not translated yet";
                       if (obj == null) {
@@ -80,7 +79,6 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
           java(
             """
               class Test {
-
                   static String score(String obj) {
                       String formatted = "Score not translated yet";
                       if (obj == null) {
@@ -107,7 +105,6 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
           java(
             """
               class Test {
-
                   static String score(String obj) {
                       String formatted = "Score not translated yet";
                       if (obj == null) {
