@@ -5859,7 +5859,6 @@ examples:
   sources:
   - before: |
       class Test {
-
           static String formatter(Object obj) {
               String formatted = "initialValue";
               if (obj == null) {
@@ -5881,7 +5880,6 @@ examples:
       }
     after: |
       class Test {
-
           static String formatter(Object obj) {
               String formatted = "initialValue";
               switch (obj) {
@@ -6013,7 +6011,6 @@ examples:
   sources:
   - before: |
       class Test {
-
           static String score(String obj) {
               String formatted = "Score not translated yet";
               if (obj == null) {
@@ -6052,7 +6049,6 @@ examples:
   sources:
   - before: |
       class Test {
-
           static void score(Object obj) {
               switch (obj) {
                   case null -> System.out.println("You did not enter the test yet");
