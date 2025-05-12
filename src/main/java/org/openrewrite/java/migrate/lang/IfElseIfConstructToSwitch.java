@@ -65,8 +65,13 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 if (switchCandidate.isValidCandidate()) {
                     Object[] arguments = switchCandidate.buildTemplateArguments(getCursor());
                     String switchBody = switchCandidate.buildTemplate();
-                    JavaTemplate switchTemplate = JavaTemplate.builder(switchBody).javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx)).contextSensitive().build();
-                    return super.visitSwitch(switchTemplate.apply(getCursor(), iff.getCoordinates().replace(), arguments).withPrefix(iff.getPrefix()), ctx);
+                    J.Switch switch_ = JavaTemplate.builder(switchBody)
+                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx))
+                        .contextSensitive()
+                        .build()
+                        .apply(getCursor(), iff.getCoordinates().replace(), arguments)
+                        .withPrefix(iff.getPrefix());
+                    return super.visitSwitch(switch_, ctx);
                 }
                 return super.visitIf(iff, ctx);
             }
