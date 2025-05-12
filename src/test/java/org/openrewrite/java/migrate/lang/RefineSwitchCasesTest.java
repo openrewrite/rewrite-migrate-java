@@ -61,7 +61,6 @@ class RefineSwitchCasesTest implements RewriteTest {
               """,
             """
             class Test {
-
                 static void score(Object obj) {
                     switch (obj) {
                         case null -> System.out.println("You did not enter the test yet");
@@ -106,7 +105,6 @@ class RefineSwitchCasesTest implements RewriteTest {
               """,
             """
             class Test {
-
                 static void score(Object obj) {
                     switch (obj) {
                         case null -> System.out.println("You did not enter the test yet");
@@ -146,7 +144,6 @@ class RefineSwitchCasesTest implements RewriteTest {
               """,
             """
             class Test {
-
                 static void score(Object obj) {
                     switch (obj) {
                         case Integer i when i >= 5 && i <= 10 -> System.out.println("You got it");

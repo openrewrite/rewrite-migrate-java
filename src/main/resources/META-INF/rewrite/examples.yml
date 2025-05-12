@@ -6027,7 +6027,6 @@ examples:
       }
     after: |
       class Test {
-
           static String score(String obj) {
               String formatted = "Score not translated yet";
               switch (obj) {
@@ -6073,7 +6072,6 @@ examples:
       }
     after: |
       class Test {
-
           static void score(Object obj) {
               switch (obj) {
                   case null -> System.out.println("You did not enter the test yet");

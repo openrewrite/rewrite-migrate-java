@@ -54,7 +54,6 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
               """,
             """
             class Test {
-
                 static String score(String obj) {
                     String formatted = "Score not translated yet";
                     switch (obj) {
