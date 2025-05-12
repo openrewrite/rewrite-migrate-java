@@ -33,10 +33,9 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     @DocumentExample
     void defaultSwitchBlockWithNullCheckAndFinalElseStatement() {
         rewriteRun(
+          //language=java
           java(
             """
-              package org.openrewrite.java.migrate.lang;
-
               class Test {
 
                   static String formatter(Object obj) {
@@ -60,8 +59,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
               }
               """,
               """
-              package org.openrewrite.java.migrate.lang;
-
               class Test {
 
                   static String formatter(Object obj) {
@@ -88,10 +85,9 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     @Test
     void defaultSwitchBlockWithSeparateNullCheckAndFinalElseStatement() {
         rewriteRun(
+          //language=java
           java(
             """
-              package org.openrewrite.java.migrate.lang;
-
               class Test {
 
                   static String formatter(Object obj) {
@@ -116,8 +112,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
               }
               """,
             """
-            package org.openrewrite.java.migrate.lang;
-
             class Test {
 
                 static String formatter(Object obj) {
@@ -146,10 +140,9 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     @Test
     void defaultSwitchBlockWithNullCheck() {
         rewriteRun(
+          //language=java
           java(
             """
-              package org.openrewrite.java.migrate.lang;
-
               class Test {
 
                   static String formatter(Object obj) {
@@ -171,8 +164,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
               }
               """,
             """
-            package org.openrewrite.java.migrate.lang;
-
             class Test {
 
                 static String formatter(Object obj) {
@@ -198,10 +189,9 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     @Test
     void defaultSwitchBlockFinalElseStatement() {
         rewriteRun(
+          //language=java
           java(
             """
-              package org.openrewrite.java.migrate.lang;
-
               class Test {
 
                   static String formatter(Object obj) {
@@ -223,8 +213,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
               }
               """,
             """
-            package org.openrewrite.java.migrate.lang;
-
             class Test {
 
                 static String formatter(Object obj) {
@@ -250,10 +238,9 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     @Test
     void defaultSwitchBlockWithNoPatternsSpecified() {
         rewriteRun(
+          //language=java
           java(
             """
-              package org.openrewrite.java.migrate.lang;
-
               class Test {
 
                   static String formatter(Object obj) {
@@ -277,8 +264,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
               }
               """,
             """
-            package org.openrewrite.java.migrate.lang;
-
             class Test {
 
                 static String formatter(Object obj) {
@@ -305,10 +290,9 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     @Test
     void noSwitchBlockWhenOnly2Branches() {
         rewriteRun(
+          //language=java
           java(
             """
-              package org.openrewrite.java.migrate.lang;
-
               class Test {
 
                   static String nullCheckAndIf(Object obj) {

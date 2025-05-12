@@ -36,8 +36,6 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
           //language=java
           java(
             """
-              package org.openrewrite.java.migrate.lang;
-
               class Test {
 
                   static String score(String obj) {
@@ -56,8 +54,6 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
               }
               """,
             """
-            package org.openrewrite.java.migrate.lang;
-
             class Test {
 
                 static String score(String obj) {
@@ -80,10 +76,9 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
     @Test
     void doNotMergeWhenNullBlockAssignsSwitchedVariable() {
         rewriteRun(
+          //language=java
           java(
             """
-              package org.openrewrite.java.migrate.lang;
-
               class Test {
 
                   static String score(String obj) {
@@ -108,10 +103,9 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
     @Test
     void doNotMergeWhenNullBlockReturnsSomething() {
         rewriteRun(
+          //language=java
           java(
             """
-              package org.openrewrite.java.migrate.lang;
-
               class Test {
 
                   static String score(String obj) {
