@@ -35,11 +35,11 @@ import static org.openrewrite.maven.Assertions.pomXml;
 class ComIntelliJAnnotationsToOrgJetbrainsAnnotationsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.beforeRecipe(withToolingApi());
-        spec.recipeFromResource(
+        spec.beforeRecipe(withToolingApi())
+          .recipeFromResource(
           "/META-INF/rewrite/intellij-annotations-to-jetbrains-annotations.yml",
           "org.openrewrite.java.migrate.ComIntelliJAnnotationsToOrgJetbrainsAnnotations"
-        );
+          );
     }
 
     @DocumentExample

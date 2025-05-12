@@ -303,6 +303,48 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.ComIntelliJAnnotationsToOrgJetbrainsAnnotations
+examples:
+- description: ''
+  sources:
+  - before: project
+    language: mavenProject
+  - before: |
+      <project>
+        <modelVersion>4.0.0</modelVersion>
+
+        <groupId>com.mycompany.app</groupId>
+        <artifactId>my-app</artifactId>
+        <version>1</version>
+
+        <dependencies>
+          <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>annotations</artifactId>
+            <version>5.1</version>
+          </dependency>
+        </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
+- description: ''
+  sources:
+  - before: |
+      plugins {
+          id("java-library")
+      }
+      repositories {
+          mavenCentral()
+      }
+      dependencies {
+          implementation("com.intellij:annotations:5.1")
+          implementation "com.intellij:annotations:6.0.3"
+          implementation group: "com.intellij", name: "annotations", version: "12.0"
+      }
+    path: build.gradle
+    language: groovy
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.DeleteDeprecatedFinalize
 examples:
 - description: ''
@@ -3282,25 +3324,6 @@ examples:
 - description: ''
   sources:
   - before: |
-      import com.google.common.base.MoreObjects;
-
-      class A {
-          Object foo(Object obj) {
-              return MoreObjects.firstNonNull(obj, "default");
-          }
-      }
-    after: |
-      import java.util.Objects;
-
-      class A {
-          Object foo(Object obj) {
-              return Objects.requireNonNullElse(obj, "default");
-          }
-      }
-    language: java
-- description: ''
-  sources:
-  - before: |
       import com.google.common.base.Optional;
 
       class A {
@@ -3341,6 +3364,25 @@ examples:
               } catch (NoSuchElementException e) {
                   return "";
               }
+          }
+      }
+    language: java
+- description: ''
+  sources:
+  - before: |
+      import com.google.common.base.MoreObjects;
+
+      class A {
+          Object foo(Object obj) {
+              return MoreObjects.firstNonNull(obj, "default");
+          }
+      }
+    after: |
+      import java.util.Objects;
+
+      class A {
+          Object foo(Object obj) {
+              return Objects.requireNonNullElse(obj, "default");
           }
       }
     language: java
