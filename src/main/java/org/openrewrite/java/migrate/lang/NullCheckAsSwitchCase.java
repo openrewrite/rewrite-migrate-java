@@ -39,13 +39,14 @@ import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
 public class NullCheckAsSwitchCase extends Recipe {
     @Override
     public String getDisplayName() {
-        return "Use pattern matching in switch cases";
+        return "Add null check to existing switch cases";
     }
 
     @Override
     public String getDescription() {
-        return "Enhance the Java programming language with pattern matching for switch expressions and statements. " +
-                "Extending pattern matching to switch allows an expression to be tested against a number of patterns, each with a specific action, so that complex data-oriented queries can be expressed concisely and safely.";
+        return "In later java versions, null checks are valid switch cases. " +
+                "This recipe will only add null checks to existing switch cases if there are no other statements in between them " +
+                "or if the block in the if statement is not impacting the flow of the switch.";
     }
 
     @Override

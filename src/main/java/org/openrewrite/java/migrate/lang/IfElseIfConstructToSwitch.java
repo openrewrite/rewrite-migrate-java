@@ -40,13 +40,13 @@ import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
 public class IfElseIfConstructToSwitch extends Recipe {
     @Override
     public String getDisplayName() {
-        return "Use pattern matching in switch cases";
+        return "If-elseIf-else construct to switch";
     }
 
     @Override
     public String getDescription() {
-        return "Enhance the Java programming language with pattern matching for switch expressions and statements. " +
-                "Extending pattern matching to switch allows an expression to be tested against a number of patterns, each with a specific action, so that complex data-oriented queries can be expressed concisely and safely.";
+        return "Replace if-elseIf-else construct with switch statements. In order to be replaced with a switch, " +
+                "all conditions must be on the same variable and there must be at least 3 cases.";
     }
 
     @Override
@@ -100,40 +100,34 @@ public class IfElseIfConstructToSwitch extends Recipe {
             }
         }
 
-        J.@Nullable If handleNullCheck(J.If ifPart, Cursor cursor) {
-            if (ifPart.getIfCondition().getTree() instanceof J.Binary) {
-                Optional<NullCheck> nullCheck = nullCheck().get(ifPart, cursor);
-                if (nullCheck.isPresent()) {
-                    nullCheckedParameter = nullCheck.get().getNullCheckedParameter();
-                    nullCheckedStatement = nullCheck.get().whenNull();
-                    Statement elsePart = nullCheck.get().whenNotNull();
-                    if (elsePart instanceof J.If) {
-                        ifPart = (J.If) elsePart;
-                    } else {
-                        elze = elsePart;
-                        ifPart = null;
-                    }
+        private J.@Nullable If handleNullCheck(J.If ifPart, Cursor cursor) {
+            Optional<NullCheck> nullCheck = nullCheck().get(ifPart, cursor);
+            if (nullCheck.isPresent()) {
+                nullCheckedParameter = nullCheck.get().getNullCheckedParameter();
+                nullCheckedStatement = nullCheck.get().whenNull();
+                Statement elsePart = nullCheck.get().whenNotNull();
+                if (elsePart instanceof J.If) {
+                    ifPart = (J.If) elsePart;
                 } else {
-                    noPotentialCandidate();
-                }
-                return ifPart;
-            }
-            throw new IllegalArgumentException("Unsupported if type: " + ifPart.getIfCondition().getTree().getClass().getSimpleName());
-        }
-
-        J.@Nullable If handleInstanceOfCheck(J.If ifPart) {
-            if (ifPart.getIfCondition().getTree() instanceof J.InstanceOf) {
-                patternMatchers.put((J.InstanceOf) ifPart.getIfCondition().getTree(), ifPart.getThenPart());
-                J.If.Else elsePart = ifPart.getElsePart();
-                if (elsePart != null && elsePart.getBody() instanceof J.If) {
-                    ifPart = (J.If) elsePart.getBody();
-                } else {
-                    elze = elsePart != null ? elsePart.getBody() : null;
+                    elze = elsePart;
                     ifPart = null;
                 }
-                return ifPart;
+            } else {
+                noPotentialCandidate();
             }
-            throw new IllegalArgumentException("Unsupported if type: " + ifPart.getIfCondition().getTree().getClass().getSimpleName());
+            return ifPart;
+        }
+
+        private J.@Nullable If handleInstanceOfCheck(J.If ifPart) {
+            patternMatchers.put((J.InstanceOf) ifPart.getIfCondition().getTree(), ifPart.getThenPart());
+            J.If.Else elsePart = ifPart.getElsePart();
+            if (elsePart != null && elsePart.getBody() instanceof J.If) {
+                ifPart = (J.If) elsePart.getBody();
+            } else {
+                elze = elsePart != null ? elsePart.getBody() : null;
+                ifPart = null;
+            }
+            return ifPart;
         }
 
         void noPotentialCandidate() {
@@ -141,9 +135,8 @@ public class IfElseIfConstructToSwitch extends Recipe {
         }
 
         boolean isValidCandidate() {
-            // all ifs in the chain must be on the same variable
+            // all ifs in the chain must be on the same variable in order to be a candidate for switch pattern matching
             if (potentialCandidate && patternMatchers.keySet().stream().map(J.InstanceOf::getExpression).map(expression -> ((J.Identifier) expression).getSimpleName()).distinct().count() != 1) {
-                // pattern matching in a switch can only happen if all if cases are on the same variable.
                 this.potentialCandidate = false;
                 return false;
             }

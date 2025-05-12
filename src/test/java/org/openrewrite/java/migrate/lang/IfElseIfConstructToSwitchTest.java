@@ -317,4 +317,36 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void noSwitchBlockWithDifferentVariablesBeingChecked() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                          class Test {
+                              static String formatter(Object obj) {
+                                  String formatted = "initialValue";
+                                  Object anotherObj = obj;
+                                  if (obj == null) {
+                                      formatted = "null";
+                                  } else if (obj instanceof Integer i)
+                                      formatted = String.format("int %d", i);
+                                  else if (obj instanceof Long l) {
+                                      formatted = String.format("long %d", l);
+                                  } else if (obj instanceof Double d) {
+                                      formatted = String.format("double %f", d);
+                                  } else if (anotherObj instanceof String s) {
+                                      String str = "String";
+                                      formatted = String.format("%s %s", str, s);
+                                  } else {
+                                      formatted = "unknown";
+                                  }
+                                  return formatted;
+                              }
+                          }
+                          """
+                )
+        );
+    }
 }
