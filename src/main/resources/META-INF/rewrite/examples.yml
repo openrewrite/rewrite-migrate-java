@@ -3608,11 +3608,11 @@ examples:
           }
       }
     after: |
-      import java.util.Objects;
+      import static java.util.Objects.requireNonNull;
 
       class A {
           Object foo(Object obj) {
-              return Objects.requireNonNull(obj);
+              return requireNonNull(obj);
           }
       }
     language: java
