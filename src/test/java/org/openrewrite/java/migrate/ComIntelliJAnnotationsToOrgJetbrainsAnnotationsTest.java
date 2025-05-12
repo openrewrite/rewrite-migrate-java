@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.DocumentExample;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.test.RecipeSpec;
@@ -42,7 +41,6 @@ class ComIntelliJAnnotationsToOrgJetbrainsAnnotationsTest implements RewriteTest
           );
     }
 
-    @DocumentExample
     @Test
     void mavenDependencyUpdate() {
         rewriteRun(
@@ -81,7 +79,6 @@ class ComIntelliJAnnotationsToOrgJetbrainsAnnotationsTest implements RewriteTest
         );
     }
 
-    @DocumentExample
     @Test
     void gradleDependencyUpdates() {
         rewriteRun(
