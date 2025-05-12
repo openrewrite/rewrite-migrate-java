@@ -22,7 +22,7 @@ import org.openrewrite.test.SourceSpec;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class UseThreadsOrExecutorsTest implements RewriteTest {
+class UseThreadsOrExecutorsTest implements RewriteTest {
 
     @DocumentExample
     @Test
@@ -60,7 +60,8 @@ public class UseThreadsOrExecutorsTest implements RewriteTest {
                 @Override
                 public void run() {}
               }
-              """, SourceSpec::skip
+              """,
+                SourceSpec::skip
           ),
           java(
             """
