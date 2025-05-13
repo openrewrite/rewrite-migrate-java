@@ -64,6 +64,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
 
                 if (switchCandidate.isValidCandidate()) {
                     Object[] arguments = switchCandidate.buildTemplateArguments(getCursor());
+                    if (arguments.length == 0) {
+                        return iff;
+                    }
                     String switchBody = switchCandidate.buildTemplate();
                     J.Switch switch_ = JavaTemplate.builder(switchBody)
                         .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx))
@@ -150,13 +153,21 @@ public class IfElseIfConstructToSwitch extends Recipe {
             return potentialCandidate;
         }
 
-        String switchOn() {
-            return ((J.Identifier) patternMatchers.keySet().stream().map(J.InstanceOf::getExpression).findAny().get()).getSimpleName();
+        @Nullable String switchOn() {
+            return patternMatchers.keySet().stream().map(J.InstanceOf::getExpression).findAny()
+                    .filter(instanceOf -> instanceOf instanceof J.Identifier)
+                    .map(J.Identifier.class::cast)
+                    .map(J.Identifier::getSimpleName)
+                    .orElse(null);
         }
 
         Object[] buildTemplateArguments(Cursor cursor) {
+            String switchOn = switchOn();
+            if (switchOn == null) {
+                return new Object[0];
+            }
             Object[] arguments = new Object[1 + (nullCheckedParameter != null ? 1 : 0) + (patternMatchers.size() * 3) + (elze != null ? 1 : 0)];
-            arguments[0] = switchOn();
+            arguments[0] = switchOn;
             int i = 1;
             if (nullCheckedParameter != null) {
                 // case null -> nullCheckedStatement
