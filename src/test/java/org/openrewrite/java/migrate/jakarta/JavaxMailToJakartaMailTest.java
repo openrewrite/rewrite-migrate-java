@@ -1,7 +1,6 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -9,11 +8,11 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-public class JavaxMailToJakartaMail implements RewriteTest {
+public class JavaxMailToJakartaMailTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "mail-1.4.7", "javax.mail-api-1.6.2", "jakarta.mail-api-2.0.1"))
+            .classpath("mail-1.4.7", "javax.mail-api-1.6.2", "jakarta.mail-api-2.0.1"))
           .recipeFromResource(
             "/META-INF/rewrite/jakarta-ee-9.yml",
             "org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail");

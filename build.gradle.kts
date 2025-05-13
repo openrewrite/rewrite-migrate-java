@@ -10,9 +10,6 @@ recipeDependencies {
     parserClasspath("javax.persistence:javax.persistence-api:2.2")
     parserClasspath("jakarta.enterprise:jakarta.enterprise.cdi-api:3.0.0-M4")
     parserClasspath("org.glassfish:javax.servlet:3.0")
-    parserClasspath("javax.mail:mail:1.4.7")
-    parserClasspath("javax.mail:javax.mail-api:1.6.2")
-    parserClasspath("jakarta.mail:jakarta.mail-api:2.0.1")
 }
 
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
@@ -75,6 +72,9 @@ dependencies {
     testRuntimeOnly("jakarta.annotation:jakarta.annotation-api:2.1.1")
     testRuntimeOnly("org.springframework:spring-core:6.1.13")
     testRuntimeOnly("com.google.code.findbugs:jsr305:3.0.2")
+    testRuntimeOnly("javax.mail:mail:1.4.7")
+    testRuntimeOnly("javax.mail:javax.mail-api:1.6.2")
+    testRuntimeOnly("jakarta.mail:jakarta.mail-api:2.0.1")
     testRuntimeOnly(gradleApi())
 }
 
