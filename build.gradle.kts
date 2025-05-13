@@ -10,8 +10,6 @@ recipeDependencies {
     parserClasspath("javax.persistence:javax.persistence-api:2.2")
     parserClasspath("jakarta.enterprise:jakarta.enterprise.cdi-api:3.0.0-M4")
     parserClasspath("org.glassfish:javax.servlet:3.0")
-    parserClasspath("javax.ws.rs:javax.ws.rs-api:2.1.1")
-    parserClasspath("jakarta.ws.rs:jakarta.ws.rs-api:3.0.0")
 }
 
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
@@ -74,6 +72,8 @@ dependencies {
     testRuntimeOnly("jakarta.annotation:jakarta.annotation-api:2.1.1")
     testRuntimeOnly("org.springframework:spring-core:6.1.13")
     testRuntimeOnly("com.google.code.findbugs:jsr305:3.0.2")
+    testRuntimeOnly("javax.ws.rs:javax.ws.rs-api:2.1.1")
+    testRuntimeOnly("jakarta.ws.rs:jakarta.ws.rs-api:3.0.0")
     testRuntimeOnly(gradleApi())
 }
 

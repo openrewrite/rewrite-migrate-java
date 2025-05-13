@@ -1,7 +1,6 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -13,7 +12,7 @@ public class JavaxWsToJakartaWsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "javax.ws.rs-api-2.1.1", "jakarta.ws.rs-api-3.0.0"))
+            .classpath("javax.ws.rs-api", "jakarta.ws.rs-api"))
           .recipeFromResource(
             "/META-INF/rewrite/jakarta-ee-9.yml",
             "org.openrewrite.java.migrate.jakarta.JavaxWsToJakartaWs");
@@ -24,6 +23,27 @@ public class JavaxWsToJakartaWsTest implements RewriteTest {
         rewriteRun(
           mavenProject(
             "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.ws.rs.core.MediaType;
+                  public class TestApplication {
+                      MediaType getType() {
+                          return MediaType.APPLICATION_JSON_TYPE;
+                      }
+                  }
+                  """,
+                """
+                  import jakarta.ws.rs.core.MediaType;
+                  public class TestApplication {
+                      MediaType getType() {
+                          return MediaType.APPLICATION_JSON_TYPE;
+                      }
+                  }
+                  """
+              )
+            ),
             //language=xml
             pomXml(
               """
@@ -61,30 +81,36 @@ public class JavaxWsToJakartaWsTest implements RewriteTest {
                 </project>
                 """
             )
-          ),
-          srcMainJava(
-            //language=java
-            java(
-              """
-                import javax.ws.rs.core.MediaType;
-                public class TestApplication {
-                }
-                """,
-              """
-                import jakarta.ws.rs.core.MediaType;
-                public class TestApplication {
-                }
-                """
-            )
           )
         );
     }
 
     @Test
-    void addsJakartaWsApiDependencyIfNonExisting() {
+    void addsJakartaWsApiDependencyIfExistingInTransitive() {
         rewriteRun(
           mavenProject(
             "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.ws.rs.core.MediaType;
+                  public class TestApplication {
+                      MediaType getType() {
+                          return MediaType.APPLICATION_JSON_TYPE;
+                      }
+                  }
+                  """,
+                """
+                  import jakarta.ws.rs.core.MediaType;
+                  public class TestApplication {
+                      MediaType getType() {
+                          return MediaType.APPLICATION_JSON_TYPE;
+                      }
+                  }
+                  """
+              )
+            ),
             //language=xml
             pomXml(
               """
@@ -95,13 +121,6 @@ public class JavaxWsToJakartaWsTest implements RewriteTest {
                     <groupId>com.example</groupId>
                     <artifactId>demo</artifactId>
                     <version>0.0.1-SNAPSHOT</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>javax</groupId>
-                            <artifactId>javaee-api</artifactId>
-                            <version>8.0</version>
-                        </dependency>
-                    </dependencies>
                 </project>
                 """,
               """
@@ -120,21 +139,6 @@ public class JavaxWsToJakartaWsTest implements RewriteTest {
                         </dependency>
                     </dependencies>
                 </project>
-                """
-            )
-          ),
-          srcMainJava(
-            //language=java
-            java(
-              """
-                import javax.ws.rs.core.MediaType;
-                public class TestApplication {
-                }
-                """,
-              """
-                import jakarta.ws.rs.core.MediaType;
-                public class TestApplication {
-                }
                 """
             )
           )
