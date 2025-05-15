@@ -128,6 +128,10 @@ recipeList:
       groupId: javax.xml.ws
       artifactId: jaxws-api
       newScope: provided
+  - org.openrewrite.gradle.ChangeDependencyConfiguration:
+      groupId: javax.xml.ws
+      artifactId: jaxws-api
+      newConfiguration: compileOnly
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedJaxBModuleProvided
@@ -143,7 +147,15 @@ recipeList:
       groupId: javax.xml.bind
       artifactId: jaxb-api
       newScope: provided
+  - org.openrewrite.gradle.ChangeDependencyConfiguration:
+      groupId: javax.xml.bind
+      artifactId: jaxb-api
+      newConfiguration: compileOnly
   - org.openrewrite.maven.ChangeDependencyScope:
       groupId: javax.activation
       artifactId: activation
       newScope: provided
+  - org.openrewrite.gradle.ChangeDependencyConfiguration:
+      groupId: javax.activation
+      artifactId: activation
+      newConfiguration: compileOnly
