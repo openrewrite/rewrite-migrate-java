@@ -431,6 +431,17 @@ class IBMSemeruTest implements RewriteTest {
               dependencies {
                   implementation("javax.xml.ws:jaxws-api:2.0")
               }
+              """,
+            """
+              plugins {
+                  id 'java-library'
+              }
+              repositories {
+                  mavenCentral()
+              }
+              dependencies {
+                  compileOnly("javax.xml.ws:jaxws-api:2.0")
+              }
               """
           )
         );
@@ -532,6 +543,18 @@ class IBMSemeruTest implements RewriteTest {
               dependencies {
                   implementation("javax.xml.bind:jaxb-api:2.3.1")
                   implementation("javax.activation:activation:1.1.1")
+              }
+              """,
+            """
+              plugins {
+                  id 'java-library'
+              }
+              repositories {
+                  mavenCentral()
+              }
+              dependencies {
+                  compileOnly("javax.xml.bind:jaxb-api:2.3.1")
+                  compileOnly("javax.activation:activation:1.1.1")
               }
               """
           )
