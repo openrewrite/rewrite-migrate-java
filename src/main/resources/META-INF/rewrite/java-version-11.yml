@@ -185,7 +185,7 @@ displayName: Add explicit JAXB API dependencies
 description: >-
   This recipe will add explicit API dependencies for Jakarta EE 8 when a Java 8 application is using JAXB. Any existing API
   dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 version 2.x
-  which allows for the continued use of the `javax.xml.bind` namespace.
+  which allows for the continued use of the `javax.xml.bind` namespace. All JAXB runtime implementation dependencies are removed.
 tags:
   - javax
   - java11
@@ -224,6 +224,19 @@ recipeList:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
       newVersion: 2.3.x
+  # Remove the jaxb runtime
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: org.glassfish.jaxb
+      artifactId: jaxb-runtime
+  - org.openrewrite.maven.RemoveManagedDependency:
+      groupId: org.glassfish.jaxb
+      artifactId: jaxb-runtime
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: com.sun.xml.bind
+      artifactId: jaxb-impl
+  - org.openrewrite.maven.RemoveManagedDependency:
+      groupId: com.sun.xml.bind
+      artifactId: jaxb-impl
   # Remove the version from added dependencies when a managed version exists.
   - org.openrewrite.maven.RemoveRedundantDependencyVersions:
       groupPattern: com.sun.xml.bind
