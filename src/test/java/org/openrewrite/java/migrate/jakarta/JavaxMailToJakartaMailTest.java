@@ -27,7 +27,7 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpath("mail-1.4.7", "javax.mail-api-1.6.2", "jakarta.mail-api-2.0.1"))
+            .classpath("mail-1.4.7", "javax.mail-api-1.6.2"))
           .recipeFromResource(
             "/META-INF/rewrite/jakarta-ee-9.yml",
             "org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail");
