@@ -3282,25 +3282,6 @@ examples:
 - description: ''
   sources:
   - before: |
-      import com.google.common.base.MoreObjects;
-
-      class A {
-          Object foo(Object obj) {
-              return MoreObjects.firstNonNull(obj, "default");
-          }
-      }
-    after: |
-      import java.util.Objects;
-
-      class A {
-          Object foo(Object obj) {
-              return Objects.requireNonNullElse(obj, "default");
-          }
-      }
-    language: java
-- description: ''
-  sources:
-  - before: |
       import com.google.common.base.Optional;
 
       class A {
@@ -3341,6 +3322,25 @@ examples:
               } catch (NoSuchElementException e) {
                   return "";
               }
+          }
+      }
+    language: java
+- description: ''
+  sources:
+  - before: |
+      import com.google.common.base.MoreObjects;
+
+      class A {
+          Object foo(Object obj) {
+              return MoreObjects.firstNonNull(obj, "default");
+          }
+      }
+    after: |
+      import java.util.Objects;
+
+      class A {
+          Object foo(Object obj) {
+              return Objects.requireNonNullElse(obj, "default");
           }
       }
     language: java

@@ -51,6 +51,7 @@
 17.0.15-tem
 17.0.15-zulu
 17.0.15.crac-librca
+17.0.15.crac-zulu
 17.0.15.fx-librca
 17.0.15.fx-zulu
 17.0.9-graalce
@@ -84,6 +85,7 @@
 21.0.7-tem
 21.0.7-zulu
 21.0.7.crac-librca
+21.0.7.crac-zulu
 21.0.7.fx-librca
 21.0.7.fx-zulu
 22.0.2-oracle
@@ -132,6 +134,7 @@
 24.0.1-sapmchn
 24.0.1-tem
 24.0.1-zulu
+24.0.1.crac-zulu
 24.0.1.fx-librca
 24.0.1.fx-zulu
 24.0.2.r22-mandrel
@@ -158,6 +161,7 @@
 25.ea.18-graal
 25.ea.19-graal
 25.ea.20-graal
+25.ea.21-graal
 25.ea.8-graal
 6.0.119-zulu
 7.0.352-zulu
