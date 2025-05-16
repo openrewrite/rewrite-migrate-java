@@ -662,6 +662,11 @@ recipeList:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.ws.rs
+      artifactId: jakarta.ws.rs-api
+      version: 3.0.x
+      onlyIfUsing: javax.ws.rs.core.*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.ws
       newPackageName: jakarta.ws
