@@ -486,6 +486,12 @@ description: Java EE has been rebranded to Jakarta EE, necessitating a package r
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.mail
+      oldArtifactId: mail
+      newGroupId: jakarta.mail
+      newArtifactId: jakarta.mail-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.mail
       oldArtifactId: javax.mail-api
       newGroupId: jakarta.mail
       newArtifactId: jakarta.mail-api
