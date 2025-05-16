@@ -27,7 +27,7 @@ class JavaxWsToJakartaWsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpath("javax.ws.rs-api", "jakarta.ws.rs-api"))
+            .classpath("javax.ws.rs-api"))
           .recipeFromResource(
             "/META-INF/rewrite/jakarta-ee-9.yml",
             "org.openrewrite.java.migrate.jakarta.JavaxWsToJakartaWs");
