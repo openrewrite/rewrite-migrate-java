@@ -239,10 +239,6 @@ recipeList:
       artifactId: jaxb-impl
   # Remove the version from added dependencies when a managed version exists.
   - org.openrewrite.maven.RemoveRedundantDependencyVersions:
-      groupPattern: com.sun.xml.bind
-      artifactPattern: "*"
-      onlyIfVersionsMatch: true
-  - org.openrewrite.maven.RemoveRedundantDependencyVersions:
       groupPattern: jakarta.xml.bind
       artifactPattern: "*"
       onlyIfVersionsMatch: true
