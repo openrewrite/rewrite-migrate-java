@@ -63,7 +63,7 @@ class Java8toJava11Test implements RewriteTest {
                   """,
                 after -> after.after(pomXml -> pomXml)
                   .afterRecipe(doc -> assertThat(doc.getMarkers().findFirst(MavenResolutionResult.class))
-                    .hasValueSatisfying(mrr -> mrr.getPom().getPlugins().get(0).getVersion().startsWith("2.5.")))
+                    .hasValueSatisfying(mrr -> mrr.getPom().getPlugins().getFirst().getVersion().startsWith("2.5.")))
               )
             ),
             8)
