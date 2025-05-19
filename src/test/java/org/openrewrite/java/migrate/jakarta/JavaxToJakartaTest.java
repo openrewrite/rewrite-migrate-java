@@ -574,7 +574,7 @@ class JavaxToJakartaTest implements RewriteTest {
     }
 
     @Test
-    void doNothingIfNotFoundTransitiveDependency() {
+    void upgradeAnnotationApiFromV1ToV2() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javaxServlet)),
           mavenProject(
@@ -592,8 +592,7 @@ class JavaxToJakartaTest implements RewriteTest {
             //language=xml
             pomXml(
               """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                <project>
                   <modelVersion>4.0.0</modelVersion>
                   <groupId>org.sample</groupId>
                   <artifactId>sample</artifactId>
@@ -603,6 +602,21 @@ class JavaxToJakartaTest implements RewriteTest {
                       <groupId>jakarta.annotation</groupId>
                       <artifactId>jakarta.annotation-api</artifactId>
                       <version>1.3.5</version>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>jakarta.annotation</groupId>
+                      <artifactId>jakarta.annotation-api</artifactId>
+                      <version>2.0.0</version>
                     </dependency>
                   </dependencies>
                 </project>

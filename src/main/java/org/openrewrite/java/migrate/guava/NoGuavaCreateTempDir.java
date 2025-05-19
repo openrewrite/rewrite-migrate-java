@@ -56,10 +56,10 @@ public class NoGuavaCreateTempDir extends Recipe {
         @Override
         public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
             J.CompilationUnit c = super.visitCompilationUnit(cu, ctx);
+            maybeRemoveImport("com.google.common.io.Files");
             maybeAddImport("java.nio.file.Files");
             maybeAddImport("java.io.IOException");
             maybeAddImport("java.io.File");
-            maybeRemoveImport("com.google.common.io.Files");
             return c;
         }
 

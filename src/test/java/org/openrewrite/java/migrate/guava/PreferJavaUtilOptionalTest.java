@@ -208,7 +208,7 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
             import java.util.Optional;
 
             class A {
-                Optional<String> foo(java.util.Optional<String> optional) {
+                Optional<String> foo(Optional<String> optional) {
                     return optional;
                 }
             }
