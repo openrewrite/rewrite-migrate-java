@@ -43,7 +43,7 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
               java(
                 """
                   import javax.annotation.Generated;
-                  
+
                   @Generated("Hello")
                   class A {
                   }
@@ -53,7 +53,6 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
             //language=xml
             pomXml(
               """
-                <?xml version="1.0" encoding="UTF-8"?>
                 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                   <modelVersion>4.0.0</modelVersion>
                   <groupId>org.sample</groupId>
@@ -62,7 +61,6 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
                 </project>
                 """,
               """
-                <?xml version="1.0" encoding="UTF-8"?>
                 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                   <modelVersion>4.0.0</modelVersion>
                   <groupId>org.sample</groupId>
@@ -73,6 +71,62 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
                       <groupId>jakarta.annotation</groupId>
                       <artifactId>jakarta.annotation-api</artifactId>
                       <version>1.3.5</version>
+                      <scope>provided</scope>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void changeAndUpgradeDependencyIfAnnotationJsr250Present() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn("package javax.annotation; public @interface Generated {}")),
+          mavenProject("my-project",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import javax.annotation.Generated;
+
+                  @Generated("Hello")
+                  class A {
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>javax.annotation</groupId>
+                      <artifactId>javax.annotation-api</artifactId>
+                      <version>1.3.2</version>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """,
+              """
+                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>jakarta.annotation</groupId>
+                      <artifactId>jakarta.annotation-api</artifactId>
+                      <version>1.3.5</version>
+                      <scope>provided</scope>
                     </dependency>
                   </dependencies>
                 </project>
