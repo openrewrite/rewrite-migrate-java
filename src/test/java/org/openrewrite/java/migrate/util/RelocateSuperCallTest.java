@@ -15,9 +15,8 @@
  */
 package org.openrewrite.java.migrate.util;
 
-import org.openrewrite.DocumentExample;
-
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -219,4 +218,3 @@ class RelocateSuperCallTest implements RewriteTest {
         );
     }
 }
-
