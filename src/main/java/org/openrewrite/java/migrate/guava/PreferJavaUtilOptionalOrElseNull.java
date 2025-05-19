@@ -57,8 +57,8 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
         @Override
         public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
             J.CompilationUnit c = super.visitCompilationUnit(cu, ctx);
-            maybeAddImport("java.util.Optional");
             maybeRemoveImport("com.google.common.base.Optional");
+            maybeAddImport("java.util.Optional");
             return c;
         }
 
