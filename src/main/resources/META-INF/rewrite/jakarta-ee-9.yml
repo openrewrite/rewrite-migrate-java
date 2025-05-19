@@ -117,21 +117,15 @@ recipeList:
       artifactId: jakarta.annotation-api
       newVersion: 2.0.x
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.annotation
-      newPackageName: jakarta.annotation
-      recursive: true
-  - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.annotation.processing
       newPackageName: jakarta.annotation.processing
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.annotation.concurrent
       newPackageName: jakarta.annotation.concurrent
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Nullable
-      newFullyQualifiedTypeName: jakarta.annotation.Nullable
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Nonnull
-      newFullyQualifiedTypeName: jakarta.annotation.Nonnull
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.annotation
+      newPackageName: jakarta.annotation
+      recursive: true
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
