@@ -117,16 +117,16 @@ recipeList:
       artifactId: jakarta.annotation-api
       newVersion: 2.0.x
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.annotation.processing
-      newPackageName: jakarta.annotation.processing
-  - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.annotation.concurrent
-      newPackageName: jakarta.annotation.concurrent
-  - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.annotation
       newPackageName: jakarta.annotation
-      recursive: true
-
+      # Avoid changing javax.annotation.concurrent and javax.annotation.processing
+      recursive: false
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.annotation.security
+      newPackageName: jakarta.annotation.security
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.annotation.sql
+      newPackageName: jakarta.annotation.sql
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxAuthenticationMigrationToJakartaAuthentication

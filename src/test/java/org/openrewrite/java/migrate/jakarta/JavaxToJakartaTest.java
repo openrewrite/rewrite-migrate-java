@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.jakarta;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -652,6 +653,32 @@ class JavaxToJakartaTest implements RewriteTest {
                       </property>
                   </bean>
               </beans>
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/731")
+    @Test
+    void doNotChangeImportsOfJavaAnnotationProcessorApi() {
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+              import javax.annotation.processing.AbstractProcessor;
+              import javax.annotation.processing.RoundEnvironment;
+              import javax.annotation.processing.SupportedAnnotationTypes;
+              import javax.lang.model.element.TypeElement;
+
+              @SupportedAnnotationTypes("MyAnnotation")
+              public class MyAnnotationProcessor extends AbstractProcessor {
+
+                  @Override
+                  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+                      return false;
+                  }
+
+              }
               """
           )
         );
