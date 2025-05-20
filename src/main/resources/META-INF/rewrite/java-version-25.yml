@@ -29,6 +29,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemoveSecurityPolicy
   - org.openrewrite.java.migrate.RemoveSecurityManager
   - org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
+  - org.openrewrite.java.migrate.RelocateSuperCall
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
