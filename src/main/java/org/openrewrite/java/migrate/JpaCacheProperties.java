@@ -154,10 +154,26 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
             // if we could determine an appropriate value, create the element.
             if (scmValue != null) {
                 if (!v1) {
-                    Xml.Tag newNode = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
+                    //Xml.Tag newNode = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
                     // Ideally we would insert <shared-cache-mode> before the <validation-mode> and <properties> nodes
                     Cursor parent = getCursor().getParentOrThrow();
-                    t = autoFormat(addOrUpdateChild(t, newNode, parent), ctx, parent);
+                    List<Xml.Tag> newChildren = new ArrayList<>();
+                    Xml.Tag sharedCacheTag = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>").withPrefix("\n        ");
+                    boolean added = false;
+
+                    for (Xml.Tag child : t.getChildren()) {
+                        if (!added && "properties".equals(child.getName())) {
+                            newChildren.add(sharedCacheTag);
+                            added = true;
+                        }
+                        newChildren.add(child);
+                    }
+                    if (!added) {
+                        newChildren.add(sharedCacheTag);
+                    }
+
+                    t = t.withContent(newChildren);
+                    t = autoFormat(t, ctx, parent);
                 } else {
                     // version="1.0"
                     // add a property for eclipselink
