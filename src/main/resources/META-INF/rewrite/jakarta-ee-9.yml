@@ -722,18 +722,20 @@ tags:
   - javax
   - jakarta
 recipeList:
-  - org.openrewrite.xml.ChangeTagAttribute:
-      #language=xpath
-      elementName: "//*[namespace-uri() = 'http://java.sun.com/xml/ns/jaxb' and local-name() = 'bindings']"
-      attributeName: version
-      oldValue: 1.0
-      newValue: 3.0
+  # Update namespace first
   - org.openrewrite.xml.ChangeTagAttribute:
       #language=xpath
       elementName: "//*[namespace-uri() = 'http://java.sun.com/xml/ns/jaxb' and local-name() = 'bindings']"
       attributeName: xmlns:jxb
       oldValue: http://java.sun.com/xml/ns/jaxb
       newValue: https://jakarta.ee/xml/ns/jaxb
+  # Update version
+  - org.openrewrite.xml.ChangeTagAttribute:
+      #language=xpath
+      elementName: "//*[namespace-uri() = 'https://jakarta.ee/xml/ns/jaxb' and local-name() = 'bindings']"
+      attributeName: version
+      oldValue: 1.0
+      newValue: 3.0
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
