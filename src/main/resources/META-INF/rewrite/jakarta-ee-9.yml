@@ -721,6 +721,9 @@ tags:
   - jaxb
   - javax
   - jakarta
+preconditions:
+  - org.openrewrite.FindSourceFiles:
+      filePattern: "!(ibm-*)"
 recipeList:
   # Update namespace first
   - org.openrewrite.xml.ChangeTagAttribute:
