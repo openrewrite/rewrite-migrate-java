@@ -640,6 +640,26 @@ recipeList:
       groupId: jakarta.websocket
       artifactId: jakarta.websocket-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.websocket
+      oldArtifactId: javax.websocket-client-api
+      newGroupId: jakarta.websocket
+      newArtifactId: jakarta.websocket-client-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.websocket
+      artifactId: jakarta.websocket-client-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.websocket
+      oldArtifactId: javax.websocket-all
+      newGroupId: jakarta.websocket
+      newArtifactId: jakarta.websocket-all
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.websocket
+      artifactId: jakarta.websocket-all
+      newVersion: 2.0.x
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.websocket
       newPackageName: jakarta.websocket
