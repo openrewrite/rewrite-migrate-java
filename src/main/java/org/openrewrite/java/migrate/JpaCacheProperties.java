@@ -26,6 +26,7 @@ import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -154,25 +155,34 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
             // if we could determine an appropriate value, create the element.
             if (scmValue != null) {
                 if (!v1) {
-                    //Xml.Tag newNode = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
-                    // Ideally we would insert <shared-cache-mode> before the <validation-mode> and <properties> nodes
                     Cursor parent = getCursor().getParentOrThrow();
-                    List<Xml.Tag> newChildren = new ArrayList<>();
-                    Xml.Tag sharedCacheTag = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>").withPrefix("\n        ");
-                    boolean added = false;
+                    List<Content> original = new ArrayList<>();
+                    if (t.getContent() != null) {
+                        original.addAll(t.getContent());
+                    }
 
-                    for (Xml.Tag child : t.getChildren()) {
-                        if (!added && "properties".equals(child.getName())) {
-                            newChildren.add(sharedCacheTag);
-                            added = true;
+                    Xml.Tag sharedCacheTag = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
+
+                    List<Content> newContent = new ArrayList<>(original.size() + 1);
+                    boolean inserted = false;
+
+                    for (Content c : original) {
+                        if (!inserted && c instanceof Xml.Tag) {
+                            Xml.Tag childTag = (Xml.Tag) c;
+                            String name = childTag.getName();
+                            if ("validation-mode".equals(name) || "properties".equals(name)) {
+                                newContent.add(sharedCacheTag);
+                                inserted = true;
+                            }
                         }
-                        newChildren.add(child);
-                    }
-                    if (!added) {
-                        newChildren.add(sharedCacheTag);
+                        newContent.add(c);
                     }
 
-                    t = t.withContent(newChildren);
+                    if (!inserted) {
+                        newContent.add(sharedCacheTag);
+                    }
+
+                    t = t.withContent(newContent);
                     t = autoFormat(t, ctx, parent);
                 } else {
                     // version="1.0"
