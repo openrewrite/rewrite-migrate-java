@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
