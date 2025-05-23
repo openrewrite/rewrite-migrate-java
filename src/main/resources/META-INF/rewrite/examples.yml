@@ -994,27 +994,6 @@ recipeName: org.openrewrite.java.migrate.UpgradePluginsForJava11
 examples:
 - description: ''
   sources:
-  - before: project
-    language: mavenProject
-  - before: |
-      <project>
-        <groupId>com.mycompany.app</groupId>
-        <artifactId>my-app</artifactId>
-        <version>1</version>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>jaxb2-maven-plugin</artifactId>
-              <version>2.3.1</version>
-            </plugin>
-          </plugins>
-        </build>
-      </project>
-    path: pom.xml
-    language: xml
-- description: ''
-  sources:
   - before: |
       <project>
         <groupId>com.mycompany.app</groupId>
@@ -1047,6 +1026,27 @@ examples:
               <groupId>ro.isdc.wro4j</groupId>
               <artifactId>wro4j-maven-plugin</artifactId>
               <version>${wro4j.version}</version>
+            </plugin>
+          </plugins>
+        </build>
+      </project>
+    path: pom.xml
+    language: xml
+- description: ''
+  sources:
+  - before: project
+    language: mavenProject
+  - before: |
+      <project>
+        <groupId>com.mycompany.app</groupId>
+        <artifactId>my-app</artifactId>
+        <version>1</version>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>jaxb2-maven-plugin</artifactId>
+              <version>2.3.1</version>
             </plugin>
           </plugins>
         </build>
@@ -3282,6 +3282,25 @@ examples:
 - description: ''
   sources:
   - before: |
+      import com.google.common.base.MoreObjects;
+
+      class A {
+          Object foo(Object obj) {
+              return MoreObjects.firstNonNull(obj, "default");
+          }
+      }
+    after: |
+      import java.util.Objects;
+
+      class A {
+          Object foo(Object obj) {
+              return Objects.requireNonNullElse(obj, "default");
+          }
+      }
+    language: java
+- description: ''
+  sources:
+  - before: |
       import com.google.common.base.Optional;
 
       class A {
@@ -3322,25 +3341,6 @@ examples:
               } catch (NoSuchElementException e) {
                   return "";
               }
-          }
-      }
-    language: java
-- description: ''
-  sources:
-  - before: |
-      import com.google.common.base.MoreObjects;
-
-      class A {
-          Object foo(Object obj) {
-              return MoreObjects.firstNonNull(obj, "default");
-          }
-      }
-    after: |
-      import java.util.Objects;
-
-      class A {
-          Object foo(Object obj) {
-              return Objects.requireNonNullElse(obj, "default");
           }
       }
     language: java
