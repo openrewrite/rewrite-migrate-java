@@ -1,0 +1,31 @@
+before_script:
+  - function setEnv(){
+    $env:JAVA_HOME="C:\Runners\OpenRewrite\CO_JDK";
+    $env:PATH+= ";$env:JAVA_HOME\bin";
+    dir env:;
+    }
+  - setEnv
+
+stages: 
+  - build
+  - test
+  - deploy
+
+build: 
+  stage: build
+  script:
+    - ./gradlew clean assemble --no-daemon
+
+test:
+  stage: test 
+  script:
+    - ./gradlew check --no-daemon
+  rules:
+    - when: never  # Never run the test job
+
+deploy: 
+  stage: deploy 
+  only:
+    - add-localdate-mapping-to-joda-recipe
+  script:
+    - ./gradlew publishNebulaPublicationToPrimionNexusRepository --no-daemon
