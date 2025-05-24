@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
@@ -45,9 +44,25 @@ class UpdateXJCBindingsToJakartaEE implements RewriteTest {
         );
     }
 
+    @Test
+    void noMigrateIBMFiles() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <jxb:bindings version="1.0"
+                          xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+                          xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            </jxb:bindings>
+            """,
+            spec -> spec.path("ibm-web-ext.xml")
+          )
+        );
+    }
+
     @Nested
     class Migrate {
-        @Disabled // temporarily disabling this to make the project build as we need a release.
         @Test
         void version() {
             rewriteRun(
