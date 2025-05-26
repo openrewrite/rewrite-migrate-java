@@ -76,8 +76,8 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
                                 method.getCoordinates().replace(),
                                 mi.getSelect(),
                                 mi.getArguments().get(0));
-                maybeAddImport("java.util.Optional");
                 maybeRemoveImport("com.google.common.base.Optional");
+                maybeAddImport("java.util.Optional");
             }
             return mi;
         }

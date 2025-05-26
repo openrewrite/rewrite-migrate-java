@@ -94,7 +94,7 @@ class BouncyCastleTest implements RewriteTest {
           mavenProject("project",
             //language=xml
             pomXml(
-              String.format("""
+                    """
                 <project>
                   <modelVersion>4.0.0</modelVersion>
 
@@ -110,7 +110,7 @@ class BouncyCastleTest implements RewriteTest {
                     </dependency>
                   </dependencies>
                 </project>
-                """, value),
+                """.formatted(value),
               spec -> spec
                 .after(identity())
                 .afterRecipe(doc -> assertThat(doc.getMarkers().findFirst(MavenResolutionResult.class)

@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.jakarta;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -574,7 +575,7 @@ class JavaxToJakartaTest implements RewriteTest {
     }
 
     @Test
-    void doNothingIfNotFoundTransitiveDependency() {
+    void upgradeAnnotationApiFromV1ToV2() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javaxServlet)),
           mavenProject(
@@ -592,8 +593,7 @@ class JavaxToJakartaTest implements RewriteTest {
             //language=xml
             pomXml(
               """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                <project>
                   <modelVersion>4.0.0</modelVersion>
                   <groupId>org.sample</groupId>
                   <artifactId>sample</artifactId>
@@ -603,6 +603,21 @@ class JavaxToJakartaTest implements RewriteTest {
                       <groupId>jakarta.annotation</groupId>
                       <artifactId>jakarta.annotation-api</artifactId>
                       <version>1.3.5</version>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>jakarta.annotation</groupId>
+                      <artifactId>jakarta.annotation-api</artifactId>
+                      <version>2.0.0</version>
                     </dependency>
                   </dependencies>
                 </project>
@@ -638,6 +653,32 @@ class JavaxToJakartaTest implements RewriteTest {
                       </property>
                   </bean>
               </beans>
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/731")
+    @Test
+    void doNotChangeImportsOfJavaAnnotationProcessorApi() {
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+              import javax.annotation.processing.AbstractProcessor;
+              import javax.annotation.processing.RoundEnvironment;
+              import javax.annotation.processing.SupportedAnnotationTypes;
+              import javax.lang.model.element.TypeElement;
+
+              @SupportedAnnotationTypes("MyAnnotation")
+              public class MyAnnotationProcessor extends AbstractProcessor {
+
+                  @Override
+                  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+                      return false;
+                  }
+
+              }
               """
           )
         );
