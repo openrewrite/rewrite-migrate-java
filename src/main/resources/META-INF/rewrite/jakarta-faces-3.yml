@@ -18,7 +18,7 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxFacesToJakartaFaces
 displayName: JSF 2.x to Jakarta Faces 3.x
-description: Jakarta EE 9 uses Faces 3.0 a major upgrade to Jakarta packages and XML namespaces.
+description: Jakarta EE 9 uses Faces 3.0, a major upgrade to Jakarta packages and XML namespaces.
 tags:
   - jakarta
   - faces
@@ -332,13 +332,11 @@ recipeList:
       existingFullyQualifiedConstantName: jakarta.faces.component.UIComponent.CURRENT_COMPOSITE_COMPONENT
       fullyQualifiedConstantName: jakarta.faces.component.UIComponent.getCurrentCompositeComponent()
 ---
-# TODO: check if this migration is EE9 or EE10
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
 displayName: Use `StateManagementStrategy`
 description: >-
-  Methods that were removed from the `jakarta.faces.application.StateManager` and `javax.faces.application.StateManager` classes in Jakarta Faces 4.0 are replaced
-  by `jakarta.faces.view.StateManagementStrategy` or `javax.faces.view.StateManagementStrategy` based on Jakarta10 migration in Faces 4.0.
+  Faces 3.0 introduced using `StateManagementStrategy` in favor of `StateManager`, which was later removed in Faces 4.0.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
@@ -369,7 +367,6 @@ recipeList:
       newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
       ignoreDefinition: true
 ---
-# TODO: optimize recipe, prob previous recipe messed it up
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
 displayName: Use `jakarta.el` instead of `jakarta.faces.el` and `javax.faces.el`
@@ -442,6 +439,7 @@ recipeList:
       newFullyQualifiedTypeName: jakarta.el.ELException
       ignoreDefinition: true
 ---
+# TODO: currently same as FacesManagedBeansRemoved in Faces4 migration. Should some items be split up?
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesManagedBeansDeprecated
 displayName: Substitute deprecated Faces Managed Beans

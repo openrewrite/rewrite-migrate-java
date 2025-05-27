@@ -30,7 +30,6 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JakartaFacesTagLibraryXml4
   - org.openrewrite.java.migrate.jakarta.JakartaWebFragmentXml6
   - org.openrewrite.java.migrate.jakarta.JakartaWebXml6
-  - org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
   - org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
   - org.openrewrite.java.migrate.jakarta.UpgradeFacesOpenSourceLibraries
 ---
@@ -116,43 +115,7 @@ recipeList:
       elementName: web-app
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd
 ---
-# TODO: check if this migration is EE9 or EE10
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
-displayName: Use `StateManagementStrategy`
-description: >-
-  Methods that were removed from the `jakarta.faces.application.StateManager` and `javax.faces.application.StateManager` classes in Jakarta Faces 4.0 are replaced
-  by `jakarta.faces.view.StateManagementStrategy` or `javax.faces.view.StateManagementStrategy` based on Jakarta10 migration in Faces 4.0.
-recipeList:
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
-      newMethodName: saveView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager getTreeStructureToSave(*.faces.context.FacesContext)"
-      newMethodName: saveView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager restoreComponentState(*.faces.context.FacesContext,*.faces.component.UIViewRoot,String)"
-      newMethodName: restoreView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager restoreTreeStructure(*.faces.context.FacesContext,String,String)"
-      newMethodName: restoreView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: "*.faces.application.StateManager saveSerializedView(*.faces.context.FacesContext)"
-      newMethodName: saveView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.application.StateManager
-      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.application.StateManager
-      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
-      ignoreDefinition: true
----
+# TODO: currently same as FacesManagedBeansDeprecated in Faces3 migration. Can this list be pared down?
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
 displayName: Substitute removed Faces Managed Beans
