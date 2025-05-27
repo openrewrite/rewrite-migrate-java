@@ -16,7 +16,7 @@
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.JakartaFaces4
+name: org.openrewrite.java.migrate.jakarta.Faces3xMigrationToFaces4x
 displayName: Upgrade to Jakarta Faces 4.x
 description: Jakarta EE 10 uses Faces 4.0.
 tags:
@@ -25,6 +25,7 @@ tags:
   - jsf
 # NOTE: The spec versions in this section come from https://jakarta.ee/xml/ns/jakartaee/#10
 recipeList:
+  - org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakartaFaces3x
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi4
   - org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE10
   - org.openrewrite.java.migrate.jakarta.JakartaFacesConfigXml4
@@ -32,7 +33,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JakartaWebFragmentXml6
   - org.openrewrite.java.migrate.jakarta.JakartaWebXml6
   - org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
-  - org.openrewrite.java.migrate.jakarta.UpgradeFacesOpenSourceLibraries
+  - org.openrewrite.java.migrate.jakarta.UpgradeFaces4OpenSourceLibraries
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi4
@@ -255,7 +256,7 @@ recipeList:
       ignoreDefinition: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.UpgradeFacesOpenSourceLibraries
+name: org.openrewrite.java.migrate.jakarta.UpgradeFaces4OpenSourceLibraries
 displayName: Upgrade Faces open source libraries
 description: Upgrade PrimeFaces, OmniFaces, and MyFaces libraries to Jakarta EE10 versions.
 tags:

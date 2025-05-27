@@ -16,7 +16,7 @@
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.JavaxFacesToJakartaFaces
+name: org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakartaFaces3x
 displayName: JSF 2.x to Jakarta Faces 3.x
 description: Jakarta EE 9 uses Faces 3.0, a major upgrade to Jakarta packages and XML namespaces.
 tags:
@@ -38,7 +38,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
   - org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
   - org.openrewrite.java.migrate.jakarta.FacesManagedBeansDeprecated
-  - org.openrewrite.java.migrate.jakarta.UpgradeFacesOpenSourceLibraries
+  - org.openrewrite.java.migrate.jakarta.UpgradeFaces3OpenSourceLibraries
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi3
@@ -425,7 +425,7 @@ recipeList:
 ---
 # TODO: should this upgrade to earliest or latest compatible version for EE9?
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.UpgradeFacesOpenSourceLibraries
+name: org.openrewrite.java.migrate.jakarta.UpgradeFaces3OpenSourceLibraries
 displayName: Upgrade Faces open source libraries
 description: Upgrade PrimeFaces, OmniFaces, and MyFaces libraries to Jakarta EE9 versions.
 tags:

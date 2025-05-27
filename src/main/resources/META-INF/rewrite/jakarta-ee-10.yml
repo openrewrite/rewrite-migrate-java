@@ -24,7 +24,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
   - org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
-  - org.openrewrite.java.migrate.jakarta.JakartaFaces4
+  - org.openrewrite.java.migrate.jakarta.Faces3xMigrationToFaces4x
   - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
   - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
   - org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation

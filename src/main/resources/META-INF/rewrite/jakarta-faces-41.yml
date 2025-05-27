@@ -24,7 +24,8 @@ tags:
   - faces
   - jsf
 recipeList:
-  - org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakarta4x
+  - org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakartaFaces3x
+  - org.openrewrite.java.migrate.jakarta.Faces3xMigrationToFaces4x
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi41
   - org.openrewrite.java.migrate.jakarta.OmniFacesNamespaceMigration
   - org.openrewrite.java.migrate.jakarta.UpgradeFaces41OpenSourceLibraries

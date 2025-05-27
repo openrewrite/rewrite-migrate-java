@@ -37,7 +37,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxEjbToJakartaEjb
   - org.openrewrite.java.migrate.jakarta.JavaxElToJakartaEl
   - org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
-  - org.openrewrite.java.migrate.jakarta.JavaxFacesToJakartaFaces
+  - org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakartaFaces3x
   - org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
   - org.openrewrite.java.migrate.jakarta.JavaxInterceptorToJakartaInterceptor
   - org.openrewrite.java.migrate.jakarta.JavaxJmsToJakartaJms
