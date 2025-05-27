@@ -16,7 +16,7 @@
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakarta4x
+name: org.openrewrite.java.migrate.jakarta.JakartaFaces4
 displayName: Upgrade to Jakarta Faces 4.x
 description: Jakarta EE 10 uses Faces 4.0.
 tags:
