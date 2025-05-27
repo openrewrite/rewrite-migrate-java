@@ -17,6 +17,8 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -34,54 +36,79 @@ class UpdateXJCBindingsToJakartaEE implements RewriteTest {
           xml(
             //language=xml
             """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <jxb:bindings version="3.0"
-                          xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
-                          xmlns:xs="http://www.w3.org/2001/XMLSchema">
-            </jxb:bindings>
-            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <jxb:bindings version="3.0"
+                            xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
+                            xmlns:xs="http://www.w3.org/2001/XMLSchema">
+              </jxb:bindings>
+              """
           )
         );
     }
 
     @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/741")
     void noMigrateIBMFiles() {
         rewriteRun(
           //language=xml
           xml(
             """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <jxb:bindings version="1.0"
-                          xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
-                          xmlns:xs="http://www.w3.org/2001/XMLSchema">
-            </jxb:bindings>
-            """,
-            spec -> spec.path("ibm-web-ext.xml")
+              <?xml version="1.0" encoding="UTF-8"?>
+              <jxb:bindings version="1.0"
+                            xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+                            xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                            xmlns:ibm="http://websphere.ibm.com/xml/ns/javaee">
+              </jxb:bindings>
+              """
           )
         );
     }
 
     @Nested
     class Migrate {
+
+        @Test
+        @DocumentExample
+        void both() {
+            rewriteRun(
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <jxb:bindings version="1.0"
+                                xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+                                xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                  </jxb:bindings>
+                  """,
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <jxb:bindings version="3.0"
+                                xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
+                                xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                  </jxb:bindings>
+                  """
+              )
+            );
+        }
         @Test
         void version() {
             rewriteRun(
               //language=xml
               xml(
                 """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <jxb:bindings version="1.0"
-                              xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
-                              xmlns:xs="http://www.w3.org/2001/XMLSchema">
-                </jxb:bindings>
-                """,
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <jxb:bindings version="1.0"
+                                xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
+                                xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                  </jxb:bindings>
+                  """,
                 """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <jxb:bindings version="3.0"
-                              xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
-                              xmlns:xs="http://www.w3.org/2001/XMLSchema">
-                </jxb:bindings>
-                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <jxb:bindings version="3.0"
+                                xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
+                                xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                  </jxb:bindings>
+                  """
               )
             );
         }
@@ -92,42 +119,19 @@ class UpdateXJCBindingsToJakartaEE implements RewriteTest {
               //language=xml
               xml(
                 """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <jxb:bindings version="3.0"
-                              xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
-                              xmlns:xs="http://www.w3.org/2001/XMLSchema">
-                </jxb:bindings>
-                """,
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <jxb:bindings version="3.0"
+                                xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+                                xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                  </jxb:bindings>
+                  """,
                 """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <jxb:bindings version="3.0"
-                              xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
-                              xmlns:xs="http://www.w3.org/2001/XMLSchema">
-                </jxb:bindings>
-                """
-              )
-            );
-        }
-
-        @Test
-        void both() {
-            rewriteRun(
-              //language=xml
-              xml(
-                """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <jxb:bindings version="1.0"
-                              xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
-                              xmlns:xs="http://www.w3.org/2001/XMLSchema">
-                </jxb:bindings>
-                """,
-                """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <jxb:bindings version="3.0"
-                              xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
-                              xmlns:xs="http://www.w3.org/2001/XMLSchema">
-                </jxb:bindings>
-                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <jxb:bindings version="3.0"
+                                xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
+                                xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                  </jxb:bindings>
+                  """
               )
             );
         }
