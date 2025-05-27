@@ -26,7 +26,6 @@ import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -160,7 +159,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
                     if (t.getContent() != null) {
                         original.addAll(t.getContent());
                     }
-
+                   // Ideally we would insert <shared-cache-mode> before the <validation-mode> and <properties> nodes
                     Xml.Tag sharedCacheTag = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
 
                     List<Content> newContent = new ArrayList<>(original.size() + 1);
