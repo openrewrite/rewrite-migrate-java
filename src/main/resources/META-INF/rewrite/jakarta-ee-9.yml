@@ -640,6 +640,26 @@ recipeList:
       groupId: jakarta.websocket
       artifactId: jakarta.websocket-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.websocket
+      oldArtifactId: javax.websocket-client-api
+      newGroupId: jakarta.websocket
+      newArtifactId: jakarta.websocket-client-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.websocket
+      artifactId: jakarta.websocket-client-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.websocket
+      oldArtifactId: javax.websocket-all
+      newGroupId: jakarta.websocket
+      newArtifactId: jakarta.websocket-all
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.websocket
+      artifactId: jakarta.websocket-all
+      newVersion: 2.0.x
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.websocket
       newPackageName: jakarta.websocket
@@ -721,19 +741,25 @@ tags:
   - jaxb
   - javax
   - jakarta
+preconditions:
+  # IBM-specific exclusion
+  - org.openrewrite.xml.search.DoesNotUseNamespaceUri:
+      namespaceUri: http://websphere.ibm.com/xml/ns/javaee
 recipeList:
-  - org.openrewrite.xml.ChangeTagAttribute:
-      #language=xpath
-      elementName: "//*[namespace-uri() = 'http://java.sun.com/xml/ns/jaxb' and local-name() = 'bindings']"
-      attributeName: version
-      oldValue: 1.0
-      newValue: 3.0
+  # Update namespace first
   - org.openrewrite.xml.ChangeTagAttribute:
       #language=xpath
       elementName: "//*[namespace-uri() = 'http://java.sun.com/xml/ns/jaxb' and local-name() = 'bindings']"
       attributeName: xmlns:jxb
       oldValue: http://java.sun.com/xml/ns/jaxb
       newValue: https://jakarta.ee/xml/ns/jaxb
+  # Update version
+  - org.openrewrite.xml.ChangeTagAttribute:
+      #language=xpath
+      elementName: "//*[namespace-uri() = 'https://jakarta.ee/xml/ns/jaxb' and local-name() = 'bindings']"
+      attributeName: version
+      oldValue: 1.0
+      newValue: 3.0
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
