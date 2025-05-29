@@ -31,9 +31,10 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -67,12 +68,12 @@ public class RefineSwitchCases extends Recipe {
                                     return statement;
                                 }
                                 List<String> labelVars = aCase.getCaseLabels().stream()
-                                        .filter(label -> label instanceof J.VariableDeclarations)
-                                        .map(label -> (J.VariableDeclarations) label)
+                                        .filter(J.VariableDeclarations.class::isInstance)
+                                        .map(J.VariableDeclarations.class::cast)
                                         .map(this::getVariablesCreated)
                                         .flatMap(List::stream)
                                         .map(J.Identifier::getSimpleName)
-                                        .collect(Collectors.toList());
+                                        .collect(toList());
                                 if (labelVars.isEmpty()) {
                                     return statement;
                                 }
@@ -92,26 +93,29 @@ public class RefineSwitchCases extends Recipe {
             }
 
             private List<J.Identifier> getConditionVariables(@Nullable Expression expression) {
-                List<J.Identifier> variables = new ArrayList<>();
                 if (expression instanceof J.Identifier) {
-                    variables.add((J.Identifier) expression);
+                    return singletonList((J.Identifier) expression);
                 } else if (expression instanceof J.Binary) {
                     J.Binary binary = (J.Binary) expression;
+                    List<J.Identifier> variables = new ArrayList<>();
                     variables.addAll(getConditionVariables(binary.getLeft()));
                     variables.addAll(getConditionVariables(binary.getRight()));
+                    return variables;
                 } else if (expression instanceof J.MethodInvocation) {
                     J.MethodInvocation methodInvocation = (J.MethodInvocation) expression;
+                    List<J.Identifier> variables = new ArrayList<>();
                     variables.addAll(getConditionVariables(methodInvocation.getSelect()));
                     variables.addAll(getConditionVariables(methodInvocation.getArguments()));
+                    return variables;
                 }
-                return variables;
+                return Collections.emptyList();
             }
 
             private List<J.Identifier> getConditionVariables(List<Expression> expressions) {
                 return expressions.stream()
                         .map(this::getConditionVariables)
                         .flatMap(List::stream)
-                        .collect(Collectors.toList());
+                        .collect(toList());
             }
 
             private List<J.Identifier> getVariablesCreated(J.VariableDeclarations declarations) {
@@ -124,7 +128,7 @@ public class RefineSwitchCases extends Recipe {
 
             private List<J.Case> getCases(J.Case aCase, J.If ifStatement) {
                 if (aCase.getBody() == null) {
-                    return Collections.singletonList(aCase);
+                    return singletonList(aCase);
                 }
                 List<J.Case> cases = new ArrayList<>();
                 Statement caseBody = ifStatement.getThenPart();
