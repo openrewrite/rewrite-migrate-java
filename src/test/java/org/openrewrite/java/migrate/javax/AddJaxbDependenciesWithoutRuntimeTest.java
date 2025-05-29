@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,14 +30,14 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 @SuppressWarnings("LanguageMismatch")
-class AddJaxbDependenciesTest implements RewriteTest {
+class AddJaxbDependenciesWithoutRuntimeTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(Environment.builder()
           .scanRuntimeClasspath("org.openrewrite.java.migrate.javax")
           .build()
-          .activateRecipes("org.openrewrite.java.migrate.javax.AddJaxbDependenciesWithRuntime"));
+          .activateRecipes("org.openrewrite.java.migrate.javax.AddJaxbDependenciesWithoutRuntime"));
     }
 
     // language=java
@@ -57,7 +57,7 @@ class AddJaxbDependenciesTest implements RewriteTest {
       """;
 
     @Test
-    void addJaxbRuntimeOnce() {
+    void removeGlassfishRuntime() {
         rewriteRun(
           spec -> spec.beforeRecipe(withToolingApi()),
           java(XML_ELEMENT_STUB),
@@ -74,15 +74,17 @@ class AddJaxbDependenciesTest implements RewriteTest {
               }
 
               dependencies {
-                  implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
+                  implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3"
+
+                  compileOnly "org.glassfish.jaxb:jaxb-runtime:2.3.2"
+
+                  testImplementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
               }
               """,
             spec -> spec.after(buildGradle -> {
-                Matcher version = Pattern.compile("\\d+\\.\\d+(\\.\\d+)?").matcher(buildGradle);
+                Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(buildGradle);
                 assertThat(version.find()).isTrue();
                 String bindApiVersion = version.group(0);
-                assertThat(version.find()).isTrue();
-                String runtimeVersion = version.group(0);
                 return """
                   plugins {
                       id "java-library"
@@ -94,10 +96,8 @@ class AddJaxbDependenciesTest implements RewriteTest {
 
                   dependencies {
                       implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
-
-                      runtimeOnly "org.glassfish.jaxb:jaxb-runtime:%s"
                   }
-                  """.formatted(bindApiVersion, runtimeVersion);
+                  """.formatted(bindApiVersion);
             })
           ),
           pomXml(
@@ -111,7 +111,13 @@ class AddJaxbDependenciesTest implements RewriteTest {
                       <dependency>
                           <groupId>jakarta.xml.bind</groupId>
                           <artifactId>jakarta.xml.bind-api</artifactId>
+                          <version>2.3.3</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.glassfish.jaxb</groupId>
+                          <artifactId>jaxb-runtime</artifactId>
                           <version>2.3.2</version>
+                          <scope>runtime</scope>
                       </dependency>
                   </dependencies>
               </project>
@@ -120,8 +126,6 @@ class AddJaxbDependenciesTest implements RewriteTest {
                 Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(pom);
                 assertThat(version.find()).isTrue();
                 String bindApiVersion = version.group(0);
-                assertThat(version.find()).isTrue();
-                String runtimeVersion = version.group(0);
                 //language=xml
                 return """
                   <project>
@@ -134,22 +138,16 @@ class AddJaxbDependenciesTest implements RewriteTest {
                               <artifactId>jakarta.xml.bind-api</artifactId>
                               <version>%s</version>
                           </dependency>
-                          <dependency>
-                              <groupId>org.glassfish.jaxb</groupId>
-                              <artifactId>jaxb-runtime</artifactId>
-                              <version>%s</version>
-                              <scope>runtime</scope>
-                          </dependency>
                       </dependencies>
                   </project>
-                  """.formatted(bindApiVersion, runtimeVersion);
+                  """.formatted(bindApiVersion);
             })
           )
         );
     }
 
     @Test
-    void renameRuntime() {
+    void removeSunRuntime() {
         rewriteRun(
           spec -> spec.beforeRecipe(withToolingApi()),
           java(XML_ELEMENT_STUB),
@@ -177,8 +175,6 @@ class AddJaxbDependenciesTest implements RewriteTest {
                 Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(buildGradle);
                 assertThat(version.find()).isTrue();
                 String bindApiVersion = version.group(0);
-                assertThat(version.find()).isTrue();
-                String runtimeVersion = version.group(0);
                 return """
                   plugins {
                       id "java-library"
@@ -190,14 +186,8 @@ class AddJaxbDependenciesTest implements RewriteTest {
 
                   dependencies {
                       implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
-
-                      runtimeOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-
-                      compileOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-
-                      testImplementation "org.glassfish.jaxb:jaxb-runtime:%s"
                   }
-                  """.formatted(bindApiVersion, runtimeVersion, runtimeVersion, runtimeVersion);
+                  """.formatted(bindApiVersion);
             })
           ),
           pomXml(
@@ -226,8 +216,6 @@ class AddJaxbDependenciesTest implements RewriteTest {
                 Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(pom);
                 assertThat(version.find()).isTrue();
                 String bindApiVersion = version.group(0);
-                assertThat(version.find()).isTrue();
-                String runtimeVersion = version.group(0);
                 //language=xml
                 return """
                   <project>
@@ -240,22 +228,16 @@ class AddJaxbDependenciesTest implements RewriteTest {
                               <artifactId>jakarta.xml.bind-api</artifactId>
                               <version>%s</version>
                           </dependency>
-                          <dependency>
-                              <groupId>org.glassfish.jaxb</groupId>
-                              <artifactId>jaxb-runtime</artifactId>
-                              <version>%s</version>
-                              <scope>runtime</scope>
-                          </dependency>
                       </dependencies>
                   </project>
-                  """.formatted(bindApiVersion, runtimeVersion);
+                  """.formatted(bindApiVersion);
             })
           )
         );
     }
 
     @Test
-    void renameAndUpdateApiAndRuntime() {
+    void renameAndUpdateApiAndRemoveRuntime() {
         rewriteRun(
           spec -> spec.beforeRecipe(withToolingApi()),
           java(XML_ELEMENT_STUB),
@@ -283,8 +265,6 @@ class AddJaxbDependenciesTest implements RewriteTest {
                 Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(buildGradle);
                 assertThat(version.find()).isTrue();
                 String bindApiVersion = version.group(0);
-                assertThat(version.find()).isTrue();
-                String runtimeVersion = version.group(0);
                 return """
                   plugins {
                       id "java-library"
@@ -296,14 +276,8 @@ class AddJaxbDependenciesTest implements RewriteTest {
 
                   dependencies {
                       implementation "jakarta.xml.bind:jakarta.xml.bind-api:%s"
-
-                      runtimeOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-
-                      compileOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-
-                      testImplementation "org.glassfish.jaxb:jaxb-runtime:%s"
                   }
-                  """.formatted(bindApiVersion, runtimeVersion, runtimeVersion, runtimeVersion);
+                  """.formatted(bindApiVersion);
             })
           ),
           pomXml(
@@ -332,8 +306,6 @@ class AddJaxbDependenciesTest implements RewriteTest {
                 Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(pom);
                 assertThat(version.find()).isTrue();
                 String bindApiVersion = version.group(0);
-                assertThat(version.find()).isTrue();
-                String runtimeVersion = version.group(0);
                 //language=xml
                 return """
                   <project>
@@ -346,22 +318,16 @@ class AddJaxbDependenciesTest implements RewriteTest {
                               <artifactId>jakarta.xml.bind-api</artifactId>
                               <version>%s</version>
                           </dependency>
-                          <dependency>
-                              <groupId>org.glassfish.jaxb</groupId>
-                              <artifactId>jaxb-runtime</artifactId>
-                              <version>%s</version>
-                              <scope>runtime</scope>
-                          </dependency>
                       </dependencies>
                   </project>
-                  """.formatted(bindApiVersion, runtimeVersion);
+                  """.formatted(bindApiVersion);
             })
           )
         );
     }
 
     @Test
-    void renameAndUpdateApiAndAddRuntimeManagedDependencies() {
+    void renameAndUpdateApiAndRemoveRuntimeManagedDependencies() {
         rewriteRun(
           java(XML_ELEMENT_STUB),
           java(CLASS_USING_XML_BIND),
@@ -398,8 +364,6 @@ class AddJaxbDependenciesTest implements RewriteTest {
                 Matcher version = Pattern.compile("2.\\d+(.\\d+)?").matcher(pom);
                 assertThat(version.find()).isTrue();
                 String bindApiVersion = version.group(0);
-                assertThat(version.find()).isTrue();
-                String runtimeVersion = version.group(0);
                 //language=xml
                 return """
                   <project>
@@ -413,11 +377,6 @@ class AddJaxbDependenciesTest implements RewriteTest {
                                   <artifactId>jakarta.xml.bind-api</artifactId>
                                   <version>%s</version>
                               </dependency>
-                              <dependency>
-                                  <groupId>org.glassfish.jaxb</groupId>
-                                  <artifactId>jaxb-runtime</artifactId>
-                                  <version>%s</version>
-                              </dependency>
                           </dependencies>
                       </dependencyManagement>
                       <dependencies>
@@ -425,14 +384,9 @@ class AddJaxbDependenciesTest implements RewriteTest {
                               <groupId>jakarta.xml.bind</groupId>
                               <artifactId>jakarta.xml.bind-api</artifactId>
                           </dependency>
-                          <dependency>
-                              <groupId>org.glassfish.jaxb</groupId>
-                              <artifactId>jaxb-runtime</artifactId>
-                              <scope>runtime</scope>
-                          </dependency>
                       </dependencies>
                   </project>
-                  """.formatted(bindApiVersion, runtimeVersion);
+                  """.formatted(bindApiVersion);
             })
           )
         );
