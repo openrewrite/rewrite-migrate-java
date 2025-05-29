@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ public class NullCheckAsSwitchCase extends Recipe {
                             return statement;
                         }
                         J nextStatement = index < block.getStatements().size() - 1 ? block.getStatements().get(index + 1) : null;
-                        if (nextStatement == null || !(nextStatement instanceof J.Switch && ((J.Switch) nextStatement).getSelector().getTree() instanceof J.Identifier && ((J.Identifier)((J.Switch) nextStatement).getSelector().getTree()).getSimpleName().equals(nullCheckedVariable.getSimpleName()))) {
+                        if (nextStatement == null || !(nextStatement instanceof J.Switch && ((J.Switch) nextStatement).getSelector().getTree() instanceof J.Identifier && ((J.Identifier) ((J.Switch) nextStatement).getSelector().getTree()).getSimpleName().equals(nullCheckedVariable.getSimpleName()))) {
                             return statement;
                         }
                         //We only set it if next statement is a J.Switch

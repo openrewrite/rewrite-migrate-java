@@ -57,7 +57,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                   }
               }
               """,
-              """
+            """
               class Test {
                   static String formatter(Object obj) {
                       String formatted = "initialValue";
@@ -109,26 +109,26 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
               }
               """,
             """
-            class Test {
-                static String formatter(Object obj) {
-                    String formatted = "initialValue";
-                    if (obj == null) {
-                        formatted = "null";
-                    }
-                    switch (obj) {
-                        case Integer i -> formatted = String.format("int %d", i);
-                        case Long l -> formatted = String.format("long %d", l);
-                        case Double d -> formatted = String.format("double %f", d);
-                        case String s -> {
-                            String str = "String";
-                            formatted = String.format("%s %s", str, s);
-                        }
-                        default -> formatted = "unknown";
-                    }
-                    return formatted;
-                }
-            }
-            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      if (obj == null) {
+                          formatted = "null";
+                      }
+                      switch (obj) {
+                          case Integer i -> formatted = String.format("int %d", i);
+                          case Long l -> formatted = String.format("long %d", l);
+                          case Double d -> formatted = String.format("double %f", d);
+                          case String s -> {
+                              String str = "String";
+                              formatted = String.format("%s %s", str, s);
+                          }
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """
           )
         );
     }
@@ -159,23 +159,23 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
               }
               """,
             """
-            class Test {
-                static String formatter(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case null -> formatted = "null";
-                        case Integer i -> formatted = String.format("int %d", i);
-                        case Long l -> formatted = String.format("long %d", l);
-                        case Double d -> formatted = String.format("double %f", d);
-                        case String s -> {
-                            String str = "String";
-                            formatted = String.format("%s %s", str, s);
-                        }
-                    }
-                    return formatted;
-                }
-            }
-            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case null -> formatted = "null";
+                          case Integer i -> formatted = String.format("int %d", i);
+                          case Long l -> formatted = String.format("long %d", l);
+                          case Double d -> formatted = String.format("double %f", d);
+                          case String s -> {
+                              String str = "String";
+                              formatted = String.format("%s %s", str, s);
+                          }
+                      }
+                      return formatted;
+                  }
+              }
+              """
           )
         );
     }
@@ -206,23 +206,23 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
               }
               """,
             """
-            class Test {
-                static String formatter(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case Integer i -> formatted = String.format("int %d", i);
-                        case Long l -> formatted = String.format("long %d", l);
-                        case Double d -> formatted = String.format("double %f", d);
-                        case String s -> {
-                            String str = "String";
-                            formatted = String.format("%s %s", str, s);
-                        }
-                        default -> formatted = "unknown";
-                    }
-                    return formatted;
-                }
-            }
-            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case Integer i -> formatted = String.format("int %d", i);
+                          case Long l -> formatted = String.format("long %d", l);
+                          case Double d -> formatted = String.format("double %f", d);
+                          case String s -> {
+                              String str = "String";
+                              formatted = String.format("%s %s", str, s);
+                          }
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """
           )
         );
     }
@@ -255,24 +255,24 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
               }
               """,
             """
-            class Test {
-                static String formatter(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case null -> formatted = "null";
-                        case Integer -> formatted = String.format("int %d", (Integer) obj);
-                        case Long -> formatted = String.format("long %d", (Long) obj);
-                        case Double -> formatted = String.format("double %f", (Double) obj);
-                        case String -> {
-                            String str = "String";
-                            formatted = String.format("%s %s", str, (String) obj);
-                        }
-                        default -> formatted = "unknown";
-                    }
-                    return formatted;
-                }
-            }
-            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case null -> formatted = "null";
+                          case Integer -> formatted = String.format("int %d", (Integer) obj);
+                          case Long -> formatted = String.format("long %d", (Long) obj);
+                          case Double -> formatted = String.format("double %f", (Double) obj);
+                          case String -> {
+                              String str = "String";
+                              formatted = String.format("%s %s", str, (String) obj);
+                          }
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """
           )
         );
     }
@@ -321,32 +321,32 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     @Test
     void noSwitchBlockWithDifferentVariablesBeingChecked() {
         rewriteRun(
-                //language=java
-                java(
-                        """
-                          class Test {
-                              static String formatter(Object obj) {
-                                  String formatted = "initialValue";
-                                  Object anotherObj = obj;
-                                  if (obj == null) {
-                                      formatted = "null";
-                                  } else if (obj instanceof Integer i)
-                                      formatted = String.format("int %d", i);
-                                  else if (obj instanceof Long l) {
-                                      formatted = String.format("long %d", l);
-                                  } else if (obj instanceof Double d) {
-                                      formatted = String.format("double %f", d);
-                                  } else if (anotherObj instanceof String s) {
-                                      String str = "String";
-                                      formatted = String.format("%s %s", str, s);
-                                  } else {
-                                      formatted = "unknown";
-                                  }
-                                  return formatted;
-                              }
-                          }
-                          """
-                )
+          //language=java
+          java(
+            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      Object anotherObj = obj;
+                      if (obj == null) {
+                          formatted = "null";
+                      } else if (obj instanceof Integer i)
+                          formatted = String.format("int %d", i);
+                      else if (obj instanceof Long l) {
+                          formatted = String.format("long %d", l);
+                      } else if (obj instanceof Double d) {
+                          formatted = String.format("double %f", d);
+                      } else if (anotherObj instanceof String s) {
+                          String str = "String";
+                          formatted = String.format("%s %s", str, s);
+                      } else {
+                          formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """
+          )
         );
     }
 }

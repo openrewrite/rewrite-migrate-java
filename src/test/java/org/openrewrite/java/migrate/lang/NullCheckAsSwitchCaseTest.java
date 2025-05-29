@@ -53,20 +53,20 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
               }
               """,
             """
-            class Test {
-                static String score(String obj) {
-                    String formatted = "Score not translated yet";
-                    switch (obj) {
-                        case null -> formatted = "You did not enter the test yet";
-                        case "A", "B" -> formatted = "Very good";
-                        case "C" -> formatted = "Good";
-                        case "D" -> formatted = "Hmmm...";
-                        default -> formatted = "unknown";
-                    }
-                    return formatted;
-                }
-            }
-            """
+              class Test {
+                  static String score(String obj) {
+                      String formatted = "Score not translated yet";
+                      switch (obj) {
+                          case null -> formatted = "You did not enter the test yet";
+                          case "A", "B" -> formatted = "Very good";
+                          case "C" -> formatted = "Good";
+                          case "D" -> formatted = "Hmmm...";
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """
           )
         );
     }
