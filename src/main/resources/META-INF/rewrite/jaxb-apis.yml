@@ -1,0 +1,130 @@
+#
+# Copyright 2025 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddJaxbDependenciesWithRuntime
+displayName: Add explicit JAXB API dependencies and runtime
+description: >-
+  This recipe will add explicit dependencies for Jakarta EE 8 when a Java 8 application is using JAXB. Any existing
+  dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 version 2.x
+  which allows for the continued use of the `javax.xml.bind` namespace. Running a full javax to Jakarta migration
+  using `org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta` will update to versions greater than 3.x which
+  necessitates the package change as well.
+tags:
+  - javax
+  - java11
+  - jaxb
+  - jakarta
+  - glassfish
+recipeList:
+  - org.openrewrite.java.migrate.javax.AddJaxbAPIDependencies
+  # Add the jaxb runtime to any projects that have a transitive dependency on the api
+  - org.openrewrite.java.migrate.javax.AddJaxbRuntime:
+      runtime: glassfish
+  # Remove the version from added dependencies when a managed version exists.
+  - org.openrewrite.maven.RemoveRedundantDependencyVersions:
+      groupPattern: org.glassfish.jaxb
+      artifactPattern: "*"
+      onlyIfVersionsMatch: true
+  - org.openrewrite.maven.RemoveRedundantDependencyVersions:
+      groupPattern: com.sun.xml.bind
+      artifactPattern: "*"
+      onlyIfVersionsMatch: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddJaxbDependenciesWithoutRuntime
+displayName: Add explicit JAXB API dependencies and remove runtimes.
+description: >-
+  This recipe will add explicit API dependencies without runtime dependencies for Jakarta EE 8 when a Java 8 application is using JAXB.
+  Any existing API dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 version 2.x
+  which allows for the continued use of the `javax.xml.bind` namespace. All JAXB runtime implementation dependencies are removed.
+tags:
+  - javax
+  - java11
+  - jaxb
+  - jakarta
+recipeList:
+  - org.openrewrite.java.migrate.javax.AddJaxbAPIDependencies
+  # Remove the jaxb runtime
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: org.glassfish.jaxb
+      artifactId: jaxb-runtime
+  - org.openrewrite.maven.RemoveManagedDependency:
+      groupId: org.glassfish.jaxb
+      artifactId: jaxb-runtime
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: com.sun.xml.bind
+      artifactId: jaxb-impl
+  - org.openrewrite.maven.RemoveManagedDependency:
+      groupId: com.sun.xml.bind
+      artifactId: jaxb-impl
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddJaxbAPIDependencies
+displayName: Add explicit JAXB API dependencies
+description: >-
+  This recipe will add explicit API dependencies for Jakarta EE 8 when a Java 8 application is using JAXB. Any existing
+  dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 version 2.x
+  which allows for the continued use of the `javax.xml.bind` namespace. Running a full javax to Jakarta migration
+  using `org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta` will update to versions greater than 3.x which
+  necessitates the package change as well.
+tags:
+  - javax
+  - java11
+  - jaxb
+  - jakarta
+recipeList:
+  # Remove the legacy jaxb-core artifact
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: com.sun.xml.bind
+      artifactId: jaxb-core
+  - org.openrewrite.maven.RemoveManagedDependency:
+      groupId: com.sun.xml.bind
+      artifactId: jaxb-core
+  # Change any existing places in the project poms that use the jaxb-api.
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.xml.bind
+      oldArtifactId: jaxb-api
+      newGroupId: jakarta.xml.bind
+      newArtifactId: jakarta.xml.bind-api
+      newVersion: 2.3.x
+  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
+      oldGroupId: javax.xml.bind
+      oldArtifactId: jaxb-api
+      newGroupId: jakarta.xml.bind
+      newArtifactId: jakarta.xml.bind-api
+      newVersion: 2.3.x
+  # Add the jakarta JAXB artifact if it is missing but a project uses types in java.xml.bind
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.xml.bind
+      artifactId: jakarta.xml.bind-api
+      version: 2.3.x
+      onlyIfUsing: javax.xml.bind..*
+      acceptTransitive: true
+  # If a project already had the jakarta api, make sure it is at the latest version.
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.xml.bind
+      artifactId: jakarta.xml.bind-api
+      newVersion: 2.3.x
+  # Remove the version from added dependencies when a managed version exists.
+  - org.openrewrite.maven.RemoveRedundantDependencyVersions:
+      groupPattern: jakarta.xml.bind
+      artifactPattern: "*"
+      onlyIfVersionsMatch: true
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.codehaus.mojo
+      artifactId: jaxb2-maven-plugin
+      newVersion: 2.5.x

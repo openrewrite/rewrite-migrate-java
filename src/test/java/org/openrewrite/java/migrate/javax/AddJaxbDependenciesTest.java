@@ -37,7 +37,7 @@ class AddJaxbDependenciesTest implements RewriteTest {
         spec.recipe(Environment.builder()
           .scanRuntimeClasspath("org.openrewrite.java.migrate.javax")
           .build()
-          .activateRecipes("org.openrewrite.java.migrate.javax.AddJaxbDependencies"));
+          .activateRecipes("org.openrewrite.java.migrate.javax.AddJaxbDependenciesWithRuntime"));
     }
 
     // language=java
