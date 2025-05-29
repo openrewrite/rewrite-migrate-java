@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
