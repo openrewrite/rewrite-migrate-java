@@ -31,7 +31,8 @@ import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.time.Duration;
-import java.util.Collections;
+
+import static java.util.Collections.singletonList;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -65,41 +66,17 @@ public class SwitchCaseEnumGuardToLabel extends Recipe {
                 }
 
                 JavaType type = label.getType();
-                boolean isEnumPattern = type instanceof JavaType.Class && JavaType.FullyQualified.Kind.Enum == ((JavaType.Class) type).getKind();
-                J.FieldAccess guardedEnum = getGuardedEnum(aCase, label);
-                if (isEnumPattern && guardedEnum != null) {
-                    return aCase.withGuard(null)
-                            .withCaseLabels(Collections.singletonList(guardedEnum.withPrefix(aCase.getCaseLabels().get(0).getPrefix())))
-                            .withBody(enumReferencesToEnumValue(label.getSimpleName(), guardedEnum).visit(aCase.getBody(), ctx));
+                if (type instanceof JavaType.Class && ((JavaType.Class) type).getKind() == JavaType.FullyQualified.Kind.Enum) {
+                    J.FieldAccess guardedEnum = getGuardedEnum(aCase, label);
+                    if (guardedEnum != null) {
+                        J modifiedBody = enumReferencesToEnumValue(label.getSimpleName(), guardedEnum)
+                                .visit(aCase.getBody(), ctx);
+                        return aCase.withGuard(null)
+                                .withCaseLabels(singletonList(guardedEnum.withPrefix(aCase.getCaseLabels().get(0).getPrefix())))
+                                .withBody(modifiedBody);
+                    }
                 }
                 return aCase;
-            }
-
-            private J.@Nullable FieldAccess getGuardedEnum(J.Case aCase, J.VariableDeclarations.NamedVariable label) {
-                Expression guard = aCase.getGuard();
-                if (guard != null) {
-                    Expression select = null;
-                    Expression equalTo = null;
-                    if (guard instanceof J.MethodInvocation) {
-                        J.MethodInvocation methodGuard = (J.MethodInvocation) guard;
-                        if ("equals".equals(methodGuard.getSimpleName()) && methodGuard.getArguments().size() == 1) {
-                            select = methodGuard.getSelect();
-                            equalTo = methodGuard.getArguments().get(0);
-                        }
-                    } else if (guard instanceof J.Binary) {
-                        J.Binary binaryGuard = (J.Binary) guard;
-                        if (J.Binary.Type.Equal == binaryGuard.getOperator()) {
-                            select = binaryGuard.getLeft();
-                            equalTo = binaryGuard.getRight();
-                        }
-                    }
-                    if (select instanceof J.FieldAccess && equalTo instanceof J.Identifier && label.getName().getSimpleName().equals(((J.Identifier) equalTo).getSimpleName())) {
-                        return (J.FieldAccess) select;
-                    } else if (equalTo instanceof J.FieldAccess && select instanceof J.Identifier && label.getName().getSimpleName().equals(((J.Identifier) select).getSimpleName())) {
-                        return (J.FieldAccess) equalTo;
-                    }
-                }
-                return null;
             }
 
             private J.VariableDeclarations.@Nullable NamedVariable getCreatedLabelVariable(J.Case aCase) {
@@ -112,20 +89,47 @@ public class SwitchCaseEnumGuardToLabel extends Recipe {
                 }
                 return decl.getVariables().get(0);
             }
-        });
 
-    }
-
-    private JavaVisitor<ExecutionContext> enumReferencesToEnumValue(String name, J.FieldAccess enumReference) {
-        return new JavaVisitor<ExecutionContext>() {
-            @Override
-            public J visitIdentifier(J.Identifier ident, ExecutionContext ctx) {
-                J.Identifier identifier = (J.Identifier) super.visitIdentifier(ident, ctx);
-                if (identifier.getSimpleName().equals(name) && TypeUtils.isOfType(identifier.getType(), enumReference.getType())) {
-                    return enumReference.withPrefix(identifier.getPrefix());
+            private J.@Nullable FieldAccess getGuardedEnum(J.Case aCase, J.VariableDeclarations.NamedVariable label) {
+                Expression guard = aCase.getGuard();
+                if (guard == null) {
+                    return null;
                 }
-                return identifier;
+                Expression select = null;
+                Expression equalTo = null;
+                if (guard instanceof J.MethodInvocation) {
+                    J.MethodInvocation methodGuard = (J.MethodInvocation) guard;
+                    if ("equals".equals(methodGuard.getSimpleName()) && methodGuard.getArguments().size() == 1) {
+                        select = methodGuard.getSelect();
+                        equalTo = methodGuard.getArguments().get(0);
+                    }
+                } else if (guard instanceof J.Binary) {
+                    J.Binary binaryGuard = (J.Binary) guard;
+                    if (J.Binary.Type.Equal == binaryGuard.getOperator()) {
+                        select = binaryGuard.getLeft();
+                        equalTo = binaryGuard.getRight();
+                    }
+                }
+                if (select instanceof J.FieldAccess && equalTo instanceof J.Identifier && label.getName().getSimpleName().equals(((J.Identifier) equalTo).getSimpleName())) {
+                    return (J.FieldAccess) select;
+                } else if (equalTo instanceof J.FieldAccess && select instanceof J.Identifier && label.getName().getSimpleName().equals(((J.Identifier) select).getSimpleName())) {
+                    return (J.FieldAccess) equalTo;
+                }
+                return null;
             }
-        };
+
+            private JavaVisitor<ExecutionContext> enumReferencesToEnumValue(String name, J.FieldAccess enumReference) {
+                return new JavaVisitor<ExecutionContext>() {
+                    @Override
+                    public J visitIdentifier(J.Identifier ident, ExecutionContext ctx) {
+                        J.Identifier identifier = (J.Identifier) super.visitIdentifier(ident, ctx);
+                        if (identifier.getSimpleName().equals(name) && TypeUtils.isOfType(identifier.getType(), enumReference.getType())) {
+                            return enumReference.withPrefix(identifier.getPrefix());
+                        }
+                        return identifier;
+                    }
+                };
+            }
+        });
     }
 }
