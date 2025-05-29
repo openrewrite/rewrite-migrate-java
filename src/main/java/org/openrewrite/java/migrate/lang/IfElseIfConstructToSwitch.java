@@ -40,13 +40,13 @@ import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
 public class IfElseIfConstructToSwitch extends Recipe {
     @Override
     public String getDisplayName() {
-        return "If-elseIf-else construct to switch";
+        return "If-else-if-else to switch";
     }
 
     @Override
     public String getDescription() {
-        return "Replace if-elseIf-else construct with switch statements. In order to be replaced with a switch, " +
-                "all conditions must be on the same variable and there must be at least 3 cases.";
+        return "Replace if-else-if-else with switch statements. In order to be replaced with a switch, " +
+                "all conditions must be on the same variable and there must be at least three cases.";
     }
 
     @Override
@@ -188,7 +188,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
             }
             if (elze != null) {
                 // default -> statement
-                arguments[i++] = getStatementArgument(elze, cursor);
+                arguments[i] = getStatementArgument(elze, cursor);
             }
 
             return arguments;
