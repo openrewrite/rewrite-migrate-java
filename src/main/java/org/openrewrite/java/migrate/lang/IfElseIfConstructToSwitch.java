@@ -139,7 +139,11 @@ public class IfElseIfConstructToSwitch extends Recipe {
 
         boolean isValidCandidate() {
             // all ifs in the chain must be on the same variable in order to be a candidate for switch pattern matching
-            if (potentialCandidate && patternMatchers.keySet().stream().map(J.InstanceOf::getExpression).map(expression -> ((J.Identifier) expression).getSimpleName()).distinct().count() != 1) {
+            if (potentialCandidate && patternMatchers.keySet().stream()
+                    .map(J.InstanceOf::getExpression)
+                    .map(expression -> ((J.Identifier) expression).getSimpleName())
+                    .distinct()
+                    .count() != 1) {
                 this.potentialCandidate = false;
                 return false;
             }
@@ -154,8 +158,10 @@ public class IfElseIfConstructToSwitch extends Recipe {
         }
 
         @Nullable String switchOn() {
-            return patternMatchers.keySet().stream().map(J.InstanceOf::getExpression).findAny()
-                    .filter(instanceOf -> instanceOf instanceof J.Identifier)
+            return patternMatchers.keySet().stream()
+                    .map(J.InstanceOf::getExpression)
+                    .findAny()
+                    .filter(J.Identifier.class::isInstance)
                     .map(J.Identifier.class::cast)
                     .map(J.Identifier::getSimpleName)
                     .orElse(null);

@@ -49,8 +49,9 @@ public class NullCheck implements Trait<J.If> {
                     return true;
                 }
             }
-        } else return statement instanceof J.Return;
-        return false;
+            return false;
+        }
+        return statement instanceof J.Return;
     }
 
     public boolean assigns(J.Identifier variable) {
@@ -58,18 +59,21 @@ public class NullCheck implements Trait<J.If> {
         if (statement instanceof J.Block) {
             for (Statement s : ((J.Block) statement).getStatements()) {
                 if (s instanceof J.Assignment) {
-                    J.Assignment assign = (J.Assignment) s;
-                    return assign.getVariable() instanceof J.Identifier && ((J.Identifier) assign.getVariable()).getSimpleName().equals(variable.getSimpleName());
+                    return assigns((J.Assignment) s, variable);
                 }
             }
         } else if (statement instanceof J.Assignment) {
-            J.Assignment assign = (J.Assignment) statement;
-            return assign.getVariable() instanceof J.Identifier && ((J.Identifier) assign.getVariable()).getSimpleName().equals(variable.getSimpleName());
+            return assigns((J.Assignment) statement, variable);
         }
         return false;
     }
 
-    @RequiredArgsConstructor
+    private static boolean assigns(J.Assignment assignment, J.Identifier variable) {
+        return assignment.getVariable() instanceof J.Identifier &&
+                // TODO Slight worry here about say A.field vs. B.field, when only comparing the simple name
+                ((J.Identifier) assignment.getVariable()).getSimpleName().equals(variable.getSimpleName());
+    }
+
     public static class Matcher extends SimpleTraitMatcher<NullCheck> {
 
         public static Matcher nullCheck() {
