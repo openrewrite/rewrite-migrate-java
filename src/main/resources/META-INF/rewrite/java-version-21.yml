@@ -135,7 +135,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.SwitchPatternMatching
 displayName: Adopt switch pattern matching (JEP 441)
-description: "[JEP 441](https://openjdk.org/jeps/441) describes some improvements on how switch statements can be improved with better pattern matching."
+description: "[JEP 441](https://openjdk.org/jeps/441) describes how some switch statements can be improved with pattern matching."
 tags:
   - java21
 recipeList:
