@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,13 +40,13 @@ import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
 public class IfElseIfConstructToSwitch extends Recipe {
     @Override
     public String getDisplayName() {
-        return "If-elseIf-else construct to switch";
+        return "If-else-if-else to switch";
     }
 
     @Override
     public String getDescription() {
-        return "Replace if-elseIf-else construct with switch statements. In order to be replaced with a switch, " +
-                "all conditions must be on the same variable and there must be at least 3 cases.";
+        return "Replace if-else-if-else with switch statements. In order to be replaced with a switch, " +
+                "all conditions must be on the same variable and there must be at least three cases.";
     }
 
     @Override
@@ -139,7 +139,11 @@ public class IfElseIfConstructToSwitch extends Recipe {
 
         boolean isValidCandidate() {
             // all ifs in the chain must be on the same variable in order to be a candidate for switch pattern matching
-            if (potentialCandidate && patternMatchers.keySet().stream().map(J.InstanceOf::getExpression).map(expression -> ((J.Identifier) expression).getSimpleName()).distinct().count() != 1) {
+            if (potentialCandidate && patternMatchers.keySet().stream()
+                    .map(J.InstanceOf::getExpression)
+                    .map(expression -> ((J.Identifier) expression).getSimpleName())
+                    .distinct()
+                    .count() != 1) {
                 this.potentialCandidate = false;
                 return false;
             }
@@ -154,8 +158,10 @@ public class IfElseIfConstructToSwitch extends Recipe {
         }
 
         @Nullable String switchOn() {
-            return patternMatchers.keySet().stream().map(J.InstanceOf::getExpression).findAny()
-                    .filter(instanceOf -> instanceOf instanceof J.Identifier)
+            return patternMatchers.keySet().stream()
+                    .map(J.InstanceOf::getExpression)
+                    .findAny()
+                    .filter(J.Identifier.class::isInstance)
                     .map(J.Identifier.class::cast)
                     .map(J.Identifier::getSimpleName)
                     .orElse(null);
@@ -182,7 +188,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
             }
             if (elze != null) {
                 // default -> statement
-                arguments[i++] = getStatementArgument(elze, cursor);
+                arguments[i] = getStatementArgument(elze, cursor);
             }
 
             return arguments;

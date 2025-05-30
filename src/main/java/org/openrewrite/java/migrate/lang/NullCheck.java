@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
@@ -49,8 +48,9 @@ public class NullCheck implements Trait<J.If> {
                     return true;
                 }
             }
-        } else return statement instanceof J.Return;
-        return false;
+            return false;
+        }
+        return statement instanceof J.Return;
     }
 
     public boolean assigns(J.Identifier variable) {
@@ -58,18 +58,21 @@ public class NullCheck implements Trait<J.If> {
         if (statement instanceof J.Block) {
             for (Statement s : ((J.Block) statement).getStatements()) {
                 if (s instanceof J.Assignment) {
-                    J.Assignment assign = (J.Assignment) s;
-                    return assign.getVariable() instanceof J.Identifier && ((J.Identifier) assign.getVariable()).getSimpleName().equals(variable.getSimpleName());
+                    return assigns((J.Assignment) s, variable);
                 }
             }
         } else if (statement instanceof J.Assignment) {
-            J.Assignment assign = (J.Assignment) statement;
-            return assign.getVariable() instanceof J.Identifier && ((J.Identifier) assign.getVariable()).getSimpleName().equals(variable.getSimpleName());
+            return assigns((J.Assignment) statement, variable);
         }
         return false;
     }
 
-    @RequiredArgsConstructor
+    private static boolean assigns(J.Assignment assignment, J.Identifier variable) {
+        return assignment.getVariable() instanceof J.Identifier &&
+                // TODO Slight worry here about say A.field vs. B.field, when only comparing the simple name
+                ((J.Identifier) assignment.getVariable()).getSimpleName().equals(variable.getSimpleName());
+    }
+
     public static class Matcher extends SimpleTraitMatcher<NullCheck> {
 
         public static Matcher nullCheck() {
@@ -83,9 +86,9 @@ public class NullCheck implements Trait<J.If> {
                 if (iff.getIfCondition().getTree() instanceof J.Binary) {
                     J.Binary binary = (J.Binary) iff.getIfCondition().getTree();
                     if (J.Binary.Type.Equal == binary.getOperator()) {
-                        if (binary.getLeft() instanceof J.Literal && ((J.Literal) binary.getLeft()).getValue() == null && binary.getRight() instanceof J.Identifier) {
+                        if (J.Literal.isLiteralValue(binary.getLeft(), null) && binary.getRight() instanceof J.Identifier) {
                             return new NullCheck(cursor, (J.Identifier) binary.getRight());
-                        } else if (binary.getRight() instanceof J.Literal && ((J.Literal) binary.getRight()).getValue() == null && binary.getLeft() instanceof J.Identifier) {
+                        } else if (J.Literal.isLiteralValue(binary.getRight(), null) && binary.getLeft() instanceof J.Identifier) {
                             return new NullCheck(cursor, (J.Identifier) binary.getLeft());
                         }
                     }

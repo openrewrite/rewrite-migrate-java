@@ -135,6 +135,7 @@
 24.0.1-graal
 24.0.1-graalce
 24.0.1-librca
+24.0.1-open
 24.0.1-oracle
 24.0.1-sapmchn
 24.0.1-tem
@@ -168,6 +169,8 @@
 25.ea.20-graal
 25.ea.21-graal
 25.ea.22-graal
+25.ea.23-graal
+25.ea.23-open
 25.ea.8-graal
 6.0.119-zulu
 7.0.352-zulu

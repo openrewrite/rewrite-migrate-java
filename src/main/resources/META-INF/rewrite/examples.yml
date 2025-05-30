@@ -4550,6 +4550,25 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
+examples:
+- description: ''
+  sources:
+  - before: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <jxb:bindings version="1.0"
+                    xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+                    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      </jxb:bindings>
+    after: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <jxb:bindings version="3.0"
+                    xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
+                    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      </jxb:bindings>
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10
 examples:
 - description: ''

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,10 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.Objects.requireNonNull;
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
 
 @Value
@@ -44,70 +44,66 @@ public class NullCheckAsSwitchCase extends Recipe {
 
     @Override
     public String getDescription() {
-        return "In later java versions, null checks are valid switch cases. " +
+        return "In later Java 21+, null checks are valid in switch cases. " +
                 "This recipe will only add null checks to existing switch cases if there are no other statements in between them " +
                 "or if the block in the if statement is not impacting the flow of the switch.";
     }
 
     @Override
-    public @Nullable Duration getEstimatedEffortPerOccurrence() {
+    public Duration getEstimatedEffortPerOccurrence() {
         return Duration.ofMinutes(3);
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(Preconditions.not(new KotlinFileChecker<>()), new JavaVisitor<ExecutionContext>() {
-
             @Override
             public J visitBlock(J.Block block, ExecutionContext ctx) {
-                List<Statement> statements = block.getStatements();
-                AtomicReference<NullCheck> nullCheck = new AtomicReference<>();
-
-                return super.visitBlock(block.withStatements(ListUtils.map(statements, (index, statement) -> {
+                AtomicReference<@Nullable NullCheck> nullCheck = new AtomicReference<>();
+                J.Block b = block.withStatements(ListUtils.map(block.getStatements(), (index, statement) -> {
                     Optional<NullCheck> nullCheckOpt = nullCheck().get(statement, getCursor());
                     if (nullCheckOpt.isPresent()) {
                         NullCheck check = nullCheckOpt.get();
-                        J.Identifier nullCheckedVariable = check.getNullCheckedParameter();
-                        if (check.returns() || check.assigns(nullCheckedVariable)) {
+                        if (check.returns() || check.assigns(check.getNullCheckedParameter())) {
                             return statement;
                         }
                         J nextStatement = index < block.getStatements().size() - 1 ? block.getStatements().get(index + 1) : null;
-                        if (nextStatement == null || !(nextStatement instanceof J.Switch && ((J.Switch) nextStatement).getSelector().getTree() instanceof J.Identifier && ((J.Identifier)((J.Switch) nextStatement).getSelector().getTree()).getSimpleName().equals(nullCheckedVariable.getSimpleName()))) {
+                        if (nextStatement == null || !(nextStatement instanceof J.Switch &&
+                                ((J.Switch) nextStatement).getSelector().getTree() instanceof J.Identifier &&
+                                ((J.Identifier) ((J.Switch) nextStatement).getSelector().getTree()).getSimpleName().equals(check.getNullCheckedParameter().getSimpleName()))) {
                             return statement;
                         }
-                        //We only set it if next statement is a J.Switch
+                        // We only set it if next statement is a J.Switch
                         nullCheck.set(check);
                         return null;
                     }
                     NullCheck check = nullCheck.get();
+                    nullCheck.set(null);
                     if (check != null && statement instanceof J.Switch) {
                         Statement nullBlock = check.whenNull();
-                        String semicolon = "";
                         if (nullBlock instanceof J.Block && ((J.Block) nullBlock).getStatements().size() == 1) {
                             nullBlock = ((J.Block) nullBlock).getStatements().get(0);
                         }
-                        if (!(nullBlock instanceof J.Block)) {
-                            semicolon = ";";
-                        }
-
                         J.Switch aSwitch = (J.Switch) statement;
-                        J.Block cases = aSwitch.getCases();
-                        J.Switch switchWithNullCase = JavaTemplate.builder("switch(#{}) {" +
-                                        "    case null -> #{}" +
-                                        "}")
-                                .contextSensitive()
-                                .build()
-                                .apply(new Cursor(getCursor(), aSwitch), aSwitch.getCoordinates().replace(), check.getNullCheckedParameter().getSimpleName(), nullBlock.withPrefix(Space.EMPTY).print(getCursor()) + semicolon);
-
-                        Statement nullCase = switchWithNullCase.getCases().getStatements().get(0);
-                        nullCheck.set(null);
-                        return aSwitch.withCases(
-                                cases.withStatements(ListUtils.insert(cases.getStatements(), nullCase, 0))
-                        );
+                        J.Case nullCase = getNullCase(aSwitch, check.getNullCheckedParameter(), nullBlock);
+                        return aSwitch.withCases(aSwitch.getCases().withStatements(
+                                ListUtils.insert(aSwitch.getCases().getStatements(), nullCase, 0)));
                     }
-                    nullCheck.set(null);
                     return statement;
-                })), ctx);
+                }));
+                return super.visitBlock(b, ctx);
+            }
+
+            private J.Case getNullCase(J.Switch aSwitch, J.Identifier identifier, Statement nullBlock) {
+                String semicolon = nullBlock instanceof J.Block ? "" : ";";
+                J.Switch switchWithNullCase = JavaTemplate.apply(
+                        "switch(#{any()}) { case null -> #{any()}" + semicolon + " }",
+                        new Cursor(getCursor(), aSwitch),
+                        aSwitch.getCoordinates().replace(),
+                        identifier,
+                        nullBlock);
+                J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
+                return nullCase.withBody(requireNonNull(nullCase.getBody()).withPrefix(Space.SINGLE_SPACE));
             }
         });
     }
