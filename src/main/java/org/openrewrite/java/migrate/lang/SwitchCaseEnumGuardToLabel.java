@@ -30,8 +30,6 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
-import java.time.Duration;
-
 import static java.util.Collections.singletonList;
 
 @Value
