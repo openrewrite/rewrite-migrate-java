@@ -46,7 +46,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxbDependenciesWithoutRuntime
-displayName: Add explicit JAXB API dependencies and remove runtimes.
+displayName: Add explicit JAXB API dependencies and remove runtimes
 description: >-
   This recipe will add explicit API dependencies without runtime dependencies for Jakarta EE 8 when a Java 8 application is using JAXB.
   Any existing API dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 version 2.x
