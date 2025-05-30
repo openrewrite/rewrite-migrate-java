@@ -32,8 +32,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
-
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class RefineSwitchCases extends Recipe {
@@ -156,14 +154,12 @@ public class RefineSwitchCases extends Recipe {
                     caseBody = caseBody.withPrefix(Space.SINGLE_SPACE);
                 }
                 cases.add(aCase.withId(Tree.randomId()).withGuard(ifStatement.getIfCondition().getTree().withPrefix(Space.SINGLE_SPACE)).withBody(caseBody));
-                if (ifStatement.getElsePart() == null) {
-                    if (aCase.getBody() instanceof J.Block) {
-                        cases.add(aCase.withBody(((J.Block) aCase.getBody()).withStatements(emptyList()).withEnd(Space.EMPTY).withPrefix(Space.SINGLE_SPACE)));
+                if (ifStatement.getElsePart() != null) {
+                    if (ifStatement.getElsePart().getBody() instanceof J.If) {
+                        cases.addAll(getCases(aCase, (J.If) ifStatement.getElsePart().getBody()));
+                    } else {
+                        cases.add(aCase.withBody(ifStatement.getElsePart().getBody().withPrefix(Space.SINGLE_SPACE)));
                     }
-                } else if (ifStatement.getElsePart().getBody() instanceof J.If) {
-                    cases.addAll(getCases(aCase, (J.If) ifStatement.getElsePart().getBody()));
-                } else {
-                    cases.add(aCase.withBody(ifStatement.getElsePart().getBody().withPrefix(Space.SINGLE_SPACE)));
                 }
 
                 return cases;
