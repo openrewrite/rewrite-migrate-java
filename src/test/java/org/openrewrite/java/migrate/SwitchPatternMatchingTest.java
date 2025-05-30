@@ -58,7 +58,6 @@ class SwitchPatternMatchingTest implements RewriteTest {
                   }
               }
               """,
-            // TODO At some point it'd be nice if we can pull the `formatted =` out of the switch cases
             """
               class Test {
                   static String formatter(Object obj) {
