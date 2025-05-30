@@ -22,6 +22,7 @@ import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
@@ -71,7 +72,7 @@ public class NullCheckAsSwitchCase extends Recipe {
                             return statement;
                         }
                         // The switch must switch on the same expression as the nullCheck
-                        if (!semanticallySame(((J.Switch) nextStatement).getSelector().getTree(), check.getNullCheckedParameter())) {
+                        if (!SemanticallyEqual.areEqual(((J.Switch) nextStatement).getSelector().getTree(), check.getNullCheckedParameter())) {
                             return statement;
                         }
                         // If the null checked block returns early or potentially reassigns the value of the check object (touching it with a methodInvocation or accessing a field or directly assigning the null-checked identifier)
@@ -108,29 +109,6 @@ public class NullCheckAsSwitchCase extends Recipe {
                         nullBlock);
                 J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
                 return nullCase.withBody(requireNonNull(nullCase.getBody()).withPrefix(Space.SINGLE_SPACE));
-            }
-
-            private <T extends Expression> boolean semanticallySame(@Nullable T e1, @Nullable T e2) {
-                if (e1 == null && e2 == null) {
-                    return true;
-                }
-                if (e1 == null || e2 == null) {
-                    return false;
-                }
-                if (e1.getClass().equals(e2.getClass())) {
-                    if (e1 instanceof J.Identifier) {
-                        return ((J.Identifier) e1).getSimpleName().equals(((J.Identifier) e2).getSimpleName());
-                    }
-                    if (e1 instanceof J.FieldAccess) {
-                        return semanticallySame(((J.FieldAccess) e1).getTarget(), ((J.FieldAccess) e2).getTarget()) &&
-                                semanticallySame(((J.FieldAccess) e1).getName(), ((J.FieldAccess) e2).getName());
-                    }
-                    if (e1 instanceof J.MethodInvocation) {
-                        return semanticallySame(((J.MethodInvocation) e1).getSelect(), ((J.MethodInvocation) e2).getSelect()) &&
-                                semanticallySame(((J.MethodInvocation) e1).getName(), ((J.MethodInvocation) e2).getName());
-                    }
-                }
-                return false;
             }
         });
     }

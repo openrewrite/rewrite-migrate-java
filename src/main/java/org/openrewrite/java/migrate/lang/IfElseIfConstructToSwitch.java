@@ -23,6 +23,7 @@ import org.openrewrite.*;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
@@ -148,7 +149,8 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 this.potentialCandidate = false;
                 return false;
             }
-            boolean nullCaseInSwitch = nullCheckedParameter != null && semanticallySame(nullCheckedParameter, switchOn());
+            Expression switchOn = switchOn();
+            boolean nullCaseInSwitch = nullCheckedParameter != null && switchOn != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn);
             boolean hasLastElseBlock = elze != null;
 
             // we need at least 3 cases to use a switch
@@ -171,7 +173,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 return new Object[0];
             }
             Object[] arguments = new Object[1 + (nullCheckedParameter != null ? 1 : 0) + (patternMatchers.size() * 3) + (elze != null ? 1 : 0)];
-            arguments[0] = switchOn.print(cursor);
+            arguments[0] = switchOn;
             int i = 1;
             if (nullCheckedParameter != null) {
                 // case null -> nullCheckedStatement
@@ -193,7 +195,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
         }
 
         String buildTemplate() {
-            StringBuilder switchBody = new StringBuilder("switch (#{}) {\n");
+            StringBuilder switchBody = new StringBuilder("switch (#{any(org.openrewrite.java.tree.Expression)}) {\n");
             if (nullCheckedParameter != null) {
                 switchBody.append("    case null -> #{}\n");
             }
@@ -239,28 +241,5 @@ public class IfElseIfConstructToSwitch extends Recipe {
             }
             return expression.toString();
         }
-    }
-
-    private static <T extends Expression> boolean semanticallySame(@Nullable T e1, @Nullable T e2) {
-        if (e1 == null && e2 == null) {
-            return true;
-        }
-        if (e1 == null || e2 == null) {
-            return false;
-        }
-        if (e1.getClass().equals(e2.getClass())) {
-            if (e1 instanceof J.Identifier) {
-                return ((J.Identifier) e1).getSimpleName().equals(((J.Identifier) e2).getSimpleName());
-            }
-            if (e1 instanceof J.FieldAccess) {
-                return semanticallySame(((J.FieldAccess) e1).getTarget(), ((J.FieldAccess) e2).getTarget()) &&
-                        semanticallySame(((J.FieldAccess) e1).getName(), ((J.FieldAccess) e2).getName());
-            }
-            if (e1 instanceof J.MethodInvocation) {
-                return semanticallySame(((J.MethodInvocation) e1).getSelect(), ((J.MethodInvocation) e2).getSelect()) &&
-                        semanticallySame(((J.MethodInvocation) e1).getName(), ((J.MethodInvocation) e2).getName());
-            }
-        }
-        return false;
     }
 }
