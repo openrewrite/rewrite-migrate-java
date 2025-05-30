@@ -181,6 +181,101 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     }
 
     @Test
+    void worksWithExpressionsOtherThanIdentifier() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  static String fieldAccess(Tester test) {
+                      String formatted = "initialValue";
+                      if (test.obj == null) {
+                          formatted = "null";
+                      } else if (test.obj instanceof Integer i)
+                          formatted = String.format("int %d", i);
+                      else if (test.obj instanceof Long l) {
+                          formatted = String.format("long %d", l);
+                      } else if (test.obj instanceof Double d) {
+                          formatted = String.format("double %f", d);
+                      } else if (test.obj instanceof String s) {
+                          String str = "String";
+                          formatted = String.format("%s %s", str, s);
+                      }
+                      return formatted;
+                  }
+
+                  static String methodInvocation(Tester test) {
+                      String formatted = "initialValue";
+                      if (test.getObj() == null) {
+                          formatted = "null";
+                      } else if (test.getObj() instanceof Integer i)
+                          formatted = String.format("int %d", i);
+                      else if (test.getObj() instanceof Long l) {
+                          formatted = String.format("long %d", l);
+                      } else if (test.getObj() instanceof Double d) {
+                          formatted = String.format("double %f", d);
+                      } else if (test.getObj() instanceof String s) {
+                          String str = "String";
+                          formatted = String.format("%s %s", str, s);
+                      }
+                      return formatted;
+                  }
+
+                  private static class Tester {
+                      private Object obj;
+
+                      public Object getObj() {
+                          return obj;
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static String fieldAccess(Tester test) {
+                      String formatted = "initialValue";
+                      switch (test.obj) {
+                          case null -> formatted = "null";
+                          case Integer i -> formatted = String.format("int %d", i);
+                          case Long l -> formatted = String.format("long %d", l);
+                          case Double d -> formatted = String.format("double %f", d);
+                          case String s -> {
+                              String str = "String";
+                              formatted = String.format("%s %s", str, s);
+                          }
+                      }
+                      return formatted;
+                  }
+
+                  static String methodInvocation(Tester test) {
+                      String formatted = "initialValue";
+                      switch (test.getObj()) {
+                          case null -> formatted = "null";
+                          case Integer i -> formatted = String.format("int %d", i);
+                          case Long l -> formatted = String.format("long %d", l);
+                          case Double d -> formatted = String.format("double %f", d);
+                          case String s -> {
+                              String str = "String";
+                              formatted = String.format("%s %s", str, s);
+                          }
+                      }
+                      return formatted;
+                  }
+
+                  private static class Tester {
+                      private Object obj;
+
+                      public Object getObj() {
+                          return obj;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void defaultSwitchBlockFinalElseStatement() {
         rewriteRun(
           //language=java

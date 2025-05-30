@@ -22,6 +22,7 @@ import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
@@ -64,16 +65,19 @@ public class NullCheckAsSwitchCase extends Recipe {
                     Optional<NullCheck> nullCheckOpt = nullCheck().get(statement, getCursor());
                     if (nullCheckOpt.isPresent()) {
                         NullCheck check = nullCheckOpt.get();
-                        if (check.returns() || check.assigns(check.getNullCheckedParameter())) {
-                            return statement;
-                        }
                         J nextStatement = index < block.getStatements().size() - 1 ? block.getStatements().get(index + 1) : null;
-                        if (nextStatement == null || !(nextStatement instanceof J.Switch &&
-                                ((J.Switch) nextStatement).getSelector().getTree() instanceof J.Identifier &&
-                                ((J.Identifier) ((J.Switch) nextStatement).getSelector().getTree()).getSimpleName().equals(check.getNullCheckedParameter().getSimpleName()))) {
+                        // We only set it if next statement is a J.Switch
+                        if (!(nextStatement instanceof J.Switch)) {
                             return statement;
                         }
-                        // We only set it if next statement is a J.Switch
+                        // The switch must switch on the same expression as the nullCheck
+                        if (!semanticallySame(((J.Switch) nextStatement).getSelector().getTree(), check.getNullCheckedParameter())) {
+                            return statement;
+                        }
+                        // If the null checked block returns early or potentially reassigns the value of the check object (touching it with a methodInvocation or accessing a field or directly assigning the null-checked identifier)
+                        if (check.returns() || check.couldModifyNullCheckedValue()) {
+                            return statement;
+                        }
                         nullCheck.set(check);
                         return null;
                     }
@@ -94,16 +98,39 @@ public class NullCheckAsSwitchCase extends Recipe {
                 return super.visitBlock(b, ctx);
             }
 
-            private J.Case getNullCase(J.Switch aSwitch, J.Identifier identifier, Statement nullBlock) {
+            private J.Case getNullCase(J.Switch aSwitch, Expression expression, Statement nullBlock) {
                 String semicolon = nullBlock instanceof J.Block ? "" : ";";
                 J.Switch switchWithNullCase = JavaTemplate.apply(
                         "switch(#{any()}) { case null -> #{any()}" + semicolon + " }",
                         new Cursor(getCursor(), aSwitch),
                         aSwitch.getCoordinates().replace(),
-                        identifier,
+                        expression,
                         nullBlock);
                 J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
                 return nullCase.withBody(requireNonNull(nullCase.getBody()).withPrefix(Space.SINGLE_SPACE));
+            }
+
+            private <T extends Expression> boolean semanticallySame(@Nullable T e1, @Nullable T e2) {
+                if (e1 == null && e2 == null) {
+                    return true;
+                }
+                if (e1 == null || e2 == null) {
+                    return false;
+                }
+                if (e1.getClass().equals(e2.getClass())) {
+                    if (e1 instanceof J.Identifier) {
+                        return ((J.Identifier) e1).getSimpleName().equals(((J.Identifier) e2).getSimpleName());
+                    }
+                    if (e1 instanceof J.FieldAccess) {
+                        return semanticallySame(((J.FieldAccess) e1).getTarget(), ((J.FieldAccess) e2).getTarget()) &&
+                                semanticallySame(((J.FieldAccess) e1).getName(), ((J.FieldAccess) e2).getName());
+                    }
+                    if (e1 instanceof J.MethodInvocation) {
+                        return semanticallySame(((J.MethodInvocation) e1).getSelect(), ((J.MethodInvocation) e2).getSelect()) &&
+                                semanticallySame(((J.MethodInvocation) e1).getName(), ((J.MethodInvocation) e2).getName());
+                    }
+                }
+                return false;
             }
         });
     }

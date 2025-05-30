@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.lang;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.trait.SimpleTraitMatcher;
@@ -26,7 +27,7 @@ import org.openrewrite.trait.Trait;
 @Value
 public class NullCheck implements Trait<J.If> {
     Cursor cursor;
-    J.Identifier nullCheckedParameter;
+    Expression nullCheckedParameter;
 
     public Statement whenNull() {
         return getTree().getThenPart();
@@ -53,24 +54,86 @@ public class NullCheck implements Trait<J.If> {
         return statement instanceof J.Return;
     }
 
-    public boolean assigns(J.Identifier variable) {
+    /**
+     * Calculates few potential cases where the null checked variable gets reassigned and only returns false if these cases DO NOT match.
+     * In any other case this returns true as we do not know that particular situation yet -> no harm -> assume it could be altered in the block.
+     * @return false only if we are 100% sure the block does not reassigns/changes the null checked variable.
+     */
+    public boolean couldModifyNullCheckedValue() {
         Statement statement = whenNull();
         if (statement instanceof J.Block) {
             for (Statement s : ((J.Block) statement).getStatements()) {
-                if (s instanceof J.Assignment) {
-                    return assigns((J.Assignment) s, variable);
+                if (couldModifyNullCheckedValue(s)) {
+                    return true;
                 }
             }
-        } else if (statement instanceof J.Assignment) {
-            return assigns((J.Assignment) statement, variable);
+            return false;
+        }
+        return couldModifyNullCheckedValue(statement);
+    }
+
+    private boolean couldModifyNullCheckedValue(Statement assignment) {
+        Expression nullCheckedParameter = getNullCheckedParameter();
+        if (assignment instanceof Expression) {
+            return couldModifyNullCheckedValue((Expression) assignment, nullCheckedParameter);
         }
         return false;
     }
 
-    private static boolean assigns(J.Assignment assignment, J.Identifier variable) {
-        return assignment.getVariable() instanceof J.Identifier &&
-                // TODO Slight worry here about say A.field vs. B.field, when only comparing the simple name
-                ((J.Identifier) assignment.getVariable()).getSimpleName().equals(variable.getSimpleName());
+    private static <T extends Expression> boolean couldModifyNullCheckedValue(T assigns, T nullChecked) {
+        if (assigns instanceof J.Identifier) {
+            if (nullChecked instanceof J.Identifier) {
+                return ((J.Identifier) assigns).getSimpleName().equals(((J.Identifier) nullChecked).getSimpleName());
+            }
+            if (nullChecked instanceof J.FieldAccess) {
+                return false;
+            }
+            if (nullChecked instanceof J.MethodInvocation) {
+                return ((J.MethodInvocation) nullChecked).getSelect() == null;
+            }
+        }
+        if (assigns instanceof J.FieldAccess) {
+            if (nullChecked instanceof J.Identifier) {
+                return false;
+            }
+            if (nullChecked instanceof J.FieldAccess) {
+                return couldModifyNullCheckedValue(((J.FieldAccess) assigns).getTarget(), ((J.FieldAccess) nullChecked).getTarget()) &&
+                        couldModifyNullCheckedValue(((J.FieldAccess) assigns).getName(), ((J.FieldAccess) nullChecked).getName());
+            }
+            if (nullChecked instanceof J.MethodInvocation) {
+                if (((J.MethodInvocation) nullChecked).getSelect() == null) {
+                    return false;
+                }
+                return couldModifyNullCheckedValue(((J.FieldAccess) assigns).getTarget(), ((J.MethodInvocation) nullChecked).getSelect());
+            }
+        }
+        if (assigns instanceof J.MethodInvocation) {
+            if (nullChecked instanceof J.Identifier) {
+                if (((J.MethodInvocation) assigns).getSelect() != null) {
+                    return false;
+                }
+            }
+            if (nullChecked instanceof J.FieldAccess) {
+                if (((J.MethodInvocation) assigns).getSelect() == null) {
+                    return false;
+                }
+                return couldModifyNullCheckedValue(((J.MethodInvocation) assigns).getSelect(), ((J.FieldAccess) nullChecked).getTarget());
+            }
+            if (nullChecked instanceof J.MethodInvocation) {
+                if (((J.MethodInvocation) assigns).getSelect() == null && ((J.MethodInvocation) nullChecked).getSelect() == null) {
+                    return true;
+                }
+                if (((J.MethodInvocation) assigns).getSelect() == null || ((J.MethodInvocation) nullChecked).getSelect() == null) {
+                    return false;
+                }
+                return couldModifyNullCheckedValue(((J.MethodInvocation) assigns).getSelect(), ((J.MethodInvocation) nullChecked).getSelect());
+            }
+        }
+        if (assigns instanceof J.Assignment) {
+            return couldModifyNullCheckedValue(((J.Assignment) assigns).getVariable(), nullChecked);
+        }
+
+        return true;
     }
 
     public static class Matcher extends SimpleTraitMatcher<NullCheck> {
@@ -86,10 +149,10 @@ public class NullCheck implements Trait<J.If> {
                 if (iff.getIfCondition().getTree() instanceof J.Binary) {
                     J.Binary binary = (J.Binary) iff.getIfCondition().getTree();
                     if (J.Binary.Type.Equal == binary.getOperator()) {
-                        if (J.Literal.isLiteralValue(binary.getLeft(), null) && binary.getRight() instanceof J.Identifier) {
-                            return new NullCheck(cursor, (J.Identifier) binary.getRight());
-                        } else if (J.Literal.isLiteralValue(binary.getRight(), null) && binary.getLeft() instanceof J.Identifier) {
-                            return new NullCheck(cursor, (J.Identifier) binary.getLeft());
+                        if (J.Literal.isLiteralValue(binary.getLeft(), null)) {
+                            return new NullCheck(cursor, binary.getRight());
+                        } else if (J.Literal.isLiteralValue(binary.getRight(), null)) {
+                            return new NullCheck(cursor, binary.getLeft());
                         }
                     }
                 }

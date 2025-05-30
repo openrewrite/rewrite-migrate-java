@@ -23,6 +23,7 @@ import org.openrewrite.*;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
@@ -83,7 +84,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
 
     private static class SwitchCandidate {
         private final Map<J.InstanceOf, Statement> patternMatchers = new LinkedHashMap<>();
-        private J.@Nullable Identifier nullCheckedParameter = null;
+        private @Nullable Expression nullCheckedParameter = null;
         private @Nullable Statement nullCheckedStatement = null;
         private @Nullable Statement elze = null;
 
@@ -141,13 +142,13 @@ public class IfElseIfConstructToSwitch extends Recipe {
             // all ifs in the chain must be on the same variable in order to be a candidate for switch pattern matching
             if (potentialCandidate && patternMatchers.keySet().stream()
                     .map(J.InstanceOf::getExpression)
-                    .map(expression -> ((J.Identifier) expression).getSimpleName())
+                    .map(this::asName)
                     .distinct()
                     .count() != 1) {
                 this.potentialCandidate = false;
                 return false;
             }
-            boolean nullCaseInSwitch = nullCheckedParameter != null && nullCheckedParameter.getSimpleName().equals(switchOn());
+            boolean nullCaseInSwitch = nullCheckedParameter != null && semanticallySame(nullCheckedParameter, switchOn());
             boolean hasLastElseBlock = elze != null;
 
             // we need at least 3 cases to use a switch
@@ -157,23 +158,20 @@ public class IfElseIfConstructToSwitch extends Recipe {
             return potentialCandidate;
         }
 
-        @Nullable String switchOn() {
+        @Nullable Expression switchOn() {
             return patternMatchers.keySet().stream()
                     .map(J.InstanceOf::getExpression)
                     .findAny()
-                    .filter(J.Identifier.class::isInstance)
-                    .map(J.Identifier.class::cast)
-                    .map(J.Identifier::getSimpleName)
                     .orElse(null);
         }
 
         Object[] buildTemplateArguments(Cursor cursor) {
-            String switchOn = switchOn();
+            Expression switchOn = switchOn();
             if (switchOn == null) {
                 return new Object[0];
             }
             Object[] arguments = new Object[1 + (nullCheckedParameter != null ? 1 : 0) + (patternMatchers.size() * 3) + (elze != null ? 1 : 0)];
-            arguments[0] = switchOn;
+            arguments[0] = switchOn.print(cursor);
             int i = 1;
             if (nullCheckedParameter != null) {
                 // case null -> nullCheckedStatement
@@ -221,5 +219,48 @@ public class IfElseIfConstructToSwitch extends Recipe {
             }
             return toAdd.withPrefix(Space.EMPTY).print(cursor) + semicolon;
         }
+
+        private String asName(@Nullable Expression expression) {
+            if (expression == null) {
+                return "";
+            }
+            if (expression instanceof J.Identifier) {
+                return ((J.Identifier) expression).getSimpleName();
+            }
+            if (expression instanceof J.FieldAccess) {
+                return asName(((J.FieldAccess) expression).getTarget()) + "." + ((J.FieldAccess) expression).getSimpleName();
+            }
+            if (expression instanceof J.MethodInvocation) {
+                String select = asName(((J.MethodInvocation) expression).getSelect());
+                if (select.isEmpty()) {
+                    select = "this";
+                }
+                return select + "$" + ((J.MethodInvocation) expression).getSimpleName();
+            }
+            return expression.toString();
+        }
+    }
+
+    private static <T extends Expression> boolean semanticallySame(@Nullable T e1, @Nullable T e2) {
+        if (e1 == null && e2 == null) {
+            return true;
+        }
+        if (e1 == null || e2 == null) {
+            return false;
+        }
+        if (e1.getClass().equals(e2.getClass())) {
+            if (e1 instanceof J.Identifier) {
+                return ((J.Identifier) e1).getSimpleName().equals(((J.Identifier) e2).getSimpleName());
+            }
+            if (e1 instanceof J.FieldAccess) {
+                return semanticallySame(((J.FieldAccess) e1).getTarget(), ((J.FieldAccess) e2).getTarget()) &&
+                        semanticallySame(((J.FieldAccess) e1).getName(), ((J.FieldAccess) e2).getName());
+            }
+            if (e1 instanceof J.MethodInvocation) {
+                return semanticallySame(((J.MethodInvocation) e1).getSelect(), ((J.MethodInvocation) e2).getSelect()) &&
+                        semanticallySame(((J.MethodInvocation) e1).getName(), ((J.MethodInvocation) e2).getName());
+            }
+        }
+        return false;
     }
 }
