@@ -23,11 +23,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.xml.Assertions.xml;
 
-class JakartaFacesXhtmlTest implements RewriteTest {
+class JakartaFacesXhtmlEE10Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
-          .activateRecipes("org.openrewrite.java.migrate.jakarta.JakartaFacesXhtml"));
+          .activateRecipes("org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE10"));
     }
 
     @DocumentExample
@@ -49,8 +49,8 @@ class JakartaFacesXhtmlTest implements RewriteTest {
               <script src="https://www.gstatic.com/charts/loader.js"></script>
               <p:outputPanel id="container" layout="block">
                   <h:panelGrid columns="4">
-                      <p:inputText converter="javax.faces.Integer" value="#{basicGChartController.mushrooms}" />
-                      <p:inputText converter="javax.faces.Integer" value="#{basicGChartController.onions}" />
+                      <p:inputText converter="jakarta.faces.Integer" value="#{basicGChartController.mushrooms}" />
+                      <p:inputText converter="jakarta.faces.Integer" value="#{basicGChartController.onions}" />
                   </h:panelGrid>
                   <c:forEach items="#{sheetDynamicController.hoursOfDay}" var="hourOfDay" varStatus="status">
                           <pe:sheetcolumn styleClass="htRight #{row.cells[status.index].style}"
@@ -58,7 +58,7 @@ class JakartaFacesXhtmlTest implements RewriteTest {
                                           value="#{row.cells[status.index].value}"
                                           readonlyCell="#{row.readOnly}"
                                           colType="numeric">
-                              <f:converter converterId="javax.faces.Integer"/>
+                              <f:converter converterId="jakarta.faces.Integer"/>
                           </pe:sheetcolumn>
                   </c:forEach>
               </p:outputPanel>
@@ -118,8 +118,8 @@ class JakartaFacesXhtmlTest implements RewriteTest {
               <script src="https://www.gstatic.com/charts/loader.js"></script>
               <div pt:id="container">
                   <h:panelGrid columns="4">
-                      <p:inputText converter="javax.faces.Integer" value="#{basicGChartController.mushrooms}" />
-                      <p:inputText converter="javax.faces.Integer" value="#{basicGChartController.onions}" />
+                      <p:inputText converter="jakarta.faces.Integer" value="#{basicGChartController.mushrooms}" />
+                      <p:inputText converter="jakarta.faces.Integer" value="#{basicGChartController.onions}" />
                   </h:panelGrid>
                   <c:forEach items="#{sheetDynamicController.hoursOfDay}" var="hourOfDay" varStatus="status">
                           <pe:sheetcolumn styleClass="htRight #{row.cells[status.index].style}"
@@ -127,7 +127,7 @@ class JakartaFacesXhtmlTest implements RewriteTest {
                                           value="#{row.cells[status.index].value}"
                                           readonlyCell="#{row.readOnly}"
                                           colType="numeric">
-                              <f:converter converterId="javax.faces.Integer"/>
+                              <f:converter converterId="jakarta.faces.Integer"/>
                           </pe:sheetcolumn>
                   </c:forEach>
               </div>
