@@ -71,7 +71,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     }
                     String switchBody = switchCandidate.buildTemplate();
                     J.Switch switch_ = JavaTemplate.builder(switchBody)
-                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx))
                         .contextSensitive()
                         .build()
                         .apply(getCursor(), iff.getCoordinates().replace(), arguments)
