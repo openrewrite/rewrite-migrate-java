@@ -26,6 +26,7 @@ import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -154,35 +155,11 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
             // if we could determine an appropriate value, create the element.
             if (scmValue != null) {
                 if (!v1) {
-                    Cursor parent = getCursor().getParentOrThrow();
-                    List<Content> original = new ArrayList<>();
-                    if (t.getContent() != null) {
-                        original.addAll(t.getContent());
-                    }
                     // Ideally we would insert <shared-cache-mode> before the <validation-mode> and <properties> nodes
-                    Xml.Tag sharedCacheTag = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
-
-                    List<Content> newContent = new ArrayList<>(original.size() + 1);
-                    boolean inserted = false;
-
-                    for (Content c : original) {
-                        if (!inserted && c instanceof Xml.Tag) {
-                            Xml.Tag childTag = (Xml.Tag) c;
-                            String name = childTag.getName();
-                            if ("validation-mode".equals(name) || "properties".equals(name)) {
-                                newContent.add(sharedCacheTag);
-                                inserted = true;
-                            }
-                        }
-                        newContent.add(c);
-                    }
-
-                    if (!inserted) {
-                        newContent.add(sharedCacheTag);
-                    }
-
-                    t = t.withContent(newContent);
-                    t = autoFormat(t, ctx, parent);
+                    Content sharedCacheTag = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
+                    t = t.withContent(ListUtils.insertInOrder((List<Content>) t.getContent(), sharedCacheTag, Comparator.comparing(c1 ->
+                            c1 instanceof Xml.Tag && ("validation-mode".equals(((Xml.Tag) c1).getName()) || "properties".equals(((Xml.Tag) c1).getName())) ? 1 : 0)));
+                    t = autoFormat(t, ctx, getCursor().getParentTreeCursor());
                 } else {
                     // version="1.0"
                     // add a property for eclipselink
