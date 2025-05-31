@@ -124,7 +124,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
                 // There is no shared-cache-mode, so process javax if present.
                 // javax property is deleted below if shared-cache-mode is set.
                 if (sdh.sharedCacheModeProperty != null &&
-                    sdh.sharedCacheModePropertyUnspecified) {
+                        sdh.sharedCacheModePropertyUnspecified) {
 
                     String scmValue = "NONE";
                     if (sdh.openJPACacheProperty != null) {
@@ -159,7 +159,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
                     if (t.getContent() != null) {
                         original.addAll(t.getContent());
                     }
-                   // Ideally we would insert <shared-cache-mode> before the <validation-mode> and <properties> nodes
+                    // Ideally we would insert <shared-cache-mode> before the <validation-mode> and <properties> nodes
                     Xml.Tag sharedCacheTag = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
 
                     List<Content> newContent = new ArrayList<>(original.size() + 1);

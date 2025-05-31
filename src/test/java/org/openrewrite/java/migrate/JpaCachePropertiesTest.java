@@ -1397,38 +1397,39 @@ class JpaCachePropertiesTest implements RewriteTest {
           )
         );
     }
+
     @Test
     void openjpa_shared_cache11_flagged() {
         rewriteRun(
           //language=xml
           xml(
             """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence"
-                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                <persistence-unit name="openjpa_cache11_flagged">
-                    <!-- flag and insert shared-cache-mode ALL-->
-                    <properties>
-                        <property name="openjpa.DataCache" value="tRue"/><!-- delete -->
-                    </properties>
-                </persistence-unit>
-            </persistence>
-            """,
+              <?xml version="1.0" encoding="UTF-8"?>
+              <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence"
+                           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                           xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+                  <persistence-unit name="openjpa_cache11_flagged">
+                      <!-- flag and insert shared-cache-mode ALL-->
+                      <properties>
+                          <property name="openjpa.DataCache" value="tRue"/><!-- delete -->
+                      </properties>
+                  </persistence-unit>
+              </persistence>
+              """,
             """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence"
-                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                <persistence-unit name="openjpa_cache11_flagged">
-                    <!-- flag and insert shared-cache-mode ALL-->
-                    <shared-cache-mode>ALL</shared-cache-mode>
-                    <properties>
-                        <!-- delete -->
-                    </properties>
-                </persistence-unit>
-            </persistence>
-            """,
+              <?xml version="1.0" encoding="UTF-8"?>
+              <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence"
+                           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                           xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+                  <persistence-unit name="openjpa_cache11_flagged">
+                      <!-- flag and insert shared-cache-mode ALL-->
+                      <shared-cache-mode>ALL</shared-cache-mode>
+                      <properties>
+                          <!-- delete -->
+                      </properties>
+                  </persistence-unit>
+              </persistence>
+              """,
             sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
           )
         );
