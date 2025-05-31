@@ -1,0 +1,90 @@
+#
+# Copyright 2025 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.lang.SearchNewThreadWithRunnable
+displayName: Search for a new Thread instantiation that accepts Runnable
+description: >-
+  Search for a new `java.lang.Thread` instantiation that accepts `java.lang.Runnable`. This recipe can be used
+  to search Threads that can be converted to Virtual Threads.
+tags:
+  - java21
+  - virtual_threads
+recipeList:
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.lang.Thread#<constructor>(java.lang.Runnable, ..)
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.lang.Thread#<constructor>(java.lang.ThreadGroup, java.lang.Runnable, ..)
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.lang.SearchExtendsThreadAndOverrideRunnable
+displayName: Search for classes that extend Thread and override Runnable#run
+description: >-
+  Search for classes that extend `java.lang.Thread` and override `java.lang.Runnable#run()`. This recipe can be used
+  to search classes where extends Thread can be replaced to implements Runnable, to convert it
+  to Virtual Threads.
+tags:
+  - java21
+  - virtual_threads
+preconditions:
+  - org.openrewrite.java.search.FindImplementations:
+      typeName: java.lang.Thread
+recipeList:
+  - org.openrewrite.java.search.FindMethodDeclaration:
+      methodPattern: java.lang.Runnable#run()
+      matchOverrides: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.lang.SearchAllThreadClassUsage
+displayName: Search where a new instance of Thread is created, or class extends Thread
+description: >-
+  Search all places where a new instance of `java.lang.Thread` is created, or class extends `java.lang.Thread`.
+tags:
+  - java21
+  - virtual_threads
+recipeList:
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.lang.Thread#<constructor>(..)
+  - org.openrewrite.java.search.FindImplementations:
+      typeName: java.lang.Thread
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.lang.SearchAllExecutors
+displayName: Search for static Executors method for creating ExecutorService
+description: >-
+  Search all places where static `java.util.concurrent.Executors` method creates
+  an `java.util.concurrent.ExecutorService`. This recipe can be used
+  to search ExecutorService that can be replaced to Virtual Thread executor.
+tags:
+  - java21
+  - virtual_threads
+recipeList:
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.util.concurrent.Executors#newCachedThreadPool(..)
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.util.concurrent.Executors#newFixedThreadPool(..)
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.util.concurrent.Executors#newSingleThreadExecutor(..)
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.util.concurrent.Executors#newWorkStealingPool(..)
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.util.concurrent.Executors#newScheduledThreadPool(..)
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.util.concurrent.Executors#newSingleThreadScheduledExecutor(..)
