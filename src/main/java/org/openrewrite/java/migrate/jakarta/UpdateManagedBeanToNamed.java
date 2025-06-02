@@ -37,7 +37,8 @@ public class UpdateManagedBeanToNamed extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Faces ManagedBean was deprecated in JSF 2.3 and removed in Jakarta Faces 4.0. Replace `@ManagedBean` with `@Named` for CDI-based bean management.";
+        return "Faces ManagedBean was deprecated in JSF 2.3 (EE8) and removed in Jakarta Faces 4.0 (EE10). " +
+               "Replace `@ManagedBean` with `@Named` for CDI-based bean management.";
     }
 
     @Override
