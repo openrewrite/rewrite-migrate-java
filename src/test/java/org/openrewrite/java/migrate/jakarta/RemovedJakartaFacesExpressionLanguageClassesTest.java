@@ -102,24 +102,24 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
             }
             """,
                 """
-            package com.test;
-
-            import jakarta.el.ELException;
-            import jakarta.el.ELResolver;
-            import jakarta.el.MethodNotFoundException;
-            import jakarta.el.PropertyNotFoundException;
-
-            public class Test {
-
-                public void testJakarta_1() {
-                    ELResolver elResolver = null;
-                    ELException elException = null;
-                    MethodNotFoundException methodNotFoundException1 = null;
-                    PropertyNotFoundException propertyNotFoundException1 = null;
-                    ELException elException1 = null;
-                }
-            }
-            """
+                  package com.test;
+                  
+                  import jakarta.el.ELException;
+                  import jakarta.el.ELResolver;
+                  import jakarta.el.MethodNotFoundException;
+                  import jakarta.el.PropertyNotFoundException;
+                  
+                  public class Test {
+                  
+                      public void testJakarta_1() {
+                          ELResolver elResolver = null;
+                          ELException elException = null;
+                          MethodNotFoundException methodNotFoundException1 = null;
+                          PropertyNotFoundException propertyNotFoundException1 = null;
+                          ELException elException1 = null;
+                      }
+                  }
+                  """
           ));
     }
 
