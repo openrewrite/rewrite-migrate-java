@@ -15,6 +15,7 @@
 11.0.26.fx-librca
 11.0.26.fx-zulu
 11.0.27-amzn
+11.0.27-bisheng
 11.0.27-kona
 11.0.27-librca
 11.0.27-ms
@@ -45,6 +46,7 @@
 17.0.14.fx-librca
 17.0.14.fx-zulu
 17.0.15-amzn
+17.0.15-bisheng
 17.0.15-kona
 17.0.15-librca
 17.0.15-ms
@@ -79,6 +81,7 @@
 21.0.6.fx-librca
 21.0.6.fx-zulu
 21.0.7-amzn
+21.0.7-bisheng
 21.0.7-graal
 21.0.7-jbr
 21.0.7-kona
@@ -171,6 +174,9 @@
 25.ea.22-graal
 25.ea.23-graal
 25.ea.23-open
+25.ea.24-graal
+25.ea.24-open
+25.ea.25-open
 25.ea.8-graal
 6.0.119-zulu
 7.0.352-zulu
@@ -188,6 +194,7 @@
 8.0.442.fx-librca
 8.0.442.fx-zulu
 8.0.452-amzn
+8.0.452-bisheng
 8.0.452-kona
 8.0.452-librca
 8.0.452-sem
