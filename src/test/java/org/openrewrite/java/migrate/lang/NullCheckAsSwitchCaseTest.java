@@ -138,6 +138,22 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
                       return formatted;
                   }
 
+                  static String useNonPrimitiveAsIdentifier(Score score) {
+                      String formatted = "Score not translated yet";
+                      if (score.getObj() == null) {
+                          setObj(score);
+                      }
+                      switch (score.getObj()) {
+                          case "A", "B" -> formatted = "Very good";
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+
+                  void setObj(Score score) {
+                      score.setObj();
+                  }
+
                   private static class Score {
                       String obj;
 
@@ -432,6 +448,112 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
                 }
             }
             """
+          )
+        );
+    }
+
+    @Test
+    void mergeWhenBoxedIsUsedAsIdentifier() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  static String score(Character obj) {
+                      String formatted = "Score not translated yet";
+                      if (obj == null) {
+                          setObj(obj);
+                          formatted = "You did not enter the test yet";
+                      }
+                      switch (obj) {
+                          case 'A', 'B' -> formatted = "Very good";
+                          case 'C' -> formatted = "Good";
+                          case 'D' -> formatted = "Hmmm...";
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+
+                  void setObj(Character obj) {
+                      obj = 'A';
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static String score(Character obj) {
+                      String formatted = "Score not translated yet";
+                      switch (obj) {
+                          case null -> {
+                              setObj(obj);
+                              formatted = "You did not enter the test yet";
+                          }
+                          case 'A', 'B' -> formatted = "Very good";
+                          case 'C' -> formatted = "Good";
+                          case 'D' -> formatted = "Hmmm...";
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+
+                  void setObj(Character obj) {
+                      obj = 'A';
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void mergeWhenStringIsUsedAsIdentifier() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  static String score(String obj) {
+                      String formatted = "Score not translated yet";
+                      if (obj == null) {
+                          setObj(obj);
+                          formatted = "You did not enter the test yet";
+                      }
+                      switch (obj) {
+                          case "A", "B" -> formatted = "Very good";
+                          case "C" -> formatted = "Good";
+                          case "D" -> formatted = "Hmmm...";
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+
+                  void setObj(String obj) {
+                      obj = "String cannot be reassigned in the original location so safe to merge";
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static String score(String obj) {
+                      String formatted = "Score not translated yet";
+                      switch (obj) {
+                          case null -> {
+                              setObj(obj);
+                              formatted = "You did not enter the test yet";
+                          }
+                          case "A", "B" -> formatted = "Very good";
+                          case "C" -> formatted = "Good";
+                          case "D" -> formatted = "Hmmm...";
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+
+                  void setObj(String obj) {
+                      obj = "String cannot be reassigned in the original location so safe to merge";
+                  }
+              }
+              """
           )
         );
     }

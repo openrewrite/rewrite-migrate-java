@@ -22,6 +22,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.trait.SimpleTraitMatcher;
 import org.openrewrite.trait.Trait;
@@ -81,10 +82,13 @@ public class NullCheck implements Trait<J.If> {
             return true;
         }
         return new JavaIsoVisitor<AtomicBoolean>() {
+
+            private final boolean isCertainlyImmutable = nullChecked.getType() != null && JavaType.Primitive.fromClassName(nullChecked.getType().toString()) != null;
+
             @Override
             public J.Identifier visitIdentifier(J.Identifier identifier, AtomicBoolean atomicBoolean) {
                 J.Identifier id = super.visitIdentifier(identifier, atomicBoolean);
-                if (SemanticallyEqual.areEqual(id, nullChecked)) {
+                if (!isCertainlyImmutable && SemanticallyEqual.areEqual(id, nullChecked)) {
                     atomicBoolean.set(true);
                 }
                 return id;
