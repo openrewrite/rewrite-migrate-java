@@ -58,14 +58,11 @@ public class UpdateManagedBeanToNamed extends Recipe {
                     public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
                         if (MANAGED_BEAN_MATCHER_JAVAX.matches(annotation) || MANAGED_BEAN_MATCHER_JAKARTA.matches(annotation)) {
                             // Get the name from the @ManagedBean annotation
-                            String beanName = annotation.getArguments() == null ? null :
-                                    annotation.getArguments().stream()
-                                            .filter(J.Assignment.class::isInstance)
-                                            .map(J.Assignment.class::cast)
-                                            .filter(arg -> arg.getVariable().toString().equals("name"))
-                                            .findFirst()
-                                            .map(arg -> arg.getAssignment().toString())
-                                            .orElse(null);
+                            String beanName = annotated(annotation.getType().toString())
+                                    .get(getCursor())
+                                    .flatMap(a -> a.getDefaultAttribute("name"))
+                                    .map(name -> name.getValue(String.class))
+                                    .orElse(null);
                             maybeAddImport("jakarta.inject.Named");
                             maybeRemoveImport("javax.faces.bean.ManagedBean");
                             maybeRemoveImport("jakarta.faces.bean.ManagedBean");
