@@ -63,10 +63,10 @@ public class IfElseIfConstructToSwitch extends Recipe {
             public J visitIf(J.If iff, ExecutionContext ctx) {
                 SwitchCandidate switchCandidate = new SwitchCandidate(iff, getCursor());
 
-                if (switchCandidate.isValidCandidate()) {
+                if (switchCandidate.isPotentialCandidate()) {
                     Object[] arguments = switchCandidate.buildTemplateArguments(getCursor());
                     if (arguments.length == 0) {
-                        return iff;
+                        super.visitIf(iff, ctx);
                     }
                     String switchBody = switchCandidate.buildTemplate();
                     J.Switch switch_ = JavaTemplate.builder(switchBody)
@@ -85,12 +85,12 @@ public class IfElseIfConstructToSwitch extends Recipe {
         private final Map<J.InstanceOf, Statement> patternMatchers = new LinkedHashMap<>();
         private @Nullable Expression nullCheckedParameter = null;
         private @Nullable Statement nullCheckedStatement = null;
-        private @Nullable Statement elze = null;
+        private @Nullable Statement else_ = null;
 
         @Getter
         private boolean potentialCandidate = true;
 
-        SwitchCandidate(J.If iff, Cursor cursor) {
+        private SwitchCandidate(J.If iff, Cursor cursor) {
             J.If ifPart = iff;
             while (potentialCandidate && ifPart != null) {
                 if (ifPart.getIfCondition().getTree() instanceof J.Binary) {
@@ -98,9 +98,10 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 } else if (ifPart.getIfCondition().getTree() instanceof J.InstanceOf) {
                     ifPart = handleInstanceOfCheck(ifPart);
                 } else {
-                    noPotentialCandidate();
+                    potentialCandidate = false;
                 }
             }
+            validatePotentialCandidate();
         }
 
         private J.@Nullable If handleNullCheck(J.If ifPart, Cursor cursor) {
@@ -112,11 +113,11 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 if (elsePart instanceof J.If) {
                     ifPart = (J.If) elsePart;
                 } else {
-                    elze = elsePart;
+                    else_ = elsePart;
                     ifPart = null;
                 }
             } else {
-                noPotentialCandidate();
+                potentialCandidate = false;
             }
             return ifPart;
         }
@@ -127,48 +128,42 @@ public class IfElseIfConstructToSwitch extends Recipe {
             if (elsePart != null && elsePart.getBody() instanceof J.If) {
                 ifPart = (J.If) elsePart.getBody();
             } else {
-                elze = elsePart != null ? elsePart.getBody() : null;
+                else_ = elsePart != null ? elsePart.getBody() : null;
                 ifPart = null;
             }
             return ifPart;
         }
 
-        void noPotentialCandidate() {
-            this.potentialCandidate = false;
-        }
-
-        boolean isValidCandidate() {
-            Expression switchOn = switchOn();
+        private void validatePotentialCandidate() {
+            Optional<Expression> switchOn = switchOn();
             // all ifs in the chain must be on the same variable in order to be a candidate for switch pattern matching
-            if (switchOn == null || potentialCandidate && !patternMatchers.keySet().stream()
+            if (!switchOn.isPresent() || potentialCandidate && !patternMatchers.keySet().stream()
                     .map(J.InstanceOf::getExpression)
-                    .allMatch(it -> SemanticallyEqual.areEqual(switchOn, it))) {
-                this.potentialCandidate = false;
-                return false;
+                    .allMatch(it -> SemanticallyEqual.areEqual(switchOn.get(), it))) {
+                potentialCandidate = false;
+                return;
             }
-            boolean nullCaseInSwitch = nullCheckedParameter != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn);
-            boolean hasLastElseBlock = elze != null;
+            boolean nullCaseInSwitch = nullCheckedParameter != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn.get());
+            boolean hasLastElseBlock = else_ != null;
 
             // we need at least 3 cases to use a switch
             if (potentialCandidate && patternMatchers.keySet().size() + (nullCaseInSwitch ? 1 : 0) + (hasLastElseBlock ? 1 : 0) <= 2) {
-                this.potentialCandidate = false;
+                potentialCandidate = false;
             }
-            return potentialCandidate;
         }
 
-        @Nullable Expression switchOn() {
+        Optional<Expression> switchOn() {
             return patternMatchers.keySet().stream()
                     .map(J.InstanceOf::getExpression)
-                    .findAny()
-                    .orElse(null);
+                    .findAny();
         }
 
         Object[] buildTemplateArguments(Cursor cursor) {
-            Expression switchOn = switchOn();
-            if (switchOn == null) {
+            Optional<Expression> switchOn = switchOn();
+            if (!switchOn.isPresent()) {
                 return new Object[0];
             }
-            Object[] arguments = new Object[1 + (nullCheckedParameter != null ? 1 : 0) + (patternMatchers.size() * 3) + (elze != null ? 1 : 0)];
+            Object[] arguments = new Object[1 + (nullCheckedParameter != null ? 1 : 0) + (patternMatchers.size() * 3) + (else_ != null ? 1 : 0)];
             arguments[0] = switchOn;
             int i = 1;
             if (nullCheckedParameter != null) {
@@ -182,9 +177,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 arguments[i++] = instanceOf.getPattern() == null ? "" : instanceOf.getPattern().withPrefix(Space.SINGLE_SPACE).print(cursor);
                 arguments[i++] = getStatementArgument(entry.getValue(), cursor);
             }
-            if (elze != null) {
+            if (else_ != null) {
                 // default -> statement
-                arguments[i] = getStatementArgument(elze, cursor);
+                arguments[i] = getStatementArgument(else_, cursor);
             }
 
             return arguments;
@@ -198,7 +193,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
             for (int i = 0; i < patternMatchers.size(); i++) {
                 switchBody.append("    case #{}#{} -> #{}\n");
             }
-            if (elze != null) {
+            if (else_ != null) {
                 switchBody.append("    default -> #{}\n");
             }
             switchBody.append("}\n");
