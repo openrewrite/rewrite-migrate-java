@@ -131,9 +131,9 @@ public class NullCheck implements Trait<J.If> {
         @Override
         protected @Nullable NullCheck test(Cursor cursor) {
             if (cursor.getValue() instanceof J.If) {
-                J.If iff = cursor.getValue();
-                if (iff.getIfCondition().getTree() instanceof J.Binary) {
-                    J.Binary binary = (J.Binary) iff.getIfCondition().getTree();
+                J.If if_ = cursor.getValue();
+                if (if_.getIfCondition().getTree() instanceof J.Binary) {
+                    J.Binary binary = (J.Binary) if_.getIfCondition().getTree();
                     if (J.Binary.Type.Equal == binary.getOperator()) {
                         if (J.Literal.isLiteralValue(binary.getLeft(), null)) {
                             return new NullCheck(cursor, binary.getRight());

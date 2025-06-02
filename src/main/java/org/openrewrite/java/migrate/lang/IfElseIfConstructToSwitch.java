@@ -60,23 +60,23 @@ public class IfElseIfConstructToSwitch extends Recipe {
         return Preconditions.check(Preconditions.not(new KotlinFileChecker<>()), new JavaVisitor<ExecutionContext>() {
 
             @Override
-            public J visitIf(J.If iff, ExecutionContext ctx) {
-                SwitchCandidate switchCandidate = new SwitchCandidate(iff, getCursor());
+            public J visitIf(J.If if_, ExecutionContext ctx) {
+                SwitchCandidate switchCandidate = new SwitchCandidate(if_, getCursor());
 
                 if (switchCandidate.isPotentialCandidate()) {
                     Object[] arguments = switchCandidate.buildTemplateArguments(getCursor());
                     if (arguments.length == 0) {
-                        super.visitIf(iff, ctx);
+                        super.visitIf(if_, ctx);
                     }
                     String switchBody = switchCandidate.buildTemplate();
                     J.Switch switch_ = JavaTemplate.builder(switchBody)
                         .contextSensitive()
                         .build()
-                        .apply(getCursor(), iff.getCoordinates().replace(), arguments)
-                        .withPrefix(iff.getPrefix());
+                        .apply(getCursor(), if_.getCoordinates().replace(), arguments)
+                        .withPrefix(if_.getPrefix());
                     return super.visitSwitch(switch_, ctx);
                 }
-                return super.visitIf(iff, ctx);
+                return super.visitIf(if_, ctx);
             }
         });
     }
@@ -90,8 +90,8 @@ public class IfElseIfConstructToSwitch extends Recipe {
         @Getter
         private boolean potentialCandidate = true;
 
-        private SwitchCandidate(J.If iff, Cursor cursor) {
-            J.If ifPart = iff;
+        private SwitchCandidate(J.If if_, Cursor cursor) {
+            J.If ifPart = if_;
             while (potentialCandidate && ifPart != null) {
                 if (ifPart.getIfCondition().getTree() instanceof J.Binary) {
                     ifPart = handleNullCheck(ifPart, cursor);
