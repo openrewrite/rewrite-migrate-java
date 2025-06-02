@@ -50,41 +50,41 @@ public class SwitchCaseEnumGuardToLabel extends Recipe {
         return Preconditions.check(Preconditions.not(new KotlinFileChecker<>()), new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
-            public J.Case visitCase(J.Case _case, ExecutionContext ctx) {
-                J.Case aCase = super.visitCase(_case, ctx);
+            public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
+                J.Case visitedCase = super.visitCase(case_, ctx);
 
-                J.VariableDeclarations.NamedVariable label = getCreatedLabelVariable(aCase);
+                J.VariableDeclarations.NamedVariable label = getCreatedLabelVariable(visitedCase);
                 if (label == null) {
-                    return aCase;
+                    return visitedCase;
                 }
 
                 JavaType type = label.getType();
                 if (type instanceof JavaType.Class && ((JavaType.Class) type).getKind() == JavaType.FullyQualified.Kind.Enum) {
-                    J.FieldAccess guardedEnum = getGuardedEnum(aCase, label);
+                    J.FieldAccess guardedEnum = getGuardedEnum(visitedCase, label);
                     if (guardedEnum != null) {
                         J modifiedBody = enumReferencesToEnumValue(label.getSimpleName(), guardedEnum)
-                                .visit(aCase.getBody(), ctx);
-                        return aCase.withGuard(null)
-                                .withCaseLabels(singletonList(guardedEnum.withPrefix(aCase.getCaseLabels().get(0).getPrefix())))
+                                .visit(visitedCase.getBody(), ctx);
+                        return visitedCase.withGuard(null)
+                                .withCaseLabels(singletonList(guardedEnum.withPrefix(visitedCase.getCaseLabels().get(0).getPrefix())))
                                 .withBody(modifiedBody);
                     }
                 }
-                return aCase;
+                return visitedCase;
             }
 
-            private J.VariableDeclarations.@Nullable NamedVariable getCreatedLabelVariable(J.Case aCase) {
-                if (aCase.getCaseLabels().size() != 1 || !(aCase.getCaseLabels().get(0) instanceof J.VariableDeclarations)) {
+            private J.VariableDeclarations.@Nullable NamedVariable getCreatedLabelVariable(J.Case case_) {
+                if (case_.getCaseLabels().size() != 1 || !(case_.getCaseLabels().get(0) instanceof J.VariableDeclarations)) {
                     return null;
                 }
-                J.VariableDeclarations decl = (J.VariableDeclarations) aCase.getCaseLabels().get(0);
+                J.VariableDeclarations decl = (J.VariableDeclarations) case_.getCaseLabels().get(0);
                 if (decl.getVariables().size() != 1) {
                     return null;
                 }
                 return decl.getVariables().get(0);
             }
 
-            private J.@Nullable FieldAccess getGuardedEnum(J.Case aCase, J.VariableDeclarations.NamedVariable label) {
-                Expression guard = aCase.getGuard();
+            private J.@Nullable FieldAccess getGuardedEnum(J.Case case_, J.VariableDeclarations.NamedVariable label) {
+                Expression guard = case_.getGuard();
                 if (guard == null) {
                     return null;
                 }
