@@ -51,16 +51,16 @@ public class RefineSwitchCases extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(Preconditions.not(new KotlinFileChecker<>()), new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.Switch visitSwitch(J.Switch switch_, ExecutionContext ctx) {
-                J.Switch aSwitch = super.visitSwitch(switch_, ctx);
-                J.Switch mappedSwitch = aSwitch.withCases(aSwitch.getCases()
-                        .withStatements(ListUtils.flatMap(aSwitch.getCases().getStatements(), statement -> {
+            public J.Switch visitSwitch(J.Switch sw, ExecutionContext ctx) {
+                J.Switch switch_ = super.visitSwitch(sw, ctx);
+                J.Switch mappedSwitch = switch_.withCases(switch_.getCases()
+                        .withStatements(ListUtils.flatMap(switch_.getCases().getStatements(), statement -> {
                             if (statement instanceof J.Case) {
-                                J.Case aCase = (J.Case) statement;
-                                if (!(aCase.getBody() instanceof J.Block) || ((J.Block) aCase.getBody()).getStatements().isEmpty()) {
+                                J.Case case_ = (J.Case) statement;
+                                if (!(case_.getBody() instanceof J.Block) || ((J.Block) case_.getBody()).getStatements().isEmpty()) {
                                     return statement;
                                 }
-                                List<String> labelVars = aCase.getCaseLabels().stream()
+                                List<String> labelVars = case_.getCaseLabels().stream()
                                         .filter(J.VariableDeclarations.class::isInstance)
                                         .map(J.VariableDeclarations.class::cast)
                                         .map(this::getVariablesCreated)
@@ -70,19 +70,19 @@ public class RefineSwitchCases extends Recipe {
                                 if (labelVars.isEmpty()) {
                                     return statement;
                                 }
-                                List<Statement> caseStatements = ((J.Block) aCase.getBody()).getStatements();
+                                List<Statement> caseStatements = ((J.Block) case_.getBody()).getStatements();
                                 if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.If) {
-                                    J.If ifStatement = (J.If) caseStatements.get(0);
-                                    if (getConditionVariables(ifStatement.getIfCondition().getTree()).stream()
+                                    J.If if_ = (J.If) caseStatements.get(0);
+                                    if (getConditionVariables(if_.getIfCondition().getTree()).stream()
                                             .allMatch(conditionVariable -> labelVars.contains(conditionVariable.getSimpleName()))) {
                                         // Replace case with multiple cases
-                                        return getCases(aCase, ifStatement);
+                                        return getCases(case_, if_);
                                     }
                                 }
                             }
                             return statement;
                         })));
-                return mappedSwitch == aSwitch ? aSwitch : autoFormat(mappedSwitch, ctx);
+                return mappedSwitch == switch_ ? switch_ : autoFormat(mappedSwitch, ctx);
             }
 
             private List<J.Identifier> getConditionVariables(@Nullable Expression expression) {
@@ -119,27 +119,27 @@ public class RefineSwitchCases extends Recipe {
                 return variables;
             }
 
-            private List<J.Case> getCases(J.Case aCase, J.If ifStatement) {
-                if (aCase.getBody() == null) {
-                    return singletonList(aCase);
+            private List<J.Case> getCases(J.Case case_, J.If if_) {
+                if (case_.getBody() == null) {
+                    return singletonList(case_);
                 }
                 List<J.Case> cases = new ArrayList<>();
-                Statement caseBody = ifStatement.getThenPart();
+                Statement caseBody = if_.getThenPart();
                 if (caseBody instanceof J.Block && ((J.Block) caseBody).getStatements().size() == 1) {
                     caseBody = ((J.Block) caseBody).getStatements().get(0);
                 }
                 if (!(caseBody instanceof J.Block)) {
                     caseBody = caseBody.withPrefix(Space.SINGLE_SPACE);
                 }
-                cases.add(aCase.withId(Tree.randomId()).withGuard(ifStatement.getIfCondition().getTree().withPrefix(Space.SINGLE_SPACE)).withBody(caseBody));
-                if (ifStatement.getElsePart() == null) {
-                    if (aCase.getBody() instanceof J.Block) {
-                        cases.add(aCase.withBody(((J.Block) aCase.getBody()).withStatements(emptyList()).withEnd(Space.EMPTY).withPrefix(Space.SINGLE_SPACE)));
+                cases.add(case_.withId(Tree.randomId()).withGuard(if_.getIfCondition().getTree().withPrefix(Space.SINGLE_SPACE)).withBody(caseBody));
+                if (if_.getElsePart() == null) {
+                    if (case_.getBody() instanceof J.Block) {
+                        cases.add(case_.withBody(((J.Block) case_.getBody()).withStatements(emptyList()).withEnd(Space.EMPTY).withPrefix(Space.SINGLE_SPACE)));
                     }
-                } else if (ifStatement.getElsePart().getBody() instanceof J.If) {
-                    cases.addAll(getCases(aCase, (J.If) ifStatement.getElsePart().getBody()));
+                } else if (if_.getElsePart().getBody() instanceof J.If) {
+                    cases.addAll(getCases(case_, (J.If) if_.getElsePart().getBody()));
                 } else {
-                    cases.add(aCase.withBody(ifStatement.getElsePart().getBody().withPrefix(Space.SINGLE_SPACE)));
+                    cases.add(case_.withBody(if_.getElsePart().getBody().withPrefix(Space.SINGLE_SPACE)));
                 }
 
                 return cases;
