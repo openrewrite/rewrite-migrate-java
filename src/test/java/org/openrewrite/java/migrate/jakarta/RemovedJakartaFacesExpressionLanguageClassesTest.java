@@ -68,7 +68,7 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
 
                    public void testJakarta() {
                         MethodExpression methodExpression = null;
-                        ELResolver eLResolver = null;
+                        ELResolver elResolver = null;
                         ValueExpression valueExpression = null;
                    }
               }
@@ -112,11 +112,11 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
             public class Test {
 
                 public void testJakarta_1() {
-                    ELResolver eLResolver = null;
-                    ELException eLException = null;
+                    ELResolver elResolver = null;
+                    ELException elException = null;
                     MethodNotFoundException methodNotFoundException1 = null;
                     PropertyNotFoundException propertyNotFoundException1 = null;
-                    ELException eLException1 = null;
+                    ELException elException1 = null;
                 }
             }
             """
@@ -155,7 +155,7 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
 
                    public void testJavax() {
                         MethodExpression methodExpression = null;
-                        ELResolver eLResolver = null;
+                        ELResolver elResolver = null;
                         ValueExpression valueExpression = null;
                    }
               }
@@ -199,11 +199,11 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
             public class Test {
 
                 public void testJavax_1() {
-                    ELResolver eLResolver = null;
-                    ELException eLException = null;
+                    ELResolver elResolver = null;
+                    ELException elException = null;
                     MethodNotFoundException methodNotFoundException1 = null;
                     PropertyNotFoundException propertyNotFoundException1 = null;
-                    ELException eLException1 = null;
+                    ELException elException1 = null;
                 }
             }
             """
