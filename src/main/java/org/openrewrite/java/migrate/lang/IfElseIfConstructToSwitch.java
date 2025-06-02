@@ -20,7 +20,6 @@ import lombok.Getter;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.SemanticallyEqual;
@@ -71,7 +70,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     }
                     String switchBody = switchCandidate.buildTemplate();
                     J.Switch switch_ = JavaTemplate.builder(switchBody)
-                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx))
                         .contextSensitive()
                         .build()
                         .apply(getCursor(), iff.getCoordinates().replace(), arguments)
@@ -140,17 +138,15 @@ public class IfElseIfConstructToSwitch extends Recipe {
         }
 
         boolean isValidCandidate() {
+            Expression switchOn = switchOn();
             // all ifs in the chain must be on the same variable in order to be a candidate for switch pattern matching
-            if (potentialCandidate && patternMatchers.keySet().stream()
+            if (switchOn == null || potentialCandidate && !patternMatchers.keySet().stream()
                     .map(J.InstanceOf::getExpression)
-                    .map(this::asName)
-                    .distinct()
-                    .count() != 1) {
+                    .allMatch(it -> SemanticallyEqual.areEqual(switchOn, it))) {
                 this.potentialCandidate = false;
                 return false;
             }
-            Expression switchOn = switchOn();
-            boolean nullCaseInSwitch = nullCheckedParameter != null && switchOn != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn);
+            boolean nullCaseInSwitch = nullCheckedParameter != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn);
             boolean hasLastElseBlock = elze != null;
 
             // we need at least 3 cases to use a switch
@@ -220,26 +216,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 semicolon = ";";
             }
             return toAdd.withPrefix(Space.EMPTY).print(cursor) + semicolon;
-        }
-
-        private String asName(@Nullable Expression expression) {
-            if (expression == null) {
-                return "";
-            }
-            if (expression instanceof J.Identifier) {
-                return ((J.Identifier) expression).getSimpleName();
-            }
-            if (expression instanceof J.FieldAccess) {
-                return asName(((J.FieldAccess) expression).getTarget()) + "." + ((J.FieldAccess) expression).getSimpleName();
-            }
-            if (expression instanceof J.MethodInvocation) {
-                String select = asName(((J.MethodInvocation) expression).getSelect());
-                if (select.isEmpty()) {
-                    select = "this";
-                }
-                return select + "$" + ((J.MethodInvocation) expression).getSimpleName();
-            }
-            return expression.toString();
         }
     }
 }
