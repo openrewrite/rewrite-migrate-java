@@ -173,7 +173,11 @@ public class IfElseIfConstructToSwitch extends Recipe {
             for (Map.Entry<J.InstanceOf, Statement> entry : patternMatchers.entrySet()) {
                 J.InstanceOf instanceOf = entry.getKey();
                 // case class (pattern) -> statement
-                arguments[i++] = ((J.Identifier) instanceOf.getClazz()).getSimpleName();
+                if (instanceOf.getClazz() instanceof J.Identifier) {
+                    arguments[i++] = ((J.Identifier) instanceOf.getClazz()).getSimpleName();
+                } else if (instanceOf.getClazz() instanceof J.FieldAccess) {
+                    arguments[i++] = ((J.FieldAccess) instanceOf.getClazz()).toString();
+                }
                 arguments[i++] = instanceOf.getPattern() == null ? "" : instanceOf.getPattern().withPrefix(Space.SINGLE_SPACE).print(cursor);
                 arguments[i++] = getStatementArgument(entry.getValue(), cursor);
             }
