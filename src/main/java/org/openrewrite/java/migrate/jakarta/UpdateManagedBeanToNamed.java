@@ -51,8 +51,7 @@ public class UpdateManagedBeanToNamed extends Recipe {
             public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
                 if (MANAGED_BEAN_MATCHER_JAVAX.matches(annotation) || MANAGED_BEAN_MATCHER_JAKARTA.matches(annotation)) {
                     // Get the name from the @ManagedBean annotation
-                    String beanName;
-                    beanName = annotation.getArguments() == null ? null :
+                    String beanName = annotation.getArguments() == null ? null :
                             annotation.getArguments().stream()
                                     .filter(J.Assignment.class::isInstance)
                                     .map(J.Assignment.class::cast)
@@ -60,23 +59,23 @@ public class UpdateManagedBeanToNamed extends Recipe {
                                     .findFirst()
                                     .map(arg -> arg.getAssignment().toString())
                                     .orElse(null);
+                    maybeAddImport("jakarta.inject.Named");
+                    maybeRemoveImport("javax.faces.bean.ManagedBean");
+                    maybeRemoveImport("jakarta.faces.bean.ManagedBean");
                     // Replace the @ManagedBean annotation with @Named
                     if (beanName != null) {
-                        annotation = JavaTemplate.builder("@Named(\"#{}\")")
+                        return JavaTemplate.builder("@Named(\"#{}\")")
                                 .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.inject-api-2.0.1"))
                                 .imports("jakarta.inject.Named")
                                 .build()
                                 .apply(getCursor(), annotation.getCoordinates().replace(), beanName);
                     } else {
-                        annotation = JavaTemplate.builder("@Named")
+                        return JavaTemplate.builder("@Named")
                                 .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.inject-api-2.0.1"))
                                 .imports("jakarta.inject.Named")
                                 .build()
                                 .apply(getCursor(), annotation.getCoordinates().replace());
                     }
-                    maybeAddImport("jakarta.inject.Named");
-                    maybeRemoveImport("javax.faces.bean.ManagedBean");
-                    maybeRemoveImport("jakarta.faces.bean.ManagedBean");
                 }
                 return annotation;
             }

@@ -33,7 +33,6 @@ class UpdateManagedBeanToNamedTest implements RewriteTest {
           .recipe(new UpdateManagedBeanToNamed());
     }
 
-    @DocumentExample
     @ParameterizedTest
     @ValueSource(strings = {"javax", "jakarta"})
     void updateManagedBeanToNamed(String pkg) {
