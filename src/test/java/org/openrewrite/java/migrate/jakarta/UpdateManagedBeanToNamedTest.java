@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -29,7 +28,7 @@ class UpdateManagedBeanToNamedTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "jsf-api-2.1.29-11", "jakarta.faces-api-3.0.0", "jakarta.inject-api-2.0.1"))
+            .classpathFromResources(new InMemoryExecutionContext(), "jsf-api-2.1.29-11", "jakarta.faces-api-3.0.0"))
           .recipe(new UpdateManagedBeanToNamed());
     }
 

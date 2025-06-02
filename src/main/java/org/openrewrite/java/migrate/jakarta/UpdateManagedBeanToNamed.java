@@ -18,13 +18,17 @@ package org.openrewrite.java.migrate.jakarta;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
+
+import static org.openrewrite.java.trait.Traits.annotated;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -43,42 +47,45 @@ public class UpdateManagedBeanToNamed extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            private final AnnotationMatcher MANAGED_BEAN_MATCHER_JAVAX = new AnnotationMatcher("javax.faces.bean.ManagedBean");
-            private final AnnotationMatcher MANAGED_BEAN_MATCHER_JAKARTA = new AnnotationMatcher("jakarta.faces.bean.ManagedBean");
+        return new Preconditions.Check(Preconditions.or(
+                        new UsesType<>("javax.faces.bean.ManagedBean", false),
+                        new UsesType<>("jakarta.faces.bean.ManagedBean", false)),
+                new JavaIsoVisitor<ExecutionContext>() {
+                    private final AnnotationMatcher MANAGED_BEAN_MATCHER_JAVAX = new AnnotationMatcher("javax.faces.bean.ManagedBean");
+                    private final AnnotationMatcher MANAGED_BEAN_MATCHER_JAKARTA = new AnnotationMatcher("jakarta.faces.bean.ManagedBean");
 
-            @Override
-            public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-                if (MANAGED_BEAN_MATCHER_JAVAX.matches(annotation) || MANAGED_BEAN_MATCHER_JAKARTA.matches(annotation)) {
-                    // Get the name from the @ManagedBean annotation
-                    String beanName = annotation.getArguments() == null ? null :
-                            annotation.getArguments().stream()
-                                    .filter(J.Assignment.class::isInstance)
-                                    .map(J.Assignment.class::cast)
-                                    .filter(arg -> arg.getVariable().toString().equals("name"))
-                                    .findFirst()
-                                    .map(arg -> arg.getAssignment().toString())
-                                    .orElse(null);
-                    maybeAddImport("jakarta.inject.Named");
-                    maybeRemoveImport("javax.faces.bean.ManagedBean");
-                    maybeRemoveImport("jakarta.faces.bean.ManagedBean");
-                    // Replace the @ManagedBean annotation with @Named
-                    if (beanName != null) {
-                        return JavaTemplate.builder("@Named(\"#{}\")")
-                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.inject-api-2.0.1"))
-                                .imports("jakarta.inject.Named")
-                                .build()
-                                .apply(getCursor(), annotation.getCoordinates().replace(), beanName);
-                    } else {
-                        return JavaTemplate.builder("@Named")
-                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.inject-api-2.0.1"))
-                                .imports("jakarta.inject.Named")
-                                .build()
-                                .apply(getCursor(), annotation.getCoordinates().replace());
+                    @Override
+                    public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
+                        if (MANAGED_BEAN_MATCHER_JAVAX.matches(annotation) || MANAGED_BEAN_MATCHER_JAKARTA.matches(annotation)) {
+                            // Get the name from the @ManagedBean annotation
+                            String beanName = annotation.getArguments() == null ? null :
+                                    annotation.getArguments().stream()
+                                            .filter(J.Assignment.class::isInstance)
+                                            .map(J.Assignment.class::cast)
+                                            .filter(arg -> arg.getVariable().toString().equals("name"))
+                                            .findFirst()
+                                            .map(arg -> arg.getAssignment().toString())
+                                            .orElse(null);
+                            maybeAddImport("jakarta.inject.Named");
+                            maybeRemoveImport("javax.faces.bean.ManagedBean");
+                            maybeRemoveImport("jakarta.faces.bean.ManagedBean");
+                            // Replace the @ManagedBean annotation with @Named
+                            if (beanName != null) {
+                                return JavaTemplate.builder("@Named(\"#{}\")")
+                                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.inject-api-2.0.1"))
+                                        .imports("jakarta.inject.Named")
+                                        .build()
+                                        .apply(getCursor(), annotation.getCoordinates().replace(), beanName);
+                            } else {
+                                return JavaTemplate.builder("@Named")
+                                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.inject-api-2.0.1"))
+                                        .imports("jakarta.inject.Named")
+                                        .build()
+                                        .apply(getCursor(), annotation.getCoordinates().replace());
+                            }
+                        }
+                        return annotation;
                     }
-                }
-                return annotation;
-            }
-        };
+                });
     }
 }
