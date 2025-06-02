@@ -375,7 +375,8 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     @Test
     void switchBlockForNestedClasses() {
         rewriteRun(
-                java("""
+                java(
+                        """
                         public class Tester {
                             public static class A {}
 
@@ -384,37 +385,37 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                         """),
                 //language=java
                 java(
-                        """
-                          class Test {
-                              static String formatter(Object obj) {
-                                  String formatted;
-                                  if (obj == null) {
-                                      formatted = "null";
-                                  } else if (obj instanceof Tester.A)
-                                      formatted = "nested1";
-                                  else if (obj instanceof Tester.B) {
-                                      formatted = "nested2";
-                                  } else {
-                                      formatted = "unknown";
-                                  }
-                                  return formatted;
-                              }
-                          }
-                          """,
-                        """
-                          class Test {
-                              static String formatter(Object obj) {
-                                  String formatted;
-                                  switch (obj) {
-                                      case null -> formatted = "null";
-                                      case Tester.A -> formatted = "nested1";
-                                      case Tester.B -> formatted = "nested2";
-                                      default -> formatted = "unknown";
-                                  }
-                                  return formatted;
-                              }
-                          }
-                          """
+                """
+                        class Test {
+                        static String formatter(Object obj) {
+                            String formatted;
+                            if (obj == null) {
+                                formatted = "null";
+                            } else if (obj instanceof Tester.A)
+                                formatted = "nested1";
+                            else if (obj instanceof Tester.B) {
+                                formatted = "nested2";
+                            } else {
+                                formatted = "unknown";
+                            }
+                            return formatted;
+                        }
+                    }
+                    """,
+                    """
+                    class Test {
+                        static String formatter(Object obj) {
+                            String formatted;
+                            switch (obj) {
+                                case null -> formatted = "null";
+                                case Tester.A -> formatted = "nested1";
+                                case Tester.B -> formatted = "nested2";
+                                default -> formatted = "unknown";
+                            }
+                            return formatted;
+                        }
+                    }
+                    """
                 )
         );
     }
