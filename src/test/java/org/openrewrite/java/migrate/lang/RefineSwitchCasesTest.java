@@ -123,7 +123,7 @@ class RefineSwitchCasesTest implements RewriteTest {
     }
 
     @Test
-    void noNoopBlocks() {
+    void noopBlocks() {
         rewriteRun(
           //language=java
           java(
@@ -138,6 +138,7 @@ class RefineSwitchCasesTest implements RewriteTest {
                                   System.out.println("Shame");
                               }
                           }
+                          default -> System.out.println("Sorry?");
                       }
                   }
               }
@@ -148,6 +149,9 @@ class RefineSwitchCasesTest implements RewriteTest {
                     switch (obj) {
                         case Integer i when i >= 5 && i <= 10 -> System.out.println("You got it");
                         case Integer i when i >= 0 && i < 5 -> System.out.println("Shame");
+                        case Integer i -> {
+                        }
+                        default -> System.out.println("Sorry?");
                     }
                 }
             }
