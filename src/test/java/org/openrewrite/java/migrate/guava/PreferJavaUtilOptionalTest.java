@@ -84,8 +84,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
             import java.util.Optional;
 
             class A {
-                String foo(Optional<String> optional) {
-                    return optional.orElse(null);
+                String foo(Optional<String> optional1) {
+                    return optional1.orElse(null);
                 }
             }
             """));
@@ -108,8 +108,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
             import java.util.Optional;
 
             class A {
-                Optional<String> foo(Optional<String> optional) {
-                    return optional.orElse("other");
+                Optional<String> foo(Optional<String> optional1) {
+                    return optional1.orElse("other");
                 }
             }
             """));
@@ -132,8 +132,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
             import java.util.Optional;
 
             class A {
-                Optional<String> foo(Optional<String> optional) {
-                    return optional.orElseGet(() -> "other");
+                Optional<String> foo(Optional<String> optional1) {
+                    return optional1.orElseGet(() -> "other");
                 }
             }
             """));
@@ -159,8 +159,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
               import java.util.function.Supplier;
 
               class A {
-                  String foo(Optional<String> optional, Supplier<String> supplier) {
-                      return optional.orElseGet(supplier);
+                  String foo(Optional<String> optional1, Supplier<String> supplier1) {
+                      return optional1.orElseGet(supplier1);
                   }
               }
               """
@@ -184,8 +184,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
             import java.util.Optional;
 
             class A {
-                Optional<String> foo(Optional<String> optional) {
-                    return optional.map(String::toUpperCase);
+                Optional<String> foo(Optional<String> optional1) {
+                    return optional1.map(String::toUpperCase);
                 }
             }
             """));

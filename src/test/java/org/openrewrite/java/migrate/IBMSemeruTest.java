@@ -88,8 +88,8 @@ class IBMSemeruTest implements RewriteTest {
                     }
                 }
 
-                public static Handler testMethod(Handler handler){ //flag (2)
-                    return handler;
+                public static Handler testMethod(Handler handler1){ //flag (2)
+                    return handler1;
                 }
               }
               """

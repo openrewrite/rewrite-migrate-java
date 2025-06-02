@@ -67,9 +67,9 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
               public class Test {
 
                    public void testJakarta() {
-                        MethodExpression methodBinding = null;
-                        ELResolver propertyResolver = null;
-                        ValueExpression valueBinding = null;
+                        MethodExpression methodExpression = null;
+                        ELResolver eLResolver = null;
+                        ValueExpression valueExpression = null;
                    }
               }
               """
@@ -112,11 +112,11 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
             public class Test {
 
                 public void testJakarta_1() {
-                    ELResolver variableResolver = null;
-                    ELException evaluationException = null;
-                    MethodNotFoundException methodNotFoundException = null;
-                    PropertyNotFoundException propertyNotFoundException = null;
-                    ELException referenceSyntaxException = null;
+                    ELResolver eLResolver = null;
+                    ELException eLException = null;
+                    MethodNotFoundException methodNotFoundException1 = null;
+                    PropertyNotFoundException propertyNotFoundException1 = null;
+                    ELException eLException1 = null;
                 }
             }
             """
@@ -154,9 +154,9 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
               public class Test {
 
                    public void testJavax() {
-                        MethodExpression methodBinding = null;
-                        ELResolver propertyResolver = null;
-                        ValueExpression valueBinding = null;
+                        MethodExpression methodExpression = null;
+                        ELResolver eLResolver = null;
+                        ValueExpression valueExpression = null;
                    }
               }
               """
@@ -199,11 +199,11 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
             public class Test {
 
                 public void testJavax_1() {
-                    ELResolver variableResolver = null;
-                    ELException evaluationException = null;
-                    MethodNotFoundException methodNotFoundException = null;
-                    PropertyNotFoundException propertyNotFoundException = null;
-                    ELException referenceSyntaxException = null;
+                    ELResolver eLResolver = null;
+                    ELException eLException = null;
+                    MethodNotFoundException methodNotFoundException1 = null;
+                    PropertyNotFoundException propertyNotFoundException1 = null;
+                    ELException eLException1 = null;
                 }
             }
             """
