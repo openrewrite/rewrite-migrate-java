@@ -204,6 +204,10 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
                           case "D" -> formatted = "Hmmm...";
                           default -> formatted = "unknown";
                       }
+                      switch (obj) {
+                          case "E" -> formatted = "Very good";
+                          case "F" -> formatted = "Good";
+                      }
                       return formatted;
                   }
               }
@@ -218,6 +222,10 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
                           case "C" -> formatted = "Good";
                           case "D" -> formatted = "Hmmm...";
                           default -> formatted = "unknown";
+                      }
+                      switch (obj) {
+                          case "E" -> formatted = "Very good";
+                          case "F" -> formatted = "Good";
                       }
                       return formatted;
                   }

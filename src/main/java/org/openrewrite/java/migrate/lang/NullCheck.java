@@ -18,11 +18,15 @@ package org.openrewrite.java.migrate.lang;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.trait.SimpleTraitMatcher;
 import org.openrewrite.trait.Trait;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Value
 public class NullCheck implements Trait<J.If> {
@@ -61,79 +65,57 @@ public class NullCheck implements Trait<J.If> {
      */
     public boolean couldModifyNullCheckedValue() {
         Statement statement = whenNull();
-        if (statement instanceof J.Block) {
-            for (Statement s : ((J.Block) statement).getStatements()) {
-                if (couldModifyNullCheckedValue(s)) {
-                    return true;
-                }
-            }
-            return false;
+        if (statement instanceof J.Block || statement instanceof Expression) {
+            return couldModifyNullCheckedValue(statement, nullCheckedParameter);
         }
-        return couldModifyNullCheckedValue(statement);
-    }
-
-    private boolean couldModifyNullCheckedValue(Statement assignment) {
-        Expression nullCheckedParameter = getNullCheckedParameter();
-        if (assignment instanceof Expression) {
-            return couldModifyNullCheckedValue((Expression) assignment, nullCheckedParameter);
-        }
-        return false;
-    }
-
-    private static <T extends Expression> boolean couldModifyNullCheckedValue(T assigns, T nullChecked) {
-        if (assigns instanceof J.Identifier) {
-            if (nullChecked instanceof J.Identifier) {
-                return ((J.Identifier) assigns).getSimpleName().equals(((J.Identifier) nullChecked).getSimpleName());
-            }
-            if (nullChecked instanceof J.FieldAccess) {
-                return false;
-            }
-            if (nullChecked instanceof J.MethodInvocation) {
-                return ((J.MethodInvocation) nullChecked).getSelect() == null;
-            }
-        }
-        if (assigns instanceof J.FieldAccess) {
-            if (nullChecked instanceof J.Identifier) {
-                return false;
-            }
-            if (nullChecked instanceof J.FieldAccess) {
-                return couldModifyNullCheckedValue(((J.FieldAccess) assigns).getTarget(), ((J.FieldAccess) nullChecked).getTarget()) &&
-                        couldModifyNullCheckedValue(((J.FieldAccess) assigns).getName(), ((J.FieldAccess) nullChecked).getName());
-            }
-            if (nullChecked instanceof J.MethodInvocation) {
-                if (((J.MethodInvocation) nullChecked).getSelect() == null) {
-                    return false;
-                }
-                return couldModifyNullCheckedValue(((J.FieldAccess) assigns).getTarget(), ((J.MethodInvocation) nullChecked).getSelect());
-            }
-        }
-        if (assigns instanceof J.MethodInvocation) {
-            if (nullChecked instanceof J.Identifier) {
-                if (((J.MethodInvocation) assigns).getSelect() != null) {
-                    return false;
-                }
-            }
-            if (nullChecked instanceof J.FieldAccess) {
-                if (((J.MethodInvocation) assigns).getSelect() == null) {
-                    return false;
-                }
-                return couldModifyNullCheckedValue(((J.MethodInvocation) assigns).getSelect(), ((J.FieldAccess) nullChecked).getTarget());
-            }
-            if (nullChecked instanceof J.MethodInvocation) {
-                if (((J.MethodInvocation) assigns).getSelect() == null && ((J.MethodInvocation) nullChecked).getSelect() == null) {
-                    return true;
-                }
-                if (((J.MethodInvocation) assigns).getSelect() == null || ((J.MethodInvocation) nullChecked).getSelect() == null) {
-                    return false;
-                }
-                return couldModifyNullCheckedValue(((J.MethodInvocation) assigns).getSelect(), ((J.MethodInvocation) nullChecked).getSelect());
-            }
-        }
-        if (assigns instanceof J.Assignment) {
-            return couldModifyNullCheckedValue(((J.Assignment) assigns).getVariable(), nullChecked);
-        }
-
+        // Cautious by default
         return true;
+    }
+    private static boolean couldModifyNullCheckedValue(J expression, Expression nullChecked) {
+        if (nullChecked instanceof J.FieldAccess && couldModifyNullCheckedValue(expression, ((J.FieldAccess) nullChecked).getTarget())) {
+            return true;
+        }
+        if (nullChecked instanceof J.MethodInvocation &&
+                ((J.MethodInvocation) nullChecked).getSelect() != null &&
+                couldModifyNullCheckedValue(expression, ((J.MethodInvocation) nullChecked).getSelect())) {
+            return true;
+        }
+        return new JavaIsoVisitor<AtomicBoolean>() {
+            @Override
+            public J.Identifier visitIdentifier(J.Identifier identifier, AtomicBoolean atomicBoolean) {
+                J.Identifier id = super.visitIdentifier(identifier, atomicBoolean);
+                if (SemanticallyEqual.areEqual(id, nullChecked)) {
+                    atomicBoolean.set(true);
+                }
+                return id;
+            }
+            @Override
+            public J.Assignment visitAssignment(J.Assignment assignment, AtomicBoolean atomicBoolean) {
+                J.Assignment as = super.visitAssignment(assignment, atomicBoolean);
+                if (SemanticallyEqual.areEqual(as.getVariable(), nullChecked)) {
+                    atomicBoolean.set(true);
+                }
+                return as;
+            }
+            @Override
+            public J.FieldAccess visitFieldAccess(J.FieldAccess fieldAccess, AtomicBoolean atomicBoolean) {
+                J.FieldAccess fa = super.visitFieldAccess(fieldAccess, atomicBoolean);
+                if (SemanticallyEqual.areEqual(fa, nullChecked) ||
+                        SemanticallyEqual.areEqual(fa.getTarget(), nullChecked)) {
+                    atomicBoolean.set(true);
+                }
+                return fa;
+            }
+            @Override
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, AtomicBoolean atomicBoolean) {
+                J.MethodInvocation mi = super.visitMethodInvocation(method, atomicBoolean);
+                if (SemanticallyEqual.areEqual(mi, nullChecked) ||
+                        ((mi.getSelect() != null) && SemanticallyEqual.areEqual(mi.getSelect(), nullChecked))) {
+                    atomicBoolean.set(true);
+                }
+                return mi;
+            }
+        }.reduce(expression, new AtomicBoolean(false)).get();
     }
 
     public static class Matcher extends SimpleTraitMatcher<NullCheck> {
