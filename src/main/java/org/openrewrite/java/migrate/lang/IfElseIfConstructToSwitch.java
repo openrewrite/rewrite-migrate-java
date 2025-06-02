@@ -164,7 +164,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 return new Object[0];
             }
             Object[] arguments = new Object[1 + (nullCheckedParameter != null ? 1 : 0) + (patternMatchers.size() * 3) + (else_ != null ? 1 : 0)];
-            arguments[0] = switchOn;
+            arguments[0] = switchOn.get();
             int i = 1;
             if (nullCheckedParameter != null) {
                 // case null -> nullCheckedStatement
