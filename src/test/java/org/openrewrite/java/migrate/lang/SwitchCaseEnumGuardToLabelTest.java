@@ -32,14 +32,20 @@ class SwitchCaseEnumGuardToLabelTest implements RewriteTest {
     @DocumentExample
     void enumValuesPatternMatching() {
         rewriteRun(
+          java(
+            """
+              package suits;
+              public enum Suit {
+                  CLUBS, DIAMONDS, HEARTS, SPADES, JOKER, SCORECARD
+              }
+              """
+          ),
           //language=java
           java(
             """
+              import suits.Suit;
               class Test {
-
-                  public enum Suit { CLUBS, DIAMONDS, HEARTS, SPADES, JOKER }
-
-                  static void score(Object obj) {
+                  void score(Object obj) {
                       switch (obj) {
                           case null -> System.out.println("You did not enter the test yet");
                           case Suit s when s == Suit.CLUBS -> System.out.println("Clubs");
@@ -57,11 +63,9 @@ class SwitchCaseEnumGuardToLabelTest implements RewriteTest {
               }
               """,
             """
+              import suits.Suit;
               class Test {
-
-                  public enum Suit { CLUBS, DIAMONDS, HEARTS, SPADES, JOKER }
-
-                  static void score(Object obj) {
+                  void score(Object obj) {
                       switch (obj) {
                           case null -> System.out.println("You did not enter the test yet");
                           case Suit.CLUBS -> System.out.println("Clubs");
@@ -74,6 +78,74 @@ class SwitchCaseEnumGuardToLabelTest implements RewriteTest {
                           case Integer i -> System.out.println("Sorry?");
                           case String s -> System.out.println("Sorry?");
                           default -> System.out.println("Sorry?");
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void staticImport() {
+        rewriteRun(
+          java(
+            """
+              package suits;
+              public enum Suit {
+                  CLUBS, DIAMONDS, HEARTS, SPADES, JOKER
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              import suits.Suit;
+              import static suits.Suit.JOKER;
+              class Test {
+                  void score(Object obj) {
+                      switch (obj) {
+                          case Suit s when JOKER == s -> System.out.println(s);
+                      }
+                  }
+              }
+              """,
+            """
+              import suits.Suit;
+              import static suits.Suit.JOKER;
+              class Test {
+                  void score(Object obj) {
+                      switch (obj) {
+                          case JOKER -> System.out.println(JOKER);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void noChangeWithIntendedUse() {
+        rewriteRun(
+          java(
+            """
+              package suits;
+              public enum Suit {
+                  CLUBS, DIAMONDS, HEARTS, SPADES, JOKER
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              import suits.Suit;
+              import static suits.Suit.HEARTS;
+              class Test {
+                  void score(Object obj) {
+                      switch (obj) {
+                          case Suit.SPADES -> System.out.println(Suit.SPADES);
+                          case HEARTS -> System.out.println(HEARTS);
                       }
                   }
               }
