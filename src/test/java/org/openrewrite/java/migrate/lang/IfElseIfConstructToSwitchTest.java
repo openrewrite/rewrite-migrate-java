@@ -387,7 +387,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                 //language=java
                 java(
                 """
-                        class Test {
+                    class Test {
                         static String formatter(Object obj) {
                             String formatted;
                             if (obj == null) {
