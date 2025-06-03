@@ -37,7 +37,6 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesResourceResolver
   - org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
   - org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
-  - org.openrewrite.java.migrate.jakarta.FacesManagedBeansDeprecated
   - org.openrewrite.java.migrate.jakarta.UpgradeFaces3OpenSourceLibraries
 ---
 type: specs.openrewrite.org/v1beta/recipe

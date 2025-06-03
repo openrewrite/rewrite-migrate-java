@@ -199,7 +199,6 @@ recipeList:
       elementName: web-app
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd
 ---
-# TODO: currently same as FacesManagedBeansDeprecated in Faces3 migration. Can this list be pared down?
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
 displayName: Substitute removed Faces Managed Beans
