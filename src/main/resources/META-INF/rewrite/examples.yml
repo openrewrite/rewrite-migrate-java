@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 type: specs.openrewrite.org/v1beta/example
-recipeName: org.openrewrite.java.jspecify.MigrateToJspecify
+recipeName: org.openrewrite.java.jspecify.JSpecifyBestPractices
 examples:
 - description: ''
   sources:
@@ -4096,7 +4096,68 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
-recipeName: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtml
+recipeName: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE10
+examples:
+- description: ''
+  sources:
+  - before: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <ui:composition
+              xmlns="http://www.w3.org/1999/xhtml"
+              xmlns:f="http://java.sun.com/jsf/core"
+              xmlns:h="http://java.sun.com/jsf/html"
+              xmlns:ui="http://java.sun.com/jsf/facelets"
+              xmlns:c="http://java.sun.com/jsp/jstl/core"
+              xmlns:p="http://primefaces.org/ui"
+              xmlns:pe="http://primefaces.org/ui/extensions">
+      <script src="https://www.gstatic.com/charts/loader.js"></script>
+      <p:outputPanel id="container" layout="block">
+          <h:panelGrid columns="4">
+              <p:inputText converter="jakarta.faces.Integer" value="#{basicGChartController.mushrooms}" />
+              <p:inputText converter="jakarta.faces.Integer" value="#{basicGChartController.onions}" />
+          </h:panelGrid>
+          <c:forEach items="#{sheetDynamicController.hoursOfDay}" var="hourOfDay" varStatus="status">
+                  <pe:sheetcolumn styleClass="htRight #{row.cells[status.index].style}"
+                                  headerText="#{hourOfDay}"
+                                  value="#{row.cells[status.index].value}"
+                                  readonlyCell="#{row.readOnly}"
+                                  colType="numeric">
+                      <f:converter converterId="jakarta.faces.Integer"/>
+                  </pe:sheetcolumn>
+          </c:forEach>
+      </p:outputPanel>
+      </ui:composition>
+    after: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <ui:composition
+              xmlns="http://www.w3.org/1999/xhtml"
+              xmlns:f="jakarta.faces.core"
+              xmlns:h="jakarta.faces.html"
+              xmlns:ui="jakarta.faces.facelets"
+              xmlns:c="jakarta.tags.core"
+              xmlns:p="primefaces"
+              xmlns:pe="primefaces.extensions">
+      <script src="https://www.gstatic.com/charts/loader.js"></script>
+      <p:outputPanel id="container" layout="block">
+          <h:panelGrid columns="4">
+              <p:inputText converter="jakarta.faces.Integer" value="#{basicGChartController.mushrooms}" />
+              <p:inputText converter="jakarta.faces.Integer" value="#{basicGChartController.onions}" />
+          </h:panelGrid>
+          <c:forEach items="#{sheetDynamicController.hoursOfDay}" var="hourOfDay" varStatus="status">
+                  <pe:sheetcolumn styleClass="htRight #{row.cells[status.index].style}"
+                                  headerText="#{hourOfDay}"
+                                  value="#{row.cells[status.index].value}"
+                                  readonlyCell="#{row.readOnly}"
+                                  colType="numeric">
+                      <f:converter converterId="jakarta.faces.Integer"/>
+                  </pe:sheetcolumn>
+          </c:forEach>
+      </p:outputPanel>
+      </ui:composition>
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE9
 examples:
 - description: ''
   sources:
@@ -4131,12 +4192,12 @@ examples:
       <?xml version="1.0" encoding="UTF-8"?>
       <ui:composition
               xmlns="http://www.w3.org/1999/xhtml"
-              xmlns:f="jakarta.faces.core"
-              xmlns:h="jakarta.faces.html"
-              xmlns:ui="jakarta.faces.facelets"
-              xmlns:c="jakarta.tags.core"
-              xmlns:p="primefaces"
-              xmlns:pe="primefaces.extensions">
+              xmlns:f="http://java.sun.com/jsf/core"
+              xmlns:h="http://java.sun.com/jsf/html"
+              xmlns:ui="http://java.sun.com/jsf/facelets"
+              xmlns:c="http://java.sun.com/jsp/jstl/core"
+              xmlns:p="http://primefaces.org/ui"
+              xmlns:pe="http://primefaces.org/ui/extensions">
       <script src="https://www.gstatic.com/charts/loader.js"></script>
       <p:outputPanel id="container" layout="block">
           <h:panelGrid columns="4">
@@ -4359,8 +4420,8 @@ examples:
       <?xml version="1.0" encoding="UTF-8"?>
       <faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd"
-                    version="4.0">
+                    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_3_0.xsd"
+                    version="3.0">
           <render-kit>
               <renderer>
                   <component-family>jakarta.faces.Output</component-family>
@@ -4390,10 +4451,10 @@ examples:
       </facelet-taglib>
     after: |
       <?xml version="1.0" encoding="UTF-8"?>
-      <facelet-taglib version="4.0"
+      <facelet-taglib version="3.0"
                       xmlns="https://jakarta.ee/xml/ns/jakartaee"
                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_0.xsd">
+                      xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_3_0.xsd">
           <function>
               <function-name>getFileContent</function-name>
               <function-class>jakarta.util.ShowcaseUtil</function-class>
@@ -4505,8 +4566,8 @@ examples:
       <?xml version="1.0" encoding="UTF-8"?>
       <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-               version="6.0">
+               xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+               version="5.0">
           <context-param>
               <param-name>jakarta.faces.PROJECT_STAGE</param-name>
               <param-value>Production</param-value>
@@ -4535,8 +4596,8 @@ examples:
       <?xml version="1.0" encoding="UTF-8"?>
       <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-               version="6.0">
+               xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+               version="5.0">
           <context-param>
               <param-name>jakarta.faces.PROJECT_STAGE</param-name>
               <param-value>Production</param-value>
@@ -4547,6 +4608,25 @@ examples:
              <res-auth>CONTAINER</res-auth>
           </resource-ref>
       </web-fragment>
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
+examples:
+- description: ''
+  sources:
+  - before: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <jxb:bindings version="1.0"
+                    xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+                    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      </jxb:bindings>
+    after: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <jxb:bindings version="3.0"
+                    xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
+                    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      </jxb:bindings>
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
