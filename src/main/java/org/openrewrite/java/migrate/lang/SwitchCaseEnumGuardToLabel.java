@@ -60,7 +60,7 @@ public class SwitchCaseEnumGuardToLabel extends Recipe {
 
                 JavaType type = label.getType();
                 if (type instanceof JavaType.Class && ((JavaType.Class) type).getKind() == JavaType.FullyQualified.Kind.Enum) {
-                    J.FieldAccess guardedEnum = getGuardedEnum(visitedCase, label);
+                    Expression guardedEnum = getGuardedEnum(visitedCase, label);
                     if (guardedEnum != null) {
                         J modifiedBody = enumReferencesToEnumValue(label.getSimpleName(), guardedEnum)
                                 .visit(visitedCase.getBody(), ctx);
@@ -83,7 +83,7 @@ public class SwitchCaseEnumGuardToLabel extends Recipe {
                 return decl.getVariables().get(0);
             }
 
-            private J.@Nullable FieldAccess getGuardedEnum(J.Case case_, J.VariableDeclarations.NamedVariable label) {
+            private @Nullable Expression getGuardedEnum(J.Case case_, J.VariableDeclarations.NamedVariable label) {
                 Expression guard = case_.getGuard();
                 if (guard == null) {
                     return null;
@@ -103,15 +103,15 @@ public class SwitchCaseEnumGuardToLabel extends Recipe {
                         equalTo = binaryGuard.getRight();
                     }
                 }
-                if (select instanceof J.FieldAccess && equalTo instanceof J.Identifier && label.getName().getSimpleName().equals(((J.Identifier) equalTo).getSimpleName())) {
-                    return (J.FieldAccess) select;
-                } else if (equalTo instanceof J.FieldAccess && select instanceof J.Identifier && label.getName().getSimpleName().equals(((J.Identifier) select).getSimpleName())) {
-                    return (J.FieldAccess) equalTo;
+                if ((select instanceof J.FieldAccess || select instanceof J.Identifier) && equalTo instanceof J.Identifier && label.getName().getSimpleName().equals(((J.Identifier) equalTo).getSimpleName())) {
+                    return select;
+                } else if ((equalTo instanceof J.FieldAccess || equalTo instanceof J.Identifier) && select instanceof J.Identifier && label.getName().getSimpleName().equals(((J.Identifier) select).getSimpleName())) {
+                    return equalTo;
                 }
                 return null;
             }
 
-            private JavaVisitor<ExecutionContext> enumReferencesToEnumValue(String name, J.FieldAccess enumReference) {
+            private JavaVisitor<ExecutionContext> enumReferencesToEnumValue(String name, Expression enumReference) {
                 return new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitIdentifier(J.Identifier ident, ExecutionContext ctx) {

@@ -87,7 +87,7 @@ class SwitchCaseEnumGuardToLabelTest implements RewriteTest {
     }
 
     @Test
-    void staticImport() {
+    void staticImportedEnumValue() {
         rewriteRun(
           java(
             """
