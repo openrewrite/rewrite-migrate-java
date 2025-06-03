@@ -26,7 +26,10 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.trait.Annotated;
 import org.openrewrite.java.tree.J;
+
+import java.util.Optional;
 
 import static org.openrewrite.java.trait.Traits.annotated;
 
@@ -42,30 +45,27 @@ public class UpdateManagedBeanToNamed extends Recipe {
     @Override
     public String getDescription() {
         return "Faces ManagedBean was deprecated in JSF 2.3 (EE8) and removed in Jakarta Faces 4.0 (EE10). " +
-               "Replace `@ManagedBean` with `@Named` for CDI-based bean management.";
+                "Replace `@ManagedBean` with `@Named` for CDI-based bean management.";
     }
+
+    private static final AnnotationMatcher MANAGED_BEAN_MATCHER = new AnnotationMatcher("*.faces.bean.ManagedBean");
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new Preconditions.Check(Preconditions.or(
-                        new UsesType<>("javax.faces.bean.ManagedBean", false),
-                        new UsesType<>("jakarta.faces.bean.ManagedBean", false)),
+        return new Preconditions.Check(new UsesType<>("*.faces.bean.ManagedBean", false),
                 new JavaIsoVisitor<ExecutionContext>() {
-                    private final AnnotationMatcher MANAGED_BEAN_MATCHER_JAVAX = new AnnotationMatcher("javax.faces.bean.ManagedBean");
-                    private final AnnotationMatcher MANAGED_BEAN_MATCHER_JAKARTA = new AnnotationMatcher("jakarta.faces.bean.ManagedBean");
-
                     @Override
                     public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-                        if (MANAGED_BEAN_MATCHER_JAVAX.matches(annotation) || MANAGED_BEAN_MATCHER_JAKARTA.matches(annotation)) {
-                            // Get the name from the @ManagedBean annotation
-                            String beanName = annotated(annotation.getType().toString())
-                                    .get(getCursor())
-                                    .flatMap(a -> a.getDefaultAttribute("name"))
-                                    .map(name -> name.getValue(String.class))
-                                    .orElse(null);
+                        Optional<Annotated> annotated = annotated(MANAGED_BEAN_MATCHER).get(getCursor());
+                        if (annotated.isPresent()) {
                             maybeAddImport("jakarta.inject.Named");
                             maybeRemoveImport("javax.faces.bean.ManagedBean");
                             maybeRemoveImport("jakarta.faces.bean.ManagedBean");
+                            // Get the name from the @ManagedBean annotation
+                            String beanName = annotated
+                                    .flatMap(a -> a.getDefaultAttribute("name"))
+                                    .map(name -> name.getValue(String.class))
+                                    .orElse(null);
                             // Replace the @ManagedBean annotation with @Named
                             if (beanName != null) {
                                 return JavaTemplate.builder("@Named(\"#{}\")")
@@ -73,13 +73,12 @@ public class UpdateManagedBeanToNamed extends Recipe {
                                         .imports("jakarta.inject.Named")
                                         .build()
                                         .apply(getCursor(), annotation.getCoordinates().replace(), beanName);
-                            } else {
-                                return JavaTemplate.builder("@Named")
-                                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.inject-api-2.0.1"))
-                                        .imports("jakarta.inject.Named")
-                                        .build()
-                                        .apply(getCursor(), annotation.getCoordinates().replace());
                             }
+                            return JavaTemplate.builder("@Named")
+                                    .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.inject-api-2.0.1"))
+                                    .imports("jakarta.inject.Named")
+                                    .build()
+                                    .apply(getCursor(), annotation.getCoordinates().replace());
                         }
                         return annotation;
                     }
