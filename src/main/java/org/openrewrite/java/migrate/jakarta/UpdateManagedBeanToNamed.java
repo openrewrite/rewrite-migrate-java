@@ -29,7 +29,10 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.trait.Annotated;
 import org.openrewrite.java.tree.J;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.openrewrite.java.trait.Traits.annotated;
 
@@ -46,6 +49,11 @@ public class UpdateManagedBeanToNamed extends Recipe {
     public String getDescription() {
         return "Faces ManagedBean was deprecated in JSF 2.3 (EE8) and removed in Jakarta Faces 4.0 (EE10). " +
                 "Replace `@ManagedBean` with `@Named` for CDI-based bean management.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return new HashSet<>(Arrays.asList("jakarta", "faces", "jsf"));
     }
 
     private static final AnnotationMatcher MANAGED_BEAN_MATCHER = new AnnotationMatcher("*.faces.bean.ManagedBean");
