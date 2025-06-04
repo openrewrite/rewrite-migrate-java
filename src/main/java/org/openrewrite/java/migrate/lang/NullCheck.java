@@ -86,36 +86,36 @@ public class NullCheck implements Trait<J.If> {
             private final boolean isCertainlyImmutable = nullChecked.getType() != null && JavaType.Primitive.fromClassName(nullChecked.getType().toString()) != null;
 
             @Override
-            public J.Identifier visitIdentifier(J.Identifier identifier, AtomicBoolean atomicBoolean) {
-                J.Identifier id = super.visitIdentifier(identifier, atomicBoolean);
+            public J.Identifier visitIdentifier(J.Identifier identifier, AtomicBoolean couldModifyValue) {
+                J.Identifier id = super.visitIdentifier(identifier, couldModifyValue);
                 if (!isCertainlyImmutable && SemanticallyEqual.areEqual(id, nullChecked)) {
-                    atomicBoolean.set(true);
+                    couldModifyValue.set(true);
                 }
                 return id;
             }
             @Override
-            public J.Assignment visitAssignment(J.Assignment assignment, AtomicBoolean atomicBoolean) {
-                J.Assignment as = super.visitAssignment(assignment, atomicBoolean);
+            public J.Assignment visitAssignment(J.Assignment assignment, AtomicBoolean couldModifyValue) {
+                J.Assignment as = super.visitAssignment(assignment, couldModifyValue);
                 if (SemanticallyEqual.areEqual(as.getVariable(), nullChecked)) {
-                    atomicBoolean.set(true);
+                    couldModifyValue.set(true);
                 }
                 return as;
             }
             @Override
-            public J.FieldAccess visitFieldAccess(J.FieldAccess fieldAccess, AtomicBoolean atomicBoolean) {
-                J.FieldAccess fa = super.visitFieldAccess(fieldAccess, atomicBoolean);
+            public J.FieldAccess visitFieldAccess(J.FieldAccess fieldAccess, AtomicBoolean couldModifyValue) {
+                J.FieldAccess fa = super.visitFieldAccess(fieldAccess, couldModifyValue);
                 if (SemanticallyEqual.areEqual(fa, nullChecked) ||
                         SemanticallyEqual.areEqual(fa.getTarget(), nullChecked)) {
-                    atomicBoolean.set(true);
+                    couldModifyValue.set(true);
                 }
                 return fa;
             }
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, AtomicBoolean atomicBoolean) {
-                J.MethodInvocation mi = super.visitMethodInvocation(method, atomicBoolean);
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, AtomicBoolean couldModifyValue) {
+                J.MethodInvocation mi = super.visitMethodInvocation(method, couldModifyValue);
                 if (SemanticallyEqual.areEqual(mi, nullChecked) ||
                         ((mi.getSelect() != null) && SemanticallyEqual.areEqual(mi.getSelect(), nullChecked))) {
-                    atomicBoolean.set(true);
+                    couldModifyValue.set(true);
                 }
                 return mi;
             }
