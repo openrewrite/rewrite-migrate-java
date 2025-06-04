@@ -41,11 +41,8 @@ public class NullCheck implements Trait<J.If> {
     }
 
     public @Nullable Statement whenNotNull() {
-        J.If.Else anElse = getTree().getElsePart();
-        if (anElse == null) {
-            return null;
-        }
-        return anElse.getBody();
+        J.If.Else else_ = getTree().getElsePart();
+        return else_ == null ? null : else_.getBody();
     }
 
     public boolean returns() {
