@@ -33,11 +33,11 @@ class UpdateSdkManTest implements RewriteTest {
           spec -> spec.recipe(new UpdateSdkMan("17", null)),
           text(
             """
-            java=11.0.25-tem
-            """,
+              java=11.0.25-tem
+              """,
             """
-            java=17.0.14-tem
-            """,
+              java=17.0.14-tem
+              """,
             spec -> spec.path(".sdkmanrc")
           )
         );
@@ -49,11 +49,11 @@ class UpdateSdkManTest implements RewriteTest {
           spec -> spec.recipe(new UpdateSdkMan("17.0.14", null)),
           text(
             """
-            java=11.1.2-tem
-            """,
+              java=11.1.2-tem
+              """,
             """
-            java=17.0.14-tem
-            """,
+              java=17.0.14-tem
+              """,
             spec -> spec.path(".sdkmanrc")
           )
         );
@@ -65,11 +65,11 @@ class UpdateSdkManTest implements RewriteTest {
           spec -> spec.recipe(new UpdateSdkMan(null, "amzn")),
           text(
             """
-            java=11.0.26-tem
-            """,
+              java=11.0.26-tem
+              """,
             """
-            java=11.0.26-amzn
-            """,
+              java=11.0.26-amzn
+              """,
             spec -> spec.path(".sdkmanrc")
           )
         );
@@ -81,11 +81,11 @@ class UpdateSdkManTest implements RewriteTest {
           spec -> spec.recipe(new UpdateSdkMan("17", "graalce")),
           text(
             """
-            java=11.0.25-amzn
-            """,
+              java=11.0.25-amzn
+              """,
             """
-            java=17.0.9-graalce
-            """,
+              java=17.0.9-graalce
+              """,
             spec -> spec.path(".sdkmanrc")
           )
         );
@@ -97,8 +97,8 @@ class UpdateSdkManTest implements RewriteTest {
           spec -> spec.recipe(new UpdateSdkMan("42", null)),
           text(
             """
-            java=11.1.2-tem
-            """,
+              java=11.1.2-tem
+              """,
             spec -> spec.path(".sdkmanrc")
           )
         );
@@ -110,8 +110,8 @@ class UpdateSdkManTest implements RewriteTest {
           spec -> spec.recipe(new UpdateSdkMan(null, "notreal")),
           text(
             """
-            java=11.1.2-tem
-            """,
+              java=11.1.2-tem
+              """,
             spec -> spec.path(".sdkmanrc")
           )
         );
@@ -128,8 +128,8 @@ class UpdateSdkManTest implements RewriteTest {
           spec -> spec.recipe(new UpdateSdkMan("17", "tem")),
           text(
             """
-            java=11.1.2-tem
-            """,
+              java=11.1.2-tem
+              """,
             spec -> spec.path(".not-sdkmanrc")
           )
         );
@@ -141,11 +141,27 @@ class UpdateSdkManTest implements RewriteTest {
           spec -> spec.recipe(new UpdateSdkMan("17", null)),
           text(
             """
-            java=11.0.25.fx-zulu
-            """,
+              java=11.0.25.fx-zulu
+              """,
             """
-            java=17.0.14.fx-zulu
-            """,
+              java=17.0.14.fx-zulu
+              """,
+            spec -> spec.path(".sdkmanrc")
+          )
+        );
+    }
+
+    @Test
+    void zuluNonCrac() {
+        rewriteRun(
+          spec -> spec.recipe(new UpdateSdkMan("17", null)),
+          text(
+            """
+              java=11.0.26-zulu
+              """,
+            """
+              java=17.0.15-zulu
+              """,
             spec -> spec.path(".sdkmanrc")
           )
         );
