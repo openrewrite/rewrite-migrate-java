@@ -20,7 +20,6 @@ import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.binary.Binary;
-import org.openrewrite.internal.ListUtils;
 import org.openrewrite.quark.Quark;
 import org.openrewrite.remote.Remote;
 import org.openrewrite.semver.LatestRelease;
@@ -95,15 +94,14 @@ public class UpdateSdkMan extends Recipe {
                 if (matcher.find()) {
                     String ver = newVersion == null ? matcher.group(1) : newVersion;
                     String dist = newDistribution == null ? matcher.group(2) : "-" + newDistribution;
-                    String oldFull = matcher.group(1) + matcher.group(2);
                     String newBasis = ver + dist;
-                    LatestRelease releaseComparator = new LatestRelease(dist);
                     Pattern majorPattern = Pattern.compile("^" + ver + "[.-].*");
-                    List<String> filteredCandidates = ListUtils.filter(
-                            readSdkmanJavaCandidates(),
-                            candidate -> majorPattern.matcher(candidate).matches() && (releaseComparator.isValid(oldFull, candidate) || releaseComparator.isValid(newBasis, candidate))
-                    );
-                    String idealCandidate = filteredCandidates.stream().sorted(releaseComparator).reduce((first, second) -> second).orElse(null);
+                    LatestRelease releaseComparator = new LatestRelease(dist);
+                    String idealCandidate = readSdkmanJavaCandidates().stream()
+                            .filter(candidate -> majorPattern.matcher(candidate).matches())
+                            .filter(candidate -> releaseComparator.isValid(newBasis, candidate))
+                            .max(releaseComparator)
+                            .orElse(null);
                     if (idealCandidate != null) {
                         return plainText.withText(matcher.replaceFirst("java=" + idealCandidate));
                     }
@@ -119,7 +117,6 @@ public class UpdateSdkMan extends Recipe {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
             }
         };
         return Preconditions.check(new FindSourceFiles(".sdkmanrc"), visitor);
