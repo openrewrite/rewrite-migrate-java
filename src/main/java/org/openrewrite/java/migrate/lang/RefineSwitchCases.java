@@ -33,6 +33,7 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -80,7 +81,15 @@ public class RefineSwitchCases extends Recipe {
                             }
                             return statement;
                         })));
-                return mappedSwitch == switch_ ? switch_ : autoFormat(mappedSwitch, ctx);
+                return new JavaIsoVisitor<ExecutionContext>() {
+                    @Override
+                    public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
+                        if (!(case_.getBody() instanceof J.Block) || !((J.Block) case_.getBody()).getStatements().isEmpty() ||((J.Block) case_.getBody()).getEnd().isEmpty()) {
+                            return case_;
+                        }
+                        return case_.withBody(createEmptyBlock().withPrefix(Space.SINGLE_SPACE));
+                    }
+                }.visitSwitch(maybeAutoFormat(switch_, mappedSwitch, ctx), ctx);
             }
 
             private List<J.Identifier> getConditionVariables(@Nullable Expression expression) {
@@ -132,7 +141,7 @@ public class RefineSwitchCases extends Recipe {
                 cases.add(case_.withId(Tree.randomId()).withGuard(if_.getIfCondition().getTree().withPrefix(Space.SINGLE_SPACE)).withBody(caseBody));
                 if (if_.getElsePart() == null) {
                     if (case_.getBody() instanceof J.Block) {
-                        cases.add(case_.withBody(((J.Block) case_.getBody()).withStatements(emptyList()).withEnd(Space.EMPTY).withPrefix(Space.SINGLE_SPACE)));
+                        cases.add(case_.withBody(createEmptyBlock().withPrefix(Space.SINGLE_SPACE)));
                     }
                 } else if (if_.getElsePart().getBody() instanceof J.If) {
                     cases.addAll(getCases(case_, (J.If) if_.getElsePart().getBody()));

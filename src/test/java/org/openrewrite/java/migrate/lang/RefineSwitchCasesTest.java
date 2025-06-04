@@ -149,8 +149,7 @@ class RefineSwitchCasesTest implements RewriteTest {
                     switch (obj) {
                         case Integer i when i >= 5 && i <= 10 -> System.out.println("You got it");
                         case Integer i when i >= 0 && i < 5 -> System.out.println("Shame");
-                        case Integer i -> {
-                        }
+                        case Integer i -> {}
                         default -> System.out.println("Sorry?");
                     }
                 }
