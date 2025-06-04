@@ -190,7 +190,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
         }
 
         String buildTemplate() {
-            StringBuilder switchBody = new StringBuilder("switch (#{any(org.openrewrite.java.tree.Expression)}) {\n");
+            StringBuilder switchBody = new StringBuilder("switch (#{any()}) {\n");
             if (nullCheckedParameter != null) {
                 switchBody.append("    case null -> #{}\n");
             }
