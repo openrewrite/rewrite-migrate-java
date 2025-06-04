@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.SemanticallyEqual;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
+import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -70,11 +72,20 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     }
                     String switchBody = switchCandidate.buildTemplate();
                     J.Switch switch_ = JavaTemplate.builder(switchBody)
-                        .contextSensitive()
-                        .build()
-                        .apply(getCursor(), if_.getCoordinates().replace(), arguments)
-                        .withPrefix(if_.getPrefix());
-                    return super.visitSwitch(switch_, ctx);
+                            .contextSensitive()
+                            .build()
+                            .apply(getCursor(), if_.getCoordinates().replace(), arguments)
+                            .withPrefix(if_.getPrefix());
+                    return super.visitSwitch(
+                            new JavaIsoVisitor<ExecutionContext>() {
+                                @Override
+                                public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
+                                    if (!(case_.getBody() instanceof J.Block) || !((J.Block) case_.getBody()).getStatements().isEmpty()) {
+                                        return case_;
+                                    }
+                                    return case_.withBody(createEmptyBlock().withPrefix(Space.SINGLE_SPACE));
+                                }
+                            }.visitSwitch(switch_, ctx), ctx);
                 }
                 return super.visitIf(if_, ctx);
             }
@@ -199,6 +210,8 @@ public class IfElseIfConstructToSwitch extends Recipe {
             }
             if (else_ != null) {
                 switchBody.append("    default -> #{}\n");
+            } else {
+                switchBody.append("    default -> {}\n");
             }
             switchBody.append("}\n");
 

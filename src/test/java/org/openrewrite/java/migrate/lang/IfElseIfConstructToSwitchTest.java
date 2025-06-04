@@ -171,6 +171,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                               String str = "String";
                               formatted = String.format("%s %s", str, s);
                           }
+                          default -> {}
                       }
                       return formatted;
                   }
@@ -243,6 +244,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                               String str = "String";
                               formatted = String.format("%s %s", str, s);
                           }
+                          default -> {}
                       }
                       return formatted;
                   }
@@ -258,6 +260,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                               String str = "String";
                               formatted = String.format("%s %s", str, s);
                           }
+                          default -> {}
                       }
                       return formatted;
                   }
