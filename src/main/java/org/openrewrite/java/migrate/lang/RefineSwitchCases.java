@@ -62,9 +62,7 @@ public class RefineSwitchCases extends Recipe {
                                 }
                                 List<String> labelVars = case_.getCaseLabels().stream()
                                         .filter(J.VariableDeclarations.class::isInstance)
-                                        .map(J.VariableDeclarations.class::cast)
-                                        .map(this::getVariablesCreated)
-                                        .flatMap(List::stream)
+                                        .flatMap(it -> getVariablesCreated((J.VariableDeclarations) it).stream())
                                         .map(J.Identifier::getSimpleName)
                                         .collect(toList());
                                 if (labelVars.isEmpty()) {
