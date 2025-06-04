@@ -29,6 +29,8 @@ import org.openrewrite.trait.Trait;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.openrewrite.java.tree.J.Binary.Type.Equal;
+
 @Value
 public class NullCheck implements Trait<J.If> {
     Cursor cursor;
@@ -134,7 +136,7 @@ public class NullCheck implements Trait<J.If> {
                 J.If if_ = cursor.getValue();
                 if (if_.getIfCondition().getTree() instanceof J.Binary) {
                     J.Binary binary = (J.Binary) if_.getIfCondition().getTree();
-                    if (J.Binary.Type.Equal == binary.getOperator()) {
+                    if (binary.getOperator() == Equal) {
                         if (J.Literal.isLiteralValue(binary.getLeft(), null)) {
                             return new NullCheck(cursor, binary.getRight());
                         } else if (J.Literal.isLiteralValue(binary.getRight(), null)) {
