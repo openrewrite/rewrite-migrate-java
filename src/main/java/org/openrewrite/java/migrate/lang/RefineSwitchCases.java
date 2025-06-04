@@ -72,8 +72,8 @@ public class RefineSwitchCases extends Recipe {
                                 List<Statement> caseStatements = ((J.Block) case_.getBody()).getStatements();
                                 if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.If) {
                                     J.If if_ = (J.If) caseStatements.get(0);
-                                    if (getConditionVariables(if_.getIfCondition().getTree()).stream()
-                                            .allMatch(conditionVariable -> labelVars.contains(conditionVariable.getSimpleName()))) {
+                                    List<J.Identifier> conditionVariables = getConditionVariables(if_.getIfCondition().getTree());
+                                    if (conditionVariables.stream().allMatch(it -> labelVars.contains(it.getSimpleName()))) {
                                         // Replace case with multiple cases
                                         return getCases(case_, if_);
                                     }
@@ -103,19 +103,13 @@ public class RefineSwitchCases extends Recipe {
                     return variables;
                 } else if (expression instanceof J.MethodInvocation) {
                     J.MethodInvocation methodInvocation = (J.MethodInvocation) expression;
-                    List<J.Identifier> variables = new ArrayList<>();
-                    variables.addAll(getConditionVariables(methodInvocation.getSelect()));
-                    variables.addAll(getConditionVariables(methodInvocation.getArguments()));
+                    List<J.Identifier> variables = new ArrayList<>(getConditionVariables(methodInvocation.getSelect()));
+                    for (Expression arg : methodInvocation.getArguments()) {
+                        variables.addAll(getConditionVariables(arg));
+                    }
                     return variables;
                 }
                 return emptyList();
-            }
-
-            private List<J.Identifier> getConditionVariables(List<Expression> expressions) {
-                return expressions.stream()
-                        .map(this::getConditionVariables)
-                        .flatMap(List::stream)
-                        .collect(toList());
             }
 
             private List<J.Identifier> getVariablesCreated(J.VariableDeclarations declarations) {
