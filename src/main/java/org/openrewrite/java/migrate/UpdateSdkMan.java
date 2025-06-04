@@ -20,8 +20,10 @@ import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.binary.Binary;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.quark.Quark;
 import org.openrewrite.remote.Remote;
+import org.openrewrite.semver.LatestRelease;
 import org.openrewrite.text.PlainText;
 import org.openrewrite.text.PlainTextParser;
 
@@ -92,11 +94,18 @@ public class UpdateSdkMan extends Recipe {
                 Matcher matcher = pattern.matcher(plainText.getText());
                 if (matcher.find()) {
                     String ver = newVersion == null ? matcher.group(1) : newVersion;
-                    String dist = newDistribution == null ? matcher.group(2) : newDistribution;
-                    for (String candidate : readSdkmanJavaCandidates()) {
-                        if (candidate.startsWith(ver) && candidate.endsWith(dist)) {
-                            return plainText.withText(matcher.replaceFirst("java=" + candidate));
-                        }
+                    String dist = newDistribution == null ? matcher.group(2) : "-" + newDistribution;
+                    String oldFull = matcher.group(1) + matcher.group(2);
+                    String newBasis = ver + dist;
+                    LatestRelease releaseComparator = new LatestRelease(dist);
+                    Pattern majorPattern = Pattern.compile("^" + ver + "[.-].*");
+                    List<String> filteredCandidates = ListUtils.filter(
+                            readSdkmanJavaCandidates(),
+                            candidate -> majorPattern.matcher(candidate).matches() && (releaseComparator.isValid(oldFull, candidate) || releaseComparator.isValid(newBasis, candidate))
+                    );
+                    String idealCandidate = filteredCandidates.stream().sorted(releaseComparator).reduce((first, second) -> second).orElse(null);
+                    if (idealCandidate != null) {
+                        return plainText.withText(matcher.replaceFirst("java=" + idealCandidate));
                     }
                 }
                 return sourceFile;
