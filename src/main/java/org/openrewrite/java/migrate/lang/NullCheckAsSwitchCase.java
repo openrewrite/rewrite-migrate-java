@@ -67,16 +67,10 @@ public class NullCheckAsSwitchCase extends Recipe {
                     if (nullCheckOpt.isPresent()) {
                         NullCheck check = nullCheckOpt.get();
                         J nextStatement = index < block.getStatements().size() - 1 ? block.getStatements().get(index + 1) : null;
-                        // We only set it if next statement is a J.Switch
-                        if (!(nextStatement instanceof J.Switch)) {
-                            return statement;
-                        }
-                        // The switch must switch on the same expression as the nullCheck
-                        if (!SemanticallyEqual.areEqual(((J.Switch) nextStatement).getSelector().getTree(), check.getNullCheckedParameter())) {
-                            return statement;
-                        }
-                        // If the null checked block returns early or potentially reassigns the value of the check object (touching it with a methodInvocation or accessing a field or directly assigning the null-checked identifier)
-                        if (check.returns() || check.couldModifyNullCheckedValue()) {
+                        if (!(nextStatement instanceof J.Switch) ||
+                                !SemanticallyEqual.areEqual(((J.Switch) nextStatement).getSelector().getTree(), check.getNullCheckedParameter()) ||
+                                check.returns() || 
+                                check.couldModifyNullCheckedValue()) {
                             return statement;
                         }
                         nullCheck.set(check);
