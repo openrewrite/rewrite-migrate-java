@@ -26,7 +26,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 @ParameterizedClass
-@CsvSource({ "javax", "jakarta" })
+@CsvSource({"javax", "jakarta"})
 record UpdateManagedBeanToNamedTest(String j) implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
