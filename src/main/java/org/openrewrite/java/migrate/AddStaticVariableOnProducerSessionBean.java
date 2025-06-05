@@ -15,16 +15,16 @@
  */
 package org.openrewrite.java.migrate;
 
+import org.checkerframework.checker.units.qual.A;
 import org.openrewrite.*;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 public class AddStaticVariableOnProducerSessionBean extends Recipe {
     @Override
@@ -43,7 +43,6 @@ public class AddStaticVariableOnProducerSessionBean extends Recipe {
                 new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-
                         J.ClassDeclaration visitingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
                         boolean isSessionBean = visitingClass.getLeadingAnnotations().stream()
                                 .map(J.Annotation::getSimpleName)
@@ -51,15 +50,9 @@ public class AddStaticVariableOnProducerSessionBean extends Recipe {
                         if (isSessionBean) {
                             boolean isProduces = multiVariable.getLeadingAnnotations().stream()
                                     .anyMatch(anno -> anno.getSimpleName().equals("Produces"));
-
-                            boolean containsStatic = multiVariable.getModifiers().stream()
-                                    .anyMatch(m -> m.getType() == J.Modifier.Type.Static);
-
-                            if (!containsStatic && isProduces) {
-                                List<J.Modifier> updatedModifiers = new ArrayList<>(multiVariable.getModifiers());
-
-                                updatedModifiers.add(new J.Modifier(Tree.randomId(), Space.format(" "), Markers.EMPTY, null, J.Modifier.Type.Static, Collections.emptyList()));
-                                return multiVariable.withModifiers(updatedModifiers);
+                            if (!multiVariable.hasModifier(J.Modifier.Type.Static) && isProduces) {
+                                return multiVariable.withModifiers(ListUtils.concat(multiVariable.getModifiers(),
+                                        new J.Modifier(Tree.randomId(), Space.SINGLE_SPACE, Markers.EMPTY, null, J.Modifier.Type.Static, Collections.emptyList())));
                             }
                         }
                         return super.visitVariableDeclarations(multiVariable, ctx);

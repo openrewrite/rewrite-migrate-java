@@ -48,14 +48,15 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new AddStaticVariableOnProducerSessionBean());
+        spec.recipe(new AddStaticVariableOnProducerSessionBean())
+          .parser(JavaParser.fromJavaVersion()
+            .dependsOn(jakarta_produces, jakarta_stateless, someDependency));
     }
 
     @Test
     @DocumentExample
     void addProducesFieldStaticOnSessionBean() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_stateless, someDependency)),
           //language=java
           java(
             """
@@ -73,19 +74,19 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
               }
               """,
             """
-                    package com.test;
-                    import jakarta.ejb.Stateless;
-                    import jakarta.enterprise.inject.Produces;
+              package com.test;
+              import jakarta.ejb.Stateless;
+              import jakarta.enterprise.inject.Produces;
 
-                    @Stateless
-                    public class MySessionBean {
-                        @Produces
-                        private static SomeDependency someDependency;
-                        void exampleMethod() {
-                           return;
-                        }
-                    }
-                    """
+              @Stateless
+              public class MySessionBean {
+                  @Produces
+                  private static SomeDependency someDependency;
+                  void exampleMethod() {
+                     return;
+                  }
+              }
+              """
           )
         );
     }
@@ -96,10 +97,12 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
           //language=java
           java(
             """
-              import javax.ejb.Singleton;
-              import javax.enterprise.inject.Produces;
+              package com.test;
 
-              @Singleton
+              import jakarta.ejb.Stateless;
+              import jakarta.enterprise.inject.Produces;
+
+              @Stateless
               public class MySessionBean {
                   @Produces
                   private static SomeDependency someDependency;
