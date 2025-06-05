@@ -15,8 +15,9 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -24,7 +25,9 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class UpdateManagedBeanToNamedTest implements RewriteTest {
+@ParameterizedClass
+@CsvSource({ "javax", "jakarta" })
+record UpdateManagedBeanToNamedTest(String j) implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
@@ -32,9 +35,8 @@ class UpdateManagedBeanToNamedTest implements RewriteTest {
           .recipe(new UpdateManagedBeanToNamed());
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"javax", "jakarta"})
-    void updateManagedBeanToNamed(String pkg) {
+    @Test
+    void updateManagedBeanToNamed() {
         rewriteRun(
           //language=java
           java(
@@ -44,7 +46,7 @@ class UpdateManagedBeanToNamedTest implements RewriteTest {
               @ManagedBean
               public class ApplicationBean2 {
               }
-              """.formatted(pkg),
+              """.formatted(j),
             """
               import jakarta.inject.Named;
 
@@ -56,9 +58,8 @@ class UpdateManagedBeanToNamedTest implements RewriteTest {
         );
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"javax", "jakarta"})
-    void updateManagedBeanToNamedWithArg(String pkg) {
+    @Test
+    void updateManagedBeanToNamedWithArg() {
         rewriteRun(
           //language=java
           java(
@@ -68,7 +69,7 @@ class UpdateManagedBeanToNamedTest implements RewriteTest {
               @ManagedBean(name="myBean")
               public class ApplicationBean2 {
               }
-              """.formatted(pkg),
+              """.formatted(j),
             """
               import jakarta.inject.Named;
 
