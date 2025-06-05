@@ -22,6 +22,7 @@ import org.openrewrite.*;
 import org.openrewrite.binary.Binary;
 import org.openrewrite.quark.Quark;
 import org.openrewrite.remote.Remote;
+import org.openrewrite.semver.LatestRelease;
 import org.openrewrite.text.PlainText;
 import org.openrewrite.text.PlainTextParser;
 
@@ -92,11 +93,17 @@ public class UpdateSdkMan extends Recipe {
                 Matcher matcher = pattern.matcher(plainText.getText());
                 if (matcher.find()) {
                     String ver = newVersion == null ? matcher.group(1) : newVersion;
-                    String dist = newDistribution == null ? matcher.group(2) : newDistribution;
-                    for (String candidate : readSdkmanJavaCandidates()) {
-                        if (candidate.startsWith(ver) && candidate.endsWith(dist)) {
-                            return plainText.withText(matcher.replaceFirst("java=" + candidate));
-                        }
+                    String dist = newDistribution == null ? matcher.group(2) : "-" + newDistribution;
+                    String newBasis = ver + dist;
+                    Pattern majorPattern = Pattern.compile("^" + ver + "[.-].*");
+                    LatestRelease releaseComparator = new LatestRelease(dist);
+                    String idealCandidate = readSdkmanJavaCandidates().stream()
+                            .filter(candidate -> majorPattern.matcher(candidate).matches())
+                            .filter(candidate -> releaseComparator.isValid(newBasis, candidate))
+                            .max(releaseComparator)
+                            .orElse(null);
+                    if (idealCandidate != null) {
+                        return plainText.withText(matcher.replaceFirst("java=" + idealCandidate));
                     }
                 }
                 return sourceFile;
@@ -110,7 +117,6 @@ public class UpdateSdkMan extends Recipe {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
             }
         };
         return Preconditions.check(new FindSourceFiles(".sdkmanrc"), visitor);
