@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
