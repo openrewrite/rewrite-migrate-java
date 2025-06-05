@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.openrewrite.java.migrate;
 
 import org.openrewrite.*;
 import org.openrewrite.java.JavaVisitor;
