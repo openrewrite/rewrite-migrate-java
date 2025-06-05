@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.jakarta;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -26,8 +27,8 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 @ParameterizedClass
-@CsvSource({"javax", "jakarta"})
-record UpdateManagedBeanToNamedTest(String j) implements RewriteTest {
+@ValueSource(strings = {"javax", "jakarta"})
+record UpdateManagedBeanToNamedTest(String pkg) implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
@@ -46,7 +47,7 @@ record UpdateManagedBeanToNamedTest(String j) implements RewriteTest {
               @ManagedBean
               public class ApplicationBean2 {
               }
-              """.formatted(j),
+              """.formatted(pkg),
             """
               import jakarta.inject.Named;
 
@@ -69,7 +70,7 @@ record UpdateManagedBeanToNamedTest(String j) implements RewriteTest {
               @ManagedBean(name="myBean")
               public class ApplicationBean2 {
               }
-              """.formatted(j),
+              """.formatted(pkg),
             """
               import jakarta.inject.Named;
 
