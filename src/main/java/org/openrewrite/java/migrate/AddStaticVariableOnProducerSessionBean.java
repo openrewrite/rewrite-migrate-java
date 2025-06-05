@@ -15,10 +15,10 @@
  */
 package org.openrewrite.java.migrate;
 
-import org.checkerframework.checker.units.qual.A;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
@@ -43,19 +43,27 @@ public class AddStaticVariableOnProducerSessionBean extends Recipe {
                 new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                        J.ClassDeclaration visitingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                        boolean isSessionBean = visitingClass.getLeadingAnnotations().stream()
-                                .map(J.Annotation::getSimpleName)
-                                .anyMatch(name -> name.equals("Stateless") || name.equals("Stateful") || name.equals("Singleton"));
-                        if (isSessionBean) {
-                            boolean isProduces = multiVariable.getLeadingAnnotations().stream()
-                                    .anyMatch(anno -> anno.getSimpleName().equals("Produces"));
-                            if (!multiVariable.hasModifier(J.Modifier.Type.Static) && isProduces) {
-                                return multiVariable.withModifiers(ListUtils.concat(multiVariable.getModifiers(),
-                                        new J.Modifier(Tree.randomId(), Space.SINGLE_SPACE, Markers.EMPTY, null, J.Modifier.Type.Static, Collections.emptyList())));
-                            }
+                        if (!multiVariable.hasModifier(J.Modifier.Type.Static) &&
+                                hasAnnotation(multiVariable, "@jakarta.enterprise.inject.Produces") &&
+                                isSessionBean()) {
+                            return multiVariable.withModifiers(ListUtils.concat(multiVariable.getModifiers(),
+                                    new J.Modifier(Tree.randomId(), Space.SINGLE_SPACE, Markers.EMPTY, null, J.Modifier.Type.Static, Collections.emptyList())));
                         }
                         return super.visitVariableDeclarations(multiVariable, ctx);
+                    }
+
+                    private boolean isSessionBean() {
+                        J.ClassDeclaration j = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                        if (j == null) {
+                            return false;
+                        }
+                        return hasAnnotation(j, "@jakarta.ejb.Singleton") ||
+                                hasAnnotation(j, "@jakarta.ejb.Statefull") ||
+                                hasAnnotation(j, "@jakarta.ejb.Stateless");
+                    }
+
+                    private boolean hasAnnotation(J j, String annotationPattern) {
+                        return !FindAnnotations.find(j, annotationPattern).isEmpty();
                     }
                 });
     }
