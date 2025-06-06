@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.SourceSpec;
 
@@ -24,11 +25,15 @@ import static org.openrewrite.java.Assertions.java;
 
 class UseThreadsOrExecutorsTest implements RewriteTest {
 
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.recipeFromResource("/META-INF/rewrite/java-virtual-threads.yml", "org.openrewrite.java.migrate.lang.FindVirtualThreadOpportunities");
+    }
+
     @DocumentExample
     @Test
     void findThreadConstructorWithRunnable() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.lang.SearchNewThreadWithRunnable"),
           java(
             """
               class Test {
@@ -53,7 +58,6 @@ class UseThreadsOrExecutorsTest implements RewriteTest {
     @Test
     void findThreadConstructorWithClassImplementingRunnable() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.lang.SearchNewThreadWithRunnable"),
           java(
             """
               class MyRunnable implements Runnable {
@@ -81,7 +85,6 @@ class UseThreadsOrExecutorsTest implements RewriteTest {
     @Test
     void findThreadConstructorWithLambda() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.lang.SearchNewThreadWithRunnable"),
           java(
             """
               class Test {
@@ -100,7 +103,6 @@ class UseThreadsOrExecutorsTest implements RewriteTest {
     @Test
     void findThreadConstructorWithThreadGroupAndRunnable() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.lang.SearchNewThreadWithRunnable"),
           java(
             """
               class Test {
@@ -125,7 +127,6 @@ class UseThreadsOrExecutorsTest implements RewriteTest {
     @Test
     void findThreadConstructorWithNullThreadGroupAndRunnable() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.lang.SearchNewThreadWithRunnable"),
           java(
             """
               class Test {
@@ -150,7 +151,6 @@ class UseThreadsOrExecutorsTest implements RewriteTest {
     @Test
     void findClassExtendsThreadAndOverrideRun() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.lang.SearchExtendsThreadAndOverrideRunnable"),
           java(
             """
               public class MyThread extends Thread {
@@ -158,8 +158,8 @@ class UseThreadsOrExecutorsTest implements RewriteTest {
               }
               """,
             """
-              public class MyThread extends Thread {
-                /*~~>*/public void run() {}
+              /*~~>*/public class MyThread extends Thread {
+                public void run() {}
               }
               """
           )
@@ -169,7 +169,6 @@ class UseThreadsOrExecutorsTest implements RewriteTest {
     @Test
     void findEmptyThreadConstructor() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.lang.SearchAllThreadClassUsage"),
           java(
             """
               class Test {
@@ -188,7 +187,6 @@ class UseThreadsOrExecutorsTest implements RewriteTest {
     @Test
     void findEmptyThreadConstructorNonSuper() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.lang.SearchAllThreadClassUsage"),
           java(
             """
               class Test extends Thread {
@@ -215,7 +213,6 @@ class UseThreadsOrExecutorsTest implements RewriteTest {
     @Test
     void findClassExtendsThread() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.lang.SearchAllThreadClassUsage"),
           java(
             """
               public class MyThread extends Thread {
@@ -232,8 +229,6 @@ class UseThreadsOrExecutorsTest implements RewriteTest {
     @Test
     void findExecutors() {
         rewriteRun(
-          //spec -> spec.recipe(new FindMethods("java.util.concurrent.Executors#*(..)", false)),
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.lang.SearchAllExecutors"),
           java(
             """
               import java.util.concurrent.ExecutorService;
