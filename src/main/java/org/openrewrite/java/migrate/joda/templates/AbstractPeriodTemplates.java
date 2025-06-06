@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,26 @@
  */
 package org.openrewrite.java.migrate.joda.templates;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.tree.MethodCall;
+import org.openrewrite.java.MethodMatcher;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public interface Templates {
-    List<MethodTemplate> getTemplates();
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_PERIOD;
 
-    /**
-     * This method is used to disambiguate between multiple potential template matches for a given methodCall.
-     * This should be overridden by Templates classes where methodMatcher.matches() may return more than one template.
-     **/
-    default boolean matchesMethodCall(MethodCall method, MethodTemplate template) {
-        return true;
-    }
+@NoArgsConstructor
+public class AbstractPeriodTemplates implements Templates{
+    final MethodMatcher toString = new MethodMatcher(JODA_PERIOD + " toString()");
 
-    default JavaTemplate buildWithImport(JavaTemplate.Builder builder, String imports) {
-        return builder.imports(imports).build() ;
-    }
+    final JavaTemplate toStringTemplate = JavaTemplate.builder("#{any(java.time.Period)}.getDays()").build();
+
+    @Getter
+    private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
+        {
+            add(new MethodTemplate(toString, toStringTemplate));
+        }
+    };
 }

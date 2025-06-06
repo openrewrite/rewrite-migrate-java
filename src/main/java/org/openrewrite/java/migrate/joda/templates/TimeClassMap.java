@@ -31,17 +31,42 @@ public class TimeClassMap {
         {
             put(JODA_DATE_TIME, javaTypeClass(JAVA_DATE_TIME, object));
             put(JODA_BASE_DATE_TIME, javaTypeClass(JAVA_DATE_TIME, object));
+            put(JODA_DATE_MIDNIGHT, javaTypeClass(JAVA_DATE_TIME, object));
             put(JODA_DATE_TIME_ZONE, javaTypeClass(JAVA_ZONE_ID, object));
             put(JODA_TIME_FORMATTER, javaTypeClass(JAVA_TIME_FORMATTER, object));
             put(JODA_DURATION, javaTypeClass(JAVA_DURATION, object));
+            put(JODA_PERIOD, javaTypeClass(JAVA_PERIOD, object));
             put(JODA_READABLE_DURATION, javaTypeClass(JAVA_DURATION, object));
             put(JODA_INTERVAL, javaTypeClass(THREE_TEN_EXTRA_INTERVAL, object));
+            put(JODA_LOCAL_DATE, javaTypeClass(JAVA_LOCAL_DATE, object));
+            put(JODA_LOCAL_DATE_TIME, javaTypeClass(JAVA_LOCAL_DATE_TIME, object));
+            put(JODA_LOCAL_TIME, javaTypeClass(JAVA_LOCAL_TIME, object));
+            put(JODA_SECONDS, javaTypeClass(JAVA_DURATION, object));
+            put(JODA_MINUTES, javaTypeClass(JAVA_DURATION, object));
+            put(JODA_HOURS, javaTypeClass(JAVA_DURATION, object));
+            put(JODA_GEORGIAN_CHRONOLOGY, javaTypeClass(JAVA_ISA_CHRONOLOGY, object));
+            put(JODA_DAYS, javaTypeClass(THREE_TEN_EXTRA_DAYS, object));
+            put(JODA_WEEKS, javaTypeClass(THREE_TEN_EXTRA_WEEKS, object));
+            put(JODA_MONTHS, javaTypeClass(THREE_TEN_EXTRA_MONTHS, object));
+            put(JODA_YEARS, javaTypeClass(THREE_TEN_EXTRA_YEARS, object));
         }
     };
 
     private final Map<String, String> jodaToJavaTimeShortName = new HashMap<String, String>() {
         {
             put(JODA_DATE_TIME, "ZonedDateTime");
+            put(JODA_DATE_MIDNIGHT, "ZonedDateTime");
+            put(JODA_LOCAL_DATE, "LocalDate");
+            put(JODA_LOCAL_DATE_TIME, "LocalDateTime");
+            put(JODA_LOCAL_TIME, "LocalTime");
+            put(JODA_SECONDS, "Duration");
+            put(JODA_MINUTES, "Duration");
+            put(JODA_HOURS, "Duration");
+            put(JODA_DAYS, "Period");
+            put(JODA_WEEKS, "Period");
+            put(JODA_MONTHS, "Period");
+            put(JODA_YEARS, "Period");
+            put(JODA_GEORGIAN_CHRONOLOGY, "IsoChronology");
         }
     };
 
