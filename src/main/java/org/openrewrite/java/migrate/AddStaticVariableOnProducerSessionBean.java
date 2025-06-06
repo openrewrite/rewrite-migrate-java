@@ -58,7 +58,7 @@ public class AddStaticVariableOnProducerSessionBean extends Recipe {
                             return false;
                         }
                         return hasAnnotation(j, "@jakarta.ejb.Singleton") ||
-                                hasAnnotation(j, "@jakarta.ejb.Statefull") ||
+                                hasAnnotation(j, "@jakarta.ejb.Stateful") ||
                                 hasAnnotation(j, "@jakarta.ejb.Stateless");
                     }
 
