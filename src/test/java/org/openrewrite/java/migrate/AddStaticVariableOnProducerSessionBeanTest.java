@@ -27,38 +27,38 @@ import static org.openrewrite.java.Assertions.java;
 class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
     @Language("java")
     private static final String jakarta_produces =
-            """
-                    package jakarta.enterprise.inject;
-                    public @interface Produces {}
-                    """;
+      """
+        package jakarta.enterprise.inject;
+        public @interface Produces {}
+        """;
 
     @Language("java")
     private static final String jakarta_stateless =
-            """
-                    package jakarta.ejb;
-                    public @interface Stateless {}
-                    """;
+      """
+        package jakarta.ejb;
+        public @interface Stateless {}
+        """;
 
     @Language("java")
     private static final String jakarta_stateful =
-            """
-                    package jakarta.ejb;
-                    public @interface Stateful {}
-                    """;
+      """
+        package jakarta.ejb;
+        public @interface Stateful {}
+        """;
 
     @Language("java")
     private static final String jakarta_singleton =
-            """
-                    package jakarta.ejb;
-                    public @interface Singleton {}
-                    """;
+      """
+        package jakarta.ejb;
+        public @interface Singleton {}
+        """;
 
     @Language("java")
     private static final String someDependency =
-            """
-                    package com.test;
-                    public class SomeDependency {}
-                    """;
+      """
+        package com.test;
+        public class SomeDependency {}
+        """;
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -71,38 +71,38 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
     @DocumentExample
     void addStaticOnProducesMarkedStateless() {
         rewriteRun(
-                spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_stateless, someDependency)),
-                //language=java
-                java(
-                        """
-                                package com.test;
-                                import jakarta.ejb.Stateless;
-                                import jakarta.enterprise.inject.Produces;
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_stateless, someDependency)),
+          //language=java
+          java(
+            """
+              package com.test;
+              import jakarta.ejb.Stateless;
+              import jakarta.enterprise.inject.Produces;
 
-                                @Stateless
-                                public class MySessionBean {
-                                    @Produces
-                                    private SomeDependency someDependency;
-                                    void exampleMethod() {
-                                       return;
-                                    }
-                                }
-                                """,
-                        """
-                                package com.test;
-                                import jakarta.ejb.Stateless;
-                                import jakarta.enterprise.inject.Produces;
+              @Stateless
+              public class MySessionBean {
+                  @Produces
+                  private SomeDependency someDependency;
+                  void exampleMethod() {
+                     return;
+                  }
+              }
+              """,
+            """
+              package com.test;
+              import jakarta.ejb.Stateless;
+              import jakarta.enterprise.inject.Produces;
 
-                                @Stateless
-                                public class MySessionBean {
-                                    @Produces
-                                    private static SomeDependency someDependency;
-                                    void exampleMethod() {
-                                       return;
-                                    }
-                                }
-                                """
-                )
+              @Stateless
+              public class MySessionBean {
+                  @Produces
+                  private static SomeDependency someDependency;
+                  void exampleMethod() {
+                     return;
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -110,38 +110,38 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
     @DocumentExample
     void addStaticOnProducesMarkedStateful() {
         rewriteRun(
-                spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_stateful, someDependency)),
-                //language=java
-                java(
-                        """
-                                package com.test;
-                                import jakarta.ejb.Stateful;
-                                import jakarta.enterprise.inject.Produces;
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_stateful, someDependency)),
+          //language=java
+          java(
+            """
+              package com.test;
+              import jakarta.ejb.Stateful;
+              import jakarta.enterprise.inject.Produces;
 
-                                @Stateful
-                                public class MySessionBean {
-                                    @Produces
-                                    private SomeDependency someDependency;
-                                    void exampleMethod() {
-                                       return;
-                                    }
-                                }
-                                """,
-                        """
-                                package com.test;
-                                import jakarta.ejb.Stateful;
-                                import jakarta.enterprise.inject.Produces;
+              @Stateful
+              public class MySessionBean {
+                  @Produces
+                  private SomeDependency someDependency;
+                  void exampleMethod() {
+                     return;
+                  }
+              }
+              """,
+            """
+              package com.test;
+              import jakarta.ejb.Stateful;
+              import jakarta.enterprise.inject.Produces;
 
-                                @Stateful
-                                public class MySessionBean {
-                                    @Produces
-                                    private static SomeDependency someDependency;
-                                    void exampleMethod() {
-                                       return;
-                                    }
-                                }
-                                """
-                )
+              @Stateful
+              public class MySessionBean {
+                  @Produces
+                  private static SomeDependency someDependency;
+                  void exampleMethod() {
+                     return;
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -149,59 +149,59 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
     @DocumentExample
     void addStaticOnProducesMarkedSingleton() {
         rewriteRun(
-                spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_singleton, someDependency)),
-                //language=java
-                java(
-                        """
-                                package com.test;
-                                import jakarta.ejb.Singleton;
-                                import jakarta.enterprise.inject.Produces;
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_singleton, someDependency)),
+          //language=java
+          java(
+            """
+              package com.test;
+              import jakarta.ejb.Singleton;
+              import jakarta.enterprise.inject.Produces;
 
-                                @Singleton
-                                public class MySessionBean {
-                                    @Produces
-                                    private SomeDependency someDependency;
-                                    void exampleMethod() {
-                                       return;
-                                    }
-                                }
-                                """,
-                        """
-                                package com.test;
-                                import jakarta.ejb.Singleton;
-                                import jakarta.enterprise.inject.Produces;
+              @Singleton
+              public class MySessionBean {
+                  @Produces
+                  private SomeDependency someDependency;
+                  void exampleMethod() {
+                     return;
+                  }
+              }
+              """,
+            """
+              package com.test;
+              import jakarta.ejb.Singleton;
+              import jakarta.enterprise.inject.Produces;
 
-                                @Singleton
-                                public class MySessionBean {
-                                    @Produces
-                                    private static SomeDependency someDependency;
-                                    void exampleMethod() {
-                                       return;
-                                    }
-                                }
-                                """
-                )
+              @Singleton
+              public class MySessionBean {
+                  @Produces
+                  private static SomeDependency someDependency;
+                  void exampleMethod() {
+                     return;
+                  }
+              }
+              """
+          )
         );
     }
 
     @Test
     void noChangeOnStaticVariable() {
         rewriteRun(
-                spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_singleton, someDependency)),
-                //language=java
-                java(
-                        """
-                                package com.test;
-                                import jakarta.ejb.Singleton;
-                                import jakarta.enterprise.inject.Produces;
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_singleton, someDependency)),
+          //language=java
+          java(
+            """
+              package com.test;
+              import jakarta.ejb.Singleton;
+              import jakarta.enterprise.inject.Produces;
 
-                                @Singleton
-                                public class MySessionBean {
-                                    @Produces
-                                    private static SomeDependency someDependency;
-                                }
-                                """
-                )
+              @Singleton
+              public class MySessionBean {
+                  @Produces
+                  private static SomeDependency someDependency;
+              }
+              """
+          )
         );
     }
 }
