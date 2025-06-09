@@ -4806,33 +4806,27 @@ examples:
 - description: ''
   sources:
   - before: |
-      package com.test;
-
       import jakarta.faces.el.MethodBinding;
       import jakarta.faces.el.PropertyResolver;
       import jakarta.faces.el.ValueBinding;
 
-      public class Test {
-
-           public void testJakarta() {
+      class Test {
+           void testJakarta() {
                 MethodBinding methodBinding = null;
                 PropertyResolver propertyResolver = null;
                 ValueBinding valueBinding = null;
            }
       }
     after: |
-      package com.test;
-
       import jakarta.el.ELResolver;
       import jakarta.el.MethodExpression;
       import jakarta.el.ValueExpression;
 
-      public class Test {
-
-           public void testJakarta() {
-                MethodExpression methodExpression = null;
-                ELResolver eLResolver = null;
-                ValueExpression valueExpression = null;
+      class Test {
+           void testJakarta() {
+                MethodExpression methodBinding = null;
+                ELResolver propertyResolver = null;
+                ValueExpression valueBinding = null;
            }
       }
     language: java
@@ -5929,6 +5923,27 @@ examples:
 
       public class Test {
           Record record;
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.FindVirtualThreadOpportunities
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {}
+          });
+      }
+    after: |
+      class Test {
+          Thread t = /*~~>*/new Thread(new Runnable() {
+            @Override
+            public void run() {}
+          });
       }
     language: java
 ---
