@@ -26,12 +26,12 @@ import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 @SuppressWarnings("NotNullFieldNotInitialized")
-class MigrateToJspecifyTest implements RewriteTest {
+class JSpecifyBestPracticesTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipeFromResource("/META-INF/rewrite/jspecify.yml", "org.openrewrite.java.jspecify.MigrateToJspecify")
+          .recipeFromResource("/META-INF/rewrite/jspecify.yml", "org.openrewrite.java.jspecify.JSpecifyBestPractices")
           .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jakarta.annotation-api", "annotations", "spring-core"));
     }
 
