@@ -41,9 +41,9 @@ public class AddStaticVariableOnProducerSessionBean extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(Preconditions.and(new UsesType<>("jakarta.enterprise.inject.Produces", false),
                         Preconditions.or(
-                                new UsesType<>("@jakarta.ejb.Singleton", false),
-                                new UsesType<>("@jakarta.ejb.Stateful", false),
-                                new UsesType<>("@jakarta.ejb.Stateless", false)
+                                new UsesType<>("jakarta.ejb.Singleton", false),
+                                new UsesType<>("jakarta.ejb.Stateful", false),
+                                new UsesType<>("jakarta.ejb.Stateless", false)
                         )),
                 new JavaVisitor<ExecutionContext>() {
                     @Override
