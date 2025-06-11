@@ -50,21 +50,21 @@ public class AddStaticVariableOnProducerSessionBean extends Recipe {
                     public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         if (!multiVariable.hasModifier(J.Modifier.Type.Static) &&
                             hasAnnotation(multiVariable, "@jakarta.enterprise.inject.Produces") &&
-                            isSessionBean()) {
+                            isInSessionBean()) {
                             return multiVariable.withModifiers(ListUtils.concat(multiVariable.getModifiers(),
                                     new J.Modifier(Tree.randomId(), Space.SINGLE_SPACE, Markers.EMPTY, null, J.Modifier.Type.Static, Collections.emptyList())));
                         }
                         return super.visitVariableDeclarations(multiVariable, ctx);
                     }
 
-                    private boolean isSessionBean() {
-                        J.ClassDeclaration j = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                        if (j == null) {
+                    private boolean isInSessionBean() {
+                        J.ClassDeclaration parentClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                        if (parentClass == null) {
                             return false;
                         }
-                        return hasAnnotation(j, "@jakarta.ejb.Singleton") ||
-                               hasAnnotation(j, "@jakarta.ejb.Stateful") ||
-                               hasAnnotation(j, "@jakarta.ejb.Stateless");
+                        return hasAnnotation(parentClass, "@jakarta.ejb.Singleton") ||
+                               hasAnnotation(parentClass, "@jakarta.ejb.Stateful") ||
+                               hasAnnotation(parentClass, "@jakarta.ejb.Stateless");
                     }
 
                     private boolean hasAnnotation(J j, String annotationPattern) {
