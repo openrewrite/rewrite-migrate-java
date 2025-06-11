@@ -39,13 +39,18 @@ public class AddStaticVariableOnProducerSessionBean extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesType<>("jakarta.enterprise.inject.Produces", false),
+        return Preconditions.check(Preconditions.and(new UsesType<>("jakarta.enterprise.inject.Produces", false),
+                        Preconditions.or(
+                                new UsesType<>("@jakarta.ejb.Singleton", false),
+                                new UsesType<>("@jakarta.ejb.Stateful", false),
+                                new UsesType<>("@jakarta.ejb.Stateless", false)
+                        )),
                 new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         if (!multiVariable.hasModifier(J.Modifier.Type.Static) &&
-                                hasAnnotation(multiVariable, "@jakarta.enterprise.inject.Produces") &&
-                                isSessionBean()) {
+                            hasAnnotation(multiVariable, "@jakarta.enterprise.inject.Produces") &&
+                            isSessionBean()) {
                             return multiVariable.withModifiers(ListUtils.concat(multiVariable.getModifiers(),
                                     new J.Modifier(Tree.randomId(), Space.SINGLE_SPACE, Markers.EMPTY, null, J.Modifier.Type.Static, Collections.emptyList())));
                         }
@@ -58,8 +63,8 @@ public class AddStaticVariableOnProducerSessionBean extends Recipe {
                             return false;
                         }
                         return hasAnnotation(j, "@jakarta.ejb.Singleton") ||
-                                hasAnnotation(j, "@jakarta.ejb.Stateful") ||
-                                hasAnnotation(j, "@jakarta.ejb.Stateless");
+                               hasAnnotation(j, "@jakarta.ejb.Stateful") ||
+                               hasAnnotation(j, "@jakarta.ejb.Stateless");
                     }
 
                     private boolean hasAnnotation(J j, String annotationPattern) {
