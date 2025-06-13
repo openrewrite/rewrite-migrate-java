@@ -24,35 +24,38 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
 
-import java.util.Collections;
+import static java.util.Collections.emptyList;
 
 public class AddStaticVariableOnProducerSessionBean extends Recipe {
     @Override
     public String getDisplayName() {
-        return "Adds static variable to @Produces field that are on session bean";
+        return "Adds `static` modifier to `@Produces` field that are on session bean";
     }
 
     @Override
     public String getDescription() {
-        return "Ensures that the fields annotated with @Produces which is inside the session bean (@Stateless, @Stateful, or @Singleton) are declared static.";
+        return "Ensures that the fields annotated with `@Produces` which is inside the session bean (`@Stateless`, `@Stateful`, or `@Singleton`) are declared `static`.";
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(Preconditions.and(new UsesType<>("jakarta.enterprise.inject.Produces", false),
+        return Preconditions.check(
+                Preconditions.and(
+                        new UsesType<>("jakarta.enterprise.inject.Produces", false),
                         Preconditions.or(
                                 new UsesType<>("jakarta.ejb.Singleton", false),
                                 new UsesType<>("jakarta.ejb.Stateful", false),
                                 new UsesType<>("jakarta.ejb.Stateless", false)
-                        )),
+                        )
+                ),
                 new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         if (!multiVariable.hasModifier(J.Modifier.Type.Static) &&
-                            hasAnnotation(multiVariable, "@jakarta.enterprise.inject.Produces") &&
-                            isInSessionBean()) {
+                                hasAnnotation(multiVariable, "@jakarta.enterprise.inject.Produces") &&
+                                isInSessionBean()) {
                             return multiVariable.withModifiers(ListUtils.concat(multiVariable.getModifiers(),
-                                    new J.Modifier(Tree.randomId(), Space.SINGLE_SPACE, Markers.EMPTY, null, J.Modifier.Type.Static, Collections.emptyList())));
+                                    new J.Modifier(Tree.randomId(), Space.SINGLE_SPACE, Markers.EMPTY, null, J.Modifier.Type.Static, emptyList())));
                         }
                         return super.visitVariableDeclarations(multiVariable, ctx);
                     }
@@ -63,8 +66,8 @@ public class AddStaticVariableOnProducerSessionBean extends Recipe {
                             return false;
                         }
                         return hasAnnotation(parentClass, "@jakarta.ejb.Singleton") ||
-                               hasAnnotation(parentClass, "@jakarta.ejb.Stateful") ||
-                               hasAnnotation(parentClass, "@jakarta.ejb.Stateless");
+                                hasAnnotation(parentClass, "@jakarta.ejb.Stateful") ||
+                                hasAnnotation(parentClass, "@jakarta.ejb.Stateless");
                     }
 
                     private boolean hasAnnotation(J j, String annotationPattern) {

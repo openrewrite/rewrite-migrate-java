@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate;
 
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
@@ -25,53 +24,41 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 
 class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
-    @Language("java")
-    private static final String jakarta_produces =
-      """
-        package jakarta.enterprise.inject;
-        public @interface Produces {}
-        """;
-
-    @Language("java")
-    private static final String jakarta_stateless =
-      """
-        package jakarta.ejb;
-        public @interface Stateless {}
-        """;
-
-    @Language("java")
-    private static final String jakarta_stateful =
-      """
-        package jakarta.ejb;
-        public @interface Stateful {}
-        """;
-
-    @Language("java")
-    private static final String jakarta_singleton =
-      """
-        package jakarta.ejb;
-        public @interface Singleton {}
-        """;
-
-    @Language("java")
-    private static final String someDependency =
-      """
-        package com.test;
-        public class SomeDependency {}
-        """;
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new AddStaticVariableOnProducerSessionBean())
+          //language=java
           .parser(JavaParser.fromJavaVersion()
-            .dependsOn(jakarta_produces, jakarta_stateless, someDependency));
+            .dependsOn(
+              """
+                package jakarta.enterprise.inject;
+                public @interface Produces {}
+                """,
+              """
+                package jakarta.ejb;
+                public @interface Stateless {}
+                """,
+              """
+                package jakarta.ejb;
+                public @interface Stateful {}
+                """,
+              """
+                package jakarta.ejb;
+                public @interface Singleton {}
+                """,
+              """
+                package com.test;
+                public class SomeDependency {}
+                """
+            )
+          );
     }
 
     @Test
     @DocumentExample
     void addStaticOnProducesMarkedStateless() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_stateless, someDependency)),
           //language=java
           java(
             """
@@ -107,10 +94,8 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
     }
 
     @Test
-    @DocumentExample
     void addStaticOnProducesMarkedStateful() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_stateful, someDependency)),
           //language=java
           java(
             """
@@ -146,10 +131,8 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
     }
 
     @Test
-    @DocumentExample
     void addStaticOnProducesMarkedSingleton() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_singleton, someDependency)),
           //language=java
           java(
             """
@@ -187,7 +170,6 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
     @Test
     void noChangeOnStaticVariable() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(jakarta_produces, jakarta_singleton, someDependency)),
           //language=java
           java(
             """
