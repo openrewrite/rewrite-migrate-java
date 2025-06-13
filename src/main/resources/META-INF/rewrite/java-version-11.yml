@@ -162,7 +162,7 @@ recipeList:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       newVersion: 2.3.x
-  # Add the jaxb runtime to any projects that have a transitive dependency on the api
+  # Add the jax-ws runtime to any projects that have a transitive dependency on the api
   - org.openrewrite.java.migrate.javax.AddJaxwsRuntime
   # Remove the version from added dependencies when a managed version exists.
   - org.openrewrite.maven.RemoveRedundantDependencyVersions:
