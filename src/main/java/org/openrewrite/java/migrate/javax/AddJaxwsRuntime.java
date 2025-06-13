@@ -46,13 +46,8 @@ public class AddJaxwsRuntime extends Recipe {
     private static final String SUN_JAXWS_RUNTIME_GROUP = "com.sun.xml.ws";
     private static final String SUN_JAXWS_RUNTIME_ARTIFACT = "jaxws-rt";
 
-    private final AddJaxwsRuntimeGradle addJaxwsRuntimeGradle;
-    private final AddJaxwsRuntimeMaven addJaxwsRuntimeMaven;
-
-    public AddJaxwsRuntime() {
-        this.addJaxwsRuntimeGradle = new AddJaxwsRuntimeGradle();
-        this.addJaxwsRuntimeMaven = new AddJaxwsRuntimeMaven();
-    }
+    private final AddJaxwsRuntimeGradle addJaxwsRuntimeGradle = new AddJaxwsRuntimeGradle();
+    private final AddJaxwsRuntimeMaven addJaxwsRuntimeMaven = new AddJaxwsRuntimeMaven();
 
     @Override
     public String getDisplayName() {
@@ -226,7 +221,7 @@ public class AddJaxwsRuntime extends Recipe {
          * Finds the highest scope for a given group/artifact.
          *
          * @param mavenModel The maven model to search for a dependency.
-         * @param groupId The group ID of the dependency
+         * @param groupId    The group ID of the dependency
          * @param artifactId The artifact ID of the dependency
          * @return The highest scope of the given dependency or null if the dependency does not exist.
          */
