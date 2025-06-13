@@ -118,11 +118,9 @@ public class AddJaxwsRuntime extends Recipe {
                             }
                         } else {
                             for (GradleDependencyConfiguration apiConfiguration : apiConfigurations) {
-                                GradleDependencyConfiguration apiGdc = gp.getConfiguration(apiConfiguration.getName());
-                                List<GradleDependencyConfiguration> apiTransitives = gp.configurationsExtendingFrom(apiGdc, true);
+                                List<GradleDependencyConfiguration> apiTransitives = gp.configurationsExtendingFrom(apiConfiguration, true);
                                 for (GradleDependencyConfiguration runtimeConfiguration : runtimeConfigurations) {
-                                    GradleDependencyConfiguration runtimeGdc = gp.getConfiguration(runtimeConfiguration.getName());
-                                    List<GradleDependencyConfiguration> runtimeTransitives = gp.configurationsExtendingFrom(runtimeGdc, true);
+                                    List<GradleDependencyConfiguration> runtimeTransitives = gp.configurationsExtendingFrom(runtimeConfiguration, true);
                                     if (apiTransitives.stream().noneMatch(runtimeTransitives::contains) && apiConfiguration.isCanBeDeclared()) {
                                         g = addJaxWsRuntimeDependency(apiConfiguration.getName(), g, ctx);
                                     }
