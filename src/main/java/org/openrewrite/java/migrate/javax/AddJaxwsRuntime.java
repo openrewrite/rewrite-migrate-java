@@ -152,7 +152,7 @@ public class AddJaxwsRuntime extends Recipe {
                     for (GradleDependencyConfiguration configuration : tmpConfigurations) {
                         GradleDependencyConfiguration gdc = gp.getConfiguration(configuration.getName());
                         for (GradleDependencyConfiguration extendsFrom : gdc.allExtendsFrom()) {
-                            if (configurations.contains(extendsFrom.getName())) {
+                            if (configurations.contains(extendsFrom)) {
                                 configurations.remove(configuration);
                             }
                         }
