@@ -105,10 +105,10 @@ public class AddJaxwsRuntime extends Recipe {
                     GradleProject gp = g.getMarkers().findFirst(GradleProject.class)
                             .orElseThrow(() -> new RuntimeException("Gradle build scripts must have a GradleProject marker"));
 
-                    Set<String> apiConfigurations = getTransitiveDependencyConfiguration(gp, JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
+                    Set<GradleDependencyConfiguration> apiConfigurations = getTransitiveDependencyConfiguration(gp, JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
 
                     if (!apiConfigurations.isEmpty()) {
-                        Set<String> runtimeConfigurations = getTransitiveDependencyConfiguration(gp, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
+                        Set<GradleDependencyConfiguration> runtimeConfigurations = getTransitiveDependencyConfiguration(gp, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
                         if (runtimeConfigurations.isEmpty()) {
                             if (gp.getConfiguration("compileOnly") != null) {
                                 g = addJaxWsRuntimeDependency("compileOnly", g, ctx);
@@ -117,14 +117,14 @@ public class AddJaxwsRuntime extends Recipe {
                                 g = addJaxWsRuntimeDependency("testImplementation", g, ctx);
                             }
                         } else {
-                            for (String apiConfiguration : apiConfigurations) {
-                                GradleDependencyConfiguration apiGdc = gp.getConfiguration(apiConfiguration);
+                            for (GradleDependencyConfiguration apiConfiguration : apiConfigurations) {
+                                GradleDependencyConfiguration apiGdc = gp.getConfiguration(apiConfiguration.getName());
                                 List<GradleDependencyConfiguration> apiTransitives = gp.configurationsExtendingFrom(apiGdc, true);
-                                for (String runtimeConfiguration : runtimeConfigurations) {
-                                    GradleDependencyConfiguration runtimeGdc = gp.getConfiguration(runtimeConfiguration);
+                                for (GradleDependencyConfiguration runtimeConfiguration : runtimeConfigurations) {
+                                    GradleDependencyConfiguration runtimeGdc = gp.getConfiguration(runtimeConfiguration.getName());
                                     List<GradleDependencyConfiguration> runtimeTransitives = gp.configurationsExtendingFrom(runtimeGdc, true);
-                                    if (apiTransitives.stream().noneMatch(runtimeTransitives::contains)) {
-                                        g = addJaxWsRuntimeDependency(apiConfiguration, g, ctx);
+                                    if (apiTransitives.stream().noneMatch(runtimeTransitives::contains) && apiConfiguration.isCanBeDeclared()) {
+                                        g = addJaxWsRuntimeDependency(apiConfiguration.getName(), g, ctx);
                                     }
                                 }
                             }
@@ -134,25 +134,25 @@ public class AddJaxwsRuntime extends Recipe {
                     return g;
                 }
 
-                private Set<String> getTransitiveDependencyConfiguration(GradleProject gp, String groupId, String artifactId) {
-                    Set<String> configurations = new HashSet<>();
+                private Set<GradleDependencyConfiguration> getTransitiveDependencyConfiguration(GradleProject gp, String groupId, String artifactId) {
+                    Set<GradleDependencyConfiguration> configurations = new HashSet<>();
                     for (GradleDependencyConfiguration gdc : gp.getConfigurations()) {
                         if (gdc.findRequestedDependency(groupId, artifactId) != null || gdc.findResolvedDependency(groupId, artifactId) != null) {
-                            configurations.add(gdc.getName());
+                            configurations.add(gdc);
                         }
                     }
 
-                    Set<String> tmpConfigurations = new HashSet<>(configurations);
-                    for (String tmpConfiguration : tmpConfigurations) {
-                        GradleDependencyConfiguration gdc = gp.getConfiguration(tmpConfiguration);
+                    Set<GradleDependencyConfiguration> tmpConfigurations = new HashSet<>(configurations);
+                    for (GradleDependencyConfiguration tmpConfiguration : tmpConfigurations) {
+                        GradleDependencyConfiguration gdc = gp.getConfiguration(tmpConfiguration.getName());
                         for (GradleDependencyConfiguration transitive : gp.configurationsExtendingFrom(gdc, true)) {
-                            configurations.remove(transitive.getName());
+                            configurations.remove(transitive);
                         }
                     }
 
                     tmpConfigurations = new HashSet<>(configurations);
-                    for (String configuration : tmpConfigurations) {
-                        GradleDependencyConfiguration gdc = gp.getConfiguration(configuration);
+                    for (GradleDependencyConfiguration configuration : tmpConfigurations) {
+                        GradleDependencyConfiguration gdc = gp.getConfiguration(configuration.getName());
                         for (GradleDependencyConfiguration extendsFrom : gdc.allExtendsFrom()) {
                             if (configurations.contains(extendsFrom.getName())) {
                                 configurations.remove(configuration);
@@ -164,9 +164,6 @@ public class AddJaxwsRuntime extends Recipe {
                 }
 
                 private G.CompilationUnit addJaxWsRuntimeDependency(String apiConfiguration, G.CompilationUnit g, ExecutionContext ctx) {
-                    if (apiConfiguration.endsWith("Classpath")) {
-                        return g;
-                    }
                     return (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, apiConfiguration, null, null, null, null, null)
                             .visitNonNull(g, ctx);
                 }
