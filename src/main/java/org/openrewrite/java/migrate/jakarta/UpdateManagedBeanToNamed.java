@@ -34,8 +34,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.openrewrite.java.trait.Traits.annotated;
-
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UpdateManagedBeanToNamed extends Recipe {
@@ -64,7 +62,7 @@ public class UpdateManagedBeanToNamed extends Recipe {
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-                        Optional<Annotated> annotated = annotated(MANAGED_BEAN_MATCHER).get(getCursor());
+                        Optional<Annotated> annotated = new Annotated.Matcher(MANAGED_BEAN_MATCHER).get(getCursor());
                         if (annotated.isPresent()) {
                             maybeAddImport("jakarta.inject.Named");
                             maybeRemoveImport("javax.faces.bean.ManagedBean");
