@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -70,137 +71,6 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
           )
         );
     }
-
-    @Test
-    void doNotMergeWhenNullBlockAssignsSwitchedVariable() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Test {
-                  static String reassignIdentifier(String obj) {
-                      String formatted = "Score not translated yet";
-                      if (obj == null) {
-                          obj = "null";
-                      }
-                      switch (obj) {
-                          case "A", "B" -> formatted = "Very good";
-                          default -> formatted = "unknown";
-                      }
-                      return formatted;
-                  }
-
-                  static String reassignFieldAccess(Score score) {
-                      String formatted = "Score not translated yet";
-                      if (score.obj == null) {
-                          score.obj = "null";
-                      }
-                      switch (score.obj) {
-                          case "A", "B" -> formatted = "Very good";
-                          default -> formatted = "unknown";
-                      }
-                      return formatted;
-                  }
-
-                  static String accessesTarget(Score score) {
-                      String formatted = "Score not translated yet";
-                      if (score.obj == null) {
-                          score.setObj();
-                      }
-                      switch (score.obj) {
-                          case "A", "B" -> formatted = "Very good";
-                          default -> formatted = "unknown";
-                      }
-                      return formatted;
-                  }
-
-                  static String accessSameTargetAsFieldAccess(Score score) {
-                      String formatted = "Score not translated yet";
-                      if (score.getObj() == null) {
-                          score.obj = "null";
-                      }
-                      switch (score.getObj()) {
-                          case "A", "B" -> formatted = "Very good";
-                          default -> formatted = "unknown";
-                      }
-                      return formatted;
-                  }
-
-                  static String accessSameTargetAsMethodInvocation(Score score) {
-                      String formatted = "Score not translated yet";
-                      if (score.getObj() == null) {
-                          score.setObj();
-                      }
-                      switch (score.getObj()) {
-                          case "A", "B" -> formatted = "Very good";
-                          default -> formatted = "unknown";
-                      }
-                      return formatted;
-                  }
-
-                  static String useNonPrimitiveAsIdentifier(Score score) {
-                      String formatted = "Score not translated yet";
-                      if (score.getObj() == null) {
-                          setObj(score);
-                      }
-                      switch (score.getObj()) {
-                          case "A", "B" -> formatted = "Very good";
-                          default -> formatted = "unknown";
-                      }
-                      return formatted;
-                  }
-
-                  void setObj(Score score) {
-                      score.setObj();
-                  }
-
-                  private static class Score {
-                      String obj;
-
-                      private Score(String obj) {
-                          this.obj =  obj;
-                      }
-
-                      private void setObj() {
-                          obj = "null";
-                      }
-
-                      public String getObj() {
-                          return obj;
-                      }
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void doNotMergeWhenNullBlockReturnsSomething() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Test {
-                  static String score(String obj) {
-                      String formatted = "Score not translated yet";
-                      if (obj == null) {
-                          return "You did not enter the test yet";
-                      }
-                      switch (obj) {
-                          case "A", "B" -> formatted = "Very good";
-                          case "C" -> formatted = "Good";
-                          case "D" -> formatted = "Hmmm...";
-                          default -> formatted = "unknown";
-                      }
-                      return formatted;
-                  }
-              }
-              """
-          )
-        );
-    }
-
 
     @Test
     void doNotAffectSecondSwitchFollowingFirst() {
@@ -355,99 +225,99 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
               }
               """,
             """
-            class Test {
-                static String reassignIdentifier(String obj) {
-                    String formatted = "Score not translated yet";
-                    switch (obj) {
-                        case null -> formatted = "null";
-                        case "A", "B" -> formatted = "Very good";
-                        default -> formatted = "unknown";
-                    }
-                    return formatted;
-                }
+              class Test {
+                  static String reassignIdentifier(String obj) {
+                      String formatted = "Score not translated yet";
+                      switch (obj) {
+                          case null -> formatted = "null";
+                          case "A", "B" -> formatted = "Very good";
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
 
-                static String reassignFieldAccess(Score score) {
-                    String formatted = "Score not translated yet";
-                    switch (score.obj) {
-                        case null -> formatted = "null";
-                        case "A", "B" -> formatted = "Very good";
-                        default -> formatted = "unknown";
-                    }
-                    return formatted;
-                }
+                  static String reassignFieldAccess(Score score) {
+                      String formatted = "Score not translated yet";
+                      switch (score.obj) {
+                          case null -> formatted = "null";
+                          case "A", "B" -> formatted = "Very good";
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
 
-                static String accessesTarget(Score score) {
-                    String formatted = "Score not translated yet";
-                    switch (score.obj) {
-                        case null -> {
-                            Other other = new Other(formatted);
-                            other.setObj();
-                        }
-                        case "A", "B" -> formatted = "Very good";
-                        default -> formatted = "unknown";
-                    }
-                    return formatted;
-                }
+                  static String accessesTarget(Score score) {
+                      String formatted = "Score not translated yet";
+                      switch (score.obj) {
+                          case null -> {
+                              Other other = new Other(formatted);
+                              other.setObj();
+                          }
+                          case "A", "B" -> formatted = "Very good";
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
 
-                static String accessSameTargetAsFieldAccess(Score score) {
-                    String formatted = "Score not translated yet";
-                    switch (score.getObj()) {
-                        case null -> {
-                            Other other = new Other(formatted);
-                            other.setObj();
-                        }
-                        case "A", "B" -> formatted = "Very good";
-                        default -> formatted = "unknown";
-                    }
-                    return formatted;
-                }
+                  static String accessSameTargetAsFieldAccess(Score score) {
+                      String formatted = "Score not translated yet";
+                      switch (score.getObj()) {
+                          case null -> {
+                              Other other = new Other(formatted);
+                              other.setObj();
+                          }
+                          case "A", "B" -> formatted = "Very good";
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
 
-                static String accessSameTargetAsMethodInvocation(Score score) {
-                    String formatted = "Score not translated yet";
-                    switch (score.getObj()) {
-                        case null -> {
-                            Other other = new Other(formatted);
-                            other.setObj();
-                        }
-                        case "A", "B" -> formatted = "Very good";
-                        default -> formatted = "unknown";
-                    }
-                    return formatted;
-                }
+                  static String accessSameTargetAsMethodInvocation(Score score) {
+                      String formatted = "Score not translated yet";
+                      switch (score.getObj()) {
+                          case null -> {
+                              Other other = new Other(formatted);
+                              other.setObj();
+                          }
+                          case "A", "B" -> formatted = "Very good";
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
 
-                private static class Score {
-                    String obj;
+                  private static class Score {
+                      String obj;
 
-                    private Score(String obj) {
-                        this.obj =  obj;
-                    }
+                      private Score(String obj) {
+                          this.obj =  obj;
+                      }
 
-                    private void setObj() {
-                        obj = "null";
-                    }
+                      private void setObj() {
+                          obj = "null";
+                      }
 
-                    public String getObj() {
-                        return obj;
-                    }
-                }
+                      public String getObj() {
+                          return obj;
+                      }
+                  }
 
-                private static class Other {
-                    String obj;
+                  private static class Other {
+                      String obj;
 
-                    private Other(String obj) {
-                        this.obj =  obj;
-                    }
+                      private Other(String obj) {
+                          this.obj =  obj;
+                      }
 
-                    private void setObj() {
-                        obj = "null";
-                    }
+                      private void setObj() {
+                          obj = "null";
+                      }
 
-                    public String getObj() {
-                        return obj;
-                    }
-                }
-            }
-            """
+                      public String getObj() {
+                          return obj;
+                      }
+                  }
+              }
+              """
           )
         );
     }
@@ -556,5 +426,140 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
               """
           )
         );
+    }
+
+    @Nested
+    class NoChange {
+
+        @Test
+        void doNotMergeWhenNullBlockReturnsSomething() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String score(String obj) {
+                          String formatted = "Score not translated yet";
+                          if (obj == null) {
+                              return "You did not enter the test yet";
+                          }
+                          switch (obj) {
+                              case "A", "B" -> formatted = "Very good";
+                              case "C" -> formatted = "Good";
+                              case "D" -> formatted = "Hmmm...";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void doNotMergeWhenNullBlockAssignsSwitchedVariable() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String reassignIdentifier(String obj) {
+                          String formatted = "Score not translated yet";
+                          if (obj == null) {
+                              obj = "null";
+                          }
+                          switch (obj) {
+                              case "A", "B" -> formatted = "Very good";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+
+                      static String reassignFieldAccess(Score score) {
+                          String formatted = "Score not translated yet";
+                          if (score.obj == null) {
+                              score.obj = "null";
+                          }
+                          switch (score.obj) {
+                              case "A", "B" -> formatted = "Very good";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+
+                      static String accessesTarget(Score score) {
+                          String formatted = "Score not translated yet";
+                          if (score.obj == null) {
+                              score.setObj();
+                          }
+                          switch (score.obj) {
+                              case "A", "B" -> formatted = "Very good";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+
+                      static String accessSameTargetAsFieldAccess(Score score) {
+                          String formatted = "Score not translated yet";
+                          if (score.getObj() == null) {
+                              score.obj = "null";
+                          }
+                          switch (score.getObj()) {
+                              case "A", "B" -> formatted = "Very good";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+
+                      static String accessSameTargetAsMethodInvocation(Score score) {
+                          String formatted = "Score not translated yet";
+                          if (score.getObj() == null) {
+                              score.setObj();
+                          }
+                          switch (score.getObj()) {
+                              case "A", "B" -> formatted = "Very good";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+
+                      static String useNonPrimitiveAsIdentifier(Score score) {
+                          String formatted = "Score not translated yet";
+                          if (score.getObj() == null) {
+                              setObj(score);
+                          }
+                          switch (score.getObj()) {
+                              case "A", "B" -> formatted = "Very good";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+
+                      void setObj(Score score) {
+                          score.setObj();
+                      }
+
+                      private static class Score {
+                          String obj;
+
+                          private Score(String obj) {
+                              this.obj =  obj;
+                          }
+
+                          private void setObj() {
+                              obj = "null";
+                          }
+
+                          public String getObj() {
+                              return obj;
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
     }
 }
