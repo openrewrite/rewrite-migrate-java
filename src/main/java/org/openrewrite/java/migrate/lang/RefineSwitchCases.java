@@ -58,7 +58,7 @@ public class RefineSwitchCases extends Recipe {
                         .withStatements(ListUtils.flatMap(switch_.getCases().getStatements(), statement -> {
                             if (statement instanceof J.Case) {
                                 J.Case case_ = (J.Case) statement;
-                                if (!(case_.getBody() instanceof J.Block)) {
+                                if (!(case_.getBody() instanceof J.Block) || case_.getGuard() != null) {
                                     return statement;
                                 }
                                 List<String> labelVars = case_.getCaseLabels().stream()
