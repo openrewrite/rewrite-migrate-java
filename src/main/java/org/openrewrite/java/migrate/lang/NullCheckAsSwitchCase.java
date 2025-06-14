@@ -67,7 +67,7 @@ public class NullCheckAsSwitchCase extends Recipe {
                     Optional<NullCheck> nullCheckOpt = nullCheck().get(statement, getCursor());
                     if (nullCheckOpt.isPresent()) {
                         NullCheck check = nullCheckOpt.get();
-                        J nextStatement = index < block.getStatements().size() - 1 ? block.getStatements().get(index + 1) : null;
+                        J nextStatement = index + 1 < block.getStatements().size() ? block.getStatements().get(index + 1) : null;
                         if (!(nextStatement instanceof J.Switch) ||
                                 hasNullCase((J.Switch) nextStatement) ||
                                 !SemanticallyEqual.areEqual(((J.Switch) nextStatement).getSelector().getTree(), check.getNullCheckedParameter()) ||
