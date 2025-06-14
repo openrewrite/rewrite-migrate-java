@@ -64,12 +64,12 @@ public class RefineSwitchCases extends Recipe {
                                 List<Statement> caseStatements = ((J.Block) case_.getBody()).getStatements();
                                 if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.If) {
                                     J.If if_ = (J.If) caseStatements.get(0);
-                                    List<String> labelVariables = getLabelVariables(case_);
+                                    List<String> labelVariables = extractLabelVariables(case_);
                                     if (!labelVariables.isEmpty() &&
-                                            getConditionVariables(if_.getIfCondition().getTree()).stream()
+                                            extractConditionVariables(if_.getIfCondition().getTree()).stream()
                                                     .allMatch(it -> labelVariables.contains(it.getSimpleName()))) {
                                         // Replace case with multiple cases
-                                        return getCases(case_, if_);
+                                        return createGuardedCases(case_, if_);
                                     }
                                 }
                             }
@@ -90,7 +90,18 @@ public class RefineSwitchCases extends Recipe {
                 }.visitSwitch(maybeAutoFormat(switch_, mappedSwitch, ctx), ctx);
             }
 
-            private Collection<J.Identifier> getConditionVariables(Expression expression) {
+            private List<String> extractLabelVariables(J.Case case_) {
+                return case_.getCaseLabels().stream()
+                        .filter(J.VariableDeclarations.class::isInstance)
+                        .map(J.VariableDeclarations.class::cast)
+                        .map(J.VariableDeclarations::getVariables)
+                        .flatMap(List::stream)
+                        .map(J.VariableDeclarations.NamedVariable::getName)
+                        .map(J.Identifier::getSimpleName)
+                        .collect(toList());
+            }
+
+            private Collection<J.Identifier> extractConditionVariables(Expression expression) {
                 return new JavaIsoVisitor<Collection<J.Identifier>>() {
                     @Override
                     public J.Identifier visitIdentifier(J.Identifier identifier, Collection<J.Identifier> identifiers) {
@@ -108,18 +119,7 @@ public class RefineSwitchCases extends Recipe {
                 }.reduce(expression, new HashSet<>());
             }
 
-            private List<String> getLabelVariables(J.Case case_) {
-                return case_.getCaseLabels().stream()
-                        .filter(J.VariableDeclarations.class::isInstance)
-                        .map(J.VariableDeclarations.class::cast)
-                        .map(J.VariableDeclarations::getVariables)
-                        .flatMap(List::stream)
-                        .map(J.VariableDeclarations.NamedVariable::getName)
-                        .map(J.Identifier::getSimpleName)
-                        .collect(toList());
-            }
-
-            private List<J.Case> getCases(J.Case case_, J.If if_) {
+            private List<J.Case> createGuardedCases(J.Case case_, J.If if_) {
                 if (case_.getBody() == null) {
                     return singletonList(case_);
                 }
@@ -137,7 +137,7 @@ public class RefineSwitchCases extends Recipe {
                         cases.add(case_.withBody(createEmptyBlock().withPrefix(Space.SINGLE_SPACE)));
                     }
                 } else if (if_.getElsePart().getBody() instanceof J.If) {
-                    cases.addAll(getCases(case_, (J.If) if_.getElsePart().getBody()));
+                    cases.addAll(createGuardedCases(case_, (J.If) if_.getElsePart().getBody()));
                 } else {
                     cases.add(case_.withBody(if_.getElsePart().getBody().withPrefix(Space.SINGLE_SPACE)));
                 }
