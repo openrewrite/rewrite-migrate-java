@@ -84,10 +84,14 @@ public class RefineSwitchCases extends Recipe {
                 return new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
-                        if (!(case_.getBody() instanceof J.Block) || !((J.Block) case_.getBody()).getStatements().isEmpty() ||((J.Block) case_.getBody()).getEnd().isEmpty()) {
-                            return case_;
+                        // Remove any trailing new line in empty case body
+                        if (case_.getBody() instanceof J.Block) {
+                            J.Block body = (J.Block) case_.getBody();
+                            if (body.getStatements().isEmpty() && !body.getEnd().isEmpty()) {
+                                return case_.withBody(body.withEnd(Space.EMPTY));
+                            }
                         }
-                        return case_.withBody(createEmptyBlock().withPrefix(Space.SINGLE_SPACE));
+                        return case_;
                     }
                 }.visitSwitch(maybeAutoFormat(switch_, mappedSwitch, ctx), ctx);
             }
