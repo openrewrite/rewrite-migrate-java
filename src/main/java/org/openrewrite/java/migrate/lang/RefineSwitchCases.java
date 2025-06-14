@@ -73,19 +73,24 @@ public class RefineSwitchCases extends Recipe {
                             }
                             return statement;
                         })));
-                return new JavaIsoVisitor<ExecutionContext>() {
-                    @Override
-                    public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
-                        // Remove any trailing new line in empty case body
-                        if (case_.getBody() instanceof J.Block) {
-                            J.Block body = (J.Block) case_.getBody();
-                            if (body.getStatements().isEmpty() && !body.getEnd().isEmpty()) {
-                                return case_.withBody(body.withEnd(Space.EMPTY));
+                if (mappedSwitch != switch_) {
+                    return new JavaIsoVisitor<ExecutionContext>() {
+                        @Override
+                        public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
+                            // Remove any trailing new line in empty case body
+                            if (case_.getBody() instanceof J.Block) {
+                                J.Block body = (J.Block) case_.getBody();
+                                if (body.getStatements().isEmpty() &&
+                                        body.getEnd().getComments().isEmpty() &&
+                                        !body.getEnd().isEmpty()) {
+                                    return case_.withBody(body.withEnd(Space.EMPTY));
+                                }
                             }
+                            return case_;
                         }
-                        return case_;
-                    }
-                }.visitSwitch(maybeAutoFormat(switch_, mappedSwitch, ctx), ctx);
+                    }.visitSwitch(autoFormat(mappedSwitch, ctx), ctx);
+                }
+                return switch_;
             }
 
             private Set<String> extractLabelVariables(J.Case case_) {

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -55,6 +56,9 @@ class RefineSwitchCasesTest implements RewriteTest {
                               else
                                   System.out.println("Sorry?");
                           }
+                          default -> {
+                              // Comment retained
+                          }
                       }
                   }
               }
@@ -76,6 +80,9 @@ class RefineSwitchCasesTest implements RewriteTest {
                               System.out.println("Shame");
                           case String s ->
                               System.out.println("Sorry?");
+                          default -> {
+                              // Comment retained
+                          }
                       }
                   }
               }
@@ -211,28 +218,50 @@ class RefineSwitchCasesTest implements RewriteTest {
         );
     }
 
-    @Test
-    void noChangeWhenAlreadyGuarded() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Test {
-                  static void score(Object obj) {
-                      switch (obj) {
-                          case Integer i when i == 7 -> {
-                              if (i >= 5 && i <= 10)
-                                  System.out.println("You got it");
-                              else if (i >= 0 && i < 5)
-                                  System.out.println("Shame");
-                              else
-                                  System.out.println("Sorry?");
+    @Nested
+    class NoChange{
+        @Test
+        void noChangeWhenAlreadyGuarded() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      static void score(Object obj) {
+                          switch (obj) {
+                              case Integer i when i == 7 -> {
+                                  if (i >= 5 && i <= 10)
+                                      System.out.println("You got it");
+                                  else if (i >= 0 && i < 5)
+                                      System.out.println("Shame");
+                                  else
+                                      System.out.println("Sorry?");
+                              }
                           }
                       }
                   }
-              }
-              """
-          )
-        );
+                  """
+              )
+            );
+        }
+
+        @Test
+        void notFormattedWhenNotChanged() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      void score(Object obj) {
+                          switch (obj) {
+                              default -> {
+                              }
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
     }
 }
