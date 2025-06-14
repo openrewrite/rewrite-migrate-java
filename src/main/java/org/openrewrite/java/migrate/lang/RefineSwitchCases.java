@@ -61,19 +61,13 @@ public class RefineSwitchCases extends Recipe {
                                 if (!(case_.getBody() instanceof J.Block) || case_.getGuard() != null) {
                                     return statement;
                                 }
-                                List<String> labelVars = case_.getCaseLabels().stream()
-                                        .filter(J.VariableDeclarations.class::isInstance)
-                                        .flatMap(it -> getVariablesCreated((J.VariableDeclarations) it).stream())
-                                        .map(J.Identifier::getSimpleName)
-                                        .collect(toList());
-                                if (labelVars.isEmpty()) {
-                                    return statement;
-                                }
                                 List<Statement> caseStatements = ((J.Block) case_.getBody()).getStatements();
                                 if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.If) {
                                     J.If if_ = (J.If) caseStatements.get(0);
-                                    List<J.Identifier> conditionVariables = getConditionVariables(if_.getIfCondition().getTree());
-                                    if (conditionVariables.stream().allMatch(it -> labelVars.contains(it.getSimpleName()))) {
+                                    List<String> labelVariables = getLabelVariables(case_);
+                                    if (!labelVariables.isEmpty() &&
+                                            getConditionVariables(if_.getIfCondition().getTree()).stream()
+                                                    .allMatch(it -> labelVariables.contains(it.getSimpleName()))) {
                                         // Replace case with multiple cases
                                         return getCases(case_, if_);
                                     }
@@ -116,12 +110,15 @@ public class RefineSwitchCases extends Recipe {
                 return emptyList();
             }
 
-            private List<J.Identifier> getVariablesCreated(J.VariableDeclarations declarations) {
-                List<J.Identifier> variables = new ArrayList<>();
-                for (J.VariableDeclarations.NamedVariable variable : declarations.getVariables()) {
-                    variables.add(variable.getName());
-                }
-                return variables;
+            private List<String> getLabelVariables(J.Case case_) {
+                return case_.getCaseLabels().stream()
+                        .filter(J.VariableDeclarations.class::isInstance)
+                        .map(J.VariableDeclarations.class::cast)
+                        .map(J.VariableDeclarations::getVariables)
+                        .flatMap(List::stream)
+                        .map(J.VariableDeclarations.NamedVariable::getName)
+                        .map(J.Identifier::getSimpleName)
+                        .collect(toList());
             }
 
             private List<J.Case> getCases(J.Case case_, J.If if_) {
