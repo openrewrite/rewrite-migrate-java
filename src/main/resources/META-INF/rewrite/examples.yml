@@ -4806,30 +4806,24 @@ examples:
 - description: ''
   sources:
   - before: |
-      package com.test;
-
       import jakarta.faces.el.MethodBinding;
       import jakarta.faces.el.PropertyResolver;
       import jakarta.faces.el.ValueBinding;
 
-      public class Test {
-
-           public void testJakarta() {
+      class Test {
+           void testJakarta() {
                 MethodBinding methodBinding = null;
                 PropertyResolver propertyResolver = null;
                 ValueBinding valueBinding = null;
            }
       }
     after: |
-      package com.test;
-
       import jakarta.el.ELResolver;
       import jakarta.el.MethodExpression;
       import jakarta.el.ValueExpression;
 
-      public class Test {
-
-           public void testJakarta() {
+      class Test {
+           void testJakarta() {
                 MethodExpression methodBinding = null;
                 ELResolver propertyResolver = null;
                 ValueExpression valueBinding = null;
@@ -5933,6 +5927,27 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.FindVirtualThreadOpportunities
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {}
+          });
+      }
+    after: |
+      class Test {
+          Thread t = /*~~>*/new Thread(new Runnable() {
+            @Override
+            public void run() {}
+          });
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.JavaLangAPIs
 examples:
 - description: ''
@@ -6052,6 +6067,57 @@ examples:
       class Test {
           String s1 = "hello";
           String s2 = "hello";
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.SwitchCaseEnumGuardToLabel
+examples:
+- description: ''
+  sources:
+  - before: |
+      import suits.Suit;
+      class Test {
+          void score(Object obj) {
+              switch (obj) {
+                  case null -> System.out.println("You did not enter the test yet");
+                  case Suit s when s == Suit.CLUBS -> System.out.println("Clubs");
+                  case Suit s when s.equals(Suit.DIAMONDS) -> System.out.println("Diamonds");
+                  case Suit s when Suit.HEARTS.equals(s) -> {
+                      System.out.println("Hearts");
+                  }
+                  case Suit s when Suit.SPADES == s -> System.out.println("Spades");
+                  case Suit s when Suit.JOKER == s -> System.out.println(s);
+                  case Integer i -> System.out.println("Sorry?");
+                  case String s -> System.out.println("Sorry?");
+                  default -> System.out.println("Sorry?");
+              }
+          }
+      }
+    after: |
+      import suits.Suit;
+      class Test {
+          void score(Object obj) {
+              switch (obj) {
+                  case null -> System.out.println("You did not enter the test yet");
+                  case Suit.CLUBS -> System.out.println("Clubs");
+                  case Suit.DIAMONDS -> System.out.println("Diamonds");
+                  case Suit.HEARTS -> {
+                      System.out.println("Hearts");
+                  }
+                  case Suit.SPADES -> System.out.println("Spades");
+                  case Suit.JOKER -> System.out.println(Suit.JOKER);
+                  case Integer i -> System.out.println("Sorry?");
+                  case String s -> System.out.println("Sorry?");
+                  default -> System.out.println("Sorry?");
+              }
+          }
+      }
+    language: java
+  - before: |
+      package suits;
+      public enum Suit {
+          CLUBS, DIAMONDS, HEARTS, SPADES, JOKER, SCORECARD
       }
     language: java
 ---

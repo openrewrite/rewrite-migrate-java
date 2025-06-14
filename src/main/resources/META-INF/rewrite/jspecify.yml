@@ -55,6 +55,7 @@ recipeList:
       artifactId: jspecify
       version: latest.release
       onlyIfUsing: javax.annotation.*ull*
+      acceptTransitive: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -80,6 +81,7 @@ recipeList:
       artifactId: jspecify
       version: 1.0.0
       onlyIfUsing: jakarta.annotation.*ull*
+      acceptTransitive: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -101,6 +103,7 @@ recipeList:
       artifactId: jspecify
       version: 1.0.0
       onlyIfUsing: org.jetbrains.annotations.*ull*
+      acceptTransitive: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.jetbrains.annotations.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -122,6 +125,7 @@ recipeList:
       artifactId: jspecify
       version: 1.0.0
       onlyIfUsing: org.springframework.lang.*ull*
+      acceptTransitive: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.springframework.lang.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
