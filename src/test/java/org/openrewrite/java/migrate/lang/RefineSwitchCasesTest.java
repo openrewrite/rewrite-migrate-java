@@ -123,7 +123,7 @@ class RefineSwitchCasesTest implements RewriteTest {
     }
 
     @Test
-    void noopBlocksToAvoidDefault() {
+    void emptyBlockToAvoidDefault() {
         rewriteRun(
           //language=java
           java(
@@ -160,7 +160,44 @@ class RefineSwitchCasesTest implements RewriteTest {
     }
 
     @Test
-    void noopAlreadyGuarded() {
+    void fieldReference() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  static void score(Object obj) {
+                      switch (obj) {
+                          case null -> System.out.println("You did not enter the test yet");
+                          case Integer i -> {
+                              if (i >= 5 && i <= 10)
+                                  System.out.println("You got it");
+                              else if (i >= 0 && i < Integer.MAX_VALUE)
+                                  System.out.println("Shame");
+                              else
+                                  System.out.println("Sorry?");
+                          }
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static void score(Object obj) {
+                      switch (obj) {
+                          case null -> System.out.println("You did not enter the test yet");
+                          case Integer i when i >= 5 && i <= 10 -> System.out.println("You got it");
+                          case Integer i when i >= 0 && i < Integer.MAX_VALUE -> System.out.println("Shame");
+                          case Integer i -> System.out.println("Sorry?");
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+    @Test
+    void noChangeWhenAlreadyGuarded() {
         rewriteRun(
           //language=java
           java(

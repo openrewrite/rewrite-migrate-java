@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.lang;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -28,9 +27,10 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
@@ -90,24 +90,22 @@ public class RefineSwitchCases extends Recipe {
                 }.visitSwitch(maybeAutoFormat(switch_, mappedSwitch, ctx), ctx);
             }
 
-            private List<J.Identifier> getConditionVariables(@Nullable Expression expression) {
-                if (expression instanceof J.Identifier) {
-                    return singletonList((J.Identifier) expression);
-                } else if (expression instanceof J.Binary) {
-                    J.Binary binary = (J.Binary) expression;
-                    List<J.Identifier> variables = new ArrayList<>();
-                    variables.addAll(getConditionVariables(binary.getLeft()));
-                    variables.addAll(getConditionVariables(binary.getRight()));
-                    return variables;
-                } else if (expression instanceof J.MethodInvocation) {
-                    J.MethodInvocation methodInvocation = (J.MethodInvocation) expression;
-                    List<J.Identifier> variables = new ArrayList<>(getConditionVariables(methodInvocation.getSelect()));
-                    for (Expression arg : methodInvocation.getArguments()) {
-                        variables.addAll(getConditionVariables(arg));
+            private Collection<J.Identifier> getConditionVariables(Expression expression) {
+                return new JavaIsoVisitor<Collection<J.Identifier>>() {
+                    @Override
+                    public J.Identifier visitIdentifier(J.Identifier identifier, Collection<J.Identifier> identifiers) {
+                        identifiers.add(identifier);
+                        return super.visitIdentifier(identifier, identifiers);
                     }
-                    return variables;
-                }
-                return emptyList();
+
+                    @Override
+                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, Collection<J.Identifier> identifiers) {
+                        // Do not pull out method name as identifier, just any select and arguments
+                        super.visit(method.getSelect(), identifiers);
+                        method.getArguments().forEach(arg -> super.visit(arg, identifiers));
+                        return method;
+                    }
+                }.reduce(expression, new HashSet<>());
             }
 
             private List<String> getLabelVariables(J.Case case_) {
