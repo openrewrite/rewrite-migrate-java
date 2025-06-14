@@ -63,6 +63,7 @@ public class NullCheckAsSwitchCase extends Recipe {
             public J visitBlock(J.Block block, ExecutionContext ctx) {
                 AtomicReference<@Nullable NullCheck> nullCheck = new AtomicReference<>();
                 J.Block b = block.withStatements(ListUtils.map(block.getStatements(), (index, statement) -> {
+                    // Maybe remove a null check preceding a switch statement
                     Optional<NullCheck> nullCheckOpt = nullCheck().get(statement, getCursor());
                     if (nullCheckOpt.isPresent()) {
                         NullCheck check = nullCheckOpt.get();
@@ -77,8 +78,9 @@ public class NullCheckAsSwitchCase extends Recipe {
                         nullCheck.set(check);
                         return null;
                     }
-                    NullCheck check = nullCheck.get();
-                    nullCheck.set(null);
+
+                    // Update the switch following a removed null check
+                    NullCheck check = nullCheck.getAndSet(null);
                     if (check != null && statement instanceof J.Switch) {
                         J.Switch aSwitch = (J.Switch) statement;
                         J.Case nullCase = createNullCase(aSwitch, check.getNullCheckedParameter(), check.whenNull());
