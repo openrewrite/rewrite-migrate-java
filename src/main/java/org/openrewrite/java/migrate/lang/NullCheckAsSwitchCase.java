@@ -80,12 +80,8 @@ public class NullCheckAsSwitchCase extends Recipe {
                     NullCheck check = nullCheck.get();
                     nullCheck.set(null);
                     if (check != null && statement instanceof J.Switch) {
-                        Statement nullBlock = check.whenNull();
-                        if (nullBlock instanceof J.Block && ((J.Block) nullBlock).getStatements().size() == 1) {
-                            nullBlock = ((J.Block) nullBlock).getStatements().get(0);
-                        }
                         J.Switch aSwitch = (J.Switch) statement;
-                        J.Case nullCase = getNullCase(aSwitch, check.getNullCheckedParameter(), nullBlock);
+                        J.Case nullCase = createNullCase(aSwitch, check.getNullCheckedParameter(), check.whenNull());
                         return aSwitch.withCases(aSwitch.getCases().withStatements(
                                 ListUtils.insert(aSwitch.getCases().getStatements(), nullCase, 0)));
                     }
@@ -107,14 +103,17 @@ public class NullCheckAsSwitchCase extends Recipe {
                 return false;
             }
 
-            private J.Case getNullCase(J.Switch aSwitch, Expression expression, Statement nullBlock) {
-                String semicolon = nullBlock instanceof J.Block ? "" : ";";
+            private J.Case createNullCase(J.Switch aSwitch, Expression expression, Statement whenNull) {
+                if (whenNull instanceof J.Block && ((J.Block) whenNull).getStatements().size() == 1) {
+                    whenNull = ((J.Block) whenNull).getStatements().get(0);
+                }
+                String semicolon = whenNull instanceof J.Block ? "" : ";";
                 J.Switch switchWithNullCase = JavaTemplate.apply(
                         "switch(#{any()}) { case null -> #{any()}" + semicolon + " }",
                         new Cursor(getCursor(), aSwitch),
                         aSwitch.getCoordinates().replace(),
                         expression,
-                        nullBlock);
+                        whenNull);
                 J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
                 return nullCase.withBody(requireNonNull(nullCase.getBody()).withPrefix(Space.SINGLE_SPACE));
             }
