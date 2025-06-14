@@ -68,6 +68,7 @@ public class NullCheckAsSwitchCase extends Recipe {
                         NullCheck check = nullCheckOpt.get();
                         J nextStatement = index < block.getStatements().size() - 1 ? block.getStatements().get(index + 1) : null;
                         if (!(nextStatement instanceof J.Switch) ||
+                                hasNullCase((J.Switch) nextStatement) ||
                                 !SemanticallyEqual.areEqual(((J.Switch) nextStatement).getSelector().getTree(), check.getNullCheckedParameter()) ||
                                 check.returns() ||
                                 check.couldModifyNullCheckedValue()) {
@@ -91,6 +92,19 @@ public class NullCheckAsSwitchCase extends Recipe {
                     return statement;
                 }));
                 return super.visitBlock(b, ctx);
+            }
+
+            private boolean hasNullCase(J.Switch switch_) {
+                for (Statement c : switch_.getCases().getStatements()) {
+                    if (c instanceof J.Case) {
+                        for (J j : ((J.Case) c).getCaseLabels()) {
+                            if (j instanceof Expression && J.Literal.isLiteralValue((Expression) j, null)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
             }
 
             private J.Case getNullCase(J.Switch aSwitch, Expression expression, Statement nullBlock) {
