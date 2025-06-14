@@ -429,6 +429,90 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
     }
 
     @Nested
+    class Throws {
+        @Test
+        void throwsSingleLine() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String score(String obj) {
+                          String formatted = "Score not translated yet";
+                          if (obj == null)
+                              throw new IllegalArgumentException("You did not enter the test yet");
+                          switch (obj) {
+                              case "A", "B" -> formatted = "Very good";
+                              case "C" -> formatted = "Good";
+                              case "D" -> formatted = "Hmmm...";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """,
+                """
+                  class Test {
+                      static String score(String obj) {
+                          String formatted = "Score not translated yet";
+                          switch (obj) {
+                              case null -> throw new IllegalArgumentException("You did not enter the test yet");
+                              case "A", "B" -> formatted = "Very good";
+                              case "C" -> formatted = "Good";
+                              case "D" -> formatted = "Hmmm...";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void throwsFromBlock() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String score(String obj) {
+                          String formatted = "Score not translated yet";
+                          if (obj == null) {
+                              throw new IllegalArgumentException("You did not enter the test yet");
+                          }
+                          switch (obj) {
+                              case "A", "B" -> formatted = "Very good";
+                              case "C" -> formatted = "Good";
+                              case "D" -> formatted = "Hmmm...";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """,
+                """
+                  class Test {
+                      static String score(String obj) {
+                          String formatted = "Score not translated yet";
+                          switch (obj) {
+                              case null -> throw new IllegalArgumentException("You did not enter the test yet");
+                              case "A", "B" -> formatted = "Very good";
+                              case "C" -> formatted = "Good";
+                              case "D" -> formatted = "Hmmm...";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+    }
+
+    @Nested
     class NoChange {
 
         @Test
