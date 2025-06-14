@@ -126,9 +126,6 @@ public class RefineSwitchCases extends Recipe {
                 if (caseBody instanceof J.Block && ((J.Block) caseBody).getStatements().size() == 1) {
                     caseBody = ((J.Block) caseBody).getStatements().get(0);
                 }
-                if (!(caseBody instanceof J.Block)) {
-                    caseBody = caseBody.withPrefix(Space.SINGLE_SPACE);
-                }
                 cases.add(case_.withId(Tree.randomId()).withGuard(if_.getIfCondition().getTree().withPrefix(Space.SINGLE_SPACE)).withBody(caseBody));
                 if (if_.getElsePart() == null) {
                     if (case_.getBody() instanceof J.Block) {
@@ -137,7 +134,7 @@ public class RefineSwitchCases extends Recipe {
                 } else if (if_.getElsePart().getBody() instanceof J.If) {
                     cases.addAll(createGuardedCases(case_, (J.If) if_.getElsePart().getBody()));
                 } else {
-                    cases.add(case_.withBody(if_.getElsePart().getBody().withPrefix(Space.SINGLE_SPACE)));
+                    cases.add(case_.withBody(if_.getElsePart().getBody()));
                 }
 
                 return cases;

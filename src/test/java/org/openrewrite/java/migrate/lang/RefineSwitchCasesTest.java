@@ -64,12 +64,18 @@ class RefineSwitchCasesTest implements RewriteTest {
                   static void score(Object obj) {
                       switch (obj) {
                           case null -> System.out.println("You did not enter the test yet");
-                          case Integer i when i >= 5 && i <= 10 -> System.out.println("You got it");
-                          case Integer i when i >= 0 && i < 5 -> System.out.println("Shame");
-                          case Integer i -> System.out.println("Sorry?");
-                          case String s when s.equalsIgnoreCase("YES") -> System.out.println("You got it");
-                          case String s when "NO".equalsIgnoreCase(s) -> System.out.println("Shame");
-                          case String s -> System.out.println("Sorry?");
+                          case Integer i when i >= 5 && i <= 10 ->
+                              System.out.println("You got it");
+                          case Integer i when i >= 0 && i < 5 ->
+                              System.out.println("Shame");
+                          case Integer i ->
+                              System.out.println("Sorry?");
+                          case String s when s.equalsIgnoreCase("YES") ->
+                              System.out.println("You got it");
+                          case String s when "NO".equalsIgnoreCase(s) ->
+                              System.out.println("Shame");
+                          case String s ->
+                              System.out.println("Sorry?");
                       }
                   }
               }
@@ -108,9 +114,12 @@ class RefineSwitchCasesTest implements RewriteTest {
                   static void score(Object obj) {
                       switch (obj) {
                           case null -> System.out.println("You did not enter the test yet");
-                          case Integer i when i >= 5 && i <= 10 -> System.out.println("You got it");
-                          case Integer i when i >= 0 && i < 5 -> System.out.println("Shame");
-                          case Integer i -> System.out.println("Sorry?");
+                          case Integer i when i >= 5 && i <= 10 ->
+                              System.out.println("You got it");
+                          case Integer i when i >= 0 && i < 5 ->
+                              System.out.println("Shame");
+                          case Integer i ->
+                              System.out.println("Sorry?");
                           case String s -> {
                               System.out.println("You got it");
                           }
@@ -147,8 +156,10 @@ class RefineSwitchCasesTest implements RewriteTest {
               class Test {
                   static void score(Object obj) {
                       switch (obj) {
-                          case Integer i when i >= 5 && i <= 10 -> System.out.println("You got it");
-                          case Integer i when i >= 0 && i < 5 -> System.out.println("Shame");
+                          case Integer i when i >= 5 && i <= 10 ->
+                              System.out.println("You got it");
+                          case Integer i when i >= 0 && i < 5 ->
+                              System.out.println("Shame");
                           case Integer i -> {}
                           default -> System.out.println("Sorry?");
                       }
@@ -186,9 +197,12 @@ class RefineSwitchCasesTest implements RewriteTest {
                   static void score(Object obj) {
                       switch (obj) {
                           case null -> System.out.println("You did not enter the test yet");
-                          case Integer i when i >= 5 && i <= 10 -> System.out.println("You got it");
-                          case Integer i when i >= 0 && i < Integer.MAX_VALUE -> System.out.println("Shame");
-                          case Integer i -> System.out.println("Sorry?");
+                          case Integer i when i >= 5 && i <= 10 ->
+                              System.out.println("You got it");
+                          case Integer i when i >= 0 && i < Integer.MAX_VALUE ->
+                              System.out.println("Shame");
+                          case Integer i ->
+                              System.out.println("Sorry?");
                       }
                   }
               }
@@ -196,6 +210,7 @@ class RefineSwitchCasesTest implements RewriteTest {
           )
         );
     }
+
     @Test
     void noChangeWhenAlreadyGuarded() {
         rewriteRun(
