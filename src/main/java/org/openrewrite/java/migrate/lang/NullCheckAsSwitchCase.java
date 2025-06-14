@@ -83,7 +83,7 @@ public class NullCheckAsSwitchCase extends Recipe {
                     NullCheck check = nullCheck.getAndSet(null);
                     if (check != null && statement instanceof J.Switch) {
                         J.Switch aSwitch = (J.Switch) statement;
-                        J.Case nullCase = createNullCase(aSwitch, check.getNullCheckedParameter(), check.whenNull());
+                        J.Case nullCase = createNullCase(aSwitch, check.whenNull());
                         return aSwitch.withCases(aSwitch.getCases().withStatements(
                                 ListUtils.insert(aSwitch.getCases().getStatements(), nullCase, 0)));
                     }
@@ -105,7 +105,7 @@ public class NullCheckAsSwitchCase extends Recipe {
                 return false;
             }
 
-            private J.Case createNullCase(J.Switch aSwitch, Expression expression, Statement whenNull) {
+            private J.Case createNullCase(J.Switch aSwitch, Statement whenNull) {
                 if (whenNull instanceof J.Block && ((J.Block) whenNull).getStatements().size() == 1) {
                     whenNull = ((J.Block) whenNull).getStatements().get(0);
                 }
@@ -114,7 +114,7 @@ public class NullCheckAsSwitchCase extends Recipe {
                         "switch(#{any()}) { case null -> #{any()}" + semicolon + " }",
                         new Cursor(getCursor(), aSwitch),
                         aSwitch.getCoordinates().replace(),
-                        expression,
+                        aSwitch.getSelector().getTree(),
                         whenNull);
                 J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
                 return nullCase.withBody(requireNonNull(nullCase.getBody()).withPrefix(Space.SINGLE_SPACE));
