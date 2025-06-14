@@ -458,6 +458,33 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
         }
 
         @Test
+        void doNotMergeForExistingNullCase() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String score(String obj) {
+                          String formatted = "Score not translated yet";
+                          if (obj == null) {
+                              formatted = "You did not enter the test yet";
+                          }
+                          switch (obj) {
+                              case null -> formatted = "Already handled";
+                              case "A", "B" -> formatted = "Very good";
+                              case "C" -> formatted = "Good";
+                              case "D" -> formatted = "Hmmm...";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
         void doNotMergeWhenNullBlockAssignsSwitchedVariable() {
             rewriteRun(
               //language=java
