@@ -27,12 +27,12 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
 
 @Value
@@ -64,10 +64,8 @@ public class RefineSwitchCases extends Recipe {
                                 List<Statement> caseStatements = ((J.Block) case_.getBody()).getStatements();
                                 if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.If) {
                                     J.If if_ = (J.If) caseStatements.get(0);
-                                    List<String> labelVariables = extractLabelVariables(case_);
-                                    if (!labelVariables.isEmpty() &&
-                                            extractConditionVariables(if_.getIfCondition().getTree()).stream()
-                                                    .allMatch(it -> labelVariables.contains(it.getSimpleName()))) {
+                                    if (extractLabelVariables(case_)
+                                            .containsAll(extractConditionVariables(if_.getIfCondition().getTree()))) {
                                         // Replace case with multiple cases
                                         return createGuardedCases(case_, if_);
                                     }
@@ -90,7 +88,7 @@ public class RefineSwitchCases extends Recipe {
                 }.visitSwitch(maybeAutoFormat(switch_, mappedSwitch, ctx), ctx);
             }
 
-            private List<String> extractLabelVariables(J.Case case_) {
+            private Set<String> extractLabelVariables(J.Case case_) {
                 return case_.getCaseLabels().stream()
                         .filter(J.VariableDeclarations.class::isInstance)
                         .map(J.VariableDeclarations.class::cast)
@@ -98,19 +96,19 @@ public class RefineSwitchCases extends Recipe {
                         .flatMap(List::stream)
                         .map(J.VariableDeclarations.NamedVariable::getName)
                         .map(J.Identifier::getSimpleName)
-                        .collect(toList());
+                        .collect(toSet());
             }
 
-            private Collection<J.Identifier> extractConditionVariables(Expression expression) {
-                return new JavaIsoVisitor<Collection<J.Identifier>>() {
+            private Set<String> extractConditionVariables(Expression expression) {
+                return new JavaIsoVisitor<Set<String>>() {
                     @Override
-                    public J.Identifier visitIdentifier(J.Identifier identifier, Collection<J.Identifier> identifiers) {
-                        identifiers.add(identifier);
+                    public J.Identifier visitIdentifier(J.Identifier identifier, Set<String> identifiers) {
+                        identifiers.add(identifier.getSimpleName());
                         return super.visitIdentifier(identifier, identifiers);
                     }
 
                     @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, Collection<J.Identifier> identifiers) {
+                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, Set<String> identifiers) {
                         // Do not pull out method name as identifier, just any select and arguments
                         super.visit(method.getSelect(), identifiers);
                         method.getArguments().forEach(arg -> super.visit(arg, identifiers));
