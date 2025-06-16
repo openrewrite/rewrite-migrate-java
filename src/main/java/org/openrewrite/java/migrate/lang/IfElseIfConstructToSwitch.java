@@ -80,7 +80,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
                             new JavaIsoVisitor<ExecutionContext>() {
                                 @Override
                                 public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
-                                    if (!(case_.getBody() instanceof J.Block) || !((J.Block) case_.getBody()).getStatements().isEmpty() ||((J.Block) case_.getBody()).getEnd().isEmpty()) {
+                                    if (!(case_.getBody() instanceof J.Block) || !((J.Block) case_.getBody()).getStatements().isEmpty() || ((J.Block) case_.getBody()).getEnd().isEmpty()) {
                                         return case_;
                                     }
                                     return case_.withBody(createEmptyBlock().withPrefix(Space.SINGLE_SPACE));
