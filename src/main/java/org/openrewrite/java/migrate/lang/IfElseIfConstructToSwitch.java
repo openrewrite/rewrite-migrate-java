@@ -203,15 +203,15 @@ public class IfElseIfConstructToSwitch extends Recipe {
         String buildTemplate() {
             StringBuilder switchBody = new StringBuilder("switch (#{any()}) {\n");
             if (nullCheckedParameter != null) {
-                switchBody.append("    case null -> #{}\n");
+                switchBody.append("case null -> #{}\n");
             }
             for (int i = 0; i < patternMatchers.size(); i++) {
-                switchBody.append("    case #{}#{} -> #{}\n");
+                switchBody.append("case #{}#{} -> #{}\n");
             }
             if (else_ != null) {
-                switchBody.append("    default -> #{}\n");
+                switchBody.append("default -> #{}\n");
             } else {
-                switchBody.append("    default -> {}\n");
+                switchBody.append("default -> {}\n");
             }
             switchBody.append("}\n");
 
@@ -220,14 +220,11 @@ public class IfElseIfConstructToSwitch extends Recipe {
 
         private String getStatementArgument(Statement statement, Cursor cursor) {
             Statement toAdd = statement;
-            String semicolon = "";
             if (statement instanceof J.Block && ((J.Block) statement).getStatements().size() == 1) {
                 toAdd = ((J.Block) statement).getStatements().get(0);
             }
-            if (!(toAdd instanceof J.Block)) {
-                semicolon = ";";
-            }
-            return toAdd.withPrefix(Space.EMPTY).print(cursor) + semicolon;
+            String suffix = toAdd instanceof J.Block ? "" : ";";
+            return toAdd.withPrefix(Space.EMPTY).print(cursor) + suffix;
         }
     }
 }
