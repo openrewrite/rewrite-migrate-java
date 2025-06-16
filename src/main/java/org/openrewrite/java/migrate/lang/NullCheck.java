@@ -65,7 +65,7 @@ public class NullCheck implements Trait<J.If> {
      */
     public boolean couldModifyNullCheckedValue() {
         Statement statement = whenNull();
-        if (statement instanceof J.Block || statement instanceof Expression) {
+        if (statement instanceof J.Block || statement instanceof Expression || statement instanceof J.Throw) {
             return couldModifyNullCheckedValue(statement, nullCheckedParameter);
         }
         // Cautious by default
