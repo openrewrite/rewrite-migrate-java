@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
@@ -112,40 +113,152 @@ class LombokValToFinalVarTest implements RewriteTest {
         );
     }
 
+    @Nested
     @SuppressWarnings({"StatementWithEmptyBody", "RedundantOperationOnEmptyContainer"})
-    @Test
-    void valInForEachStatement() {
-        //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import lombok.val;
-                import java.util.List;
-                import java.util.ArrayList;
+    class ValInLoop {
+        @Test
+        void list() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    import lombok.val;
 
-                class A {
-                    void bar() {
-                        List<String> lst = new ArrayList<>();
-                        for (val s : lst) {}
-                    }
-                }
-                """,
-              """
-                import java.util.List;
-                import java.util.ArrayList;
+                    import java.util.ArrayList;
+                    import java.util.List;
 
-                class A {
-                    void bar() {
-                        List<String> lst = new ArrayList<>();
-                        for (final var s : lst) {}
+                    class A {
+                        void bar() {
+                            List<String> lst = new ArrayList<>();
+                            for (val s : lst) {}
+                        }
                     }
-                }
+                    """,
+                  """
+                    import java.util.List;
+                    import java.util.ArrayList;
+
+                    class A {
+                        void bar() {
+                            List<String> lst = new ArrayList<>();
+                            for (final var s : lst) {}
+                        }
+                    }
+                    """
+                ),
+                17
+              )
+            );
+        }
+
+        @Test
+        void array() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    import lombok.val;
+                    import java.util.List;
+                    import java.util.ArrayList;
+
+                    class A {
+                        void bar() {
+                            String[] lst = new String[]{"ABC", "DEF", "DOESN'T", "MATTER"};
+                            for (val s : lst) {}
+                        }
+                    }
+                    """,
+                  """
+                    import java.util.List;
+                    import java.util.ArrayList;
+
+                    class A {
+                        void bar() {
+                            String[] lst = new String[]{"ABC", "DEF", "DOESN'T", "MATTER"};
+                            for (final var s : lst) {}
+                        }
+                    }
+                    """
+                ),
+                17
+              )
+            );
+        }
+
+        @Test
+        void parameter() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    import lombok.val;
+                    import java.nio.file.Path;
+                    import java.util.List;
+                    import java.util.ArrayList;
+
+                    class A {
+                        static void bar(final List<Path> lst) {
+                            for (val s : lst) {}
+                        }
+                    }
+                    """,
+                  """
+                    import java.nio.file.Path;
+                    import java.util.List;
+                    import java.util.ArrayList;
+
+                    class A {
+                        static void bar(final List<Path> lst) {
+                            for (final var s : lst) {}
+                        }
+                    }
+                    """
+                ),
+                17
+              )
+            );
+        }
+
+
+        @Test
+        void valuesFromMethod() {
+            //language=java
+            rewriteRun(
+              java(
                 """
-            ),
-            17
-          )
-        );
+                  interface Mapper {
+                      String[] getNamesList();
+                  }
+                  """
+              ),
+              version(
+                java(
+                  """
+                    import lombok.val;
+
+                    class A {
+                        Mapper mapper;
+                        void bar() {
+                            for (val s : mapper.getNamesList()) {}
+                        }
+                    }
+                    """,
+                  """
+                    class A {
+                        Mapper mapper;
+                        void bar() {
+                            for (final var s : mapper.getNamesList()) {}
+                        }
+                    }
+                    """
+                ),
+                17
+              )
+            );
+        }
     }
 
     @Test
