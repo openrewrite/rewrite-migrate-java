@@ -210,16 +210,17 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
     @Override
     public @NonNull J visitFieldAccess(@NonNull J.FieldAccess fieldAccess, @NonNull ExecutionContext ctx) {
         J.FieldAccess f = (J.FieldAccess) super.visitFieldAccess(fieldAccess, ctx);
-        if (TypeUtils.isOfClassType(f.getType(), JODA_DATE_TIME_ZONE) && f.getSimpleName().equals("UTC")) {
-            return JavaTemplate.builder("ZoneOffset.UTC")
-                    .imports(JAVA_ZONE_OFFSET)
-                    .build()
-                    .apply(updateCursor(f), f.getCoordinates().replace());
+        if (!isJodaVarRef(fieldAccess)) {
+            return f;
         }
-        return f;
+
+        JavaType.Class fieldType = (JavaType.Class) f.getType();
+        JavaType.Class javaTimeType = TimeClassMap.getJavaTimeType(fieldType.getFullyQualifiedName());
+
+        return f.withType(javaTimeType);
     }
 
-    @Override
+        @Override
     public @NonNull J visitIdentifier(@NonNull J.Identifier ident, @NonNull ExecutionContext ctx) {
         if (!isJodaVarRef(ident)) {
             return super.visitIdentifier(ident, ctx);
@@ -268,16 +269,30 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         // this expression is an argument to a method call
         MethodCall parentMethod = getCursor().getParentTreeCursor().getValue();
-        if (parentMethod.getMethodType().getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+        JavaType.Method parentMethodType = parentMethod.getMethodType();
+        if (parentMethodType.getDeclaringType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return updatedExpr;
         }
         int argPos = parentMethod.getArguments().indexOf(original);
-        JavaType paramType = parentMethod.getMethodType().getParameterTypes().get(argPos);
+        List<JavaType> parameterTypes = parentMethodType.getParameterTypes();
+        int parameterTypesSize = parameterTypes.size();
+
+        //try to process method with variable arguments
+        if(argPos > parameterTypesSize)
+        {
+            //todo find better way to detect (...) in method arguments
+            if (parameterTypes.get(parameterTypesSize - 1).toString().endsWith("[]")){
+                return updatedExpr;
+            }
+            return original;
+        }
+
+        JavaType paramType = parameterTypes.get(argPos);
         if (TypeUtils.isAssignableTo(paramType, updatedExpr.getType())) {
             return updatedExpr;
         }
-        String paramName = parentMethod.getMethodType().getParameterNames().get(argPos);
-        NamedVariable var = acc.getVarTable().getVarByName(parentMethod.getMethodType(), paramName);
+        String paramName = parentMethodType.getParameterNames().get(argPos);
+        NamedVariable var = acc.getVarTable().getVarByName(parentMethodType, paramName);
         if (var != null /*&& !acc.getUnsafeVars().contains(var)*/) {
             return updatedExpr;
         }

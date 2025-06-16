@@ -19,8 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_DURATION;
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_SECONDS;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +36,12 @@ public class SecondsTemplates implements Templates {
     final MethodMatcher isLessThan = new MethodMatcher(JODA_SECONDS + " isLessThan(org.joda.time.Seconds)");
     final MethodMatcher isGreaterThan = new MethodMatcher(JODA_SECONDS + " isGreaterThan(org.joda.time.Seconds)");
     final MethodMatcher toStandardDuration = new MethodMatcher(JODA_SECONDS + " toStandardDuration()");
+    final MethodMatcher secondsPlus = new MethodMatcher(JODA_SECONDS + " plus(int)");
+    final MethodMatcher secondsMinus = new MethodMatcher(JODA_SECONDS + " minus(int)");
+    final MethodMatcher secondsNegated = new MethodMatcher(JODA_SECONDS + " negated()");
+    final MethodMatcher secondsCompareTo = new MethodMatcher(JODA_SECONDS + " compareTo(" + JODA_SECONDS + ")");
+    final MethodMatcher secondsToStandardMinutes = new MethodMatcher(JODA_SECONDS + " toStandardMinutes()");
+    final MethodMatcher secondsToString = new MethodMatcher(JODA_SECONDS + " toString()");
 
     final JavaTemplate.Builder secondsStaticMethodTemplate = JavaTemplate.builder("Duration.ofSeconds(#{any(int)})");
     final JavaTemplate.Builder plusMethodTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.plus(#{any(java.time.Duration)})");
@@ -47,6 +52,13 @@ public class SecondsTemplates implements Templates {
     final JavaTemplate.Builder minusIsNegativeTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.minus(#{any(java.time.Duration)}).isNegative()");
     final JavaTemplate.Builder minusIsPositiveTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.minus(#{any(java.time.Duration)}).isPositive()");
     final JavaTemplate.Builder asDurationTemplate = JavaTemplate.builder("#{any(java.time.Duration)}");
+    final JavaTemplate.Builder plusSecondsTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.plusSeconds(#{any(int)})");
+    final JavaTemplate.Builder minusSecondsTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.minusSeconds(#{any(int)})");
+    final JavaTemplate.Builder toMinutesTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.toMinutes()");
+    final JavaTemplate.Builder toMinutesNegatedTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.toMinutes() * -1");
+    final JavaTemplate.Builder compareLongTemplate = JavaTemplate.builder("Long.compare(#{any(long)}, #{any(long)})");
+
+    final JavaTemplate.Builder plusIntTemplate = JavaTemplate.builder("#{any(java.time.Duration)}");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -60,6 +72,11 @@ public class SecondsTemplates implements Templates {
             add(new MethodTemplate(isLessThan, build(minusIsNegativeTemplate)));
             add(new MethodTemplate(isGreaterThan, build(minusIsPositiveTemplate)));
             add(new MethodTemplate(toStandardDuration, build(asDurationTemplate)));
+            add(new MethodTemplate(secondsPlus, build(plusSecondsTemplate)));
+            add(new MethodTemplate(secondsMinus, build(minusSecondsTemplate)));
+            add(new MethodTemplate(secondsToStandardMinutes, build(toMinutesTemplate)));
+            add(new MethodTemplate(secondsNegated, build(toMinutesNegatedTemplate)));
+            add(new MethodTemplate(secondsCompareTo, build(compareLongTemplate)));
         }
     };
 

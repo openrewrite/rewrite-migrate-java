@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2024 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,32 +19,33 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
-//todo mapping is not working
 @NoArgsConstructor
-public class ChronologyTemplates implements Templates{
-    final MethodMatcher getInstanceUTC = new MethodMatcher(JODA_GEORGIAN_CHRONOLOGY + " getInstanceUTC()");
-    final MethodMatcher getInstance = new MethodMatcher(JODA_GEORGIAN_CHRONOLOGY + " getInstance()");
-    final MethodMatcher getDateTimeMillis = new MethodMatcher(JODA_BASIC_CHRONOLOGY + " getDateTimeMillis(int,int,int,int)");
+public class DateMidnightTemplates implements Templates {
+    private final MethodMatcher newDateMidnight = new MethodMatcher(JODA_DATE_MIDNIGHT + "<constructor>()");
+    private final MethodMatcher newDateMidnightAtDate = new MethodMatcher(JODA_DATE_MIDNIGHT + "<constructor>(int, int, int)");
 
-    final JavaTemplate.Builder instanceTemplate = JavaTemplate.builder("IsoChronology.INSTANCE");
-    final JavaTemplate.Builder epochSecondTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.epochSecond(#{any(int)},#{any(int)},#{any(int)},#{any(int)},0,0,0,ZoneOffset.ofTotalSeconds(0))")
-            .imports(JAVA_ZONE_OFFSET);
+    private final JavaTemplate.Builder dateTimeTemplate = JavaTemplate.builder("LocalDate.now().atStartOfDay(ZoneId.systemDefault())")
+            .imports(JAVA_ZONE_ID);
+    private final JavaTemplate.Builder dateTimeWithYMD = JavaTemplate.builder("LocalDate.of(#{any(int)}, #{any(int)}, #{any(int)}).atStartOfDay(ZoneId.systemDefault())")
+            .imports(JAVA_ZONE_ID);
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
-            add(new MethodTemplate(getInstanceUTC, build(instanceTemplate)));
-            add(new MethodTemplate(getDateTimeMillis, build(epochSecondTemplate)));
+            add(new MethodTemplate(newDateMidnight, build(dateTimeTemplate)));
+            add(new MethodTemplate(newDateMidnightAtDate, build(dateTimeWithYMD)));
         }
     };
 
     private JavaTemplate build(JavaTemplate.Builder builder) {
-        return buildWithImport(builder, JAVA_ISA_CHRONOLOGY);
+        return buildWithImport(builder, JAVA_DATE_TIME);
     }
 }

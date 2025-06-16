@@ -22,11 +22,13 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_DURATION;
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_BASE_DURATION;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 public class BaseDurationTemplates implements Templates {
     private final MethodMatcher getMillis = new MethodMatcher(JODA_BASE_DURATION + " getMillis()");
+    private final MethodMatcher toPeriodDayTime = new MethodMatcher(JODA_BASE_DURATION + " toPeriod(" + JODA_PERIOD_TYPE + ")");
+
+    //.toPeriod(PeriodType.dayTime())
 
     private final JavaTemplate getMillisTemplate = JavaTemplate.builder("#{any(" + JAVA_DURATION + ")}.toMillis()").build();
 
@@ -34,6 +36,8 @@ public class BaseDurationTemplates implements Templates {
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
             add(new MethodTemplate(getMillis, getMillisTemplate));
+
+            add(new MethodTemplate(toPeriodDayTime, JODA_NO_AUTOMATIC_MAPPING_POSSIBLE_TEMPLATE));
         }
     };
 }

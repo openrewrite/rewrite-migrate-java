@@ -67,6 +67,7 @@ public class DurationTemplates implements Templates {
 
     private final MethodMatcher negated = new MethodMatcher(JODA_DURATION + " negated()");
     private final MethodMatcher abs = new MethodMatcher(JODA_DURATION + " abs()");
+    private final MethodMatcher durationIsShorterThan = new MethodMatcher(JODA_DURATION + " isShorterThan(" + JODA_DURATION + ")");
 
     private final JavaTemplate.Builder durationOfMillisTemplate = JavaTemplate.builder("Duration.ofMillis(#{any(long)})");
     private final JavaTemplate.Builder durationBetweenInstantsTemplate = JavaTemplate.builder("Duration.between(Instant.ofEpochMilli(#{any(long)}), Instant.ofEpochMilli(#{any(long)}))")
@@ -100,6 +101,8 @@ public class DurationTemplates implements Templates {
     private final JavaTemplate.Builder dividedByTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.dividedBy(#{any(long)})");
     private final JavaTemplate.Builder negatedTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.negated()");
     private final JavaTemplate.Builder absTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.abs()");
+    private final JavaTemplate.Builder durationCompareTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.compareTo(#{any(java.time.Duration)}) < 0");
+
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {

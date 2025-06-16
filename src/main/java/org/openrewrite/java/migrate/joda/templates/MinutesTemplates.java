@@ -37,7 +37,11 @@ public class MinutesTemplates implements Templates {
     final MethodMatcher isLessThan = new MethodMatcher(JODA_MINUTES + " isLessThan(org.joda.time.Minutes)");
     final MethodMatcher isGreaterThan = new MethodMatcher(JODA_MINUTES + " isGreaterThan(org.joda.time.Minutes)");
     final MethodMatcher toStandardDuration = new MethodMatcher(JODA_MINUTES + " toStandardDuration()");
+    final MethodMatcher minutesZero = new MethodMatcher(JODA_MINUTES + " ZERO");
+    final MethodMatcher minutesToStandardSeconds = new MethodMatcher(JODA_MINUTES + " toStandardSeconds()");
+
     //Minutes.ZERO
+    //Minutes.minutes(10).toStandardSeconds()
 
     final JavaTemplate.Builder minutesStaticMethodTemplate = JavaTemplate.builder("Duration.ofMinutes(#{any(int)})");
     final JavaTemplate.Builder plusMethodTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.plus(#{any(java.time.Duration)})");
@@ -48,6 +52,8 @@ public class MinutesTemplates implements Templates {
     final JavaTemplate.Builder minusIsNegativeTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.minus(#{any(java.time.Duration)}).isNegative()");
     final JavaTemplate.Builder minusIsPositiveTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.minus(#{any(java.time.Duration)}).isPositive()");
     final JavaTemplate.Builder asDurationTemplate = JavaTemplate.builder("#{any(java.time.Duration)}");
+    final JavaTemplate.Builder durationZeroTemplate = JavaTemplate.builder("Duration.ZERO");
+    final JavaTemplate.Builder toSecondsTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.toSeconds()");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -61,6 +67,8 @@ public class MinutesTemplates implements Templates {
             add(new MethodTemplate(isLessThan, build(minusIsNegativeTemplate)));
             add(new MethodTemplate(isGreaterThan, build(minusIsPositiveTemplate)));
             add(new MethodTemplate(toStandardDuration, build(asDurationTemplate)));
+            add(new MethodTemplate(minutesZero, build(durationZeroTemplate)));
+            add(new MethodTemplate(minutesToStandardSeconds, build(toSecondsTemplate)));
         }
     };
 

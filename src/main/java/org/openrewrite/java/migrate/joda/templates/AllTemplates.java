@@ -77,8 +77,8 @@ public class AllTemplates {
             add(new MatcherAndTemplates(ANY_TIME_FORMATTER, new DateTimeFormatterTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_DATE_TIME, new DateTimeTemplates()));
             add(new MatcherAndTemplates(ANY_DATE_TIME, new DateTimeTemplates()));
-            add(new MatcherAndTemplates(ANY_NEW_DATE_MIDNIGHT, new DateTimeTemplates()));
-            add(new MatcherAndTemplates(ANY_DATE_MIDNIGHT, new DateTimeTemplates()));
+            add(new MatcherAndTemplates(ANY_NEW_DATE_MIDNIGHT, new DateMidnightTemplates()));
+            add(new MatcherAndTemplates(ANY_DATE_MIDNIGHT, new DateMidnightTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_DURATION, new DurationTemplates()));
             add(new MatcherAndTemplates(ANY_DURATION, new DurationTemplates()));
             add(new MatcherAndTemplates(ANY_NEW_PERIOD, new PeriodTemplates()));

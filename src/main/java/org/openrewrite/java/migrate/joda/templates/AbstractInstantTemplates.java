@@ -70,7 +70,7 @@ public class AbstractInstantTemplates implements Templates {
     private final JavaTemplate toDateTemplate = JavaTemplate.builder("Date.from(#{any(" + JAVA_DATE_TIME + ")}.toInstant())")
             .imports(JAVA_UTIL_DATE)
             .build();
-    private final JavaTemplate toDateTimeTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")").build();
+    private final JavaTemplate toDateTimeTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}").build();
     private final JavaTemplate toInstantTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.toInstant()").build();
     private final JavaTemplate toStringTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.toString()").build();
     private final JavaTemplate toStringFormatterTemplate = JavaTemplate.builder("#{any(" + JAVA_DATE_TIME + ")}.format(#{any(" + JAVA_TIME_FORMATTER + ")})").build();

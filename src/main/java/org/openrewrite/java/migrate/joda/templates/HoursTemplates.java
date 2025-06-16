@@ -40,6 +40,7 @@ public class HoursTemplates implements Templates {
     final MethodMatcher isGreaterThan = new MethodMatcher(JODA_HOURS + " isGreaterThan(org.joda.time.Hours)");
     final MethodMatcher toString = new MethodMatcher(JODA_HOURS + " toString()");
     final MethodMatcher equals = new MethodMatcher(JODA_HOURS + " equals(org.joda.time.Hours)");
+    final MethodMatcher hoursToStandardSeconds = new MethodMatcher(JODA_HOURS + " toStandardSeconds()");
 
     final JavaTemplate.Builder staticHoursTemplate = JavaTemplate.builder("Duration.ofHours(#{any(int)})");
     final JavaTemplate.Builder plusTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.plus(#{any(java.time.Duration)})");
@@ -53,6 +54,7 @@ public class HoursTemplates implements Templates {
     final JavaTemplate.Builder minusIsPositiveTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.minus(#{any(java.time.Duration)}).isPositive()");
     final JavaTemplate.Builder toStringTemplate = JavaTemplate.builder("#{any(java.time.Duration)}");
     final JavaTemplate.Builder equalsTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.equals(#{any(java.time.Duration)})");
+    final JavaTemplate.Builder toSecondsTemplate = JavaTemplate.builder("#{any(java.time.Duration)}.toSeconds()");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -69,6 +71,7 @@ public class HoursTemplates implements Templates {
             add(new MethodTemplate(isGreaterThan, build(minusIsPositiveTemplate)));
             add(new MethodTemplate(toString, build(toStringTemplate)));
             add(new MethodTemplate(equals, build(equalsTemplate)));
+            add(new MethodTemplate(hoursToStandardSeconds, build(toSecondsTemplate)));
         }
     };
 

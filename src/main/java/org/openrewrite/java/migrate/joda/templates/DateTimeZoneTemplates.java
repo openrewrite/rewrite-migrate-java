@@ -37,6 +37,11 @@ public class DateTimeZoneTemplates implements Templates {
     private final MethodMatcher toTimeZone = new MethodMatcher(JODA_DATE_TIME_ZONE + " toTimeZone()");
     private final MethodMatcher getId = new MethodMatcher(JODA_DATE_TIME_ZONE + " getID()");
     private final MethodMatcher equals = new MethodMatcher(JODA_DATE_TIME_ZONE + " equals(java.lang.Object)");
+    private final MethodMatcher zoneGetOffsetFromLocal = new MethodMatcher(JODA_DATE_TIME_ZONE + " getOffsetFromLocal(long)");
+    private final MethodMatcher zoneIsLocalDateTimeGap = new MethodMatcher(JODA_DATE_TIME_ZONE + " isLocalDateTimeGap(org.joda.time.LocalDateTime)");
+
+    //getOffsetFromLocal(long)
+    //timezone.isLocalDateTimeGap(endSafe)
 
     private final JavaTemplate.Builder zoneIdOfTemplate = JavaTemplate.builder("ZoneId.of(#{any(String)})")
             .imports(JAVA_ZONE_ID);
@@ -53,6 +58,8 @@ public class DateTimeZoneTemplates implements Templates {
     private final JavaTemplate.Builder getIdTemplate = JavaTemplate.builder("#{any(java.time.ZoneId)}.getId()")
             .imports(JAVA_ZONE_ID);
     private final JavaTemplate.Builder equalsTemplate = JavaTemplate.builder("#{any(java.time.ZoneId)}.equals()");
+    private final JavaTemplate.Builder getOffsetTemplate = JavaTemplate.builder("#{any(java.time.ZoneId)}.getRules().getOffset(Instant.ofEpochMilli(#{any(long)}))");
+    private final JavaTemplate.Builder isGapTemplate = JavaTemplate.builder("#{any(java.time.ZoneId)}.getRules().getValidOffsets(#{any(java.time.LocalDateTime)}).isEmpty()");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -69,6 +76,8 @@ public class DateTimeZoneTemplates implements Templates {
             add(new MethodTemplate(toTimeZone, build(getTimeZone)));
             add(new MethodTemplate(getId, build(getIdTemplate)));
             add(new MethodTemplate(equals, build(equalsTemplate)));
+            add(new MethodTemplate(zoneGetOffsetFromLocal, build(getOffsetTemplate)));
+            add(new MethodTemplate(zoneIsLocalDateTimeGap, build(isGapTemplate)));
         }
     };
 

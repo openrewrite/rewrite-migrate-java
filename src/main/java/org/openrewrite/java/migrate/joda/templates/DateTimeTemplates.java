@@ -41,7 +41,6 @@ public class DateTimeTemplates implements Templates {
     private final MethodMatcher newDateTimeWithSecAndZone = new MethodMatcher(JODA_DATE_TIME + "<constructor>(int, int, int, int, int, int, " + JODA_DATE_TIME_ZONE + ")");
     private final MethodMatcher newDateTimeWithMillis = new MethodMatcher(JODA_DATE_TIME + "<constructor>(int, int, int, int, int, int, int)");
     private final MethodMatcher newDateTimeWithMillisAndZone = new MethodMatcher(JODA_DATE_TIME + "<constructor>(int, int, int, int, int, int, int, " + JODA_DATE_TIME_ZONE + ")");
-    private final MethodMatcher newDateMidnight = new MethodMatcher(JODA_DATE_MIDNIGHT + "<constructor>(int, int, int)");
 
     private final MethodMatcher dateTimeNow = new MethodMatcher(JODA_DATE_TIME + " now()");
     private final MethodMatcher dateTimeNowWithZone = new MethodMatcher(JODA_DATE_TIME + " now(" + JODA_DATE_TIME_ZONE + ")");
@@ -123,7 +122,10 @@ public class DateTimeTemplates implements Templates {
     private final MethodMatcher secondOfMinute = new MethodMatcher(JODA_DATE_TIME + " secondOfMinute()");
     private final MethodMatcher millisOfDay = new MethodMatcher(JODA_DATE_TIME + " millisOfDay()");
     private final MethodMatcher millisOfSecond = new MethodMatcher(JODA_DATE_TIME + " millisOfSecond()");
+    private final MethodMatcher dateTimeGetZone = new MethodMatcher(JODA_DATE_TIME + " getZone()");
 
+    //clientTime.getZone().getOffsetFromLocal(clientTime.getMillis())
+    //start.plusDays(1)
 
     private final JavaTemplate.Builder dateTimeTemplate = JavaTemplate.builder("ZonedDateTime.now()");
     private final JavaTemplate.Builder dateTimeWithZoneTemplate = JavaTemplate.builder("ZonedDateTime.now(#{any(java.time.ZoneOffset)})");
@@ -142,8 +144,6 @@ public class DateTimeTemplates implements Templates {
     private final JavaTemplate.Builder dateTimeWithMillisTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)} * 1_000_000, ZoneId.systemDefault())")
             .imports(JAVA_ZONE_ID);
     private final JavaTemplate.Builder dateTimeWithMillisAndZoneTemplate = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)}, #{any(int)} * 1_000_000, #{any(java.time.ZoneId)})");
-    private final JavaTemplate.Builder dateTimeWithYMD = JavaTemplate.builder("ZonedDateTime.of(#{any(int)}, #{any(int)}, #{any(int)}, 0, 0, 0, 0, ZoneId.systemDefault())")
-            .imports(JAVA_ZONE_ID);
     private final JavaTemplate.Builder dateTimeParseTemplate = JavaTemplate.builder("ZonedDateTime.parse(#{any(String)})");
     private final JavaTemplate.Builder dateTimeParseWithFormatterTemplate = JavaTemplate.builder("ZonedDateTime.parse(#{any(String)}, #{any(java.time.format.DateTimeFormatter)})");
     private final JavaTemplate.Builder toDateTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}");
@@ -202,6 +202,7 @@ public class DateTimeTemplates implements Templates {
     private final JavaTemplate.Builder withMillisOfSecondTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.withNano(#{any(int)} * 1_000_000)");
     private final JavaTemplate.Builder withMillisOfDayTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.with(ChronoField.MILLI_OF_DAY, #{any(int)})")
             .imports(JAVA_CHRONO_FIELD);
+    final JavaTemplate.Builder getZoneTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.getZone()");
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
@@ -218,7 +219,6 @@ public class DateTimeTemplates implements Templates {
             add(new MethodTemplate(newDateTimeWithSecAndZone, build(dateTimeWithSecAndZoneTemplate)));
             add(new MethodTemplate(newDateTimeWithMillis, build(dateTimeWithMillisTemplate)));
             add(new MethodTemplate(newDateTimeWithMillisAndZone, build(dateTimeWithMillisAndZoneTemplate)));
-            add(new MethodTemplate(newDateMidnight, build(dateTimeWithYMD)));
 
             add(new MethodTemplate(dateTimeNow, build(dateTimeTemplate)));
             add(new MethodTemplate(dateTimeNowWithZone, build(dateTimeWithZoneTemplate)));
@@ -278,6 +278,7 @@ public class DateTimeTemplates implements Templates {
             add(new MethodTemplate(withSecondOfMinute, build(withSecondOfMinuteTemplate)));
             add(new MethodTemplate(withMillisOfSecond, build(withMillisOfSecondTemplate)));
             add(new MethodTemplate(withMillisOfDay, build(withMillisOfDayTemplate)));
+            add(new MethodTemplate(dateTimeGetZone, build(getZoneTemplate)));
         }
     };
 

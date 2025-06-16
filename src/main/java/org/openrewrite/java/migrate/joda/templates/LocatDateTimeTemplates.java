@@ -69,9 +69,17 @@ public class LocatDateTimeTemplates implements Templates {
     final MethodMatcher minusMillis = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minusMillis(int)");
     final MethodMatcher plus = new MethodMatcher(JODA_LOCAL_DATE_TIME + " plus(org.joda.time.ReadableDuration)");
     final MethodMatcher minus = new MethodMatcher(JODA_LOCAL_DATE_TIME + " minus(org.joda.time.ReadableDuration)");
+    final MethodMatcher getDateTimeFieldType = new MethodMatcher(JODA_LOCAL_DATE_TIME + " get(org.joda.time.DateTimeFieldType)");
+    final MethodMatcher withMinuteOfHour = new MethodMatcher(JODA_LOCAL_DATE_TIME + " withMinuteOfHour(int)");
+    final MethodMatcher withHourOfDay = new MethodMatcher(JODA_LOCAL_DATE_TIME + " withHourOfDay(int)");
 
     final MethodMatcher toFormatedString = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toString(java.lang.String)");
     final MethodMatcher toString = new MethodMatcher(JODA_LOCAL_DATE_TIME + " toString()");
+    //time.get(DateTimeFieldType.hourOfDay())
+    //time.get(DateTimeFieldType.minuteOfHour()
+    //endTime.withMinuteOfHour(0).withHourOfDay(endTime.getHourOfDay() + 1)
+    //startTime.withMinuteOfHour(0)
+
 
     final JavaTemplate.Builder newLocalDateTimeNoArgsTemplate = JavaTemplate.builder("LocalDateTime.now()");
     final JavaTemplate.Builder newLocalDateTimeEpochTemplate = JavaTemplate.builder("LocalDateTime.ofInstant(Instant.ofEpochMilli(#{any(long)}), ZoneId.systemDefault())")
@@ -114,6 +122,8 @@ public class LocatDateTimeTemplates implements Templates {
     final JavaTemplate.Builder minusMillisTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minusNanos(#{any(int)} * 1_000_000L)");
     final JavaTemplate.Builder plusTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.plus(#{any(java.time.Duration)})");
     final JavaTemplate.Builder minusTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.minus(#{any(java.time.Duration)})");
+    final JavaTemplate.Builder withMinuteTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.withMinute(#{any(int)})");
+    final JavaTemplate.Builder withHourTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.withHour(#{any(int)})");
 
     final JavaTemplate.Builder toFormatedStringTemplate = JavaTemplate.builder("#{any(java.time.LocalDateTime)}.format(DateTimeFormatter.ofPattern(#{any(String)}))")
             .imports(JAVA_TIME_FORMATTER);
@@ -161,6 +171,9 @@ public class LocatDateTimeTemplates implements Templates {
             add(new MethodTemplate(minusMillis, build(minusMillisTemplate)));
             add(new MethodTemplate(plus, build(plusTemplate)));
             add(new MethodTemplate(minus, build(minusTemplate)));
+            add(new MethodTemplate(getDateTimeFieldType, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
+            add(new MethodTemplate(withMinuteOfHour, build(withMinuteTemplate)));
+            add(new MethodTemplate(withHourOfDay, build(withHourTemplate)));
 
             add(new MethodTemplate(toFormatedString, build(toFormatedStringTemplate)));
             add(new MethodTemplate(toString, build(toStringTemplate)));

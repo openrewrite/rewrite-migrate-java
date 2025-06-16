@@ -34,6 +34,7 @@ public class LocatDateTemplates implements Templates {
     final MethodMatcher newLocalDateYmd = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>(int,int,int)");
     final MethodMatcher newLocalDate = new MethodMatcher(JODA_LOCAL_DATE + "<constructor>(java.lang.Object)");
     final MethodMatcher fromDateFields = new MethodMatcher(JODA_LOCAL_DATE + " fromDateFields(java.util.Date)");
+    final MethodMatcher localDateToDateTime = new MethodMatcher(JODA_LOCAL_DATE + " toDateTime(" + JODA_LOCAL_TIME + ")");
 
     final MethodMatcher withDayOfMonth = new MethodMatcher(JODA_LOCAL_DATE + " withDayOfMonth(int)");
     final MethodMatcher now = new MethodMatcher(JODA_LOCAL_DATE + " now()");
@@ -147,6 +148,7 @@ public class LocatDateTemplates implements Templates {
             add(new MethodTemplate(toString, build(toStringTemplate)));
             add(new MethodTemplate(hashCode, build(hashCodeTemplate)));
 
+            add(new MethodTemplate(localDateToDateTime, JODA_NO_AUTOMATIC_MAPPING_POSSIBLE_TEMPLATE));
             add(new MethodTemplate(dayOfMonth, JODA_NO_AUTOMATIC_MAPPING_POSSIBLE_TEMPLATE));
             add(new MethodTemplate(newLocalDate, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
             add(new MethodTemplate(equals, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));

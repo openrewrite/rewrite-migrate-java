@@ -23,11 +23,12 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_ABSTRACT_PERIOD;
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_PERIOD;
 
 @NoArgsConstructor
 public class AbstractPeriodTemplates implements Templates{
-    final MethodMatcher toString = new MethodMatcher(JODA_PERIOD + " toString()");
+    final MethodMatcher toString = new MethodMatcher(JODA_ABSTRACT_PERIOD + " toString()");
 
     final JavaTemplate toStringTemplate = JavaTemplate.builder("#{any(java.time.Period)}.getDays()").build();
 
