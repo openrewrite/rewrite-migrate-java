@@ -59,6 +59,7 @@ recipeList:
       artifactId: commons-codec
       newVersion: 1.17.x
   - org.openrewrite.java.migrate.AddLombokMapstructBinding
+  - org.openrewrite.java.migrate.lang.PatternMatchingWithInstanceOf
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
