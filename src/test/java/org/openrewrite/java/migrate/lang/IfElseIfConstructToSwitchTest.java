@@ -182,7 +182,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     }
 
     @Test
-    void worksWithExpressionsOtherThanIdentifier() {
+    void worksWithFieldAccesses() {
         rewriteRun(
           //language=java
           java(
@@ -205,29 +205,8 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                       return formatted;
                   }
 
-                  static String methodInvocation(Tester test) {
-                      String formatted = "initialValue";
-                      if (test.getObj() == null) {
-                          formatted = "null";
-                      } else if (test.getObj() instanceof Integer i)
-                          formatted = String.format("int %d", i);
-                      else if (test.getObj() instanceof Long l) {
-                          formatted = String.format("long %d", l);
-                      } else if (test.getObj() instanceof Double d) {
-                          formatted = String.format("double %f", d);
-                      } else if (test.getObj() instanceof String s) {
-                          String str = "String";
-                          formatted = String.format("%s %s", str, s);
-                      }
-                      return formatted;
-                  }
-
                   private static class Tester {
                       private Object obj;
-
-                      public Object getObj() {
-                          return obj;
-                      }
                   }
               }
               """,
@@ -249,28 +228,8 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                       return formatted;
                   }
 
-                  static String methodInvocation(Tester test) {
-                      String formatted = "initialValue";
-                      switch (test.getObj()) {
-                          case null -> formatted = "null";
-                          case Integer i -> formatted = String.format("int %d", i);
-                          case Long l -> formatted = String.format("long %d", l);
-                          case Double d -> formatted = String.format("double %f", d);
-                          case String s -> {
-                              String str = "String";
-                              formatted = String.format("%s %s", str, s);
-                          }
-                          default -> {}
-                      }
-                      return formatted;
-                  }
-
                   private static class Tester {
                       private Object obj;
-
-                      public Object getObj() {
-                          return obj;
-                      }
                   }
               }
               """
@@ -326,7 +285,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     }
 
     @Test
-    void defaultSwitchBlockWithNoPatternsSpecified() {
+    void labelsSwitchBlockWhenNoLabelSpecified() {
         rewriteRun(
           //language=java
           java(
@@ -358,12 +317,12 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                       String formatted = "initialValue";
                       switch (obj) {
                           case null -> formatted = "null";
-                          case Integer -> formatted = String.format("int %d", (Integer) obj);
-                          case Long -> formatted = String.format("long %d", (Long) obj);
-                          case Double -> formatted = String.format("double %f", (Double) obj);
-                          case String -> {
+                          case Integer intObj -> formatted = String.format("int %d", intObj);
+                          case Long longObj -> formatted = String.format("long %d", longObj);
+                          case Double doubleObj -> formatted = String.format("double %f", doubleObj);
+                          case String stringObj -> {
                               String str = "String";
-                              formatted = String.format("%s %s", str, (String) obj);
+                              formatted = String.format("%s %s", str, stringObj);
                           }
                           default -> formatted = "unknown";
                       }
@@ -490,6 +449,48 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                           formatted = "unknown";
                       }
                       return formatted;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void noSwitchBlockForMethodInvocations() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  static String methodInvocation(Tester test) {
+                      String formatted = "initialValue";
+                      if (test.getObj() == null) {
+                          formatted = "null";
+                      } else if (test.getObj() instanceof Integer i)
+                          formatted = String.format("int %d", i);
+                      else if (test.getObj() instanceof Long l) {
+                          formatted = String.format("long %d", l);
+                      } else if (test.getObj() instanceof Double d) {
+                          formatted = String.format("double %f", d);
+                      } else if (test.getObj() instanceof String s) {
+                          String str = "String";
+                          formatted = String.format("%s %s", str, s);
+                      }
+                      return formatted;
+                  }
+              }
+
+              private static class Tester {
+                  private Object obj;
+
+                  //Calling the getter might change the value which triggers another flow to occur with if-else-if statements due to multiple invocations of the method vs a single invocation. (eg. Iterators, result sets...)
+                  public Object getObj() {
+                      Object toReturn = obj;
+                      if (obj == null) {
+                          obj = "it was null";
+                      }
+                      return toReturn;
                   }
               }
               """

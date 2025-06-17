@@ -30,7 +30,6 @@ import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
-import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -50,11 +49,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
     public String getDescription() {
         return "Replace if-else-if-else with switch statements. In order to be replaced with a switch, " +
                 "all conditions must be on the same variable and there must be at least three cases.";
-    }
-
-    @Override
-    public @Nullable Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(3);
     }
 
     @Override
@@ -166,6 +160,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
         Optional<Expression> switchOn() {
             return patternMatchers.keySet().stream()
                     .map(J.InstanceOf::getExpression)
+                    .filter(e -> e instanceof J.FieldAccess || e instanceof J.Identifier)
                     .findAny();
         }
 
