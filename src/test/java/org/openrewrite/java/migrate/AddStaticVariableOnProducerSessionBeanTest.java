@@ -22,6 +22,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.xml.Assertions.xml;
 
 class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
 
@@ -53,6 +54,59 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
                 """
             )
           );
+    }
+
+    @Test
+    @DocumentExample
+    void addStaticToProducesFieldFromXml() {
+        rewriteRun(
+          xml(
+            //language=xml
+            """
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <ejb-jar xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd" version="3.1">
+                    	<display-name>testTransaction</display-name>
+                    	<enterprise-beans>
+                            <session>
+                                <ejb-name>MySessionBean</ejb-name>
+                                <ejb-class>com.test.MySessionBean</ejb-class>
+                                <session-type>Stateless</session-type>
+                                <transaction-type>Container</transaction-type>
+                            </session>
+                        </enterprise-beans>
+                    </ejb-jar>
+                    """,
+            sourceSpecs -> sourceSpecs.path("ejb-jar.xml")
+          ),
+          //language=java
+          java(
+            """
+              package com.test;
+              import jakarta.enterprise.inject.Produces;
+
+              public class MySessionBean {
+                  @Produces
+                  private SomeDependency someDependency;
+                  void exampleMethod() {
+                     return;
+                  }
+              }
+              """,
+            """
+              package com.test;
+              import jakarta.enterprise.inject.Produces;
+
+              public class MySessionBean {
+                  @Produces
+                  private static SomeDependency someDependency;
+                  void exampleMethod() {
+                     return;
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Test

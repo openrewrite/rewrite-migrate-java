@@ -15,18 +15,26 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.migrate.javax.RemoveEmbeddableId;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.xml.XmlVisitor;
+import org.openrewrite.xml.tree.Xml;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.util.Collections.emptyList;
 
-public class AddStaticVariableOnProducerSessionBean extends Recipe {
+public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<AddStaticVariableOnProducerSessionBean.Accumulator> {
     @Override
     public String getDisplayName() {
         return "Adds `static` modifier to `@Produces` field that are on session bean";
@@ -38,17 +46,47 @@ public class AddStaticVariableOnProducerSessionBean extends Recipe {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(
-                Preconditions.and(
-                        new UsesType<>("jakarta.enterprise.inject.Produces", false),
-                        Preconditions.or(
-                                new UsesType<>("jakarta.ejb.Singleton", false),
-                                new UsesType<>("jakarta.ejb.Stateful", false),
-                                new UsesType<>("jakarta.ejb.Stateless", false)
-                        )
-                ),
+    public Accumulator getInitialValue(ExecutionContext ctx) {
+        return new Accumulator();
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+        return new XmlVisitor<ExecutionContext>() {
+            @Override
+            public Xml visitTag(Xml.Tag tag, ExecutionContext executionContext) {
+                String className = null;
+                String sessionType = null;
+                for (Xml.Tag child : tag.getChildren()) {
+                    if ("ejb-class".equals(child.getName())) {
+                        className = child.getValue().toString();
+                    } else if ("session-type".equals(child.getName())) {
+                        sessionType = child.getValue().toString();
+                    }
+                }
+                if (className != null && sessionType != null) {
+                    acc.getSessionBeanClasses().put(className, sessionType);
+                }
+                return super.visitTag(tag, executionContext);
+            }
+        };
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+        return
+//                Preconditions.check(
+//                Preconditions.and(
+//                        new UsesType<>("jakarta.enterprise.inject.Produces", false),
+//                        Preconditions.or(
+//                                new UsesType<>("jakarta.ejb.Singleton", false),
+//                                new UsesType<>("jakarta.ejb.Stateful", false),
+//                                new UsesType<>("jakarta.ejb.Stateless", false)
+//                        )
+//                ),
                 new JavaVisitor<ExecutionContext>() {
+                    private final Accumulator accumulator = acc;
+
                     @Override
                     public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         if (!multiVariable.hasModifier(J.Modifier.Type.Static) &&
@@ -66,13 +104,26 @@ public class AddStaticVariableOnProducerSessionBean extends Recipe {
                             return false;
                         }
                         return hasAnnotation(parentClass, "@jakarta.ejb.Singleton") ||
-                                hasAnnotation(parentClass, "@jakarta.ejb.Stateful") ||
-                                hasAnnotation(parentClass, "@jakarta.ejb.Stateless");
+                               hasAnnotation(parentClass, "@jakarta.ejb.Stateful") ||
+                               hasAnnotation(parentClass, "@jakarta.ejb.Stateless");
                     }
 
                     private boolean hasAnnotation(J j, String annotationPattern) {
                         return !FindAnnotations.find(j, annotationPattern).isEmpty();
                     }
-                });
+                };
+//                );
+    }
+
+    // @Data
+    static class Accumulator {
+
+        @Getter
+        @Setter
+        private Map<String, String> sessionBeanClasses = new HashMap<>();
+
+        @Getter
+        @Setter
+        String sessionType;
     }
 }
