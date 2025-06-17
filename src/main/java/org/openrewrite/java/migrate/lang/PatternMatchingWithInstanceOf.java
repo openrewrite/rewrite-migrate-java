@@ -81,7 +81,7 @@ public class PatternMatchingWithInstanceOf extends Recipe {
                                 }
 
                                 @Override
-                                public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
+                                public @Nullable J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                                     List<J.VariableDeclarations.NamedVariable> mappedVariables = ListUtils.map(multiVariable.getVariables(), variable -> {
                                         if (pattern != null && variable != null) {
                                             Expression initializer = variable.getInitializer();
