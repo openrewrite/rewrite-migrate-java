@@ -15,8 +15,6 @@
  */
 package org.openrewrite.java.migrate;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaVisitor;
@@ -34,10 +32,10 @@ import java.util.Map;
 
 import static java.util.Collections.emptyList;
 
-public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<AddStaticVariableOnProducerSessionBean.Accumulator> {
+public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Map<String, String>> {
     @Override
     public String getDisplayName() {
-        return "Adds `static` modifier to `@Produces` field that are on session bean";
+        return "Adds `static` modifier to `@Produces` fields that are in session bean";
     }
 
     @Override
@@ -46,13 +44,22 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<AddSt
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
-        return new Accumulator();
+    public Map<String, String> getInitialValue(ExecutionContext ctx) {
+        return new HashMap<>();
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(Map<String, String> acc) {
         return new XmlVisitor<ExecutionContext>() {
+
+            @Override
+            public Xml visitDocument(Xml.Document document, ExecutionContext ctx) {
+                if (!document.getSourcePath().endsWith("ejb-jar.xml")) {
+                    return document;
+                }
+                return super.visitDocument(document, ctx);
+            }
+
             @Override
             public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 String className = null;
@@ -65,7 +72,7 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<AddSt
                     }
                 }
                 if (className != null && sessionType != null) {
-                    acc.getSessionBeanClasses().put(className, sessionType);
+                    acc.put(className, sessionType);
                 }
                 return super.visitTag(tag, ctx);
             }
@@ -73,62 +80,45 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<AddSt
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
-        return
-                Preconditions.check(
-                        Preconditions.or(
-                                new UsesType<>("jakarta.enterprise.inject.Produces", false),
-                                Preconditions.or(
-                                        new UsesType<>("jakarta.ejb.Singleton", false),
-                                        new UsesType<>("jakarta.ejb.Stateful", false),
-                                        new UsesType<>("jakarta.ejb.Stateless", false)
-                                )
-                        ),
-                        new JavaVisitor<ExecutionContext>() {
-                            private final Accumulator accumulator = acc;
-
-                            @Override
-                            public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                                if (!multiVariable.hasModifier(J.Modifier.Type.Static) &&
-                                    hasAnnotation(multiVariable, "@jakarta.enterprise.inject.Produces") &&
-                                    (isInSessionBean() || isInXml())) {
-                                    return multiVariable.withModifiers(ListUtils.concat(multiVariable.getModifiers(),
-                                            new J.Modifier(Tree.randomId(), Space.SINGLE_SPACE, Markers.EMPTY, null, J.Modifier.Type.Static, emptyList())));
-                                }
-                                return super.visitVariableDeclarations(multiVariable, ctx);
-                            }
-
-                            private boolean isInSessionBean() {
-                                J.ClassDeclaration parentClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                                if (parentClass == null) {
-                                    return false;
-                                }
-                                return hasAnnotation(parentClass, "@jakarta.ejb.Singleton") ||
-                                       hasAnnotation(parentClass, "@jakarta.ejb.Stateful") ||
-                                       hasAnnotation(parentClass, "@jakarta.ejb.Stateless");
-                            }
-
-                            private boolean isInXml() {
-                                J.ClassDeclaration parentClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                                if (parentClass != null && parentClass.getType() instanceof JavaType.FullyQualified) {
-                                    JavaType.FullyQualified fqType = parentClass.getType();
-                                    String fqName = fqType.getFullyQualifiedName();
-                                    return acc.getSessionBeanClasses().containsKey(fqName);
-                                }
-                                return false;
-                            }
-
-                            private boolean hasAnnotation(J j, String annotationPattern) {
-                                return !FindAnnotations.find(j, annotationPattern).isEmpty();
-                            }
+    public TreeVisitor<?, ExecutionContext> getVisitor(Map<String, String> acc) {
+        return Preconditions.check(
+                new UsesType<>("jakarta.enterprise.inject.Produces", false),
+                new JavaVisitor<ExecutionContext>() {
+                    @Override
+                    public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
+                        if (!multiVariable.hasModifier(J.Modifier.Type.Static) &&
+                            hasAnnotation(multiVariable, "@jakarta.enterprise.inject.Produces") &&
+                            (isInSessionBean() || isInXml())) {
+                            return multiVariable.withModifiers(ListUtils.concat(multiVariable.getModifiers(),
+                                    new J.Modifier(Tree.randomId(), Space.SINGLE_SPACE, Markers.EMPTY, null, J.Modifier.Type.Static, emptyList())));
                         }
-                );
-    }
+                        return super.visitVariableDeclarations(multiVariable, ctx);
+                    }
 
-    // @Data
-    @Setter
-    @Getter
-    public static class Accumulator {
-        private Map<String, String> sessionBeanClasses = new HashMap<>();
+                    private boolean isInSessionBean() {
+                        J.ClassDeclaration parentClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                        if (parentClass == null) {
+                            return false;
+                        }
+                        return hasAnnotation(parentClass, "@jakarta.ejb.Singleton") ||
+                               hasAnnotation(parentClass, "@jakarta.ejb.Stateful") ||
+                               hasAnnotation(parentClass, "@jakarta.ejb.Stateless");
+                    }
+
+                    private boolean isInXml() {
+                        J.ClassDeclaration parentClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                        if (parentClass != null && parentClass.getType() instanceof JavaType.FullyQualified) {
+                            JavaType.FullyQualified fqType = parentClass.getType();
+                            String fqName = fqType.getFullyQualifiedName();
+                            return acc.containsKey(fqName);
+                        }
+                        return false;
+                    }
+
+                    private boolean hasAnnotation(J j, String annotationPattern) {
+                        return !FindAnnotations.find(j, annotationPattern).isEmpty();
+                    }
+                }
+        );
     }
 }

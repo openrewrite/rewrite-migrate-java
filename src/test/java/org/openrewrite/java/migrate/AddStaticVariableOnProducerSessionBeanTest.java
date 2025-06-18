@@ -117,6 +117,53 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
 
     @Test
     @DocumentExample
+    void noChangeWhenBeanNotMentionedInXml() {
+        rewriteRun(
+          xml(
+            //language=xml
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <ejb-jar xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd" version="3.1">
+              	<display-name>testTransaction</display-name>
+              	<enterprise-beans>
+                      <session>
+                          <ejb-name>TestProducerFieldStaticOnSessionBean</ejb-name>
+                          <ejb-class>org.test.ejb.TestProducerFieldStaticOnSessionBean</ejb-class>
+                          <session-type>Stateless</session-type>
+                          <transaction-type>Container</transaction-type>
+                      </session>
+                      <session>
+                           <ejb-name>TestProducerFieldNonStaticOnSessionBean</ejb-name>
+                           <ejb-class>org.test.ejb.TestProducerFieldNonStaticOnSessionBean</ejb-class>
+                           <session-type>Singleton</session-type>
+                           <transaction-type>Container</transaction-type>
+                      </session>
+                  </enterprise-beans>
+              </ejb-jar>
+              """,
+            sourceSpecs -> sourceSpecs.path("ejb-jar.xml")
+          ),
+          //language=java
+          java(
+            """
+              package com.test;
+              import jakarta.enterprise.inject.Produces;
+
+              public class MySessionBean {
+                  @Produces
+                  private SomeDependency someDependency;
+                  void exampleMethod() {
+                     return;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    @DocumentExample
     void addStaticOnProducesMarkedStateless() {
         rewriteRun(
           //language=java
