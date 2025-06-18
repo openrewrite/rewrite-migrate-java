@@ -17,7 +17,9 @@ package org.openrewrite.java.migrate.lombok;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -136,13 +138,13 @@ class LombokValToFinalVarTest implements RewriteTest {
                     }
                     """,
                   """
-                    import java.util.List;
                     import java.util.ArrayList;
+                    import java.util.List;
 
                     class A {
                         void bar() {
                             List<String> lst = new ArrayList<>();
-                            for (final var s : lst) {}
+                            for (var s : lst) {}
                         }
                     }
                     """
@@ -177,7 +179,7 @@ class LombokValToFinalVarTest implements RewriteTest {
                     class A {
                         void bar() {
                             String[] lst = new String[]{"ABC", "DEF", "DOESN'T", "MATTER"};
-                            for (final var s : lst) {}
+                            for (var s : lst) {}
                         }
                     }
                     """
@@ -212,7 +214,7 @@ class LombokValToFinalVarTest implements RewriteTest {
 
                     class A {
                         static void bar(final List<Path> lst) {
-                            for (final var s : lst) {}
+                            for (var s : lst) {}
                         }
                     }
                     """
@@ -250,7 +252,7 @@ class LombokValToFinalVarTest implements RewriteTest {
                     class A {
                         Mapper mapper;
                         void bar() {
-                            for (final var s : mapper.getNamesList()) {}
+                            for (var s : mapper.getNamesList()) {}
                         }
                     }
                     """

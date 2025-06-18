@@ -15,17 +15,17 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.RemoveUnusedImports;
 import org.openrewrite.java.search.MaybeUsesImport;
 import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.java.service.AnnotationService;
+import org.openrewrite.java.tree.*;
+import org.openrewrite.marker.Markers;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -75,26 +75,28 @@ public class LombokValToFinalVar extends Recipe {
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations mv, ExecutionContext ctx) {
             J.VariableDeclarations varDecls = super.visitVariableDeclarations(mv, ctx);
+
             if (TypeUtils.isOfClassType(varDecls.getType(), LOMBOK_VAL) ||
-                (varDecls.getTypeExpression() instanceof J.Identifier && ((J.Identifier) varDecls.getTypeExpression()).getSimpleName().equals("val"))) {
+                    (varDecls.getTypeExpression() instanceof J.Identifier && ((J.Identifier) varDecls.getTypeExpression()).getSimpleName().equals("val"))) {
                 maybeRemoveImport(LOMBOK_VAL);
 
                 J.VariableDeclarations.NamedVariable nv = mv.getVariables().get(0);
-                String finalVarVariableTemplateString;
-                Object[] args;
                 if (nv.getInitializer() == null) {
-                    finalVarVariableTemplateString = "final var #{}";
-                    args = new Object[]{nv.getSimpleName()};
+                    // manually transoform to var, as val in this case has no sufficent type information due to https://github.com/openrewrite/rewrite/pull/5637
+                    TypeTree typeExpression = varDecls.getTypeExpression();
+                    J.Identifier varType = new J.Identifier(Tree.randomId(),
+                            typeExpression.getPrefix(),
+                            typeExpression.getMarkers(),
+                            service(AnnotationService.class).getAllAnnotations(getCursor()),
+                            "var",
+                            nv.getType(),
+                            null);
+                    varDecls = varDecls.withTypeExpression(varType);
                 } else {
-                    finalVarVariableTemplateString = "final var #{} = #{any()};";
-                    args = new Object[]{nv.getSimpleName(), nv.getInitializer()};
-                }
-                varDecls = JavaTemplate.builder(finalVarVariableTemplateString)
-                        .contextSensitive()
-                        .build()
-                        .apply(updateCursor(varDecls), varDecls.getCoordinates().replace(), args);
-
-                if (nv.getInitializer() != null) {
+                    varDecls = JavaTemplate.builder("final var #{} = #{any()};")
+                            .contextSensitive()
+                            .build()
+                            .apply(updateCursor(varDecls), varDecls.getCoordinates().replace(), nv.getSimpleName(), nv.getInitializer());
                     varDecls = varDecls.withVariables(ListUtils.map(varDecls.getVariables(), namedVar -> namedVar
                             .withInitializer(namedVar.getInitializer().withPrefix(nv.getInitializer().getPrefix()))));
                 }
