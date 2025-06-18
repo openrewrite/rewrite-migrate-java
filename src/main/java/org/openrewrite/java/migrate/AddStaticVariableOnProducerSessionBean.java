@@ -54,7 +54,7 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<AddSt
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
         return new XmlVisitor<ExecutionContext>() {
             @Override
-            public Xml visitTag(Xml.Tag tag, ExecutionContext executionContext) {
+            public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 String className = null;
                 String sessionType = null;
                 for (Xml.Tag child : tag.getChildren()) {
@@ -67,7 +67,7 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<AddSt
                 if (className != null && sessionType != null) {
                     acc.getSessionBeanClasses().put(className, sessionType);
                 }
-                return super.visitTag(tag, executionContext);
+                return super.visitTag(tag, ctx);
             }
         };
     }
