@@ -18,14 +18,13 @@ package org.openrewrite.java.migrate.lombok;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.RemoveUnusedImports;
 import org.openrewrite.java.search.MaybeUsesImport;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.service.AnnotationService;
-import org.openrewrite.java.tree.*;
-import org.openrewrite.marker.Markers;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeTree;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -82,7 +81,7 @@ public class LombokValToFinalVar extends Recipe {
 
                 J.VariableDeclarations.NamedVariable nv = mv.getVariables().get(0);
                 if (nv.getInitializer() == null) {
-                    // manually transoform to var, as val in this case has no sufficent type information due to https://github.com/openrewrite/rewrite/pull/5637
+                    // manually transform to var, as val in this case has no sufficient type information, and the java template parsing would fail, see https://github.com/openrewrite/rewrite/pull/5637
                     TypeTree typeExpression = varDecls.getTypeExpression();
                     J.Identifier varType = new J.Identifier(Tree.randomId(),
                             typeExpression.getPrefix(),
