@@ -24,18 +24,21 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Collections.emptyList;
 
-public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Map<String, String>> {
+public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Set<String>> {
+
+    private static final XPathMatcher EJB_PATH = new XPathMatcher("ejb-jar/enterprise-beans/session");
+
     @Override
     public String getDisplayName() {
-        return "Adds `static` modifier to `@Produces` fields that are in session bean";
+        return "Adds `static` modifier to `@Produces` fields that are in session beans";
     }
 
     @Override
@@ -44,43 +47,37 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Map<S
     }
 
     @Override
-    public Map<String, String> getInitialValue(ExecutionContext ctx) {
-        return new HashMap<>();
+    public Set<String> getInitialValue(ExecutionContext ctx) {
+        return new HashSet<>();
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Map<String, String> acc) {
-        return new XmlVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getScanner(Set<String> acc) {
+        return Preconditions.check(
+                new FindSourceFiles("**/ejb-jar.xml"),
+                new XmlVisitor<ExecutionContext>() {
 
-            @Override
-            public Xml visitDocument(Xml.Document document, ExecutionContext ctx) {
-                if (!document.getSourcePath().endsWith("ejb-jar.xml")) {
-                    return document;
-                }
-                return super.visitDocument(document, ctx);
-            }
-
-            @Override
-            public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
-                String className = null;
-                String sessionType = null;
-                for (Xml.Tag child : tag.getChildren()) {
-                    if ("ejb-class".equals(child.getName())) {
-                        className = child.getValue().orElse(null);
-                    } else if ("session-type".equals(child.getName())) {
-                        sessionType = child.getValue().orElse(null);
+                    @Override
+                    public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
+                        String className = null;
+                        if (EJB_PATH.matches(getCursor())) {
+                            for (Xml.Tag child : tag.getChildren()) {
+                                if ("ejb-class".equals(child.getName())) {
+                                    className = child.getValue().orElse(null);
+                                    break;
+                                }
+                            }
+                            if (className != null) {
+                                acc.add(className);
+                            }
+                        }
+                        return super.visitTag(tag, ctx);
                     }
-                }
-                if (className != null && sessionType != null) {
-                    acc.put(className, sessionType);
-                }
-                return super.visitTag(tag, ctx);
-            }
-        };
+                });
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Map<String, String> acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(Set<String> acc) {
         return Preconditions.check(
                 new UsesType<>("jakarta.enterprise.inject.Produces", false),
                 new JavaVisitor<ExecutionContext>() {
@@ -110,7 +107,7 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Map<S
                         if (parentClass != null && parentClass.getType() instanceof JavaType.FullyQualified) {
                             JavaType.FullyQualified fqType = parentClass.getType();
                             String fqName = fqType.getFullyQualifiedName();
-                            return acc.containsKey(fqName);
+                            return acc.contains(fqName);
                         }
                         return false;
                     }
