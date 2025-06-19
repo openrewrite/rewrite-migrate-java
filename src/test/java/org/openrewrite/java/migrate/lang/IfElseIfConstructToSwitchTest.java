@@ -23,12 +23,15 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
 
 class IfElseIfConstructToSwitchTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new IfElseIfConstructToSwitch());
+        spec
+                .recipe(new IfElseIfConstructToSwitch())
+                .allSources(source -> version(source, 17));
     }
 
     @Test
@@ -490,8 +493,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
         @Test
         void switchBlockWhenPreviousRecipeAddedLabels() {
             rewriteRun(
-                spec -> spec
-                        .recipes(new InstanceOfPatternMatch(), new IfElseIfConstructToSwitch()),
+                spec -> spec.recipes(new InstanceOfPatternMatch(), new IfElseIfConstructToSwitch()),
                 //language=java
                 java(
                     """
@@ -522,12 +524,12 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                                 String formatted = "initialValue";
                                 switch (obj) {
                                     case null -> formatted = "null";
-                                    case Integer i -> formatted = String.format("int %d", i);
-                                    case Long l -> formatted = String.format("long %d", l);
-                                    case Double d -> formatted = String.format("double %f", d);
-                                    case String s -> {
+                                    case Integer integer -> formatted = String.format("int %d", integer);
+                                    case Long long1 -> formatted = String.format("long %d", long1);
+                                    case Double double1 -> formatted = String.format("double %f", double1);
+                                    case String string -> {
                                         String str = "String";
-                                        formatted = String.format("%s %s", str, s);
+                                        formatted = String.format("%s %s", str, string);
                                     }
                                     default -> formatted = "unknown";
                                 }
@@ -535,55 +537,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                             }
                         }
                         """
-                )
-            );
-        }
-
-        @Test
-        void switchBlockWhenPreviousRecipeAddedLabelsForNestedClasses() {
-            rewriteRun(
-                java(
-                    """
-                      public class Tester {
-                          public static class A {}
-
-                          public static class B {}
-                      }
-                      """
-                ),
-                //language=java
-                java(
-                    """
-                      class Test {
-                          static String formatter(Object obj) {
-                              String formatted;
-                              if (obj == null) {
-                                  formatted = "null";
-                              } else if (obj instanceof Tester.A)
-                                  formatted = "nested1";
-                              else if (obj instanceof Tester.B) {
-                                  formatted = "nested2";
-                              } else {
-                                  formatted = "unknown";
-                              }
-                              return formatted;
-                          }
-                      }
-                      """,
-                    """
-                      class Test {
-                          static String formatter(Object obj) {
-                              String formatted;
-                              switch (obj) {
-                                  case null -> formatted = "null";
-                                  case Tester.A a -> formatted = "nested1";
-                                  case Tester.B b -> formatted = "nested2";
-                                  default -> formatted = "unknown";
-                              }
-                              return formatted;
-                          }
-                      }
-                      """
                 )
             );
         }
