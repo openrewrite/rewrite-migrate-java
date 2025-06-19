@@ -56,7 +56,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
-                new UsesJavaVersion<>(17),
+                new UsesJavaVersion<>(21),
                 Preconditions.not(new KotlinFileChecker<>()),
                 Preconditions.not(new GroovyFileChecker<>())
         );

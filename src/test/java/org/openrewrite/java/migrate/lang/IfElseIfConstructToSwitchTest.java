@@ -31,7 +31,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
                 .recipe(new IfElseIfConstructToSwitch())
-                .allSources(source -> version(source, 17));
+                .allSources(source -> version(source, 21));
     }
 
     @Test
