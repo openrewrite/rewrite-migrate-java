@@ -113,7 +113,7 @@ public class NullCheckAsSwitchCase extends Recipe {
 
             private J.Case createNullCase(J.Switch aSwitch, Statement whenNull) {
                 J.Case currentFirstCase = aSwitch.getCases().getStatements().isEmpty() || !(aSwitch.getCases().getStatements().get(0) instanceof J.Case) ? null : (J.Case) aSwitch.getCases().getStatements().get(0);
-                if (currentFirstCase == null || J.Case.Type.Rule.equals(currentFirstCase.getType())) {
+                if (currentFirstCase == null || J.Case.Type.Rule == currentFirstCase.getType()) {
                     if (whenNull instanceof J.Block && ((J.Block) whenNull).getStatements().size() == 1) {
                         whenNull = ((J.Block) whenNull).getStatements().get(0);
                     }
