@@ -166,4 +166,17 @@ class UpdateSdkManTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void doNotDowngradeVersionIfAlreadyHighEnough() {
+        rewriteRun(
+          spec -> spec.recipe(new UpdateSdkMan("17", null)),
+          text(
+            """
+              java=24-librca
+              """,
+            spec -> spec.path(".sdkmanrc")
+          )
+        );
+    }
 }
