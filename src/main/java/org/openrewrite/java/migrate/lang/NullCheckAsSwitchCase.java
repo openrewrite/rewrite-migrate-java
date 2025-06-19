@@ -27,6 +27,7 @@ import org.openrewrite.java.tree.*;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -111,18 +112,43 @@ public class NullCheckAsSwitchCase extends Recipe {
             }
 
             private J.Case createNullCase(J.Switch aSwitch, Statement whenNull) {
-                if (whenNull instanceof J.Block && ((J.Block) whenNull).getStatements().size() == 1) {
-                    whenNull = ((J.Block) whenNull).getStatements().get(0);
+                J.Case currentFirstCase = aSwitch.getCases().getStatements().isEmpty() || !(aSwitch.getCases().getStatements().get(0) instanceof J.Case) ? null : (J.Case) aSwitch.getCases().getStatements().get(0);
+                if (currentFirstCase == null || J.Case.Type.Rule.equals(currentFirstCase.getType())) {
+                    if (whenNull instanceof J.Block && ((J.Block) whenNull).getStatements().size() == 1) {
+                        whenNull = ((J.Block) whenNull).getStatements().get(0);
+                    }
+                    String semicolon = whenNull instanceof J.Block ? "" : ";";
+                    J.Switch switchWithNullCase = JavaTemplate.apply(
+                            "switch(#{any()}) { case null -> #{any()}" + semicolon + " }",
+                            new Cursor(getCursor(), aSwitch),
+                            aSwitch.getCoordinates().replace(),
+                            aSwitch.getSelector().getTree(),
+                            whenNull);
+                    J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
+                    return nullCase.withBody(requireNonNull(nullCase.getBody()).withPrefix(Space.SINGLE_SPACE));
+                } else {
+                    List<J> statements = new ArrayList<>();
+                    statements.add(aSwitch.getSelector().getTree());
+                    if (whenNull instanceof J.Block) {
+                        statements.addAll(((J.Block) whenNull).getStatements());
+                    } else {
+                        statements.add(whenNull);
+                    }
+                    StringBuilder template = new StringBuilder("switch(#{any()}) {\ncase null:");
+                    for (int i = 1; i < statements.size(); i++) {
+                        template.append("\n#{any()};");
+                    }
+                    template.append("\nbreak;\n}");
+                    J.Switch switchWithNullCase = JavaTemplate.apply(
+                            template.toString(),
+                            new Cursor(getCursor(), aSwitch),
+                            aSwitch.getCoordinates().replace(),
+                            statements.toArray());
+                    J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
+                    Space currentFirstCaseIndentation = currentFirstCase.getStatements().stream().map(J::getPrefix).findFirst().orElse(Space.SINGLE_SPACE);
+
+                    return nullCase.withStatements(ListUtils.mapFirst(nullCase.getStatements(), s -> s == null ? null : s.withPrefix(currentFirstCaseIndentation)));
                 }
-                String semicolon = whenNull instanceof J.Block ? "" : ";";
-                J.Switch switchWithNullCase = JavaTemplate.apply(
-                        "switch(#{any()}) { case null -> #{any()}" + semicolon + " }",
-                        new Cursor(getCursor(), aSwitch),
-                        aSwitch.getCoordinates().replace(),
-                        aSwitch.getSelector().getTree(),
-                        whenNull);
-                J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
-                return nullCase.withBody(requireNonNull(nullCase.getBody()).withPrefix(Space.SINGLE_SPACE));
             }
 
             private boolean coversAllPossibleValues(J.Switch switch_) {

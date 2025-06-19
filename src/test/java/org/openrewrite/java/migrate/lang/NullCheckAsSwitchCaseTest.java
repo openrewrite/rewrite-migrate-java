@@ -73,6 +73,64 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
     }
 
     @Test
+    @DocumentExample
+    void mergeNullCheckWithSwitchStatement() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  static String score(String obj) {
+                      String formatted = "Score not translated yet";
+                      if (obj == null) {
+                          formatted = "You did not enter the test yet";
+                      }
+                      switch (obj) {
+                          case "A", "B":
+                              formatted = "Very good";
+                              break;
+                          case "C":
+                              formatted = "Good";
+                              break;
+                          case "D":
+                              formatted = "Hmmm...";
+                              break;
+                          default:
+                              formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static String score(String obj) {
+                      String formatted = "Score not translated yet";
+                      switch (obj) {
+                          case null:
+                              formatted = "You did not enter the test yet";
+                              break;
+                          case "A", "B":
+                              formatted = "Very good";
+                              break;
+                          case "C":
+                              formatted = "Good";
+                              break;
+                          case "D":
+                              formatted = "Hmmm...";
+                              break;
+                          default:
+                              formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void doNotAffectSecondSwitchFollowingFirst() {
         rewriteRun(
           //language=java
