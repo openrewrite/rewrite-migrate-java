@@ -168,12 +168,25 @@ class UpdateSdkManTest implements RewriteTest {
     }
 
     @Test
-    void doNotDowngradeVersionIfAlreadyHighEnough() {
+    void doNotDowngradeVersionIfAlreadyHighEnoughSameDistribution() {
         rewriteRun(
           spec -> spec.recipe(new UpdateSdkMan("17", null)),
           text(
             """
               java=24-librca
+              """,
+            spec -> spec.path(".sdkmanrc")
+          )
+        );
+    }
+
+    @Test
+    void doNotDowngradeVersionIfAlreadyHighEnoughDifferentDistribution() {
+        rewriteRun(
+          spec -> spec.recipe(new UpdateSdkMan("23", "zulu")),
+          text(
+            """
+              java=24-amzn
               """,
             spec -> spec.path(".sdkmanrc")
           )

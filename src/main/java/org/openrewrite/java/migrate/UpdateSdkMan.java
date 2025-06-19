@@ -92,31 +92,25 @@ public class UpdateSdkMan extends Recipe {
                 Pattern pattern = Pattern.compile("java=(.*?)([.a-z]*-.*)");
                 Matcher matcher = pattern.matcher(plainText.getText());
                 if (matcher.find()) {
-                    if (!isRequestedDowngrade(matcher.group(1))) {
-                        String ver = newVersion == null ? matcher.group(1) : newVersion;
-                        String dist = newDistribution == null ? matcher.group(2) : "-" + newDistribution;
-                        String newBasis = ver + dist;
-                        Pattern majorPattern = Pattern.compile("^" + ver + "[.-].*");
-                        LatestRelease releaseComparator = new LatestRelease(dist);
-                        String idealCandidate = readSdkmanJavaCandidates().stream()
-                                .filter(candidate -> majorPattern.matcher(candidate).matches())
-                                .filter(candidate -> releaseComparator.isValid(newBasis, candidate))
-                                .max(releaseComparator)
-                                .orElse(null);
-                        if (idealCandidate != null) {
-                            return plainText.withText(matcher.replaceFirst("java=" + idealCandidate));
-                        }
+                    String ver = newVersion == null ? matcher.group(1) : newVersion;
+                    String dist = newDistribution == null ? matcher.group(2) : "-" + newDistribution;
+                    String newBasis = ver + dist;
+                    Pattern majorPattern = Pattern.compile("^" + ver + "[.-].*");
+                    LatestRelease releaseComparator = new LatestRelease(dist);
+                    String idealCandidate = readSdkmanJavaCandidates().stream()
+                            .filter(candidate -> majorPattern.matcher(candidate).matches())
+                            .filter(candidate -> releaseComparator.isValid(newBasis, candidate))
+                            .max(releaseComparator)
+                            .orElse(null);
+                    if (idealCandidate != null && !isRequestedDowngrade(matcher.group(1) + dist, idealCandidate, dist)) {
+                        return plainText.withText(matcher.replaceFirst("java=" + idealCandidate));
                     }
                 }
                 return sourceFile;
             }
 
-            private boolean isRequestedDowngrade(String currentVersion) {
-                if (newVersion == null || currentVersion.equals(newVersion)) {
-                    return false;
-                }
-                LatestRelease basisComparator = new LatestRelease(null);
-                return basisComparator.compare(null, currentVersion, newVersion) > 0;
+            private boolean isRequestedDowngrade(String currentVersionWithNewDist, String requestedVersionWithDist, String dist) {
+                return new LatestRelease(dist).compare(null, currentVersionWithNewDist, requestedVersionWithDist) > 0;
             }
 
             private List<String> readSdkmanJavaCandidates() {
