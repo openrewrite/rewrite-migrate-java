@@ -285,56 +285,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     }
 
     @Test
-    void labelsSwitchBlockWhenNoLabelSpecified() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Test {
-                  static String formatter(Object obj) {
-                      String formatted = "initialValue";
-                      if (obj == null) {
-                          formatted = "null";
-                      } else if (obj instanceof Integer)
-                          formatted = String.format("int %d", (Integer) obj);
-                      else if (obj instanceof Long) {
-                          formatted = String.format("long %d", (Long) obj);
-                      } else if (obj instanceof Double) {
-                          formatted = String.format("double %f", (Double) obj);
-                      } else if (obj instanceof String) {
-                          String str = "String";
-                          formatted = String.format("%s %s", str, (String) obj);
-                      } else {
-                          formatted = "unknown";
-                      }
-                      return formatted;
-                  }
-              }
-              """,
-            """
-              class Test {
-                  static String formatter(Object obj) {
-                      String formatted = "initialValue";
-                      switch (obj) {
-                          case null -> formatted = "null";
-                          case Integer intObj -> formatted = String.format("int %d", intObj);
-                          case Long longObj -> formatted = String.format("long %d", longObj);
-                          case Double doubleObj -> formatted = String.format("double %f", doubleObj);
-                          case String stringObj -> {
-                              String str = "String";
-                              formatted = String.format("%s %s", str, stringObj);
-                          }
-                          default -> formatted = "unknown";
-                      }
-                      return formatted;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
     void switchBlockForNestedClasses() {
         rewriteRun(
           java(
@@ -374,6 +324,37 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                           case Tester.A -> formatted = "nested1";
                           case Tester.B -> formatted = "nested2";
                           default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void noSwitchBlockWhenNoLabelSpecified() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      if (obj == null) {
+                          formatted = "null";
+                      } else if (obj instanceof Integer)
+                          formatted = String.format("int %d", (Integer) obj);
+                      else if (obj instanceof Long) {
+                          formatted = String.format("long %d", (Long) obj);
+                      } else if (obj instanceof Double) {
+                          formatted = String.format("double %f", (Double) obj);
+                      } else if (obj instanceof String) {
+                          String str = "String";
+                          formatted = String.format("%s %s", str, (String) obj);
+                      } else {
+                          formatted = "unknown";
                       }
                       return formatted;
                   }

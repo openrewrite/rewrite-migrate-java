@@ -148,6 +148,11 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 potentialCandidate = false;
                 return;
             }
+            // All InstanceOf checks must have a pattern, otherwise we can't use switch pattern matching (consider calling org.openrewrite.staticanalysis.InstanceOfPatternMatch - or java 17 upgrade - first)
+            if (patternMatchers.keySet().stream().anyMatch(instanceOf -> instanceOf.getPattern() == null)) {
+                potentialCandidate = false;
+                return;
+            }
             boolean nullCaseInSwitch = nullCheckedParameter != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn.get());
             boolean hasLastElseBlock = else_ != null;
 
