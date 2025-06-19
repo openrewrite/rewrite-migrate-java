@@ -30,7 +30,7 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NullCheckAsSwitchCase())
-          .allSources(source -> version(source, 17));
+          .allSources(source -> version(source, 21));
     }
 
     @Test
