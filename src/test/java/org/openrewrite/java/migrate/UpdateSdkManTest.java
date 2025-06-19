@@ -168,6 +168,38 @@ class UpdateSdkManTest implements RewriteTest {
     }
 
     @Test
+    void upgradeIfNewVersionIsStillSameVersionBasisAndSameDistribution() {
+        rewriteRun(
+          spec -> spec.recipe(new UpdateSdkMan("21", null)),
+          text(
+            """
+              java=21.0.6-zulu
+              """,
+            """
+              java=21.0.7-zulu
+              """,
+            spec -> spec.path(".sdkmanrc")
+          )
+        );
+    }
+
+    @Test
+    void upgradeIfNewVersionIsStillSameVersionBasisAndDifferentDistribution() {
+        rewriteRun(
+          spec -> spec.recipe(new UpdateSdkMan("23", "amzn")),
+          text(
+            """
+              java=23.0.1-open
+              """,
+            """
+              java=23.0.2-amzn
+              """,
+            spec -> spec.path(".sdkmanrc")
+          )
+        );
+    }
+
+    @Test
     void doNotDowngradeVersionIfAlreadyHighEnoughSameDistribution() {
         rewriteRun(
           spec -> spec.recipe(new UpdateSdkMan("17", null)),
