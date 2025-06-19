@@ -23,15 +23,15 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.SemanticallyEqual;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Space;
-import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.*;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.time.Duration;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
@@ -68,13 +68,18 @@ public class NullCheckAsSwitchCase extends Recipe {
                     if (nullCheckOpt.isPresent()) {
                         NullCheck check = nullCheckOpt.get();
                         J nextStatement = index + 1 < block.getStatements().size() ? block.getStatements().get(index + 1) : null;
-                        if (!(nextStatement instanceof J.Switch) ||
-                                hasNullCase((J.Switch) nextStatement) ||
-                                !SemanticallyEqual.areEqual(((J.Switch) nextStatement).getSelector().getTree(), check.getNullCheckedParameter()) ||
-                                check.returns() ||
-                                check.couldModifyNullCheckedValue()) {
+                        if (!(nextStatement instanceof J.Switch) || check.returns() || check.couldModifyNullCheckedValue()) {
                             return statement;
                         }
+                        J.Switch nextSwitch = (J.Switch) nextStatement;
+                        // Only if the switch does not have a null case and switches on the same value as the null check, we can remove the null check
+                        // It must have all possible input values covered
+                        if (hasNullCase(nextSwitch) ||
+                                !SemanticallyEqual.areEqual(nextSwitch.getSelector().getTree(), check.getNullCheckedParameter()) ||
+                                !coversAllPossibleValues(nextSwitch)) {
+                            return statement;
+                        }
+
                         nullCheck.set(check);
                         return null;
                     }
@@ -118,6 +123,34 @@ public class NullCheckAsSwitchCase extends Recipe {
                         whenNull);
                 J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
                 return nullCase.withBody(requireNonNull(nullCase.getBody()).withPrefix(Space.SINGLE_SPACE));
+            }
+
+            private boolean coversAllPossibleValues(J.Switch switch_) {
+                List<J> labels = switch_.getCases().getStatements().stream().map(J.Case.class::cast).map(J.Case::getCaseLabels).flatMap(Collection::stream).collect(Collectors.toList());
+                if (labels.stream().anyMatch(label -> label instanceof J.Identifier && "default".equals(((J.Identifier) label).getSimpleName()))) {
+                    return true;
+                }
+                JavaType javaType = switch_.getSelector().getTree().getType();
+                if (javaType instanceof JavaType.Class && ((JavaType.Class) javaType).getKind() == JavaType.FullyQualified.Kind.Enum) {
+                    return ((JavaType.Class) javaType).getMembers().stream().allMatch(variable ->
+                            labels.stream().anyMatch(label -> {
+                                if (!(label instanceof TypeTree)) {
+                                    return false;
+                                }
+                                TypeTree labelJavaType = (TypeTree) label;
+                                if (!TypeUtils.isOfType(labelJavaType.getType(), javaType)) {
+                                    return false;
+                                }
+                                J.Identifier enumName = null;
+                                if (label instanceof J.Identifier) {
+                                    enumName = (J.Identifier) label;
+                                } else if (label instanceof J.FieldAccess) {
+                                    enumName = ((J.FieldAccess) label).getName();
+                                }
+                                return enumName != null && variable.getName().equals(enumName.getSimpleName());
+                            }));
+                }
+                return false;
             }
         });
     }

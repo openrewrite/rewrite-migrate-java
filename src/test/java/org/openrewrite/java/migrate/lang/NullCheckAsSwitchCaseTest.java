@@ -428,6 +428,61 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
         );
     }
 
+    @Test
+    void mergeWhenExistingSwitchIsCoveringAllPossibleEnumValues() {
+        rewriteRun(
+          java(
+            """
+              package suits;
+              public enum Suit {
+                  CLUBS, DIAMONDS, HEARTS, SPADES, JOKER
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              import suits.Suit;
+              import static suits.Suit.HEARTS;
+              import static suits.Suit.DIAMONDS;
+              import static suits.Suit.JOKER;
+              class Test {
+                  void score(Suit obj) {
+                      if (obj == null) {
+                          System.out.println("no suit chosen yet.");
+                      }
+                      switch (obj) {
+                          case Suit.CLUBS -> System.out.println(Suit.CLUBS);
+                          case Suit.SPADES -> System.out.println(Suit.SPADES);
+                          case HEARTS -> System.out.println(HEARTS);
+                          case DIAMONDS -> System.out.println(DIAMONDS);
+                          case JOKER -> System.out.println(JOKER);
+                      }
+                  }
+              }
+              """,
+            """
+              import suits.Suit;
+              import static suits.Suit.HEARTS;
+              import static suits.Suit.DIAMONDS;
+              import static suits.Suit.JOKER;
+              class Test {
+                  void score(Suit obj) {
+                      switch (obj) {
+                          case null -> System.out.println("no suit chosen yet.");
+                          case Suit.CLUBS -> System.out.println(Suit.CLUBS);
+                          case Suit.SPADES -> System.out.println(Suit.SPADES);
+                          case HEARTS -> System.out.println(HEARTS);
+                          case DIAMONDS -> System.out.println(DIAMONDS);
+                          case JOKER -> System.out.println(JOKER);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class Throws {
         @Test
@@ -672,5 +727,61 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
             );
         }
 
+        @Test
+        void doNotMergeWhenExistingSwitchIsNotCoveringAllPossibleInputValuesWithDefault() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String score(String obj) {
+                          String formatted = "Score not translated yet";
+                          if (obj == null) {
+                              throw new IllegalArgumentException();
+                          }
+                          switch (obj) {
+                              case "A", "B" -> formatted = "Very good";
+                              case "C" -> formatted = "Good";
+                              case "D" -> formatted = "Hmmm...";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void doNotMergeWhenExistingSwitchIsNotCoveringAllPossibleEnumValues() {
+            rewriteRun(
+              java(
+                """
+                  package suits;
+                  public enum Suit {
+                      CLUBS, DIAMONDS, HEARTS, SPADES, JOKER
+                  }
+                  """
+              ),
+              //language=java
+              java(
+                """
+                  import suits.Suit;
+                  import static suits.Suit.HEARTS;
+                  class Test {
+                      void score(Suit obj) {
+                          if (obj == null) {
+                              System.out.println("no suit chosen yet.");
+                          }
+                          switch (obj) {
+                              case Suit.SPADES -> System.out.println(Suit.SPADES);
+                              case HEARTS -> System.out.println(HEARTS);
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
     }
 }
