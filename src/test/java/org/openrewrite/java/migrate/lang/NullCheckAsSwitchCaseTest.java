@@ -22,12 +22,15 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
 
 class NullCheckAsSwitchCaseTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new NullCheckAsSwitchCase());
+        spec
+          .recipe(new NullCheckAsSwitchCase())
+          .allSources(source -> version(source, 17));
     }
 
     @Test

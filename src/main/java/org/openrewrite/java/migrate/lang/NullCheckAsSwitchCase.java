@@ -23,7 +23,9 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.SemanticallyEqual;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
+import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.time.Duration;
@@ -59,7 +61,13 @@ public class NullCheckAsSwitchCase extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(Preconditions.not(new KotlinFileChecker<>()), new JavaVisitor<ExecutionContext>() {
+        TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
+                new UsesJavaVersion<>(17),
+                Preconditions.not(new KotlinFileChecker<>()),
+                Preconditions.not(new GroovyFileChecker<>())
+        );
+
+        return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitBlock(J.Block block, ExecutionContext ctx) {
                 AtomicReference<@Nullable NullCheck> nullCheck = new AtomicReference<>();
