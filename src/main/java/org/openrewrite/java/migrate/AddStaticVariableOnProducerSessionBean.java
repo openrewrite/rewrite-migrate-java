@@ -105,7 +105,7 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Set<S
 
                     private boolean isInXml() {
                         J.ClassDeclaration parentClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                        if (parentClass != null && parentClass.getType() instanceof JavaType.FullyQualified) {
+                        if (parentClass.getType() instanceof JavaType.FullyQualified) {
                             JavaType.FullyQualified fqType = parentClass.getType();
                             String fqName = fqType.getFullyQualifiedName();
                             return acc.contains(fqName);
