@@ -28,7 +28,8 @@ import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 import static java.util.Collections.emptyList;
 
