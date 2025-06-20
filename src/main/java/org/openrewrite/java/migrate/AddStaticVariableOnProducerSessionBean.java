@@ -60,16 +60,18 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Set<S
 
                     @Override
                     public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
-                        String className = null;
                         if (EJB_PATH.matches(getCursor())) {
-                            for (Xml.Tag child : tag.getChildren()) {
-                                if ("ejb-class".equals(child.getName())) {
-                                    className = child.getValue().orElse(null);
-                                    break;
+                            Xml.Tag ejbClassTag = tag.getChild("ejb-class").orElse(null);
+                            Xml.Tag sessionTag = tag.getChild("session-type").orElse(null);
+                            if (ejbClassTag != null && sessionTag != null) {
+                                String className = ejbClassTag.getValue().orElse(null);
+                                String sessionType = sessionTag.getValue().orElse(null);
+                                if (className != null &&
+                                    ("Singleton".equalsIgnoreCase(sessionType) ||
+                                     "Stateless".equalsIgnoreCase(sessionType) ||
+                                     "Stateful".equalsIgnoreCase(sessionType))) {
+                                    acc.add(className);
                                 }
-                            }
-                            if (className != null) {
-                                acc.add(className);
                             }
                         }
                         return super.visitTag(tag, ctx);
@@ -90,7 +92,7 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Set<S
                             return multiVariable.withModifiers(ListUtils.concat(multiVariable.getModifiers(),
                                     new J.Modifier(Tree.randomId(), Space.SINGLE_SPACE, Markers.EMPTY, null, J.Modifier.Type.Static, emptyList())));
                         }
-                        return super.visitVariableDeclarations(multiVariable, ctx);
+                        return multiVariable;
                     }
 
                     private boolean isInSessionBean() {
