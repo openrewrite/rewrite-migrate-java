@@ -67,7 +67,7 @@ final class DeclarationCheck {
         }
 
         initializer = initializer.unwrap();
-        boolean isNullAssigment = initializer instanceof J.Literal && ((J.Literal) initializer).getValue() == null;
+        boolean isNullAssigment = J.Literal.isLiteralValue(initializer, null);
         boolean alreadyUseVar = typeExpression instanceof J.Identifier && "var".equals(((J.Identifier) typeExpression).getSimpleName());
         return !isNullAssigment && !alreadyUseVar;
     }
