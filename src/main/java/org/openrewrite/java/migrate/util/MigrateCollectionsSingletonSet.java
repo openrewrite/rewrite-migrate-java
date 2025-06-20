@@ -60,8 +60,7 @@ public class MigrateCollectionsSingletonSet extends Recipe {
             }
 
             private boolean isNotLiteralNull(J.MethodInvocation m) {
-                return !(m.getArguments().get(0) instanceof J.Literal &&
-                         ((J.Literal) m.getArguments().get(0)).getValue() == null);
+                return !(J.Literal.isLiteralValue(m.getArguments().get(0), null));
             }
         });
     }
