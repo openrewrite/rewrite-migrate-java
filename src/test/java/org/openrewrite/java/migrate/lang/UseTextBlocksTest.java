@@ -71,7 +71,6 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void newlineAtBeginningOfLines() {
         rewriteRun(
