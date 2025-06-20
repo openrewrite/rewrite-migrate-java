@@ -40,7 +40,7 @@ public class MigrateCollectionsSingletonMap extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Prefer `Map.Of(..)` instead of using `Collections.singletonMap()` in Java 9 or higher.";
+        return "Prefer `Map.of(..)` instead of using `Collections.singletonMap()` in Java 9 or higher.";
     }
 
     @Override
