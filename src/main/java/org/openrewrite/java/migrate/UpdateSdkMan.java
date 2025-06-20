@@ -102,11 +102,15 @@ public class UpdateSdkMan extends Recipe {
                             .filter(candidate -> releaseComparator.isValid(newBasis, candidate))
                             .max(releaseComparator)
                             .orElse(null);
-                    if (idealCandidate != null) {
+                    if (idealCandidate != null && !isRequestedDowngrade(matcher.group(1) + dist, idealCandidate, dist)) {
                         return plainText.withText(matcher.replaceFirst("java=" + idealCandidate));
                     }
                 }
                 return sourceFile;
+            }
+
+            private boolean isRequestedDowngrade(String currentVersionWithNewDist, String requestedVersionWithDist, String dist) {
+                return new LatestRelease(dist).compare(null, currentVersionWithNewDist, requestedVersionWithDist) > 0;
             }
 
             private List<String> readSdkmanJavaCandidates() {
