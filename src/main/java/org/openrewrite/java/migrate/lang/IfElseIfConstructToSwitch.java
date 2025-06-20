@@ -60,26 +60,27 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 Preconditions.not(new KotlinFileChecker<>()),
                 Preconditions.not(new GroovyFileChecker<>())
         );
-
         return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
 
             @Override
             public J visitIf(J.If if_, ExecutionContext ctx) {
                 J.Switch switch_ = new SwitchCandidate(if_, getCursor()).buildSwitchTemplate();
                 if (switch_ != null) {
-                    return super.visitSwitch(
-                            new JavaIsoVisitor<ExecutionContext>() {
-                                @Override
-                                public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
-                                    if (case_.getBody() == null) {
-                                        return case_;
-                                    }
-                                    if (case_.getBody() instanceof J.Block && ((J.Block) case_.getBody()).getStatements().isEmpty() && !((J.Block) case_.getBody()).getEnd().isEmpty()) {
-                                        return case_.withBody(((J.Block) case_.getBody()).withEnd(Space.EMPTY));
-                                    }
-                                    return case_.withBody(case_.getBody().withPrefix(Space.SINGLE_SPACE));
-                                }
-                            }.visitSwitch(switch_, ctx), ctx);
+                    switch_ = new JavaIsoVisitor<ExecutionContext>() {
+                        @Override
+                        public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
+                            if (case_.getBody() == null) {
+                                return case_;
+                            }
+                            if (case_.getBody() instanceof J.Block &&
+                                    ((J.Block) case_.getBody()).getStatements().isEmpty() &&
+                                    !((J.Block) case_.getBody()).getEnd().isEmpty()) {
+                                return case_.withBody(((J.Block) case_.getBody()).withEnd(Space.EMPTY));
+                            }
+                            return case_.withBody(case_.getBody().withPrefix(Space.SINGLE_SPACE));
+                        }
+                    }.visitSwitch(switch_, ctx);
+                    return super.visitSwitch(switch_, ctx);
                 }
                 return super.visitIf(if_, ctx);
             }
@@ -107,9 +108,10 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     ifPart = handleInstanceOfCheck(ifPart);
                 } else {
                     potentialCandidate = false;
+                    return;
                 }
             }
-            validatePotentialCandidate();
+            potentialCandidate = validatePotentialCandidate();
         }
 
         private J.@Nullable If handleNullCheck(J.If ifPart, Cursor cursor) {
@@ -142,27 +144,26 @@ public class IfElseIfConstructToSwitch extends Recipe {
             return ifPart;
         }
 
-        private void validatePotentialCandidate() {
+        private boolean validatePotentialCandidate() {
             Optional<Expression> switchOn = switchOn();
             // all ifs in the chain must be on the same variable in order to be a candidate for switch pattern matching
-            if (!switchOn.isPresent() || potentialCandidate && !patternMatchers.keySet().stream()
+            if (!switchOn.isPresent() || !patternMatchers.keySet().stream()
                     .map(J.InstanceOf::getExpression)
                     .allMatch(it -> SemanticallyEqual.areEqual(switchOn.get(), it))) {
-                potentialCandidate = false;
-                return;
+                return false;
             }
-            // All InstanceOf checks must have a pattern, otherwise we can't use switch pattern matching (consider calling org.openrewrite.staticanalysis.InstanceOfPatternMatch - or java 17 upgrade - first)
+            // All InstanceOf checks must have a pattern, otherwise we can't use switch pattern matching
+            // (consider calling org.openrewrite.staticanalysis.InstanceOfPatternMatch - or java 17 upgrade - first)
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> instanceOf.getPattern() == null)) {
-                potentialCandidate = false;
-                return;
+                return false;
             }
             boolean nullCaseInSwitch = nullCheckedParameter != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn.get());
             boolean hasLastElseBlock = else_ != null;
 
             // we need at least 3 cases to use a switch
-            if (potentialCandidate && patternMatchers.keySet().size() + (nullCaseInSwitch ? 1 : 0) + (hasLastElseBlock ? 1 : 0) <= 2) {
-                potentialCandidate = false;
-            }
+            return 3 <= patternMatchers.size() +
+                    (nullCaseInSwitch ? 1 : 0) +
+                    (hasLastElseBlock ? 1 : 0);
         }
 
         public J.@Nullable Switch buildSwitchTemplate() {
@@ -223,7 +224,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
             if (statement.getClazz() instanceof J.Identifier) {
                 return ((J.Identifier) statement.getClazz()).getSimpleName();
             } else if (statement.getClazz() instanceof J.FieldAccess) {
-                return  ((J.FieldAccess) statement.getClazz()).toString();
+                return ((J.FieldAccess) statement.getClazz()).toString();
             }
             throw new IllegalStateException("Found unsupported statement where clazz is " + statement.getClazz());
         }

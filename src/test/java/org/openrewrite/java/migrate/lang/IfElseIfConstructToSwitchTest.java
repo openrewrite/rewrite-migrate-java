@@ -30,8 +30,8 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-                .recipe(new IfElseIfConstructToSwitch())
-                .allSources(source -> version(source, 21));
+          .recipe(new IfElseIfConstructToSwitch())
+          .allSources(source -> version(source, 21));
     }
 
     @Test
@@ -493,51 +493,51 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
         @Test
         void switchBlockWhenPreviousRecipeAddedLabels() {
             rewriteRun(
-                spec -> spec.recipes(new InstanceOfPatternMatch(), new IfElseIfConstructToSwitch()),
-                //language=java
-                java(
-                    """
-                        class Test {
-                            static String formatter(Object obj) {
-                                String formatted = "initialValue";
-                                if (obj == null) {
-                                    formatted = "null";
-                                } else if (obj instanceof Integer)
-                                    formatted = String.format("int %d", (Integer) obj);
-                                else if (obj instanceof Long) {
-                                    formatted = String.format("long %d", (Long) obj);
-                                } else if (obj instanceof Double) {
-                                    formatted = String.format("double %f", (Double) obj);
-                                } else if (obj instanceof String) {
-                                    String str = "String";
-                                    formatted = String.format("%s %s", str, (String) obj);
-                                } else {
-                                    formatted = "unknown";
-                                }
-                                return formatted;
-                            }
-                        }
-                        """,
-                    """
-                        class Test {
-                            static String formatter(Object obj) {
-                                String formatted = "initialValue";
-                                switch (obj) {
-                                    case null -> formatted = "null";
-                                    case Integer integer -> formatted = String.format("int %d", integer);
-                                    case Long long1 -> formatted = String.format("long %d", long1);
-                                    case Double double1 -> formatted = String.format("double %f", double1);
-                                    case String string -> {
-                                        String str = "String";
-                                        formatted = String.format("%s %s", str, string);
-                                    }
-                                    default -> formatted = "unknown";
-                                }
-                                return formatted;
-                            }
-                        }
-                        """
-                )
+              spec -> spec.recipes(new InstanceOfPatternMatch(), new IfElseIfConstructToSwitch()),
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String formatter(Object obj) {
+                          String formatted = "initialValue";
+                          if (obj == null) {
+                              formatted = "null";
+                          } else if (obj instanceof Integer)
+                              formatted = String.format("int %d", (Integer) obj);
+                          else if (obj instanceof Long) {
+                              formatted = String.format("long %d", (Long) obj);
+                          } else if (obj instanceof Double) {
+                              formatted = String.format("double %f", (Double) obj);
+                          } else if (obj instanceof String) {
+                              String str = "String";
+                              formatted = String.format("%s %s", str, (String) obj);
+                          } else {
+                              formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """,
+                """
+                  class Test {
+                      static String formatter(Object obj) {
+                          String formatted = "initialValue";
+                          switch (obj) {
+                              case null -> formatted = "null";
+                              case Integer integer -> formatted = String.format("int %d", integer);
+                              case Long long1 -> formatted = String.format("long %d", long1);
+                              case Double double1 -> formatted = String.format("double %f", double1);
+                              case String string -> {
+                                  String str = "String";
+                                  formatted = String.format("%s %s", str, string);
+                              }
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
             );
         }
     }
