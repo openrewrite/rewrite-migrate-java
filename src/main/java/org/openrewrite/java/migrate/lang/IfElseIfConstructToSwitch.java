@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.lang;
 
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
@@ -34,6 +33,7 @@ import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
@@ -65,27 +65,19 @@ public class IfElseIfConstructToSwitch extends Recipe {
 
             @Override
             public J visitIf(J.If if_, ExecutionContext ctx) {
-                SwitchCandidate switchCandidate = new SwitchCandidate(if_, getCursor());
-
-                if (switchCandidate.isPotentialCandidate()) {
-                    Object[] arguments = switchCandidate.buildTemplateArguments(getCursor());
-                    if (arguments.length == 0) {
-                        super.visitIf(if_, ctx);
-                    }
-                    String switchBody = switchCandidate.buildTemplate();
-                    J.Switch switch_ = JavaTemplate.builder(switchBody)
-                            .contextSensitive()
-                            .build()
-                            .apply(getCursor(), if_.getCoordinates().replace(), arguments)
-                            .withPrefix(if_.getPrefix());
+                J.Switch switch_ = new SwitchCandidate(if_, getCursor()).buildSwitchTemplate();
+                if (switch_ != null) {
                     return super.visitSwitch(
                             new JavaIsoVisitor<ExecutionContext>() {
                                 @Override
                                 public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
-                                    if (!(case_.getBody() instanceof J.Block) || !((J.Block) case_.getBody()).getStatements().isEmpty() || ((J.Block) case_.getBody()).getEnd().isEmpty()) {
+                                    if (case_.getBody() == null) {
                                         return case_;
                                     }
-                                    return case_.withBody(createEmptyBlock().withPrefix(Space.SINGLE_SPACE));
+                                    if (case_.getBody() instanceof J.Block && ((J.Block) case_.getBody()).getStatements().isEmpty() && !((J.Block) case_.getBody()).getEnd().isEmpty()) {
+                                        return case_.withBody(((J.Block) case_.getBody()).withEnd(Space.EMPTY));
+                                    }
+                                    return case_.withBody(case_.getBody().withPrefix(Space.SINGLE_SPACE));
                                 }
                             }.visitSwitch(switch_, ctx), ctx);
                 }
@@ -99,11 +91,14 @@ public class IfElseIfConstructToSwitch extends Recipe {
         private @Nullable Expression nullCheckedParameter = null;
         private @Nullable Statement nullCheckedStatement = null;
         private @Nullable Statement else_ = null;
+        private final Cursor cursor;
+        private final J.If if_;
 
-        @Getter
         private boolean potentialCandidate = true;
 
         private SwitchCandidate(J.If if_, Cursor cursor) {
+            this.if_ = if_;
+            this.cursor = cursor;
             J.If ifPart = if_;
             while (potentialCandidate && ifPart != null) {
                 if (ifPart.getIfCondition().getTree() instanceof J.Binary) {
@@ -170,69 +165,82 @@ public class IfElseIfConstructToSwitch extends Recipe {
             }
         }
 
-        Optional<Expression> switchOn() {
+        public J.@Nullable Switch buildSwitchTemplate() {
+            Optional<Expression> switchOn = switchOn();
+            if (!this.potentialCandidate || !switchOn.isPresent()) {
+                return null;
+            }
+            Object[] arguments = new Object[2 + (nullCheckedParameter != null ? 1 : 0) + (patternMatchers.size() * 3)];
+            arguments[0] = switchOn.get();
+            StringBuilder switchBody = new StringBuilder("switch (#{any()}) {\n");
+            int i = 1;
+            if (nullCheckedParameter != null) {
+                Statement statement = getStatement(Objects.requireNonNull(nullCheckedStatement));
+                if (statement instanceof J.Block) {
+                    switchBody.append("case null -> #{}\n");
+                } else {
+                    switchBody.append("case null -> #{any()};\n");
+                }
+                arguments[i++] = statement;
+            }
+            for (Map.Entry<J.InstanceOf, Statement> entry : patternMatchers.entrySet()) {
+                J.InstanceOf instanceOf = entry.getKey();
+                Statement statement = getStatement(entry.getValue());
+                if (statement instanceof J.Block) {
+                    switchBody.append("case #{}#{} -> #{}\n");
+                } else {
+                    switchBody.append("case #{}#{} -> #{any()};\n");
+                }
+                arguments[i++] = getClassName(instanceOf);
+                arguments[i++] = getPattern(instanceOf);
+                arguments[i++] = statement;
+            }
+            if (else_ != null) {
+                Statement statement = getStatement(else_);
+                if (statement instanceof J.Block) {
+                    switchBody.append("default -> #{}\n");
+                } else {
+                    switchBody.append("default -> #{any()};\n");
+                }
+                arguments[i] = statement;
+            } else {
+                switchBody.append("default -> #{}\n");
+                arguments[i] = createEmptyBlock();
+            }
+            switchBody.append("}\n");
+
+            return JavaTemplate.apply(switchBody.toString(), cursor, if_.getCoordinates().replace(), arguments).withPrefix(if_.getPrefix());
+        }
+
+        private Optional<Expression> switchOn() {
             return patternMatchers.keySet().stream()
                     .map(J.InstanceOf::getExpression)
                     .filter(e -> e instanceof J.FieldAccess || e instanceof J.Identifier)
                     .findAny();
         }
 
-        Object[] buildTemplateArguments(Cursor cursor) {
-            Optional<Expression> switchOn = switchOn();
-            if (!switchOn.isPresent()) {
-                return new Object[0];
+        private String getClassName(J.InstanceOf statement) {
+            if (statement.getClazz() instanceof J.Identifier) {
+                return ((J.Identifier) statement.getClazz()).getSimpleName();
+            } else if (statement.getClazz() instanceof J.FieldAccess) {
+                return  ((J.FieldAccess) statement.getClazz()).toString();
             }
-            Object[] arguments = new Object[1 + (nullCheckedParameter != null ? 1 : 0) + (patternMatchers.size() * 3) + (else_ != null ? 1 : 0)];
-            arguments[0] = switchOn.get();
-            int i = 1;
-            if (nullCheckedParameter != null) {
-                // case null -> nullCheckedStatement
-                arguments[i++] = getStatementArgument(nullCheckedStatement, cursor);
-            }
-            for (Map.Entry<J.InstanceOf, Statement> entry : patternMatchers.entrySet()) {
-                J.InstanceOf instanceOf = entry.getKey();
-                // case class (pattern) -> statement
-                if (instanceOf.getClazz() instanceof J.Identifier) {
-                    arguments[i++] = ((J.Identifier) instanceOf.getClazz()).getSimpleName();
-                } else if (instanceOf.getClazz() instanceof J.FieldAccess) {
-                    arguments[i++] = ((J.FieldAccess) instanceOf.getClazz()).toString();
-                }
-                arguments[i++] = instanceOf.getPattern() == null ? "" : instanceOf.getPattern().withPrefix(Space.SINGLE_SPACE).print(cursor);
-                arguments[i++] = getStatementArgument(entry.getValue(), cursor);
-            }
-            if (else_ != null) {
-                // default -> statement
-                arguments[i] = getStatementArgument(else_, cursor);
-            }
-
-            return arguments;
+            throw new IllegalStateException("Found unsupported statement where clazz is " + statement.getClazz());
         }
 
-        String buildTemplate() {
-            StringBuilder switchBody = new StringBuilder("switch (#{any()}) {\n");
-            if (nullCheckedParameter != null) {
-                switchBody.append("case null -> #{}\n");
+        private String getPattern(J.InstanceOf statement) {
+            if (statement.getPattern() instanceof J.Identifier) {
+                return " " + ((J.Identifier) statement.getPattern()).getSimpleName();
             }
-            for (int i = 0; i < patternMatchers.size(); i++) {
-                switchBody.append("case #{}#{} -> #{}\n");
-            }
-            if (else_ != null) {
-                switchBody.append("default -> #{}\n");
-            } else {
-                switchBody.append("default -> {}\n");
-            }
-            switchBody.append("}\n");
-
-            return switchBody.toString();
+            return "";
         }
 
-        private String getStatementArgument(Statement statement, Cursor cursor) {
+        private Statement getStatement(Statement statement) {
             Statement toAdd = statement;
             if (statement instanceof J.Block && ((J.Block) statement).getStatements().size() == 1) {
                 toAdd = ((J.Block) statement).getStatements().get(0);
             }
-            String suffix = toAdd instanceof J.Block ? "" : ";";
-            return toAdd.withPrefix(Space.EMPTY).print(cursor) + suffix;
+            return toAdd;
         }
     }
 }
