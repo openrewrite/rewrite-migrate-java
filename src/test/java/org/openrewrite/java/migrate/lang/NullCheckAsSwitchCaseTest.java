@@ -76,7 +76,6 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
     }
 
     @Test
-    @DocumentExample
     void mergeNullCheckWithSwitchStatement() {
         rewriteRun(
           //language=java
