@@ -247,6 +247,13 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
         rewriteRun(
                 //language=java
                 java(
+                """
+                        public class AnotherClass {
+                            public static class SubClass<T> {}
+                        }
+                        """),
+                //language=java
+                java(
                         """
                           class Test {
                               static String formatter(Object obj) {
@@ -259,6 +266,8 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                                       formatted = String.format("strings %s", (Object) strings);
                                   } else if (obj instanceof Class<?> clazz) {
                                       formatted = String.format("class %s", clazz.getSimpleName());
+                                  } else if (obj instanceof AnotherClass.SubClass<?> subClazz) {
+                                      formatted = String.format("sub-class %s", subClazz);
                                   }
                                   return formatted;
                               }
@@ -273,6 +282,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                                       case String str -> formatted = String.format("string %s", str);
                                       case String[] strings -> formatted = String.format("strings %s", (Object) strings);
                                       case Class<?> clazz -> formatted = String.format("class %s", clazz.getSimpleName());
+                                      case AnotherClass.SubClass<?> subClazz -> formatted = String.format("sub-class %s", subClazz);
                                       default -> {}
                                   }
                                   return formatted;
