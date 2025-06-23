@@ -35,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
 import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
@@ -162,7 +163,8 @@ public class IfElseIfConstructToSwitch extends Recipe {
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> instanceOf.getPattern() == null)) {
                 return false;
             }
-            //The blocks cannot do a return as that would lead to all blocks having to do a return, the block/expression difference in return for switch statements / expressions being different...
+            // The blocks cannot do a return as that would lead to all blocks having to do a return,
+            // the block/expression difference in return for switch statements / expressions being different...
             if (returns(nullCheckedStatement) || patternMatchers.values().stream().anyMatch(this::returns) || returns(else_)) {
                 return false;
             }
@@ -180,6 +182,16 @@ public class IfElseIfConstructToSwitch extends Recipe {
             return 3 <= patternMatchers.size() +
                     (nullCaseInSwitch ? 1 : 0) +
                     (hasLastElseBlock ? 1 : 0);
+        }
+
+        private boolean returns(@Nullable Statement statement) {
+            return statement != null && new JavaIsoVisitor<AtomicBoolean>() {
+                @Override
+                public J.Return visitReturn(J.Return return_, AtomicBoolean atomicBoolean) {
+                    atomicBoolean.set(true);
+                    return return_;
+                }
+            }.reduce(statement, new AtomicBoolean(false)).get();
         }
 
         public J.@Nullable Switch buildSwitchTemplate() {
@@ -236,29 +248,13 @@ public class IfElseIfConstructToSwitch extends Recipe {
         }
 
         private Statement getStatement(Statement statement) {
-            Statement toAdd = statement;
             if (statement instanceof J.Block && ((J.Block) statement).getStatements().size() == 1) {
                 Statement firstStatement = ((J.Block) statement).getStatements().get(0);
                 if (firstStatement instanceof Expression || firstStatement instanceof J.Throw) {
-                    toAdd = firstStatement;
+                    return firstStatement;
                 }
             }
-            return toAdd;
-        }
-
-        private boolean returns(@Nullable Statement statement) {
-            if (statement == null) {
-                return false;
-            }
-            if (statement instanceof J.Block) {
-                for (Statement s : ((J.Block) statement).getStatements()) {
-                    if (s instanceof J.Return) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            return statement instanceof J.Return;
+            return statement;
         }
     }
 }
