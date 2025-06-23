@@ -107,7 +107,10 @@ public class NullCheckAsSwitchCase extends Recipe {
 
             private J.Case createNullCase(J.Switch aSwitch, Statement whenNull) {
                 if (whenNull instanceof J.Block && ((J.Block) whenNull).getStatements().size() == 1) {
-                    whenNull = ((J.Block) whenNull).getStatements().get(0);
+                    Statement firstStatement = ((J.Block) whenNull).getStatements().get(0);
+                    if (firstStatement instanceof Expression || firstStatement instanceof J.Throw) {
+                        whenNull = firstStatement;
+                    }
                 }
                 String semicolon = whenNull instanceof J.Block ? "" : ";";
                 J.Switch switchWithNullCase = JavaTemplate.apply(
