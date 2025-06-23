@@ -157,6 +157,13 @@ public class IfElseIfConstructToSwitch extends Recipe {
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> instanceOf.getPattern() == null)) {
                 return false;
             }
+            // Do no harm -> If we do not know how to replace(yet), do not replace
+            if (patternMatchers.keySet().stream().anyMatch(instanceOf -> {
+                J clazz = instanceOf.getClazz();
+                return !(clazz instanceof J.Identifier || clazz instanceof J.FieldAccess || clazz instanceof J.ArrayType || clazz instanceof J.ParameterizedType);
+            })) {
+                return false;
+            }
             boolean nullCaseInSwitch = nullCheckedParameter != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn.get());
             boolean hasLastElseBlock = else_ != null;
 
@@ -223,10 +230,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
         private String getClassName(J.InstanceOf statement) {
             if (statement.getClazz() instanceof J.Identifier) {
                 return ((J.Identifier) statement.getClazz()).getSimpleName();
-            } else if (statement.getClazz() instanceof J.FieldAccess) {
-                return ((J.FieldAccess) statement.getClazz()).toString();
             }
-            throw new IllegalStateException("Found unsupported statement where clazz is " + statement.getClazz());
+
+            return statement.getClazz().toString();
         }
 
         private String getPattern(J.InstanceOf statement) {
