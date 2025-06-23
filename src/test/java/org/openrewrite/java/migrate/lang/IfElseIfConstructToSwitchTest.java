@@ -243,6 +243,47 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     }
 
     @Test
+    void worksWithGenericsAndArrays() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                          class Test {
+                              static String formatter(Object obj) {
+                                  String formatted = "initialValue";
+                                  if (obj == null) {
+                                      formatted = "null";
+                                  } else if (obj instanceof String str)
+                                      formatted = String.format("string %s", str);
+                                  else if (obj instanceof String[] strings) {
+                                      formatted = String.format("strings %s", (Object) strings);
+                                  } else if (obj instanceof Class<?> clazz) {
+                                      formatted = String.format("class %s", clazz.getSimpleName());
+                                  }
+                                  return formatted;
+                              }
+                          }
+                          """,
+                        """
+                          class Test {
+                              static String formatter(Object obj) {
+                                  String formatted = "initialValue";
+                                  switch (obj) {
+                                      case null -> formatted = "null";
+                                      case String str -> formatted = String.format("string %s", str);
+                                      case String[] strings -> formatted = String.format("strings %s", (Object) strings);
+                                      case Class<?> clazz -> formatted = String.format("class %s", clazz.getSimpleName());
+                                      default -> {}
+                                  }
+                                  return formatted;
+                              }
+                          }
+                          """
+                )
+        );
+    }
+
+    @Test
     void defaultSwitchBlockFinalElseStatement() {
         rewriteRun(
           //language=java
