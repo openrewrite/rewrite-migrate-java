@@ -192,34 +192,19 @@ public class IfElseIfConstructToSwitch extends Recipe {
             StringBuilder switchBody = new StringBuilder("switch (#{any()}) {\n");
             int i = 1;
             if (nullCheckedParameter != null) {
-                Statement statement = getStatement(Objects.requireNonNull(nullCheckedStatement));
-                if (statement instanceof J.Block) {
-                    switchBody.append("case null -> #{}\n");
-                } else {
-                    switchBody.append("case null -> #{any()};\n");
-                }
-                arguments[i++] = statement;
+                switchBody.append("case null -> #{any()};\n");
+                arguments[i++] = getStatement(Objects.requireNonNull(nullCheckedStatement));
             }
             for (Map.Entry<J.InstanceOf, Statement> entry : patternMatchers.entrySet()) {
                 J.InstanceOf instanceOf = entry.getKey();
-                Statement statement = getStatement(entry.getValue());
-                if (statement instanceof J.Block) {
-                    switchBody.append("case #{}#{} -> #{}\n");
-                } else {
-                    switchBody.append("case #{}#{} -> #{any()};\n");
-                }
+                switchBody.append("case #{}#{} -> #{any()};\n");
                 arguments[i++] = getClassName(instanceOf);
                 arguments[i++] = getPattern(instanceOf);
-                arguments[i++] = statement;
+                arguments[i++] = getStatement(entry.getValue());
             }
             if (else_ != null) {
-                Statement statement = getStatement(else_);
-                if (statement instanceof J.Block) {
-                    switchBody.append("default -> #{}\n");
-                } else {
-                    switchBody.append("default -> #{any()};\n");
-                }
-                arguments[i] = statement;
+                switchBody.append("default -> #{any()};\n");
+                arguments[i] = getStatement(else_);
             } else {
                 switchBody.append("default -> #{}\n");
                 arguments[i] = createEmptyBlock();
