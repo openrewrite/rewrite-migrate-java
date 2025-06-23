@@ -245,52 +245,52 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     @Test
     void worksWithGenericsAndArrays() {
         rewriteRun(
-                //language=java
-                java(
-                """
-                        public class AnotherClass {
-                            public static class SubClass<T> {}
-                        }
-                        """
-                ),
-                //language=java
-                java(
-                        """
-                          class Test {
-                              static String formatter(Object obj) {
-                                  String formatted = "initialValue";
-                                  if (obj == null) {
-                                      formatted = "null";
-                                  } else if (obj instanceof String str)
-                                      formatted = String.format("string %s", str);
-                                  else if (obj instanceof String[] strings) {
-                                      formatted = String.format("strings %s", (Object) strings);
-                                  } else if (obj instanceof Class<?> clazz) {
-                                      formatted = String.format("class %s", clazz.getSimpleName());
-                                  } else if (obj instanceof AnotherClass.SubClass<?> subClazz) {
-                                      formatted = String.format("sub-class %s", subClazz);
-                                  }
-                                  return formatted;
-                              }
-                          }
-                          """,
-                        """
-                          class Test {
-                              static String formatter(Object obj) {
-                                  String formatted = "initialValue";
-                                  switch (obj) {
-                                      case null -> formatted = "null";
-                                      case String str -> formatted = String.format("string %s", str);
-                                      case String[] strings -> formatted = String.format("strings %s", (Object) strings);
-                                      case Class<?> clazz -> formatted = String.format("class %s", clazz.getSimpleName());
-                                      case AnotherClass.SubClass<?> subClazz -> formatted = String.format("sub-class %s", subClazz);
-                                      default -> {}
-                                  }
-                                  return formatted;
-                              }
-                          }
-                          """
-                )
+          //language=java
+          java(
+            """
+              public class AnotherClass {
+                  public static class SubClass<T> {}
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      if (obj == null) {
+                          formatted = "null";
+                      } else if (obj instanceof String str)
+                          formatted = String.format("string %s", str);
+                      else if (obj instanceof String[] strings) {
+                          formatted = String.format("strings %s", (Object) strings);
+                      } else if (obj instanceof Class<?> clazz) {
+                          formatted = String.format("class %s", clazz.getSimpleName());
+                      } else if (obj instanceof AnotherClass.SubClass<?> subClazz) {
+                          formatted = String.format("sub-class %s", subClazz);
+                      }
+                      return formatted;
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case null -> formatted = "null";
+                          case String str -> formatted = String.format("string %s", str);
+                          case String[] strings -> formatted = String.format("strings %s", (Object) strings);
+                          case Class<?> clazz -> formatted = String.format("class %s", clazz.getSimpleName());
+                          case AnotherClass.SubClass<?> subClazz -> formatted = String.format("sub-class %s", subClazz);
+                          default -> {}
+                      }
+                      return formatted;
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -393,83 +393,83 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     @Test
     void singleExpressionsUnwrapped() {
         rewriteRun(
-                //language=java
-                java(
-                        """
-                          class Test {
-                              static String formatter(Object obj) {
-                                  String formatted = "initialValue";
-                                  if (obj == null) {
-                                      formatted = "null";
-                                  } else if (obj instanceof Integer i)
-                                      formatted = String.format("int %d", i);
-                                  else if (obj instanceof Long l) {
-                                      formatted = String.format("long %d", l);
-                                  } else {
-                                      formatted = "unknown";
-                                  }
-                                  return formatted;
-                              }
-                          }
-                          """,
-                        """
-                          class Test {
-                              static String formatter(Object obj) {
-                                  String formatted = "initialValue";
-                                  switch (obj) {
-                                      case null -> formatted = "null";
-                                      case Integer i -> formatted = String.format("int %d", i);
-                                      case Long l -> formatted = String.format("long %d", l);
-                                      default -> formatted = "unknown";
-                                  }
-                                  return formatted;
-                              }
-                          }
-                          """
-                )
+          //language=java
+          java(
+            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      if (obj == null) {
+                          formatted = "null";
+                      } else if (obj instanceof Integer i)
+                          formatted = String.format("int %d", i);
+                      else if (obj instanceof Long l) {
+                          formatted = String.format("long %d", l);
+                      } else {
+                          formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case null -> formatted = "null";
+                          case Integer i -> formatted = String.format("int %d", i);
+                          case Long l -> formatted = String.format("long %d", l);
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """
+          )
         );
     }
 
     @Test
     void singleStatementsNotUnwrapped() {
         rewriteRun(
-                //language=java
-                java(
-                        """
-                          class Test {
-                              static String formatter(Object obj) {
-                                  String formatted = "initialValue";
-                                  if (obj == null) {
-                                      formatted = "null";
-                                  } else if (obj instanceof Long l) {
-                                      if (formatted.equals("initialValue")) {
-                                          formatted = String.format("long %d", l);
-                                      }
-                                  } else {
-                                      formatted = "unknown";
-                                  }
-                                  return formatted;
+          //language=java
+          java(
+            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      if (obj == null) {
+                          formatted = "null";
+                      } else if (obj instanceof Long l) {
+                          if (formatted.equals("initialValue")) {
+                              formatted = String.format("long %d", l);
+                          }
+                      } else {
+                          formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case null -> formatted = "null";
+                          case Long l -> {
+                              if (formatted.equals("initialValue")) {
+                                  formatted = String.format("long %d", l);
                               }
                           }
-                          """,
-                        """
-                          class Test {
-                              static String formatter(Object obj) {
-                                  String formatted = "initialValue";
-                                  switch (obj) {
-                                      case null -> formatted = "null";
-                                      case Long l -> {
-                                          if (formatted.equals("initialValue")) {
-                                              formatted = String.format("long %d", l);
-                                          }
-                                      }
-                                      default -> formatted = "unknown";
-                                  }
-                                  return formatted;
-                              }
-                          }
-                          """
-                )
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -478,74 +478,74 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
         @Test
         void throwsSingleLine() {
             rewriteRun(
-                    //language=java
-                    java(
-                            """
-                              class Test {
-                                  static String formatter(Object obj) {
-                                      String formatted = "initialValue";
-                                      if (obj == null)
-                                          throw new IllegalArgumentException("You did not enter the test yet");
-                                      else if (obj instanceof Long l) {
-                                          formatted = String.format("long %d", l);
-                                      } else {
-                                          formatted = "unknown";
-                                      }
-                                      return formatted;
-                                  }
-                              }
-                              """,
-                            """
-                              class Test {
-                                  static String formatter(Object obj) {
-                                      String formatted = "initialValue";
-                                      switch (obj) {
-                                          case null -> throw new IllegalArgumentException("You did not enter the test yet");
-                                          case Long l -> formatted = String.format("long %d", l);
-                                          default -> formatted = "unknown";
-                                      }
-                                      return formatted;
-                                  }
-                              }
-                              """
-                    )
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String formatter(Object obj) {
+                          String formatted = "initialValue";
+                          if (obj == null)
+                              throw new IllegalArgumentException("You did not enter the test yet");
+                          else if (obj instanceof Long l) {
+                              formatted = String.format("long %d", l);
+                          } else {
+                              formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """,
+                """
+                  class Test {
+                      static String formatter(Object obj) {
+                          String formatted = "initialValue";
+                          switch (obj) {
+                              case null -> throw new IllegalArgumentException("You did not enter the test yet");
+                              case Long l -> formatted = String.format("long %d", l);
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
             );
         }
 
         @Test
         void throwsFromBlock() {
             rewriteRun(
-                    //language=java
-                    java(
-                            """
-                              class Test {
-                                  static String formatter(Object obj) {
-                                      String formatted = "initialValue";
-                                      if (obj == null) {
-                                          throw new IllegalArgumentException("You did not enter the test yet");
-                                      } else if (obj instanceof Long l) {
-                                          formatted = String.format("long %d", l);
-                                      } else {
-                                          formatted = "unknown";
-                                      }
-                                      return formatted;
-                                  }
-                              }
-                              """,
-                            """
-                              class Test {
-                                  static String formatter(Object obj) {
-                                      String formatted = "initialValue";
-                                      switch (obj) {
-                                          case null -> throw new IllegalArgumentException("You did not enter the test yet");
-                                          case Long l -> formatted = String.format("long %d", l);
-                                          default -> formatted = "unknown";
-                                      }
-                                      return formatted;
-                                  }
-                              }
-                              """
-                    )
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String formatter(Object obj) {
+                          String formatted = "initialValue";
+                          if (obj == null) {
+                              throw new IllegalArgumentException("You did not enter the test yet");
+                          } else if (obj instanceof Long l) {
+                              formatted = String.format("long %d", l);
+                          } else {
+                              formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """,
+                """
+                  class Test {
+                      static String formatter(Object obj) {
+                          String formatted = "initialValue";
+                          switch (obj) {
+                              case null -> throw new IllegalArgumentException("You did not enter the test yet");
+                              case Long l -> formatted = String.format("long %d", l);
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
             );
         }
 
@@ -743,89 +743,89 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
         @Test
         void noSwitchBlockWhenNullBlockReturns() {
             rewriteRun(
-                    //language=java
-                    java(
-                        """
-                        class Test {
-                            static String formatter(Object obj) {
-                                String formatted = "initialValue";
-                                if (obj == null) {
-                                    return "null";
-                                } else if (obj instanceof Integer i)
-                                    formatted = String.format("int %d", i);
-                                else if (obj instanceof Long l) {
-                                    formatted = String.format("long %d", l);
-                                } else if (obj instanceof Double d) {
-                                    formatted = String.format("double %f", d);
-                                } else if (obj instanceof String s) {
-                                    String str = "String";
-                                    formatted = String.format("%s %s", str, s);
-                                }
-                                return formatted;
-                            }
-                        }
-                        """
-                    )
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String formatter(Object obj) {
+                          String formatted = "initialValue";
+                          if (obj == null) {
+                              return "null";
+                          } else if (obj instanceof Integer i)
+                              formatted = String.format("int %d", i);
+                          else if (obj instanceof Long l) {
+                              formatted = String.format("long %d", l);
+                          } else if (obj instanceof Double d) {
+                              formatted = String.format("double %f", d);
+                          } else if (obj instanceof String s) {
+                              String str = "String";
+                              formatted = String.format("%s %s", str, s);
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
             );
         }
 
         @Test
         void noSwitchBlockWhenInstanceOfBlockReturns() {
             rewriteRun(
-                    //language=java
-                    java(
-                         """
-                         class Test {
-                             static String formatter(Object obj) {
-                                 String formatted = "initialValue";
-                                 if (obj == null) {
-                                     formatted = "null";
-                                 } else if (obj instanceof Integer i)
-                                     return String.format("int %d", i);
-                                 else if (obj instanceof Long l) {
-                                     formatted = String.format("long %d", l);
-                                 } else if (obj instanceof Double d) {
-                                     formatted = String.format("double %f", d);
-                                 } else if (obj instanceof String s) {
-                                     String str = "String";
-                                     formatted = String.format("%s %s", str, s);
-                                 }
-                                 return formatted;
-                             }
-                         }
-                         """
-                    )
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String formatter(Object obj) {
+                          String formatted = "initialValue";
+                          if (obj == null) {
+                              formatted = "null";
+                          } else if (obj instanceof Integer i)
+                              return String.format("int %d", i);
+                          else if (obj instanceof Long l) {
+                              formatted = String.format("long %d", l);
+                          } else if (obj instanceof Double d) {
+                              formatted = String.format("double %f", d);
+                          } else if (obj instanceof String s) {
+                              String str = "String";
+                              formatted = String.format("%s %s", str, s);
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
             );
         }
 
         @Test
         void noSwitchBlockWhenElseBlockReturns() {
             rewriteRun(
-                    //language=java
-                    java(
-                            """
-                            class Test {
-                                static String formatter(Object obj) {
-                                    String formatted = "initialValue";
-                                    if (obj == null) {
-                                        formatted = "null";
-                                    } else if (obj instanceof Integer i)
-                                        formatted = String.format("int %d", i);
-                                    else if (obj instanceof Long l) {
-                                        formatted = String.format("long %d", l);
-                                    } else if (obj instanceof Double d) {
-                                        formatted = String.format("double %f", d);
-                                    } else if (obj instanceof String s) {
-                                        String str = "String";
-                                        formatted = String.format("%s %s", str, s);
-                                    } else {
-                                        return "Unknown test result";
-                                    }
-                                    return formatted;
-                                }
-                            }
-                            """
-                    )
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String formatter(Object obj) {
+                          String formatted = "initialValue";
+                          if (obj == null) {
+                              formatted = "null";
+                          } else if (obj instanceof Integer i)
+                              formatted = String.format("int %d", i);
+                          else if (obj instanceof Long l) {
+                              formatted = String.format("long %d", l);
+                          } else if (obj instanceof Double d) {
+                              formatted = String.format("double %f", d);
+                          } else if (obj instanceof String s) {
+                              String str = "String";
+                              formatted = String.format("%s %s", str, s);
+                          } else {
+                              return "Unknown test result";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
             );
         }
     }

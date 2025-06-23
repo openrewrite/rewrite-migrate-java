@@ -105,5 +105,5 @@ class MigrateCollectionsSingletonMapTest implements RewriteTest {
             9
           )
         );
-    }    
+    }
 }
