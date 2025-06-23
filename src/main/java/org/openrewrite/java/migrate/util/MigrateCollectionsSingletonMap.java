@@ -40,7 +40,7 @@ public class MigrateCollectionsSingletonMap extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Prefer `Map.Of(..)` instead of using `Collections.singletonMap()` in Java 9 or higher.";
+        return "Prefer `Map.of(..)` instead of using `Collections.singletonMap()` in Java 9 or higher.";
     }
 
     @Override
@@ -49,7 +49,7 @@ public class MigrateCollectionsSingletonMap extends Recipe {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
-                if (SINGLETON_MAP.matches(method)) {
+                if (SINGLETON_MAP.matches(method) && isNotLiteralNull(m)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Map");
                     StringJoiner mapOf = new StringJoiner(", ", "Map.of(", ")");
@@ -67,6 +67,11 @@ public class MigrateCollectionsSingletonMap extends Recipe {
                 }
 
                 return m;
+            }
+
+            private boolean isNotLiteralNull(J.MethodInvocation m) {
+                return !(J.Literal.isLiteralValue(m.getArguments().get(0), null) ||
+                         J.Literal.isLiteralValue(m.getArguments().get(1), null));
             }
         });
     }

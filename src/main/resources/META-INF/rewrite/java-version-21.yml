@@ -142,5 +142,6 @@ description: ->-
 tags:
   - java21
 recipeList:
+  - org.openrewrite.java.migrate.lang.IfElseIfConstructToSwitch
   - org.openrewrite.java.migrate.lang.RefineSwitchCases
   - org.openrewrite.java.migrate.lang.SwitchCaseEnumGuardToLabel

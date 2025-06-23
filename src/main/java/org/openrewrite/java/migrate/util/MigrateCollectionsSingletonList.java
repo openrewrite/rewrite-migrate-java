@@ -49,7 +49,8 @@ public class MigrateCollectionsSingletonList extends Recipe {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
-                if (SINGLETON_LIST.matches(m) && isNotLiteralNull(m)) {
+                if (SINGLETON_LIST.matches(m) &&
+                        !(J.Literal.isLiteralValue(m.getArguments().get(0), null))) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.List");
 
@@ -64,11 +65,6 @@ public class MigrateCollectionsSingletonList extends Recipe {
                             .withPrefix(Space.EMPTY);
                 }
                 return m;
-            }
-
-            private boolean isNotLiteralNull(J.MethodInvocation m) {
-                return !(m.getArguments().get(0) instanceof J.Literal &&
-                         ((J.Literal) m.getArguments().get(0)).getValue() == null);
             }
         });
     }
