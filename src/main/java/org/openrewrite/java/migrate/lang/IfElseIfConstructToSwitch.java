@@ -76,7 +76,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
                             if (case_.getBody() instanceof J.Block &&
                                     ((J.Block) case_.getBody()).getStatements().isEmpty() &&
                                     !((J.Block) case_.getBody()).getEnd().isEmpty()) {
-                                return case_.withBody(((J.Block) case_.getBody()).withPrefix(Space.SINGLE_SPACE).withEnd(Space.EMPTY));
+                                return case_.withBody(((J.Block) case_.getBody())
+                                        .withPrefix(Space.SINGLE_SPACE)
+                                        .withEnd(Space.EMPTY));
                             }
                             return case_.withBody(case_.getBody().withPrefix(Space.SINGLE_SPACE));
                         }
@@ -218,7 +220,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
             if (else_ != null) {
                 arguments[i] = getStatement(else_);
             } else {
-                arguments[i] = createEmptyBlock().withPrefix(Space.SINGLE_SPACE);
+                arguments[i] = createEmptyBlock();
             }
             switchBody.append("}\n");
 
