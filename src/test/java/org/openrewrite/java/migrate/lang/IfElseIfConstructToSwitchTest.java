@@ -251,7 +251,8 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                         public class AnotherClass {
                             public static class SubClass<T> {}
                         }
-                        """),
+                        """
+                ),
                 //language=java
                 java(
                         """
