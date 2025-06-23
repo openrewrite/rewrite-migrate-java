@@ -100,6 +100,11 @@ public class IfElseIfConstructToSwitch extends Recipe {
         private SwitchCandidate(J.If if_, Cursor cursor) {
             this.if_ = if_;
             this.cursor = cursor;
+            Cursor parent = cursor.getParent(2);
+            if (parent == null || parent.getValue() instanceof J.If.Else) {
+                potentialCandidate = false;
+                return;
+            }
             J.If ifPart = if_;
             while (potentialCandidate && ifPart != null) {
                 if (ifPart.getIfCondition().getTree() instanceof J.Binary) {
@@ -155,6 +160,10 @@ public class IfElseIfConstructToSwitch extends Recipe {
             // All InstanceOf checks must have a pattern, otherwise we can't use switch pattern matching
             // (consider calling org.openrewrite.staticanalysis.InstanceOfPatternMatch - or java 17 upgrade - first)
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> instanceOf.getPattern() == null)) {
+                return false;
+            }
+            //The blocks cannot do a return as that would lead to all blocks having to do a return, the block/expression difference in return for switch statements / expressions being different...
+            if (returns(nullCheckedStatement) || patternMatchers.values().stream().anyMatch(this::returns) || returns(else_)) {
                 return false;
             }
             // Do no harm -> If we do not know how to replace(yet), do not replace
@@ -245,9 +254,27 @@ public class IfElseIfConstructToSwitch extends Recipe {
         private Statement getStatement(Statement statement) {
             Statement toAdd = statement;
             if (statement instanceof J.Block && ((J.Block) statement).getStatements().size() == 1) {
-                toAdd = ((J.Block) statement).getStatements().get(0);
+                Statement firstStatement = ((J.Block) statement).getStatements().get(0);
+                if (firstStatement instanceof Expression || firstStatement instanceof J.Throw) {
+                    toAdd = firstStatement;
+                }
             }
             return toAdd;
+        }
+
+        private boolean returns(@Nullable Statement statement) {
+            if (statement == null) {
+                return false;
+            }
+            if (statement instanceof J.Block) {
+                for (Statement s : ((J.Block) statement).getStatements()) {
+                    if (s instanceof J.Return) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return statement instanceof J.Return;
         }
     }
 }
