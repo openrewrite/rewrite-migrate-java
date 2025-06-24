@@ -56,8 +56,45 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
           );
     }
 
-    @Test
     @DocumentExample
+    @Test
+    void addStaticOnProducesMarkedStateless() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package com.test;
+              import jakarta.ejb.Stateless;
+              import jakarta.enterprise.inject.Produces;
+
+              @Stateless
+              public class MySessionBean {
+                  @Produces
+                  private SomeDependency someDependency;
+                  void exampleMethod() {
+                     return;
+                  }
+              }
+              """,
+            """
+              package com.test;
+              import jakarta.ejb.Stateless;
+              import jakarta.enterprise.inject.Produces;
+
+              @Stateless
+              public class MySessionBean {
+                  @Produces
+                  private static SomeDependency someDependency;
+                  void exampleMethod() {
+                     return;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void addStaticToProducesFieldFromXml() {
         rewriteRun(
           xml(
@@ -73,12 +110,6 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
                           <ejb-class>com.test.MySessionBean</ejb-class>
                           <session-type>Stateless</session-type>
                           <transaction-type>Container</transaction-type>
-                      </session>
-                      <session>
-                           <ejb-name>TestProducerFieldNonStaticOnSessionBean</ejb-name>
-                           <ejb-class>org.test.ejb.TestProducerFieldNonStaticOnSessionBean</ejb-class>
-                           <session-type>Stateless</session-type>
-                           <transaction-type>Container</transaction-type>
                       </session>
                   </enterprise-beans>
               </ejb-jar>
@@ -116,7 +147,6 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
     }
 
     @Test
-    @DocumentExample
     void noChangeWhenBeanNotMentionedInXml() {
         rewriteRun(
           xml(
@@ -153,44 +183,6 @@ class AddStaticVariableOnProducerSessionBeanTest implements RewriteTest {
               public class MySessionBean {
                   @Produces
                   private SomeDependency someDependency;
-                  void exampleMethod() {
-                     return;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    @DocumentExample
-    void addStaticOnProducesMarkedStateless() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              package com.test;
-              import jakarta.ejb.Stateless;
-              import jakarta.enterprise.inject.Produces;
-
-              @Stateless
-              public class MySessionBean {
-                  @Produces
-                  private SomeDependency someDependency;
-                  void exampleMethod() {
-                     return;
-                  }
-              }
-              """,
-            """
-              package com.test;
-              import jakarta.ejb.Stateless;
-              import jakarta.enterprise.inject.Produces;
-
-              @Stateless
-              public class MySessionBean {
-                  @Produces
-                  private static SomeDependency someDependency;
                   void exampleMethod() {
                      return;
                   }

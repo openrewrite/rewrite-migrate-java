@@ -49,6 +49,7 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Set<S
 
     @Override
     public Set<String> getInitialValue(ExecutionContext ctx) {
+        // Class names of session beans found in XML
         return new HashSet<>();
     }
 
@@ -57,7 +58,6 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Set<S
         return Preconditions.check(
                 new FindSourceFiles("**/ejb-jar.xml"),
                 new XmlVisitor<ExecutionContext>() {
-
                     @Override
                     public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
                         if (EJB_PATH.matches(getCursor())) {
@@ -107,10 +107,8 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Set<S
 
                     private boolean isInXml() {
                         J.ClassDeclaration parentClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                        if (parentClass.getType() instanceof JavaType.FullyQualified) {
-                            JavaType.FullyQualified fqType = parentClass.getType();
-                            String fqName = fqType.getFullyQualifiedName();
-                            return acc.contains(fqName);
+                        if (parentClass != null && parentClass.getType() != null) {
+                            return acc.contains(parentClass.getType().getFullyQualifiedName());
                         }
                         return false;
                     }
