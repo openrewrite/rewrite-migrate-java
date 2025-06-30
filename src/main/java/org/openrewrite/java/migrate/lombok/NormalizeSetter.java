@@ -26,6 +26,7 @@ import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,12 +40,12 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
 
     @Override
     public String getDisplayName() {
-        return "Rename setter methods to fit lombok";
+        return "Rename setter methods to fit Lombok";
     }
 
     @Override
     public String getDescription() {
-        return "Rename methods that are effectively setter to the name lombok would give them.\n" +
+        return "Rename methods that are effectively setter to the name Lombok would give them.\n" +
                 "Limitations:\n" +
                 " - If two methods in a class are effectively the same setter then one's name will be corrected and the others name will be left as it is.\n" +
                 " - If the correct name for a method is already taken by another method then the name will not be corrected.\n" +
@@ -91,16 +92,9 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
 
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                assert method.getMethodType() != null;
-
-                if (!LombokUtils.isEffectivelySetter(method)) {
-                    return method;
-                }
-
-                // return early if the method overrides another
-                // if the project defined both the original and the overridden method,
-                // then the renaming of the "original" in the base class will cover the override
-                if (method.getLeadingAnnotations().stream().anyMatch(a -> "Override".equals(a.getSimpleName()))) {
+                if (method.getMethodType() == null || method.getBody() == null ||
+                        !LombokUtils.isEffectivelySetter(method) ||
+                        TypeUtils.isOverride(method.getMethodType())) {
                     return method;
                 }
 
