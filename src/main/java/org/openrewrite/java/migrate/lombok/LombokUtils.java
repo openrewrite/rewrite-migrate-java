@@ -189,23 +189,22 @@ class LombokUtils {
         J.VariableDeclarations.NamedVariable param = variableDeclarations.getVariables().get(0);
         String paramName = param.getName().toString();
 
-        boolean singularStatement = method.getBody() != null //abstract methods can be null
-                && method.getBody().getStatements().size() == 1 &&
-                method.getBody().getStatements().get(0) instanceof J.Assignment;
-
-        if (!singularStatement) {
+        if (method.getBody() == null ||
+                method.getBody().getStatements().size() != 1 ||
+                !(method.getBody().getStatements().get(0) instanceof J.Assignment)) {
             return false;
         }
         J.Assignment assignment = (J.Assignment) method.getBody().getStatements().get(0);
 
-        if (assignment.getVariable() instanceof J.FieldAccess || assignment.getVariable() instanceof J.Identifier) {
-            JavaType fieldType = assignment.getVariable().getType();
-            // assigned value is exactly the parameter
-            return assignment.getAssignment().toString().equals(paramName) &&
-                            param.getType() != null &&
-                            param.getType().equals(fieldType);  // type of parameter and field have to match
+        if (!(assignment.getVariable() instanceof J.FieldAccess) && !(assignment.getVariable() instanceof J.Identifier)) {
+            return false;
         }
-        return false;
+
+        JavaType fieldType = assignment.getVariable().getType();
+        // assigned value is exactly the parameter
+        return assignment.getAssignment().toString().equals(paramName) &&
+                        param.getType() != null &&
+                        param.getType().equals(fieldType);  // type of parameter and field have to match
     }
 
     public static String deriveSetterMethodName(JavaType.Variable fieldType) {
