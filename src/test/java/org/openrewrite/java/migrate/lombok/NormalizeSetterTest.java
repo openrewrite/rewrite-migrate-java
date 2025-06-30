@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -143,34 +144,6 @@ class NormalizeSetterTest implements RewriteTest {
     }
 
     @Test
-    void noBoxing1() {
-        rewriteRun(// language=java
-          java(
-            """
-              class A {
-                  Boolean Foo;
-                  void storeFoo(boolean foo) { this.foo = foo; }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void noBoxing2() {
-        rewriteRun(// language=java
-          java(
-            """
-              class A {
-                  boolean Foo;
-                  void storeFoo(Boolean foo) { this.foo = foo; }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
     void renameAcrossClasses() {
         rewriteRun(// language=java
           java(
@@ -201,28 +174,6 @@ class NormalizeSetterTest implements RewriteTest {
                   void useIt() {
                       var a = new A();
                       a.setFoo(4);
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void shouldNotChangeOverridesOfExternalMethods() {
-        rewriteRun(// language=java
-          java(
-            """
-
-              import java.util.Date;
-
-              class A extends Date {
-
-                  private long foo;
-
-                  @Override
-                  public long setTime(long time) {
-                      this.foo = time;
                   }
               }
               """
@@ -296,28 +247,6 @@ class NormalizeSetterTest implements RewriteTest {
               class B extends A {
 
                   @Override
-                  public void setFoo(long foo) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void shouldNotRenameToExistingMethods() {
-        rewriteRun(// language=java
-          java(
-            """
-
-              class A {
-
-                  private long foo;
-
-                  public void setTime(long foo) {
-                      this.foo = foo;
-                  }
-
                   public void setFoo(long foo) {
                   }
               }
@@ -601,4 +530,77 @@ class NormalizeSetterTest implements RewriteTest {
         );
     }
 
+    @Nested
+    class NoChange {
+
+        @Test
+        void noBoxing1() {
+            rewriteRun(// language=java
+              java(
+                """
+                  class A {
+                      Boolean Foo;
+                      void storeFoo(boolean foo) { this.foo = foo; }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void noBoxing2() {
+            rewriteRun(// language=java
+              java(
+                """
+                  class A {
+                      boolean Foo;
+                      void storeFoo(Boolean foo) { this.foo = foo; }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void shouldNotChangeOverridesOfExternalMethods() {
+            rewriteRun(// language=java
+              java(
+                """
+                  import java.util.Date;
+
+                  class A extends Date {
+
+                      private long foo;
+
+                      @Override
+                      public long setTime(long time) {
+                          this.foo = time;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void shouldNotRenameToExistingMethods() {
+            rewriteRun(// language=java
+              java(
+                """
+                  class A {
+
+                      private long foo;
+
+                      public void setTime(long foo) {
+                          this.foo = foo;
+                      }
+
+                      public void setFoo(long foo) {
+                      }
+                  }
+                  """
+              )
+            );
+        }
+    }
 }
