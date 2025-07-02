@@ -35,7 +35,7 @@ import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class NormalizeSetter extends ScanningRecipe<List<NormalizeSetter.RenameRecord>> {
+public class AdoptLombokSetterMethodNames extends ScanningRecipe<List<AdoptLombokSetterMethodNames.RenameRecord>> {
 
     private final static String DO_NOT_RENAME = "DO_NOT_RENAME";
 
