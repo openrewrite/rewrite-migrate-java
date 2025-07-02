@@ -485,6 +485,7 @@ class NormalizeSetterTest implements RewriteTest {
      * If existing method names need to be rotated in a loop the recipe should still work.
      * For now this is not planned.
      */
+
     @Test
     void shouldWorkOnCircleCasesButDoesntYet() {
         rewriteRun(// language=java

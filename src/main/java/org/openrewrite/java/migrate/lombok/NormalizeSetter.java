@@ -24,6 +24,7 @@ import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
@@ -59,8 +60,7 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
 
     @Value
     private static class RenameRecord {
-        String pathToClass_;
-        String methodName_;
+        String methodPattern;
         String parameterType_;
         String newMethodName_;
     }
@@ -125,8 +125,7 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
                 //todo write separate recipe for merging effective setters
                 acc.renameRecords.add(
                         new RenameRecord(
-                                pathToClass,
-                                actualMethodName,
+                                MethodMatcher.methodPattern(method),
                                 parameterType,
                                 expectedMethodName
                         )
@@ -157,15 +156,11 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(MethodAcc acc) {
-
         return new TreeVisitor<Tree, ExecutionContext>() {
-
             @Override
             public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
-
                 for (RenameRecord rr : acc.renameRecords) {
-                    String methodPattern = String.format("%s %s(%s)", rr.pathToClass_, rr.methodName_, rr.parameterType_);
-                    tree = new ChangeMethodName(methodPattern, rr.newMethodName_, true, null)
+                    tree = new ChangeMethodName(rr.methodPattern, rr.newMethodName_, true, null)
                             .getVisitor().visit(tree, ctx);
                 }
                 return tree;
