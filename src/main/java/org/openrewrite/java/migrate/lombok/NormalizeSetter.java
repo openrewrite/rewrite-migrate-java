@@ -31,7 +31,7 @@ import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -61,8 +61,7 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
     @Value
     private static class RenameRecord {
         String methodPattern;
-        String parameterType_;
-        String newMethodName_;
+        String newMethodName;
     }
 
     @Override
@@ -73,21 +72,16 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(MethodAcc acc) {
         return new JavaIsoVisitor<ExecutionContext>() {
-
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-
-                List<String> doNotRename = classDecl.getBody().getStatements().stream()
-                        .filter(s -> s instanceof J.MethodDeclaration)
-                        .map(s -> (J.MethodDeclaration) s)
-                        .map(J.MethodDeclaration::getSimpleName)
-                        .collect(Collectors.toList());
-
-                getCursor().putMessage(DO_NOT_RENAME, doNotRename);
-
-                super.visitClassDeclaration(classDecl, ctx);
-
-                return classDecl;
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                // Cheaply collect all declared methods; this also means we do not support clashing nested class methods
+                Set<JavaType.Method> declaredMethods = cu.getTypesInUse().getDeclaredMethods();
+                List<String> existingMethodNames = new ArrayList<>();
+                for (JavaType.Method method : declaredMethods) {
+                    existingMethodNames.add(method.getName());
+                }
+                getCursor().putMessage(DO_NOT_RENAME, existingMethodNames);
+                return super.visitCompilationUnit(cu, ctx);
             }
 
             @Override
@@ -101,11 +95,8 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
                 JavaType.Variable fieldType = extractVariable(method);
 
                 String expectedMethodName = LombokUtils.deriveSetterMethodName(fieldType);
-                String parameterType = fieldType.getType().toString();
-                String actualMethodName = method.getSimpleName();
-
                 // If method already has the name it should have, then nothing to be done
-                if (expectedMethodName.equals(actualMethodName)) {
+                if (expectedMethodName.equals(method.getSimpleName())) {
                     return method;
                 }
 
@@ -115,23 +106,10 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
                 if (doNotRename.contains(expectedMethodName)) {
                     return method;
                 }
-                //WON'T DO: there is a rare edge case, that is not addressed yet.
-                // If `getFoo()` returns `ba` and `getBa()` returns `foo` then neither will be renamed.
-                // This could be fixed by compiling a list of planned changes and doing a soundness check (and not renaming sequentially, or rather introducing temporary method names)
-                // At this point I don't think it's worth the effort.
 
-
-                String pathToClass = method.getMethodType().getDeclaringType().getFullyQualifiedName().replace('$', '.');
-                //todo write separate recipe for merging effective setters
-                acc.renameRecords.add(
-                        new RenameRecord(
-                                MethodMatcher.methodPattern(method),
-                                parameterType,
-                                expectedMethodName
-                        )
-                );
-                doNotRename.remove(actualMethodName);//actual method name becomes available again
-                doNotRename.add(expectedMethodName);//expected method name now blocked
+                acc.renameRecords.add(new RenameRecord(MethodMatcher.methodPattern(method), expectedMethodName));
+                doNotRename.remove(method.getSimpleName()); //actual method name becomes available again
+                doNotRename.add(expectedMethodName); //expected method name now blocked
                 return method;
             }
 
@@ -160,7 +138,7 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
             @Override
             public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
                 for (RenameRecord rr : acc.renameRecords) {
-                    tree = new ChangeMethodName(rr.methodPattern, rr.newMethodName_, true, null)
+                    tree = new ChangeMethodName(rr.methodPattern, rr.newMethodName, true, null)
                             .getVisitor().visit(tree, ctx);
                 }
                 return tree;
