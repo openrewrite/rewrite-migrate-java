@@ -487,17 +487,15 @@ class NormalizeSetterTest implements RewriteTest {
      * If existing method names need to be rotated in a loop the recipe should still work.
      * For now this is not planned.
      */
-
+    @ExpectedToFail("Not implemented yet")
     @Test
     void shouldWorkOnCircleCasesButDoesntYet() {
         rewriteRun(// language=java
           java(
             """
-
               class A {
 
                   int foo;
-
                   int bar;
 
                   public void setBar(int bar) {
@@ -509,26 +507,23 @@ class NormalizeSetterTest implements RewriteTest {
                   }
 
               }
+              """,
+            """
+              class A {
+
+                  int foo;
+                  int bar;
+
+                  public void setFoo(int foo) {
+                      this.foo = foo;
+                  }
+
+                  public void setBar(int bar) {
+                      this.bar = bar;
+                  }
+
+              }
               """
-//            ,
-//            """
-//
-//              class A {
-//
-//                  int foo;
-//
-//                  int bar;
-//
-//                  public void setFoo(int foo) {
-//                      this.foo = foo;
-//                  }
-//
-//                  public void setBar(int bar) {
-//                      this.bar = bar;
-//                  }
-//
-//              }
-//              """
           )
         );
     }
