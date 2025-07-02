@@ -35,7 +35,7 @@ import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
+public class NormalizeSetter extends ScanningRecipe<List<NormalizeSetter.RenameRecord>> {
 
     private final static String DO_NOT_RENAME = "DO_NOT_RENAME";
 
@@ -54,23 +54,19 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
                 "E.g. `int getFoo() { return ba; } int getBa() { return foo; }` stays as it is.";
     }
 
-    public static class MethodAcc {
-        List<RenameRecord> renameRecords = new ArrayList<>();
-    }
-
     @Value
-    private static class RenameRecord {
+    public static class RenameRecord {
         String methodPattern;
         String newMethodName;
     }
 
     @Override
-    public MethodAcc getInitialValue(ExecutionContext ctx) {
-        return new MethodAcc();
+    public List<RenameRecord> getInitialValue(ExecutionContext ctx) {
+        return new ArrayList<>();
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(MethodAcc acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(List<RenameRecord> renameRecords) {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
@@ -107,7 +103,7 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
                     return method;
                 }
 
-                acc.renameRecords.add(new RenameRecord(MethodMatcher.methodPattern(method), expectedMethodName));
+                renameRecords.add(new RenameRecord(MethodMatcher.methodPattern(method), expectedMethodName));
                 doNotRename.remove(method.getSimpleName()); //actual method name becomes available again
                 doNotRename.add(expectedMethodName); //expected method name now blocked
                 return method;
@@ -133,11 +129,11 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(MethodAcc acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(List<RenameRecord> renameRecords) {
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
-                for (RenameRecord rr : acc.renameRecords) {
+                for (RenameRecord rr : renameRecords) {
                     tree = new ChangeMethodName(rr.methodPattern, rr.newMethodName, true, null)
                             .getVisitor().visit(tree, ctx);
                 }

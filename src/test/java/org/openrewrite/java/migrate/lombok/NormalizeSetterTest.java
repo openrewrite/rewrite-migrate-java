@@ -268,7 +268,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-
               class A {
 
                   private long foo;
@@ -283,7 +282,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-
               class A {
 
                   private long foo;
@@ -309,7 +307,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-
               class A {
 
                   class B {
@@ -323,7 +320,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-
               class A {
 
                   class B {
@@ -345,7 +341,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-
               class A {
 
                   class B {
@@ -361,7 +356,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-
               class A {
 
                   class B {
@@ -389,7 +383,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-
               class A {
 
                   private long foo;
@@ -409,7 +402,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-
               class A {
 
                   private long foo;
@@ -440,7 +432,6 @@ class NormalizeSetterTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-
               class A {
 
                   private long foo;
@@ -460,7 +451,6 @@ class NormalizeSetterTest implements RewriteTest {
               }
               """,
             """
-
               class A {
 
                   private long foo;
