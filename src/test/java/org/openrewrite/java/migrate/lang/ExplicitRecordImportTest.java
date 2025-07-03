@@ -23,7 +23,6 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.javaVersion;
 
 class ExplicitRecordImportTest implements RewriteTest {
 
@@ -91,8 +90,7 @@ class ExplicitRecordImportTest implements RewriteTest {
                       }
                   }
               }
-              """,
-            s -> s.markers(javaVersion(17))
+              """
           )
         );
     }
