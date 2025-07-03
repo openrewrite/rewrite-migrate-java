@@ -20,10 +20,9 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.search.FindTypes;
 import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.JavaVarKeyword;
+import org.openrewrite.java.tree.*;
 
 public class ExplicitRecordImport extends Recipe {
     @Override
@@ -42,17 +41,21 @@ public class ExplicitRecordImport extends Recipe {
                 new UsesType<>("*..Record", false),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                        J.VariableDeclarations vd = super.visitVariableDeclarations(multiVariable, ctx);
-                        if (vd.getType() instanceof JavaType.FullyQualified) {
-                            JavaType.FullyQualified type = (JavaType.FullyQualified) vd.getType();
-                            if ("Record".equals(type.getClassName()) &&
-                                    !type.getPackageName().startsWith("java.lang") &&
-                                    (vd.getTypeExpression() == null || !vd.getTypeExpression().getMarkers().findFirst(JavaVarKeyword.class).isPresent())) {
-                                maybeAddImport(type.getFullyQualifiedName());
+                    public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                        JavaSourceFile javaSourceFile = getCursor().firstEnclosing(JavaSourceFile.class);
+                        if (javaSourceFile != null) {
+                            for (NameTree nameTree : FindTypes.findAssignable(cu, "*..Record")) {
+                                if (nameTree.getType() instanceof JavaType.FullyQualified) {
+                                    JavaType.FullyQualified ref = (JavaType.FullyQualified) nameTree.getType();
+                                    if ("Record".equals(ref.getClassName()) &&
+                                            !ref.getPackageName().startsWith("java.lang") &&
+                                            !nameTree.getMarkers().findFirst(JavaVarKeyword.class).isPresent()) {
+                                        maybeAddImport(ref.getFullyQualifiedName());
+                                    }
+                                }
                             }
                         }
-                        return vd;
+                        return cu;
                     }
                 }
         );
