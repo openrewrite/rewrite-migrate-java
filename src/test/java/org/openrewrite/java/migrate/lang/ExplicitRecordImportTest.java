@@ -98,7 +98,37 @@ class ExplicitRecordImportTest implements RewriteTest {
     }
 
     @Test
-    void noChangeIfAlreadyFullyQualified() {
+    void genericUseOfRecordClass() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package com.acme.music;
+
+              import java.util.List;
+
+              class Test {
+                  List<Record> records;
+              }
+              """,
+            """
+              package com.acme.music;
+
+              import com.acme.music.Record;
+
+              import java.util.List;
+
+              class Test {
+                  List<Record> records;
+              }
+              """
+          )
+        );
+    }
+
+
+    @Test
+    void documentChangeWhenFullyQualified() {
         rewriteRun(
           //language=java
           java(
