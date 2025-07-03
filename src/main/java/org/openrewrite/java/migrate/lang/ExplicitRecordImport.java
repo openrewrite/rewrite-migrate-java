@@ -22,8 +22,8 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.JavaVarKeyword;
 
 public class ExplicitRecordImport extends Recipe {
     @Override
@@ -42,19 +42,17 @@ public class ExplicitRecordImport extends Recipe {
                 new UsesType<>("*..Record", false),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-                        JavaSourceFile javaSourceFile = getCursor().firstEnclosing(JavaSourceFile.class);
-                        if (javaSourceFile != null) {
-                            for (JavaType type : cu.getTypesInUse().getTypesInUse()) {
-                                if (type instanceof JavaType.FullyQualified) {
-                                    JavaType.FullyQualified ref = (JavaType.FullyQualified) type;
-                                    if ("Record".equals(ref.getClassName()) && !ref.getPackageName().startsWith("java.lang")) {
-                                        maybeAddImport(ref.getFullyQualifiedName());
-                                    }
-                                }
+                    public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
+                        J.VariableDeclarations vd = super.visitVariableDeclarations(multiVariable, ctx);
+                        if (vd.getType() instanceof JavaType.FullyQualified) {
+                            JavaType.FullyQualified type = (JavaType.FullyQualified) vd.getType();
+                            if ("Record".equals(type.getClassName()) &&
+                                    !type.getPackageName().startsWith("java.lang") &&
+                                    (vd.getTypeExpression() == null || !vd.getTypeExpression().getMarkers().findFirst(JavaVarKeyword.class).isPresent())) {
+                                maybeAddImport(type.getFullyQualifiedName());
                             }
                         }
-                        return cu;
+                        return vd;
                     }
                 }
         );
