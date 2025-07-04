@@ -24,6 +24,9 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.gradle.Assertions.settingsGradle;
+import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.xml.Assertions.xml;
@@ -726,6 +729,86 @@ class JavaxToJakartaTest implements RewriteTest {
                       public String safeUpperCase(@Nullable String input) {
                           return input == null ? null : input.toUpperCase();
                       }
+                  }
+                  """
+              )
+            )
+          )
+        );
+    }
+
+    @Test
+    void multiProjectWithSpringBoot3StarterWebShouldRemoveJakartaDependencyWhenUsingNullableAnnotationWhenApplicable() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()).parser(JavaParser.fromJavaVersion().dependsOn(javaxServlet, jakartaAnnotation)),
+          mavenProject("multi-project-build",
+            //language=groovy
+            settingsGradle("""
+              include 'project-with-null-annotations'
+              include 'project-without-null-annotations'
+              """),
+            mavenProject("project-with-null-annotations",
+              //language=groovy
+              buildGradle(
+                """
+                  plugins {
+                      id 'java'
+                  }
+
+                  repositories {
+                      mavenCentral()
+                  }
+
+                  dependencies {
+                      implementation 'jakarta.annotation:jakarta.annotation-api:1.3.5'
+                      implementation 'org.springframework.boot:spring-boot-starter-web'
+                  }
+                  """,
+                """
+                  plugins {
+                      id 'java'
+                  }
+
+                  repositories {
+                      mavenCentral()
+                  }
+
+                  dependencies {
+                      implementation 'jakarta.annotation:jakarta.annotation-api:2.0.0'
+                      implementation 'org.springframework.boot:spring-boot-starter-web'
+                  }
+                  """
+              ),
+              srcMainJava(
+                //language=java
+                java(
+                  """
+                    import jakarta.annotation.Nullable;
+
+                    public class TestApplication {
+                        @Nullable
+                        public String safeUpperCase(@Nullable String input) {
+                            return input == null ? null : input.toUpperCase();
+                        }
+                    }
+                    """
+                )
+              )
+            ),
+            mavenProject("project-without-null-annotations",
+              //language=groovy
+              buildGradle(
+                """
+                  plugins {
+                      id 'java'
+                  }
+
+                  repositories {
+                      mavenCentral()
+                  }
+
+                  dependencies {
+                      implementation 'org.springframework.boot:spring-boot-starter-web'
                   }
                   """
               )
