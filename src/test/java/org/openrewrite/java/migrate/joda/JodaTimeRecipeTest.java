@@ -72,15 +72,18 @@ class JodaTimeRecipeTest implements RewriteTest {
           java(
             """
               import org.joda.time.DateTime;
+              import org.joda.time.Period;
 
               class A {
                   public void foo() {
                       DateTime dt = new DateTime();
                       System.out.println(dt.toDateTime());
                       System.out.println(new B().dateTime.toDateTime());
+                      System.out.println(new B().period);
                   }
                   public static class B {
                       DateTime dateTime = new DateTime();
+                      Period period;
                   }
               }
               """,

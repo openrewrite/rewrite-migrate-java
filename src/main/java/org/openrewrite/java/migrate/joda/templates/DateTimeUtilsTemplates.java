@@ -22,22 +22,23 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_INSTANT;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_DATE_TIME_UTILS;
 
-public class BaseDurationTemplates implements Templates {
-    private final MethodMatcher getMillis = new MethodMatcher(JODA_BASE_DURATION + " getMillis()");
-    private final MethodMatcher toPeriodDayTime = new MethodMatcher(JODA_BASE_DURATION + " toPeriod(" + JODA_PERIOD_TYPE + ")");
+public class DateTimeUtilsTemplates implements Templates {
+    private final MethodMatcher currentTimeMillis = new MethodMatcher(JODA_DATE_TIME_UTILS + " currentTimeMillis()");
 
-    //.toPeriod(PeriodType.dayTime())
-
-    private final JavaTemplate getMillisTemplate = JavaTemplate.builder("#{any(" + JAVA_DURATION + ")}.toMillis()").build();
+    private final JavaTemplate.Builder currentTimeMillisTemplate = JavaTemplate.builder("Instant.now().toEpochMilli();")
+            .imports(JAVA_INSTANT);
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
-            add(new MethodTemplate(getMillis, getMillisTemplate));
-
-            add(new MethodTemplate(toPeriodDayTime, JODA_NO_AUTOMATIC_MAPPING_POSSIBLE_TEMPLATE));
+            add(new MethodTemplate(currentTimeMillis, build(currentTimeMillisTemplate)));
         }
     };
+
+    private JavaTemplate build(JavaTemplate.Builder builder) {
+        return builder.build();
+    }
 }
