@@ -37,7 +37,7 @@ class UseRangesTest implements RewriteTest {
     void simple() {
         rewriteRun(
                 //language=java
-                java(//todo add other cases
+                java(
                         """
                           import java.math.BigDecimal;
 
