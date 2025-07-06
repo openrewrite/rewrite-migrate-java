@@ -437,6 +437,104 @@ class UseRangesTest implements RewriteTest {
                 )
             );
         }
+
+        @Test
+        void literals() {
+            rewriteRun(
+                //language=java
+                java(
+                  """
+                    class Test {
+
+                      void foo() {
+                        boolean condition1 = 0 <= 1 && 1 <= 2;
+                        boolean condition2 = 0 <= 0 && 2 >= 0;
+                      }
+                    }
+                    """,
+                  """
+                    import com.google.common.collect.Range;
+
+                    class Test {
+
+                      void foo() {
+                        boolean condition1 = Range.closed(0, 2).contains(1);
+                        boolean condition2 = Range.closed(0, 2).contains(0);
+                      }
+                    }
+                    """
+                )
+            );
+        }
+
+        @Test
+        void noUniqueCandidate() {
+            rewriteRun(
+                //language=java
+                java(
+                  """
+                    class Test {
+
+                      void foo() {
+                        boolean condition1 = 0 <= 1 && 2 <= 3;
+                      }
+                    }
+                    """
+                )
+            );
+        }
+
+        /**
+         * The intent of these lines of code is not necessarily clear.
+         * But they match a range and are converted accordingly.
+         */
+        @Test
+        void unclearIntent() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+
+                    void foo() {
+                      boolean c1 = 0 <= 0 && 0 <= 2;
+                      boolean c2 = 0 <= 0 && 2 >= 0;
+                      boolean c3 = 0 >= 0 && 0 <= 2;
+                      boolean c4 = 0 <= 2 && 0 <= 0;
+
+                      boolean c5 = 0 <= 0 && 0 <= 0;
+                      boolean c6 = 0 <= 0 && 0 >= 0;
+                      boolean c7 = 0 >= 0 && 0 <= 0;
+                      boolean c8 = 0 <= 0 && 0 <= 0;
+
+                      boolean c9 = 0 <= 2 && 0 <= 0 && 0 <= 3;
+                    }
+                  }
+                  """,
+                """
+                  import com.google.common.collect.Range;
+
+                  class Test {
+
+                    void foo() {
+                      boolean c1 = Range.closed(0, 2).contains(0);
+                      boolean c2 = Range.closed(0, 2).contains(0);
+                      boolean c3 = Range.closed(0, 2).contains(0);
+                      boolean c4 = Range.closed(0, 2).contains(0);
+
+                      boolean c5 = Range.closed(0, 0).contains(0);
+                      boolean c6 = Range.closed(0, 0).contains(0);
+                      boolean c7 = Range.closed(0, 0).contains(0);
+                      boolean c8 = Range.closed(0, 0).contains(0);
+
+                      boolean c9 = Range.closed(0, 2).contains(0) && 0 <= 3;
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
     }
 
     @Nested
@@ -1144,7 +1242,6 @@ class UseRangesTest implements RewriteTest {
     }
 
     @Test
-    @DocumentExample
     void regression1() {
         rewriteRun(
           //language=java
@@ -1212,27 +1309,6 @@ class UseRangesTest implements RewriteTest {
                 private boolean isInRange(BigDecimal value, T t) {
                   return Range.closed(t.getMinValue(), t.getMaxValue()).contains(value);
                 }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void unchanged() {
-        rewriteRun(
-          spec -> spec.recipe(new UseRangesRecipes()),
-          //language=java
-          java(
-            """
-              class Test {
-                  boolean unchanged1 = booleanExpression() ? booleanExpression() : !booleanExpression();
-                  boolean unchanged2 = booleanExpression() ? true : !booleanExpression();
-                  boolean unchanged3 = booleanExpression() ? booleanExpression() : false;
-
-                  boolean booleanExpression() {
-                    return true;
-                  }
               }
               """
           )
