@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import lombok.Value;
-import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.Tree;
@@ -28,17 +27,17 @@ import org.openrewrite.marker.SearchResult;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Predicate;
 
-public class HasNoJakartaNullAnnotations extends ScanningRecipe<HasNoJakartaNullAnnotations.Accumulator> {
+public class HasNoJakartaAnnotations extends ScanningRecipe<HasNoJakartaAnnotations.Accumulator> {
     @Override
     public String getDisplayName() {
-        return "Project has no Jakarta null annotations";
+        return "Project has no Jakarta annotations";
     }
 
     @Override
     public String getDescription() {
-        return "Search for `@Nonnull` and `@Nullable` annotations, mark all source as found if no annotations are found.";
+        return "Mark all source as found per `JavaProject` where no Jakarta annotations are found. " +
+                "This is useful mostly as a precondition for recipes that require Jakarta annotations to be present";
     }
 
     @Value
@@ -52,17 +51,16 @@ public class HasNoJakartaNullAnnotations extends ScanningRecipe<HasNoJakartaNull
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(HasNoJakartaNullAnnotations.Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(HasNoJakartaAnnotations.Accumulator acc) {
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
-            public Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
-                assert tree != null;
+            public Tree preVisit(Tree tree, ExecutionContext ctx) {
+                stopAfterPreVisit();
                 if (tree instanceof J) {
                     tree.getMarkers().findFirst(JavaProject.class)
                             .filter(jp -> !acc.getProjectsWithDependency().contains(jp))
-                            .filter(__ ->!FindAnnotations.find((J) tree, "@jakarta.annotation.Nonnull", true).isEmpty() ||
-                                    !FindAnnotations.find((J) tree, "@jakarta.annotation.Nullable", true).isEmpty())
-                            .ifPresent(it -> acc.getProjectsWithDependency().add(it));
+                            .filter(jp -> !FindAnnotations.find((J) tree, "@jakarta.annotation.*", true).isEmpty())
+                            .ifPresent(jp -> acc.getProjectsWithDependency().add(jp));
                 }
                 return tree;
             }
@@ -70,14 +68,14 @@ public class HasNoJakartaNullAnnotations extends ScanningRecipe<HasNoJakartaNull
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(HasNoJakartaNullAnnotations.Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(HasNoJakartaAnnotations.Accumulator acc) {
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
-            public Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
-                assert tree != null;
+            public Tree preVisit(Tree tree, ExecutionContext ctx) {
+                stopAfterPreVisit();
                 return tree.getMarkers().findFirst(JavaProject.class)
                         .filter(it -> !acc.getProjectsWithDependency().contains(it))
-                        .map(__ -> SearchResult.found(tree, "Project has no Jakarta null annotations"))
+                        .map(__ -> SearchResult.found(tree, "Project has no Jakarta annotations"))
                         .orElse(tree);
             }
         };
