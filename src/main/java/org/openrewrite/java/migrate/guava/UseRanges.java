@@ -36,29 +36,29 @@ public class UseRanges {
 
         @BeforeTemplate
         boolean simple(T from, T candidate, T to) {
-            return from.compareTo(candidate) <= 0
-                    && candidate.compareTo(to) <= 0;
+            return from.compareTo(candidate) <= 0 &&
+                    candidate.compareTo(to) <= 0;
         }
 
         @BeforeTemplate
         boolean candidateAsArgument(T from, T candidate, T to) {
 
-            return from.compareTo(candidate) <= 0
-                    && to.compareTo(candidate) >= 0;
+            return from.compareTo(candidate) <= 0 &&
+                    to.compareTo(candidate) >= 0;
         }
 
         @BeforeTemplate
         boolean candidateAsBase(T from, T candidate, T to) {
 
-            return candidate.compareTo(from) >= 0
-                    && candidate.compareTo(to) <= 0;
+            return candidate.compareTo(from) >= 0 &&
+                    candidate.compareTo(to) <= 0;
         }
 
         @BeforeTemplate
         boolean flipped(T from, T candidate, T to) {
 
-            return candidate.compareTo(to) <= 0
-                    && from.compareTo(candidate) <= 0;
+            return candidate.compareTo(to) <= 0 &&
+                    from.compareTo(candidate) <= 0;
         }
 
         @UseImportPolicy(ImportPolicy.IMPORT_TOP_LEVEL)
@@ -77,29 +77,29 @@ public class UseRanges {
         @BeforeTemplate
         boolean simple(T from, T candidate, T to) {
 
-            return from.compareTo(candidate) < 0
-                && candidate.compareTo(to) < 0;
+            return from.compareTo(candidate) < 0 &&
+                candidate.compareTo(to) < 0;
         }
 
         @BeforeTemplate
         boolean candidateAsArgument(T from, T candidate, T to) {
 
-            return from.compareTo(candidate) < 0
-                && to.compareTo(candidate) > 0;
+            return from.compareTo(candidate) < 0 &&
+                to.compareTo(candidate) > 0;
         }
 
         @BeforeTemplate
         boolean candidateAsBase(T from, T candidate, T to) {
 
-            return candidate.compareTo(from) > 0
-                && candidate.compareTo(to) < 0;
+            return candidate.compareTo(from) > 0 &&
+                candidate.compareTo(to) < 0;
         }
 
         @BeforeTemplate
         boolean flipped(T from, T candidate, T to) {
 
-            return candidate.compareTo(to) < 0
-                && from.compareTo(candidate) < 0;
+            return candidate.compareTo(to) < 0 &&
+                from.compareTo(candidate) < 0;
         }
 
         @UseImportPolicy(ImportPolicy.IMPORT_TOP_LEVEL)
@@ -118,29 +118,29 @@ public class UseRanges {
         @BeforeTemplate
         boolean simple(T from, T candidate, T to) {
 
-            return from.compareTo(candidate) <= 0
-                && candidate.compareTo(to) < 0;
+            return from.compareTo(candidate) <= 0 &&
+                candidate.compareTo(to) < 0;
         }
 
         @BeforeTemplate
         boolean candidateAsArgument(T from, T candidate, T to) {
 
-            return from.compareTo(candidate) <= 0
-                && to.compareTo(candidate) > 0;
+            return from.compareTo(candidate) <= 0 &&
+                to.compareTo(candidate) > 0;
         }
 
         @BeforeTemplate
         boolean candidateAsBase(T from, T candidate, T to) {
 
-            return candidate.compareTo(from) >= 0
-                && candidate.compareTo(to) < 0;
+            return candidate.compareTo(from) >= 0 &&
+                candidate.compareTo(to) < 0;
         }
 
         @BeforeTemplate
         boolean flipped(T from, T candidate, T to) {
 
-            return candidate.compareTo(to) < 0
-                && from.compareTo(candidate) <= 0;
+            return candidate.compareTo(to) < 0 &&
+                from.compareTo(candidate) <= 0;
         }
 
         @UseImportPolicy(ImportPolicy.IMPORT_TOP_LEVEL)
@@ -159,29 +159,29 @@ public class UseRanges {
         @BeforeTemplate
         boolean simple(T from, T candidate, T to) {
 
-            return from.compareTo(candidate) < 0
-                && candidate.compareTo(to) <= 0;
+            return from.compareTo(candidate) < 0 &&
+                candidate.compareTo(to) <= 0;
         }
 
         @BeforeTemplate
         boolean candidateAsArgument(T from, T candidate, T to) {
 
-            return from.compareTo(candidate) < 0
-                && to.compareTo(candidate) >= 0;
+            return from.compareTo(candidate) < 0 &&
+                to.compareTo(candidate) >= 0;
         }
 
         @BeforeTemplate
         boolean candidateAsBase(T from, T candidate, T to) {
 
-            return candidate.compareTo(from) > 0
-                && candidate.compareTo(to) <= 0;
+            return candidate.compareTo(from) > 0 &&
+                candidate.compareTo(to) <= 0;
         }
 
         @BeforeTemplate
         boolean flipped(T from, T candidate, T to) {
 
-            return candidate.compareTo(to) <= 0
-                && from.compareTo(candidate) < 0;
+            return candidate.compareTo(to) <= 0 &&
+                from.compareTo(candidate) < 0;
         }
 
         @UseImportPolicy(ImportPolicy.IMPORT_TOP_LEVEL)

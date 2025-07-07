@@ -3343,25 +3343,6 @@ examples:
 - description: ''
   sources:
   - before: |
-      import com.google.common.base.MoreObjects;
-
-      class A {
-          Object foo(Object obj) {
-              return MoreObjects.firstNonNull(obj, "default");
-          }
-      }
-    after: |
-      import java.util.Objects;
-
-      class A {
-          Object foo(Object obj) {
-              return Objects.requireNonNullElse(obj, "default");
-          }
-      }
-    language: java
-- description: ''
-  sources:
-  - before: |
       import com.google.common.base.Optional;
 
       class A {
@@ -3402,6 +3383,25 @@ examples:
               } catch (NoSuchElementException e) {
                   return "";
               }
+          }
+      }
+    language: java
+- description: ''
+  sources:
+  - before: |
+      import com.google.common.base.MoreObjects;
+
+      class A {
+          Object foo(Object obj) {
+              return MoreObjects.firstNonNull(obj, "default");
+          }
+      }
+    after: |
+      import java.util.Objects;
+
+      class A {
+          Object foo(Object obj) {
+              return Objects.requireNonNullElse(obj, "default");
           }
       }
     language: java
@@ -3824,6 +3824,40 @@ examples:
                   }
               };
           }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.UseRangesRecipes
+examples:
+- description: ''
+  sources:
+  - before: |
+      import java.math.BigDecimal;
+
+      class Test {
+
+        void foo() {
+          BigDecimal from = new BigDecimal("0");
+          BigDecimal candidate = new BigDecimal("0");
+          BigDecimal to = new BigDecimal("2");
+          boolean trueCondition = from.compareTo(candidate) <= 0
+                                && candidate.compareTo(to) <= 0;
+        }
+      }
+    after: |
+      import com.google.common.collect.Range;
+
+      import java.math.BigDecimal;
+
+      class Test {
+
+        void foo() {
+          BigDecimal from = new BigDecimal("0");
+          BigDecimal candidate = new BigDecimal("0");
+          BigDecimal to = new BigDecimal("2");
+          boolean trueCondition = Range.closed(from, to).contains(candidate);
+        }
       }
     language: java
 ---
@@ -5939,7 +5973,7 @@ examples:
   - before: |
       package com.acme.music;
 
-      public class Test {
+      class Test {
           Record record;
       }
     after: |
@@ -5947,7 +5981,7 @@ examples:
 
       import com.acme.music.Record;
 
-      public class Test {
+      class Test {
           Record record;
       }
     language: java
