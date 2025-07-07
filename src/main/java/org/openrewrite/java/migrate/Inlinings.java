@@ -120,12 +120,12 @@ public class Inlinings extends Recipe {
             if (methodType == null) {
                 return null;
             }
-            String templateString = createTemplateString(methodType.getParameterNames());
+            String templateString = createTemplateString(replacement, methodType.getParameterNames());
             Object[] parameters = createParameters(templateString, original);
             return new Template(templateString, parameters);
         }
 
-        private String createTemplateString(List<String> originalParameterNames) {
+        private static String createTemplateString(String replacement, List<String> originalParameterNames) {
             String templateString = replacement.replaceAll("\\bthis\\b", "#{this:any()}");
             for (String parameterName : originalParameterNames) {
                 // Replace parameter names with their values in the templateString
