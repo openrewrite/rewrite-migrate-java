@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
@@ -29,7 +28,10 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -123,7 +125,7 @@ public class Inlinings extends Recipe {
             return new Template(templateString, parameters);
         }
 
-        private @NotNull String createTemplateString(List<String> originalParameterNames) {
+        private String createTemplateString(List<String> originalParameterNames) {
             String templateString = replacement.replaceAll("\\bthis\\b", "#{this:any()}");
             for (String parameterName : originalParameterNames) {
                 // Replace parameter names with their values in the templateString
