@@ -96,8 +96,10 @@ public class Inlinings extends Recipe {
     @Value
     private static class InlineMeValues {
         private static final Pattern TEMPLATE_IDENTIFIER = Pattern.compile("#\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*):any\\(.*?\\)}");
+
         @Getter(AccessLevel.NONE)
         String replacement;
+
         String[] imports;
         String[] staticImports;
 
