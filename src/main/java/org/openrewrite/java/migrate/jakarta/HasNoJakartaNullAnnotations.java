@@ -28,6 +28,7 @@ import org.openrewrite.marker.SearchResult;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class HasNoJakartaNullAnnotations extends ScanningRecipe<HasNoJakartaNullAnnotations.Accumulator> {
     @Override
@@ -37,7 +38,7 @@ public class HasNoJakartaNullAnnotations extends ScanningRecipe<HasNoJakartaNull
 
     @Override
     public String getDescription() {
-        return "Search for @Nonnull and @Nullable annotations, mark all source as found if no annotations are found.";
+        return "Search for `@Nonnull` and `@Nullable` annotations, mark all source as found if no annotations are found.";
     }
 
     @Value
@@ -58,6 +59,7 @@ public class HasNoJakartaNullAnnotations extends ScanningRecipe<HasNoJakartaNull
                 assert tree != null;
                 if (tree instanceof J) {
                     tree.getMarkers().findFirst(JavaProject.class)
+                            .filter(jp -> !acc.getProjectsWithDependency().contains(jp))
                             .filter(__ ->!FindAnnotations.find((J) tree, "@jakarta.annotation.Nonnull", true).isEmpty() ||
                                     !FindAnnotations.find((J) tree, "@jakarta.annotation.Nullable", true).isEmpty())
                             .ifPresent(it -> acc.getProjectsWithDependency().add(it));
