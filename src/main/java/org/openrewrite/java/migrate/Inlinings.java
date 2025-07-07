@@ -29,13 +29,12 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.requireNonNull;
 
 public class Inlinings extends Recipe {
 
@@ -68,12 +67,12 @@ public class Inlinings extends Recipe {
                             return mi;
                         }
                         return JavaTemplate.builder(template.getString())
-                                .doBeforeParseTemplate(System.out::println)
                                 .contextSensitive()
+                                .doBeforeParseTemplate(System.out::println)
                                 .imports(values.getImports())
                                 .staticImports(values.getStaticImports())
                                 .build()
-                                .apply(getCursor(), mi.getCoordinates().replace(), template.getParameters());
+                                .apply(updateCursor(mi), mi.getCoordinates().replace(), template.getParameters());
                     }
 
                     private @Nullable InlineMeValues findInlineMeValues(JavaType.@Nullable Method methodType) {
@@ -94,7 +93,7 @@ public class Inlinings extends Recipe {
 
     @Value
     private static class InlineMeValues {
-        private static final Pattern TEMPLATE_IDENTIFIER = Pattern.compile("#\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*):any\\(\\)}");
+        private static final Pattern TEMPLATE_IDENTIFIER = Pattern.compile("#\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*):any\\(.*?\\)}");
         @Getter(AccessLevel.NONE)
         String replacement;
         String[] imports;
@@ -108,8 +107,8 @@ public class Inlinings extends Recipe {
                     ));
             String replacement = (String) collect.get("replacement");
             // TODO Parse imports and static imports from the annotation values too
-            String[] imports = new String[0];
-            String[] staticImports = new String[0];
+            String[] imports = new String[]{};
+            String[] staticImports = new String[]{};
             return new InlineMeValues(replacement, imports, staticImports);
         }
 
@@ -119,10 +118,8 @@ public class Inlinings extends Recipe {
             if (methodType == null) {
                 return null;
             }
-
-            List<String> originalParameterNames = methodType.getParameterNames();
-            String templateString = createTemplateString(originalParameterNames);
-            Expression[] parameters = createParameters(templateString, originalParameterNames, original);
+            String templateString = createTemplateString(methodType.getParameterNames());
+            Object[] parameters = createParameters(templateString, original);
             return new Template(templateString, parameters);
         }
 
@@ -137,28 +134,26 @@ public class Inlinings extends Recipe {
             return templateString;
         }
 
-        private static Expression[] createParameters(String templateString, List<String> originalParameterNames, J.MethodInvocation original) {
+        private static Object[] createParameters(String templateString, J.MethodInvocation original) {
             Map<String, Expression> lookup = new HashMap<>();
             if (original.getSelect() != null) {
                 lookup.put("this", original.getSelect());
             }
+            List<String> originalParameterNames = requireNonNull(original.getMethodType()).getParameterNames();
             for (int i = 0; i < originalParameterNames.size(); i++) {
                 String originalName = originalParameterNames.get(i);
                 Expression originalValue = original.getArguments().get(i);
                 lookup.put(originalName, originalValue);
             }
-            List<Expression> parameters = new ArrayList<>();
+            List<Object> parameters = new ArrayList<>();
             Matcher matcher = TEMPLATE_IDENTIFIER.matcher(templateString);
             while (matcher.find()) {
                 Expression o = lookup.get(matcher.group(1));
                 if (o != null) {
                     parameters.add(o);
-                } else {
-                    throw new IllegalStateException(
-                            "No parameter found for " + matcher.group(1) + " in template: " + templateString);
                 }
             }
-            return parameters.toArray(new Expression[0]);
+            return parameters.toArray(new Object[0]);
         }
     }
 
