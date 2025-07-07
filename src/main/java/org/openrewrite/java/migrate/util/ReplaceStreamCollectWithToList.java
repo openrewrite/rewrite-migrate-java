@@ -33,8 +33,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class ReplaceStreamCollectWithToList extends Recipe {
 
     private static final MethodMatcher STREAM_COLLECT = new MethodMatcher("java.util.stream.Stream collect(java.util.stream.Collector)");

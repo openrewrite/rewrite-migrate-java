@@ -36,8 +36,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.util.Collections.emptyList;
 import static org.openrewrite.internal.StringUtils.uncapitalize;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class DontOverfetchDto extends Recipe {
 
     @Option(displayName = "DTO type",

@@ -29,8 +29,8 @@ class ReplaceMathRandomWithThreadLocalRandomRecipeTest implements RewriteTest {
         spec.recipe(new ReplaceMathRandomWithThreadLocalRandomRecipe());
     }
 
-    @Test
     @DocumentExample
+    @Test
     void replacesMathRandom() {
         rewriteRun(
           //language=java

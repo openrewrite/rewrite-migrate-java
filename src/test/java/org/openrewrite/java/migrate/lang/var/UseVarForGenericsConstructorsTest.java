@@ -175,8 +175,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
     @Nested
     class Applicable {
 
-        @Nested
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/257")
+        @Nested
         class AdvancedGenerics {
             @Test
             void genericMethod() {
@@ -331,8 +331,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             }
         }
 
-        @Test
         @DocumentExample
+        @Test
         void withTypeParameterInDefinitionOnly() {
             //language=java
             rewriteRun(

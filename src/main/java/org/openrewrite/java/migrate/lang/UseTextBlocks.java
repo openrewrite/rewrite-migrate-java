@@ -43,8 +43,8 @@ import java.util.stream.Collectors;
 import static java.util.Objects.requireNonNull;
 import static org.openrewrite.Tree.randomId;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UseTextBlocks extends Recipe {
     @Option(displayName = "Whether to convert strings without newlines (the default value is true).",
             description = "Whether or not strings without newlines should be converted to text block when processing code. " +

@@ -30,9 +30,9 @@ import static java.util.Collections.singletonList;
 /**
  * @deprecated in favor of {@link org.openrewrite.java.ReplaceStringLiteralValue}.
  */
-@Value
-@EqualsAndHashCode(callSuper = false)
 @Deprecated
+@EqualsAndHashCode(callSuper = false)
+@Value
 public class ReplaceStringLiteralValue extends Recipe {
 
     @Option(displayName = "Old literal `String` value",
@@ -48,7 +48,7 @@ public class ReplaceStringLiteralValue extends Recipe {
     String newLiteralValue;
 
     @JsonCreator
-    public ReplaceStringLiteralValue(@NonNull @JsonProperty("oldStringValue") String oldStringValue, @NonNull @JsonProperty("newStringValue") String newStringValue) {
+    public ReplaceStringLiteralValue(@JsonProperty("oldStringValue") @NonNull String oldStringValue, @JsonProperty("newStringValue") @NonNull String newStringValue) {
         this.oldLiteralValue = oldStringValue;
         this.newLiteralValue = newStringValue;
     }

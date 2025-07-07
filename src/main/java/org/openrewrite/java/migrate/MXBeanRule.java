@@ -41,8 +41,8 @@ import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.tree.J.ClassDeclaration.Kind.Type.Interface;
 import static org.openrewrite.staticanalysis.ModifierOrder.sortModifiers;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class MXBeanRule extends Recipe {
 
     @Override

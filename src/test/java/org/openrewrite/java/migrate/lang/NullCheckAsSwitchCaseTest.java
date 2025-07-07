@@ -30,8 +30,8 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
         spec.recipe(new NullCheckAsSwitchCase());
     }
 
-    @Test
     @DocumentExample
+    @Test
     void mergeNullCheckWithSwitch() {
         rewriteRun(
           //language=java

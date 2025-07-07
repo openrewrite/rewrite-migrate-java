@@ -38,8 +38,8 @@ import java.util.regex.Pattern;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UpdateSdkMan extends Recipe {
 
     @Option(displayName = "Java version",

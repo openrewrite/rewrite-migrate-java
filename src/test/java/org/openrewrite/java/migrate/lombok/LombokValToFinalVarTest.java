@@ -31,8 +31,8 @@ class LombokValToFinalVarTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().classpath("lombok"));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void replaceAssignmentVal() {
         //language=java
         rewriteRun(

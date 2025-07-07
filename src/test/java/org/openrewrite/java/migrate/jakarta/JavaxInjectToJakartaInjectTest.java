@@ -32,8 +32,8 @@ class JavaxInjectToJakartaInjectTest implements RewriteTest {
           "org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject");
     }
 
-    @Test
     @DocumentExample
+    @Test
     void projectWithJavaxInject() {
         rewriteRun(
           //language=xml

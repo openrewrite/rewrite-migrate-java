@@ -22,8 +22,8 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.TreeVisitor;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UseLog4j2 extends UseLogRecipeTemplate {
 
     @Override

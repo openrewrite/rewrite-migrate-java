@@ -213,8 +213,8 @@ class UseVarKeywordTest implements RewriteTest {
                 );
             }
 
-            @Test
             @Disabled("this should be possible, but it needs very hard type inference")
+            @Test
             void withTernary() {
                 //language=java
                 rewriteRun(
@@ -380,8 +380,8 @@ class UseVarKeywordTest implements RewriteTest {
 
         @Nested
         class Applicable {
-            @Test
             @DocumentExample
+            @Test
             void forString() {
                 //language=java
                 rewriteRun(
@@ -697,8 +697,8 @@ class UseVarKeywordTest implements RewriteTest {
         @Nested
         class Applicable {
 
-            @Test
             @DocumentExample
+            @Test
             void withDiamondOperator() {
                 //language=java
                 rewriteRun(

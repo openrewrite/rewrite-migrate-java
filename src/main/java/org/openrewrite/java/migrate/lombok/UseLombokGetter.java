@@ -30,8 +30,8 @@ import org.openrewrite.java.tree.J;
 import java.util.Collections;
 import java.util.Set;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UseLombokGetter extends Recipe {
 
     @Override

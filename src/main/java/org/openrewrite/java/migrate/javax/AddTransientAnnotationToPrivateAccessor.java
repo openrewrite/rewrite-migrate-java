@@ -33,8 +33,8 @@ import org.openrewrite.java.tree.JavaType;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class AddTransientAnnotationToPrivateAccessor extends Recipe {
 
     @Override

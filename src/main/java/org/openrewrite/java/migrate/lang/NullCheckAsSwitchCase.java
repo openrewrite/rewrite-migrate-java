@@ -36,8 +36,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.util.Objects.requireNonNull;
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class NullCheckAsSwitchCase extends Recipe {
     @Override
     public String getDisplayName() {

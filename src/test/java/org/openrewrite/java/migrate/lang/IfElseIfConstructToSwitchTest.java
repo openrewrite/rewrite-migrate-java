@@ -34,8 +34,8 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
           .allSources(source -> version(source, 21));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void defaultSwitchBlockWithNullCheckAndFinalElseStatement() {
         rewriteRun(
           //language=java
