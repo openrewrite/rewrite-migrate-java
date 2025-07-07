@@ -39,6 +39,8 @@ class InliningsTest implements RewriteTest {
         rewriteRun(
           java(
             """
+              package m;
+
               import com.google.errorprone.annotations.InlineMe;
               import java.time.Duration;
 
@@ -60,6 +62,7 @@ class InliningsTest implements RewriteTest {
           ),
           java(
             """
+              import m.MyClass;
               class Foo {
                   void foo(MyClass myClass) {
                       myClass.getDeadlineMillis();
@@ -67,6 +70,7 @@ class InliningsTest implements RewriteTest {
               }
               """,
             """
+              import m.MyClass;
               class Foo {
                   void foo(MyClass myClass) {
                       myClass.getDeadline().toMillis();
