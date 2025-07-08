@@ -33,6 +33,10 @@ import static org.openrewrite.maven.Assertions.pomXml;
 
 class BouncyCastleTest implements RewriteTest {
 
+    static List<String> artifactBaseNames() {
+        return Arrays.asList("bcprov", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls");
+    }
+
     @DocumentExample
     @Test
     void document() {
@@ -80,10 +84,6 @@ class BouncyCastleTest implements RewriteTest {
             )
           )
         );
-    }
-
-    static List<String> artifactBaseNames() {
-        return Arrays.asList("bcprov", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls");
     }
 
     @ParameterizedTest
