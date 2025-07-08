@@ -28,6 +28,7 @@ recipeList:
   - org.openrewrite.java.migrate.JREJdbcInterfaceNewMethods
   - org.openrewrite.java.migrate.JREThrowableFinalMethods
   - org.openrewrite.java.migrate.util.ReplaceMathRandomWithThreadLocalRandomRecipe
+  - org.openrewrite.java.migrate.BouncyCastleFromJdk15OnToJdk15to18
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JREJdbcInterfaceNewMethods
