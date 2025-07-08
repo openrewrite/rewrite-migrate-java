@@ -33,10 +33,6 @@ import static org.openrewrite.maven.Assertions.pomXml;
 
 class BouncyCastleTest implements RewriteTest {
 
-    static List<String> artifactBaseNames() {
-        return Arrays.asList("bcprov", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls");
-    }
-
     @DocumentExample
     @Test
     void document() {
@@ -50,11 +46,9 @@ class BouncyCastleTest implements RewriteTest {
               """
                 <project>
                   <modelVersion>4.0.0</modelVersion>
-
                   <groupId>com.mycompany.app</groupId>
                   <artifactId>my-app</artifactId>
                   <version>1</version>
-
                   <dependencies>
                     <dependency>
                       <groupId>org.bouncycastle</groupId>
@@ -88,13 +82,52 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    void testBouncyCastleArtifactUpgradeRecipe(
+    static List<String> artifactBaseNames() {
+        return Arrays.asList("bcprov", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls");
+    }
+
+    @ParameterizedTest
+    @MethodSource("artifactBaseNames")
+    void jdk15onToJdk18on(String artifactBaseName) {
+        runBouncyCastleArtifactUpgradeRecipe(
+          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
+          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
+          artifactBaseName,
+          "jdk15on",
+          "jdk18on"
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("artifactBaseNames")
+    void jdk15to18ToJdk18on(String artifactBaseName) {
+        runBouncyCastleArtifactUpgradeRecipe(
+          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
+          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
+          artifactBaseName,
+          "jdk15to18",
+          "jdk18on"
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("artifactBaseNames")
+    void jdk15onToJdk15To18(String artifactBaseName) {
+        runBouncyCastleArtifactUpgradeRecipe(
+          "/META-INF/rewrite/bouncycastle-jdk15to18.yml",
+          "org.openrewrite.java.migrate.BouncyCastleFromJdk15OnToJdk15to18",
+          artifactBaseName,
+          "jdk15on",
+          "jdk15to18"
+        );
+    }
+
+    void runBouncyCastleArtifactUpgradeRecipe(
       String yamlFile,
       String recipe,
       String baseArtifactId,
       String originalArtifactSuffix,
-      String expectedArtifactSuffix
-    ) {
+      String expectedArtifactSuffix) {
         rewriteRun(
           recipeSpec -> recipeSpec.recipeFromResource(yamlFile, recipe),
           mavenProject("project",
@@ -103,11 +136,9 @@ class BouncyCastleTest implements RewriteTest {
               """
                 <project>
                   <modelVersion>4.0.0</modelVersion>
-
                   <groupId>com.mycompany.app</groupId>
                   <artifactId>my-app</artifactId>
                   <version>1</version>
-
                   <dependencies>
                     <dependency>
                       <groupId>org.bouncycastle</groupId>
@@ -129,42 +160,6 @@ class BouncyCastleTest implements RewriteTest {
                   }))
             )
           )
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource("artifactBaseNames")
-    void jdk15onToJdk18on(String artifactBaseName) {
-        testBouncyCastleArtifactUpgradeRecipe(
-          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
-          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
-          artifactBaseName,
-          "jdk15on",
-          "jdk18on"
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource("artifactBaseNames")
-    void jdk15to18ToJdk18on(String artifactBaseName) {
-        testBouncyCastleArtifactUpgradeRecipe(
-          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
-          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
-          artifactBaseName,
-          "jdk15to18",
-          "jdk18on"
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource("artifactBaseNames")
-    void jdk15onToJdk15To18(String artifactBaseName) {
-        testBouncyCastleArtifactUpgradeRecipe(
-          "/META-INF/rewrite/bouncycastle-jdk15to18.yml",
-          "org.openrewrite.java.migrate.BouncyCastleFromJdk15OnToJdk15to18",
-          artifactBaseName,
-          "jdk15on",
-          "jdk15to18"
         );
     }
 }

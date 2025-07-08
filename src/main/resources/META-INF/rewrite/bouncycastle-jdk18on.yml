@@ -17,9 +17,9 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On
-displayName: Migrate BouncyCastle to jdk18on
+displayName: Migrate Bouncy Castle to `jdk18on`
 description: >-
-  This recipe will upgrade BouncyCastle dependencies from -jdk15on or -jdk15to18 to -jdk18on.
+  This recipe will upgrade Bouncy Castle dependencies from `-jdk15on` or `-jdk15to18` to `-jdk18on`.
 tags:
   - bouncycastle
 recipeList:
