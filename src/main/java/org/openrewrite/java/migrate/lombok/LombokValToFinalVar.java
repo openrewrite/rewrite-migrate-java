@@ -76,12 +76,13 @@ public class LombokValToFinalVar extends Recipe {
             J.VariableDeclarations varDecls = super.visitVariableDeclarations(mv, ctx);
 
             if (TypeUtils.isOfClassType(varDecls.getType(), LOMBOK_VAL) ||
-                    (varDecls.getTypeExpression() instanceof J.Identifier && ((J.Identifier) varDecls.getTypeExpression()).getSimpleName().equals("val"))) {
+                    (varDecls.getTypeExpression() instanceof J.Identifier && "val".equals(((J.Identifier) varDecls.getTypeExpression()).getSimpleName()))) {
                 maybeRemoveImport(LOMBOK_VAL);
 
                 J.VariableDeclarations.NamedVariable nv = mv.getVariables().get(0);
                 if (nv.getInitializer() == null) {
-                    // manually transform to var, as val in this case has no sufficient type information, and the java template parsing would fail, see https://github.com/openrewrite/rewrite/pull/5637
+                    // manually transform to var, as val in this case has no sufficient type information
+                    // and the java template parsing would fail, see https://github.com/openrewrite/rewrite/pull/5637
                     TypeTree typeExpression = varDecls.getTypeExpression();
                     J.Identifier varType = new J.Identifier(Tree.randomId(),
                             typeExpression.getPrefix(),
@@ -90,15 +91,15 @@ public class LombokValToFinalVar extends Recipe {
                             "var",
                             nv.getType(),
                             null);
-                    varDecls = varDecls.withTypeExpression(varType);
-                } else {
-                    varDecls = JavaTemplate.builder("final var #{} = #{any()};")
-                            .contextSensitive()
-                            .build()
-                            .apply(updateCursor(varDecls), varDecls.getCoordinates().replace(), nv.getSimpleName(), nv.getInitializer());
-                    varDecls = varDecls.withVariables(ListUtils.map(varDecls.getVariables(), namedVar -> namedVar
-                            .withInitializer(namedVar.getInitializer().withPrefix(nv.getInitializer().getPrefix()))));
+                    return varDecls.withTypeExpression(varType);
                 }
+
+                varDecls = JavaTemplate.builder("final var #{} = #{any()};")
+                        .contextSensitive()
+                        .build()
+                        .apply(updateCursor(varDecls), varDecls.getCoordinates().replace(), nv.getSimpleName(), nv.getInitializer());
+                varDecls = varDecls.withVariables(ListUtils.map(varDecls.getVariables(), namedVar -> namedVar
+                        .withInitializer(namedVar.getInitializer().withPrefix(nv.getInitializer().getPrefix()))));
             }
             return varDecls;
         }
