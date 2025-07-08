@@ -17,12 +17,14 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.Scope;
-import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static java.util.function.UnaryOperator.identity;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,28 +33,26 @@ import static org.openrewrite.maven.Assertions.pomXml;
 
 class BouncyCastleTest implements RewriteTest {
 
-    @Override
-    public void defaults(RecipeSpec spec) {
-        spec.recipeFromResource(
-          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
-          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On");
+    static List<String> artifactBaseNames() {
+        return Arrays.asList("bcprov", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls");
     }
 
     @DocumentExample
     @Test
     void document() {
         rewriteRun(
+          spec -> spec.recipeFromResource(
+            "/META-INF/rewrite/bouncycastle-jdk18on.yml",
+            "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On"),
           mavenProject("project",
             //language=xml
             pomXml(
               """
                 <project>
                   <modelVersion>4.0.0</modelVersion>
-
                   <groupId>com.mycompany.app</groupId>
                   <artifactId>my-app</artifactId>
                   <version>1</version>
-
                   <dependencies>
                     <dependency>
                       <groupId>org.bouncycastle</groupId>
@@ -86,31 +86,68 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
+    @ParameterizedTest
+    @MethodSource("artifactBaseNames")
+    void jdk15onToJdk18on(String artifactBaseName) {
+        runBouncyCastleArtifactUpgradeRecipe(
+          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
+          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
+          artifactBaseName,
+          "jdk15on",
+          "jdk18on"
+        );
+    }
 
     @ParameterizedTest
-    @ValueSource(strings = {"bcprov", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
-    void updateBouncyCastle(String value) {
+    @MethodSource("artifactBaseNames")
+    void jdk15to18ToJdk18on(String artifactBaseName) {
+        runBouncyCastleArtifactUpgradeRecipe(
+          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
+          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
+          artifactBaseName,
+          "jdk15to18",
+          "jdk18on"
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("artifactBaseNames")
+    void jdk15onToJdk15To18(String artifactBaseName) {
+        runBouncyCastleArtifactUpgradeRecipe(
+          "/META-INF/rewrite/bouncycastle-jdk15to18.yml",
+          "org.openrewrite.java.migrate.BouncyCastleFromJdk15OnToJdk15to18",
+          artifactBaseName,
+          "jdk15on",
+          "jdk15to18"
+        );
+    }
+
+    void runBouncyCastleArtifactUpgradeRecipe(
+      String yamlFile,
+      String recipe,
+      String baseArtifactId,
+      String originalArtifactSuffix,
+      String expectedArtifactSuffix) {
         rewriteRun(
+          recipeSpec -> recipeSpec.recipeFromResource(yamlFile, recipe),
           mavenProject("project",
             //language=xml
             pomXml(
-                    """
+              """
                 <project>
                   <modelVersion>4.0.0</modelVersion>
-
                   <groupId>com.mycompany.app</groupId>
                   <artifactId>my-app</artifactId>
                   <version>1</version>
-
                   <dependencies>
                     <dependency>
                       <groupId>org.bouncycastle</groupId>
-                      <artifactId>%s-jdk15on</artifactId>
+                      <artifactId>%s-%s</artifactId>
                       <version>1.70</version>
                     </dependency>
                   </dependencies>
                 </project>
-                """.formatted(value),
+                """.formatted(baseArtifactId, originalArtifactSuffix),
               spec -> spec
                 .after(identity())
                 .afterRecipe(doc -> assertThat(doc.getMarkers().findFirst(MavenResolutionResult.class)
@@ -119,7 +156,7 @@ class BouncyCastleTest implements RewriteTest {
                   .singleElement()
                   .satisfies(rd -> {
                       assertThat(rd.getGroupId()).isEqualTo("org.bouncycastle");
-                      assertThat(rd.getArtifactId()).isEqualTo(value + "-jdk18on");
+                      assertThat(rd.getArtifactId()).isEqualTo(String.format("%s-%s", baseArtifactId, expectedArtifactSuffix));
                   }))
             )
           )
