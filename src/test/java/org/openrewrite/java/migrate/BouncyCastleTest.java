@@ -125,4 +125,48 @@ class BouncyCastleTest implements RewriteTest {
           )
         );
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
+    void updateBouncyCastleForJavaLessThan8(String value) {
+        rewriteRun(
+          recipeSpec ->
+            recipeSpec.recipeFromResource(
+              "/META-INF/rewrite/bouncycastle-jdk15to18.yml",
+              "org.openrewrite.java.migrate.BouncyCastleFromJdk15OnToJdk15to18")
+          ,
+          mavenProject("project",
+            //language=xml
+            pomXml(
+              """
+          <project>
+            <modelVersion>4.0.0</modelVersion>
+
+            <groupId>com.mycompany.app</groupId>
+            <artifactId>my-app</artifactId>
+            <version>1</version>
+
+            <dependencies>
+              <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>%s-jdk15on</artifactId>
+                <version>1.70</version>
+              </dependency>
+            </dependencies>
+          </project>
+          """.formatted(value),
+              spec -> spec
+                .after(identity())
+                .afterRecipe(doc -> assertThat(doc.getMarkers().findFirst(MavenResolutionResult.class)
+                  .get().getDependencies().get(Scope.Compile))
+                  .filteredOn(rd -> rd.getDepth() == 0)
+                  .singleElement()
+                  .satisfies(rd -> {
+                      assertThat(rd.getGroupId()).isEqualTo("org.bouncycastle");
+                      assertThat(rd.getArtifactId()).isEqualTo(value + "-jdk15to18");
+                  }))
+            )
+          )
+        );
+    }
 }
