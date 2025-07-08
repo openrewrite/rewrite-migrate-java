@@ -380,11 +380,14 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         void ownObject() {
             //language=java
             rewriteRun(
-              java("""
-                package com.test;
-                public class Option<T> {}
-                """),
-              java("""
+              java(
+                """
+                  package com.test;
+                  public class Option<T> {}
+                  """
+              ),
+              java(
+                """
                   import com.test.Option;
                   import java.util.HashSet;
                   import java.util.Set;
