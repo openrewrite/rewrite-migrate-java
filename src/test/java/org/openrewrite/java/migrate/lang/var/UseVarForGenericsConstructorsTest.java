@@ -19,14 +19,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
-import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.migrate.UseJavaUtilBase64;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import java.util.List;
-
-import static org.openrewrite.java.Assertions.*;
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class UseVarForGenericsConstructorsTest implements RewriteTest {
     @Override
@@ -42,16 +39,17 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         void boundedGenerics() {
             //language=java
             rewriteRun(
-              java("""
-                import java.util.List;
-                import java.util.ArrayList;
-
-                class A {
-                    void generic() {
-                        List<? extends String> lst = new ArrayList<>();
-                    }
-                }
+              java(
                 """
+                  import java.util.List;
+                  import java.util.ArrayList;
+
+                  class A {
+                      void generic() {
+                          List<? extends String> lst = new ArrayList<>();
+                      }
+                  }
+                  """
               )
             );
         }
@@ -61,18 +59,18 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             //language=java
             rewriteRun(
               java(
-                    """
-                import java.util.Map;
-                import java.util.LinkedHashMap;
-
-                class AbstractOAuth2Configurer {}
-
-                class A {
-                    void twoParams() {
-                        Map<Class<? extends AbstractOAuth2Configurer>, AbstractOAuth2Configurer> configurers = new LinkedHashMap<>();
-                    }
-                }
                 """
+                  import java.util.Map;
+                  import java.util.LinkedHashMap;
+
+                  class AbstractOAuth2Configurer {}
+
+                  class A {
+                      void twoParams() {
+                          Map<Class<? extends AbstractOAuth2Configurer>, AbstractOAuth2Configurer> configurers = new LinkedHashMap<>();
+                      }
+                  }
+                  """
               )
             );
         }
@@ -100,15 +98,16 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             // this one is handled by UseVarForMethodInvocations
             //language=java
             rewriteRun(
-              java("""
-                import java.util.List;
-
-                class A {
-                  void m() {
-                      List<String> strs = List.of("one", "two");
-                  }
-                }
+              java(
                 """
+                  import java.util.List;
+
+                  class A {
+                    void m() {
+                        List<String> strs = List.of("one", "two");
+                    }
+                  }
+                  """
               )
             );
         }
@@ -137,16 +136,17 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             //todo check if this may be possible!, We could transform ArrayList into ArrayList<String>
             //language=java
             rewriteRun(
-              java("""
-                import java.util.List;
-                import java.util.ArrayList;
-
-                class A {
-                  void m() {
-                      List<String> strs = new ArrayList();
-                  }
-                }
+              java(
                 """
+                  import java.util.List;
+                  import java.util.ArrayList;
+
+                  class A {
+                    void m() {
+                        List<String> strs = new ArrayList();
+                    }
+                  }
+                  """
               )
             );
         }
@@ -183,7 +183,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                 //language=java
                 rewriteRun(
                   java(
-                        """
+                    """
                       import java.util.List;
                       import java.util.ArrayList;
 
@@ -211,7 +211,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                 //language=java
                 rewriteRun(
                   java(
-                        """
+                    """
                       import java.util.List;
                       import java.util.ArrayList;
 
@@ -239,7 +239,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                 //language=java
                 rewriteRun(
                   java(
-                        """
+                    """
                       import java.util.List;
                       import java.util.ArrayList;
 
@@ -268,7 +268,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                 //language=java
                 rewriteRun(
                   java(
-                        """
+                    """
                       import java.util.Map;
                       import java.util.HashMap;
 
@@ -298,7 +298,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             //language=java
             rewriteRun(
               java(
-                    """
+                """
                   import java.util.List;
                   import java.util.ArrayList;
 
@@ -325,7 +325,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         void diamondOperatorIsNotUsed() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                """
                   import java.util.List;
                   import java.util.ArrayList;
 
@@ -353,7 +354,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             //language=java
             rewriteRun(
               java(
-                    """
+                """
                   import java.util.List;
                   import java.util.ArrayList;
 
