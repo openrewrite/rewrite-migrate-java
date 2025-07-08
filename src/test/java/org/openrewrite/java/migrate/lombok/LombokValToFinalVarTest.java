@@ -125,23 +125,19 @@ class LombokValToFinalVarTest implements RewriteTest {
                   """
                     import lombok.val;
 
-                    import java.util.ArrayList;
                     import java.util.List;
 
                     class A {
-                        void bar() {
-                            List<String> lst = new ArrayList<>();
+                        void bar(List<String> lst) {
                             for (val s : lst) {}
                         }
                     }
                     """,
                   """
-                    import java.util.ArrayList;
                     import java.util.List;
 
                     class A {
-                        void bar() {
-                            List<String> lst = new ArrayList<>();
+                        void bar(List<String> lst) {
                             for (var s : lst) {}
                         }
                     }
@@ -164,8 +160,7 @@ class LombokValToFinalVarTest implements RewriteTest {
                     import java.util.ArrayList;
 
                     class A {
-                        void bar() {
-                            String[] lst = new String[]{"ABC", "DEF", "DOESN'T", "MATTER"};
+                        void bar(String[] lst) {
                             for (val s : lst) {}
                         }
                     }
@@ -175,8 +170,7 @@ class LombokValToFinalVarTest implements RewriteTest {
                     import java.util.ArrayList;
 
                     class A {
-                        void bar() {
-                            String[] lst = new String[]{"ABC", "DEF", "DOESN'T", "MATTER"};
+                        void bar(String[] lst) {
                             for (var s : lst) {}
                         }
                     }
@@ -186,42 +180,6 @@ class LombokValToFinalVarTest implements RewriteTest {
               )
             );
         }
-
-        @Test
-        void parameter() {
-            //language=java
-            rewriteRun(
-              version(
-                java(
-                  """
-                    import lombok.val;
-                    import java.nio.file.Path;
-                    import java.util.List;
-                    import java.util.ArrayList;
-
-                    class A {
-                        static void bar(final List<Path> lst) {
-                            for (val s : lst) {}
-                        }
-                    }
-                    """,
-                  """
-                    import java.nio.file.Path;
-                    import java.util.List;
-                    import java.util.ArrayList;
-
-                    class A {
-                        static void bar(final List<Path> lst) {
-                            for (var s : lst) {}
-                        }
-                    }
-                    """
-                ),
-                17
-              )
-            );
-        }
-
 
         @Test
         void valuesFromMethod() {
@@ -240,16 +198,14 @@ class LombokValToFinalVarTest implements RewriteTest {
                     import lombok.val;
 
                     class A {
-                        Mapper mapper;
-                        void bar() {
+                        void bar(Mapper mapper) {
                             for (val s : mapper.getNamesList()) {}
                         }
                     }
                     """,
                   """
                     class A {
-                        Mapper mapper;
-                        void bar() {
+                        void bar(Mapper mapper) {
                             for (var s : mapper.getNamesList()) {}
                         }
                     }
