@@ -144,7 +144,7 @@ public class UseVarForGenericsConstructors extends Recipe {
             J.VariableDeclarations.NamedVariable varZero = vd.getVariables().get(0);
             Expression initializer = Objects.requireNonNull(varZero.getInitializer());
 
-            // if left is defined but right is not, copy types to initializer
+            // If left is defined but right is not, copy types to initializer
             if (rightTypes.isEmpty() && !leftTypes.isEmpty()) {
                 // we need to switch type infos from left to right here
                 List<Expression> typeExpressions = leftTypes.stream().map(UseVarForGenericsConstructorsVisitor::typeToExpression).collect(toList());
@@ -169,7 +169,7 @@ public class UseVarForGenericsConstructors extends Recipe {
         }
 
         /**
-         * recursively map a JavaType to an Expression with the same semantics
+         * Recursively map a JavaType to an Expression with the same semantics
          * @param type to map
          * @return semantically equal Expression
          */
