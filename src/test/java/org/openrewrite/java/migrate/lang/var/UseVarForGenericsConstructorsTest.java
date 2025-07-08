@@ -60,7 +60,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         void twoParamsWithBounds() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                 import java.util.Map;
                 import java.util.LinkedHashMap;
 
@@ -181,7 +182,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             void genericMethod() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                        """
                       import java.util.List;
                       import java.util.ArrayList;
 
@@ -208,7 +210,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             void unboundedGenerics() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                        """
                       import java.util.List;
                       import java.util.ArrayList;
 
@@ -235,7 +238,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             void inceptionGenerics() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                        """
                       import java.util.List;
                       import java.util.ArrayList;
 
@@ -263,7 +267,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             void twoParams() {
                 //language=java
                 rewriteRun(
-                  java("""
+                  java(
+                        """
                       import java.util.Map;
                       import java.util.HashMap;
 
@@ -292,7 +297,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         void withTypeParameterInDefinitionOnly() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                   import java.util.List;
                   import java.util.ArrayList;
 
@@ -346,7 +352,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         void arrayAsType() {
             //language=java
             rewriteRun(
-              java("""
+              java(
+                    """
                   import java.util.List;
                   import java.util.ArrayList;
 
