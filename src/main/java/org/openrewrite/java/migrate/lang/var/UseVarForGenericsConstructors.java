@@ -192,7 +192,7 @@ public class UseVarForGenericsConstructors extends Recipe {
                 throw new IllegalStateException("Declaration-site variance type variables are not supported in Java.");
             } else if (type instanceof JavaType.Parameterized) { // recursively parse
                 List<JRightPadded<Expression>> typeParamsExpression = ((JavaType.Parameterized) type).getTypeParameters().stream()
-                        .map(curType -> JRightPadded.build(typeToExpression(curType)))
+                        .map(it -> JRightPadded.build(typeToExpression(it)))
                         .collect(toList());
                 NameTree clazz = new J.Identifier(randomId(), EMPTY, Markers.EMPTY, emptyList(), ((JavaType.Parameterized) type).getClassName(), null, null);
                 return new J.ParameterizedType(randomId(), EMPTY, Markers.EMPTY, clazz, JContainer.build(typeParamsExpression), type);
