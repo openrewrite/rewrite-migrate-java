@@ -530,8 +530,8 @@ class UseLombokGetterTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite/issues/5015")
+    @Test
     void noChangeIfAnnotated() {
         rewriteRun(// language=java
           java("@interface MyOtherAnnotation {}"),
@@ -551,8 +551,8 @@ class UseLombokGetterTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite/issues/5015")
+    @Test
     void replaceGetterIfOverwrite() {
         rewriteRun(// language=java
           java(

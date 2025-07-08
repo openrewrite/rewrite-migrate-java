@@ -61,8 +61,8 @@ class ListFirstAndLastTest implements RewriteTest {
             );
         }
 
-        @Test
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/423")
+        @Test
         void getFirstFromMethodInvocation() {
             rewriteRun(
               //language=java
@@ -124,8 +124,8 @@ class ListFirstAndLastTest implements RewriteTest {
             );
         }
 
-        @Test
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/423")
+        @Test
         void addFirstFromMethodInvocation() {
             rewriteRun(
               //language=java
@@ -185,8 +185,8 @@ class ListFirstAndLastTest implements RewriteTest {
             );
         }
 
-        @Test
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/423")
+        @Test
         void removeFirstFromMethodInvocation() {
             rewriteRun(
               //language=java

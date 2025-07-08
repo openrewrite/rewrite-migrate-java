@@ -107,8 +107,8 @@ class UseEnumSetOfTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/516")
+    @Test
     void dontChangeVarargs() {
         //language=java
         rewriteRun(
@@ -132,8 +132,8 @@ class UseEnumSetOfTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/516")
+    @Test
     void dontChangeArray() {
         //language=java
         rewriteRun(
@@ -158,8 +158,8 @@ class UseEnumSetOfTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/490")
+    @Test
     void dontHaveArgs() {
         //language=java
         rewriteRun(

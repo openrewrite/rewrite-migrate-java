@@ -85,4 +85,25 @@ class MigrateCollectionsSingletonMapTest implements RewriteTest {
           )
         );
     }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/571")
+    @Test
+    void shouldNotConvertLiteralNull() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.*;
+
+                class Test {
+                    Map<String, String> mapWithNullKey = Collections.singletonMap(null, "foo");
+                    Map<String, String> mapWithNullValue = Collections.singletonMap("bar", null);
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
 }

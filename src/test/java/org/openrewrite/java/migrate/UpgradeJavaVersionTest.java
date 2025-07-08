@@ -130,8 +130,8 @@ class UpgradeJavaVersionTest implements RewriteTest {
         }
     }
 
-    @SuppressWarnings("GroovyAssignabilityCheck")
     @Nested
+    @SuppressWarnings("GroovyAssignabilityCheck")
     class Gradle {
         @Test
         void gradleUpgradeFromJava11ToJava17() {

@@ -35,8 +35,8 @@ import java.util.List;
 import static java.util.Collections.singletonList;
 import static org.openrewrite.Tree.randomId;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class StringFormatted extends Recipe {
 
     private static final MethodMatcher STRING_FORMAT = new MethodMatcher("java.lang.String format(String, ..)");

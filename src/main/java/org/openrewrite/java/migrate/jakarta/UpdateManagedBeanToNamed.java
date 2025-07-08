@@ -34,8 +34,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UpdateManagedBeanToNamed extends Recipe {
 
     @Override

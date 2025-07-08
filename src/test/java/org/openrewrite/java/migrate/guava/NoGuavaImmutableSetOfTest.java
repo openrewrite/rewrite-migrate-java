@@ -32,8 +32,8 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void replaceArguments() {
         //language=java
         rewriteRun(

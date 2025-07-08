@@ -27,8 +27,8 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toMap;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class BeansXmlNamespace extends Recipe {
 
     private static final XPathMatcher BEANS_MATCHER = new XPathMatcher("/beans");

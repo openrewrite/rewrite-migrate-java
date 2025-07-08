@@ -40,9 +40,9 @@ class LombokValueToRecordTest implements RewriteTest {
           );
     }
 
-    @Test
     @DocumentExample
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/141")
+    @Test
     void convertOnlyValueAnnotatedClassWithoutDefaultValuesToRecord() {
         //language=java
         rewriteRun(

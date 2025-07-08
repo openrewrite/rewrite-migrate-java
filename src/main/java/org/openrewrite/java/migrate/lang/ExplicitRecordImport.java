@@ -20,10 +20,9 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.search.FindTypes;
 import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaSourceFile;
-import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.*;
 
 public class ExplicitRecordImport extends Recipe {
     @Override
@@ -45,10 +44,12 @@ public class ExplicitRecordImport extends Recipe {
                     public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
                         JavaSourceFile javaSourceFile = getCursor().firstEnclosing(JavaSourceFile.class);
                         if (javaSourceFile != null) {
-                            for (JavaType type : cu.getTypesInUse().getTypesInUse()) {
-                                if (type instanceof JavaType.FullyQualified) {
-                                    JavaType.FullyQualified ref = (JavaType.FullyQualified) type;
-                                    if ("Record".equals(ref.getClassName()) && !ref.getPackageName().startsWith("java.lang")) {
+                            for (NameTree nameTree : FindTypes.findAssignable(cu, "*..Record")) {
+                                if (nameTree.getType() instanceof JavaType.FullyQualified) {
+                                    JavaType.FullyQualified ref = (JavaType.FullyQualified) nameTree.getType();
+                                    if ("Record".equals(ref.getClassName()) &&
+                                            !ref.getPackageName().startsWith("java.lang") &&
+                                            !nameTree.getMarkers().findFirst(JavaVarKeyword.class).isPresent()) {
                                         maybeAddImport(ref.getFullyQualifiedName());
                                     }
                                 }

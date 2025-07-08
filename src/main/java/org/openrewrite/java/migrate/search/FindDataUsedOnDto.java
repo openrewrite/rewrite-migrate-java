@@ -26,8 +26,8 @@ import org.openrewrite.marker.SearchResult;
 
 import static org.openrewrite.internal.StringUtils.uncapitalize;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class FindDataUsedOnDto extends Recipe {
     transient DtoDataUses dtoDataUses = new DtoDataUses(this);
 

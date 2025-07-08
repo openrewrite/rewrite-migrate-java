@@ -160,8 +160,8 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
 
     @Nested
     class Applicable {
-        @Test
         @DocumentExample
+        @Test
         void withJDKFactoryMethods() {
             //language=java
             rewriteRun(

@@ -126,6 +126,39 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.AddStaticVariableOnProducerSessionBean
+examples:
+- description: ''
+  sources:
+  - before: |
+      package com.test;
+      import jakarta.ejb.Stateless;
+      import jakarta.enterprise.inject.Produces;
+
+      @Stateless
+      public class MySessionBean {
+          @Produces
+          private SomeDependency someDependency;
+          void exampleMethod() {
+             return;
+          }
+      }
+    after: |
+      package com.test;
+      import jakarta.ejb.Stateless;
+      import jakarta.enterprise.inject.Produces;
+
+      @Stateless
+      public class MySessionBean {
+          @Produces
+          private static SomeDependency someDependency;
+          void exampleMethod() {
+             return;
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ArrayStoreExceptionToTypeNotPresentException
 examples:
 - description: ''
@@ -3254,6 +3287,34 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.WasDevMvnChangeParentArtifactId
+examples:
+- description: ''
+  sources:
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+           <parent>
+                <groupId>net.wasdev.maven.parent</groupId>
+                 <artifactId>java8-parent</artifactId>
+                 <version>1.4</version>
+           </parent>
+           <artifactId>my-artifact</artifactId>
+      </project>
+    after: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+           <parent>
+                <groupId>net.wasdev.maven.parent</groupId>
+                 <artifactId>parent</artifactId>
+                 <version>1.4</version>
+           </parent>
+           <artifactId>my-artifact</artifactId>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
 examples:
 - description: ''
@@ -4574,41 +4635,6 @@ examples:
           </context-param>
       </web-fragment>
     language: xml
-- description: ''
-  sources:
-  - before: |
-      <?xml version="1.0" encoding="UTF-8"?>
-      <web-app xmlns="http://java.sun.com/xml/ns/javaee"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_0.xsd"
-               version="2.0">
-          <context-param>
-              <param-name>javax.faces.PROJECT_STAGE</param-name>
-              <param-value>Production</param-value>
-          </context-param>
-          <resource-ref>
-             <res-ref-name>myDataSource</res-ref-name>
-             <res-type>javax.sql.DataSource</res-type>
-             <res-auth>CONTAINER</res-auth>
-          </resource-ref>
-      </web-fragment>
-    after: |
-      <?xml version="1.0" encoding="UTF-8"?>
-      <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
-               version="5.0">
-          <context-param>
-              <param-name>jakarta.faces.PROJECT_STAGE</param-name>
-              <param-value>Production</param-value>
-          </context-param>
-          <resource-ref>
-             <res-ref-name>myDataSource</res-ref-name>
-             <res-type>javax.sql.DataSource</res-type>
-             <res-auth>CONTAINER</res-auth>
-          </resource-ref>
-      </web-fragment>
-    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
@@ -5913,7 +5939,7 @@ examples:
   - before: |
       package com.acme.music;
 
-      public class Test {
+      class Test {
           Record record;
       }
     after: |
@@ -5921,7 +5947,7 @@ examples:
 
       import com.acme.music.Record;
 
-      public class Test {
+      class Test {
           Record record;
       }
     language: java
@@ -5944,6 +5970,52 @@ examples:
             @Override
             public void run() {}
           });
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.IfElseIfConstructToSwitch
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          static String formatter(Object obj) {
+              String formatted = "initialValue";
+              if (obj == null) {
+                  formatted = "null";
+              } else if (obj instanceof Integer i)
+                  formatted = String.format("int %d", i);
+              else if (obj instanceof Long l) {
+                  formatted = String.format("long %d", l);
+              } else if (obj instanceof Double d) {
+                  formatted = String.format("double %f", d);
+              } else if (obj instanceof String s) {
+                  String str = "String";
+                  formatted = String.format("%s %s", str, s);
+              } else {
+                  formatted = "unknown";
+              }
+              return formatted;
+          }
+      }
+    after: |
+      class Test {
+          static String formatter(Object obj) {
+              String formatted = "initialValue";
+              switch (obj) {
+                  case null -> formatted = "null";
+                  case Integer i -> formatted = String.format("int %d", i);
+                  case Long l -> formatted = String.format("long %d", l);
+                  case Double d -> formatted = String.format("double %f", d);
+                  case String s -> {
+                      String str = "String";
+                      formatted = String.format("%s %s", str, s);
+                  }
+                  default -> formatted = "unknown";
+              }
+              return formatted;
+          }
       }
     language: java
 ---
@@ -6049,6 +6121,100 @@ examples:
               InetAddress maddr = InetAddress.getByName("127.0.0.1");
               byte b = 100;
               new SecurityManager().checkMulticast(maddr);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.NullCheckAsSwitchCase
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          static String score(String obj) {
+              String formatted = "Score not translated yet";
+              if (obj == null) {
+                  formatted = "You did not enter the test yet";
+              }
+              switch (obj) {
+                  case "A", "B" -> formatted = "Very good";
+                  case "C" -> formatted = "Good";
+                  case "D" -> formatted = "Hmmm...";
+                  default -> formatted = "unknown";
+              }
+              return formatted;
+          }
+      }
+    after: |
+      class Test {
+          static String score(String obj) {
+              String formatted = "Score not translated yet";
+              switch (obj) {
+                  case null -> formatted = "You did not enter the test yet";
+                  case "A", "B" -> formatted = "Very good";
+                  case "C" -> formatted = "Good";
+                  case "D" -> formatted = "Hmmm...";
+                  default -> formatted = "unknown";
+              }
+              return formatted;
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.RefineSwitchCases
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          static void score(Object obj) {
+              switch (obj) {
+                  case null -> System.out.println("You did not enter the test yet");
+                  case Integer i -> {
+                      if (i >= 5 && i <= 10)
+                          System.out.println("You got it");
+                      else if (i >= 0 && i < 5)
+                          System.out.println("Shame");
+                      else
+                          System.out.println("Sorry?");
+                  }
+                  case String s -> {
+                      if (s.equalsIgnoreCase("YES"))
+                          System.out.println("You got it");
+                      else if ("NO".equalsIgnoreCase(s))
+                          System.out.println("Shame");
+                      else
+                          System.out.println("Sorry?");
+                  }
+                  default -> {
+                      // Comment retained
+                  }
+              }
+          }
+      }
+    after: |
+      class Test {
+          static void score(Object obj) {
+              switch (obj) {
+                  case null -> System.out.println("You did not enter the test yet");
+                  case Integer i when i >= 5 && i <= 10 ->
+                      System.out.println("You got it");
+                  case Integer i when i >= 0 && i < 5 ->
+                      System.out.println("Shame");
+                  case Integer i ->
+                      System.out.println("Sorry?");
+                  case String s when s.equalsIgnoreCase("YES") ->
+                      System.out.println("You got it");
+                  case String s when "NO".equalsIgnoreCase(s) ->
+                      System.out.println("Shame");
+                  case String s ->
+                      System.out.println("Sorry?");
+                  default -> {
+                      // Comment retained
+                  }
+              }
           }
       }
     language: java
@@ -6192,33 +6358,6 @@ examples:
                   """;
       }
     language: java
-- description: ''
-  sources:
-  - before: |
-      class A {
-          void welcome() {
-              log("\n========================================================="
-                  + "\n                                                         "
-                  + "\n          Welcome to Spring Integration!                 "
-                  + "\n                                                         "
-                  + "\n    For more information please visit:                   "
-                  + "\n    https://www.springsource.org/spring-integration      "
-                  + "\n                                                         "
-                  + "\n=========================================================");
-          }
-          void log(String s) {}
-      }
-    after: "class A {\n    void welcome() {\n        log(\"\"\"\n            \n  \
-      \          =========================================================\n     \
-      \                                                               \\s\n      \
-      \                Welcome to Spring Integration!                \\s\n       \
-      \                                                             \\s\n        \
-      \        For more information please visit:                  \\s\n         \
-      \       https://www.springsource.org/spring-integration     \\s\n          \
-      \                                                          \\s\n           \
-      \ =========================================================\\\n            \"\
-      \"\");\n    }\n    void log(String s) {}\n}\n"
-    language: java
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.UseVar
@@ -6341,21 +6480,6 @@ examples:
       class A {
         void m() {
             var o = new Object();
-        }
-      }
-    language: java
-- description: ''
-  sources:
-  - before: |
-      class A {
-        void m() {
-            final Object o = new Object();
-        }
-      }
-    after: |
-      class A {
-        void m() {
-            final var o = new Object();
         }
       }
     language: java

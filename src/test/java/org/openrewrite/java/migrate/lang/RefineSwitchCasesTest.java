@@ -29,8 +29,8 @@ class RefineSwitchCasesTest implements RewriteTest {
         spec.recipe(new RefineSwitchCases());
     }
 
-    @Test
     @DocumentExample
+    @Test
     void refineCases() {
         rewriteRun(
           //language=java
