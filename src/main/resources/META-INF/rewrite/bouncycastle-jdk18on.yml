@@ -19,10 +19,11 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On
 displayName: Migrate BouncyCastle to jdk18on
 description: >-
-  This recipe will upgrade BouncyCastle dependencies from -jdk15on to -jdk18on.
+  This recipe will upgrade BouncyCastle dependencies from -jdk15on or -jdk15to18 to -jdk18on.
 tags:
   - bouncycastle
 recipeList:
+  # -jdk15on migration
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.bouncycastle
       oldArtifactId: bcprov-jdk15on
@@ -56,5 +57,42 @@ recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.bouncycastle
       oldArtifactId: bctls-jdk15on
+      newArtifactId: bctls-jdk18on
+      newVersion: latest.release
+
+  # -jdk15to18 migration
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcprov-jdk15to18
+      newArtifactId: bcprov-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcutil-jdk15to18
+      newArtifactId: bcutil-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcpkix-jdk15to18
+      newArtifactId: bcpkix-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcmail-jdk15to18
+      newArtifactId: bcmail-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcjmail-jdk15to18
+      newArtifactId: bcjmail-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcpg-jdk15to18
+      newArtifactId: bcpg-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bctls-jdk15to18
       newArtifactId: bctls-jdk18on
       newVersion: latest.release
