@@ -22,8 +22,7 @@ import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.javaVersion;
+import static org.openrewrite.java.Assertions.*;
 
 class UseVarForGenericsConstructorsTest implements RewriteTest {
     @Override
@@ -168,6 +167,27 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                   }
                   """
               )
+            );
+        }
+
+        @Test
+        void javaLowerThan10() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    import java.util.List;
+                    import java.util.ArrayList;
+
+                    class A {
+                        void m() {
+                            List<String> strs = new ArrayList<>();
+                        }
+                    }
+                    """
+                ),
+                9)
             );
         }
     }
