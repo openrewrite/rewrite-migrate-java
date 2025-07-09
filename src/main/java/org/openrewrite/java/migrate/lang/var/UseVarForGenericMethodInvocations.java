@@ -84,7 +84,8 @@ public class UseVarForGenericMethodInvocations extends Recipe {
 
             return DeclarationCheck.transformToVar(vd);
             // TODO implement to support cases like `var strs = List.<String>of();`
-            /*return DeclarationCheck.<J.MethodInvocation>transformToVar(vd, it -> {
+            /*J.VariableDeclarations finalVd = vd;
+            return DeclarationCheck.<J.MethodInvocation>transformToVar(vd, it -> {
                 // if left is defined but not right, copy types to initializer
                 if (finalVd.getTypeExpression() instanceof J.ParameterizedType && !((J.ParameterizedType) finalVd.getTypeExpression()).getTypeParameters().isEmpty() && it.getTypeParameters() == null) {
                     return it.withTypeParameters(((J.ParameterizedType) finalVd.getTypeExpression()).getPadding().getTypeParameters());
