@@ -82,14 +82,15 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 maybeRemoveImport((JavaType.FullyQualified) vd.getType());
             }
 
-            return DeclarationCheck.<J.MethodInvocation>transformToVar(vd, it -> {
+            return DeclarationCheck.transformToVar(vd);
+            // TODO implement to support cases like `var strs = List.<String>of();`
+            /*return DeclarationCheck.<J.MethodInvocation>transformToVar(vd, it -> {
                 // if left is defined but not right, copy types to initializer
-                // TODO implement to support cases like `var strs = List.<String>of();`
-                /*if (finalVd.getTypeExpression() instanceof J.ParameterizedType && !((J.ParameterizedType) finalVd.getTypeExpression()).getTypeParameters().isEmpty() && it.getTypeParameters() == null) {
+                if (finalVd.getTypeExpression() instanceof J.ParameterizedType && !((J.ParameterizedType) finalVd.getTypeExpression()).getTypeParameters().isEmpty() && it.getTypeParameters() == null) {
                     return it.withTypeParameters(((J.ParameterizedType) finalVd.getTypeExpression()).getPadding().getTypeParameters());
-                }*/
+                }
                 return it;
-            });
+            });*/
         }
 
         private static boolean allArgumentsEmpty(J.MethodInvocation invocation) {
