@@ -37,8 +37,8 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
 import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class RefineSwitchCases extends Recipe {
     @Override
     public String getDisplayName() {

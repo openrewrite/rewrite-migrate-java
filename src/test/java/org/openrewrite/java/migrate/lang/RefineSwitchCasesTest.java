@@ -32,8 +32,8 @@ class RefineSwitchCasesTest implements RewriteTest {
           .allSources(source -> version(source, 21));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void refineCases() {
         rewriteRun(
           //language=java

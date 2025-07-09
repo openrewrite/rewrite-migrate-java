@@ -115,8 +115,8 @@ class UseVarForObjectsTest extends VarBaseTest {
             );
         }
 
-        @Test
         @Disabled("this should be possible, but it needs very hard type inference")
+        @Test
         void withTernary() {
             //language=java
             rewriteRun(
@@ -275,8 +275,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                 );
             }
 
-            @Test
             @Disabled("in favor to https://github.com/openrewrite/rewrite-migrate-java/issues/608 we skip all static methods ATM")
+            @Test
             void staticMethods() {
                 //language=java
                 rewriteRun(
@@ -315,8 +315,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                 );
             }
 
-            @Test
             @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/550")
+            @Test
             void genericType() {
                 rewriteRun(
                   //language=java
@@ -350,8 +350,8 @@ class UseVarForObjectsTest extends VarBaseTest {
     @Nested
     class NotApplicable {
 
-        @Test
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/608")
+        @Test
         void genericTypeInStaticMethod() {
             // ATM the recipe skips all static method initialized variables
             rewriteRun(
@@ -393,8 +393,8 @@ class UseVarForObjectsTest extends VarBaseTest {
             );
         }
 
-        @Test
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/551")
+        @Test
         void arrayInitializer() {
             //language=java
             rewriteRun(

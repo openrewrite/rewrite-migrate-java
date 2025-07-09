@@ -31,8 +31,8 @@ class SwitchCaseEnumGuardToLabelTest implements RewriteTest {
           .allSources(source -> version(source, 21));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void enumValuesPatternMatching() {
         rewriteRun(
           java(

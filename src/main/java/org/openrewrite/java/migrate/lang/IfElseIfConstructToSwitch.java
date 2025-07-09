@@ -35,12 +35,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
 import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class IfElseIfConstructToSwitch extends Recipe {
     @Override
     public String getDisplayName() {
@@ -75,7 +76,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
                             if (case_.getBody() instanceof J.Block &&
                                     ((J.Block) case_.getBody()).getStatements().isEmpty() &&
                                     !((J.Block) case_.getBody()).getEnd().isEmpty()) {
-                                return case_.withBody(((J.Block) case_.getBody()).withEnd(Space.EMPTY));
+                                return case_.withBody(((J.Block) case_.getBody())
+                                        .withPrefix(Space.SINGLE_SPACE)
+                                        .withEnd(Space.EMPTY));
                             }
                             return case_.withBody(case_.getBody().withPrefix(Space.SINGLE_SPACE));
                         }
@@ -100,6 +103,11 @@ public class IfElseIfConstructToSwitch extends Recipe {
         private SwitchCandidate(J.If if_, Cursor cursor) {
             this.if_ = if_;
             this.cursor = cursor;
+            Cursor parent = cursor.getParent(2);
+            if (parent == null || parent.getValue() instanceof J.If.Else) {
+                potentialCandidate = false;
+                return;
+            }
             J.If ifPart = if_;
             while (potentialCandidate && ifPart != null) {
                 if (ifPart.getIfCondition().getTree() instanceof J.Binary) {
@@ -157,6 +165,18 @@ public class IfElseIfConstructToSwitch extends Recipe {
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> instanceOf.getPattern() == null)) {
                 return false;
             }
+            // The blocks cannot do a return as that would lead to all blocks having to do a return,
+            // the block/expression difference in return for switch statements / expressions being different...
+            if (returns(nullCheckedStatement) || patternMatchers.values().stream().anyMatch(this::returns) || returns(else_)) {
+                return false;
+            }
+            // Do no harm -> If we do not know how to replace(yet), do not replace
+            if (patternMatchers.keySet().stream().anyMatch(instanceOf -> {
+                J clazz = instanceOf.getClazz();
+                return !(clazz instanceof J.Identifier || clazz instanceof J.FieldAccess || clazz instanceof J.ArrayType || clazz instanceof J.ParameterizedType);
+            })) {
+                return false;
+            }
             boolean nullCaseInSwitch = nullCheckedParameter != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn.get());
             boolean hasLastElseBlock = else_ != null;
 
@@ -164,6 +184,16 @@ public class IfElseIfConstructToSwitch extends Recipe {
             return 3 <= patternMatchers.size() +
                     (nullCaseInSwitch ? 1 : 0) +
                     (hasLastElseBlock ? 1 : 0);
+        }
+
+        private boolean returns(@Nullable Statement statement) {
+            return statement != null && new JavaIsoVisitor<AtomicBoolean>() {
+                @Override
+                public J.Return visitReturn(J.Return return_, AtomicBoolean atomicBoolean) {
+                    atomicBoolean.set(true);
+                    return return_;
+                }
+            }.reduce(statement, new AtomicBoolean(false)).get();
         }
 
         public J.@Nullable Switch buildSwitchTemplate() {
@@ -176,36 +206,20 @@ public class IfElseIfConstructToSwitch extends Recipe {
             StringBuilder switchBody = new StringBuilder("switch (#{any()}) {\n");
             int i = 1;
             if (nullCheckedParameter != null) {
-                Statement statement = getStatement(Objects.requireNonNull(nullCheckedStatement));
-                if (statement instanceof J.Block) {
-                    switchBody.append("case null -> #{}\n");
-                } else {
-                    switchBody.append("case null -> #{any()};\n");
-                }
-                arguments[i++] = statement;
+                switchBody.append("case null -> #{any()};\n");
+                arguments[i++] = getStatement(Objects.requireNonNull(nullCheckedStatement));
             }
             for (Map.Entry<J.InstanceOf, Statement> entry : patternMatchers.entrySet()) {
                 J.InstanceOf instanceOf = entry.getKey();
-                Statement statement = getStatement(entry.getValue());
-                if (statement instanceof J.Block) {
-                    switchBody.append("case #{}#{} -> #{}\n");
-                } else {
-                    switchBody.append("case #{}#{} -> #{any()};\n");
-                }
+                switchBody.append("case #{}#{} -> #{any()};\n");
                 arguments[i++] = getClassName(instanceOf);
                 arguments[i++] = getPattern(instanceOf);
-                arguments[i++] = statement;
+                arguments[i++] = getStatement(entry.getValue());
             }
+            switchBody.append("default -> #{any()};\n");
             if (else_ != null) {
-                Statement statement = getStatement(else_);
-                if (statement instanceof J.Block) {
-                    switchBody.append("default -> #{}\n");
-                } else {
-                    switchBody.append("default -> #{any()};\n");
-                }
-                arguments[i] = statement;
+                arguments[i] = getStatement(else_);
             } else {
-                switchBody.append("default -> #{}\n");
                 arguments[i] = createEmptyBlock();
             }
             switchBody.append("}\n");
@@ -223,10 +237,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
         private String getClassName(J.InstanceOf statement) {
             if (statement.getClazz() instanceof J.Identifier) {
                 return ((J.Identifier) statement.getClazz()).getSimpleName();
-            } else if (statement.getClazz() instanceof J.FieldAccess) {
-                return ((J.FieldAccess) statement.getClazz()).toString();
             }
-            throw new IllegalStateException("Found unsupported statement where clazz is " + statement.getClazz());
+
+            return statement.getClazz().toString();
         }
 
         private String getPattern(J.InstanceOf statement) {
@@ -237,11 +250,13 @@ public class IfElseIfConstructToSwitch extends Recipe {
         }
 
         private Statement getStatement(Statement statement) {
-            Statement toAdd = statement;
             if (statement instanceof J.Block && ((J.Block) statement).getStatements().size() == 1) {
-                toAdd = ((J.Block) statement).getStatements().get(0);
+                Statement firstStatement = ((J.Block) statement).getStatements().get(0);
+                if (firstStatement instanceof Expression || firstStatement instanceof J.Throw) {
+                    return firstStatement;
+                }
             }
-            return toAdd;
+            return statement;
         }
     }
 }

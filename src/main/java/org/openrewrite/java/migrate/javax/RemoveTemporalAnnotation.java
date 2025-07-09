@@ -34,8 +34,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class RemoveTemporalAnnotation extends Recipe {
     /*
      * This rule scans for the following annotation-attribute combinations where data does not need to be converted

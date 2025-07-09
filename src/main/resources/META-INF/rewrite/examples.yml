@@ -251,11 +251,9 @@ examples:
   - before: |
       <project>
         <modelVersion>4.0.0</modelVersion>
-
         <groupId>com.mycompany.app</groupId>
         <artifactId>my-app</artifactId>
         <version>1</version>
-
         <dependencies>
           <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -3287,6 +3285,34 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.WasDevMvnChangeParentArtifactId
+examples:
+- description: ''
+  sources:
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+           <parent>
+                <groupId>net.wasdev.maven.parent</groupId>
+                 <artifactId>java8-parent</artifactId>
+                 <version>1.4</version>
+           </parent>
+           <artifactId>my-artifact</artifactId>
+      </project>
+    after: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+           <parent>
+                <groupId>net.wasdev.maven.parent</groupId>
+                 <artifactId>parent</artifactId>
+                 <version>1.4</version>
+           </parent>
+           <artifactId>my-artifact</artifactId>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
 examples:
 - description: ''
@@ -4607,41 +4633,6 @@ examples:
           </context-param>
       </web-fragment>
     language: xml
-- description: ''
-  sources:
-  - before: |
-      <?xml version="1.0" encoding="UTF-8"?>
-      <web-app xmlns="http://java.sun.com/xml/ns/javaee"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_0.xsd"
-               version="2.0">
-          <context-param>
-              <param-name>javax.faces.PROJECT_STAGE</param-name>
-              <param-value>Production</param-value>
-          </context-param>
-          <resource-ref>
-             <res-ref-name>myDataSource</res-ref-name>
-             <res-type>javax.sql.DataSource</res-type>
-             <res-auth>CONTAINER</res-auth>
-          </resource-ref>
-      </web-fragment>
-    after: |
-      <?xml version="1.0" encoding="UTF-8"?>
-      <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
-               version="5.0">
-          <context-param>
-              <param-name>jakarta.faces.PROJECT_STAGE</param-name>
-              <param-value>Production</param-value>
-          </context-param>
-          <resource-ref>
-             <res-ref-name>myDataSource</res-ref-name>
-             <res-type>javax.sql.DataSource</res-type>
-             <res-auth>CONTAINER</res-auth>
-          </resource-ref>
-      </web-fragment>
-    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
@@ -5946,7 +5937,7 @@ examples:
   - before: |
       package com.acme.music;
 
-      public class Test {
+      class Test {
           Record record;
       }
     after: |
@@ -5954,7 +5945,7 @@ examples:
 
       import com.acme.music.Record;
 
-      public class Test {
+      class Test {
           Record record;
       }
     language: java
@@ -6365,33 +6356,6 @@ examples:
                   """;
       }
     language: java
-- description: ''
-  sources:
-  - before: |
-      class A {
-          void welcome() {
-              log("\n========================================================="
-                  + "\n                                                         "
-                  + "\n          Welcome to Spring Integration!                 "
-                  + "\n                                                         "
-                  + "\n    For more information please visit:                   "
-                  + "\n    https://www.springsource.org/spring-integration      "
-                  + "\n                                                         "
-                  + "\n=========================================================");
-          }
-          void log(String s) {}
-      }
-    after: "class A {\n    void welcome() {\n        log(\"\"\"\n            \n  \
-      \          =========================================================\n     \
-      \                                                               \\s\n      \
-      \                Welcome to Spring Integration!                \\s\n       \
-      \                                                             \\s\n        \
-      \        For more information please visit:                  \\s\n         \
-      \       https://www.springsource.org/spring-integration     \\s\n          \
-      \                                                          \\s\n           \
-      \ =========================================================\\\n            \"\
-      \"\");\n    }\n    void log(String s) {}\n}\n"
-    language: java
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.UseVar
@@ -6514,21 +6478,6 @@ examples:
       class A {
         void m() {
             var o = new Object();
-        }
-      }
-    language: java
-- description: ''
-  sources:
-  - before: |
-      class A {
-        void m() {
-            final Object o = new Object();
-        }
-      }
-    after: |
-      class A {
-        void m() {
-            final var o = new Object();
         }
       }
     language: java

@@ -31,8 +31,8 @@ import org.openrewrite.maven.UseMavenCompilerPluginReleaseConfiguration;
 import java.time.Duration;
 import java.util.*;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UpgradeJavaVersion extends Recipe {
 
     @Option(displayName = "Java version",

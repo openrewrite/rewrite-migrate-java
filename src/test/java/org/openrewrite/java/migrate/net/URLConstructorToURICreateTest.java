@@ -30,9 +30,9 @@ class URLConstructorToURICreateTest implements RewriteTest {
         spec.recipe(new URLConstructorToURICreate());
     }
 
-    @Test
     @DocumentExample
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/191")
+    @Test
     void urlConstructor() {
         rewriteRun(
           //language=java
@@ -50,8 +50,8 @@ class URLConstructorToURICreateTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
+    @Test
     void urlCheckAbsolutePath() {
         rewriteRun(
           //language=java
@@ -125,8 +125,8 @@ class URLConstructorToURICreateTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
+    @Test
     void gradleUrl() {
         rewriteRun(
           //language=groovy
@@ -150,8 +150,8 @@ class URLConstructorToURICreateTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
+    @Test
     void urlCheckConstantAbsolutePath() {
         rewriteRun(
           //language=java
@@ -183,8 +183,8 @@ class URLConstructorToURICreateTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
+    @Test
     void urlCheckConstantRelativePath() {
         rewriteRun(
           //language=java
@@ -204,8 +204,8 @@ class URLConstructorToURICreateTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
+    @Test
     void urlCheckRelativePath() {
         rewriteRun(
           spec -> spec.expectedCyclesThatMakeChanges(0),
@@ -224,8 +224,8 @@ class URLConstructorToURICreateTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
+    @Test
     void urlCheckNullPath() {
         rewriteRun(
           //language=java
@@ -243,8 +243,8 @@ class URLConstructorToURICreateTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
+    @Test
     void urlCheckMethodInvocationParameter() {
         rewriteRun(
           //language=java

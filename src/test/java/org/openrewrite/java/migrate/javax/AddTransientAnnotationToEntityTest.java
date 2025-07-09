@@ -31,8 +31,8 @@ class AddTransientAnnotationToEntityTest implements RewriteTest {
           .recipe(new AddTransientAnnotationToEntity());
     }
 
-    @Test
     @DocumentExample
+    @Test
     void addTransient() {
         //language=java
         rewriteRun(

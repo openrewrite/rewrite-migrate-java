@@ -28,9 +28,9 @@ import static java.util.Collections.singletonList;
 /**
  * @deprecated Use {@link org.openrewrite.maven.UseMavenCompilerPluginReleaseConfiguration} instead.
  */
-@Value
-@EqualsAndHashCode(callSuper = false)
 @Deprecated
+@EqualsAndHashCode(callSuper = false)
+@Value
 public class UseMavenCompilerPluginReleaseConfiguration extends Recipe {
     private static final XPathMatcher PLUGINS_MATCHER = new XPathMatcher("/project/build//plugins");
 

@@ -39,8 +39,8 @@ import java.util.stream.Collectors;
 import static java.util.Objects.requireNonNull;
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class NullCheckAsSwitchCase extends Recipe {
     @Override
     public String getDisplayName() {
@@ -123,7 +123,10 @@ public class NullCheckAsSwitchCase extends Recipe {
                 J.Case currentFirstCase = aSwitch.getCases().getStatements().isEmpty() || !(aSwitch.getCases().getStatements().get(0) instanceof J.Case) ? null : (J.Case) aSwitch.getCases().getStatements().get(0);
                 if (currentFirstCase == null || J.Case.Type.Rule == currentFirstCase.getType()) {
                     if (whenNull instanceof J.Block && ((J.Block) whenNull).getStatements().size() == 1) {
-                        whenNull = ((J.Block) whenNull).getStatements().get(0);
+                        Statement firstStatement = ((J.Block) whenNull).getStatements().get(0);
+                        if (firstStatement instanceof Expression || firstStatement instanceof J.Throw) {
+                            whenNull = firstStatement;
+                        }
                     }
                     String semicolon = whenNull instanceof J.Block ? "" : ";";
                     J.Switch switchWithNullCase = JavaTemplate.apply(

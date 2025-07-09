@@ -33,8 +33,8 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
           .allSources(source -> version(source, 21));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void mergeNullCheckWithSwitch() {
         rewriteRun(
           //language=java
@@ -481,6 +481,88 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
 
                   void setObj(String obj) {
                       obj = "String cannot be reassigned in the original location so safe to merge";
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void singleExpressionsUnwrapped() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      if (obj == null) {
+                          formatted = "null";
+                      }
+                      switch (obj) {
+                          case Integer i -> formatted = String.format("int %d", i);
+                          case Long l -> formatted = String.format("long %d", l);
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case null -> formatted = "null";
+                          case Integer i -> formatted = String.format("int %d", i);
+                          case Long l -> formatted = String.format("long %d", l);
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void singleStatementsNotUnwrapped() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      if (obj == null) {
+                          if (formatted.equals("initialValue")) {
+                              formatted = "null";
+                          }
+                      }
+                      switch (obj) {
+                          case Long l -> formatted = String.format("long %d", l);
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static String formatter(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case null -> {
+                              if (formatted.equals("initialValue")) {
+                                  formatted = "null";
+                              }
+                          }
+                          case Long l -> formatted = String.format("long %d", l);
+                          default -> formatted = "unknown";
+                      }
+                      return formatted;
                   }
               }
               """

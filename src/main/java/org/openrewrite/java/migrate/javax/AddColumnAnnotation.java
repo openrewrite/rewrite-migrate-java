@@ -31,8 +31,8 @@ import org.openrewrite.java.tree.J;
 
 import java.util.Comparator;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class AddColumnAnnotation extends Recipe {
 
     @Override

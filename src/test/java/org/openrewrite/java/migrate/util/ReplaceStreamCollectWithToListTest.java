@@ -32,8 +32,8 @@ class ReplaceStreamCollectWithToListTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(17)));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void replacesToUnmodifiableList() {
         rewriteRun(
           //language=java

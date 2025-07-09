@@ -34,8 +34,8 @@ import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import static java.util.Collections.singletonList;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class SwitchCaseEnumGuardToLabel extends Recipe {
     @Override
     public String getDisplayName() {
