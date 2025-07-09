@@ -87,12 +87,20 @@ public class UseVarForGenericsConstructors extends Recipe {
                 return vd;
             }
 
-            // Mark imports for removal if unused
             if (vd.getType() instanceof JavaType.FullyQualified) {
                 maybeRemoveImport((JavaType.FullyQualified) vd.getType());
             }
 
-            return transformToVar(vd, leftTypes, rightTypes);
+            J.VariableDeclarations finalVd = vd;
+            return DeclarationCheck.<J.NewClass>transformToVar(vd, it -> {
+                // If left is defined but right is not, copy types from typeExpression to initializer
+                if (rightTypes.isEmpty() && !leftTypes.isEmpty() && finalVd.getTypeExpression() instanceof J.ParameterizedType && it.getClazz() instanceof J.ParameterizedType) {
+                    J.ParameterizedType typedInitializerClazz = ((J.ParameterizedType) it.getClazz())
+                            .withTypeParameters(((J.ParameterizedType) finalVd.getTypeExpression()).getTypeParameters());
+                    return it.withClazz(typedInitializerClazz);
+                }
+                return it;
+            });
         }
 
         private static Boolean anyTypeHasBounds(List<JavaType> leftTypes) {
@@ -140,31 +148,6 @@ public class UseVarForGenericsConstructors extends Recipe {
                 return ((JavaType.Parameterized) variable.getType()).getTypeParameters();
             }
             return new ArrayList<>();
-        }
-
-        private J.VariableDeclarations transformToVar(J.VariableDeclarations vd, List<JavaType> leftTypes, List<JavaType> rightTypes) {
-            J.NewClass initializer = Objects.requireNonNull((J.NewClass) vd.getVariables().get(0).getInitializer());
-
-            // If left is defined but right is not, copy types from typeExpression to initializer
-            if (rightTypes.isEmpty() && !leftTypes.isEmpty() && vd.getTypeExpression() instanceof J.ParameterizedType && initializer.getClazz() instanceof J.ParameterizedType) {
-                J.ParameterizedType typedInitializerClazz = ((J.ParameterizedType) initializer.getClazz())
-                        .withTypeParameters(((J.ParameterizedType) vd.getTypeExpression()).getTypeParameters());
-                initializer = initializer.withClazz(typedInitializerClazz);
-            }
-
-            // Replace actual type by `var` keyword and replace the first variable's name, initializer and type
-            J.NewClass finalInitializer = initializer;
-            List<J.VariableDeclarations.NamedVariable> variables = ListUtils.mapFirst(vd.getVariables(), it -> {
-                JavaType.Variable variableType = it.getVariableType() == null ? null : it.getVariableType().withOwner(null);
-                return it
-                        .withName(it.getName().withType(finalInitializer.getType()).withFieldType(variableType))
-                        .withInitializer(finalInitializer)
-                        .withVariableType(variableType);
-            });
-            J.Identifier typeExpression = new J.Identifier(randomId(), vd.getTypeExpression().getPrefix(),
-                    Markers.build(singleton(JavaVarKeyword.build())), emptyList(), "var", initializer.getType(), null);
-
-            return vd.withVariables(variables).withTypeExpression(typeExpression);
         }
     }
 }

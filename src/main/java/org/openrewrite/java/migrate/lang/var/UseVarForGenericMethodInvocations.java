@@ -15,18 +15,15 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import org.openrewrite.*;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.tree.*;
-import org.openrewrite.marker.Markers;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.util.Collections.emptyList;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
 public class UseVarForGenericMethodInvocations extends Recipe {
     @Override
@@ -50,9 +47,6 @@ public class UseVarForGenericMethodInvocations extends Recipe {
     }
 
     static final class UseVarForGenericsVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private final JavaTemplate template = JavaTemplate.builder("var #{} = #{any()}")
-                .javaParser(JavaParser.fromJavaVersion()).build();
-
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, ExecutionContext ctx) {
             vd = super.visitVariableDeclarations(vd, ctx);
@@ -62,7 +56,7 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 return vd;
             }
 
-            // recipe specific
+            // Recipe specific
             boolean isPrimitive = DeclarationCheck.isPrimitive(vd);
             boolean usesNoGenerics = !DeclarationCheck.useGenerics(vd);
             boolean usesTernary = DeclarationCheck.initializedByTernary(vd);
@@ -70,26 +64,32 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 return vd;
             }
 
-            //now we deal with generics, check for method invocations
+            // Now we deal with generics, check for method invocations
             Expression initializer = vd.getVariables().get(0).getInitializer();
             boolean isMethodInvocation = initializer != null && initializer.unwrap() instanceof J.MethodInvocation;
             if (!isMethodInvocation) {
                 return vd;
             }
 
-            //if no type paramters are present and no arguments we assume the type is hard to determine a needs manual action
+            // If no type paramters are present and no arguments we assume the type is hard to determine a needs manual action
             boolean hasNoTypeParams = ((J.MethodInvocation) initializer).getTypeParameters() == null;
             boolean argumentsEmpty = allArgumentsEmpty((J.MethodInvocation) initializer);
             if (hasNoTypeParams && argumentsEmpty) {
                 return vd;
             }
 
-            // mark imports for removal if unused
             if (vd.getType() instanceof JavaType.FullyQualified) {
-                maybeRemoveImport( (JavaType.FullyQualified) vd.getType() );
+                maybeRemoveImport((JavaType.FullyQualified) vd.getType());
             }
 
-            return transformToVar(vd, new ArrayList<>(), new ArrayList<>());
+            return DeclarationCheck.<J.MethodInvocation>transformToVar(vd, it -> {
+                // if left is defined but not right, copy types to initializer
+                // TODO implement to support cases like `var strs = List.<String>of();`
+                /*if (finalVd.getTypeExpression() instanceof J.ParameterizedType && !((J.ParameterizedType) finalVd.getTypeExpression()).getTypeParameters().isEmpty() && it.getTypeParameters() == null) {
+                    return it.withTypeParameters(((J.ParameterizedType) finalVd.getTypeExpression()).getPadding().getTypeParameters());
+                }*/
+                return it;
+            });
         }
 
         private static boolean allArgumentsEmpty(J.MethodInvocation invocation) {
@@ -99,41 +99,6 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 }
             }
             return true;
-        }
-
-        private J.VariableDeclarations transformToVar(J.VariableDeclarations vd, List<JavaType> leftTypes, List<JavaType> rightTypes) {
-            Expression initializer = vd.getVariables().get(0).getInitializer();
-            String simpleName = vd.getVariables().get(0).getSimpleName();
-
-            // if left is defined but not right, copy types to initializer
-            if (rightTypes.isEmpty() && !leftTypes.isEmpty()) {
-                // we need to switch type infos from left to right here
-                List<Expression> typeArgument = new ArrayList<>();
-                for (JavaType t : leftTypes) {
-                    typeArgument.add(new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, emptyList(), ((JavaType.Class) t).getClassName(), t, null));
-                }
-                J.ParameterizedType typedInitializerClazz = ((J.ParameterizedType) ((J.NewClass) initializer).getClazz()).withTypeParameters(typeArgument);
-                initializer = ((J.NewClass) initializer).withClazz(typedInitializerClazz);
-            }
-
-            J.VariableDeclarations result = template.<J.VariableDeclarations>apply(getCursor(), vd.getCoordinates().replace(), simpleName, initializer)
-                    .withPrefix(vd.getPrefix());
-
-            // apply modifiers like final
-            List<J.Modifier> modifiers = vd.getModifiers();
-            boolean hasModifiers = !modifiers.isEmpty();
-            if (hasModifiers) {
-                result = result.withModifiers(modifiers);
-            }
-
-            // apply prefix to type expression
-            TypeTree resultingTypeExpression = result.getTypeExpression();
-            boolean resultHasTypeExpression = resultingTypeExpression != null;
-            if (resultHasTypeExpression) {
-                result = result.withTypeExpression(resultingTypeExpression.withPrefix(vd.getTypeExpression().getPrefix()));
-            }
-
-            return result;
         }
     }
 }
