@@ -36,13 +36,10 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
 
         @Test
         void boundedGenerics() {
-            // could be var lst = new ArrayList<? extends String>();
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
+              java(
+                """
                   import java.util.List;
                   import java.util.ArrayList;
 
@@ -51,8 +48,28 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                           List<? extends String> lst = new ArrayList<>();
                       }
                   }
-                  """),
-                10
+                  """
+              )
+            );
+        }
+
+        @Test
+        void twoParamsWithBounds() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import java.util.Map;
+                  import java.util.LinkedHashMap;
+
+                  class AbstractOAuth2Configurer {}
+
+                  class A {
+                      void twoParams() {
+                          Map<Class<? extends AbstractOAuth2Configurer>, AbstractOAuth2Configurer> configurers = new LinkedHashMap<>();
+                      }
+                  }
+                  """
               )
             );
         }
@@ -61,20 +78,16 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         void forEmptyFactoryMethod() {
             //language=java
             rewriteRun(
-              version(
-                java(
+              java(
+                """
+                  import java.util.List;
+
+                  class A {
+                    void m() {
+                        List<String> strs = List.of();
+                    }
+                  }
                   """
-                      package com.example.app;
-
-                      import java.util.List;
-
-                      class A {
-                        void m() {
-                            List<String> strs = List.of();
-                        }
-                      }
-                    """),
-                10
               )
             );
         }
@@ -84,10 +97,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             // this one is handled by UseVarForMethodInvocations
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
+              java(
+                """
                   import java.util.List;
 
                   class A {
@@ -95,8 +106,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                         List<String> strs = List.of("one", "two");
                     }
                   }
-                  """),
-                10
+                  """
               )
             );
         }
@@ -105,21 +115,17 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         void forEmptyDiamondOperators() {
             //language=java
             rewriteRun(
-              version(
-                java(
+              java(
+                """
+                  import java.util.List;
+                  import java.util.ArrayList;
+
+                  class A {
+                    void m() {
+                        List strs = new ArrayList<>();
+                    }
+                  }
                   """
-                      package com.example.app;
-
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
-                        void m() {
-                            List strs = new ArrayList<>();
-                        }
-                      }
-                    """),
-                10
               )
             );
         }
@@ -129,10 +135,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             //todo check if this may be possible!, We could transform ArrayList into ArrayList<String>
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
+              java(
+                """
                   import java.util.List;
                   import java.util.ArrayList;
 
@@ -141,8 +145,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                         List<String> strs = new ArrayList();
                     }
                   }
-                  """),
-                10
+                  """
               )
             );
         }
@@ -152,22 +155,39 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             // this one fails for generics because it's covered by UseVarForObjects
             //language=java
             rewriteRun(
+              java(
+                """
+                  import java.util.List;
+                  import java.util.ArrayList;
+
+                  class A {
+                    void m() {
+                        List strs = new ArrayList();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void javaLowerThan10() {
+            //language=java
+            rewriteRun(
               version(
                 java(
                   """
-                      package com.example.app;
+                    import java.util.List;
+                    import java.util.ArrayList;
 
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
+                    class A {
                         void m() {
-                            List strs = new ArrayList();
+                            List<String> strs = new ArrayList<>();
                         }
-                      }
-                    """),
-                10
-              )
+                    }
+                    """
+                ),
+                9)
             );
         }
     }
@@ -182,10 +202,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             void genericMethod() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
-
+                  java(
+                    """
                       import java.util.List;
                       import java.util.ArrayList;
 
@@ -194,9 +212,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                               List<T> lst = new ArrayList<>();
                           }
                       }
-                      """, """
-                      package com.example.app;
-
+                      """,
+                    """
                       import java.util.ArrayList;
 
                       class A {
@@ -204,8 +221,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                               var lst = new ArrayList<T>();
                           }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -214,10 +230,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             void unboundedGenerics() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
-
+                  java(
+                    """
                       import java.util.List;
                       import java.util.ArrayList;
 
@@ -226,9 +240,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                               List<?> lst = new ArrayList<>();
                           }
                       }
-                      """, """
-                      package com.example.app;
-
+                      """,
+                    """
                       import java.util.ArrayList;
 
                       class A {
@@ -236,31 +249,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                               var lst = new ArrayList<?>();
                           }
                       }
-                      """),
-                    10
-                  )
-                );
-            }
-
-            @Test
-            void boundedGenerics() {
-                // could be var lst = new ArrayList<? extends String>();
-                //language=java
-                rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
-
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
-                          void generic() {
-                              List<? extends String> lst = new ArrayList<>();
-                          }
-                      }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -269,10 +258,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             void inceptionGenerics() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
-
+                  java(
+                    """
                       import java.util.List;
                       import java.util.ArrayList;
 
@@ -281,9 +268,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                               List<List<Object>> lst = new ArrayList<>();
                           }
                       }
-                      """, """
-                      package com.example.app;
-
+                      """,
+                    """
                       import java.util.List;
                       import java.util.ArrayList;
 
@@ -292,8 +278,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                               var lst = new ArrayList<List<Object>>();
                           }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -302,10 +287,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             void twoParams() {
                 //language=java
                 rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
-
+                  java(
+                    """
                       import java.util.Map;
                       import java.util.HashMap;
 
@@ -314,9 +297,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                               Map<String, Object> map = new HashMap<>();
                           }
                       }
-                      """, """
-                      package com.example.app;
-
+                      """,
+                    """
                       import java.util.HashMap;
 
                       class A {
@@ -324,8 +306,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                               var map = new HashMap<String, Object>();
                           }
                       }
-                      """),
-                    10
+                      """
                   )
                 );
             }
@@ -336,42 +317,36 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         void withTypeParameterInDefinitionOnly() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
+              java(
+                """
                   import java.util.List;
                   import java.util.ArrayList;
 
                   class A {
-                    void m() {
-                        List<String> strs = new ArrayList<>();
-                    }
+                      void m() {
+                          List<String> strs = new ArrayList<>();
+                      }
                   }
-                  """, """
-                  package com.example.app;
-
+                  """,
+                """
                   import java.util.ArrayList;
 
                   class A {
-                    void m() {
-                        var strs = new ArrayList<String>();
-                    }
+                      void m() {
+                          var strs = new ArrayList<String>();
+                      }
                   }
-                  """),
-                10
+                  """
               )
             );
         }
 
         @Test
-        void ifWelldefined() {
+        void diamondOperatorIsNotUsed() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
+              java(
+                """
                   import java.util.List;
                   import java.util.ArrayList;
 
@@ -380,9 +355,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                         List<String> strs = new ArrayList<String>();
                     }
                   }
-                  """, """
-                  package com.example.app;
-
+                  """,
+                """
                   import java.util.ArrayList;
 
                   class A {
@@ -390,8 +364,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                         var strs = new ArrayList<String>();
                     }
                   }
-                  """),
-                10
+                  """
               )
             );
         }
@@ -400,10 +373,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         void arrayAsType() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
+              java(
+                """
                   import java.util.List;
                   import java.util.ArrayList;
 
@@ -412,9 +383,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                         List<char[]> strs = new ArrayList<>();
                     }
                   }
-                  """, """
-                  package com.example.app;
-
+                  """,
+                """
                   import java.util.ArrayList;
 
                   class A {
@@ -422,32 +392,43 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                         var strs = new ArrayList<char[]>();
                     }
                   }
-                  """),
-                10
+                  """
               )
             );
         }
 
         @Test
-        void twoParamsWithBounds() {
+        void ownObject() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
-                  import java.util.Map;
-                  import java.util.LinkedHashMap;
-
-                  class AbstractOAuth2Configurer {}
+              java(
+                """
+                  package com.test;
+                  public class Option<T> {}
+                  """
+              ),
+              java(
+                """
+                  import com.test.Option;
+                  import java.util.HashSet;
+                  import java.util.Set;
 
                   class A {
-                      void twoParams() {
-                          Map<Class<? extends AbstractOAuth2Configurer>, AbstractOAuth2Configurer> configurers = new LinkedHashMap<>();
+                      void m() {
+                          Set<Option<Long>> ids = new HashSet<>();
                       }
                   }
-                  """),
-                10
+                  """,
+                """
+                  import com.test.Option;
+                  import java.util.HashSet;
+
+                  class A {
+                      void m() {
+                          var ids = new HashSet<Option<Long>>();
+                      }
+                  }
+                  """
               )
             );
         }
