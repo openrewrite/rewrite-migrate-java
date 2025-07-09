@@ -71,7 +71,7 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 return vd;
             }
 
-            // If no type paramters are present and no arguments we assume the type is hard to determine a needs manual action
+            // If no type parameters and no arguments are present, we assume the type is too hard to determine
             boolean hasNoTypeParams = ((J.MethodInvocation) initializer).getTypeParameters() == null;
             boolean argumentsEmpty = allArgumentsEmpty((J.MethodInvocation) initializer);
             if (hasNoTypeParams && argumentsEmpty) {
