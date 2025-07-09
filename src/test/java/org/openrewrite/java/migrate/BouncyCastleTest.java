@@ -86,8 +86,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ParameterizedTest
     @MethodSource("artifactBaseNames")
+    @ParameterizedTest
     void jdk15onToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk18on.yml",
@@ -98,8 +98,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ParameterizedTest
     @MethodSource("artifactBaseNames")
+    @ParameterizedTest
     void jdk15to18ToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk18on.yml",
@@ -110,8 +110,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ParameterizedTest
     @MethodSource("artifactBaseNames")
+    @ParameterizedTest
     void jdk15onToJdk15To18(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk15to18.yml",
