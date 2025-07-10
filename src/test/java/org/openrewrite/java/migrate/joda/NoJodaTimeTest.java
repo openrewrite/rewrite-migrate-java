@@ -43,12 +43,24 @@ class NoJodaTimeTest implements RewriteTest {
               java(
                 """
                   import org.joda.time.DateTime;
+                  import org.joda.time.LocalDate;
+                  import org.joda.time.LocalDateTime;
+                  import org.joda.time.LocalTime;
+                  import org.joda.time.Seconds;
+                  import org.joda.time.Hours;
+                  import org.joda.time.Days;
                   import org.joda.time.Interval;
 
                   class A {
                       void foo() {
                           DateTime dt = new DateTime();
                           DateTime dt1 = new DateTime().plusDays(1);
+                          LocalDate ld = new LocalDate();
+                          LocalDateTime ldt = new LocalDateTime();
+                          LocalTime lt = new LocalTime();
+                          Seconds s1 = Seconds.seconds(30);
+                          Hours h1 = Hours.hours(8);
+                          Days d1 = Days.days(3);
                           Interval i = new Interval(dt, dt1);
                           System.out.println(i.toDuration());
                       }
@@ -58,11 +70,22 @@ class NoJodaTimeTest implements RewriteTest {
                   import org.threeten.extra.Interval;
 
                   import java.time.ZonedDateTime;
+                  import java.time.LocalDate;
+                  import java.time.LocalDateTime;
+                  import java.time.LocalTime;
+                  import java.time.Duration;
+                  import java.time.Period;
 
                   class A {
                       void foo() {
                           ZonedDateTime dt = ZonedDateTime.now();
                           ZonedDateTime dt1 = ZonedDateTime.now().plusDays(1);
+                          LocalDate ld = LocalDate.now();
+                          LocalDateTime ldt = LocalDateTime.now();
+                          LocalTime lt = LocalTime.now();
+                          Duration s1 = Duration.ofSeconds(30);
+                          Duration h1 = Duration.ofHours(8);
+                          Period d1 = Period.ofDays(3);
                           Interval i = Interval.of(dt.toInstant(), dt1.toInstant());
                           System.out.println(i.toDuration());
                       }

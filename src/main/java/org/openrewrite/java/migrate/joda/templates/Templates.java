@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.joda.templates;
 
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.MethodCall;
 
 import java.util.List;
@@ -28,5 +29,9 @@ public interface Templates {
      **/
     default boolean matchesMethodCall(MethodCall method, MethodTemplate template) {
         return true;
+    }
+
+    default JavaTemplate buildWithImport(JavaTemplate.Builder builder, String imports) {
+        return builder.imports(imports).build() ;
     }
 }
