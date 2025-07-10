@@ -154,11 +154,26 @@ public class NullCheckAsSwitchCase extends Recipe {
                 } else {
                     statements.add(whenNull);
                 }
+
+                // Check if the last statement is a throw statement
+                Statement lastStatement = null;
+                if (whenNull instanceof J.Block) {
+                    List<Statement> blockStatements = ((J.Block) whenNull).getStatements();
+                    if (!blockStatements.isEmpty()) {
+                        lastStatement = blockStatements.get(blockStatements.size() - 1);
+                    }
+                } else {
+                    lastStatement = whenNull;
+                }
+
                 StringBuilder template = new StringBuilder("switch(#{any()}) {\ncase null:");
                 for (int i = 1; i < statements.size(); i++) {
                     template.append("\n#{any()};");
                 }
-                template.append("\nbreak;\n}");
+                if (!(lastStatement instanceof J.Throw)) {
+                    template.append("\nbreak;");
+                }
+                template.append("\n}");
                 J.Switch switchWithNullCase = JavaTemplate.apply(
                         template.toString(),
                         new Cursor(getCursor(), aSwitch),
