@@ -29,9 +29,11 @@ import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
@@ -117,25 +119,34 @@ public class NullCheckAsSwitchCase extends Recipe {
             }
 
             private J.Case createNullCase(J.Switch aSwitch, Statement whenNull) {
-                J.Case currentFirstCase = aSwitch.getCases().getStatements().isEmpty() || !(aSwitch.getCases().getStatements().get(0) instanceof J.Case) ? null : (J.Case) aSwitch.getCases().getStatements().get(0);
+                J.Case currentFirstCase = aSwitch.getCases().getStatements().isEmpty() ||
+                        !(aSwitch.getCases().getStatements().get(0) instanceof J.Case) ?
+                        null : (J.Case) aSwitch.getCases().getStatements().get(0);
                 if (currentFirstCase == null || J.Case.Type.Rule == currentFirstCase.getType()) {
-                    if (whenNull instanceof J.Block && ((J.Block) whenNull).getStatements().size() == 1) {
-                        Statement firstStatement = ((J.Block) whenNull).getStatements().get(0);
-                        if (firstStatement instanceof Expression || firstStatement instanceof J.Throw) {
-                            whenNull = firstStatement;
-                        }
-                    }
-                    String semicolon = whenNull instanceof J.Block ? "" : ";";
-                    J.Switch switchWithNullCase = JavaTemplate.apply(
-                            "switch(#{any()}) { case null -> #{any()}" + semicolon + " }",
-                            new Cursor(getCursor(), aSwitch),
-                            aSwitch.getCoordinates().replace(),
-                            aSwitch.getSelector().getTree(),
-                            whenNull);
-                    J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
-                    return nullCase.withBody(requireNonNull(nullCase.getBody()).withPrefix(Space.SINGLE_SPACE));
+                    return createCaseRule(aSwitch, whenNull);
                 }
+                return createCaseStatement(aSwitch, whenNull, currentFirstCase);
+            }
 
+            private J.Case createCaseRule(J.Switch aSwitch, Statement whenNull) {
+                if (whenNull instanceof J.Block && ((J.Block) whenNull).getStatements().size() == 1) {
+                    Statement firstStatement = ((J.Block) whenNull).getStatements().get(0);
+                    if (firstStatement instanceof Expression || firstStatement instanceof J.Throw) {
+                        whenNull = firstStatement;
+                    }
+                }
+                String semicolon = whenNull instanceof J.Block ? "" : ";";
+                J.Switch switchWithNullCase = JavaTemplate.apply(
+                        "switch(#{any()}) { case null -> #{any()}" + semicolon + " }",
+                        new Cursor(getCursor(), aSwitch),
+                        aSwitch.getCoordinates().replace(),
+                        aSwitch.getSelector().getTree(),
+                        whenNull);
+                J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
+                return nullCase.withBody(requireNonNull(nullCase.getBody()).withPrefix(Space.SINGLE_SPACE));
+            }
+
+            private J.Case createCaseStatement(J.Switch aSwitch, Statement whenNull, J.Case currentFirstCase) {
                 List<J> statements = new ArrayList<>();
                 statements.add(aSwitch.getSelector().getTree());
                 if (whenNull instanceof J.Block) {
