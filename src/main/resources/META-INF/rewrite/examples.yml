@@ -6437,25 +6437,21 @@ examples:
 - description: ''
   sources:
   - before: |
-      package com.example.app;
-
       import java.util.List;
       import java.util.ArrayList;
 
       class A {
-        void m() {
-            List<String> strs = new ArrayList<>();
-        }
+          void m() {
+              List<String> strs = new ArrayList<>();
+          }
       }
     after: |
-      package com.example.app;
-
       import java.util.ArrayList;
 
       class A {
-        void m() {
-            var strs = new ArrayList<String>();
-        }
+          void m() {
+              var strs = new ArrayList<String>();
+          }
       }
     language: java
 ---
@@ -6689,6 +6685,25 @@ examples:
       </project>
     path: pom.xml
     language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lombok.LombokOnXToOnX_
+examples:
+- description: ''
+  sources:
+  - before: |
+      import lombok.Getter;
+      class Example {
+          @Getter(onMethod=@__({@Deprecated}))
+          private String field;
+      }
+    after: |
+      import lombok.Getter;
+      class Example {
+          @Getter(onMethod_={@Deprecated})
+          private String field;
+      }
+    language: java
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.LombokValToFinalVar
