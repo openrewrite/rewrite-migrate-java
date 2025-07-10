@@ -23,10 +23,12 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.MethodCall;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,10 +73,34 @@ public class Inlinings extends Recipe {
                         return JavaTemplate.builder(template.getString())
                                 .contextSensitive()
                                 .doBeforeParseTemplate(System.out::println)
+                                .doAfterVariableSubstitution(System.out::println)
                                 .imports(values.getImports())
                                 .staticImports(values.getStaticImports())
+                                .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
                                 .build()
                                 .apply(updateCursor(mi), mi.getCoordinates().replace(), template.getParameters());
+                    }
+
+                    @Override
+                    public J.NewClass visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
+                        J.NewClass nc = super.visitNewClass(newClass, ctx);
+                        InlineMeValues values = findInlineMeValues(nc.getConstructorType());
+                        if (values == null) {
+                            return nc;
+                        }
+                        Template template = values.template(nc);
+                        if (template == null) {
+                            return nc;
+                        }
+                        return JavaTemplate.builder(template.getString())
+                                .contextSensitive()
+                                .doBeforeParseTemplate(System.out::println)
+                                .doAfterVariableSubstitution(System.out::println)
+                                .imports(values.getImports())
+                                .staticImports(values.getStaticImports())
+                                .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
+                                .build()
+                                .apply(updateCursor(nc), nc.getCoordinates().replace(), template.getParameters());
                     }
 
                     private @Nullable InlineMeValues findInlineMeValues(JavaType.@Nullable Method methodType) {
@@ -110,21 +136,32 @@ public class Inlinings extends Recipe {
                             JavaType.Annotation.ElementValue::getValue
                     ));
             String replacement = (String) collect.get("replacement");
-            // TODO Parse imports and static imports from the annotation values too
-            String[] imports = new String[]{};
-            String[] staticImports = new String[]{};
+
+            // Parse imports and static imports from the annotation values
+            String[] imports = parseImports(collect.get("imports"));
+            String[] staticImports = parseImports(collect.get("staticImports"));
+
             return new InlineMeValues(replacement, imports, staticImports);
         }
 
+        private static String[] parseImports(@Nullable Object importsValue) {
+            if (importsValue instanceof List) {
+                return ((List<?>) importsValue).stream()
+                        .map(Object::toString)
+                        .toArray(String[]::new);
+            }
+            return new String[]{};
+        }
+
         @Nullable
-        Template template(J.MethodInvocation original) {
+        Template template(MethodCall original) {
             JavaType.Method methodType = original.getMethodType();
             if (methodType == null) {
                 return null;
             }
             String templateString = createTemplateString(replacement, methodType.getParameterNames());
-            Object[] parameters = createParameters(templateString, original);
-            return new Template(templateString, parameters);
+            List<Object> parameters = createParameters(templateString, original);
+            return new Template(templateString, parameters.toArray(new Object[0]));
         }
 
         private static String createTemplateString(String replacement, List<String> originalParameterNames) {
@@ -138,10 +175,13 @@ public class Inlinings extends Recipe {
             return templateString;
         }
 
-        private static Object[] createParameters(String templateString, J.MethodInvocation original) {
+        private static List<Object> createParameters(String templateString, MethodCall original) {
             Map<String, Expression> lookup = new HashMap<>();
-            if (original.getSelect() != null) {
-                lookup.put("this", original.getSelect());
+            if (original instanceof J.MethodInvocation) {
+                Expression select = ((J.MethodInvocation) original).getSelect();
+                if (select != null) {
+                    lookup.put("this", select);
+                }
             }
             List<String> originalParameterNames = requireNonNull(original.getMethodType()).getParameterNames();
             for (int i = 0; i < originalParameterNames.size(); i++) {
@@ -157,7 +197,7 @@ public class Inlinings extends Recipe {
                     parameters.add(o);
                 }
             }
-            return parameters.toArray(new Object[0]);
+            return parameters;
         }
     }
 
