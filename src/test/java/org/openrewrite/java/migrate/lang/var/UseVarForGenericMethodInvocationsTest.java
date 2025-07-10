@@ -85,7 +85,7 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
 
             @Test
             void withEmptyOnwNonStaticFactoryMethods() {
-                //if detectable this could be `var strs = this.<String>myList();`
+                // TODO: this could be `var strs = this.<String>myList();`
                 //language=java
                 rewriteRun(
                   version(
@@ -110,7 +110,7 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
 
             @Test
             void withEmptyOnwFactoryMethods() {
-                // if detectable this could be `var strs = A.<String>myList();`
+                // TODO: this could be `var strs = A.<String>myList();`
                 //language=java
                 rewriteRun(
                   version(
@@ -135,7 +135,7 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
 
             @Test
             void forEmptyJDKFactoryMethod() {
-                // if detectable this could be `var strs = List.<String>of();`
+                // TODO: this could be `var strs = List.<String>of();`
                 //language=java
                 rewriteRun(
                   version(
