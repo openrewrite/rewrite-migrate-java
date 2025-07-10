@@ -30,8 +30,8 @@ import org.openrewrite.java.tree.JavaType;
 
 import java.util.List;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class HttpSessionInvalidate extends Recipe {
     @Override
     public String getDisplayName() {

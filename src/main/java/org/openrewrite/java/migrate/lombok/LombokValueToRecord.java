@@ -37,8 +37,8 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>> {
 
     private static final AnnotationMatcher LOMBOK_VALUE_MATCHER = new AnnotationMatcher("@lombok.Value()");

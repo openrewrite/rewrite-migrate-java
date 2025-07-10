@@ -28,8 +28,8 @@ class PathsGetToPathOfTest implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.Java8toJava11");
     }
 
-    @Test
     @DocumentExample
+    @Test
     void convertPathsGetToPathOf() {
         rewriteRun(
           //language=java

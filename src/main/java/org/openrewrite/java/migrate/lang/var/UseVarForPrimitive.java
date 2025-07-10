@@ -31,8 +31,8 @@ import org.openrewrite.java.tree.JavaType;
 
 import static java.lang.String.format;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UseVarForPrimitive extends Recipe {
 
     @Override

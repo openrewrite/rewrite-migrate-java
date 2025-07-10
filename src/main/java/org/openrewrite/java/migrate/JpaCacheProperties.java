@@ -33,8 +33,8 @@ import java.util.Optional;
 import static org.openrewrite.xml.AddOrUpdateChild.addOrUpdateChild;
 import static org.openrewrite.xml.FilterTagChildrenVisitor.filterTagChildren;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class JpaCacheProperties extends Recipe {
     @Override
     public String getDisplayName() {

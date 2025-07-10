@@ -28,8 +28,8 @@ class SwitchCaseEnumGuardToLabelTest implements RewriteTest {
         spec.recipe(new SwitchCaseEnumGuardToLabel());
     }
 
-    @Test
     @DocumentExample
+    @Test
     void enumValuesPatternMatching() {
         rewriteRun(
           java(

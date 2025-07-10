@@ -132,8 +132,8 @@ class AddJaxwsDependenciesTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/760")
+    @Test
     void dontAddGradleResolutionOnlyDependencies() {
         rewriteRun(
           spec -> spec.beforeRecipe(withToolingApi()),

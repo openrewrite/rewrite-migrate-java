@@ -129,9 +129,9 @@ class UpdateAnnotationAttributeJavaxToJakartaTest implements RewriteTest {
           );
     }
 
-    @Test
     @DocumentExample
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/688")
+    @Test
     void replaceInterfaceName() {
         rewriteRun(
           //language=java
@@ -158,8 +158,8 @@ class UpdateAnnotationAttributeJavaxToJakartaTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/374")
+    @Test
     void replaceMessage() {
         rewriteRun(
           //language=java
@@ -184,8 +184,8 @@ class UpdateAnnotationAttributeJavaxToJakartaTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/688")
+    @Test
     void replacePropertyValue() {
         rewriteRun(
           //language=java

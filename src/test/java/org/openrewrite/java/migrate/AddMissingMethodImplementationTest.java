@@ -55,8 +55,8 @@ class AddMissingMethodImplementationTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/459")
+    @Test
     void skipInterfaces() {
         //language=java
         rewriteRun(

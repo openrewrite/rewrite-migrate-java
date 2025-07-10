@@ -40,8 +40,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
 import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class IfElseIfConstructToSwitch extends Recipe {
     @Override
     public String getDisplayName() {

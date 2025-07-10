@@ -30,8 +30,8 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeTree;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UseVarForObject extends Recipe {
 
     @Override

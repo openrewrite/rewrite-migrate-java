@@ -54,8 +54,8 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
           );
     }
 
-    @Test
     @DocumentExample
+    @Test
     void instanceAndGetPeerMethodControlParentheses() {
         rewriteRun(
           //language=java

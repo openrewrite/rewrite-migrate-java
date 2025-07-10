@@ -251,11 +251,9 @@ examples:
   - before: |
       <project>
         <modelVersion>4.0.0</modelVersion>
-
         <groupId>com.mycompany.app</groupId>
         <artifactId>my-app</artifactId>
         <version>1</version>
-
         <dependencies>
           <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -5939,7 +5937,7 @@ examples:
   - before: |
       package com.acme.music;
 
-      public class Test {
+      class Test {
           Record record;
       }
     after: |
@@ -5947,7 +5945,7 @@ examples:
 
       import com.acme.music.Record;
 
-      public class Test {
+      class Test {
           Record record;
       }
     language: java

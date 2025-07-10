@@ -287,8 +287,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     class NotYetImplemented {
 
         @DocumentExample
-        @Test
         @ExpectedToFail("Not yet implemented")
+        @Test
         void getCatchIllegalStateExceptionToNoSuchElementException() {
             // > when the value is absent, this method throws IllegalStateException, whereas the Java 8 counterpart throws NoSuchElementException.
             // Sure hope no one actually does this, but you never know.
@@ -324,8 +324,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
             );
         }
 
-        @Test
         @ExpectedToFail("Not yet implemented")
+        @Test
         void asSetToStreamCollectToSet() {
             // Comparison to java.util.Optional: this method has no equivalent in Java 8's Optional class. However, some use cases can be written with calls to optional.stream().
             //language=java
@@ -354,8 +354,8 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
             );
         }
 
-        @Test
         @ExpectedToFail("Not yet implemented")
+        @Test
         void presentInstances() {
             // Comparison to java.util.Optional: this method has no equivalent in Java 8's Optional class; use optionals.stream().filter(Optional::isPresent).map(Optional::get) instead.
             //language=java

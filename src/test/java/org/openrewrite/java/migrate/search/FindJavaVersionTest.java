@@ -33,8 +33,8 @@ class FindJavaVersionTest implements RewriteTest {
         spec.recipe(new FindJavaVersion());
     }
 
-    @Test
     @DocumentExample
+    @Test
     void twoClassesWithSameMarkerLeadToOneRow() {
         JavaVersion jv = new JavaVersion(randomId(), "Sam", "Shelter", "17", "8");
         rewriteRun(
