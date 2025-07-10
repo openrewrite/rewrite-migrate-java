@@ -29,10 +29,7 @@ import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -163,19 +160,21 @@ public class NullCheckAsSwitchCase extends Recipe {
             }
 
             private boolean coversAllPossibleValues(J.Switch switch_) {
-                List<J> labels = switch_.getCases().getStatements().stream().map(J.Case.class::cast).map(J.Case::getCaseLabels).flatMap(Collection::stream).collect(Collectors.toList());
-                if (labels.stream().anyMatch(label -> label instanceof J.Identifier && "default".equals(((J.Identifier) label).getSimpleName()))) {
-                    return true;
+                List<J> labels = new ArrayList<>();
+                for (Statement statement : switch_.getCases().getStatements()) {
+                    for (J j : ((J.Case) statement).getCaseLabels()) {
+                        if (j instanceof J.Identifier && "default".equals(((J.Identifier) j).getSimpleName())) {
+                            return true;
+                        }
+                        labels.add(j);
+                    }
                 }
                 JavaType javaType = switch_.getSelector().getTree().getType();
                 if (javaType instanceof JavaType.Class && ((JavaType.Class) javaType).getKind() == JavaType.FullyQualified.Kind.Enum) {
+                    // Every enum value must be present in the switch
                     return ((JavaType.Class) javaType).getMembers().stream().allMatch(variable ->
                             labels.stream().anyMatch(label -> {
-                                if (!(label instanceof TypeTree)) {
-                                    return false;
-                                }
-                                TypeTree labelJavaType = (TypeTree) label;
-                                if (!TypeUtils.isOfType(labelJavaType.getType(), javaType)) {
+                                if (!(label instanceof TypeTree && TypeUtils.isOfType(((TypeTree) label).getType(), javaType))) {
                                     return false;
                                 }
                                 J.Identifier enumName = null;
@@ -184,7 +183,7 @@ public class NullCheckAsSwitchCase extends Recipe {
                                 } else if (label instanceof J.FieldAccess) {
                                     enumName = ((J.FieldAccess) label).getName();
                                 }
-                                return enumName != null && variable.getName().equals(enumName.getSimpleName());
+                                return enumName != null && Objects.equals(variable.getName(), enumName.getSimpleName());
                             }));
                 }
                 return false;
