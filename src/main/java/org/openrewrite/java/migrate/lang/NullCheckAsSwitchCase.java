@@ -31,12 +31,12 @@ import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Objects.requireNonNull;
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
+import static org.openrewrite.java.migrate.lang.SwitchUtils.coversAllPossibleValues;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -183,36 +183,6 @@ public class NullCheckAsSwitchCase extends Recipe {
                 Space currentFirstCaseIndentation = currentFirstCase.getStatements().stream().map(J::getPrefix).findFirst().orElse(Space.SINGLE_SPACE);
 
                 return nullCase.withStatements(ListUtils.mapFirst(nullCase.getStatements(), s -> s == null ? null : s.withPrefix(currentFirstCaseIndentation)));
-            }
-
-            private boolean coversAllPossibleValues(J.Switch switch_) {
-                List<J> labels = new ArrayList<>();
-                for (Statement statement : switch_.getCases().getStatements()) {
-                    for (J j : ((J.Case) statement).getCaseLabels()) {
-                        if (j instanceof J.Identifier && "default".equals(((J.Identifier) j).getSimpleName())) {
-                            return true;
-                        }
-                        labels.add(j);
-                    }
-                }
-                JavaType javaType = switch_.getSelector().getTree().getType();
-                if (javaType instanceof JavaType.Class && ((JavaType.Class) javaType).getKind() == JavaType.FullyQualified.Kind.Enum) {
-                    // Every enum value must be present in the switch
-                    return ((JavaType.Class) javaType).getMembers().stream().allMatch(variable ->
-                            labels.stream().anyMatch(label -> {
-                                if (!(label instanceof TypeTree && TypeUtils.isOfType(((TypeTree) label).getType(), javaType))) {
-                                    return false;
-                                }
-                                J.Identifier enumName = null;
-                                if (label instanceof J.Identifier) {
-                                    enumName = (J.Identifier) label;
-                                } else if (label instanceof J.FieldAccess) {
-                                    enumName = ((J.FieldAccess) label).getName();
-                                }
-                                return enumName != null && Objects.equals(variable.getName(), enumName.getSimpleName());
-                            }));
-                }
-                return false;
             }
         });
     }
