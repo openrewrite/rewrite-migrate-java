@@ -266,9 +266,9 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             JavaType.FullyQualified declaringType = methodType.getDeclaringType();
             String methodName = methodType.getName();
             String classFqn = declaringType.getFullyQualifiedName();
-            if(recordTypeToMembers.containsKey(classFqn)
-                    && recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName))
-                    && methodName.startsWith(STANDARD_GETTER_PREFIX)) {
+            if(recordTypeToMembers.containsKey(classFqn) &&
+                    recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName)) &&
+                    methodName.startsWith(STANDARD_GETTER_PREFIX)) {
                 return memberReference.withMethodType(methodType.withName(getterMethodNameToFluentMethodName(methodName)));
             }
 
