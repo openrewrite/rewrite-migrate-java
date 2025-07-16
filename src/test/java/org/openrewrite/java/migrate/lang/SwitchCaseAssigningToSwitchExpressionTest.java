@@ -68,7 +68,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                     String formatted = "initialValue";
                     switch (obj) {
                         case Integer i: formatted = String.format("int %d", i); break;
-                        case Long l: System.out.println("long"); formatted = String.format("long %d", l); break;
+                        case Long l: formatted = String.format("long %d", l); break;
                         default: formatted = "unknown"; break;
                     }
                 }
@@ -78,12 +78,28 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                 void doFormat(Object obj) {
                     String formatted = switch (obj) {
                         case Integer i: yield String.format("int %d", i);
-                        case Long l: {
-                            System.out.println("long");
-                            yield String.format("long %d", l);
-                        }
+                        case Long l: yield String.format("long %d", l);
                         default: yield "unknown";
                     };
+                }
+            }
+            """));
+    }
+
+    @Test
+    void notConvertSimpleColonCasesAssignationsWithExtraCodeInBlock() {
+        // Only one statement [+break;] per case is currently supported
+        rewriteRun(
+          //language=java
+          java("""
+            class Test {
+                void doFormat(Object obj) {
+                    String formatted = "initialValue";
+                    switch (obj) {
+                        case Integer i: formatted = String.format("int %d", i); break;
+                        case Long l: System.out.println("long"); formatted = String.format("long %d", l); break;
+                        default: formatted = "unknown"; break;
+                    }
                 }
             }
             """));
@@ -151,79 +167,6 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     }
 
     @Test
-    void convertArrowCasesAssignationInBlockToYieldInBlock() {
-        rewriteRun(
-          //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case Integer i -> formatted = String.format("int %d", i);
-                        case Long l -> {
-                            System.out.println("long!");
-                            formatted = String.format("long %d", l);
-                        }
-                        default -> formatted = "unknown";
-                    }
-                }
-            }
-            """, """
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = switch (obj) {
-                        case Integer i -> String.format("int %d", i);
-                        case Long l -> {
-                            System.out.println("long!");
-                            yield String.format("long %d", l);
-                        }
-                        default -> "unknown";
-                    };
-                }
-            }
-            """));
-    }
-
-    @Test
-    void notConvertColonCasesWithMissingBreakStatement() {
-        rewriteRun(
-          //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case String s: formatted = String.format("String %s", s); break;
-                        case null: formatted = "null";
-                        default: formatted = "unknown"; break;
-                    }
-                }
-            }
-            """));
-    }
-
-    @Test
-    void notConvertColonCasesWithMissingBreakStatementInBlock() {
-        rewriteRun(
-          //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case String s: formatted = String.format("String %s", s); break;
-                        case null: {
-                            System.out.println("null");
-                            formatted = "null";
-                        }
-                        default: formatted = "unknown"; break;
-                    }
-                }
-            }
-            """));
-    }
-
-    @Test
     void notConvertCasesWithMissingAssignment() {
         rewriteRun(
           //language=java
@@ -235,70 +178,6 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                         case String s: formatted = String.format("String %s", s); break;
                         case Integer i: System.out.println("Integer!"); break;
                         default: formatted = "unknown"; break;
-                    }
-                }
-            }
-            """));
-    }
-
-    @Test
-    void notConvertCasesWithAssignmentNotTheLastStatementOfStatementList() {
-        rewriteRun(
-          //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case String s: formatted = String.format("String %s", s); break;
-                        case Integer i:
-                            formatted = String.format("Integer %d", i);
-                            System.out.println("Integer!");
-                            break;
-                        default: formatted = "unknown"; break;
-                    }
-                }
-            }
-            """));
-    }
-
-    @Test
-    void notConvertColonCasesWithAssignmentNotTheLastStatementOfBlock() {
-        rewriteRun(
-          //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case String s: formatted = String.format("String %s", s); break;
-                        case Integer i: {
-                            formatted = String.format("Integer %d", i);
-                            System.out.println("Integer!");
-                            break;
-                        }
-                        default: formatted = "unknown"; break;
-                    }
-                }
-            }
-            """));
-    }
-
-    @Test
-    void notConvertArrowCasesWithAssignmentNotTheLastStatementOfBlock() {
-        rewriteRun(
-          //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case String s -> formatted = String.format("String %s", s);
-                        case Integer i -> {
-                            formatted = String.format("Integer %d", i);
-                            System.out.println("Integer!");
-                        }
-                        default: formatted = "unknown";
                     }
                 }
             }
@@ -318,26 +197,6 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                         case String s: formatted = String.format("String %s", s); break;
                         case Integer i: formatted2 = String.format("Integer %d", i); break;
                         default: formatted = "unknown"; break;
-                    }
-                }
-            }
-            """));
-    }
-
-    @Test
-    void notConvertCasesWhenNonExhaustive() {
-        rewriteRun(
-          //language=java
-          java("""
-            class Test {
-                enum TrafficLight {
-                    RED, GREEN, YELLOW
-                }
-                void doFormat(TrafficLight light) {
-                    String status = "initialValue";
-                    switch (light) {
-                        case RED: status = "stop"; break;
-                        case GREEN: status = "go"; break;
                     }
                 }
             }
@@ -397,7 +256,6 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
             """));
     }
 
-    // Is this always a correct thing to do? If yes we wouldn't need to check for exhaustiveness.
     @Test
     void convertCasesWhenColonCaseHasNoStatementsAndNextCaseIsAssignationByAddedDefault() {
         rewriteRun(
@@ -426,14 +284,13 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                         case RED:
                         case GREEN:
                         case YELLOW: yield "unsure";
-                        default: yield "initialValue";
+                        default: yield"initialValue";
                     };
                 }
             }
             """));
     }
 
-    // Is this always a correct thing to do? If yes we wouldn't need to check for exhaustiveness.
     @Test
     void convertCasesWithAddedDefault() {
         rewriteRun(
@@ -460,7 +317,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                     String status = switch (light) {
                         case RED: yield "stop";
                         case GREEN: yield "go";
-                        default: yield "initialValue";
+                        default: yield"initialValue";
                     };
                 }
             }
@@ -468,7 +325,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     }
 
     @Test
-    void convertColonCasesWithMultipleBlocks() {
+    void notConvertColonCasesWithMultipleBlocks() {
+        // More than one block statement per case is not yet supported.
         rewriteRun(
           //language=java
           java("""
@@ -477,9 +335,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                     String status = "initialValue";
                     switch (obj) {
                         case null: {
-                            System.out.println("null case");
+                            status = "none";
                         }
-                        status = "none";
                         {
                             break;
                         }
@@ -487,15 +344,39 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                     }
                 }
             }
+            """));
+    }
+
+    void convertCasesInstanceVariableAssignment() {
+        rewriteRun(
+          //language=java
+          java("""
+            class Test {
+                enum TrafficLight {
+                    RED, GREEN, YELLOW
+                }
+                private String status = "initialValue";
+
+                void doFormat(TrafficLight light) {
+                    String status = "initialValue";
+                    switch (light) {
+                        case RED: this.status = "stop"; break;
+                        case GREEN: this.status = "go"; break;
+                    }
+                }
+            }
             """, """
             class Test {
-                void doFormat(Object obj) {
-                    String status = switch (obj) {
-                        case null: {
-                            System.out.println("null case");
-                        }
-                            yield "none";
-                        default: yield "default status";
+                enum TrafficLight {
+                    RED, GREEN, YELLOW
+                }
+                private String status = "initialValue";
+
+                void doFormat(TrafficLight light) {
+                    this.status = switch (light) {
+                        case RED: yield "stop";
+                        case GREEN: yield "go";
+                        default: yield "initialValue";
                     };
                 }
             }
