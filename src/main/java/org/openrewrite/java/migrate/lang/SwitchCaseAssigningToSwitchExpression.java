@@ -19,9 +19,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
@@ -51,7 +53,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
     @Override
     public String getDescription() {
         return "Switch statements for which each case is assigning a value to the same variable can be converted to a switch expression that returns the value of the variable. " +
-               "This is only applicable for Java 17 and later.";
+                "This is only applicable for Java 17 and later.";
     }
 
     @Override
@@ -74,9 +76,9 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             }
 
                             if (index < block.getStatements().size() - 1 &&
-                                statement instanceof J.VariableDeclarations &&
-                                ((J.VariableDeclarations) statement).getVariables().size() == 1 &&
-                                block.getStatements().get(index + 1) instanceof J.Switch
+                                    statement instanceof J.VariableDeclarations &&
+                                    ((J.VariableDeclarations) statement).getVariables().size() == 1 &&
+                                    block.getStatements().get(index + 1) instanceof J.Switch
                             ) {
                                 J.VariableDeclarations vd = (J.VariableDeclarations) statement;
                                 J.Switch nextStatementSwitch = (J.Switch) block.getStatements().get(index + 1);
@@ -93,12 +95,12 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
 
                     private Optional<J.SwitchExpression> buildNewSwitchExpression(J.Switch originalSwitch, J.VariableDeclarations.NamedVariable originalVariable) {
                         final String variableName = originalVariable.getSimpleName();
-                        AtomicBoolean isUnqualified = new AtomicBoolean();
+                        AtomicBoolean isQualified = new AtomicBoolean(true);
                         AtomicBoolean isDefaultCaseAbsent = new AtomicBoolean(true);
                         AtomicBoolean isUsingArrows = new AtomicBoolean(true);
 
                         List<Statement> updatedCases = ListUtils.map(originalSwitch.getCases().getStatements(), s -> {
-                            if (isUnqualified.get()) {
+                            if (!isQualified.get()) {
                                 return null;
                             }
 
@@ -117,7 +119,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                         J.Assignment assignment = (J.Assignment) block.getStatements().get(0);
                                         if (assignment.getVariable() instanceof J.Identifier) {
                                             J.Identifier variable = (J.Identifier) assignment.getVariable();
-                                            if (variable.getSimpleName().equals(variableName)) {
+                                            if (variable.getSimpleName().equals(variableName) && !containsIdentifier(variableName, assignment.getAssignment())) {
                                                 return caseItem.withBody(assignment.getAssignment());
                                             }
                                         }
@@ -144,12 +146,12 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                 }
 
                                 if (caseStatements.size() == 2 &&
-                                    caseStatements.get(0) instanceof J.Assignment &&
-                                    caseStatements.get(1) instanceof J.Break) {
+                                        caseStatements.get(0) instanceof J.Assignment &&
+                                        caseStatements.get(1) instanceof J.Break) {
                                     J.Assignment assignment = (J.Assignment) caseStatements.get(0);
                                     if (assignment.getVariable() instanceof J.Identifier) {
                                         J.Identifier variable = (J.Identifier) assignment.getVariable();
-                                        if (variable.getSimpleName().equals(variableName)) {
+                                        if (variable.getSimpleName().equals(variableName) && !containsIdentifier(variableName, assignment.getAssignment())) {
                                             J.Yield yieldStatement = new J.Yield(
                                                     randomId(),
                                                     assignment.getPrefix().withWhitespace(" "), // TODO: must be a better way to adjust the formatting when taken from a J.Block, see test convertColonCasesSimpleAssignationInBlockToSingleYield()
@@ -163,10 +165,11 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                 }
                             }
 
-                            isUnqualified.set(true);
+                            isQualified.set(false);
                             return null;
                         });
-                        if (isUnqualified.get()) {
+
+                        if (!isQualified.get()) {
                             return Optional.empty();
                         }
 
@@ -190,6 +193,16 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             updatedCases.add(initializer.getCases().getStatements().get(0));
                         }
                         return Optional.of(initializer.withCases(initializer.getCases().withStatements(updatedCases)));
+                    }
+
+                    private boolean containsIdentifier(String identifierName, Expression expression) {
+                        return new JavaIsoVisitor<AtomicBoolean>() {
+                            @Override
+                            public J.Identifier visitIdentifier(J.Identifier id, AtomicBoolean found) {
+                                found.set(found.get() || id.getSimpleName().equals(identifierName));
+                                return super.visitIdentifier(id, found);
+                            }
+                        }.reduce(expression, new AtomicBoolean()).get();
                     }
                 }
         );

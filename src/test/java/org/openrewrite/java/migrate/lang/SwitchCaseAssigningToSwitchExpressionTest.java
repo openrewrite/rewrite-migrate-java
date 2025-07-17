@@ -376,4 +376,36 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
               """
           ));
     }
+
+    @Test
+    void notConvertWhenOriginalVariableIsUsedInCaseAssignment() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat(int i) {
+                      String orig = "initialValue";
+                      switch (i) {
+                          case 1: orig = orig.toLowerCase(); break;
+                      }
+                  }
+
+                  void doFormat2(int i) {
+                      String orig = "initialValue";
+                      switch (i) {
+                          case 1: orig = String.format("%s %s", orig, "foo"); break;
+                      }
+                  }
+
+                  void doFormat3(int i) {
+                      String orig = "initialValue";
+                      switch (i) {
+                          case 1: orig = "foo" + orig; break;
+                      }
+                  }
+              }
+              """
+          ));
+    }
 }
