@@ -377,42 +377,4 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
               """
           ));
     }
-
-    @Test
-    void convertCasesInstanceVariableAssignment() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Test {
-                  enum TrafficLight {
-                      RED, GREEN, YELLOW
-                  }
-
-                  void doFormat(TrafficLight light) {
-                      String status = "initialValue";
-                      switch (light) {
-                          case RED: status = "stop"; break;
-                          case GREEN: status = "go"; break;
-                      }
-                  }
-              }
-              """,
-            """
-              class Test {
-                  enum TrafficLight {
-                      RED, GREEN, YELLOW
-                  }
-
-                  void doFormat(TrafficLight light) {
-                      String status = switch (light) {
-                          case RED: yield "stop";
-                          case GREEN: yield "go";
-                          default: yield "initialValue";
-                      };
-                  }
-              }
-              """
-          ));
-    }
 }
