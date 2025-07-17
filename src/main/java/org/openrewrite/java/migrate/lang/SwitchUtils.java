@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class SwitchUtils {
+class SwitchUtils {
     /**
      * Checks if a switch statement covers all possible values of its selector.
      * This is typically used to determine if a switch statement is "exhaustive" as per the Java language specification.
