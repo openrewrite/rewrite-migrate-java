@@ -255,26 +255,30 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         }
 
         @Override
-        public J.MemberReference visitMemberReference(J.MemberReference memberReference, ExecutionContext ctx) {
-            // when "memberReference" is "a::getTest"
-            // memberReference.getMethodType() == null
-            JavaType.Method methodType = memberReference.getMethodType();
-            if(methodType == null) {
-                return memberReference;
-            }
+        public J.MemberReference visitMemberReference(J.MemberReference memberRef, ExecutionContext ctx) {
+            J.MemberReference memberReference = super.visitMemberReference(memberRef, ctx);
 
-            JavaType.FullyQualified declaringType = methodType.getDeclaringType();
-            String methodName = methodType.getName();
-            String classFqn = declaringType.getFullyQualifiedName();
-            if(recordTypeToMembers.containsKey(classFqn) &&
-                    recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName)) &&
-                    methodName.startsWith(STANDARD_GETTER_PREFIX)) {
-                return memberReference.withMethodType(methodType.withName(getterMethodNameToFluentMethodName(methodName)));
+            // Handle method references like a::getTest
+            Expression containing = memberReference.getContaining();
+            if (containing != null && containing.getType() instanceof JavaType.Class) {
+                JavaType.Class classType = (JavaType.Class) containing.getType();
+                String classFqn = classType.getFullyQualifiedName();
+
+                J.Identifier reference = memberReference.getReference();
+                String methodName = reference.getSimpleName();
+
+                if (recordTypeToMembers.containsKey(classFqn) &&
+                    methodName.startsWith(STANDARD_GETTER_PREFIX) &&
+                    recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName))) {
+
+                    return memberReference.withReference(
+                        reference.withSimpleName(getterMethodNameToFluentMethodName(methodName))
+                    );
+                }
             }
 
             return memberReference;
         }
-
 
         private boolean isMethodInvocationOnRecordTypeClassMember(J.MethodInvocation methodInvocation) {
             Expression expression = methodInvocation.getSelect();
