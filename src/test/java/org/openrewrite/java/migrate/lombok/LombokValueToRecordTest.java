@@ -46,8 +46,6 @@ class LombokValueToRecordTest implements RewriteTest {
     void convertOnlyValueAnnotatedClassWithoutDefaultValuesToRecord() {
         //language=java
         rewriteRun(
-          // TODO: find a way to please type validation so this workaround is not required anymore
-          s -> s.typeValidationOptions(TypeValidation.none()),
           java(
             """
               package example;
@@ -142,7 +140,6 @@ class LombokValueToRecordTest implements RewriteTest {
     void onlyRemoveAnnotationFromRecords() {
         //language=java
         rewriteRun(
-          s -> s.typeValidationOptions(TypeValidation.none()),
           java(
             """
               package example;
@@ -185,7 +182,6 @@ class LombokValueToRecordTest implements RewriteTest {
     void innerRecordsNotStatic() {
         //language=java
         rewriteRun(
-          s -> s.typeValidationOptions(TypeValidation.none()),
           java(
             """
               package example;
@@ -218,7 +214,6 @@ class LombokValueToRecordTest implements RewriteTest {
     void interfaceIsImplementedThatDoesNotDefineFieldGetter() {
         //language=java
         rewriteRun(
-          s -> s.typeValidationOptions(TypeValidation.none()),
           java(
             """
               package example;
@@ -248,13 +243,13 @@ class LombokValueToRecordTest implements RewriteTest {
     void plainLombokBuilder() {
         //language=java
         rewriteRun(
-          s -> s.typeValidationOptions(TypeValidation.none()),
           java(
             """
               package example;
 
               import lombok.Value;
               import lombok.Builder;
+              import java.io.Serializable;
 
               @Value
               @Builder
@@ -266,6 +261,7 @@ class LombokValueToRecordTest implements RewriteTest {
               package example;
 
               import lombok.Builder;
+              import java.io.Serializable;
 
               @Builder
               public record A(
@@ -282,7 +278,6 @@ class LombokValueToRecordTest implements RewriteTest {
     void methodReferences() {
         //language=java
         rewriteRun(
-          s -> s.typeValidationOptions(TypeValidation.none()),
           java(
             """
               package example;
@@ -349,7 +344,7 @@ class LombokValueToRecordTest implements RewriteTest {
         void classWithFieldAnnotations() {
             //language=java
             rewriteRun(
-              s -> s.typeValidationOptions(TypeValidation.none()),
+              s -> s.typeValidationOptions(TypeValidation.all().identifiers(false)),
               java(
                 """
                   import com.fasterxml.jackson.annotation.JsonProperty;
@@ -478,7 +473,6 @@ class LombokValueToRecordTest implements RewriteTest {
         void nonStaticInnerClass() {
             //language=java
             rewriteRun(
-              s -> s.typeValidationOptions(TypeValidation.none()),
               java(
                 """
                   package example;
@@ -500,7 +494,6 @@ class LombokValueToRecordTest implements RewriteTest {
         void staticConstructor() {
             //language=java
             rewriteRun(
-              s -> s.typeValidationOptions(TypeValidation.none()),
               java(
                 """
                   package example;
