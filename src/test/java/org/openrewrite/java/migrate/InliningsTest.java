@@ -32,8 +32,8 @@ class InliningsTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().classpath("guava", "error_prone_annotations"));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void inlineMe() {
         //language=java
         rewriteRun(
