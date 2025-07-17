@@ -47,11 +47,11 @@ class SwitchUtilsTest {
               """
                 class Test {
                     void method(TrafficLight light) {
-                          switch (light) {
-                              case RED -> System.out.println("stop");
-                              case YELLOW -> System.out.println("caution");
-                              case GREEN -> System.out.println("go");
-                          }
+                        switch (light) {
+                            case RED -> System.out.println("stop");
+                            case YELLOW -> System.out.println("caution");
+                            case GREEN -> System.out.println("go");
+                        }
                     }
                     enum TrafficLight { RED, YELLOW, GREEN }
                 }
@@ -69,10 +69,10 @@ class SwitchUtilsTest {
               """
                 class Test {
                     void method(TrafficLight light) {
-                          switch (light) {
-                              case RED -> System.out.println("stop");
-                              case YELLOW -> System.out.println("caution");
-                          }
+                        switch (light) {
+                            case RED -> System.out.println("stop");
+                            case YELLOW -> System.out.println("caution");
+                        }
                     }
                     enum TrafficLight { RED, YELLOW, GREEN }
                 }
@@ -90,11 +90,11 @@ class SwitchUtilsTest {
               """
                 class Test {
                     void method(TrafficLight light) {
-                          switch (light) {
-                              case RED -> System.out.println("stop");
-                              case YELLOW -> System.out.println("caution");
-                              default -> System.out.println("unknown");
-                          }
+                        switch (light) {
+                            case RED -> System.out.println("stop");
+                            case YELLOW -> System.out.println("caution");
+                            default -> System.out.println("unknown");
+                        }
                     }
                     enum TrafficLight { RED, YELLOW, GREEN }
                 }
@@ -112,9 +112,9 @@ class SwitchUtilsTest {
               """
                 class Test {
                     void method(TrafficLight light) {
-                          switch (light) {
-                              default -> System.out.println("unknown");
-                          }
+                        switch (light) {
+                            default -> System.out.println("unknown");
+                        }
                     }
                     enum TrafficLight { RED, YELLOW, GREEN }
                 }
@@ -132,9 +132,9 @@ class SwitchUtilsTest {
               """
                 class Test {
                     void method(Object obj) {
-                          switch (obj) {
-                              default -> System.out.println("default");
-                          }
+                        switch (obj) {
+                            default -> System.out.println("default");
+                        }
                     }
                 }
                 """
@@ -153,11 +153,11 @@ class SwitchUtilsTest {
                 class Test {
                     sealed abstract class Shape permits Circle, Square, Rectangle {}
                     void method(Shape shape) {
-                          switch (shape) {
-                              case Circle c -> System.out.println("circle");
-                              case Square s -> System.out.println("square");
-                              case Rectangle r -> System.out.println("rectangle");
-                          }
+                        switch (shape) {
+                            case Circle c -> System.out.println("circle");
+                            case Square s -> System.out.println("square");
+                            case Rectangle r -> System.out.println("rectangle");
+                        }
                     }
                 }
                 """
