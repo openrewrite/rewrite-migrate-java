@@ -280,44 +280,6 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     }
 
     @Test
-    void convertCasesWhenColonCaseHasNoStatementsAndNextCaseIsAssignationByAddedDefault() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Test {
-                  enum TrafficLight {
-                      RED, GREEN, YELLOW
-                  }
-                  void doFormat(TrafficLight light) {
-                      String status = "initialValue";
-                      switch (light) {
-                          case RED:
-                          case GREEN:
-                          case YELLOW: status = "unsure"; break;
-                      }
-                  }
-              }
-              """,
-            """
-              class Test {
-                  enum TrafficLight {
-                      RED, GREEN, YELLOW
-                  }
-                  void doFormat(TrafficLight light) {
-                      String status = switch (light) {
-                          case RED:
-                          case GREEN:
-                          case YELLOW: yield "unsure";
-                          default: yield "initialValue";
-                      };
-                  }
-              }
-              """
-          ));
-    }
-
-    @Test
     void convertCasesWithAddedDefault() {
         rewriteRun(
           //language=java
@@ -372,6 +334,43 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                           }
                           default: status = "default status"; break;
                       }
+                  }
+              }
+              """
+          ));
+    }
+
+    @Test
+    void noDefaultAddedIfAlreadyExhaustive() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
+                  void doFormat(TrafficLight light) {
+                      String status = "initialValue";
+                      switch (light) {
+                          case RED: status = "stop"; break;
+                          case GREEN: status = "go"; break;
+                          case YELLOW: status = "unsure"; break;
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
+                  void doFormat(TrafficLight light) {
+                      String status = switch (light) {
+                          case RED: yield "stop";
+                          case GREEN: yield "go";
+                          case YELLOW: yield "unsure";
+                      };
                   }
               }
               """

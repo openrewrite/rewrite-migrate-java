@@ -80,7 +80,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             ) {
                                 J.VariableDeclarations vd = (J.VariableDeclarations) statement;
                                 J.Switch nextStatementSwitch = (J.Switch) block.getStatements().get(index + 1);
-                                Optional<J.SwitchExpression> newSwitchExpression = buildNewSwitchExpression(nextStatementSwitch, vd.getVariables().get(0), ctx);
+                                Optional<J.SwitchExpression> newSwitchExpression = buildNewSwitchExpression(nextStatementSwitch, vd.getVariables().get(0));
                                 if (newSwitchExpression.isPresent()) {
                                     originalSwitch.set(nextStatementSwitch);
                                     return vd.withVariables(singletonList(vd.getVariables().get(0).withInitializer(newSwitchExpression.get())));
@@ -91,7 +91,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                         return super.visitBlock(b, ctx);
                     }
 
-                    private Optional<J.SwitchExpression> buildNewSwitchExpression(J.Switch originalSwitch, J.VariableDeclarations.NamedVariable originalVariable, ExecutionContext ctx) {
+                    private Optional<J.SwitchExpression> buildNewSwitchExpression(J.Switch originalSwitch, J.VariableDeclarations.NamedVariable originalVariable) {
                         final String variableName = originalVariable.getSimpleName();
                         AtomicBoolean isUnqualified = new AtomicBoolean();
                         AtomicBoolean isDefaultCaseAbsent = new AtomicBoolean(true);
@@ -186,7 +186,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                         );
 
                         J.SwitchExpression initializer = (J.SwitchExpression) Objects.requireNonNull(vd.getVariables().get(0).getInitializer());
-                        if (isDefaultCaseAbsent.get()) {
+                        if (isDefaultCaseAbsent.get() && !SwitchUtils.coversAllPossibleValues(originalSwitch)) {
                             updatedCases.add(initializer.getCases().getStatements().get(0));
                         }
                         return Optional.of(initializer.withCases(initializer.getCases().withStatements(updatedCases)));
