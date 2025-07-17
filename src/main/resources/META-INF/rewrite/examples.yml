@@ -6235,6 +6235,34 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.SwitchCaseAssigningToSwitchExpression
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          void doFormat(Object obj) {
+              String formatted = "initialValue";
+              switch (obj) {
+                  case Integer i -> formatted = String.format("int %d", i);
+                  case Long l -> formatted = String.format("long %d", l);
+                  default -> formatted = "unknown";
+              }
+          }
+      }
+    after: |
+      class Test {
+          void doFormat(Object obj) {
+              String formatted = switch (obj) {
+                  case Integer i -> String.format("int %d", i);
+                  case Long l -> String.format("long %d", l);
+                  default -> "unknown";
+              };
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.SwitchCaseEnumGuardToLabel
 examples:
 - description: ''

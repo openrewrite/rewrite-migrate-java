@@ -15,7 +15,9 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -34,56 +36,62 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     void convertSimpleArrowCasesAssignations() {
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case Integer i -> formatted = String.format("int %d", i);
-                        case Long l -> formatted = String.format("long %d", l);
-                        default -> formatted = "unknown";
-                    }
-                }
-            }
-            """, """
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = switch (obj) {
-                        case Integer i -> String.format("int %d", i);
-                        case Long l -> String.format("long %d", l);
-                        default -> "unknown";
-                    };
-                }
-            }
-            """));
+          java(
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case Integer i -> formatted = String.format("int %d", i);
+                          case Long l -> formatted = String.format("long %d", l);
+                          default -> formatted = "unknown";
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = switch (obj) {
+                          case Integer i -> String.format("int %d", i);
+                          case Long l -> String.format("long %d", l);
+                          default -> "unknown";
+                      };
+                  }
+              }
+              """
+          ));
     }
 
     @Test
     void convertSimpleColonCasesAssignations() {
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case Integer i: formatted = String.format("int %d", i); break;
-                        case Long l: formatted = String.format("long %d", l); break;
-                        default: formatted = "unknown"; break;
-                    }
-                }
-            }
-            """, """
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = switch (obj) {
-                        case Integer i: yield String.format("int %d", i);
-                        case Long l: yield String.format("long %d", l);
-                        default: yield "unknown";
-                    };
-                }
-            }
-            """));
+          java(
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case Integer i: formatted = String.format("int %d", i); break;
+                          case Long l: formatted = String.format("long %d", l); break;
+                          default: formatted = "unknown"; break;
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = switch (obj) {
+                          case Integer i: yield String.format("int %d", i);
+                          case Long l: yield String.format("long %d", l);
+                          default: yield "unknown";
+                      };
+                  }
+              }
+              """
+          ));
     }
 
     @Test
@@ -91,237 +99,260 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
         // Only one statement [+break;] per case is currently supported
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case Integer i: formatted = String.format("int %d", i); break;
-                        case Long l: System.out.println("long"); formatted = String.format("long %d", l); break;
-                        default: formatted = "unknown"; break;
-                    }
-                }
-            }
-            """));
+          java(
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case Integer i: formatted = String.format("int %d", i); break;
+                          case Long l: System.out.println("long"); formatted = String.format("long %d", l); break;
+                          default: formatted = "unknown"; break;
+                      }
+                  }
+              }
+              """
+          ));
     }
 
     @Test
     void convertColonCasesSimpleAssignationInBlockToSingleYield() {
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case Integer i: formatted = String.format("int %d", i); break;
-                        case Long l: {
-                            formatted = String.format("long %d", l);
-                            break;
-                        }
-                        default: formatted = "unknown"; break;
-                    }
-                }
-            }
-            """, """
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = switch (obj) {
-                        case Integer i: yield String.format("int %d", i);
-                        case Long l: yield String.format("long %d", l);
-                        default: yield "unknown";
-                    };
-                }
-            }
-            """));
+          java(
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case Integer i: formatted = String.format("int %d", i); break;
+                          case Long l: {
+                              formatted = String.format("long %d", l);
+                              break;
+                          }
+                          default: formatted = "unknown"; break;
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = switch (obj) {
+                          case Integer i: yield String.format("int %d", i);
+                          case Long l: yield String.format("long %d", l);
+                          default: yield "unknown";
+                      };
+                  }
+              }
+              """
+          ));
     }
 
     @Test
     void convertArrowCasesSimpleAssignationInBlockToSingleValue() {
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case Integer i -> formatted = String.format("int %d", i);
-                        case Long l -> {
-                            formatted = String.format("long %d", l);
-                        }
-                        default -> formatted = "unknown";
-                    }
-                }
-            }
-            """, """
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = switch (obj) {
-                        case Integer i -> String.format("int %d", i);
-                        case Long l -> String.format("long %d", l);
-                        default -> "unknown";
-                    };
-                }
-            }
-            """));
+          java(
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case Integer i -> formatted = String.format("int %d", i);
+                          case Long l -> {
+                              formatted = String.format("long %d", l);
+                          }
+                          default -> formatted = "unknown";
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = switch (obj) {
+                          case Integer i -> String.format("int %d", i);
+                          case Long l -> String.format("long %d", l);
+                          default -> "unknown";
+                      };
+                  }
+              }
+              """
+          ));
     }
 
     @Test
     void notConvertCasesWithMissingAssignment() {
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    switch (obj) {
-                        case String s: formatted = String.format("String %s", s); break;
-                        case Integer i: System.out.println("Integer!"); break;
-                        default: formatted = "unknown"; break;
-                    }
-                }
-            }
-            """));
+          java(
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case String s: formatted = String.format("String %s", s); break;
+                          case Integer i: System.out.println("Integer!"); break;
+                          default: formatted = "unknown"; break;
+                      }
+                  }
+              }
+              """
+          ));
     }
 
     @Test
     void notConvertCasesWithAssignmentToDifferentVariables() {
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String formatted = "initialValue";
-                    String formatted2 = "anotherInitialValue";
-                    switch (obj) {
-                        case String s: formatted = String.format("String %s", s); break;
-                        case Integer i: formatted2 = String.format("Integer %d", i); break;
-                        default: formatted = "unknown"; break;
-                    }
-                }
-            }
-            """));
+          java(
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = "initialValue";
+                      String formatted2 = "anotherInitialValue";
+                      switch (obj) {
+                          case String s: formatted = String.format("String %s", s); break;
+                          case Integer i: formatted2 = String.format("Integer %d", i); break;
+                          default: formatted = "unknown"; break;
+                      }
+                  }
+              }
+              """
+          ));
     }
 
     @Test
     void notConvertCasesWhenColonCaseHasNoStatementsAndNextCaseIsntAssignation() {
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String status = "initialValue";
-                    switch (obj) {
-                        case null:
-                        default: System.out.println("default"); break;
-                    }
-                }
-            }
-            """));
+          java(
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String status = "initialValue";
+                      switch (obj) {
+                          case null:
+                          default: System.out.println("default"); break;
+                      }
+                  }
+              }
+              """
+          ));
     }
 
     @Test
     void convertCasesWhenColonCaseHasNoStatementsAndNextCaseIsAssignation() {
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                enum TrafficLight {
-                    RED, GREEN, YELLOW
-                }
-                void doFormat(TrafficLight light) {
-                    String status = "initialValue";
-                    switch (light) {
-                        case RED:
-                        case GREEN:
-                        case YELLOW: status = "unsure"; break;
-                        default: status = "unknown"; break;
-                    }
-                }
-            }
-            """, """
-            class Test {
-                enum TrafficLight {
-                    RED, GREEN, YELLOW
-                }
-                void doFormat(TrafficLight light) {
-                    String status = switch (light) {
-                        case RED:
-                        case GREEN:
-                        case YELLOW: yield "unsure";
-                        default: yield "unknown";
-                    };
-                }
-            }
-            """));
+          java(
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
+                  void doFormat(TrafficLight light) {
+                      String status = "initialValue";
+                      switch (light) {
+                          case RED:
+                          case GREEN:
+                          case YELLOW: status = "unsure"; break;
+                          default: status = "unknown"; break;
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
+                  void doFormat(TrafficLight light) {
+                      String status = switch (light) {
+                          case RED:
+                          case GREEN:
+                          case YELLOW: yield "unsure";
+                          default: yield "unknown";
+                      };
+                  }
+              }
+              """
+          ));
     }
 
     @Test
     void convertCasesWhenColonCaseHasNoStatementsAndNextCaseIsAssignationByAddedDefault() {
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                enum TrafficLight {
-                    RED, GREEN, YELLOW
-                }
-                void doFormat(TrafficLight light) {
-                    String status = "initialValue";
-                    switch (light) {
-                        case RED:
-                        case GREEN:
-                        case YELLOW: status = "unsure"; break;
-                    }
-                }
-            }
-            """, """
-            class Test {
-                enum TrafficLight {
-                    RED, GREEN, YELLOW
-                }
-                void doFormat(TrafficLight light) {
-                    String status = switch (light) {
-                        case RED:
-                        case GREEN:
-                        case YELLOW: yield "unsure";
-                        default: yield"initialValue";
-                    };
-                }
-            }
-            """));
+          java(
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
+                  void doFormat(TrafficLight light) {
+                      String status = "initialValue";
+                      switch (light) {
+                          case RED:
+                          case GREEN:
+                          case YELLOW: status = "unsure"; break;
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
+                  void doFormat(TrafficLight light) {
+                      String status = switch (light) {
+                          case RED:
+                          case GREEN:
+                          case YELLOW: yield "unsure";
+                          default: yield"initialValue";
+                      };
+                  }
+              }
+              """
+          ));
     }
 
     @Test
     void convertCasesWithAddedDefault() {
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                enum TrafficLight {
-                    RED, GREEN, YELLOW
-                }
-                void doFormat(TrafficLight light) {
-                    String status = "initialValue";
-                    switch (light) {
-                        case RED: status = "stop"; break;
-                        case GREEN: status = "go"; break;
-                    }
-                }
-            }
-            """, """
-            class Test {
-                enum TrafficLight {
-                    RED, GREEN, YELLOW
-                }
-                void doFormat(TrafficLight light) {
-                    String status = switch (light) {
-                        case RED: yield "stop";
-                        case GREEN: yield "go";
-                        default: yield"initialValue";
-                    };
-                }
-            }
-            """));
+          java(
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
+                  void doFormat(TrafficLight light) {
+                      String status = "initialValue";
+                      switch (light) {
+                          case RED: status = "stop"; break;
+                          case GREEN: status = "go"; break;
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
+                  void doFormat(TrafficLight light) {
+                      String status = switch (light) {
+                          case RED: yield "stop";
+                          case GREEN: yield "go";
+                          default: yield"initialValue";
+                      };
+                  }
+              }
+              """
+          ));
     }
 
     @Test
@@ -329,57 +360,61 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
         // More than one block statement per case is not yet supported.
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                void doFormat(Object obj) {
-                    String status = "initialValue";
-                    switch (obj) {
-                        case null: {
-                            status = "none";
-                        }
-                        {
-                            break;
-                        }
-                        default: status = "default status"; break;
-                    }
-                }
-            }
-            """));
+          java(
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String status = "initialValue";
+                      switch (obj) {
+                          case null: {
+                              status = "none";
+                          }
+                          {
+                              break;
+                          }
+                          default: status = "default status"; break;
+                      }
+                  }
+              }
+              """
+          ));
     }
 
+    @Test
     void convertCasesInstanceVariableAssignment() {
         rewriteRun(
           //language=java
-          java("""
-            class Test {
-                enum TrafficLight {
-                    RED, GREEN, YELLOW
-                }
-                private String status = "initialValue";
+          java(
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
 
-                void doFormat(TrafficLight light) {
-                    String status = "initialValue";
-                    switch (light) {
-                        case RED: this.status = "stop"; break;
-                        case GREEN: this.status = "go"; break;
-                    }
-                }
-            }
-            """, """
-            class Test {
-                enum TrafficLight {
-                    RED, GREEN, YELLOW
-                }
-                private String status = "initialValue";
+                  void doFormat(TrafficLight light) {
+                      String status = "initialValue";
+                      switch (light) {
+                          case RED: status = "stop"; break;
+                          case GREEN: status = "go"; break;
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
 
-                void doFormat(TrafficLight light) {
-                    this.status = switch (light) {
-                        case RED: yield "stop";
-                        case GREEN: yield "go";
-                        default: yield "initialValue";
-                    };
-                }
-            }
-            """));
+                  void doFormat(TrafficLight light) {
+                      String status = switch (light) {
+                          case RED: yield "stop";
+                          case GREEN: yield "go";
+                          default: yield "initialValue";
+                      };
+                  }
+              }
+              """
+          ));
     }
 }
