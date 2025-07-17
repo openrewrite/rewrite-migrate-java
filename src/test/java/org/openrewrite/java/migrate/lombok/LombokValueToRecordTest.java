@@ -270,7 +270,6 @@ class LombokValueToRecordTest implements RewriteTest {
               """
           )
         );
-
     }
 
     @Test
