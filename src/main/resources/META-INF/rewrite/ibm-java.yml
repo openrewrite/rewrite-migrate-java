@@ -117,30 +117,56 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedJavaXMLWSModuleProvided
-displayName: Do not use `java.xml.ws` module in WebSphere Liberty
+displayName: Do not package `java.xml.ws` module in WebSphere Liberty applications
 description:
   The `java.xml.ws` module was removed in Java11. Websphere Liberty provides its own implementation of the module, which can be used by specifying the `jaxws-2.2` feature in the server.xml file.
-  This recipe removes the `javax.xml.ws` module from the application's build dependency in favor of the Websphere Liberty implementation to avoid class loading issues.
+  This recipe updates the `javax.xml.ws` dependency to use the `provided` scope to avoid class loading issues.
 tags:
   - java11
 recipeList:
-  - org.openrewrite.java.dependencies.RemoveDependency:
+  - org.openrewrite.maven.ChangeDependencyScope:
       groupId: javax.xml.ws
       artifactId: jaxws-api
+      newScope: provided
+  - org.openrewrite.gradle.ChangeDependencyConfiguration:
+      groupId: javax.xml.ws
+      artifactId: jaxws-api
+      newConfiguration: compileOnly
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedJaxBModuleProvided
-displayName: Do not use `java.xml.bind` and `java.activation` modules in WebSphere Liberty
+displayName: Do not package `java.xml.bind` and `java.activation` modules in WebSphere Liberty applications
 description:
   The `java.xml.bind` and `java.activation` modules were removed in Java11.
   Websphere Liberty provides its own implementation of the modules, which can be used by specifying the `jaxb-2.2` feature in the server.xml file.
-  This recipe removes the `javax.xml.bind` and `javax.activation` modules from the application's build dependency in favor of the Websphere Liberty implementation to avoid class loading issues.
+  This recipe updates the `javax.xml.bind` and `javax.activation` dependencies to use the `provided` scope to avoid class loading issues.
 tags:
   - java11
 recipeList:
-  - org.openrewrite.java.dependencies.RemoveDependency:
+  - org.openrewrite.maven.ChangeDependencyScope:
       groupId: javax.xml.bind
       artifactId: jaxb-api
-  - org.openrewrite.java.dependencies.RemoveDependency:
+      newScope: provided
+  - org.openrewrite.gradle.ChangeDependencyConfiguration:
+      groupId: javax.xml.bind
+      artifactId: jaxb-api
+      newConfiguration: compileOnly
+  - org.openrewrite.maven.ChangeDependencyScope:
       groupId: javax.activation
       artifactId: activation
+      newScope: provided
+  - org.openrewrite.gradle.ChangeDependencyConfiguration:
+      groupId: javax.activation
+      artifactId: activation
+      newConfiguration: compileOnly
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.WasDevMvnChangeParentArtifactId
+displayName: Change `net.wasdev.maven.parent:java8-parent` to `:parent`
+description: This recipe changes the artifactId of the `<parent>` tag in the `pom.xml` from `java8-parent` to `parent`.
+recipeList:
+  - org.openrewrite.maven.ChangeParentPom:
+      oldGroupId: net.wasdev.maven.parent
+      oldArtifactId: java8-parent
+      newArtifactId: parent
+      newVersion: 1.4

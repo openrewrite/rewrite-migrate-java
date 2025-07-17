@@ -31,8 +31,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(false));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void removeFinalizerForInflater() {
         //language=java
         rewriteRun(java(
@@ -45,7 +45,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   obj.finalize();
               }
           }
-          """, """
+          """,
+                """
           import java.util.zip.Inflater;
 
           class FooInflater extends Inflater {
@@ -68,7 +69,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   finalize();
               }
           }
-          """, """
+          """,
+                """
           import java.util.zip.Inflater;
 
           class FooBar extends Inflater {
@@ -90,7 +92,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   this.finalize();
               }
           }
-          """, """
+          """,
+                """
           import java.util.zip.Inflater;
 
           class FooBar extends Inflater {
@@ -112,7 +115,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   new FooBar().finalize();
               }
           }
-          """, """
+          """,
+                """
           import java.util.zip.Inflater;
 
           class FooBar extends Inflater {
@@ -166,7 +170,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   obj.finalize();
               }
           }
-          """, """
+          """,
+                """
           import java.util.zip.Deflater;
 
           class FooBar extends Deflater {
@@ -208,7 +213,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
                   obj.finalize();
               }
           }
-          """, """
+          """,
+                """
           import java.util.zip.ZipFile;
 
           class FooBar extends ZipFile {

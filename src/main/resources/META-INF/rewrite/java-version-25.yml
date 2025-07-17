@@ -1,0 +1,114 @@
+#
+# Copyright 2025 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeToJava25
+displayName: Migrate to Java 25
+description: >-
+  This recipe will apply changes commonly needed when migrating to Java 25. This recipe will also replace deprecated API
+  with equivalents when there is a clear migration strategy. Build files will also be updated to use Java 25 as the
+  target/source and plugins will be also be upgraded to versions that are compatible with Java 25.
+tags:
+  - java25
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeToJava21
+  - org.openrewrite.java.migrate.RemoveSecurityAccessController
+  - org.openrewrite.java.migrate.RemoveSecurityPolicy
+  - org.openrewrite.java.migrate.RemoveSecurityManager
+  - org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.AccessController
+displayName: Remove Security AccessController
+description: The Security Manager API is unsupported in Java 24. This recipe will remove the usage of `java.security.AccessController`.
+tags:
+  - java25
+  - security
+  - deprecation
+preconditions:
+  - org.openrewrite.java.migrate.search.FindJavaVersion:
+      version: 24
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.security.AccessController#checkPermission(..)
+recipeList:
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: java.security.AccessController#checkPermission(..)
+  - org.openrewrite.staticanalysis.UnnecessaryCatch
+  - org.openrewrite.staticanalysis.UnnecessaryThrows
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemoveSecurityPolicy
+displayName: Remove Security Policy
+description: The Security Manager API is unsupported in Java 24. This recipe will remove the use of `java.security.Policy`.
+tags:
+  - java25
+  - security
+  - deprecation
+preconditions:
+  - org.openrewrite.java.migrate.search.FindJavaVersion:
+      version: 24
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.security.Policy#setPolicy(..)
+recipeList:
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: java.security.Policy#setPolicy(..)
+  - org.openrewrite.staticanalysis.UnnecessaryCatch
+  - org.openrewrite.staticanalysis.UnnecessaryThrows
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemoveSecurityManager
+displayName: Remove Security SecurityManager
+description: The Security Manager API is unsupported in Java 24. This recipe will remove the usage of `java.security.SecurityManager`.
+tags:
+  - java25
+  - security
+  - deprecation
+preconditions:
+  - org.openrewrite.java.migrate.search.FindJavaVersion:
+      version: 24
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.lang.SecurityManager#check*(..)
+recipeList:
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: java.lang.SecurityManager#check*(..)
+  - org.openrewrite.staticanalysis.UnnecessaryCatch
+  - org.openrewrite.staticanalysis.UnnecessaryThrows
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
+displayName: Replace `System.getSecurityManager()` with `null`
+description: >-
+    The Security Manager API is unsupported in Java 24. This recipe will replace `System.getSecurityManager()` with `null`
+    to make its behavior more obvious and try to simplify execution paths afterwards.
+tags:
+  - java25
+  - security
+  - deprecation
+preconditions:
+  - org.openrewrite.java.migrate.search.FindJavaVersion:
+      version: 24
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: java.lang.System#getSecurityManager()
+recipeList:
+  - org.openrewrite.java.ReplaceMethodInvocationWithConstant:
+      methodPattern: java.lang.System#getSecurityManager()
+      constant: "null"
+  - org.openrewrite.staticanalysis.SimplifyConstantIfBranchExecution

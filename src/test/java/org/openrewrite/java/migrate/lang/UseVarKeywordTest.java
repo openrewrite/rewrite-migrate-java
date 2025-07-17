@@ -18,7 +18,7 @@ package org.openrewrite.java.migrate.lang;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.openrewrite.Example;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -213,8 +213,8 @@ class UseVarKeywordTest implements RewriteTest {
                 );
             }
 
-            @Test
             @Disabled("this should be possible, but it needs very hard type inference")
+            @Test
             void withTernary() {
                 //language=java
                 rewriteRun(
@@ -380,8 +380,8 @@ class UseVarKeywordTest implements RewriteTest {
 
         @Nested
         class Applicable {
+            @DocumentExample
             @Test
-            @Example
             void forString() {
                 //language=java
                 rewriteRun(
@@ -696,6 +696,39 @@ class UseVarKeywordTest implements RewriteTest {
 
         @Nested
         class Applicable {
+
+            @DocumentExample
+            @Test
+            void withDiamondOperator() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      package com.example.app;
+
+                      import java.util.List;
+                      import java.util.ArrayList;
+
+                      class A {
+                        void m() {
+                            List<String> strs = new ArrayList<>();
+                        }
+                      }
+                      """,
+                    """
+                      package com.example.app;
+
+                      import java.util.ArrayList;
+
+                      class A {
+                        void m() {
+                            var strs = new ArrayList<String>();
+                        }
+                      }
+                      """
+                  )
+                );
+            }
             @Test
             void ifWelldefined() {
                 //language=java
@@ -753,39 +786,6 @@ class UseVarKeywordTest implements RewriteTest {
                       class A {
                         void m() {
                             var strs = new ArrayList();
-                        }
-                      }
-                      """
-                  )
-                );
-            }
-
-            @Test
-            @Example
-            void withDiamondOperator() {
-                //language=java
-                rewriteRun(
-                  java(
-                    """
-                      package com.example.app;
-
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
-                        void m() {
-                            List<String> strs = new ArrayList<>();
-                        }
-                      }
-                      """,
-                    """
-                      package com.example.app;
-
-                      import java.util.ArrayList;
-
-                      class A {
-                        void m() {
-                            var strs = new ArrayList<String>();
                         }
                       }
                       """

@@ -17,7 +17,7 @@ package org.openrewrite.java.migrate.lang.var;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.openrewrite.Example;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -36,13 +36,10 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
 
         @Test
         void boundedGenerics() {
-            // could be var lst = new ArrayList<? extends String>();
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
+              java(
+                """
                   import java.util.List;
                   import java.util.ArrayList;
 
@@ -51,346 +48,7 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                           List<? extends String> lst = new ArrayList<>();
                       }
                   }
-                  """),
-                10
-              )
-            );
-        }
-
-        @Test
-        void forEmptyFactoryMethod() {
-            //language=java
-            rewriteRun(
-              version(
-                java(
                   """
-                      package com.example.app;
-
-                      import java.util.List;
-
-                      class A {
-                        void m() {
-                            List<String> strs = List.of();
-                        }
-                      }
-                    """),
-                10
-              )
-            );
-        }
-
-        @Test
-        void withFactoryMethods() {
-            // this one is handled by UseVarForMethodInvocations
-            //language=java
-            rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
-                  import java.util.List;
-
-                  class A {
-                    void m() {
-                        List<String> strs = List.of("one", "two");
-                    }
-                  }
-                  """),
-                10
-              )
-            );
-        }
-
-        @Test
-        void forEmptyDiamondOperators() {
-            //language=java
-            rewriteRun(
-              version(
-                java(
-                  """
-                      package com.example.app;
-
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
-                        void m() {
-                            List strs = new ArrayList<>();
-                        }
-                      }
-                    """),
-                10
-              )
-            );
-        }
-
-        @Test
-        void withDiamondOperatorOnRaw() {
-            //todo check if this may be possible!, We could transform ArrayList into ArrayList<String>
-            //language=java
-            rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
-                  import java.util.List;
-                  import java.util.ArrayList;
-
-                  class A {
-                    void m() {
-                        List<String> strs = new ArrayList();
-                    }
-                  }
-                  """),
-                10
-              )
-            );
-        }
-
-        @Test
-        void forNoDiamondOperators() {
-            // this one fails for generics because it's covered by UseVarForObjects
-            //language=java
-            rewriteRun(
-              version(
-                java(
-                  """
-                      package com.example.app;
-
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
-                        void m() {
-                            List strs = new ArrayList();
-                        }
-                      }
-                    """),
-                10
-              )
-            );
-        }
-    }
-
-    @Nested
-    class Applicable {
-
-        @Nested
-        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/257")
-        class AdvancedGenerics {
-            @Test
-            void genericMethod() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
-
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
-                          static <T> void generic() {
-                              List<T> lst = new ArrayList<>();
-                          }
-                      }
-                      """, """
-                      package com.example.app;
-
-                      import java.util.ArrayList;
-
-                      class A {
-                          static <T> void generic() {
-                              var lst = new ArrayList<T>();
-                          }
-                      }
-                      """),
-                    10
-                  )
-                );
-            }
-
-            @Test
-            void unboundedGenerics() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
-
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
-                          void generic() {
-                              List<?> lst = new ArrayList<>();
-                          }
-                      }
-                      """, """
-                      package com.example.app;
-
-                      import java.util.ArrayList;
-
-                      class A {
-                          void generic() {
-                              var lst = new ArrayList<?>();
-                          }
-                      }
-                      """),
-                    10
-                  )
-                );
-            }
-
-            @Test
-            void boundedGenerics() {
-                // could be var lst = new ArrayList<? extends String>();
-                //language=java
-                rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
-
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
-                          void generic() {
-                              List<? extends String> lst = new ArrayList<>();
-                          }
-                      }
-                      """),
-                    10
-                  )
-                );
-            }
-
-            @Test
-            void inceptionGenerics() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
-
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
-                          void generic() {
-                              List<List<Object>> lst = new ArrayList<>();
-                          }
-                      }
-                      """, """
-                      package com.example.app;
-
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
-                          void generic() {
-                              var lst = new ArrayList<List<Object>>();
-                          }
-                      }
-                      """),
-                    10
-                  )
-                );
-            }
-
-            @Test
-            void twoParams() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
-
-                      import java.util.Map;
-                      import java.util.HashMap;
-
-                      class A {
-                          void twoParams() {
-                              Map<String, Object> map = new HashMap<>();
-                          }
-                      }
-                      """, """
-                      package com.example.app;
-
-                      import java.util.HashMap;
-
-                      class A {
-                          void twoParams() {
-                              var map = new HashMap<String, Object>();
-                          }
-                      }
-                      """),
-                    10
-                  )
-                );
-            }
-        }
-
-        @Test
-        void ifWelldefined() {
-            //language=java
-            rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
-                  import java.util.List;
-                  import java.util.ArrayList;
-
-                  class A {
-                    void m() {
-                        List<String> strs = new ArrayList<String>();
-                    }
-                  }
-                  """, """
-                  package com.example.app;
-
-                  import java.util.ArrayList;
-
-                  class A {
-                    void m() {
-                        var strs = new ArrayList<String>();
-                    }
-                  }
-                  """),
-                10
-              )
-            );
-        }
-
-        @Test
-        void arrayAsType() {
-            //language=java
-            rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
-                  import java.util.List;
-                  import java.util.ArrayList;
-
-                  class A {
-                    void m() {
-                        List<char[]> strs = new ArrayList<>();
-                    }
-                  }
-                  """, """
-                  package com.example.app;
-
-                  import java.util.ArrayList;
-
-                  class A {
-                    void m() {
-                        var strs = new ArrayList<char[]>();
-                    }
-                  }
-                  """),
-                10
               )
             );
         }
@@ -399,10 +57,8 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         void twoParamsWithBounds() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
+              java(
+                """
                   import java.util.Map;
                   import java.util.LinkedHashMap;
 
@@ -413,32 +69,294 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                           Map<Class<? extends AbstractOAuth2Configurer>, AbstractOAuth2Configurer> configurers = new LinkedHashMap<>();
                       }
                   }
-                  """),
-                10
+                  """
               )
             );
         }
 
         @Test
-        @Example
-        void withTypeParameterInDefinitionOnly() {
+        void forEmptyFactoryMethod() {
             //language=java
             rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
+              java(
+                """
+                  import java.util.List;
 
+                  class A {
+                    void m() {
+                        List<String> strs = List.of();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void withFactoryMethods() {
+            // this one is handled by UseVarForMethodInvocations
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import java.util.List;
+
+                  class A {
+                    void m() {
+                        List<String> strs = List.of("one", "two");
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void forEmptyDiamondOperators() {
+            //language=java
+            rewriteRun(
+              java(
+                """
                   import java.util.List;
                   import java.util.ArrayList;
 
                   class A {
                     void m() {
-                        List<String> strs = new ArrayList<>();
+                        List strs = new ArrayList<>();
                     }
                   }
-                  """, """
-                  package com.example.app;
+                  """
+              )
+            );
+        }
 
+        @Test
+        void withDiamondOperatorOnRaw() {
+            //todo check if this may be possible!, We could transform ArrayList into ArrayList<String>
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import java.util.List;
+                  import java.util.ArrayList;
+
+                  class A {
+                    void m() {
+                        List<String> strs = new ArrayList();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void forNoDiamondOperators() {
+            // this one fails for generics because it's covered by UseVarForObjects
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import java.util.List;
+                  import java.util.ArrayList;
+
+                  class A {
+                    void m() {
+                        List strs = new ArrayList();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void javaLowerThan10() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    import java.util.List;
+                    import java.util.ArrayList;
+
+                    class A {
+                        void m() {
+                            List<String> strs = new ArrayList<>();
+                        }
+                    }
+                    """
+                ),
+                9)
+            );
+        }
+    }
+
+    @Nested
+    class Applicable {
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/257")
+        @Nested
+        class AdvancedGenerics {
+            @Test
+            void genericMethod() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      import java.util.List;
+                      import java.util.ArrayList;
+
+                      class A {
+                          static <T> void generic() {
+                              List<T> lst = new ArrayList<>();
+                          }
+                      }
+                      """,
+                    """
+                      import java.util.ArrayList;
+
+                      class A {
+                          static <T> void generic() {
+                              var lst = new ArrayList<T>();
+                          }
+                      }
+                      """
+                  )
+                );
+            }
+
+            @Test
+            void unboundedGenerics() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      import java.util.List;
+                      import java.util.ArrayList;
+
+                      class A {
+                          void generic() {
+                              List<?> lst = new ArrayList<>();
+                          }
+                      }
+                      """,
+                    """
+                      import java.util.ArrayList;
+
+                      class A {
+                          void generic() {
+                              var lst = new ArrayList<?>();
+                          }
+                      }
+                      """
+                  )
+                );
+            }
+
+            @Test
+            void inceptionGenerics() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      import java.util.List;
+                      import java.util.ArrayList;
+
+                      class A {
+                          void generic() {
+                              List<List<Object>> lst = new ArrayList<>();
+                          }
+                      }
+                      """,
+                    """
+                      import java.util.List;
+                      import java.util.ArrayList;
+
+                      class A {
+                          void generic() {
+                              var lst = new ArrayList<List<Object>>();
+                          }
+                      }
+                      """
+                  )
+                );
+            }
+
+            @Test
+            void twoParams() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      import java.util.Map;
+                      import java.util.HashMap;
+
+                      class A {
+                          void twoParams() {
+                              Map<String, Object> map = new HashMap<>();
+                          }
+                      }
+                      """,
+                    """
+                      import java.util.HashMap;
+
+                      class A {
+                          void twoParams() {
+                              var map = new HashMap<String, Object>();
+                          }
+                      }
+                      """
+                  )
+                );
+            }
+        }
+
+        @DocumentExample
+        @Test
+        void withTypeParameterInDefinitionOnly() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import java.util.List;
+                  import java.util.ArrayList;
+
+                  class A {
+                      void m() {
+                          List<String> strs = new ArrayList<>();
+                      }
+                  }
+                  """,
+                """
+                  import java.util.ArrayList;
+
+                  class A {
+                      void m() {
+                          var strs = new ArrayList<String>();
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void diamondOperatorIsNotUsed() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import java.util.List;
+                  import java.util.ArrayList;
+
+                  class A {
+                    void m() {
+                        List<String> strs = new ArrayList<String>();
+                    }
+                  }
+                  """,
+                """
                   import java.util.ArrayList;
 
                   class A {
@@ -446,8 +364,71 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                         var strs = new ArrayList<String>();
                     }
                   }
-                  """),
-                10
+                  """
+              )
+            );
+        }
+
+        @Test
+        void arrayAsType() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import java.util.List;
+                  import java.util.ArrayList;
+
+                  class A {
+                    void m() {
+                        List<char[]> strs = new ArrayList<>();
+                    }
+                  }
+                  """,
+                """
+                  import java.util.ArrayList;
+
+                  class A {
+                    void m() {
+                        var strs = new ArrayList<char[]>();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void ownObject() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.test;
+                  public class Option<T> {}
+                  """
+              ),
+              java(
+                """
+                  import com.test.Option;
+                  import java.util.HashSet;
+                  import java.util.Set;
+
+                  class A {
+                      void m() {
+                          Set<Option<Long>> ids = new HashSet<>();
+                      }
+                  }
+                  """,
+                """
+                  import com.test.Option;
+                  import java.util.HashSet;
+
+                  class A {
+                      void m() {
+                          var ids = new HashSet<Option<Long>>();
+                      }
+                  }
+                  """
               )
             );
         }

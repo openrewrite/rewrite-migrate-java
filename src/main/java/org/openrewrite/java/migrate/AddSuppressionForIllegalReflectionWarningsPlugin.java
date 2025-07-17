@@ -30,10 +30,10 @@ import org.openrewrite.xml.tree.Xml;
  * This imperative recipe will add the maven jar plugin to a maven project. The maven jar plugin will be configured to suppress
  * Illegal Reflection Warnings. In the case of a multi-module project, this recipe will attempt to add the plugin to only the top level project.
  */
-@Incubating(since = "0.2.0")
-@Getter
-@RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@Getter
+@Incubating(since = "0.2.0")
+@RequiredArgsConstructor
 public class AddSuppressionForIllegalReflectionWarningsPlugin extends Recipe {
 
     private static final XPathMatcher PACKAGING_MATCHER = new XPathMatcher("/project/packaging");

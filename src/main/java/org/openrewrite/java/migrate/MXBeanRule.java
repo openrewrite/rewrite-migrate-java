@@ -41,8 +41,8 @@ import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.tree.J.ClassDeclaration.Kind.Type.Interface;
 import static org.openrewrite.staticanalysis.ModifierOrder.sortModifiers;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class MXBeanRule extends Recipe {
 
     @Override
@@ -111,7 +111,7 @@ public class MXBeanRule extends Recipe {
             modifiers.removeIf(modifier -> modifier.getType() == Modifier.Type.Private ||
                     modifier.getType() == Modifier.Type.Protected ||
                     modifier.getType() == Modifier.Type.Abstract);
-            modifiers.add(new J.Modifier(randomId(), Space.EMPTY, Markers.EMPTY, Modifier.Type.Public, emptyList()));
+            modifiers.add(new J.Modifier(randomId(), Space.EMPTY, Markers.EMPTY, null, Modifier.Type.Public, emptyList()));
             return maybeAutoFormat(cd, cd.withModifiers(sortModifiers(modifiers)), ctx);
         }
     }

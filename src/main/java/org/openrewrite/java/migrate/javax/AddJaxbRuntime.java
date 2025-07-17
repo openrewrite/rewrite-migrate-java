@@ -39,8 +39,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
     private static final String JACKSON_GROUP = "com.fasterxml.jackson.module";
     private static final String JACKSON_JAXB_ARTIFACT = "jackson-module-jaxb-annotations";
@@ -160,7 +160,7 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                         artifactId = SUN_JAXB_RUNTIME_ARTIFACT;
                     }
                     if (rc.findResolvedDependency(groupId, artifactId) == null) {
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(groupId, artifactId, version, null, "runtimeOnly", null, null, null, null)
+                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(groupId, artifactId, version, null, "runtimeOnly", null, null, null, null, null)
                                 .visitNonNull(g, ctx);
                     }
                     return g;
@@ -168,8 +168,8 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
             });
 
             final TreeVisitor<?, ExecutionContext> mavenVisitor = new MavenIsoVisitor<ExecutionContext>() {
-                @SuppressWarnings("ConstantConditions")
                 @Override
+                @SuppressWarnings("ConstantConditions")
                 public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
                     Xml.Document d = super.visitDocument(document, ctx);
 

@@ -32,6 +32,34 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().classpath("guava"));
     }
 
+    @DocumentExample
+    @Test
+    void replaceArguments() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.Set;
+                import com.google.common.collect.ImmutableSet;
+
+                class Test {
+                    Set<String> m = ImmutableSet.of("A", "B", "C", "D");
+                }
+                """,
+              """
+                import java.util.Set;
+
+                class Test {
+                    Set<String> m = Set.of("A", "B", "C", "D");
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
     @Test
     void doNotChangeReturnsImmutableSet() {
         //language=java
@@ -153,34 +181,6 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
                   }
               }
               """
-          )
-        );
-    }
-
-    @Test
-    @DocumentExample
-    void replaceArguments() {
-        //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.Set;
-                import com.google.common.collect.ImmutableSet;
-
-                class Test {
-                    Set<String> m = ImmutableSet.of("A", "B", "C", "D");
-                }
-                """,
-              """
-                import java.util.Set;
-
-                class Test {
-                    Set<String> m = Set.of("A", "B", "C", "D");
-                }
-                """
-            ),
-            9
           )
         );
     }

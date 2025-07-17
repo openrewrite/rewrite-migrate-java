@@ -26,14 +26,15 @@ import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import static org.openrewrite.xml.AddOrUpdateChild.addOrUpdateChild;
 import static org.openrewrite.xml.FilterTagChildrenVisitor.filterTagChildren;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class JpaCacheProperties extends Recipe {
     @Override
     public String getDisplayName() {
@@ -124,7 +125,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
                 // There is no shared-cache-mode, so process javax if present.
                 // javax property is deleted below if shared-cache-mode is set.
                 if (sdh.sharedCacheModeProperty != null &&
-                    sdh.sharedCacheModePropertyUnspecified) {
+                        sdh.sharedCacheModePropertyUnspecified) {
 
                     String scmValue = "NONE";
                     if (sdh.openJPACacheProperty != null) {
@@ -154,10 +155,11 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
             // if we could determine an appropriate value, create the element.
             if (scmValue != null) {
                 if (!v1) {
-                    Xml.Tag newNode = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
                     // Ideally we would insert <shared-cache-mode> before the <validation-mode> and <properties> nodes
-                    Cursor parent = getCursor().getParentOrThrow();
-                    t = autoFormat(addOrUpdateChild(t, newNode, parent), ctx, parent);
+                    Content sharedCacheTag = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
+                    t = t.withContent(ListUtils.insertInOrder((List<Content>) t.getContent(), sharedCacheTag, Comparator.comparing(c1 ->
+                            c1 instanceof Xml.Tag && ("validation-mode".equals(((Xml.Tag) c1).getName()) || "properties".equals(((Xml.Tag) c1).getName())) ? 1 : 0)));
+                    t = autoFormat(t, ctx, getCursor().getParentTreeCursor());
                 } else {
                     // version="1.0"
                     // add a property for eclipselink

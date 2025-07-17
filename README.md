@@ -196,3 +196,6 @@ There are currently no recipes that will automatically apply "<Add-Opens>" direc
 
 We appreciate all types of contributions. See the [contributing guide](https://github.com/openrewrite/.github/blob/main/CONTRIBUTING.md) for detailed instructions on how to get started.
 
+### Licensing
+
+For more information about licensing, please visit our [licensing page](https://docs.openrewrite.org/licensing/openrewrite-licensing).

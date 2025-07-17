@@ -33,8 +33,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class ReplaceStreamCollectWithToList extends Recipe {
 
     private static final MethodMatcher STREAM_COLLECT = new MethodMatcher("java.util.stream.Stream collect(java.util.stream.Collector)");
@@ -84,9 +84,6 @@ public class ReplaceStreamCollectWithToList extends Recipe {
 
     @RequiredArgsConstructor
     private static final class ReplaceCollectorToListVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private static final JavaTemplate template = JavaTemplate
-                .builder("#{any(java.util.stream.Stream)}.toList()")
-                .build();
         private final boolean convertToList;
 
         @Override
@@ -97,9 +94,10 @@ public class ReplaceStreamCollectWithToList extends Recipe {
             }
             Expression command = method.getArguments().get(0);
             if (COLLECT_TO_UNMODIFIABLE_LIST.matches(command) ||
-                convertToList && COLLECT_TO_LIST.matches(command)) {
+                    convertToList && COLLECT_TO_LIST.matches(command)) {
                 maybeRemoveImport("java.util.stream.Collectors");
-                J.MethodInvocation toList = template.apply(updateCursor(result), result.getCoordinates().replace(), result.getSelect());
+                J.MethodInvocation toList = JavaTemplate.apply("#{any(java.util.stream.Stream)}.toList()",
+                        updateCursor(result), result.getCoordinates().replace(), result.getSelect());
                 return toList.getPadding().withSelect(result.getPadding().getSelect());
             }
             return result;

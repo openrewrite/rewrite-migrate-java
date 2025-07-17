@@ -82,9 +82,9 @@ public class UseJavaUtilBase64 extends Recipe {
                 }
                 J.CompilationUnit c = (J.CompilationUnit) super.visitCompilationUnit(cu, ctx);
 
-                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Encoder", "java.util.Base64$Encoder", true, null)
+                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Encoder", "java.util.Base64$Encoder", true)
                         .getVisitor().visitNonNull(c, ctx);
-                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Decoder", "java.util.Base64$Decoder", true, null)
+                c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Decoder", "java.util.Base64$Decoder", true)
                         .getVisitor().visitNonNull(c, ctx);
                 return c;
             }

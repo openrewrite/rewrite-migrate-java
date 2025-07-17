@@ -22,6 +22,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.analysis.constantfold.ConstantFold;
 import org.openrewrite.analysis.util.CursorUtil;
+import org.openrewrite.internal.RecipeRunException;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
@@ -38,7 +39,7 @@ public class URLConstructorToURICreate extends Recipe {
 
     private static final String URI_FQN = "java.net.URI";
     private static final String URL_FQN = "java.net.URL";
-    private static final MethodMatcher methodMatcherSingleArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String)");
+    private static final MethodMatcher methodMatcherSingleArg = new MethodMatcher(URL_FQN + "#<init>(java.lang.String)");
 
     @Override
     public String getDisplayName() {
@@ -47,7 +48,7 @@ public class URLConstructorToURICreate extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Converts `new URL(String)` constructor to `URI.create(String).toURL()`.";
+        return "Converts `new URL(String)` constructor to `URI.create(String).toURL()`. The URL constructor has been deprecated due to security vulnerabilities when handling malformed URLs. Using `URI.create(String)` provides stronger validation and safer URL handling in modern Java applications.";
     }
 
     @Override
@@ -62,16 +63,13 @@ public class URLConstructorToURICreate extends Recipe {
                                 return nc;
                             }
 
-                            JavaTemplate template = JavaTemplate.builder("URI.create(#{any(String)}).toURL()")
-                                    .imports(URI_FQN)
-                                    .contextSensitive()
-                                    .javaParser(JavaParser.fromJavaVersion())
-                                    .build();
+                            maybeRemoveImport(URL_FQN);
                             maybeAddImport(URI_FQN);
-
-                            return template.apply(getCursor(),
-                                    nc.getCoordinates().replace(),
-                                    nc.getArguments().get(0));
+                            return JavaTemplate.builder("URI.create(#{any(String)}).toURL()")
+                                    .imports(URI_FQN)
+                                    .javaParser(JavaParser.fromJavaVersion())
+                                    .build()
+                                    .apply(getCursor(), nc.getCoordinates().replace(), nc.getArguments().get(0));
                         }
                         return super.visitNewClass(nc, ctx);
                     }
@@ -86,9 +84,14 @@ public class URLConstructorToURICreate extends Recipe {
                         } else if (arg instanceof J.Identifier &&
                                 TypeUtils.isOfType(arg.getType(), JavaType.Primitive.String)) {
                             // find constant value of the identifier
-                            return CursorUtil.findCursorForTree(getCursor(), arg)
-                                    .bind(c -> ConstantFold.findConstantLiteralValue(c, String.class))
-                                    .toNull();
+                            try {
+                                return CursorUtil.findCursorForTree(getCursor(), arg)
+                                        .bind(c -> ConstantFold.findConstantLiteralValue(c, String.class))
+                                        .toNull();
+                            } catch (RecipeRunException e) {
+                                // `ConstantFold` does not support lambdas
+                                return null;
+                            }
                         } else {
                             // null indicates no path extractable
                             return null;

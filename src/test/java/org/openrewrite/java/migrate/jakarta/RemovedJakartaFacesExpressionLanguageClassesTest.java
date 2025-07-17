@@ -42,36 +42,32 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
           //language=java
           java(
             """
-              package com.test;
-
               import jakarta.faces.el.MethodBinding;
               import jakarta.faces.el.PropertyResolver;
               import jakarta.faces.el.ValueBinding;
 
-              public class Test {
-
-                   public void testJakarta() {
+              class Test {
+                   void testJakarta() {
                         MethodBinding methodBinding = null;
                         PropertyResolver propertyResolver = null;
                         ValueBinding valueBinding = null;
                    }
               }
-              """, """
-              package com.test;
-
+              """,
+                """
               import jakarta.el.ELResolver;
               import jakarta.el.MethodExpression;
               import jakarta.el.ValueExpression;
 
-              public class Test {
-
-                   public void testJakarta() {
+              class Test {
+                   void testJakarta() {
                         MethodExpression methodBinding = null;
                         ELResolver propertyResolver = null;
                         ValueExpression valueBinding = null;
                    }
               }
-              """));
+              """
+          ));
     }
 
     @Test
@@ -80,17 +76,14 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
           //language=java
           java(
                 """
-            package com.test;
-
             import jakarta.faces.el.VariableResolver;
             import jakarta.faces.el.EvaluationException;
             import jakarta.faces.el.MethodNotFoundException;
             import jakarta.faces.el.PropertyNotFoundException;
             import jakarta.faces.el.ReferenceSyntaxException;
 
-            public class Test {
-
-                public void testJakarta_1() {
+            class Test {
+                void testJakarta_1() {
                     VariableResolver variableResolver = null;
                     EvaluationException evaluationException = null;
                     MethodNotFoundException methodNotFoundException = null;
@@ -98,17 +91,15 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
                     ReferenceSyntaxException referenceSyntaxException = null;
                 }
             }
-            """, """
-            package com.test;
-
+            """,
+                """
             import jakarta.el.ELException;
             import jakarta.el.ELResolver;
             import jakarta.el.MethodNotFoundException;
             import jakarta.el.PropertyNotFoundException;
 
-            public class Test {
-
-                public void testJakarta_1() {
+            class Test {
+                void testJakarta_1() {
                     ELResolver variableResolver = null;
                     ELException evaluationException = null;
                     MethodNotFoundException methodNotFoundException = null;
@@ -116,7 +107,8 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
                     ELException referenceSyntaxException = null;
                 }
             }
-            """));
+            """
+          ));
     }
 
     @Test
@@ -125,36 +117,32 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
           //language=java
           java(
             """
-              package com.test;
-
               import javax.faces.el.MethodBinding;
               import javax.faces.el.PropertyResolver;
               import javax.faces.el.ValueBinding;
 
-              public class Test {
-
-                   public void testJavax() {
+              class Test {
+                   void testJavax() {
                         MethodBinding methodBinding = null;
                         PropertyResolver propertyResolver = null;
                         ValueBinding valueBinding = null;
                    }
               }
-              """, """
-              package com.test;
-
+              """,
+                """
               import jakarta.el.ELResolver;
               import jakarta.el.MethodExpression;
               import jakarta.el.ValueExpression;
 
-              public class Test {
-
-                   public void testJavax() {
+              class Test {
+                   void testJavax() {
                         MethodExpression methodBinding = null;
                         ELResolver propertyResolver = null;
                         ValueExpression valueBinding = null;
                    }
               }
-              """));
+              """
+          ));
     }
 
     @Test
@@ -163,17 +151,14 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
           //language=java
           java(
                 """
-            package com.test;
-
             import javax.faces.el.VariableResolver;
             import javax.faces.el.EvaluationException;
             import javax.faces.el.MethodNotFoundException;
             import javax.faces.el.PropertyNotFoundException;
             import javax.faces.el.ReferenceSyntaxException;
 
-            public class Test {
-
-                public void testJavax_1() {
+            class Test {
+                void testJavax_1() {
                     VariableResolver variableResolver = null;
                     EvaluationException evaluationException = null;
                     MethodNotFoundException methodNotFoundException = null;
@@ -181,17 +166,15 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
                     ReferenceSyntaxException referenceSyntaxException = null;
                 }
             }
-            """, """
-            package com.test;
-
+            """,
+                """
             import jakarta.el.ELException;
             import jakarta.el.ELResolver;
             import jakarta.el.MethodNotFoundException;
             import jakarta.el.PropertyNotFoundException;
 
-            public class Test {
-
-                public void testJavax_1() {
+            class Test {
+                void testJavax_1() {
                     ELResolver variableResolver = null;
                     ELException evaluationException = null;
                     MethodNotFoundException methodNotFoundException = null;
@@ -199,7 +182,8 @@ class RemovedJakartaFacesExpressionLanguageClassesTest implements RewriteTest {
                     ELException referenceSyntaxException = null;
                 }
             }
-            """));
+            """
+          ));
     }
 
 }

@@ -80,42 +80,8 @@ class ReplaceComSunAWTUtilitiesMethodsTest implements RewriteTest {
           );
     }
 
-    @Test
-    void replaceComSunAWTUtilitiesClassesIsTranslucencySupported() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import com.test.AWTUtilitiesTest;
-              
-              class Test {
-                  void foo() {
-                      boolean f = AWTUtilitiesTest.isTranslucencySupported1(AWTUtilitiesTest.Translucency.TRANSLUCENT);
-                      boolean j = AWTUtilitiesTest.isTranslucencySupported1(AWTUtilitiesTest.Translucency.PERPIXEL_TRANSPARENT);
-                      boolean k = AWTUtilitiesTest.isTranslucencySupported1(AWTUtilitiesTest.Translucency.PERPIXEL_TRANSLUCENT);
-                  }
-              }
-              """,
-            """
-              import java.awt.GraphicsDevice;
-              import java.awt.GraphicsDevice.WindowTranslucency;
-              import java.awt.GraphicsEnvironment;
-              import java.awt.Window;
-              
-              class Test {
-                  void foo() {
-                      boolean f = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency.TRANSLUCENT);
-                      boolean j = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency.PERPIXEL_TRANSPARENT);
-                      boolean k = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency.PERPIXEL_TRANSLUCENT);
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
     @DocumentExample
+    @Test
     void replaceComSunAWTUtilitiesClassesRemaining() {
         rewriteRun(
           //language=java
@@ -162,6 +128,40 @@ class ReplaceComSunAWTUtilitiesMethodsTest implements RewriteTest {
                       Component c = null;
                       Shape sh = new Ellipse2D.Double(0, 0, c.getWidth(), c.getHeight());
                       c.setMixingCutoutShape(sh);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceComSunAWTUtilitiesClassesIsTranslucencySupported() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.test.AWTUtilitiesTest;
+              
+              class Test {
+                  void foo() {
+                      boolean f = AWTUtilitiesTest.isTranslucencySupported1(AWTUtilitiesTest.Translucency.TRANSLUCENT);
+                      boolean j = AWTUtilitiesTest.isTranslucencySupported1(AWTUtilitiesTest.Translucency.PERPIXEL_TRANSPARENT);
+                      boolean k = AWTUtilitiesTest.isTranslucencySupported1(AWTUtilitiesTest.Translucency.PERPIXEL_TRANSLUCENT);
+                  }
+              }
+              """,
+            """
+              import java.awt.GraphicsDevice;
+              import java.awt.GraphicsDevice.WindowTranslucency;
+              import java.awt.GraphicsEnvironment;
+              import java.awt.Window;
+              
+              class Test {
+                  void foo() {
+                      boolean f = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency.TRANSLUCENT);
+                      boolean j = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency.PERPIXEL_TRANSPARENT);
+                      boolean k = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency.PERPIXEL_TRANSLUCENT);
                   }
               }
               """

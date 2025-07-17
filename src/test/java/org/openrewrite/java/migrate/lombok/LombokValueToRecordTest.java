@@ -42,42 +42,9 @@ class LombokValueToRecordTest implements RewriteTest {
           );
     }
 
-    @Test
-    void valueAnnotatedClassWithUseExactOptionKeepsLombokToString() {
-        //language=java
-        rewriteRun(
-          s -> s.recipe(new LombokValueToRecord(true)),
-          java(
-            """
-              import lombok.Value;
-
-              @Value
-              public class Test {
-                  String field1;
-
-                  String field2;
-              }
-              """,
-            """
-              public record Test(
-                  String field1,
-
-                  String field2) {
-                  @Override
-                  public String toString() {
-                      return "Test(" +
-                              "field1=" + field1 + ", " +
-                              "field2=" + field2 +
-                              ")";
-                  }
-              }
-              """)
-        );
-    }
-
-    @Test
     @DocumentExample
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/141")
+    @Test
     void convertOnlyValueAnnotatedClassWithoutDefaultValuesToRecord() {
         //language=java
         rewriteRun(
@@ -132,6 +99,40 @@ class LombokValueToRecordTest implements RewriteTest {
 
                   public String getRecordValue() {
                       return record.test();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void valueAnnotatedClassWithUseExactOptionKeepsLombokToString() {
+        //language=java
+        rewriteRun(
+          s -> s.recipe(new LombokValueToRecord(true)),
+          java(
+            """
+              import lombok.Value;
+
+              @Value
+              public class Test {
+                  String field1;
+
+                  String field2;
+              }
+              """,
+            """
+              public record Test(
+                  String field1,
+
+                  String field2) {
+                  @Override
+                  public String toString() {
+                      return "Test(" +
+                              "field1=" + field1 + ", " +
+                              "field2=" + field2 +
+                              ")";
                   }
               }
               """

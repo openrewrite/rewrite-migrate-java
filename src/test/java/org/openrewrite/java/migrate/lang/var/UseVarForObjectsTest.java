@@ -48,7 +48,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         Object o = new Object();
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -56,7 +57,31 @@ class UseVarForObjectsTest extends VarBaseTest {
                         var o = new Object();
                     }
                   }
-                  """)
+                  """
+              )
+            );
+        }
+
+        @Test
+        void withModifier() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  class A {
+                    void m() {
+                        final Object o = new Object();
+                    }
+                  }
+                  """,
+                    """
+                  class A {
+                    void m() {
+                        final var o = new Object();
+                    }
+                  }
+                  """
+              )
             );
         }
 
@@ -75,7 +100,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         Object innerO = o;
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -89,31 +115,8 @@ class UseVarForObjectsTest extends VarBaseTest {
             );
         }
 
-        @Test
-        @DocumentExample
-        void withModifier() {
-            //language=java
-            rewriteRun(
-              java(
-                """
-                  class A {
-                    void m() {
-                        final Object o = new Object();
-                    }
-                  }
-                  """, """
-                  class A {
-                    void m() {
-                        final var o = new Object();
-                    }
-                  }
-                  """
-              )
-            );
-        }
-
-        @Test
         @Disabled("this should be possible, but it needs very hard type inference")
+        @Test
         void withTernary() {
             //language=java
             rewriteRun(
@@ -126,7 +129,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         String o = true ? "isTrue" : "Test";
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -152,7 +156,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         Object o = new Object();
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -178,7 +183,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         Object o = new Object();
                     }
                   }
-                  """, """
+                  """,
+                    """
                   package com.example.app;
 
                   class A {
@@ -269,8 +275,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                 );
             }
 
-            @Test
             @Disabled("in favor to https://github.com/openrewrite/rewrite-migrate-java/issues/608 we skip all static methods ATM")
+            @Test
             void staticMethods() {
                 //language=java
                 rewriteRun(
@@ -309,8 +315,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                 );
             }
 
-            @Test
             @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/550")
+            @Test
             void genericType() {
                 rewriteRun(
                   //language=java
@@ -344,8 +350,8 @@ class UseVarForObjectsTest extends VarBaseTest {
     @Nested
     class NotApplicable {
 
-        @Test
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/608")
+        @Test
         void genericTypeInStaticMethod() {
             // ATM the recipe skips all static method initialized variables
             rewriteRun(
@@ -387,8 +393,8 @@ class UseVarForObjectsTest extends VarBaseTest {
             );
         }
 
-        @Test
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/551")
+        @Test
         void arrayInitializer() {
             //language=java
             rewriteRun(
@@ -401,7 +407,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                         String[] dictionary = {"aa", "b", "aba", "ba"};
                     }
                   }
-                  """)
+                  """
+              )
             );
         }
 

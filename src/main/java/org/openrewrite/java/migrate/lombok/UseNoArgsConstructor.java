@@ -30,8 +30,8 @@ import org.openrewrite.java.tree.TypeUtils;
 
 import static java.util.Comparator.comparing;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UseNoArgsConstructor extends Recipe {
 
     @Override

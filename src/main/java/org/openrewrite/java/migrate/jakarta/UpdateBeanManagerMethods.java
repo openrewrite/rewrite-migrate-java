@@ -36,7 +36,7 @@ public class UpdateBeanManagerMethods extends Recipe {
 
     @Override
     public String getDescription() {
-        return " Updates `BeanManager.fireEvent()` or `BeanManager.createInjectionTarget()`.";
+        return "Updates `BeanManager.fireEvent()` or `BeanManager.createInjectionTarget()`.";
     }
 
     @Override

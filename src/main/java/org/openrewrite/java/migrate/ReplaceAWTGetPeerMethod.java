@@ -29,9 +29,9 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.java.tree.TypedTree;
 
-@Value
-@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+@Value
 public class ReplaceAWTGetPeerMethod extends Recipe {
 
     @Option(displayName = "Method pattern to replace",

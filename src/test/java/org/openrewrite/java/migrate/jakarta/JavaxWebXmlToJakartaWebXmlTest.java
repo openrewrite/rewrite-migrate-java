@@ -53,12 +53,56 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
               <?xml version="1.0" encoding="UTF-8"?>
               <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                       xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-                       version="6.0">
+                       xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+                       version="5.0">
                   <context-param>
                       <param-name>jakarta.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
+              </web-fragment>
+              """,
+            sourceSpecs -> sourceSpecs.path("web.xml")
+          )
+        );
+    }
+
+    @Test
+    void migrateWithSQLDataSource() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-app xmlns="http://java.sun.com/xml/ns/javaee"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_0.xsd"
+                       version="2.0">
+                  <context-param>
+                      <param-name>javax.faces.PROJECT_STAGE</param-name>
+                      <param-value>Production</param-value>
+                  </context-param>
+                  <resource-ref>
+                     <res-ref-name>myDataSource</res-ref-name>
+                     <res-type>javax.sql.DataSource</res-type>
+                     <res-auth>CONTAINER</res-auth>
+                  </resource-ref>
+              </web-fragment>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+                       version="5.0">
+                  <context-param>
+                      <param-name>jakarta.faces.PROJECT_STAGE</param-name>
+                      <param-value>Production</param-value>
+                  </context-param>
+                  <resource-ref>
+                     <res-ref-name>myDataSource</res-ref-name>
+                     <res-type>javax.sql.DataSource</res-type>
+                     <res-auth>CONTAINER</res-auth>
+                  </resource-ref>
               </web-fragment>
               """,
             sourceSpecs -> sourceSpecs.path("web.xml")
@@ -87,57 +131,12 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
               <?xml version="1.0" encoding="UTF-8"?>
               <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                       xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-                       version="6.0">
+                       xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+                       version="5.0">
                   <context-param>
                       <param-name>jakarta.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment>
-              """,
-            sourceSpecs -> sourceSpecs.path("web.xml")
-          )
-        );
-    }
-
-    @DocumentExample
-    @Test
-    void migrateWithSQLDataSource() {
-        rewriteRun(
-          //language=xml
-          xml(
-            """
-              <?xml version="1.0" encoding="UTF-8"?>
-              <web-app xmlns="http://java.sun.com/xml/ns/javaee"
-                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_0.xsd"
-                       version="2.0">
-                  <context-param>
-                      <param-name>javax.faces.PROJECT_STAGE</param-name>
-                      <param-value>Production</param-value>
-                  </context-param>
-                  <resource-ref>
-                     <res-ref-name>myDataSource</res-ref-name>
-                     <res-type>javax.sql.DataSource</res-type>
-                     <res-auth>CONTAINER</res-auth>
-                  </resource-ref>
-              </web-fragment>
-              """,
-            """
-              <?xml version="1.0" encoding="UTF-8"?>
-              <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
-                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                       xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-                       version="6.0">
-                  <context-param>
-                      <param-name>jakarta.faces.PROJECT_STAGE</param-name>
-                      <param-value>Production</param-value>
-                  </context-param>
-                  <resource-ref>
-                     <res-ref-name>myDataSource</res-ref-name>
-                     <res-type>javax.sql.DataSource</res-type>
-                     <res-auth>CONTAINER</res-auth>
-                  </resource-ref>
               </web-fragment>
               """,
             sourceSpecs -> sourceSpecs.path("web.xml")

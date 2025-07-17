@@ -109,7 +109,8 @@ class ChangeDefaultKeyStoreTest implements RewriteTest {
                		}
                	}
               }
-              """)
+              """
+          )
         );
     }
 
