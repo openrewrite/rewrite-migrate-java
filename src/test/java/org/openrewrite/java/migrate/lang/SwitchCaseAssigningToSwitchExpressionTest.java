@@ -309,7 +309,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                           case RED:
                           case GREEN:
                           case YELLOW: yield "unsure";
-                          default: yield"initialValue";
+                          default: yield "initialValue";
                       };
                   }
               }
@@ -345,7 +345,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                       String status = switch (light) {
                           case RED: yield "stop";
                           case GREEN: yield "go";
-                          default: yield"initialValue";
+                          default: yield "initialValue";
                       };
                   }
               }

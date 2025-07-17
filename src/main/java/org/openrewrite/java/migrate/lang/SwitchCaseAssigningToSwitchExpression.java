@@ -176,7 +176,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
 
                         StringBuilder template = new StringBuilder(
                                 "Object o = switch (#{any()}) {\n" +
-                                (isUsingArrows.get() ? "default ->" : "  default: yield") + " #{any()};\n" +
+                                    "default" + (isUsingArrows.get() ? " ->" : ": yield") + " #{any()};\n" +
                                 "}");
                         J.VariableDeclarations vd = JavaTemplate.apply(
                                 template.toString(),
