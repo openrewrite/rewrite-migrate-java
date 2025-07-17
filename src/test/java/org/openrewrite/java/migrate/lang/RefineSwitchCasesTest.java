@@ -22,11 +22,14 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
 
 class RefineSwitchCasesTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new RefineSwitchCases());
+        spec
+          .recipe(new RefineSwitchCases())
+          .allSources(source -> version(source, 21));
     }
 
     @DocumentExample
