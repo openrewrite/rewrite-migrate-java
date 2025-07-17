@@ -17,16 +17,14 @@ package org.openrewrite.java.migrate.lang;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Space;
-import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
@@ -39,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 import static org.openrewrite.Tree.randomId;
 
 
@@ -78,6 +77,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             if (index < block.getStatements().size() - 1 &&
                                     statement instanceof J.VariableDeclarations &&
                                     ((J.VariableDeclarations) statement).getVariables().size() == 1 &&
+                                    !canHaveSideEffects(((J.VariableDeclarations) statement).getVariables().get(0).getInitializer()) &&
                                     block.getStatements().get(index + 1) instanceof J.Switch
                             ) {
                                 J.VariableDeclarations vd = (J.VariableDeclarations) statement;
@@ -188,7 +188,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                 statements.toArray()
                         );
 
-                        J.SwitchExpression initializer = (J.SwitchExpression) Objects.requireNonNull(vd.getVariables().get(0).getInitializer());
+                        J.SwitchExpression initializer = (J.SwitchExpression) requireNonNull(vd.getVariables().get(0).getInitializer());
                         if (isDefaultCaseAbsent.get() && !SwitchUtils.coversAllPossibleValues(originalSwitch)) {
                             updatedCases.add(initializer.getCases().getStatements().get(0));
                         }
@@ -199,8 +199,31 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                         return new JavaIsoVisitor<AtomicBoolean>() {
                             @Override
                             public J.Identifier visitIdentifier(J.Identifier id, AtomicBoolean found) {
-                                found.set(found.get() || id.getSimpleName().equals(identifierName));
+                                if (id.getSimpleName().equals(identifierName)) {
+                                    found.set(true);
+                                    return id;
+                                }
                                 return super.visitIdentifier(id, found);
+                            }
+                        }.reduce(expression, new AtomicBoolean()).get();
+                    }
+
+                    private boolean canHaveSideEffects(@Nullable Expression expression) {
+                        if (expression == null) {
+                            return false;
+                        }
+
+                        return new JavaIsoVisitor<AtomicBoolean>() {
+                            @Override
+                            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, AtomicBoolean found) {
+                                found.set(true);
+                                return method;
+                            }
+
+                            @Override
+                            public J.NewClass visitNewClass(J.NewClass newClass, AtomicBoolean found) {
+                                found.set(true);
+                                return newClass;
                             }
                         }.reduce(expression, new AtomicBoolean()).get();
                     }

@@ -387,22 +387,87 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   void doFormat(int i) {
                       String orig = "initialValue";
                       switch (i) {
-                          case 1: orig = orig.toLowerCase(); break;
+                          default: orig = orig.toLowerCase(); break;
                       }
                   }
 
                   void doFormat2(int i) {
                       String orig = "initialValue";
                       switch (i) {
-                          case 1: orig = String.format("%s %s", orig, "foo"); break;
+                          default: orig = String.format("%s %s", orig, "foo"); break;
                       }
                   }
 
                   void doFormat3(int i) {
                       String orig = "initialValue";
                       switch (i) {
-                          case 1: orig = "foo" + orig; break;
+                          default: orig = "foo" + orig; break;
                       }
+                  }
+              }
+              """
+          ));
+    }
+
+    @Test
+    void notConvertWhenOriginalVariableAssignationHasSideEffects() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+                    class Test {
+                        void methodInvocation(int i) {
+                            String orig = "initialValue".toLowerCase();
+                            switch (i) {
+                                default: orig = "hello"; break;
+                            }
+                        }
+
+                        void newClass(int i) {
+                            String orig = new String("initialValue");
+                            switch (i) {
+                                default: orig = "hello"; break;
+                            }
+                        }
+
+                        void newClassInBinaryExpression(int i) {
+                            String orig = "initialValue" + new String("more");
+                            switch (i) {
+                                default: orig = "hello"; break;
+                            }
+                        }
+                    }
+                    """
+          ));
+    }
+
+    @Test
+    void convertWhenOriginalVariableAssignationIsComplexExpressionButNoSideEffects() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  String field = "strawberry";
+
+                  void doFormat(int i) {
+                      String variable = "var";
+                      String orig = "initialValue" + "test" + 45 + true + field + this.field;
+                      switch (i) {
+                          default: orig = "hello"; break;
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  String field = "strawberry";
+
+                  void doFormat(int i) {
+                      String variable = "var";
+                      String orig = switch (i) {
+                          default: yield "hello";
+                      };
                   }
               }
               """
