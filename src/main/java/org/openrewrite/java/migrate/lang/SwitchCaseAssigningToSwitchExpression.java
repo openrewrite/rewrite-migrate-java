@@ -24,14 +24,16 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Space;
+import org.openrewrite.java.tree.Statement;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -179,8 +181,8 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
 
                         StringBuilder template = new StringBuilder(
                                 "Object o = switch (#{any()}) {\n" +
-                                    "default" + (isUsingArrows.get() ? " ->" : ": yield") + " #{any()};\n" +
-                                "}");
+                                        "default" + (isUsingArrows.get() ? " ->" : ": yield") + " #{any()};\n" +
+                                        "}");
                         J.VariableDeclarations vd = JavaTemplate.apply(
                                 template.toString(),
                                 new Cursor(getCursor(), originalSwitch),
