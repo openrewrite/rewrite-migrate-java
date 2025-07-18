@@ -258,32 +258,25 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         public J.MemberReference visitMemberReference(J.MemberReference memberRef, ExecutionContext ctx) {
             J.MemberReference memberReference = super.visitMemberReference(memberRef, ctx);
 
-            // Handle method references like a::getTest
             Expression containing = memberReference.getContaining();
-            if (containing != null && containing.getType() instanceof JavaType.Class) {
-                JavaType.Class classType = (JavaType.Class) containing.getType();
-                String classFqn = classType.getFullyQualifiedName();
-
+            if (containing.getType() instanceof JavaType.Class) {
+                String classFqn = ((JavaType.Class) containing.getType()).getFullyQualifiedName();
                 J.Identifier reference = memberReference.getReference();
                 String methodName = reference.getSimpleName();
-
                 String newSimpleName = getterMethodNameToFluentMethodName(methodName);
                 if (recordTypeToMembers.containsKey(classFqn) &&
                     methodName.startsWith(STANDARD_GETTER_PREFIX) &&
                     recordTypeToMembers.get(classFqn).contains(newSimpleName)) {
 
-                    // Update the method type if present
                     JavaType.Method methodType = memberReference.getMethodType();
                     if (methodType != null) {
                         methodType = methodType.withName(newSimpleName);
                     }
-
                     return memberReference
                         .withReference(reference.withSimpleName(newSimpleName))
                         .withMethodType(methodType);
                 }
             }
-
             return memberReference;
         }
 
