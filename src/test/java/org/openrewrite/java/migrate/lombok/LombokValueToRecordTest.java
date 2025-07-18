@@ -26,7 +26,7 @@ import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.*;
 
-@SuppressWarnings("NullableProblems")
+@SuppressWarnings({"ClassCanBeRecord", "LombokGetterMayBeUsed", "NullableProblems", "TypeParameterExplicitlyExtendsObject"})
 class LombokValueToRecordTest implements RewriteTest {
 
     @Override
@@ -313,7 +313,6 @@ class LombokValueToRecordTest implements RewriteTest {
         );
     }
 
-    @SuppressWarnings({"TypeParameterExplicitlyExtendsObject", "ClassCanBeRecord", "LombokGetterMayBeUsed"})
     @Nested
     class Unchanged {
         @Test
