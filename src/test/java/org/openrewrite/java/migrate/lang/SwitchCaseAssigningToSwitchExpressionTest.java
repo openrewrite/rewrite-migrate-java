@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -531,6 +532,123 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                           case YELLOW:
                           default: System.out.println("foo");
                       }
+                  }
+              }
+              """
+          ));
+    }
+
+    @Test
+    void inlineWhenVariableOnlyToBeReturned() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  String doFormat() {
+                      String formatted;
+                      switch (1) {
+                          default: formatted = "foo"; break;
+                      }
+                      return formatted;
+                  }
+              }
+              """,
+            """
+              class Test {
+                  String doFormat() {
+                      return switch (1) {
+                          default: yield "foo";
+                      };
+                  }
+              }
+              """
+          ));
+    }
+
+    @Test
+    void doNotinlineWhenInappropriate() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  String originalVariableNotReturned() {
+                      String formatted;
+                      switch (1) {
+                          default: formatted = "foo"; break;
+                      }
+                      return "string";
+                  }
+
+                  String codeBetweenSwitchAndReturn() {
+                      String formatted;
+                      switch (1) {
+                          default: formatted = "foo"; break;
+                      }
+                      System.out.println("Hey");
+                      return formatted;
+                  }
+
+                  void noReturnedExpression() {
+                      String formatted;
+                      switch (1) {
+                          default: formatted = "foo"; break;
+                      }
+                      return;
+                  }
+              }
+              """,
+            """
+              class Test {
+                  String originalVariableNotReturned() {
+                      String formatted= switch (1) {
+                          default: yield "foo";
+                      };
+                      return "string";
+                  }
+
+                  String codeBetweenSwitchAndReturn() {
+                      String formatted= switch (1) {
+                          default: yield "foo";
+                      };
+                      System.out.println("Hey");
+                      return formatted;
+                  }
+
+                  void noReturnedExpression() {
+                      String formatted= switch (1) {
+                          default: yield "foo";
+                      };
+                      return;
+                  }
+              }
+              """
+          ));
+    }
+
+    @Test
+    @ExpectedToFail
+    void failsToFormatWithASpaceWhenOriginalVariableHasNoInitializer() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat() {
+                      String formatted;
+                      switch (1) {
+                          default: formatted = "foo"; break;
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void doFormat() {
+                      String formatted = switch (1) {
+                          default: yield "foo";
+                      };
                   }
               }
               """

@@ -30,7 +30,6 @@ import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -64,15 +63,21 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
         return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitBlock(J.Block block, ExecutionContext ctx) {
-                        AtomicReference<J.Switch> originalSwitch = new AtomicReference<>();
+                        AtomicReference<J.@Nullable Switch> originalSwitch = new AtomicReference<>();
+                        AtomicReference<J.@Nullable Return> inlinedReturn = new AtomicReference<>();
 
+                        int lastIndex = block.getStatements().size() - 1;
                         J.Block b = block.withStatements(ListUtils.map(block.getStatements(), (index, statement) -> {
                             if (statement == originalSwitch.getAndSet(null)) {
                                 // We've already converted the switch/assignments to an assignment with a switch expression.
                                 return null;
                             }
 
-                            if (index < block.getStatements().size() - 1 &&
+                            if (index == lastIndex && inlinedReturn.get() != null) {
+                                return inlinedReturn.get();
+                            }
+
+                            if (index < lastIndex &&
                                     statement instanceof J.VariableDeclarations &&
                                     ((J.VariableDeclarations) statement).getVariables().size() == 1 &&
                                     !canHaveSideEffects(((J.VariableDeclarations) statement).getVariables().get(0).getInitializer()) &&
@@ -80,10 +85,19 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             ) {
                                 J.VariableDeclarations vd = (J.VariableDeclarations) statement;
                                 J.Switch nextStatementSwitch = (J.Switch) block.getStatements().get(index + 1);
-                                Optional<J.SwitchExpression> newSwitchExpression = buildNewSwitchExpression(nextStatementSwitch, vd.getVariables().get(0));
-                                if (newSwitchExpression.isPresent()) {
+
+                                J.VariableDeclarations.NamedVariable originalVariable = vd.getVariables().get(0);
+                                J.SwitchExpression newSwitchExpression = buildNewSwitchExpression(nextStatementSwitch, originalVariable);
+
+                                if (newSwitchExpression != null) {
                                     originalSwitch.set(nextStatementSwitch);
-                                    return vd.withVariables(singletonList(vd.getVariables().get(0).withInitializer(newSwitchExpression.get())));
+                                    J.Return lastReturn = canSwitchBeReturnedInline(index, block.getStatements(), originalVariable.getSimpleName());
+                                    if (lastReturn != null) {
+                                        inlinedReturn.set(lastReturn.withExpression(newSwitchExpression));
+                                        return null; // We're inlining on return, remove the original variable declaration.
+                                    } else {
+                                        return vd.withVariables(singletonList(originalVariable.withInitializer(newSwitchExpression)));
+                                    }
                                 }
                             }
                             return statement;
@@ -91,7 +105,23 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                         return super.visitBlock(b, ctx);
                     }
 
-                    private Optional<J.SwitchExpression> buildNewSwitchExpression(J.Switch originalSwitch, J.VariableDeclarations.NamedVariable originalVariable) {
+                    private J.@Nullable Return canSwitchBeReturnedInline(int currentStatementIndex, List<Statement> blockStatements, String originalVariableName) {
+                        if (currentStatementIndex + 3 == blockStatements.size()) {
+                            Statement lastStatement = blockStatements.get(currentStatementIndex + 2);
+                            if (lastStatement instanceof J.Return) {
+                                J.Return lastReturn = (J.Return) lastStatement;
+                                if (lastReturn.getExpression() instanceof J.Identifier) {
+                                    J.Identifier identifier = (J.Identifier) lastReturn.getExpression();
+                                    if (identifier.getSimpleName().equals(originalVariableName)) {
+                                        return lastReturn;
+                                    }
+                                }
+                            }
+                        }
+                        return null;
+                    }
+
+                    private J.@Nullable SwitchExpression buildNewSwitchExpression(J.Switch originalSwitch, J.VariableDeclarations.NamedVariable originalVariable) {
                         final String variableName = originalVariable.getSimpleName();
                         AtomicBoolean isQualified = new AtomicBoolean(true);
                         AtomicBoolean isDefaultCaseAbsent = new AtomicBoolean(true);
@@ -175,9 +205,8 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
 
                         if (!isQualified.get() ||
                                 (originalInitializer == null && shouldAddDefaultCase) ||
-                                (isLastCaseEmpty.get() && !shouldAddDefaultCase)
-                        ) {
-                            return Optional.empty();
+                                (isLastCaseEmpty.get() && !shouldAddDefaultCase)) {
+                            return null;
                         }
 
                         if (shouldAddDefaultCase) {
@@ -186,7 +215,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             );
                         }
 
-                        return Optional.of(
+                        return
                                 new J.SwitchExpression(
                                         randomId(),
                                         Space.SINGLE_SPACE,
@@ -194,8 +223,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                         originalSwitch.getSelector(),
                                         originalSwitch.getCases().withStatements(updatedCases),
                                         originalVariable.getType()
-                                )
-                        );
+                                );
                     }
 
                     private J.Case createDefaultCase(boolean arrow, Expression returnedExpression, J.Switch originalSwitch) {
