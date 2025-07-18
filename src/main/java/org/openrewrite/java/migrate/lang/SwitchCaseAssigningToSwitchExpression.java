@@ -105,13 +105,12 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
 
                             J.Case caseItem = (J.Case) s;
 
-                            if (caseItem != null && caseItem.getCaseLabels().get(0) instanceof J.Identifier && ((J.Identifier) caseItem.getCaseLabels().get(0)).getSimpleName().equals("default")) {
+                            if (caseItem.getCaseLabels().get(0) instanceof J.Identifier &&
+                                    ((J.Identifier) caseItem.getCaseLabels().get(0)).getSimpleName().equals("default")) {
                                 isDefaultCaseAbsent.set(false);
                             }
 
-                            if (caseItem == null) {
-                                return null;
-                            } else if (caseItem.getBody() != null) { // arrow cases
+                            if (caseItem.getBody() != null) { // arrow cases
                                 if (caseItem.getBody() instanceof J.Block) {
                                     J.Block block = (J.Block) caseItem.getBody();
                                     if (block.getStatements().size() == 1 && block.getStatements().get(0) instanceof J.Assignment) {
@@ -156,7 +155,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                         if (variable.getSimpleName().equals(variableName) && !containsIdentifier(variableName, assignment.getAssignment())) {
                                             J.Yield yieldStatement = new J.Yield(
                                                     randomId(),
-                                                    assignment.getPrefix().withWhitespace(" "), // TODO: must be a better way to adjust the formatting when taken from a J.Block, see test convertColonCasesSimpleAssignationInBlockToSingleYield()
+                                                    assignment.getPrefix().withWhitespace(" "),
                                                     Markers.EMPTY,
                                                     false,
                                                     assignment.getAssignment()
