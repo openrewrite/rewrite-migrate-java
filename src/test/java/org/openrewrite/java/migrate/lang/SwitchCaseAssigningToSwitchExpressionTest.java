@@ -654,4 +654,82 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
               """
           ));
     }
+
+    @Test
+    void commentsArePreserved() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      // line before the original variable
+                      String formatted = "initialValue"; // original variable after code
+                      // line before the switch
+                      switch (obj) { // first line of the switch
+                          // before the cases
+                          case Integer i -> formatted = String.format("int %d", i); // first case
+                          // between the 1st and 2nd case
+                          /* before the 2nd case */ case Long l -> formatted = String.format("long %d", l);
+                          default -> formatted = "unknown";
+                          // after the last case
+                      } // last line of the switch
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      // line before the original variable
+                      // original variable after code
+                      // line before the switch
+                      String formatted = switch (obj) { // first line of the switch
+                          // before the cases
+                          case Integer i -> String.format("int %d", i); // first case
+                          // between the 1st and 2nd case
+                          /* before the 2nd case */ case Long l -> String.format("long %d", l);
+                          default -> "unknown";
+                          // after the last case
+                      }; // last line of the switch
+                  }
+              }
+              """
+          ));
+    }
+
+    @Test
+    void commentsArePreservedWhenInlining() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  String doFormat() {
+                      // line before original variable
+                      String formatted; // original variable after code
+                      // between the original variable and the switch
+                      switch (1) { // on the switch after code
+                          default: formatted = "foo"; break;
+                      } // last line of the switch
+                      // between switch and return
+                      return formatted; // after return on the same line
+                  }
+              }
+              """,
+            """
+              class Test {
+                  String doFormat() {
+                      // line before original variable
+                      // original variable after code
+                      // between the original variable and the switch
+                      // last line of the switch
+                      // between switch and return
+                      return switch (1) { // on the switch after code
+                          default: yield "foo";
+                      }; // after return on the same line
+                  }
+              }
+              """
+          ));
+    }
 }

@@ -93,10 +93,19 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                     originalSwitch.set(nextStatementSwitch);
                                     J.Return lastReturn = canSwitchBeReturnedInline(index, block.getStatements(), originalVariable.getSimpleName());
                                     if (lastReturn != null) {
-                                        inlinedReturn.set(lastReturn.withExpression(newSwitchExpression));
+                                        inlinedReturn.set(
+                                                lastReturn
+                                                        .withExpression(newSwitchExpression)
+                                                        .withPrefix(lastReturn.getPrefix()
+                                                                .withComments(ListUtils.concatAll(vd.getComments(), ListUtils.concatAll(nextStatementSwitch.getComments(), lastReturn.getComments())))
+                                                                .withWhitespace(vd.getPrefix().getWhitespace())
+                                                        )
+                                        );
                                         return null; // We're inlining on return, remove the original variable declaration.
                                     } else {
-                                        return vd.withVariables(singletonList(originalVariable.withInitializer(newSwitchExpression)));
+                                        return vd
+                                                .withVariables(singletonList(originalVariable.withInitializer(newSwitchExpression)))
+                                                .withComments(ListUtils.concatAll(vd.getComments(), nextStatementSwitch.getComments()));
                                     }
                                 }
                             }
