@@ -26,6 +26,7 @@ import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.*;
 
+@SuppressWarnings("NullableProblems")
 class LombokValueToRecordTest implements RewriteTest {
 
     @Override
@@ -279,13 +280,11 @@ class LombokValueToRecordTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              package example;
-
               import lombok.Value;
               import java.util.function.Supplier;
 
               @Value
-              public class A {
+              class A {
                 String test;
               }
 
@@ -297,11 +296,9 @@ class LombokValueToRecordTest implements RewriteTest {
               }
               """,
             """
-              package example;
-
               import java.util.function.Supplier;
 
-              public record A(
+              record A(
                 String test) {
               }
 
@@ -316,6 +313,7 @@ class LombokValueToRecordTest implements RewriteTest {
         );
     }
 
+    @SuppressWarnings({"TypeParameterExplicitlyExtendsObject", "ClassCanBeRecord", "LombokGetterMayBeUsed"})
     @Nested
     class Unchanged {
         @Test
