@@ -97,8 +97,9 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                         AtomicBoolean isQualified = new AtomicBoolean(true);
                         AtomicBoolean isDefaultCaseAbsent = new AtomicBoolean(true);
                         AtomicBoolean isUsingArrows = new AtomicBoolean(true);
+                        AtomicBoolean isLastCaseEmpty = new AtomicBoolean(false);
 
-                        List<Statement> updatedCases = ListUtils.map(originalSwitch.getCases().getStatements(), s -> {
+                        List<Statement> updatedCases = ListUtils.map(originalSwitch.getCases().getStatements(), (index, s) -> {
                             if (!isQualified.get()) {
                                 return null;
                             }
@@ -137,6 +138,9 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                 isUsingArrows.set(false);
                                 List<Statement> caseStatements = caseItem.getStatements();
                                 if (caseStatements.isEmpty()) {
+                                    if (index + 1 == originalSwitch.getCases().getStatements().size()) {
+                                        isLastCaseEmpty.set(true);
+                                    }
                                     return caseItem;
                                 }
 
@@ -189,7 +193,10 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
 
                         J.SwitchExpression initializer = (J.SwitchExpression) requireNonNull(vd.getVariables().get(0).getInitializer());
                         if (isDefaultCaseAbsent.get() && !SwitchUtils.coversAllPossibleValues(originalSwitch)) {
+                            // add a `default:` case yielding/returning the originalVariable initializer
                             updatedCases.add(initializer.getCases().getStatements().get(0));
+                        } else if (isLastCaseEmpty.get()) {
+                            return Optional.empty();
                         }
                         return Optional.of(initializer.withCases(initializer.getCases().withStatements(updatedCases)));
                     }

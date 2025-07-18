@@ -480,4 +480,27 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
               """
           ));
     }
+
+    @Test
+    void notConvertColonSwitchWithEmptyLastCase() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
+                  void doFormat(TrafficLight light) {
+                      String status = "initialValue";
+                      switch (light) {
+                          case RED: status = "stop"; break;
+                          case GREEN: status = "go"; break;
+                          case YELLOW:
+                      }
+                  }
+              }
+              """
+          ));
+    }
 }
