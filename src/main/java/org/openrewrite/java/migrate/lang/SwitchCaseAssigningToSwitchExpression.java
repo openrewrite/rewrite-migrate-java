@@ -29,7 +29,6 @@ import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -172,33 +171,43 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             return null;
                         });
 
-                        if (!isQualified.get()) {
+                        boolean shouldAddDefaultCase = isDefaultCaseAbsent.get() && !SwitchUtils.coversAllPossibleValues(originalSwitch);
+                        Expression originalInitializer = originalVariable.getInitializer();
+
+                        if (!isQualified.get() ||
+                                (originalInitializer == null && shouldAddDefaultCase) ||
+                                (isLastCaseEmpty.get() && !shouldAddDefaultCase)
+                        ) {
                             return Optional.empty();
                         }
 
-                        List<J> statements = new ArrayList<>();
-                        statements.add(originalSwitch.getSelector().getTree());
-                        statements.add(originalVariable.getInitializer().withPrefix(Space.SINGLE_SPACE));
+                        if (shouldAddDefaultCase) {
+                            updatedCases.add(
+                                    createDefaultCase(isUsingArrows.get(), originalInitializer.withPrefix(Space.SINGLE_SPACE), originalSwitch)
+                            );
+                        }
 
-                        StringBuilder template = new StringBuilder(
-                                "Object o = switch (#{any()}) {\n" +
-                                        "default" + (isUsingArrows.get() ? " ->" : ": yield") + " #{any()};\n" +
-                                        "}");
-                        J.VariableDeclarations vd = JavaTemplate.apply(
-                                template.toString(),
-                                new Cursor(getCursor(), originalSwitch),
-                                originalSwitch.getCoordinates().replace(), //right coordinates? We don't want to replace the switch, we modify it and move it as an assignement one line up.
-                                statements.toArray()
+                        return Optional.of(
+                                new J.SwitchExpression(
+                                        randomId(),
+                                        Space.SINGLE_SPACE,
+                                        Markers.EMPTY,
+                                        originalSwitch.getSelector(),
+                                        originalSwitch.getCases().withStatements(updatedCases),
+                                        originalVariable.getType()
+                                )
                         );
+                    }
 
-                        J.SwitchExpression initializer = (J.SwitchExpression) requireNonNull(vd.getVariables().get(0).getInitializer());
-                        if (isDefaultCaseAbsent.get() && !SwitchUtils.coversAllPossibleValues(originalSwitch)) {
-                            // add a `default:` case yielding/returning the originalVariable initializer
-                            updatedCases.add(initializer.getCases().getStatements().get(0));
-                        } else if (isLastCaseEmpty.get()) {
-                            return Optional.empty();
-                        }
-                        return Optional.of(initializer.withCases(initializer.getCases().withStatements(updatedCases)));
+                    private J.Case createDefaultCase(boolean arrow, Expression returnedExpression, J.Switch originalSwitch) {
+                        String template = "switch(1) {\n" + "default" + (arrow ? " ->" : ": yield") + " #{any()};\n}";
+                        J.Switch switchStatement = JavaTemplate.apply(
+                                template,
+                                new Cursor(getCursor(), originalSwitch),
+                                originalSwitch.getCoordinates().replace(),
+                                returnedExpression
+                        );
+                        return (J.Case) switchStatement.getCases().getStatements().get(0);
                     }
 
                     private boolean containsIdentifier(String identifierName, Expression expression) {

@@ -503,4 +503,37 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
               """
           ));
     }
+
+    @Test
+    void notConvertSwitchOnUninitializedOriginalVariableAndNonExhaustiveSwitch() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
+                  void exhaustiveButCantAddDefaultAndMissingAssignment(TrafficLight light) {
+                      String status;
+                      switch (light) {
+                          case RED: status = "stop"; break;
+                          case GREEN: status = "go"; break;
+                          case YELLOW:
+                      }
+                  }
+
+                  void exhaustiveButMissingAssignment(TrafficLight light) {
+                      String status;
+                      switch (light) {
+                          case RED: status = "stop"; break;
+                          case GREEN: status = "go"; break;
+                          case YELLOW:
+                          default: System.out.println("foo");
+                      }
+                  }
+              }
+              """
+          ));
+    }
 }
