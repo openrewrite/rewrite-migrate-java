@@ -24,10 +24,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Space;
-import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
@@ -210,6 +207,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                         }.reduce(expression, new AtomicBoolean()).get();
                     }
 
+                    // Is any code elsewhere executed due to the provided expression
                     private boolean canHaveSideEffects(@Nullable Expression expression) {
                         if (expression == null) {
                             return false;
@@ -226,6 +224,29 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             public J.NewClass visitNewClass(J.NewClass newClass, AtomicBoolean found) {
                                 found.set(true);
                                 return newClass;
+                            }
+
+                            private boolean isToStringImplicitelyCalled(Expression a, Expression b) {
+                                // Assuming an implicit `.toString()` call could have a side effect, but excluding
+                                // the java.lang.* classes from that rule.
+                                if (TypeUtils.isAssignableTo("java.lang.String", a.getType()) &&
+                                        TypeUtils.isAssignableTo("java.lang.String", b.getType())) {
+                                    return false;
+                                }
+
+                                return a.getType() == JavaType.Primitive.String &&
+                                        (!(b.getType() instanceof JavaType.Primitive || requireNonNull(b.getType()).toString().startsWith("java.lang")) &&
+                                                !TypeUtils.isAssignableTo("java.lang.String", b.getType()));
+                            }
+
+                            @Override
+                            public J.Binary visitBinary(J.Binary binary, AtomicBoolean found) {
+                                if (isToStringImplicitelyCalled(binary.getLeft(), binary.getRight()) ||
+                                        isToStringImplicitelyCalled(binary.getRight(), binary.getLeft())) {
+                                    found.set(true);
+                                    return binary;
+                                }
+                                return super.visitBinary(binary, found);
                             }
                         }.reduce(expression, new AtomicBoolean()).get();
                     }

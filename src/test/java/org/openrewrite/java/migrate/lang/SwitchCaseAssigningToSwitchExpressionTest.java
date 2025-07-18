@@ -415,29 +415,36 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
           //language=java
           java(
             """
-                    class Test {
-                        void methodInvocation(int i) {
-                            String orig = "initialValue".toLowerCase();
-                            switch (i) {
-                                default: orig = "hello"; break;
-                            }
-                        }
+              class Test {
+                  void methodInvocation(int i) {
+                      String orig = "initialValue".toLowerCase();
+                      switch (i) {
+                          default: orig = "hello"; break;
+                      }
+                  }
 
-                        void newClass(int i) {
-                            String orig = new String("initialValue");
-                            switch (i) {
-                                default: orig = "hello"; break;
-                            }
-                        }
+                  void newClass(int i) {
+                      String orig = new String("initialValue");
+                      switch (i) {
+                          default: orig = "hello"; break;
+                      }
+                  }
 
-                        void newClassInBinaryExpression(int i) {
-                            String orig = "initialValue" + new String("more");
-                            switch (i) {
-                                default: orig = "hello"; break;
-                            }
-                        }
-                    }
-                    """
+                  void newClassInBinaryExpression(int i) {
+                      String orig = "initialValue" + new String("more");
+                      switch (i) {
+                          default: orig = "hello"; break;
+                      }
+                  }
+
+                  void implicitToStringInvocation(int i, Test o) {
+                      String orig = "initialValue" + o;
+                      switch (i) {
+                          default: orig = "hello"; break;
+                      }
+                  }
+              }
+              """
           ));
     }
 
