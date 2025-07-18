@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,26 @@
 package org.openrewrite.java.migrate.joda.templates;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_ABSTRACT_PERIOD;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_PERIOD;
 
-public class BaseDurationTemplates implements Templates {
-    private final MethodMatcher getMillis = new MethodMatcher(JODA_BASE_DURATION + " getMillis()");
-    private final MethodMatcher toPeriodDayTime = new MethodMatcher(JODA_BASE_DURATION + " toPeriod(" + JODA_PERIOD_TYPE + ")");
+@NoArgsConstructor
+public class AbstractPeriodTemplates implements Templates{
+    final MethodMatcher toString = new MethodMatcher(JODA_ABSTRACT_PERIOD + " toString()");
 
-    //.toPeriod(PeriodType.dayTime())
-
-    private final JavaTemplate getMillisTemplate = JavaTemplate.builder("#{any(" + JAVA_DURATION + ")}.toMillis()").build();
+    final JavaTemplate toStringTemplate = JavaTemplate.builder("#{any(java.time.Period)}.getDays()").build();
 
     @Getter
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
-            add(new MethodTemplate(getMillis, getMillisTemplate));
-
-            add(new MethodTemplate(toPeriodDayTime, JODA_NO_AUTOMATIC_MAPPING_POSSIBLE_TEMPLATE));
+            add(new MethodTemplate(toString, toStringTemplate));
         }
     };
 }
