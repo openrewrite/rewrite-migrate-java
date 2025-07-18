@@ -273,8 +273,8 @@ class LombokValueToRecordTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/449")
+    @Test
     void methodReferences() {
         //language=java
         rewriteRun(
