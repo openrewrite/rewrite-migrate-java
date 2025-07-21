@@ -24,6 +24,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
+@SuppressWarnings({"EnhancedSwitchMigration", "RedundantLabeledSwitchRuleCodeBlock", "StringOperationCanBeSimplified", "SwitchStatementWithTooFewBranches", "UnnecessaryReturnStatement", "UnusedAssignment"})
 class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
