@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -154,7 +153,6 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
         );
     }
 
-    @ExpectedToFail("Not implemented yet, but should be possible to support")
     @Test
     void convertColonCasesSimpleAssignmentInBlockToSingleYieldWithoutFinalCaseBreak() {
         rewriteRun(

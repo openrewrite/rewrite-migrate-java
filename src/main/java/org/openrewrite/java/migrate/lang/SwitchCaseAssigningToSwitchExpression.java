@@ -170,35 +170,26 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                 }
                             } else {  // colon cases
                                 isUsingArrows.set(false);
+                                boolean isLastCase = index + 1 == originalSwitch.getCases().getStatements().size();
+
                                 List<Statement> caseStatements = caseItem.getStatements();
                                 if (caseStatements.isEmpty()) {
-                                    if (index + 1 == originalSwitch.getCases().getStatements().size()) {
+                                    if (isLastCase) {
                                         isLastCaseEmpty.set(true);
                                     }
                                     return caseItem;
                                 }
 
-                                if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.Block) {
-                                    caseStatements = ((J.Block) caseStatements.get(0)).getStatements();
-                                }
-
-                                if (caseStatements.size() == 2 &&
-                                        caseStatements.get(0) instanceof J.Assignment &&
-                                        caseStatements.get(1) instanceof J.Break) {
-                                    J.Assignment assignment = (J.Assignment) caseStatements.get(0);
-                                    if (assignment.getVariable() instanceof J.Identifier) {
-                                        J.Identifier variable = (J.Identifier) assignment.getVariable();
-                                        if (variable.getSimpleName().equals(variableName) && !containsIdentifier(variableName, assignment.getAssignment())) {
-                                            J.Yield yieldStatement = new J.Yield(
-                                                    randomId(),
-                                                    assignment.getPrefix().withWhitespace(" "),
-                                                    Markers.EMPTY,
-                                                    false,
-                                                    assignment.getAssignment()
-                                            );
-                                            return caseItem.withStatements(singletonList(yieldStatement));
-                                        }
-                                    }
+                                J.Assignment assignment = extractAssignmentFromColonCase(caseStatements, isLastCase, variableName);
+                                if (assignment != null) {
+                                    J.Yield yieldStatement = new J.Yield(
+                                            randomId(),
+                                            assignment.getPrefix().withWhitespace(" "),
+                                            Markers.EMPTY,
+                                            false,
+                                            assignment.getAssignment()
+                                    );
+                                    return caseItem.withStatements(singletonList(yieldStatement));
                                 }
                             }
 
@@ -230,6 +221,24 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                         originalSwitch.getCases().withStatements(updatedCases),
                                         originalVariable.getType()
                                 );
+                    }
+
+                    private J.@Nullable Assignment extractAssignmentFromColonCase(List<Statement> caseStatements, boolean isLastCase, String variableName) {
+                        if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.Block) {
+                            caseStatements = ((J.Block) caseStatements.get(0)).getStatements();
+                        }
+
+                        if (((caseStatements.size() == 2 && caseStatements.get(1) instanceof J.Break) || (caseStatements.size() == 1 && isLastCase)) &&
+                                caseStatements.get(0) instanceof J.Assignment) {
+                            J.Assignment assignment = (J.Assignment) caseStatements.get(0);
+                            if (assignment.getVariable() instanceof J.Identifier) {
+                                J.Identifier variable = (J.Identifier) assignment.getVariable();
+                                if (variable.getSimpleName().equals(variableName) && !containsIdentifier(variableName, assignment.getAssignment())) {
+                                    return assignment;
+                                }
+                            }
+                        }
+                        return null;
                     }
 
                     private J.Case createDefaultCase(boolean arrow, Expression returnedExpression, J.Switch originalSwitch) {
