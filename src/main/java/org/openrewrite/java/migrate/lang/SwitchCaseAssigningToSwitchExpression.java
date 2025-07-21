@@ -99,11 +99,10 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                                         )
                                         );
                                         return null; // We're inlining on return, remove the original variable declaration.
-                                    } else {
-                                        return vd
-                                                .withVariables(singletonList(originalVariable.withInitializer(newSwitchExpression)))
-                                                .withComments(ListUtils.concatAll(vd.getComments(), nextStatementSwitch.getComments()));
                                     }
+                                    return vd
+                                            .withVariables(singletonList(originalVariable.withInitializer(newSwitchExpression)))
+                                            .withComments(ListUtils.concatAll(vd.getComments(), nextStatementSwitch.getComments()));
                                 }
                             }
                             return statement;
@@ -275,7 +274,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                 return newClass;
                             }
 
-                            private boolean isToStringImplicitelyCalled(Expression a, Expression b) {
+                            private boolean isToStringImplicitlyCalled(Expression a, Expression b) {
                                 // Assuming an implicit `.toString()` call could have a side effect, but excluding
                                 // the java.lang.* classes from that rule.
                                 if (TypeUtils.isAssignableTo("java.lang.String", a.getType()) &&
@@ -290,8 +289,8 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
 
                             @Override
                             public J.Binary visitBinary(J.Binary binary, AtomicBoolean found) {
-                                if (isToStringImplicitelyCalled(binary.getLeft(), binary.getRight()) ||
-                                        isToStringImplicitelyCalled(binary.getRight(), binary.getLeft())) {
+                                if (isToStringImplicitlyCalled(binary.getLeft(), binary.getRight()) ||
+                                        isToStringImplicitlyCalled(binary.getRight(), binary.getLeft())) {
                                     found.set(true);
                                     return binary;
                                 }
