@@ -648,8 +648,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
         );
     }
 
-    @Test
     @ExpectedToFail
+    @Test
     void failsToFormatWithASpaceWhenOriginalVariableHasNoInitializer() {
         rewriteRun(
           //language=java
