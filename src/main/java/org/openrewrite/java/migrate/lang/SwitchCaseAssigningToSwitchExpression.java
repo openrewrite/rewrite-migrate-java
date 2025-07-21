@@ -58,9 +58,9 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                 Preconditions.not(new KotlinFileChecker<>()),
                 Preconditions.not(new GroovyFileChecker<>())
         );
-        return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(preconditions, new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J visitBlock(J.Block block, ExecutionContext ctx) {
+                    public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
                         AtomicReference<J.@Nullable Switch> originalSwitch = new AtomicReference<>();
                         AtomicReference<J.@Nullable Return> inlinedReturn = new AtomicReference<>();
 
