@@ -147,26 +147,9 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             }
 
                             if (caseItem.getBody() != null) { // arrow cases
-                                if (caseItem.getBody() instanceof J.Block) {
-                                    J.Block block = (J.Block) caseItem.getBody();
-                                    if (block.getStatements().size() == 1 && block.getStatements().get(0) instanceof J.Assignment) {
-                                        J.Assignment assignment = (J.Assignment) block.getStatements().get(0);
-                                        if (assignment.getVariable() instanceof J.Identifier) {
-                                            J.Identifier variable = (J.Identifier) assignment.getVariable();
-                                            if (variable.getSimpleName().equals(variableName) && !containsIdentifier(variableName, assignment.getAssignment())) {
-                                                return caseItem.withBody(assignment.getAssignment());
-                                            }
-                                        }
-                                    }
-
-                                } else if (caseItem.getBody() instanceof J.Assignment) {
-                                    J.Assignment assignment = (J.Assignment) caseItem.getBody();
-                                    if (assignment.getVariable() instanceof J.Identifier) {
-                                        J.Identifier variable = (J.Identifier) assignment.getVariable();
-                                        if (variable.getSimpleName().equals(variableName)) {
-                                            return caseItem.withBody(assignment.getAssignment());
-                                        }
-                                    }
+                                Expression assignedExpression = extractAssignedExpressionFromArrowCase(caseItem.getBody(), variableName);
+                                if (assignedExpression != null) {
+                                    return caseItem.withBody(assignedExpression);
                                 }
                             } else {  // colon cases
                                 isUsingArrows.set(false);
@@ -221,6 +204,32 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                         originalSwitch.getCases().withStatements(updatedCases),
                                         originalVariable.getType()
                                 );
+                    }
+
+                    private @Nullable Expression extractAssignedExpressionFromArrowCase(J caseBody, String variableName) {
+                        if (caseBody instanceof J.Block) {
+                            J.Block block = (J.Block) caseBody;
+                            if (block.getStatements().size() == 1 && block.getStatements().get(0) instanceof J.Assignment) {
+                                J.Assignment assignment = (J.Assignment) block.getStatements().get(0);
+                                if (assignment.getVariable() instanceof J.Identifier) {
+                                    J.Identifier variable = (J.Identifier) assignment.getVariable();
+                                    if (variable.getSimpleName().equals(variableName) && !containsIdentifier(variableName, assignment.getAssignment())) {
+                                        return assignment.getAssignment();
+                                    }
+                                }
+                            }
+
+                        } else if (caseBody instanceof J.Assignment) {
+                            J.Assignment assignment = (J.Assignment) caseBody;
+                            if (assignment.getVariable() instanceof J.Identifier) {
+                                J.Identifier variable = (J.Identifier) assignment.getVariable();
+                                if (variable.getSimpleName().equals(variableName)) {
+                                    return assignment.getAssignment();
+                                }
+                            }
+                        }
+
+                        return null;
                     }
 
                     private J.@Nullable Assignment extractAssignmentFromColonCase(List<Statement> caseStatements, boolean isLastCase, String variableName) {
