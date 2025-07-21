@@ -22,6 +22,7 @@ import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
@@ -83,7 +84,6 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
 
                                 J.VariableDeclarations.NamedVariable originalVariable = vd.getVariables().get(0);
                                 J.SwitchExpression newSwitchExpression = buildNewSwitchExpression(nextStatementSwitch, originalVariable);
-
                                 if (newSwitchExpression != null) {
                                     originalSwitch.set(nextStatementSwitch);
                                     return vd
@@ -97,7 +97,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                     }
 
                     private J.@Nullable SwitchExpression buildNewSwitchExpression(J.Switch originalSwitch, J.VariableDeclarations.NamedVariable originalVariable) {
-                        final String variableName = originalVariable.getSimpleName();
+                        final J.Identifier variableName = originalVariable.getName();
                         AtomicBoolean isQualified = new AtomicBoolean(true);
                         AtomicBoolean isDefaultCaseAbsent = new AtomicBoolean(true);
                         AtomicBoolean isUsingArrows = new AtomicBoolean(true);
@@ -160,72 +160,64 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
 
                         if (shouldAddDefaultCase) {
                             updatedCases.add(
-                                    createDefaultCase(isUsingArrows.get(), originalInitializer.withPrefix(Space.SINGLE_SPACE), originalSwitch)
+                                    createDefaultCase(originalSwitch, originalInitializer.withPrefix(Space.SINGLE_SPACE), isUsingArrows.get())
                             );
                         }
 
-                        return
-                                new J.SwitchExpression(
-                                        randomId(),
-                                        Space.SINGLE_SPACE,
-                                        Markers.EMPTY,
-                                        originalSwitch.getSelector(),
-                                        originalSwitch.getCases().withStatements(updatedCases),
-                                        originalVariable.getType()
-                                );
+                        return new J.SwitchExpression(
+                                randomId(),
+                                Space.SINGLE_SPACE,
+                                Markers.EMPTY,
+                                originalSwitch.getSelector(),
+                                originalSwitch.getCases().withStatements(updatedCases),
+                                originalVariable.getType());
                     }
 
-                    private J.@Nullable Assignment extractValidAssignmentFromArrowCase(J caseBody, String variableName) {
+                    private J.@Nullable Assignment extractValidAssignmentFromArrowCase(J caseBody, J.Identifier variableName) {
                         if (caseBody instanceof J.Block && ((J.Block) caseBody).getStatements().size() == 1) {
                             caseBody = ((J.Block) caseBody).getStatements().get(0);
                         }
-
                         return validateAssignmentFromCase(caseBody, variableName);
                     }
 
-                    private J.@Nullable Assignment extractValidAssignmentFromColonCase(List<Statement> caseStatements, boolean isLastCase, String variableName) {
+                    private J.@Nullable Assignment extractValidAssignmentFromColonCase(List<Statement> caseStatements, boolean isLastCase, J.Identifier variableName) {
                         if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.Block) {
                             caseStatements = ((J.Block) caseStatements.get(0)).getStatements();
                         }
-
                         if ((caseStatements.size() == 2 && caseStatements.get(1) instanceof J.Break) || (caseStatements.size() == 1 && isLastCase)) {
                             return validateAssignmentFromCase(caseStatements.get(0), variableName);
                         }
-
                         return null;
                     }
 
-                    private J.@Nullable Assignment validateAssignmentFromCase(J maybeAssignment, String variableName) {
+                    private J.@Nullable Assignment validateAssignmentFromCase(J maybeAssignment, J.Identifier variableName) {
                         if (maybeAssignment instanceof J.Assignment) {
                             J.Assignment assignment = (J.Assignment) maybeAssignment;
                             if (assignment.getVariable() instanceof J.Identifier) {
                                 J.Identifier variable = (J.Identifier) assignment.getVariable();
-                                if (variable.getSimpleName().equals(variableName) && !containsIdentifier(variableName, assignment.getAssignment())) {
+                                if (SemanticallyEqual.areEqual(variable, variableName) && !containsIdentifier(variableName, assignment.getAssignment())) {
                                     return assignment;
                                 }
                             }
                         }
-
                         return null;
                     }
 
-                    private J.Case createDefaultCase(boolean arrow, Expression returnedExpression, J.Switch originalSwitch) {
-                        String template = "switch(1) {\n" + "default" + (arrow ? " ->" : ": yield") + " #{any()};\n}";
+                    private J.Case createDefaultCase(J.Switch originalSwitch, Expression returnedExpression, boolean arrow) {
                         J.Switch switchStatement = JavaTemplate.apply(
-                                template,
+                                "switch(1) { default" + (arrow ? " ->" : ": yield") + " #{any()}; }",
                                 new Cursor(getCursor(), originalSwitch),
                                 originalSwitch.getCoordinates().replace(),
                                 returnedExpression
                         );
-
                         return (J.Case) switchStatement.getCases().getStatements().get(0);
                     }
 
-                    private boolean containsIdentifier(String identifierName, Expression expression) {
+                    private boolean containsIdentifier(J.Identifier identifierName, Expression expression) {
                         return new JavaIsoVisitor<AtomicBoolean>() {
                             @Override
                             public J.Identifier visitIdentifier(J.Identifier id, AtomicBoolean found) {
-                                if (id.getSimpleName().equals(identifierName)) {
+                                if (SemanticallyEqual.areEqual(id, identifierName)) {
                                     found.set(true);
                                     return id;
                                 }
