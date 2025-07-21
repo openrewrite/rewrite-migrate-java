@@ -27,8 +27,9 @@ import static org.openrewrite.java.Assertions.version;
 class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new SwitchCaseAssigningToSwitchExpression()).allSources(source -> version(source, 21)
-        );
+        spec
+          .recipe(new SwitchCaseAssigningToSwitchExpression())
+          .allSources(source -> version(source, 17));
     }
 
     @DocumentExample
@@ -491,6 +492,20 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                       String orig = "initialValue" + o;
                       switch (i) {
                           default: orig = "hello"; break;
+                      }
+                  }
+
+                  void incrementOperator(int i, Test o) {
+                      int n = i++;
+                      switch (i) {
+                          default: n = 5; break;
+                      }
+                  }
+
+                  void assignment(int i, Test o) {
+                      int n = ( i = 2 );
+                      switch (i) {
+                          default: n = 5; break;
                       }
                   }
               }

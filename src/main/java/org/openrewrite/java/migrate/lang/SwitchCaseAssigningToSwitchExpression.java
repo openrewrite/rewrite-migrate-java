@@ -234,6 +234,12 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
 
                         return new JavaIsoVisitor<AtomicBoolean>() {
                             @Override
+                            public J.Assignment visitAssignment(J.Assignment assignment, AtomicBoolean found) {
+                                found.set(true);
+                                return super.visitAssignment(assignment, found);
+                            }
+
+                            @Override
                             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, AtomicBoolean found) {
                                 found.set(true);
                                 return method;
@@ -243,6 +249,12 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             public J.NewClass visitNewClass(J.NewClass newClass, AtomicBoolean found) {
                                 found.set(true);
                                 return newClass;
+                            }
+
+                            @Override
+                            public J.Unary visitUnary(J.Unary unary, AtomicBoolean found) {
+                                found.set(true);
+                                return super.visitUnary(unary, found);
                             }
 
                             private boolean isToStringImplicitlyCalled(Expression a, Expression b) {
