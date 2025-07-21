@@ -22,7 +22,6 @@ import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
