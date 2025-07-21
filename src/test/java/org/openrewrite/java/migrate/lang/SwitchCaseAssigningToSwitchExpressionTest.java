@@ -634,7 +634,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     }
 
     @Test
-    void doNotinlineWhenInappropriate() {
+    void doNotInlineWhenInappropriate() {
         rewriteRun(
           //language=java
           java(
@@ -688,6 +688,58 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                           default: yield "foo";
                       };
                       return;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void defaultAsSecondLabelColonCase() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class A {
+                  void doFormat(String str) {
+                      String formatted = "initialValue";
+                      switch (str) {
+                          case "foo": formatted = "Foo";
+                          case "bar": formatted = "Bar";
+                          case null, default: formatted = "unknown";
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void defaultAsSecondLabelArrowCase() {
+        rewriteRun(
+          java(
+            """
+              class B {
+                  void doFormat(String str) {
+                      String formatted = "initialValue";
+                      switch (str) {
+                          case "foo" -> formatted = "Foo";
+                          case "bar" -> formatted = "Bar";
+                          case null, default -> formatted = "Other";
+                      }
+                  }
+              }
+              """,
+            """
+              class B {
+                  void doFormat(String str) {
+                      String formatted = switch (str) {
+                          case "foo" -> "Foo";
+                          case "bar" -> "Bar";
+                          case null, default -> "Other";
+                      };
                   }
               }
               """

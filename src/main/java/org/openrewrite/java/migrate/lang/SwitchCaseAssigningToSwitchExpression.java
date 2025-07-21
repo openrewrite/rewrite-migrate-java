@@ -109,7 +109,6 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             }
 
                             J.Case caseItem = (J.Case) s;
-
                             if (caseItem.getCaseLabels().get(0) instanceof J.Identifier &&
                                     ((J.Identifier) caseItem.getCaseLabels().get(0)).getSimpleName().equals("default")) {
                                 isDefaultCaseAbsent.set(false);
@@ -226,7 +225,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                         }.reduce(expression, new AtomicBoolean()).get();
                     }
 
-                    // Is any code elsewhere executed due to the provided expression
+                    // Might the initializer affect the input or output of the switch expression?
                     private boolean canHaveSideEffects(@Nullable Expression expression) {
                         if (expression == null) {
                             return false;
