@@ -25,6 +25,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.staticanalysis.InlineVariable;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
@@ -59,27 +60,24 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
         );
         return Preconditions.check(preconditions, new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
+                    public J.Block visitBlock(J.Block originalBlock, ExecutionContext ctx) {
+                        J.Block block = super.visitBlock(originalBlock, ctx);
+
                         AtomicReference<J.@Nullable Switch> originalSwitch = new AtomicReference<>();
-                        AtomicReference<J.@Nullable Return> inlinedReturn = new AtomicReference<>();
 
                         int lastIndex = block.getStatements().size() - 1;
-                        J.Block b = block.withStatements(ListUtils.map(block.getStatements(), (index, statement) -> {
+                        return block.withStatements(ListUtils.map(block.getStatements(), (index, statement) -> {
                             if (statement == originalSwitch.getAndSet(null)) {
+                                doAfterVisit(new InlineVariable().getVisitor());
                                 // We've already converted the switch/assignments to an assignment with a switch expression.
                                 return null;
-                            }
-
-                            if (index == lastIndex && inlinedReturn.get() != null) {
-                                return inlinedReturn.get();
                             }
 
                             if (index < lastIndex &&
                                     statement instanceof J.VariableDeclarations &&
                                     ((J.VariableDeclarations) statement).getVariables().size() == 1 &&
                                     !canHaveSideEffects(((J.VariableDeclarations) statement).getVariables().get(0).getInitializer()) &&
-                                    block.getStatements().get(index + 1) instanceof J.Switch
-                            ) {
+                                    block.getStatements().get(index + 1) instanceof J.Switch) {
                                 J.VariableDeclarations vd = (J.VariableDeclarations) statement;
                                 J.Switch nextStatementSwitch = (J.Switch) block.getStatements().get(index + 1);
 
@@ -88,18 +86,6 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
 
                                 if (newSwitchExpression != null) {
                                     originalSwitch.set(nextStatementSwitch);
-                                    J.Return lastReturn = canSwitchBeReturnedInline(index, block.getStatements(), originalVariable.getSimpleName());
-                                    if (lastReturn != null) {
-                                        inlinedReturn.set(
-                                                lastReturn
-                                                        .withExpression(newSwitchExpression)
-                                                        .withPrefix(lastReturn.getPrefix()
-                                                                .withComments(ListUtils.concatAll(vd.getComments(), ListUtils.concatAll(nextStatementSwitch.getComments(), lastReturn.getComments())))
-                                                                .withWhitespace(vd.getPrefix().getWhitespace())
-                                                        )
-                                        );
-                                        return null; // We're inlining on return, remove the original variable declaration.
-                                    }
                                     return vd
                                             .withVariables(singletonList(originalVariable.getPadding().withInitializer(
                                                     JLeftPadded.<Expression>build(newSwitchExpression).withBefore(Space.SINGLE_SPACE))))
@@ -108,23 +94,6 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             }
                             return statement;
                         }));
-                        return super.visitBlock(b, ctx);
-                    }
-
-                    private J.@Nullable Return canSwitchBeReturnedInline(int currentStatementIndex, List<Statement> blockStatements, String originalVariableName) {
-                        if (currentStatementIndex + 3 == blockStatements.size()) {
-                            Statement lastStatement = blockStatements.get(currentStatementIndex + 2);
-                            if (lastStatement instanceof J.Return) {
-                                J.Return lastReturn = (J.Return) lastStatement;
-                                if (lastReturn.getExpression() instanceof J.Identifier) {
-                                    J.Identifier identifier = (J.Identifier) lastReturn.getExpression();
-                                    if (identifier.getSimpleName().equals(originalVariableName)) {
-                                        return lastReturn;
-                                    }
-                                }
-                            }
-                        }
-                        return null;
                     }
 
                     private J.@Nullable SwitchExpression buildNewSwitchExpression(J.Switch originalSwitch, J.VariableDeclarations.NamedVariable originalVariable) {
@@ -207,7 +176,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                     }
 
                     private J.@Nullable Assignment extractValidAssignmentFromArrowCase(J caseBody, String variableName) {
-                        if (caseBody instanceof J.Block && ((J.Block)caseBody).getStatements().size() == 1) {
+                        if (caseBody instanceof J.Block && ((J.Block) caseBody).getStatements().size() == 1) {
                             caseBody = ((J.Block) caseBody).getStatements().get(0);
                         }
 
