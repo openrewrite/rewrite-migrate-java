@@ -37,7 +37,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static org.openrewrite.Tree.randomId;
 
-
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class SwitchCaseAssigningToSwitchExpression extends Recipe {
@@ -56,10 +55,9 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
                 new UsesJavaVersion<>(17),
-                Preconditions.not(new KotlinFileChecker<>()), // necessary ?
-                Preconditions.not(new GroovyFileChecker<>())  // necessary ?
+                Preconditions.not(new KotlinFileChecker<>()),
+                Preconditions.not(new GroovyFileChecker<>())
         );
-
         return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitBlock(J.Block block, ExecutionContext ctx) {

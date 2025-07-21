@@ -27,12 +27,13 @@ import static org.openrewrite.java.Assertions.version;
 class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new SwitchCaseAssigningToSwitchExpression()).allSources(source -> version(source, 21));
+        spec.recipe(new SwitchCaseAssigningToSwitchExpression()).allSources(source -> version(source, 21)
+        );
     }
 
     @DocumentExample
     @Test
-    void convertSimpleArrowCasesAssignations() {
+    void convertSimpleArrowCasesAssignment() {
         rewriteRun(
           //language=java
           java(
@@ -59,11 +60,12 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
-    void convertSimpleColonCasesAssignations() {
+    void convertSimpleColonCasesAssignment() {
         rewriteRun(
           //language=java
           java(
@@ -90,11 +92,12 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
-    void notConvertSimpleColonCasesAssignationsWithExtraCodeInBlock() {
+    void notConvertSimpleColonCasesAssignmentWithExtraCodeInBlock() {
         // Only one statement [+break;] per case is currently supported
         rewriteRun(
           //language=java
@@ -111,7 +114,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -145,7 +149,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -178,7 +183,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -198,7 +204,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -219,7 +226,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -238,7 +246,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -277,7 +286,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -313,7 +323,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -338,7 +349,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -375,7 +387,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -407,7 +420,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -446,7 +460,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -479,7 +494,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -502,7 +518,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -535,7 +552,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -563,7 +581,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -624,7 +643,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -652,7 +672,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -694,7 +715,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 
     @Test
@@ -730,6 +752,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
               }
               """
-          ));
+          )
+        );
     }
 }
