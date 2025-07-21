@@ -120,7 +120,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     }
 
     @Test
-    void convertColonCasesSimpleAssignationInBlockToSingleYield() {
+    void convertColonCasesSimpleAssignmentInBlockToSingleYield() {
         rewriteRun(
           //language=java
           java(
@@ -154,8 +154,44 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
         );
     }
 
+    @ExpectedToFail("Not implemented yet, but should be possible to support")
     @Test
-    void convertArrowCasesSimpleAssignationInBlockToSingleValue() {
+    void convertColonCasesSimpleAssignmentInBlockToSingleYieldWithoutFinalCaseBreak() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = "initialValue";
+                      switch (obj) {
+                          case Integer i: formatted = String.format("int %d", i); break;
+                          case Long l: {
+                              formatted = String.format("long %d", l);
+                              break;
+                          }
+                          default: formatted = "unknown";
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void doFormat(Object obj) {
+                      String formatted = switch (obj) {
+                          case Integer i: yield String.format("int %d", i);
+                          case Long l: yield String.format("long %d", l);
+                          default: yield "unknown";
+                      };
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void convertArrowCasesSimpleAssignmentInBlockToSingleValue() {
         rewriteRun(
           //language=java
           java(
@@ -232,7 +268,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     }
 
     @Test
-    void notConvertCasesWhenColonCaseHasNoStatementsAndNextCaseIsntAssignation() {
+    void notConvertCasesWhenColonCaseHasNoStatementsAndNextCaseIsntAssignment() {
         rewriteRun(
           //language=java
           java(
@@ -252,7 +288,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     }
 
     @Test
-    void convertCasesWhenColonCaseHasNoStatementsAndNextCaseIsAssignation() {
+    void convertCasesWhenColonCaseHasNoStatementsAndNextCaseIsAssignment() {
         rewriteRun(
           //language=java
           java(
@@ -426,7 +462,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     }
 
     @Test
-    void notConvertWhenOriginalVariableAssignationHasSideEffects() {
+    void notConvertWhenOriginalVariableAssignmentHasSideEffects() {
         rewriteRun(
           //language=java
           java(
@@ -466,7 +502,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
     }
 
     @Test
-    void convertWhenOriginalVariableAssignationIsComplexExpressionButNoSideEffects() {
+    void convertWhenOriginalVariableAssignmentIsComplexExpressionButNoSideEffects() {
         rewriteRun(
           //language=java
           java(
@@ -475,7 +511,6 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   String field = "strawberry";
 
                   void doFormat(int i) {
-                      String variable = "var";
                       String orig = "initialValue" + "test" + 45 + true + field + this.field;
                       switch (i) {
                           default: orig = "hello"; break;
@@ -488,7 +523,6 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   String field = "strawberry";
 
                   void doFormat(int i) {
-                      String variable = "var";
                       String orig = switch (i) {
                           default: yield "hello";
                       };
@@ -622,14 +656,14 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
             """
               class Test {
                   String originalVariableNotReturned() {
-                      String formatted= switch (1) {
+                      String formatted = switch (1) {
                           default: yield "foo";
                       };
                       return "string";
                   }
 
                   String codeBetweenSwitchAndReturn() {
-                      String formatted= switch (1) {
+                      String formatted = switch (1) {
                           default: yield "foo";
                       };
                       System.out.println("Hey");
@@ -637,7 +671,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
 
                   void noReturnedExpression() {
-                      String formatted= switch (1) {
+                      String formatted = switch (1) {
                           default: yield "foo";
                       };
                       return;
@@ -648,9 +682,8 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
         );
     }
 
-    @ExpectedToFail
     @Test
-    void failsToFormatWithASpaceWhenOriginalVariableHasNoInitializer() {
+    void whitespaceAddedWhenNoOriginalAssignment() {
         rewriteRun(
           //language=java
           java(
