@@ -656,14 +656,14 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
             """
               class Test {
                   String originalVariableNotReturned() {
-                      String formatted= switch (1) {
+                      String formatted = switch (1) {
                           default: yield "foo";
                       };
                       return "string";
                   }
 
                   String codeBetweenSwitchAndReturn() {
-                      String formatted= switch (1) {
+                      String formatted = switch (1) {
                           default: yield "foo";
                       };
                       System.out.println("Hey");
@@ -671,7 +671,7 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                   }
 
                   void noReturnedExpression() {
-                      String formatted= switch (1) {
+                      String formatted = switch (1) {
                           default: yield "foo";
                       };
                       return;
@@ -682,7 +682,6 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
         );
     }
 
-    @ExpectedToFail("Missing whitespace before `=`")
     @Test
     void whitespaceAddedWhenNoOriginalAssignment() {
         rewriteRun(

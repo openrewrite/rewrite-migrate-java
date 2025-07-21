@@ -101,7 +101,8 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                         return null; // We're inlining on return, remove the original variable declaration.
                                     }
                                     return vd
-                                            .withVariables(singletonList(originalVariable.withInitializer(newSwitchExpression)))
+                                            .withVariables(singletonList(originalVariable.getPadding().withInitializer(
+                                                    JLeftPadded.<Expression>build(newSwitchExpression).withBefore(Space.SINGLE_SPACE))))
                                             .withComments(ListUtils.concatAll(vd.getComments(), nextStatementSwitch.getComments()));
                                 }
                             }
