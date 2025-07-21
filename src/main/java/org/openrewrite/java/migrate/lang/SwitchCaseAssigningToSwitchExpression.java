@@ -97,7 +97,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                     }
 
                     private J.@Nullable SwitchExpression buildNewSwitchExpression(J.Switch originalSwitch, J.VariableDeclarations.NamedVariable originalVariable) {
-                        final J.Identifier variableName = originalVariable.getName();
+                        J.Identifier variableName = originalVariable.getName();
                         AtomicBoolean isQualified = new AtomicBoolean(true);
                         AtomicBoolean isDefaultCaseAbsent = new AtomicBoolean(true);
                         AtomicBoolean isUsingArrows = new AtomicBoolean(true);
@@ -115,7 +115,11 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                             }
 
                             if (caseItem.getBody() != null) { // arrow cases
-                                J.Assignment assignment = extractValidAssignmentFromArrowCase(caseItem.getBody(), variableName);
+                                J caseBody = caseItem.getBody();
+                                if (caseBody instanceof J.Block && ((J.Block) caseBody).getStatements().size() == 1) {
+                                    caseBody = ((J.Block) caseBody).getStatements().get(0);
+                                }
+                                J.Assignment assignment = extractAssignmentOfVariable(caseBody, variableName);
                                 if (assignment != null) {
                                     return caseItem.withBody(assignment.getAssignment());
                                 }
@@ -131,7 +135,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                     return caseItem;
                                 }
 
-                                J.Assignment assignment = extractValidAssignmentFromColonCase(caseStatements, isLastCase, variableName);
+                                J.Assignment assignment = extractAssignmentFromColonCase(caseStatements, isLastCase, variableName);
                                 if (assignment != null) {
                                     J.Yield yieldStatement = new J.Yield(
                                             randomId(),
@@ -171,29 +175,23 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                 originalVariable.getType());
                     }
 
-                    private J.@Nullable Assignment extractValidAssignmentFromArrowCase(J caseBody, J.Identifier variableName) {
-                        if (caseBody instanceof J.Block && ((J.Block) caseBody).getStatements().size() == 1) {
-                            caseBody = ((J.Block) caseBody).getStatements().get(0);
-                        }
-                        return validateAssignmentFromCase(caseBody, variableName);
-                    }
-
-                    private J.@Nullable Assignment extractValidAssignmentFromColonCase(List<Statement> caseStatements, boolean isLastCase, J.Identifier variableName) {
+                    private J.@Nullable Assignment extractAssignmentFromColonCase(List<Statement> caseStatements, boolean isLastCase, J.Identifier variableName) {
                         if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.Block) {
                             caseStatements = ((J.Block) caseStatements.get(0)).getStatements();
                         }
                         if ((caseStatements.size() == 2 && caseStatements.get(1) instanceof J.Break) || (caseStatements.size() == 1 && isLastCase)) {
-                            return validateAssignmentFromCase(caseStatements.get(0), variableName);
+                            return extractAssignmentOfVariable(caseStatements.get(0), variableName);
                         }
                         return null;
                     }
 
-                    private J.@Nullable Assignment validateAssignmentFromCase(J maybeAssignment, J.Identifier variableName) {
+                    private J.@Nullable Assignment extractAssignmentOfVariable(J maybeAssignment, J.Identifier variableName) {
                         if (maybeAssignment instanceof J.Assignment) {
                             J.Assignment assignment = (J.Assignment) maybeAssignment;
                             if (assignment.getVariable() instanceof J.Identifier) {
                                 J.Identifier variable = (J.Identifier) assignment.getVariable();
-                                if (SemanticallyEqual.areEqual(variable, variableName) && !containsIdentifier(variableName, assignment.getAssignment())) {
+                                if (SemanticallyEqual.areEqual(variable, variableName) &&
+                                        !containsIdentifier(variableName, assignment.getAssignment())) {
                                     return assignment;
                                 }
                             }
