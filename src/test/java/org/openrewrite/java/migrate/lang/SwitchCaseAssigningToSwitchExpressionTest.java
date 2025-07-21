@@ -589,6 +589,15 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                       }
                   }
 
+                  void exhaustiveButCantAddDefaultAfterEmptyLabel(TrafficLight light) {
+                      String status = "initialValue";
+                      switch (light) {
+                          case RED: status = "stop"; break;
+                          case GREEN: status = "go"; break;
+                          case YELLOW:
+                      }
+                  }
+
                   void exhaustiveButMissingAssignment(TrafficLight light) {
                       String status;
                       switch (light) {

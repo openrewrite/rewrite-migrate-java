@@ -159,8 +159,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
 
                         if (shouldAddDefaultCase) {
                             updatedCases.add(
-                                    createDefaultCase(originalSwitch, originalInitializer.withPrefix(Space.SINGLE_SPACE), isUsingArrows.get())
-                            );
+                                    createDefaultCase(originalSwitch, originalInitializer.withPrefix(Space.SINGLE_SPACE), isUsingArrows.get()));
                         }
 
                         return new J.SwitchExpression(
