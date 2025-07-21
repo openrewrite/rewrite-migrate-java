@@ -160,7 +160,7 @@ class UpdateSdkManTest implements RewriteTest {
               java=11.0.26-zulu
               """,
             """
-              java=17.0.15-zulu
+              java=17.0.16-zulu
               """,
             spec -> spec.path(".sdkmanrc")
           )
@@ -176,7 +176,7 @@ class UpdateSdkManTest implements RewriteTest {
               java=21.0.6-zulu
               """,
             """
-              java=21.0.7-zulu
+              java=21.0.8-zulu
               """,
             spec -> spec.path(".sdkmanrc")
           )
