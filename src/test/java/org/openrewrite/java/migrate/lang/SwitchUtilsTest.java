@@ -165,4 +165,28 @@ class SwitchUtilsTest {
           )
         );
     }
+
+    @Test
+    void coversAllCasesEnumWithExtraMembers() {
+        assertTrue(
+          SwitchUtils.coversAllPossibleValues(
+            extractSwitch(
+              """
+                class Test {
+                    enum EnumWithExtraMembers {
+                        ONE, TWO;
+                        public static final EnumWithExtraMembers THREE = ONE;
+                    }
+                    void method(EnumWithExtraMembers e) {
+                        switch (e) {
+                            case ONE -> System.out.println("one");
+                            case TWO -> System.out.println("two");
+                        }
+                    }
+                }
+                """
+            )
+          )
+        );
+    }
 }

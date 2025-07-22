@@ -25,13 +25,12 @@ class SwitchUtils {
     /**
      * Checks if a switch statement covers all possible values of its selector.
      * This is typically used to determine if a switch statement is "exhaustive" as per the Java language specification.
-     *
+     * <p>
      * NOTE: Missing support for sealed classes/interfaces.
-     *
-     * @See <a href="https://docs.oracle.com/en/java/javase/21/language/switch-expressions-and-statements.html">Switch Expressions in Java 21</a>
      *
      * @param switch_ the switch statement to check
      * @return true if the switch covers all possible values, false otherwise
+     * @See <a href="https://docs.oracle.com/en/java/javase/21/language/switch-expressions-and-statements.html">Switch Expressions in Java 21</a>
      */
     public static boolean coversAllPossibleValues(J.Switch switch_) {
         List<J> labels = new ArrayList<>();
@@ -46,7 +45,7 @@ class SwitchUtils {
         JavaType javaType = switch_.getSelector().getTree().getType();
         if (javaType instanceof JavaType.Class && ((JavaType.Class) javaType).getKind() == JavaType.FullyQualified.Kind.Enum) {
             // Every enum value must be present in the switch
-            return ((JavaType.Class) javaType).getMembers().stream().allMatch(variable ->
+            return ((JavaType.Class) javaType).getMembers().stream().filter(member -> member.hasFlags(Flag.Enum)).allMatch(variable ->
                     labels.stream().anyMatch(label -> {
                         if (!(label instanceof TypeTree && TypeUtils.isOfType(((TypeTree) label).getType(), javaType))) {
                             return false;
