@@ -73,9 +73,7 @@ public class UseJoinColumnForMapping extends Recipe {
                         J.VariableDeclarations joinColumn = (J.VariableDeclarations) new ChangeType(COLUMN, JOIN_COLUMN, false).getVisitor().visit(multiVariable, ctx, getCursor().getParentOrThrow());
                         joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "length").getVisitor().visit(joinColumn, ctx, getCursor().getParentOrThrow());
                         joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "precision").getVisitor().visit(joinColumn, ctx, getCursor().getParentOrThrow());
-                        joinColumn = (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "scale").getVisitor().visit(joinColumn, ctx, getCursor().getParentOrThrow());
-
-                        return joinColumn;
+                        return (J.VariableDeclarations) new RemoveAnnotationAttribute(JOIN_COLUMN, "scale").getVisitor().visit(joinColumn, ctx, getCursor().getParentOrThrow());
                     }
                 }
         );
