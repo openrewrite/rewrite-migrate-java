@@ -63,8 +63,9 @@ public class NoGuavaListsNewLinkedList extends Recipe {
                             .imports("java.util.LinkedList")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace());
-                } else if (NEW_LINKED_LIST_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
-                           TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
+                }
+                if (NEW_LINKED_LIST_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
+                        TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.LinkedList");
                     return JavaTemplate.builder("new LinkedList<>(#{any(java.util.Collection)})")

@@ -157,9 +157,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 JavaType type = implemented.getType();
                 if (type instanceof JavaType.FullyQualified) {
                     return isConflictingInterface((JavaType.FullyQualified) type, memberVariableNames);
-                } else {
-                    return false;
                 }
+                return false;
             });
         }
 

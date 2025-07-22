@@ -63,7 +63,8 @@ public class UseLombokSetter extends Recipe {
                                 LombokUtils.getAccessLevel(method)));
                         return null; //delete
 
-                    } else if (assignmentVariable instanceof J.Identifier &&
+                    }
+                    if (assignmentVariable instanceof J.Identifier &&
                             ((J.Identifier) assignmentVariable).getFieldType() != null) {
                         doAfterVisit(new FieldAnnotator(Setter.class,
                                 ((J.Identifier) assignmentVariable).getFieldType(),

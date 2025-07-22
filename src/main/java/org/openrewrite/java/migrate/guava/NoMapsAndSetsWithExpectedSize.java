@@ -68,7 +68,8 @@ public class NoMapsAndSetsWithExpectedSize extends Recipe {
                                     .imports("java.util.HashMap")
                                     .build()
                                     .apply(getCursor(), coordinates, j.getArguments().toArray());
-                        } else if (NEW_LINKED_HASHMAP.matches(j)) {
+                        }
+                        if (NEW_LINKED_HASHMAP.matches(j)) {
                             maybeRemoveImport("com.google.common.collect.Maps");
                             maybeAddImport("java.util.LinkedHashMap");
                             JavaCoordinates coordinates = j.getCoordinates().replace();
@@ -76,7 +77,8 @@ public class NoMapsAndSetsWithExpectedSize extends Recipe {
                                     .imports("java.util.LinkedHashMap")
                                     .build()
                                     .apply(getCursor(), coordinates, j.getArguments().toArray());
-                        } else if (NEW_HASHSET.matches(j)) {
+                        }
+                        if (NEW_HASHSET.matches(j)) {
                             maybeRemoveImport("com.google.common.collect.Sets");
                             maybeAddImport("java.util.HashSet");
                             JavaCoordinates coordinates = j.getCoordinates().replace();
@@ -84,7 +86,8 @@ public class NoMapsAndSetsWithExpectedSize extends Recipe {
                                     .imports("java.util.HashSet")
                                     .build()
                                     .apply(getCursor(), coordinates, j.getArguments().toArray());
-                        } else if (NEW_LINKED_HASHSET.matches(j)) {
+                        }
+                        if (NEW_LINKED_HASHSET.matches(j)) {
                             maybeRemoveImport("com.google.common.collect.Sets");
                             maybeAddImport("java.util.LinkedHashSet");
                             JavaCoordinates coordinates = j.getCoordinates().replace();

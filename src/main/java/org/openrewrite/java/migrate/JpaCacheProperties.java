@@ -289,11 +289,14 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
         if (propVal != null) {
             if ("false".equalsIgnoreCase(propVal)) {
                 return "NONE";
-            } else if ("true".equalsIgnoreCase(propVal)) {
+            }
+            if ("true".equalsIgnoreCase(propVal)) {
                 return "ALL";
-            } else if (propVal.matches("(?i:true)\\(ExcludedTypes=.*")) {
+            }
+            if (propVal.matches("(?i:true)\\(ExcludedTypes=.*")) {
                 return "DISABLE_SELECTIVE";
-            } else if (propVal.matches("(?i:true)\\(Types=.*")) {
+            }
+            if (propVal.matches("(?i:true)\\(Types=.*")) {
                 return "ENABLE_SELECTIVE";
             }
         }
@@ -305,7 +308,8 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
     private @Nullable String convertScmValue(String scmValue) {
         if ("NONE".equals(scmValue)) {
             return "false";
-        } else if ("ALL".equals(scmValue)) {
+        }
+        if ("ALL".equals(scmValue)) {
             return "true";
         }
         // otherwise, don't process it
