@@ -495,14 +495,14 @@ class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
                       }
                   }
 
-                  void incrementOperator(int i, Test o) {
+                  void incrementOperator(int i) {
                       int n = i++;
                       switch (i) {
                           default: n = 5; break;
                       }
                   }
 
-                  void assignment(int i, Test o) {
+                  void assignment(int i) {
                       int n = ( i = 2 );
                       switch (i) {
                           default: n = 5; break;

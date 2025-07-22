@@ -97,7 +97,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                     }
 
                     private J.@Nullable SwitchExpression buildNewSwitchExpression(J.Switch originalSwitch, J.VariableDeclarations.NamedVariable originalVariable) {
-                        J.Identifier variableName = originalVariable.getName();
+                        J.Identifier originalVariableId = originalVariable.getName();
                         AtomicBoolean isQualified = new AtomicBoolean(true);
                         AtomicBoolean isDefaultCaseAbsent = new AtomicBoolean(true);
                         AtomicBoolean isUsingArrows = new AtomicBoolean(true);
@@ -119,7 +119,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                 if (caseBody instanceof J.Block && ((J.Block) caseBody).getStatements().size() == 1) {
                                     caseBody = ((J.Block) caseBody).getStatements().get(0);
                                 }
-                                J.Assignment assignment = extractAssignmentOfVariable(caseBody, variableName);
+                                J.Assignment assignment = extractAssignmentOfVariable(caseBody, originalVariableId);
                                 if (assignment != null) {
                                     return caseItem.withBody(assignment.getAssignment());
                                 }
@@ -135,7 +135,7 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                     return caseItem;
                                 }
 
-                                J.Assignment assignment = extractAssignmentFromColonCase(caseStatements, isLastCase, variableName);
+                                J.Assignment assignment = extractAssignmentFromColonCase(caseStatements, isLastCase, originalVariableId);
                                 if (assignment != null) {
                                     J.Yield yieldStatement = new J.Yield(
                                             randomId(),
@@ -175,23 +175,23 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                                 originalVariable.getType());
                     }
 
-                    private J.@Nullable Assignment extractAssignmentFromColonCase(List<Statement> caseStatements, boolean isLastCase, J.Identifier variableName) {
+                    private J.@Nullable Assignment extractAssignmentFromColonCase(List<Statement> caseStatements, boolean isLastCase, J.Identifier variableId) {
                         if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.Block) {
                             caseStatements = ((J.Block) caseStatements.get(0)).getStatements();
                         }
                         if ((caseStatements.size() == 2 && caseStatements.get(1) instanceof J.Break) || (caseStatements.size() == 1 && isLastCase)) {
-                            return extractAssignmentOfVariable(caseStatements.get(0), variableName);
+                            return extractAssignmentOfVariable(caseStatements.get(0), variableId);
                         }
                         return null;
                     }
 
-                    private J.@Nullable Assignment extractAssignmentOfVariable(J maybeAssignment, J.Identifier variableName) {
+                    private J.@Nullable Assignment extractAssignmentOfVariable(J maybeAssignment, J.Identifier variableId) {
                         if (maybeAssignment instanceof J.Assignment) {
                             J.Assignment assignment = (J.Assignment) maybeAssignment;
                             if (assignment.getVariable() instanceof J.Identifier) {
                                 J.Identifier variable = (J.Identifier) assignment.getVariable();
-                                if (SemanticallyEqual.areEqual(variable, variableName) &&
-                                        !containsIdentifier(variableName, assignment.getAssignment())) {
+                                if (SemanticallyEqual.areEqual(variable, variableId) &&
+                                        !containsIdentifier(variableId, assignment.getAssignment())) {
                                     return assignment;
                                 }
                             }
@@ -209,11 +209,11 @@ public class SwitchCaseAssigningToSwitchExpression extends Recipe {
                         return (J.Case) switchStatement.getCases().getStatements().get(0);
                     }
 
-                    private boolean containsIdentifier(J.Identifier identifierName, Expression expression) {
+                    private boolean containsIdentifier(J.Identifier identifier, Expression expression) {
                         return new JavaIsoVisitor<AtomicBoolean>() {
                             @Override
                             public J.Identifier visitIdentifier(J.Identifier id, AtomicBoolean found) {
-                                if (SemanticallyEqual.areEqual(id, identifierName)) {
+                                if (SemanticallyEqual.areEqual(id, identifier)) {
                                     found.set(true);
                                     return id;
                                 }
