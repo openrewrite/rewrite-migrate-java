@@ -129,7 +129,8 @@ public class UseJavaUtilBase64 extends Recipe {
                             .build()
                             .apply(updateCursor(c), c.getCoordinates().replace());
 
-                } else if (newBase64Decoder.matches(c)) {
+                }
+                if (newBase64Decoder.matches(c)) {
                     return JavaTemplate.builder(useMimeCoder ? "Base64.getMimeDecoder()" : "Base64.getDecoder()")
                             .contextSensitive()
                             .imports("java.util.Base64")
