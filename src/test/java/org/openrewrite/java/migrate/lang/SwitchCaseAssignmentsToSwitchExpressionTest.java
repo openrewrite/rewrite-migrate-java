@@ -714,10 +714,21 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
                   void doFormat(String str) {
                       String formatted = "initialValue";
                       switch (str) {
-                          case "foo": formatted = "Foo";
-                          case "bar": formatted = "Bar";
+                          case "foo": formatted = "Foo"; break;
+                          case "bar": formatted = "Bar"; break;
                           case null, default: formatted = "unknown";
                       }
+                  }
+              }
+              """,
+            """
+              class A {
+                  void doFormat(String str) {
+                      String formatted = switch (str) {
+                          case "foo": yield "Foo";
+                          case "bar": yield "Bar";
+                          case null, default: yield "unknown";
+                      };
                   }
               }
               """
@@ -857,6 +868,50 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
                       return switch (1) { // on the switch after code
                           default: yield "foo";
                       }; // after return on the same line
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void notConvertWhenFallThrough() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat(String str) {
+                      String formatted = "initialValue";
+                      switch (str) {
+                          case "A": formatted = "A"; // no break
+                          case "B": formatted = "B"; // no break
+                          case "C": formatted = "C"; // no break
+                          default: formatted = "Z";
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void notConvertWhenFallThroughAppends() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat(String str) {
+                      String formatted = "initialValue";
+                      switch (str) {
+                          case "A": formatted = "A";
+                          case "B": formatted = formatted + "B";
+                          case "C": formatted = formatted + "C";
+                          default: formatted = "Z"; break;
+                      }
                   }
               }
               """
