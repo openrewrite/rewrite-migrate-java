@@ -174,4 +174,27 @@ class SwitchExpressionYieldToArrowTest implements RewriteTest {
             )
         );
     }
+
+    @Test
+    void doNotConvertEmptyCases() {
+        rewriteRun(
+          java(
+            """
+              class Test {
+                  enum TrafficLight {
+                      RED, GREEN, YELLOW
+                  }
+                  void doFormat(TrafficLight light) {
+                      String status = switch (light) {
+                          case RED:
+                          case GREEN:
+                          case YELLOW: yield "unsure";
+                          default: yield "unknown";
+                      };
+                  }
+              }
+              """
+          )
+        );
+    }
 }
