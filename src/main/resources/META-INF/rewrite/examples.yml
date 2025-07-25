@@ -6314,33 +6314,6 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
-recipeName: org.openrewrite.java.migrate.lang.SwitchCaseReturnsToSwitchExpression
-examples:
-- description: ''
-  sources:
-  - before: |
-      class Test {
-          String doFormat(String str) {
-              switch (str) {
-                  case "foo": return "Foo";
-                  case "bar": return "Bar";
-                  case null, default: return "Other";
-              }
-          }
-      }
-    after: |
-      class Test {
-          String doFormat(String str) {
-              return switch (str) {
-                  case "foo" -> "Foo";
-                  case "bar" -> "Bar";
-                  case null, default -> "Other";
-              };
-          }
-      }
-    language: java
----
-type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.SwitchExpressionYieldToArrow
 examples:
 - description: ''
