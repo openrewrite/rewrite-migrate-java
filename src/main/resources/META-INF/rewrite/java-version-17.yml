@@ -60,7 +60,6 @@ recipeList:
       newVersion: 1.17.x
   - org.openrewrite.java.migrate.AddLombokMapstructBinding
   - org.openrewrite.java.migrate.lang.SwitchCaseAssignmentsToSwitchExpression
-  - org.openrewrite.java.migrate.lang.SwitchCaseReturnsToSwitchExpression
   - org.openrewrite.java.migrate.lang.SwitchExpressionYieldToArrow
 
 ---
