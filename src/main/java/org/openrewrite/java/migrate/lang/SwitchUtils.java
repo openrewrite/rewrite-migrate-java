@@ -30,7 +30,7 @@ class SwitchUtils {
      *
      * @param switch_ the switch statement to check
      * @return true if the switch covers all possible values, false otherwise
-     * @See <a href="https://docs.oracle.com/en/java/javase/21/language/switch-expressions-and-statements.html">Switch Expressions in Java 21</a>
+     * @see <a href="https://docs.oracle.com/en/java/javase/21/language/switch-expressions-and-statements.html">Switch Expressions in Java 21</a>
      */
     public static boolean coversAllPossibleValues(J.Switch switch_) {
         List<J> labels = new ArrayList<>();

@@ -110,7 +110,7 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
 
                             J.Case caseItem = (J.Case) s;
                             if (caseItem.getCaseLabels().get(0) instanceof J.Identifier &&
-                                    ((J.Identifier) caseItem.getCaseLabels().get(0)).getSimpleName().equals("default")) {
+                                    "default".equals(((J.Identifier) caseItem.getCaseLabels().get(0)).getSimpleName())) {
                                 isDefaultCaseAbsent.set(false);
                             }
 
@@ -151,19 +151,19 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
                             isQualified.set(false);
                             return null;
                         });
+                        if (!isQualified.get()) {
+                            return null;
+                        }
 
                         boolean shouldAddDefaultCase = isDefaultCaseAbsent.get() && !SwitchUtils.coversAllPossibleValues(originalSwitch);
                         Expression originalInitializer = originalVariable.getInitializer();
-
-                        if (!isQualified.get() ||
-                                (originalInitializer == null && shouldAddDefaultCase) ||
+                        if ((originalInitializer == null && shouldAddDefaultCase) ||
                                 (isLastCaseEmpty.get() && !shouldAddDefaultCase)) {
                             return null;
                         }
 
                         if (shouldAddDefaultCase) {
-                            updatedCases.add(
-                                    createDefaultCase(originalSwitch, originalInitializer.withPrefix(Space.SINGLE_SPACE), isUsingArrows.get()));
+                            updatedCases.add(createDefaultCase(originalSwitch, originalInitializer.withPrefix(Space.SINGLE_SPACE), isUsingArrows.get()));
                         }
 
                         return new J.SwitchExpression(

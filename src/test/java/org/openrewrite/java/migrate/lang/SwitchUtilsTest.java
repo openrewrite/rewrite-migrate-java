@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.lang;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
@@ -143,10 +142,9 @@ class SwitchUtilsTest {
         );
     }
 
-    @ExpectedToFail("Not implemented yet for sealed classes")
     @Test
     void coversAllCasesAllSealedClasses() {
-        assertTrue(
+        assertFalse(
           SwitchUtils.coversAllPossibleValues(
             extractSwitch(
               """
@@ -162,7 +160,7 @@ class SwitchUtilsTest {
                 }
                 """
             )
-          )
+          ), "Not implemented yet for sealed classes"
         );
     }
 
