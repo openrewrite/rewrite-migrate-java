@@ -24,24 +24,26 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JContainer;
+import org.openrewrite.java.tree.Space;
+import org.openrewrite.java.tree.Statement;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
-import java.util.List;
+import static java.util.Objects.requireNonNull;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class SwitchExpressionYieldToArrow extends Recipe {
     @Override
     public String getDisplayName() {
-        return "Convert switch expression colon case to arrow";
+        return "Convert switch expression yield to arrow";
     }
 
     @Override
     public String getDescription() {
-        return "Convert switch expressions with colon cases and yield statements to arrow syntax. " +
-                "This is only applicable for Java 14 and later.";
+        return "Convert switch expressions with colon cases and yield statements to arrow syntax.";
     }
 
     @Override
@@ -56,66 +58,46 @@ public class SwitchExpressionYieldToArrow extends Recipe {
             public J.SwitchExpression visitSwitchExpression(J.SwitchExpression switchExpression, ExecutionContext ctx) {
                 J.SwitchExpression se = super.visitSwitchExpression(switchExpression, ctx);
 
-                // First check if all cases are either arrow cases or simple yield cases
-                boolean hasColonCases = false;
-                boolean hasArrowCases = false;
-                boolean hasComplexCases = false;
-
-                for (Statement statement : se.getCases().getStatements()) {
-                    if (statement instanceof J.Case) {
-                        J.Case caseStatement = (J.Case) statement;
-                        if (caseStatement.getType() == J.Case.Type.Rule) {
-                            hasArrowCases = true;
-                        } else if (caseStatement.getType() == J.Case.Type.Statement && caseStatement.getBody() == null) {
-                            hasColonCases = true;
-                            List<Statement> statements = caseStatement.getStatements();
-                            // Check if this is a complex case (more than just a yield)
-                            if (statements.size() != 1 || !(statements.get(0) instanceof J.Yield)) {
-                                hasComplexCases = true;
-                            }
-                        }
-                    }
-                }
-
-                // Don't convert if there are no colon cases, has complex cases, or has a mix of arrow and colon
-                if (!hasColonCases || hasComplexCases || (hasArrowCases && hasColonCases)) {
+                // Check if this is a complex case (more than just a yield)
+                if (anythingOtherThanYield(se)) {
                     return se;
                 }
 
                 return se.withCases(se.getCases().withStatements(ListUtils.map(se.getCases().getStatements(), statement -> {
+                    J.Case caseStatement = (J.Case) requireNonNull(statement);
+                    J.Yield yieldStatement = (J.Yield) caseStatement.getStatements().get(0);
+
+                    // Add space after the last case label to create space before arrow
+                    JContainer<J> caseLabels = caseStatement.getPadding().getCaseLabels();
+                    JContainer<J> updatedLabels = caseLabels.getPadding().withElements(
+                            ListUtils.mapLast(caseLabels.getPadding().getElements(),
+                                    elem -> elem.withAfter(Space.SINGLE_SPACE))
+                    );
+
+                    return caseStatement
+                            .withStatements(null)
+                            .withBody(yieldStatement.getValue().withPrefix(Space.SINGLE_SPACE))
+                            .withType(J.Case.Type.Rule)
+                            .getPadding()
+                            .withCaseLabels(updatedLabels);
+                })));
+            }
+
+            // For now, we only convert switch expressions that consist solely of yield statements
+            private boolean anythingOtherThanYield(J.SwitchExpression se) {
+                for (Statement statement : se.getCases().getStatements()) {
                     if (!(statement instanceof J.Case)) {
-                        return statement;
+                        return true;
                     }
 
                     J.Case caseStatement = (J.Case) statement;
-
-                    // Only convert colon cases with yield statements
-                    if (caseStatement.getType() == J.Case.Type.Statement && caseStatement.getBody() == null) {
-                        List<Statement> statements = caseStatement.getStatements();
-
-                        // Check if this case has a single yield statement
-                        if (statements.size() == 1 && statements.get(0) instanceof J.Yield) {
-                            J.Yield yieldStatement = (J.Yield) statements.get(0);
-
-                            // Add space after the last case label to create space before arrow
-                            J.Case.Padding padding = caseStatement.getPadding();
-                            JContainer<J> caseLabels = padding.getCaseLabels();
-                            JContainer<J> updatedLabels = caseLabels.getPadding().withElements(
-                                ListUtils.mapLast(caseLabels.getPadding().getElements(),
-                                    elem -> elem.withAfter(Space.SINGLE_SPACE))
-                            );
-
-                            return caseStatement
-                                    .withStatements(null)
-                                    .withBody(yieldStatement.getValue().withPrefix(Space.SINGLE_SPACE))
-                                    .withType(J.Case.Type.Rule)
-                                    .getPadding()
-                                    .withCaseLabels(updatedLabels);
-                        }
+                    if (caseStatement.getType() != J.Case.Type.Statement ||
+                            caseStatement.getStatements().size() != 1 ||
+                            !(caseStatement.getStatements().get(0) instanceof J.Yield)) {
+                        return true;
                     }
-
-                    return caseStatement;
-                })));
+                }
+                return false;
             }
         });
     }
