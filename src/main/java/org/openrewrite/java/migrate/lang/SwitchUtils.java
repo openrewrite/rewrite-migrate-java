@@ -17,8 +17,9 @@ package org.openrewrite.java.migrate.lang;
 
 import org.openrewrite.java.tree.*;
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import static java.util.stream.Collectors.toSet;
 
 class SwitchUtils {
