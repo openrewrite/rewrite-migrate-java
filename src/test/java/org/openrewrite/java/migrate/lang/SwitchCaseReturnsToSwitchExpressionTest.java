@@ -66,6 +66,39 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
     }
 
     @Test
+    void convertSimpleSwitchWithReturnsAfterOtherStatements() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+            class Test {
+                String doFormat(String str) {
+                    System.out.println("Formatting: " + str);
+                    switch (str) {
+                        case "foo": return "Foo";
+                        case "bar": return "Bar";
+                        case null, default: return "Other";
+                    }
+                }
+            }
+            """,
+            """
+            class Test {
+                String doFormat(String str) {
+                    System.out.println("Formatting: " + str);
+                    return switch (str) {
+                        case "foo" -> "Foo";
+                        case "bar" -> "Bar";
+                        case null, default -> "Other";
+                    };
+                }
+            }
+            """
+          )
+        );
+    }
+
+    @Test
     void convertSwitchWithColonCases() {
         rewriteRun(
             //language=java

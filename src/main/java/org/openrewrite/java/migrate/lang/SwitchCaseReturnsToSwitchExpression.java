@@ -56,13 +56,11 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
             public J.Switch visitSwitch(J.Switch switch_, ExecutionContext ctx) {
                 J.Switch sw = super.visitSwitch(switch_, ctx);
 
-                // Check if this switch is the only statement in its parent block
+                // Check if this switch is the last statement in its parent block
                 Cursor parentCursor = getCursor().getParentTreeCursor();
                 if (parentCursor.getValue() instanceof J.Block) {
                     J.Block parentBlock = parentCursor.getValue();
-                    if (parentBlock.getStatements().size() == 1 &&
-                        parentBlock.getStatements().get(0) == sw) {
-
+                    if (parentBlock.getStatements().get(parentBlock.getStatements().size() - 1) == sw) {
                         if (canConvertToSwitchExpression(sw)) {
                             J.SwitchExpression switchExpression = convertToSwitchExpression(sw);
                             J.Return returnStatement = new J.Return(
@@ -77,7 +75,7 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                                 @Override
                                 public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
                                     if (block == parentBlock) {
-                                        return block.withStatements(ListUtils.concat(returnStatement, null));
+                                        return block.withStatements(ListUtils.mapLast(block.getStatements(), last -> returnStatement));
                                     }
                                     return super.visitBlock(block, ctx);
                                 }
