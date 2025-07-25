@@ -86,9 +86,9 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
               class Test {
                   void doFormat(Object obj) {
                       String formatted = switch (obj) {
-                          case Integer i: yield String.format("int %d", i);
-                          case Long l: yield String.format("long %d", l);
-                          default: yield "unknown";
+                          case Integer i -> String.format("int %d", i);
+                          case Long l -> String.format("long %d", l);
+                          default -> "unknown";
                       };
                   }
               }
@@ -143,9 +143,9 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
               class Test {
                   void doFormat(Object obj) {
                       String formatted = switch (obj) {
-                          case Integer i: yield String.format("int %d", i);
-                          case Long l: yield String.format("long %d", l);
-                          default: yield "unknown";
+                          case Integer i -> String.format("int %d", i);
+                          case Long l -> String.format("long %d", l);
+                          default -> "unknown";
                       };
                   }
               }
@@ -178,9 +178,9 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
               class Test {
                   void doFormat(Object obj) {
                       String formatted = switch (obj) {
-                          case Integer i: yield String.format("int %d", i);
-                          case Long l: yield String.format("long %d", l);
-                          default: yield "unknown";
+                          case Integer i -> String.format("int %d", i);
+                          case Long l -> String.format("long %d", l);
+                          default -> "unknown";
                       };
                   }
               }
@@ -352,9 +352,9 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
                   }
                   void doFormat(TrafficLight light) {
                       String status = switch (light) {
-                          case RED: yield "stop";
-                          case GREEN: yield "go";
-                          default: yield "initialValue";
+                          case RED -> "stop";
+                          case GREEN -> "go";
+                          default -> "initialValue";
                       };
                   }
               }
@@ -416,9 +416,9 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
                   }
                   void doFormat(TrafficLight light) {
                       String status = switch (light) {
-                          case RED: yield "stop";
-                          case GREEN: yield "go";
-                          case YELLOW: yield "unsure";
+                          case RED -> "stop";
+                          case GREEN -> "go";
+                          case YELLOW -> "unsure";
                       };
                   }
               }
@@ -537,7 +537,7 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
 
                   void doFormat(int i) {
                       String orig = switch (i) {
-                          default: yield "hello";
+                          default -> "hello";
                       };
                   }
               }
@@ -633,7 +633,7 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
               class Test {
                   String doFormat() {
                       return switch (1) {
-                          default: yield "foo";
+                          default -> "foo";
                       };
                   }
               }
@@ -679,14 +679,14 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
               class Test {
                   String originalVariableNotReturned() {
                       String formatted = switch (1) {
-                          default: yield "foo";
+                          default -> "foo";
                       };
                       return "string";
                   }
 
                   String codeBetweenSwitchAndReturn() {
                       String formatted = switch (1) {
-                          default: yield "foo";
+                          default -> "foo";
                       };
                       System.out.println("Hey");
                       return formatted;
@@ -694,7 +694,7 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
 
                   void noReturnedExpression() {
                       String formatted = switch (1) {
-                          default: yield "foo";
+                          default -> "foo";
                       };
                       return;
                   }
@@ -725,9 +725,9 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
               class A {
                   void doFormat(String str) {
                       String formatted = switch (str) {
-                          case "foo": yield "Foo";
-                          case "bar": yield "Bar";
-                          case null, default: yield "unknown";
+                          case "foo" -> "Foo";
+                          case "bar" -> "Bar";
+                          case null, default -> "unknown";
                       };
                   }
               }
@@ -786,7 +786,7 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
               class Test {
                   void doFormat() {
                       String formatted = switch (1) {
-                          default: yield "foo";
+                          default -> "foo";
                       };
                   }
               }
@@ -866,7 +866,7 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
                       // last line of the switch
                       // between switch and return
                       return switch (1) { // on the switch after code
-                          default: yield "foo";
+                          default -> "foo";
                       }; // after return on the same line
                   }
               }

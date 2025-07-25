@@ -70,6 +70,7 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
                         return block.withStatements(ListUtils.map(block.getStatements(), (index, statement) -> {
                             if (statement == originalSwitch.getAndSet(null)) {
                                 doAfterVisit(new InlineVariable().getVisitor());
+                                doAfterVisit(new SwitchExpressionYieldToArrow().getVisitor());
                                 // We've already converted the switch/assignments to an assignment with a switch expression.
                                 return null;
                             }
