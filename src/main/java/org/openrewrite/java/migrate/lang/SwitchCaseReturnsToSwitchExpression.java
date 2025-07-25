@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lang;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -27,7 +28,6 @@ import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.openrewrite.Tree.randomId;
 
@@ -41,8 +41,7 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Switch statements where each case returns a value can be converted to a switch expression that returns the value directly. " +
-                "This is only applicable for Java 14 and later.";
+        return "Switch statements where each case returns a value can be converted to a switch expression that returns the value directly.";
     }
 
     @Override
@@ -66,25 +65,23 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
 
                         if (canConvertToSwitchExpression(sw)) {
                             J.SwitchExpression switchExpression = convertToSwitchExpression(sw);
-                            if (switchExpression != null) {
-                                J.Return returnStatement = new J.Return(
-                                        randomId(),
-                                        sw.getPrefix(),
-                                        Markers.EMPTY,
-                                        switchExpression
-                                );
+                            J.Return returnStatement = new J.Return(
+                                    randomId(),
+                                    sw.getPrefix(),
+                                    Markers.EMPTY,
+                                    switchExpression
+                            );
 
-                                // Replace the parent block's content
-                                doAfterVisit(new JavaIsoVisitor<ExecutionContext>() {
-                                    @Override
-                                    public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
-                                        if (block == parentBlock) {
-                                            return block.withStatements(ListUtils.concat(returnStatement, null));
-                                        }
-                                        return super.visitBlock(block, ctx);
+                            // Replace the parent block's content
+                            doAfterVisit(new JavaIsoVisitor<ExecutionContext>() {
+                                @Override
+                                public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
+                                    if (block == parentBlock) {
+                                        return block.withStatements(ListUtils.concat(returnStatement, null));
                                     }
-                                });
-                            }
+                                    return super.visitBlock(block, ctx);
+                                }
+                            });
                         }
                     }
                 }
@@ -93,14 +90,11 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
             }
 
             private boolean canConvertToSwitchExpression(J.Switch switchStatement) {
-                AtomicBoolean allCasesReturn = new AtomicBoolean(true);
-                AtomicBoolean hasDefaultCase = new AtomicBoolean(false);
-                AtomicBoolean isUsingArrows = new AtomicBoolean(true);
+                boolean hasDefaultCase = false;
 
                 for (Statement statement : switchStatement.getCases().getStatements()) {
                     if (!(statement instanceof J.Case)) {
-                        allCasesReturn.set(false);
-                        break;
+                        return false;
                     }
 
                     J.Case caseStatement = (J.Case) statement;
@@ -108,7 +102,7 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                     // Check for default case
                     for (J label : caseStatement.getCaseLabels()) {
                         if (label instanceof J.Identifier && "default".equals(((J.Identifier) label).getSimpleName())) {
-                            hasDefaultCase.set(true);
+                            hasDefaultCase = true;
                         }
                     }
 
@@ -119,20 +113,19 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                             body = ((J.Block) body).getStatements().get(0);
                         }
                         if (!(body instanceof J.Return)) {
-                            allCasesReturn.set(false);
+                            return false;
                         }
                     } else {
                         // Colon case
-                        isUsingArrows.set(false);
                         List<Statement> statements = caseStatement.getStatements();
                         if (statements.isEmpty() || !isReturnCase(statements)) {
-                            allCasesReturn.set(false);
+                            return false;
                         }
                     }
                 }
 
                 // We need either a default case or the switch to cover all possible values
-                return allCasesReturn.get() && (hasDefaultCase.get() || SwitchUtils.coversAllPossibleValues(switchStatement));
+                return hasDefaultCase || SwitchUtils.coversAllPossibleValues(switchStatement);
             }
 
             private boolean isReturnCase(List<Statement> statements) {
@@ -243,7 +236,7 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
             }
 
 
-            private Expression extractReturnExpression(List<Statement> statements) {
+            private @Nullable Expression extractReturnExpression(List<Statement> statements) {
                 if (statements.isEmpty()) {
                     return null;
                 }

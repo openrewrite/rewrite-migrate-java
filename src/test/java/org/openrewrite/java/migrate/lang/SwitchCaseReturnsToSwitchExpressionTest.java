@@ -168,51 +168,6 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
     }
 
     @Test
-    void doNotConvertWhenNotAllCasesReturn() {
-        rewriteRun(
-            //language=java
-            java(
-                """
-                class Test {
-                    String process(String str) {
-                        switch (str) {
-                            case "foo":
-                                return "Foo";
-                            case "bar":
-                                System.out.println("Bar case");
-                                break;
-                            default:
-                                return "Other";
-                        }
-                        return "End";
-                    }
-                }
-                """
-            )
-        );
-    }
-
-    @Test
-    void doNotConvertWhenNoDefaultAndNotExhaustive() {
-        rewriteRun(
-            //language=java
-            java(
-                """
-                class Test {
-                    String format(String str) {
-                        switch (str) {
-                            case "foo": return "Foo";
-                            case "bar": return "Bar";
-                        }
-                        return "Not found";
-                    }
-                }
-                """
-            )
-        );
-    }
-
-    @Test
     void convertEnumSwitchThatIsExhaustive() {
         rewriteRun(
             //language=java
@@ -244,6 +199,51 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
                 }
                 """
             )
+        );
+    }
+
+    @Test
+    void doNotConvertWhenNotAllCasesReturn() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+            class Test {
+                String process(String str) {
+                    switch (str) {
+                        case "foo":
+                            return "Foo";
+                        case "bar":
+                            System.out.println("Bar case");
+                            break;
+                        default:
+                            return "Other";
+                    }
+                    return "End";
+                }
+            }
+            """
+          )
+        );
+    }
+
+    @Test
+    void doNotConvertWhenNoDefaultAndNotExhaustive() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+            class Test {
+                String format(String str) {
+                    switch (str) {
+                        case "foo": return "Foo";
+                        case "bar": return "Bar";
+                    }
+                    return "Not found";
+                }
+            }
+            """
+          )
         );
     }
 
