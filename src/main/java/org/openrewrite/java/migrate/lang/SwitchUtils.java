@@ -20,6 +20,7 @@ import org.openrewrite.java.tree.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import static java.util.stream.Collectors.toSet;
 
 class SwitchUtils {
