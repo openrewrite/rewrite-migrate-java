@@ -17,9 +17,9 @@ package org.openrewrite.java.migrate.lang;
 
 import org.openrewrite.java.tree.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+
+import static java.util.stream.Collectors.toSet;
 
 class SwitchUtils {
     /**
@@ -43,21 +43,26 @@ class SwitchUtils {
             }
         }
         JavaType javaType = switch_.getSelector().getTree().getType();
-        if (javaType instanceof JavaType.Class && ((JavaType.Class) javaType).getKind() == JavaType.FullyQualified.Kind.Enum) {
-            // Every enum value must be present in the switch
-            return ((JavaType.Class) javaType).getMembers().stream().filter(member -> member.hasFlags(Flag.Enum)).allMatch(variable ->
-                    labels.stream().anyMatch(label -> {
-                        if (!(label instanceof TypeTree && TypeUtils.isOfType(((TypeTree) label).getType(), javaType))) {
-                            return false;
-                        }
-                        J.Identifier enumName = null;
-                        if (label instanceof J.Identifier) {
-                            enumName = (J.Identifier) label;
-                        } else if (label instanceof J.FieldAccess) {
-                            enumName = ((J.FieldAccess) label).getName();
-                        }
-                        return enumName != null && Objects.equals(variable.getName(), enumName.getSimpleName());
-                    }));
+        if (javaType instanceof JavaType.Class) {
+            JavaType.Class javaTypeClass = (JavaType.Class) javaType;
+            if (javaTypeClass.hasFlags(Flag.Enum)) {
+                Collection<String> labelValues = labels.stream()
+                        .filter(label -> label instanceof J.Identifier || label instanceof J.FieldAccess)
+                        .filter(label -> TypeUtils.isOfType(((TypeTree) label).getType(), javaType))
+                        .map(label -> label instanceof J.Identifier ?
+                                ((J.Identifier) label).getSimpleName() :
+                                ((J.FieldAccess) label).getName().getSimpleName())
+                        .collect(toSet());
+                if (labelValues.isEmpty()) {
+                    return false;
+                }
+                Collection<String> enumValues = javaTypeClass.getMembers().stream()
+                        .filter(member -> member.hasFlags(Flag.Enum))
+                        .map(JavaType.Variable::getName)
+                        .collect(toSet());
+                // Every enum value must be present in the switch
+                return !enumValues.isEmpty() && labelValues.containsAll(enumValues);
+            }
         }
         return false;
     }

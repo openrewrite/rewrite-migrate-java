@@ -24,11 +24,11 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
 @SuppressWarnings({"EnhancedSwitchMigration", "RedundantLabeledSwitchRuleCodeBlock", "StringOperationCanBeSimplified", "SwitchStatementWithTooFewBranches", "UnnecessaryReturnStatement", "UnusedAssignment"})
-class SwitchCaseAssigningToSwitchExpressionTest implements RewriteTest {
+class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new SwitchCaseAssigningToSwitchExpression())
+          .recipe(new SwitchCaseAssignmentsToSwitchExpression())
           .allSources(source -> version(source, 17));
     }
 

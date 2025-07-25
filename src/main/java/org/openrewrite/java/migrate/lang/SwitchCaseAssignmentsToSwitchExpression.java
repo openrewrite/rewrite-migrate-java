@@ -40,7 +40,7 @@ import static org.openrewrite.Tree.randomId;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class SwitchCaseAssigningToSwitchExpression extends Recipe {
+public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
     @Override
     public String getDisplayName() {
         return "Convert assigning Switch statements to Switch expressions";
