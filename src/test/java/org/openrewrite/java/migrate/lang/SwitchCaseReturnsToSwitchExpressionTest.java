@@ -32,9 +32,9 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(17)));
     }
 
+    @DocumentExample
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/800")
     @Test
-    @DocumentExample
     void convertSimpleSwitchWithReturns() {
         rewriteRun(
             //language=java

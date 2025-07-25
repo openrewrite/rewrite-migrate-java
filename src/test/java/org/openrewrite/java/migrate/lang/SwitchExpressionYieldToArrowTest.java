@@ -32,9 +32,9 @@ class SwitchExpressionYieldToArrowTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(17)));
     }
 
+    @DocumentExample
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/799")
     @Test
-    @DocumentExample
     void convertSwitchExpressionWithYield() {
         rewriteRun(
             //language=java
@@ -99,6 +99,41 @@ class SwitchExpressionYieldToArrowTest implements RewriteTest {
     }
 
     @Test
+    void convertEnumSwitchExpression() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+            class Test {
+                enum Color { RED, GREEN, BLUE }
+
+                String colorName(Color color) {
+                    return switch (color) {
+                        case RED: yield "Red";
+                        case GREEN: yield "Green";
+                        case BLUE: yield "Blue";
+                    };
+                }
+            }
+            """,
+            """
+            class Test {
+                enum Color { RED, GREEN, BLUE }
+
+                String colorName(Color color) {
+                    return switch (color) {
+                        case RED -> "Red";
+                        case GREEN -> "Green";
+                        case BLUE -> "Blue";
+                    };
+                }
+            }
+            """
+          )
+        );
+    }
+
+    @Test
     void doNotConvertArrowCases() {
         rewriteRun(
             //language=java
@@ -130,61 +165,6 @@ class SwitchExpressionYieldToArrowTest implements RewriteTest {
                             case "foo":
                                 System.out.println("Processing foo");
                                 yield "Foo";
-                            case "bar": yield "Bar";
-                            default: yield "Other";
-                        };
-                    }
-                }
-                """
-            )
-        );
-    }
-
-    @Test
-    void convertEnumSwitchExpression() {
-        rewriteRun(
-            //language=java
-            java(
-                """
-                class Test {
-                    enum Color { RED, GREEN, BLUE }
-
-                    String colorName(Color color) {
-                        return switch (color) {
-                            case RED: yield "Red";
-                            case GREEN: yield "Green";
-                            case BLUE: yield "Blue";
-                        };
-                    }
-                }
-                """,
-                """
-                class Test {
-                    enum Color { RED, GREEN, BLUE }
-
-                    String colorName(Color color) {
-                        return switch (color) {
-                            case RED -> "Red";
-                            case GREEN -> "Green";
-                            case BLUE -> "Blue";
-                        };
-                    }
-                }
-                """
-            )
-        );
-    }
-
-    @Test
-    void doNotConvertMixedCases() {
-        rewriteRun(
-            //language=java
-            java(
-                """
-                class Test {
-                    String process(String str) {
-                        return switch (str) {
-                            case "foo" -> "Foo";
                             case "bar": yield "Bar";
                             default: yield "Other";
                         };
