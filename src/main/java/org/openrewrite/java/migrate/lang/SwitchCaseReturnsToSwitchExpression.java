@@ -53,38 +53,23 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
         );
         return Preconditions.check(preconditions, new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.Switch visitSwitch(J.Switch switch_, ExecutionContext ctx) {
-                J.Switch sw = super.visitSwitch(switch_, ctx);
-
-                // Check if this switch is the last statement in its parent block
-                Cursor parentCursor = getCursor().getParentTreeCursor();
-                if (parentCursor.getValue() instanceof J.Block) {
-                    J.Block parentBlock = parentCursor.getValue();
-                    if (parentBlock.getStatements().get(parentBlock.getStatements().size() - 1) == sw) {
+            public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
+                J.Block b = super.visitBlock(block, ctx);
+                return b.withStatements(ListUtils.map(b.getStatements(), statement -> {
+                    if (statement instanceof J.Switch) {
+                        J.Switch sw = (J.Switch) statement;
                         if (canConvertToSwitchExpression(sw)) {
                             J.SwitchExpression switchExpression = convertToSwitchExpression(sw);
-                            J.Return returnStatement = new J.Return(
+                            return new J.Return(
                                     randomId(),
                                     sw.getPrefix(),
                                     Markers.EMPTY,
                                     switchExpression
                             );
-
-                            // Replace the parent block's content
-                            doAfterVisit(new JavaIsoVisitor<ExecutionContext>() {
-                                @Override
-                                public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
-                                    if (block == parentBlock) {
-                                        return block.withStatements(ListUtils.mapLast(block.getStatements(), last -> returnStatement));
-                                    }
-                                    return super.visitBlock(block, ctx);
-                                }
-                            });
                         }
                     }
-                }
-
-                return sw;
+                    return statement;
+                }));
             }
 
             private boolean canConvertToSwitchExpression(J.Switch switchStatement) {
@@ -207,8 +192,8 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
 
                             // Add space after the last case label to create space before arrow
                             JContainer<J> updatedLabels = caseLabels.getPadding().withElements(
-                                ListUtils.mapLast(caseLabels.getPadding().getElements(),
-                                    elem -> elem.withAfter(Space.SINGLE_SPACE))
+                                    ListUtils.mapLast(caseLabels.getPadding().getElements(),
+                                            elem -> elem.withAfter(Space.SINGLE_SPACE))
                             );
 
                             return caseStatement
