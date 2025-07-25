@@ -81,7 +81,8 @@ public class URLConstructorToURICreate extends Recipe {
                             String literalValueSource = ((J.Literal) arg).getValueSource();
                             // Remove quotations from string
                             return literalValueSource != null ? literalValueSource.substring(1, literalValueSource.length() - 1).trim() : null;
-                        } else if (arg instanceof J.Identifier &&
+                        }
+                        if (arg instanceof J.Identifier &&
                                 TypeUtils.isOfType(arg.getType(), JavaType.Primitive.String)) {
                             // find constant value of the identifier
                             try {

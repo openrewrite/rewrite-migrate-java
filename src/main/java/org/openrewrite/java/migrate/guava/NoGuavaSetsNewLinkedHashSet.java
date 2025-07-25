@@ -66,8 +66,9 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
                             .imports("java.util.LinkedHashSet")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace());
-                } else if (NEW_LINKED_HASH_SET_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
-                           TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
+                }
+                if (NEW_LINKED_HASH_SET_ITERABLE.matches(method) && method.getArguments().size() == 1 &&
+                        TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
                     return JavaTemplate.builder("new LinkedHashSet<>(#{any(java.util.Collection)})")
@@ -75,7 +76,8 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
                             .imports("java.util.LinkedHashSet")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
-                } else if (NEW_LINKED_HASH_SET_CAPACITY.matches(method)) {
+                }
+                if (NEW_LINKED_HASH_SET_CAPACITY.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
                     return JavaTemplate.builder("new LinkedHashSet<>(#{any(int)})")
