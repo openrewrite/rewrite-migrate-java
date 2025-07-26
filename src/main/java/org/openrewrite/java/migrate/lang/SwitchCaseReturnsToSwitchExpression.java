@@ -76,22 +76,12 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
             }
 
             private boolean canConvertToSwitchExpression(J.Switch switchStatement) {
-                boolean hasDefaultCase = false;
-
                 for (Statement statement : switchStatement.getCases().getStatements()) {
                     if (!(statement instanceof J.Case)) {
                         return false;
                     }
 
                     J.Case caseStatement = (J.Case) statement;
-
-                    // Check for default case
-                    for (J label : caseStatement.getCaseLabels()) {
-                        if (label instanceof J.Identifier && "default".equals(((J.Identifier) label).getSimpleName())) {
-                            hasDefaultCase = true;
-                        }
-                    }
-
                     if (caseStatement.getBody() != null) {
                         // Arrow case
                         J body = caseStatement.getBody();
@@ -111,7 +101,7 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                 }
 
                 // We need either a default case or the switch to cover all possible values
-                return hasDefaultCase || SwitchUtils.coversAllPossibleValues(switchStatement);
+                return SwitchUtils.coversAllPossibleValues(switchStatement);
             }
 
             private boolean isReturnCase(List<Statement> statements) {
@@ -119,26 +109,13 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                     return false;
                 }
 
-
                 // Handle block containing a single return
                 if (statements.size() == 1 && statements.get(0) instanceof J.Block) {
-                    J.Block block = (J.Block) statements.get(0);
-                    if (block.getStatements().size() == 1 && block.getStatements().get(0) instanceof J.Return) {
-                        return true;
-                    }
+                    return isReturnCase(((J.Block) statements.get(0)).getStatements());
                 }
 
                 // Direct return statement
-                if (statements.size() == 1 && statements.get(0) instanceof J.Return) {
-                    return true;
-                }
-
-                // Return followed by break (unreachable but sometimes present)
-                if (statements.size() == 2 && statements.get(0) instanceof J.Return && statements.get(1) instanceof J.Break) {
-                    return true;
-                }
-
-                return false;
+                return statements.size() == 1 && statements.get(0) instanceof J.Return;
             }
 
             private J.SwitchExpression convertToSwitchExpression(J.Switch switchStatement) {
