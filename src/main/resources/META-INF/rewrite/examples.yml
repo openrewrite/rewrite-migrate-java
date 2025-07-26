@@ -3826,6 +3826,40 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.UseRangesRecipes
+examples:
+- description: ''
+  sources:
+  - before: |
+      import java.math.BigDecimal;
+
+      class Test {
+
+        void foo() {
+          BigDecimal from = new BigDecimal("0");
+          BigDecimal candidate = new BigDecimal("0");
+          BigDecimal to = new BigDecimal("2");
+          boolean trueCondition = from.compareTo(candidate) <= 0
+                                && candidate.compareTo(to) <= 0;
+        }
+      }
+    after: |
+      import com.google.common.collect.Range;
+
+      import java.math.BigDecimal;
+
+      class Test {
+
+        void foo() {
+          BigDecimal from = new BigDecimal("0");
+          BigDecimal candidate = new BigDecimal("0");
+          BigDecimal to = new BigDecimal("2");
+          boolean trueCondition = Range.closed(from, to).contains(candidate);
+        }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.io.ReplaceFileInOrOutputStreamFinalizeWithClose
 examples:
 - description: ''
