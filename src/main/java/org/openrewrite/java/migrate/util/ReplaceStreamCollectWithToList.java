@@ -27,6 +27,8 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -95,12 +97,54 @@ public class ReplaceStreamCollectWithToList extends Recipe {
             Expression command = method.getArguments().get(0);
             if (COLLECT_TO_UNMODIFIABLE_LIST.matches(command) ||
                     convertToList && COLLECT_TO_LIST.matches(command)) {
+                
+                // Check if the transformation would result in incompatible types
+                if (!isTypeCompatible(result)) {
+                    return result;
+                }
+                
                 maybeRemoveImport("java.util.stream.Collectors");
                 J.MethodInvocation toList = JavaTemplate.apply("#{any(java.util.stream.Stream)}.toList()",
                         updateCursor(result), result.getCoordinates().replace(), result.getSelect());
                 return toList.getPadding().withSelect(result.getPadding().getSelect());
             }
             return result;
+        }
+
+        private boolean isTypeCompatible(J.MethodInvocation method) {
+            // Get the type of the collect method invocation (the resulting List type)
+            JavaType methodType = method.getType();
+            if (!(methodType instanceof JavaType.Parameterized)) {
+                return true; // Conservative: allow transformation if we can't determine the type
+            }
+            
+            JavaType.Parameterized resultListType = (JavaType.Parameterized) methodType;
+            if (resultListType.getTypeParameters().isEmpty()) {
+                return true; // No type parameters to check
+            }
+            
+            // Get the stream type to determine what toList() would return
+            Expression select = method.getSelect();
+            if (select == null || select.getType() == null) {
+                return true; // Conservative: allow transformation if we can't determine the stream type
+            }
+            
+            JavaType streamType = select.getType();
+            if (!(streamType instanceof JavaType.Parameterized)) {
+                return true; // Conservative: allow transformation if stream type is not parameterized
+            }
+            
+            JavaType.Parameterized parameterizedStream = (JavaType.Parameterized) streamType;
+            if (parameterizedStream.getTypeParameters().isEmpty()) {
+                return true; // No type parameters to check
+            }
+            
+            JavaType streamElementType = parameterizedStream.getTypeParameters().get(0);
+            JavaType expectedElementType = resultListType.getTypeParameters().get(0);
+            
+            // Check if the stream element type and expected list element type are exactly the same
+            // If they differ (e.g., Stream<Integer> but List<Number>), don't transform
+            return TypeUtils.isOfType(streamElementType, expectedElementType);
         }
     }
 }
