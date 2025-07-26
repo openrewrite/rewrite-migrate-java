@@ -119,34 +119,10 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
             }
 
             private J.SwitchExpression convertToSwitchExpression(J.Switch switchStatement) {
-                // First pass to determine return type
-                JavaType returnType = null;
-                for (Statement statement : switchStatement.getCases().getStatements()) {
-                    J.Case caseStatement = (J.Case) statement;
-                    if (caseStatement.getBody() != null) {
-                        J body = caseStatement.getBody();
-                        if (body instanceof J.Block && ((J.Block) body).getStatements().size() == 1) {
-                            body = ((J.Block) body).getStatements().get(0);
-                        }
-                        if (body instanceof J.Return) {
-                            J.Return ret = (J.Return) body;
-                            if (ret.getExpression() != null && ret.getExpression().getType() != null) {
-                                returnType = ret.getExpression().getType();
-                                break;
-                            }
-                        }
-                    } else {
-                        Expression returnExpression = extractReturnExpression(caseStatement.getStatements());
-                        if (returnExpression != null && returnExpression.getType() != null) {
-                            returnType = returnExpression.getType();
-                            break;
-                        }
-                    }
-                }
+                JavaType returnType = extractReturnType(switchStatement);
 
                 List<Statement> convertedCases = ListUtils.map(switchStatement.getCases().getStatements(), statement -> {
                     J.Case caseStatement = (J.Case) statement;
-
                     if (caseStatement.getBody() != null) {
                         // Arrow case
                         J body = caseStatement.getBody();
@@ -156,9 +132,7 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                         if (body instanceof J.Return) {
                             J.Return ret = (J.Return) body;
                             if (ret.getExpression() != null) {
-                                return caseStatement
-                                        .withBody(ret.getExpression())
-                                        .withType(J.Case.Type.Rule);
+                                return caseStatement.withBody(ret.getExpression());
                             }
                         }
                     } else {
@@ -166,16 +140,10 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                         Expression returnExpression = extractReturnExpression(caseStatement.getStatements());
                         if (returnExpression != null) {
                             // When converting from colon to arrow syntax, we need to ensure proper spacing
-                            // The space before the arrow is handled by the padding on the case labels
-                            J.Case.Padding padding = caseStatement.getPadding();
-                            JContainer<J> caseLabels = padding.getCaseLabels();
-
-                            // Add space after the last case label to create space before arrow
+                            JContainer<J> caseLabels = caseStatement.getPadding().getCaseLabels();
                             JContainer<J> updatedLabels = caseLabels.getPadding().withElements(
                                     ListUtils.mapLast(caseLabels.getPadding().getElements(),
-                                            elem -> elem.withAfter(Space.SINGLE_SPACE))
-                            );
-
+                                            elem -> elem.withAfter(Space.SINGLE_SPACE)));
                             return caseStatement
                                     .withStatements(null)
                                     .withBody(returnExpression.withPrefix(Space.SINGLE_SPACE))
@@ -184,10 +152,8 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                                     .withCaseLabels(updatedLabels);
                         }
                     }
-
                     return caseStatement;
                 });
-
                 return new J.SwitchExpression(
                         randomId(),
                         Space.SINGLE_SPACE,
@@ -198,14 +164,38 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                 );
             }
 
+            private @Nullable JavaType extractReturnType(J.Switch switchStatement) {
+                for (Statement statement : switchStatement.getCases().getStatements()) {
+                    J.Case caseStatement = (J.Case) statement;
+                    if (caseStatement.getBody() != null) {
+                        J body = caseStatement.getBody();
+                        if (body instanceof J.Block && ((J.Block) body).getStatements().size() == 1) {
+                            body = ((J.Block) body).getStatements().get(0);
+                        }
+                        if (body instanceof J.Return) {
+                            J.Return ret = (J.Return) body;
+                            if (ret.getExpression() != null && ret.getExpression().getType() != null) {
+                                return ret.getExpression().getType();
+                            }
+                        }
+                    } else {
+                        Expression returnExpression = extractReturnExpression(caseStatement.getStatements());
+                        if (returnExpression != null && returnExpression.getType() != null) {
+                            return returnExpression.getType();
+                        }
+                    }
+                }
+                return null;
+            }
+
 
             private @Nullable Expression extractReturnExpression(List<Statement> statements) {
-                if (statements.isEmpty()) {
+                if (statements.size() != 1) {
                     return null;
                 }
 
                 // Handle block containing a single return
-                if (statements.size() == 1 && statements.get(0) instanceof J.Block) {
+                if (statements.get(0) instanceof J.Block) {
                     J.Block block = (J.Block) statements.get(0);
                     if (block.getStatements().size() == 1 && block.getStatements().get(0) instanceof J.Return) {
                         return ((J.Return) block.getStatements().get(0)).getExpression();
@@ -213,7 +203,7 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                 }
 
                 // Direct return statement
-                if (statements.size() >= 1 && statements.get(0) instanceof J.Return) {
+                if (statements.get(0) instanceof J.Return) {
                     return ((J.Return) statements.get(0)).getExpression();
                 }
 
