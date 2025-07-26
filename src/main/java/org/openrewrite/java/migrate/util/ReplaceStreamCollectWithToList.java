@@ -27,6 +27,8 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -95,12 +97,32 @@ public class ReplaceStreamCollectWithToList extends Recipe {
             Expression command = method.getArguments().get(0);
             if (COLLECT_TO_UNMODIFIABLE_LIST.matches(command) ||
                     convertToList && COLLECT_TO_LIST.matches(command)) {
+
+                // Check if the transformation would result in incompatible types
+                if (!areTypesCompatible(result)) {
+                    return result;
+                }
+
                 maybeRemoveImport("java.util.stream.Collectors");
                 J.MethodInvocation toList = JavaTemplate.apply("#{any(java.util.stream.Stream)}.toList()",
                         updateCursor(result), result.getCoordinates().replace(), result.getSelect());
                 return toList.getPadding().withSelect(result.getPadding().getSelect());
             }
             return result;
+        }
+
+        private boolean areTypesCompatible(J.MethodInvocation method) {
+            if (method.getSelect() == null ||
+                    method.getSelect().getType() == null ||
+                    !(method.getSelect().getType() instanceof JavaType.Parameterized) ||
+                    !(method.getType() instanceof JavaType.Parameterized)) {
+                return false;
+            }
+            // Check if the stream element type and expected list element type are exactly the same
+            // If they differ (e.g., Stream<Integer> but List<Number>), don't transform
+            return TypeUtils.isOfType(
+                    ((JavaType.Parameterized) method.getSelect().getType()).getTypeParameters().get(0),
+                    ((JavaType.Parameterized) method.getType()).getTypeParameters().get(0));
         }
     }
 }
