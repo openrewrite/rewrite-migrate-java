@@ -251,11 +251,9 @@ examples:
   - before: |
       <project>
         <modelVersion>4.0.0</modelVersion>
-
         <groupId>com.mycompany.app</groupId>
         <artifactId>my-app</artifactId>
         <version>1</version>
-
         <dependencies>
           <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -1027,6 +1025,27 @@ recipeName: org.openrewrite.java.migrate.UpgradePluginsForJava11
 examples:
 - description: ''
   sources:
+  - before: project
+    language: mavenProject
+  - before: |
+      <project>
+        <groupId>com.mycompany.app</groupId>
+        <artifactId>my-app</artifactId>
+        <version>1</version>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>jaxb2-maven-plugin</artifactId>
+              <version>2.3.1</version>
+            </plugin>
+          </plugins>
+        </build>
+      </project>
+    path: pom.xml
+    language: xml
+- description: ''
+  sources:
   - before: |
       <project>
         <groupId>com.mycompany.app</groupId>
@@ -1059,27 +1078,6 @@ examples:
               <groupId>ro.isdc.wro4j</groupId>
               <artifactId>wro4j-maven-plugin</artifactId>
               <version>${wro4j.version}</version>
-            </plugin>
-          </plugins>
-        </build>
-      </project>
-    path: pom.xml
-    language: xml
-- description: ''
-  sources:
-  - before: project
-    language: mavenProject
-  - before: |
-      <project>
-        <groupId>com.mycompany.app</groupId>
-        <artifactId>my-app</artifactId>
-        <version>1</version>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>jaxb2-maven-plugin</artifactId>
-              <version>2.3.1</version>
             </plugin>
           </plugins>
         </build>
@@ -3343,25 +3341,6 @@ examples:
 - description: ''
   sources:
   - before: |
-      import com.google.common.base.MoreObjects;
-
-      class A {
-          Object foo(Object obj) {
-              return MoreObjects.firstNonNull(obj, "default");
-          }
-      }
-    after: |
-      import java.util.Objects;
-
-      class A {
-          Object foo(Object obj) {
-              return Objects.requireNonNullElse(obj, "default");
-          }
-      }
-    language: java
-- description: ''
-  sources:
-  - before: |
       import com.google.common.base.Optional;
 
       class A {
@@ -3402,6 +3381,25 @@ examples:
               } catch (NoSuchElementException e) {
                   return "";
               }
+          }
+      }
+    language: java
+- description: ''
+  sources:
+  - before: |
+      import com.google.common.base.MoreObjects;
+
+      class A {
+          Object foo(Object obj) {
+              return MoreObjects.firstNonNull(obj, "default");
+          }
+      }
+    after: |
+      import java.util.Objects;
+
+      class A {
+          Object foo(Object obj) {
+              return Objects.requireNonNullElse(obj, "default");
           }
       }
     language: java
@@ -5939,7 +5937,7 @@ examples:
   - before: |
       package com.acme.music;
 
-      public class Test {
+      class Test {
           Record record;
       }
     after: |
@@ -5947,7 +5945,7 @@ examples:
 
       import com.acme.music.Record;
 
-      public class Test {
+      class Test {
           Record record;
       }
     language: java
@@ -6237,6 +6235,34 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.SwitchCaseAssignmentsToSwitchExpression
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          void doFormat(Object obj) {
+              String formatted = "initialValue";
+              switch (obj) {
+                  case Integer i -> formatted = String.format("int %d", i);
+                  case Long l -> formatted = String.format("long %d", l);
+                  default -> formatted = "unknown";
+              }
+          }
+      }
+    after: |
+      class Test {
+          void doFormat(Object obj) {
+              String formatted = switch (obj) {
+                  case Integer i -> String.format("int %d", i);
+                  case Long l -> String.format("long %d", l);
+                  default -> "unknown";
+              };
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.SwitchCaseEnumGuardToLabel
 examples:
 - description: ''
@@ -6284,6 +6310,35 @@ examples:
       package suits;
       public enum Suit {
           CLUBS, DIAMONDS, HEARTS, SPADES, JOKER, SCORECARD
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.SwitchExpressionYieldToArrow
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          String format(String str) {
+              String formatted = switch (str) {
+                  case "foo": yield "Foo";
+                  case "bar": yield "Bar";
+                  case null, default: yield "unknown";
+              };
+              return formatted;
+          }
+      }
+    after: |
+      class Test {
+          String format(String str) {
+              String formatted = switch (str) {
+                  case "foo" -> "Foo";
+                  case "bar" -> "Bar";
+                  case null, default -> "unknown";
+              };
+              return formatted;
+          }
       }
     language: java
 ---
@@ -6439,25 +6494,21 @@ examples:
 - description: ''
   sources:
   - before: |
-      package com.example.app;
-
       import java.util.List;
       import java.util.ArrayList;
 
       class A {
-        void m() {
-            List<String> strs = new ArrayList<>();
-        }
+          void m() {
+              List<String> strs = new ArrayList<>();
+          }
       }
     after: |
-      package com.example.app;
-
       import java.util.ArrayList;
 
       class A {
-        void m() {
-            var strs = new ArrayList<String>();
-        }
+          void m() {
+              var strs = new ArrayList<String>();
+          }
       }
     language: java
 ---
@@ -6691,6 +6742,25 @@ examples:
       </project>
     path: pom.xml
     language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lombok.LombokOnXToOnX_
+examples:
+- description: ''
+  sources:
+  - before: |
+      import lombok.Getter;
+      class Example {
+          @Getter(onMethod=@__({@Deprecated}))
+          private String field;
+      }
+    after: |
+      import lombok.Getter;
+      class Example {
+          @Getter(onMethod_={@Deprecated})
+          private String field;
+      }
+    language: java
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.LombokValToFinalVar

@@ -136,7 +136,8 @@ public class NullCheck implements Trait<J.If> {
                     if (binary.getOperator() == Equal) {
                         if (J.Literal.isLiteralValue(binary.getLeft(), null)) {
                             return new NullCheck(cursor, binary.getRight());
-                        } else if (J.Literal.isLiteralValue(binary.getRight(), null)) {
+                        }
+                        if (J.Literal.isLiteralValue(binary.getRight(), null)) {
                             return new NullCheck(cursor, binary.getLeft());
                         }
                     }

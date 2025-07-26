@@ -78,8 +78,8 @@ public class AddJaxwsRuntime extends Recipe {
         return Arrays.asList(addJaxwsRuntimeGradle, addJaxwsRuntimeMaven);
     }
 
-    @Value
     @EqualsAndHashCode(callSuper = false)
+    @Value
     public static class AddJaxwsRuntimeGradle extends Recipe {
         @Override
         public String getDisplayName() {
@@ -169,8 +169,8 @@ public class AddJaxwsRuntime extends Recipe {
         }
     }
 
-    @Value
     @EqualsAndHashCode(callSuper = false)
+    @Value
     public static class AddJaxwsRuntimeMaven extends Recipe {
         @Override
         public String getDisplayName() {
@@ -188,8 +188,8 @@ public class AddJaxwsRuntime extends Recipe {
         @Override
         public TreeVisitor<?, ExecutionContext> getVisitor() {
             return new MavenIsoVisitor<ExecutionContext>() {
-                @SuppressWarnings({"ReassignedVariable", "ConstantConditions"})
                 @Override
+                @SuppressWarnings({"ReassignedVariable", "ConstantConditions"})
                 public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
                     Xml.Document d = super.visitDocument(document, ctx);
                     MavenResolutionResult mavenModel = getResolutionResult();

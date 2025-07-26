@@ -72,8 +72,8 @@ class UseVarForPrimitiveTest extends VarBaseTest {
     @Nested
     class Applicable {
 
-        @Test
         @DocumentExample
+        @Test
         void forChar() {
             //language=java
             rewriteRun(

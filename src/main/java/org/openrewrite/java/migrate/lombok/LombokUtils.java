@@ -111,9 +111,8 @@ class LombokUtils {
                     fieldName.substring(0, 3).matches("is[A-Z]");
             if (alreadyStartsWithIs) {
                 return fieldName;
-            } else {
-                return "is" + StringUtils.capitalize(fieldName);
             }
+            return "is" + StringUtils.capitalize(fieldName);
         }
         return "get" + StringUtils.capitalize(fieldName);
     }
@@ -214,9 +213,11 @@ class LombokUtils {
     static AccessLevel getAccessLevel(J.MethodDeclaration methodDeclaration) {
         if (methodDeclaration.hasModifier(Public)) {
             return PUBLIC;
-        } else if (methodDeclaration.hasModifier(Protected)) {
+        }
+        if (methodDeclaration.hasModifier(Protected)) {
             return PROTECTED;
-        } else if (methodDeclaration.hasModifier(Private)) {
+        }
+        if (methodDeclaration.hasModifier(Private)) {
             return PRIVATE;
         }
         return PACKAGE;

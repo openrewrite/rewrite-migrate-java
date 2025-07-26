@@ -31,9 +31,9 @@ class ThreadStopUnsupportedTest implements RewriteTest {
         spec.recipe(new ThreadStopUnsupported());
     }
 
-    @Test
-    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/194")
     @DocumentExample
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/194")
+    @Test
     void addCommentPreJava21() {
         rewriteRun(
           //language=java

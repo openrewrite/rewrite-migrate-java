@@ -52,7 +52,7 @@ public class UpdateBeanManagerMethods extends Recipe {
                 if (fireEventMatcher.matches(method) && mi.getSelect() != null) {
                     if (arguments.size() <= 1) {
                         return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getEvent()" +
-                                                    ".fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})")
+                                ".fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})")
                                 .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
                                 .build()
                                 .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), arguments.get(0));
@@ -66,13 +66,14 @@ public class UpdateBeanManagerMethods extends Recipe {
                     args[arguments.size()] = arguments.get(0);
 
                     String template = "#{any(jakarta.enterprise.inject.spi.BeanManager)}.getEvent()" +
-                                      ".select(" + String.join(", ", Collections.nCopies(arguments.size() - 1, "#{any(java.lang.annotation.Annotation)}")) + ')' +
-                                      ".fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})";
+                            ".select(" + String.join(", ", Collections.nCopies(arguments.size() - 1, "#{any(java.lang.annotation.Annotation)}")) + ')' +
+                            ".fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})";
                     return JavaTemplate.builder(template)
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
                             .build()
                             .apply(updateCursor(mi), mi.getCoordinates().replace(), args);
-                } else if (createInjectionTargetMatcher.matches(method) && mi.getSelect() != null) {
+                }
+                if (createInjectionTargetMatcher.matches(method) && mi.getSelect() != null) {
                     return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getInjectionTargetFactory(#{any(jakarta.enterprise.inject.spi.AnnotatedType)}).createInjectionTarget(null)")
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
                             .build()

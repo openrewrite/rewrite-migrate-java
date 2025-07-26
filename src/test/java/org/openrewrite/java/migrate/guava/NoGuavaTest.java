@@ -62,8 +62,8 @@ class NoGuavaTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/39#issuecomment-910673213")
+    @Test
     void preferJavaUtilObjectsHashCode() {
         //language=java
         rewriteRun(
@@ -100,8 +100,8 @@ class NoGuavaTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/39#issuecomment-910673213")
+    @Test
     void preferJavaUtilObjectsEquals() {
         //language=java
         rewriteRun(

@@ -23,21 +23,26 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.SemanticallyEqual;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Objects.requireNonNull;
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
+import static org.openrewrite.java.migrate.lang.SwitchUtils.coversAllPossibleValues;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class NullCheckAsSwitchCase extends Recipe {
     @Override
     public String getDisplayName() {
@@ -58,7 +63,13 @@ public class NullCheckAsSwitchCase extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(Preconditions.not(new KotlinFileChecker<>()), new JavaVisitor<ExecutionContext>() {
+        TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
+                new UsesJavaVersion<>(21),
+                Preconditions.not(new KotlinFileChecker<>()),
+                Preconditions.not(new GroovyFileChecker<>())
+        );
+
+        return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitBlock(J.Block block, ExecutionContext ctx) {
                 AtomicReference<@Nullable NullCheck> nullCheck = new AtomicReference<>();
@@ -68,13 +79,18 @@ public class NullCheckAsSwitchCase extends Recipe {
                     if (nullCheckOpt.isPresent()) {
                         NullCheck check = nullCheckOpt.get();
                         J nextStatement = index + 1 < block.getStatements().size() ? block.getStatements().get(index + 1) : null;
-                        if (!(nextStatement instanceof J.Switch) ||
-                                hasNullCase((J.Switch) nextStatement) ||
-                                !SemanticallyEqual.areEqual(((J.Switch) nextStatement).getSelector().getTree(), check.getNullCheckedParameter()) ||
-                                check.returns() ||
-                                check.couldModifyNullCheckedValue()) {
+                        if (!(nextStatement instanceof J.Switch) || check.returns() || check.couldModifyNullCheckedValue()) {
                             return statement;
                         }
+                        J.Switch nextSwitch = (J.Switch) nextStatement;
+                        // Only if the switch does not have a null case and switches on the same value as the null check, we can remove the null check
+                        // It must have all possible input values covered
+                        if (hasNullCase(nextSwitch) ||
+                                !SemanticallyEqual.areEqual(nextSwitch.getSelector().getTree(), check.getNullCheckedParameter()) ||
+                                !coversAllPossibleValues(nextSwitch)) {
+                            return statement;
+                        }
+
                         nullCheck.set(check);
                         return null;
                     }
@@ -106,6 +122,16 @@ public class NullCheckAsSwitchCase extends Recipe {
             }
 
             private J.Case createNullCase(J.Switch aSwitch, Statement whenNull) {
+                J.Case currentFirstCase = aSwitch.getCases().getStatements().isEmpty() ||
+                        !(aSwitch.getCases().getStatements().get(0) instanceof J.Case) ?
+                        null : (J.Case) aSwitch.getCases().getStatements().get(0);
+                if (currentFirstCase == null || J.Case.Type.Rule == currentFirstCase.getType()) {
+                    return createCaseRule(aSwitch, whenNull);
+                }
+                return createCaseStatement(aSwitch, whenNull, currentFirstCase);
+            }
+
+            private J.Case createCaseRule(J.Switch aSwitch, Statement whenNull) {
                 if (whenNull instanceof J.Block && ((J.Block) whenNull).getStatements().size() == 1) {
                     Statement firstStatement = ((J.Block) whenNull).getStatements().get(0);
                     if (firstStatement instanceof Expression || firstStatement instanceof J.Throw) {
@@ -121,6 +147,45 @@ public class NullCheckAsSwitchCase extends Recipe {
                         whenNull);
                 J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
                 return nullCase.withBody(requireNonNull(nullCase.getBody()).withPrefix(Space.SINGLE_SPACE));
+            }
+
+            private J.Case createCaseStatement(J.Switch aSwitch, Statement whenNull, J.Case currentFirstCase) {
+                List<J> statements = new ArrayList<>();
+                statements.add(aSwitch.getSelector().getTree());
+                if (whenNull instanceof J.Block) {
+                    statements.addAll(((J.Block) whenNull).getStatements());
+                } else {
+                    statements.add(whenNull);
+                }
+
+                // Check if the last statement is a throw statement
+                Statement lastStatement = null;
+                if (whenNull instanceof J.Block) {
+                    List<Statement> blockStatements = ((J.Block) whenNull).getStatements();
+                    if (!blockStatements.isEmpty()) {
+                        lastStatement = blockStatements.get(blockStatements.size() - 1);
+                    }
+                } else {
+                    lastStatement = whenNull;
+                }
+
+                StringBuilder template = new StringBuilder("switch(#{any()}) {\ncase null:");
+                for (int i = 1; i < statements.size(); i++) {
+                    template.append("\n#{any()};");
+                }
+                if (!(lastStatement instanceof J.Throw)) {
+                    template.append("\nbreak;");
+                }
+                template.append("\n}");
+                J.Switch switchWithNullCase = JavaTemplate.apply(
+                        template.toString(),
+                        new Cursor(getCursor(), aSwitch),
+                        aSwitch.getCoordinates().replace(),
+                        statements.toArray());
+                J.Case nullCase = (J.Case) switchWithNullCase.getCases().getStatements().get(0);
+                Space currentFirstCaseIndentation = currentFirstCase.getStatements().stream().map(J::getPrefix).findFirst().orElse(Space.SINGLE_SPACE);
+
+                return nullCase.withStatements(ListUtils.mapFirst(nullCase.getStatements(), s -> s == null ? null : s.withPrefix(currentFirstCaseIndentation)));
             }
         });
     }

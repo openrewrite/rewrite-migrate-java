@@ -28,8 +28,8 @@ import org.openrewrite.xml.tree.Xml;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class BeanDiscovery extends Recipe {
 
     private static final XPathMatcher BEANS_MATCHER = new XPathMatcher("/beans");

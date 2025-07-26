@@ -27,9 +27,9 @@ import static java.util.Collections.singletonList;
 /**
  * @deprecated in favor of {@link org.openrewrite.maven.UpdateMavenProjectPropertyJavaVersion}
  */
-@Value
-@EqualsAndHashCode(callSuper = false)
 @Deprecated
+@EqualsAndHashCode(callSuper = false)
+@Value
 public class UpdateMavenProjectPropertyJavaVersion extends Recipe {
 
     @Option(displayName = "Java version",

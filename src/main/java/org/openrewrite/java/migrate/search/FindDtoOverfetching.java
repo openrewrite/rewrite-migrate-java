@@ -31,8 +31,8 @@ import java.util.TreeSet;
 import static java.util.Collections.emptySet;
 import static org.openrewrite.internal.StringUtils.uncapitalize;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class FindDtoOverfetching extends Recipe {
     @Option(displayName = "DTO type",
             description = "The fully qualified name of the DTO.",

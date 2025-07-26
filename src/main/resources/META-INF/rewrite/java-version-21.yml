@@ -39,7 +39,8 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradePluginsForJava21
   - org.openrewrite.java.migrate.DeleteDeprecatedFinalize
   - org.openrewrite.java.migrate.RemovedSubjectMethods
-  # - org.openrewrite.java.migrate.SwitchPatternMatching
+  #- org.openrewrite.java.migrate.SwitchPatternMatching
+  #- org.openrewrite.java.migrate.lang.NullCheckAsSwitchCase
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -142,6 +143,5 @@ tags:
   - java21
 recipeList:
   - org.openrewrite.java.migrate.lang.IfElseIfConstructToSwitch
-  - org.openrewrite.java.migrate.lang.NullCheckAsSwitchCase
   - org.openrewrite.java.migrate.lang.RefineSwitchCases
   - org.openrewrite.java.migrate.lang.SwitchCaseEnumGuardToLabel

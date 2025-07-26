@@ -32,8 +32,8 @@ class RemoveBeanIsNullableTest implements RewriteTest {
             .classpathFromResources(new InMemoryExecutionContext(), "jakarta.enterprise.cdi-api-3.0.0-M4"));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void removeBeanIsNullable() {
         rewriteRun(
           //language=java

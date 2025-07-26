@@ -43,8 +43,8 @@ import java.util.stream.Collectors;
 import static java.util.Objects.requireNonNull;
 import static org.openrewrite.Tree.randomId;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UseTextBlocks extends Recipe {
     @Option(displayName = "Whether to convert strings without newlines (the default value is true).",
             description = "Whether or not strings without newlines should be converted to text block when processing code. " +
@@ -204,8 +204,9 @@ public class UseTextBlocks extends Recipe {
             concatenationSb.append(b.getPrefix().getWhitespace()).append("-");
             concatenationSb.append(b.getPadding().getOperator().getBefore().getWhitespace()).append("-");
             return flatAdditiveStringLiterals(b.getLeft(), stringLiterals, contentSb, concatenationSb) &&
-                   flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
-        } else if (isRegularStringLiteral(expression)) {
+                    flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
+        }
+        if (isRegularStringLiteral(expression)) {
             J.Literal l = (J.Literal) expression;
             stringLiterals.add(l);
             contentSb.append(requireNonNull(l.getValue()));
@@ -243,11 +244,10 @@ public class UseTextBlocks extends Recipe {
         int spaceCount = tabAndSpaceCounts[1];
         if (useTabCharacter) {
             return StringUtils.repeat("\t", tabCount) +
-                   StringUtils.repeat(" ", spaceCount);
-        } else {
-            // replace tab with spaces if the style is using spaces
-            return StringUtils.repeat(" ", tabCount * tabSize + spaceCount);
+                    StringUtils.repeat(" ", spaceCount);
         }
+        // replace tab with spaces if the style is using spaces
+        return StringUtils.repeat(" ", tabCount * tabSize + spaceCount);
     }
 
     /**

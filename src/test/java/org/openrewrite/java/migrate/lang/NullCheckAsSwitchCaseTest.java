@@ -18,20 +18,24 @@ package org.openrewrite.java.migrate.lang;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.version;
 
 class NullCheckAsSwitchCaseTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new NullCheckAsSwitchCase());
+        spec
+          .recipe(new NullCheckAsSwitchCase())
+          .allSources(source -> version(source, 21));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void mergeNullCheckWithSwitch() {
         rewriteRun(
           //language=java
@@ -63,6 +67,63 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
                           case "C" -> formatted = "Good";
                           case "D" -> formatted = "Hmmm...";
                           default -> formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void mergeNullCheckWithSwitchStatement() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  static String score(String obj) {
+                      String formatted = "Score not translated yet";
+                      if (obj == null) {
+                          formatted = "You did not enter the test yet";
+                      }
+                      switch (obj) {
+                          case "A", "B":
+                              formatted = "Very good";
+                              break;
+                          case "C":
+                              formatted = "Good";
+                              break;
+                          case "D":
+                              formatted = "Hmmm...";
+                              break;
+                          default:
+                              formatted = "unknown";
+                      }
+                      return formatted;
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static String score(String obj) {
+                      String formatted = "Score not translated yet";
+                      switch (obj) {
+                          case null:
+                              formatted = "You did not enter the test yet";
+                              break;
+                          case "A", "B":
+                              formatted = "Very good";
+                              break;
+                          case "C":
+                              formatted = "Good";
+                              break;
+                          case "D":
+                              formatted = "Hmmm...";
+                              break;
+                          default:
+                              formatted = "unknown";
                       }
                       return formatted;
                   }
@@ -510,6 +571,61 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
         );
     }
 
+    @Test
+    void mergeWhenExistingSwitchIsCoveringAllPossibleEnumValues() {
+        rewriteRun(
+          java(
+            """
+              package suits;
+              public enum Suit {
+                  CLUBS, DIAMONDS, HEARTS, SPADES, JOKER
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              import suits.Suit;
+              import static suits.Suit.HEARTS;
+              import static suits.Suit.DIAMONDS;
+              import static suits.Suit.JOKER;
+              class Test {
+                  void score(Suit obj) {
+                      if (obj == null) {
+                          System.out.println("no suit chosen yet.");
+                      }
+                      switch (obj) {
+                          case Suit.CLUBS -> System.out.println(Suit.CLUBS);
+                          case Suit.SPADES -> System.out.println(Suit.SPADES);
+                          case HEARTS -> System.out.println(HEARTS);
+                          case DIAMONDS -> System.out.println(DIAMONDS);
+                          case JOKER -> System.out.println(JOKER);
+                      }
+                  }
+              }
+              """,
+            """
+              import suits.Suit;
+              import static suits.Suit.HEARTS;
+              import static suits.Suit.DIAMONDS;
+              import static suits.Suit.JOKER;
+              class Test {
+                  void score(Suit obj) {
+                      switch (obj) {
+                          case null -> System.out.println("no suit chosen yet.");
+                          case Suit.CLUBS -> System.out.println(Suit.CLUBS);
+                          case Suit.SPADES -> System.out.println(Suit.SPADES);
+                          case HEARTS -> System.out.println(HEARTS);
+                          case DIAMONDS -> System.out.println(DIAMONDS);
+                          case JOKER -> System.out.println(JOKER);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class Throws {
         @Test
@@ -754,5 +870,123 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
             );
         }
 
+        @Test
+        void doNotMergeWhenExistingSwitchIsNotCoveringAllPossibleInputValuesWithDefault() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String score(String obj) {
+                          String formatted = "Score not translated yet";
+                          if (obj == null) {
+                              throw new IllegalArgumentException();
+                          }
+                          switch (obj) {
+                              case "A", "B" -> formatted = "Very good";
+                              case "C" -> formatted = "Good";
+                              case "D" -> formatted = "Hmmm...";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void doNotMergeWhenExistingSwitchIsNotCoveringAllPossibleEnumValues() {
+            rewriteRun(
+              java(
+                """
+                  package suits;
+                  public enum Suit {
+                      CLUBS, DIAMONDS, HEARTS, SPADES, JOKER
+                  }
+                  """
+              ),
+              //language=java
+              java(
+                """
+                  import suits.Suit;
+                  import static suits.Suit.HEARTS;
+                  class Test {
+                      void score(Suit obj) {
+                          if (obj == null) {
+                              System.out.println("no suit chosen yet.");
+                          }
+                          switch (obj) {
+                              case Suit.SPADES -> System.out.println(Suit.SPADES);
+                              case HEARTS -> System.out.println(HEARTS);
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/785")
+    @Test
+    void noBreakAfterThrow() {
+        rewriteRun(
+          java(
+            """
+              class Foo {
+                  String bar(String foo) {
+                      if (foo == null) {
+                          throw new RuntimeException("");
+                      }
+                      switch (foo) {
+                          case "hello":
+                              return "world";
+                          default:
+                              return "other";
+                      }
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  String bar(String foo) {
+                      switch (foo) {
+                          case null:
+                              throw new RuntimeException("");
+                          case "hello":
+                              return "world";
+                          default:
+                              return "other";
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/785")
+    @Test
+    void noChangeOnReturn() {
+        rewriteRun(
+          java(
+            """
+              class Foo {
+                  String bar(String foo) {
+                      if (foo == null) {
+                          return "";
+                      }
+                      switch (foo) {
+                          case "hello":
+                              return "world";
+                          default:
+                              return "other";
+                      }
+                  }
+              }
+              """
+          )
+        );
     }
 }

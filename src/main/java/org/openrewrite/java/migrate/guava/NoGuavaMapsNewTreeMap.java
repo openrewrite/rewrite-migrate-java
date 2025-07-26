@@ -64,7 +64,8 @@ public class NoGuavaMapsNewTreeMap extends Recipe {
                             .imports("java.util.TreeMap")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace());
-                } else if (NEW_TREE_MAP_WITH_COMPARATOR.matches(method)) {
+                }
+                if (NEW_TREE_MAP_WITH_COMPARATOR.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.TreeMap");
                     return JavaTemplate.builder("new TreeMap<>(#{any(java.util.Comparator)})")
@@ -72,7 +73,8 @@ public class NoGuavaMapsNewTreeMap extends Recipe {
                             .imports("java.util.TreeMap")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
-                } else if (NEW_TREE_MAP_WITH_MAP.matches(method)) {
+                }
+                if (NEW_TREE_MAP_WITH_MAP.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.TreeMap");
                     return JavaTemplate.builder("new TreeMap<>(#{any(java.util.Map)})")

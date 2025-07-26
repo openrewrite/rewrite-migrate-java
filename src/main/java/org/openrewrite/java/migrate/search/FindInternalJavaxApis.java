@@ -30,8 +30,8 @@ import org.openrewrite.marker.SearchResult;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@RequiredArgsConstructor
 public class FindInternalJavaxApis extends Recipe {
 
     private final transient MethodCalls methodCalls = new MethodCalls(this);

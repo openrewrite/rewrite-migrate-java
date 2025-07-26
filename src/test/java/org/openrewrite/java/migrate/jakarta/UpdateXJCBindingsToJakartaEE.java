@@ -46,8 +46,8 @@ class UpdateXJCBindingsToJakartaEE implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/741")
+    @Test
     void noMigrateIBMFiles() {
         rewriteRun(
           //language=xml
@@ -67,8 +67,8 @@ class UpdateXJCBindingsToJakartaEE implements RewriteTest {
     @Nested
     class Migrate {
 
-        @Test
         @DocumentExample
+        @Test
         void both() {
             rewriteRun(
               //language=xml

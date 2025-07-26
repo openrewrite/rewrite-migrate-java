@@ -49,8 +49,8 @@ class ReplaceLocalizedStreamMethodsTest implements RewriteTest {
             "com.test.Runtime1 getLocalizedOutputStream1(java.io.OutputStream)"));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void replaceGetLocalizedInputStream() {
         rewriteRun(
           //language=java
