@@ -85,16 +85,16 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                     if (caseStatement.getBody() != null) {
                         // Arrow case
                         J body = caseStatement.getBody();
-                        if (body instanceof J.Block && ((J.Block) body).getStatements().size() == 1) {
-                            body = ((J.Block) body).getStatements().get(0);
-                        }
-                        if (!(body instanceof J.Return)) {
+                        if (body instanceof J.Block) {
+                            if (!isReturnCase(((J.Block) body).getStatements())) {
+                                return false;
+                            }
+                        } else if (!(body instanceof J.Return)) {
                             return false;
                         }
                     } else {
                         // Colon case
-                        List<Statement> statements = caseStatement.getStatements();
-                        if (statements.isEmpty() || !isReturnCase(statements)) {
+                        if (!isReturnCase(caseStatement.getStatements())) {
                             return false;
                         }
                     }
@@ -105,17 +105,15 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
             }
 
             private boolean isReturnCase(List<Statement> statements) {
-                if (statements.isEmpty()) {
+                if (statements.size() != 1) {
                     return false;
                 }
-
                 // Handle block containing a single return
-                if (statements.size() == 1 && statements.get(0) instanceof J.Block) {
+                if (statements.get(0) instanceof J.Block) {
                     return isReturnCase(((J.Block) statements.get(0)).getStatements());
                 }
-
                 // Direct return statement
-                return statements.size() == 1 && statements.get(0) instanceof J.Return;
+                return statements.get(0) instanceof J.Return;
             }
 
             private J.SwitchExpression convertToSwitchExpression(J.Switch switchStatement) {
@@ -193,7 +191,6 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                 if (statements.size() != 1) {
                     return null;
                 }
-
                 // Handle block containing a single return
                 if (statements.get(0) instanceof J.Block) {
                     J.Block block = (J.Block) statements.get(0);
@@ -201,12 +198,10 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                         return ((J.Return) block.getStatements().get(0)).getExpression();
                     }
                 }
-
                 // Direct return statement
                 if (statements.get(0) instanceof J.Return) {
                     return ((J.Return) statements.get(0)).getExpression();
                 }
-
                 return null;
             }
         });
