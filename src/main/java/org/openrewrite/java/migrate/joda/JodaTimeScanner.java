@@ -29,6 +29,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavadocVisitor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
+import org.openrewrite.marker.SearchResult;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -93,14 +94,19 @@ class JodaTimeScanner extends ScopeAwareVisitor {
 
     @Override
     public J visitVariable(NamedVariable variable, ExecutionContext ctx) {
-        if (variable.getType() == null || !variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+        if (variable.getType() == null){
+            return SearchResult.found(variable, "Variable with no type is found. Please check your code."); // unhandled case
+        }
+        if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return super.visitVariable(variable, ctx);
         }
         // TODO: handle class variables
+        // working fine with disabling for safe check in JodaTimeVisitor
         if (isClassVar(variable)) {
             acc.getUnsafeVars().add(variable);
             return variable;
         }
+
         variable = (NamedVariable) super.visitVariable(variable, ctx);
 
         if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
@@ -197,13 +203,26 @@ class JodaTimeScanner extends ScopeAwareVisitor {
             if (argPos == -1) {
                 return method;
             }
-            String paramName = parentMethod.getMethodType().getParameterNames().get(argPos);
-            NamedVariable var = acc.getVarTable().getVarByName(parentMethod.getMethodType(), paramName);
+
+            JavaType.Method parentMethodType = parentMethod.getMethodType();
+            List<JavaType> parameterTypes = parentMethodType.getParameterTypes();
+            int parameterTypesSize = parameterTypes.size();
+            //try to process method with variable arguments
+            if(argPos > parameterTypesSize)
+            {
+                //todo find better way to detect (...) in method arguments
+                if (parameterTypes.get(parameterTypesSize - 1).toString().endsWith("[]")){
+                    return method;
+                }
+            }
+
+            String paramName = parentMethodType.getParameterNames().get(argPos);
+            NamedVariable var = acc.getVarTable().getVarByName(parentMethodType, paramName);
             if (var != null) {
                 methodReferencedVars.computeIfAbsent(method.getMethodType(), k -> new HashSet<>()).add(var);
             } else {
                 methodUnresolvedReferencedVars.computeIfAbsent(method.getMethodType(), k -> new HashSet<>())
-                        .add(new UnresolvedVar(parentMethod.getMethodType(), paramName));
+                        .add(new UnresolvedVar(parentMethodType, paramName));
             }
         }
         return method;
