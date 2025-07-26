@@ -99,7 +99,7 @@ public class ReplaceStreamCollectWithToList extends Recipe {
                     convertToList && COLLECT_TO_LIST.matches(command)) {
 
                 // Check if the transformation would result in incompatible types
-                if (!isTypeCompatible(result)) {
+                if (!areTypesCompatible(result)) {
                     return result;
                 }
 
@@ -111,30 +111,18 @@ public class ReplaceStreamCollectWithToList extends Recipe {
             return result;
         }
 
-        private boolean isTypeCompatible(J.MethodInvocation method) {
-            // Get the type of the collect method invocation (the resulting List type)
-            JavaType methodType = method.getType();
-            if (!(methodType instanceof JavaType.Parameterized)) {
-                return true; // Conservative: allow transformation if we can't determine the type
+        private boolean areTypesCompatible(J.MethodInvocation method) {
+            if (method.getSelect() == null ||
+                    method.getSelect().getType() == null ||
+                    !(method.getSelect().getType() instanceof JavaType.Parameterized) ||
+                    !(method.getType() instanceof JavaType.Parameterized)) {
+                return false;
             }
-
-            // Get the stream type to determine what toList() would return
-            Expression select = method.getSelect();
-            if (select == null || select.getType() == null) {
-                return true; // Conservative: allow transformation if we can't determine the stream type
-            }
-
-            JavaType streamType = select.getType();
-            if (!(streamType instanceof JavaType.Parameterized)) {
-                return true; // Conservative: allow transformation if stream type is not parameterized
-            }
-
-            JavaType streamElementType = ((JavaType.Parameterized) streamType).getTypeParameters().get(0);
-            JavaType expectedElementType = ((JavaType.Parameterized) methodType).getTypeParameters().get(0);
-
             // Check if the stream element type and expected list element type are exactly the same
             // If they differ (e.g., Stream<Integer> but List<Number>), don't transform
-            return TypeUtils.isOfType(streamElementType, expectedElementType);
+            return TypeUtils.isOfType(
+                    ((JavaType.Parameterized) method.getSelect().getType()).getTypeParameters().get(0),
+                    ((JavaType.Parameterized) method.getType()).getTypeParameters().get(0));
         }
     }
 }
