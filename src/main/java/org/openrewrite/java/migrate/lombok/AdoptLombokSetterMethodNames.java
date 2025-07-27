@@ -25,6 +25,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
@@ -88,10 +89,18 @@ public class AdoptLombokSetterMethodNames extends ScanningRecipe<List<AdoptLombo
                     return method;
                 }
 
-                JavaType.Variable fieldType = extractVariable(method);
+                JavaType.Variable fieldType;
+                Expression variable = ((J.Assignment) method.getBody().getStatements().get(0)).getVariable();
+                if (variable instanceof J.FieldAccess) {
+                    fieldType = ((J.FieldAccess) variable).getName().getFieldType();
+                } else if (variable instanceof J.Identifier) {
+                    fieldType = ((J.Identifier) variable).getFieldType();
+                } else {
+                    return method;
+                }
 
-                String expectedMethodName = LombokUtils.deriveSetterMethodName(fieldType);
                 // If method already has the name it should have, then nothing to be done
+                String expectedMethodName = LombokUtils.deriveSetterMethodName(fieldType);
                 if (expectedMethodName.equals(method.getSimpleName())) {
                     return method;
                 }
@@ -107,23 +116,6 @@ public class AdoptLombokSetterMethodNames extends ScanningRecipe<List<AdoptLombo
                 doNotRename.remove(method.getSimpleName()); //actual method name becomes available again
                 doNotRename.add(expectedMethodName); //expected method name now blocked
                 return method;
-            }
-
-            private JavaType.@Nullable Variable extractVariable(J.MethodDeclaration method) {
-                J.Assignment assignment_ = (J.Assignment) method.getBody().getStatements().get(0);
-
-                JavaType.Variable fieldType;
-                if (assignment_.getVariable() instanceof J.FieldAccess) {
-                    J.FieldAccess fieldAccess = (J.FieldAccess) assignment_.getVariable();
-                    fieldType = fieldAccess.getName().getFieldType();
-                } else if (assignment_.getVariable() instanceof J.Identifier) {
-                    J.Identifier fieldAccess = (J.Identifier) assignment_.getVariable();
-                    fieldType = fieldAccess.getFieldType();
-                } else {
-                    //only those types above are possible, see LombokUtils::isEffectivelySetter
-                    throw new IllegalStateException("Unexpected type for returned variable");
-                }
-                return fieldType;
             }
         };
     }
