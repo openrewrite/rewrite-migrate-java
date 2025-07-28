@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Collections.singletonList;
-import static java.util.Objects.requireNonNull;
 import static org.openrewrite.Tree.randomId;
 
 @Value
@@ -262,8 +261,12 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
                                     return false;
                                 }
 
+                                if (b.getType() == null) {
+                                    return true; // Don't make any changes if the type is unknown.
+                                }
+
                                 return a.getType() == JavaType.Primitive.String &&
-                                        (!(b.getType() instanceof JavaType.Primitive || requireNonNull(b.getType()).toString().startsWith("java.lang")) &&
+                                        (!(b.getType() instanceof JavaType.Primitive || b.getType().toString().startsWith("java.lang")) &&
                                                 !TypeUtils.isAssignableTo("java.lang.String", b.getType()));
                             }
 
