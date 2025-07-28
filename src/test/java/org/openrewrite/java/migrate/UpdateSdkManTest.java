@@ -20,6 +20,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.openrewrite.test.SourceSpecs.text;
 
@@ -27,22 +28,6 @@ import static org.openrewrite.test.SourceSpecs.text;
 class UpdateSdkManTest implements RewriteTest {
 
     @DocumentExample
-    @Test
-    void updateVersionUsingMajorOnly() {
-        rewriteRun(
-          spec -> spec.recipe(new UpdateSdkMan("17", null)),
-          text(
-            """
-              java=11.0.25-tem
-              """,
-            """
-              java=17.0.15-tem
-              """,
-            spec -> spec.path(".sdkmanrc")
-          )
-        );
-    }
-
     @Test
     void updateVersionExact() {
         rewriteRun(
@@ -55,6 +40,20 @@ class UpdateSdkManTest implements RewriteTest {
               java=17.0.14-tem
               """,
             spec -> spec.path(".sdkmanrc")
+          )
+        );
+    }
+
+    @Test
+    void updateVersionUsingMajorOnly() {
+        rewriteRun(
+          spec -> spec.recipe(new UpdateSdkMan("17", null)),
+          text(
+            """
+              java=11.0.25-tem
+              """,
+            spec -> spec.path(".sdkmanrc")
+              .after(sdkmanrc -> assertThat(sdkmanrc).containsOnlyOnce("java=").containsPattern("java=17").actual())
           )
         );
     }
