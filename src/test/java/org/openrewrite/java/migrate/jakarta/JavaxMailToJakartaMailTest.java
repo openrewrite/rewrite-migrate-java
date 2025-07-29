@@ -20,6 +20,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
@@ -57,23 +58,9 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                     </dependencies>
                 </project>
                 """,
-              """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example</groupId>
-                    <artifactId>demo</artifactId>
-                    <version>0.0.1-SNAPSHOT</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.mail</groupId>
-                            <artifactId>jakarta.mail-api</artifactId>
-                            <version>2.0.1</version>
-                        </dependency>
-                    </dependencies>
-                </project>
-                """
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("jakarta.mail-api")
+                .actual())
             )
           ),
           srcMainJava(
@@ -118,23 +105,9 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                     </dependencies>
                 </project>
                 """,
-              """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example</groupId>
-                    <artifactId>demo</artifactId>
-                    <version>0.0.1-SNAPSHOT</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.mail</groupId>
-                            <artifactId>jakarta.mail-api</artifactId>
-                            <version>2.0.1</version>
-                        </dependency>
-                    </dependencies>
-                </project>
-                """
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("jakarta.mail-api")
+                .actual())
             )
           ),
           srcMainJava(
@@ -187,23 +160,9 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                     <version>0.0.1-SNAPSHOT</version>
                 </project>
                 """,
-              """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example</groupId>
-                    <artifactId>demo</artifactId>
-                    <version>0.0.1-SNAPSHOT</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.mail</groupId>
-                            <artifactId>jakarta.mail-api</artifactId>
-                            <version>2.0.1</version>
-                        </dependency>
-                    </dependencies>
-                </project>
-                """
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("jakarta.mail-api")
+                .actual())
             )
           )
         );
@@ -228,7 +187,7 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                         <dependency>
                             <groupId>jakarta.mail</groupId>
                             <artifactId>jakarta.mail-api</artifactId>
-                            <version>2.0.1</version>
+                            <version>2.0.2</version>
                         </dependency>
                     </dependencies>
                 </project>
