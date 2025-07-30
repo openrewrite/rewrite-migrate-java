@@ -26,8 +26,9 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class LombokOnXToOnX_ extends Recipe {
 
@@ -54,7 +55,7 @@ public class LombokOnXToOnX_ extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("lombok");
+        return singleton("lombok");
     }
 
     @Override

@@ -28,6 +28,8 @@ import org.openrewrite.java.tree.JavaType;
 
 import java.util.*;
 
+import static java.util.Collections.emptyList;
+
 public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
     @Override
     public String getDisplayName() {
@@ -78,7 +80,7 @@ public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
         }
 
         public @Nullable NamedVariable getVarByName(@Nullable JavaType declaringType, String varName) {
-            return vars.getOrDefault(declaringType, Collections.emptyList()).stream()
+            return vars.getOrDefault(declaringType, emptyList()).stream()
                     .filter(v -> v.getSimpleName().equals(varName))
                     .findFirst() // there should be only one variable with the same name
                     .orElse(null);

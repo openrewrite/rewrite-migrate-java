@@ -23,8 +23,9 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class MigrateClassLoaderDefineClass extends Recipe {
     private static final MethodMatcher DEFINE_CLASS_MATCHER = new MethodMatcher("java.lang.ClassLoader defineClass(byte[], int, int)");
@@ -41,7 +42,7 @@ public class MigrateClassLoaderDefineClass extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("deprecated");
+        return singleton("deprecated");
     }
 
     @Override

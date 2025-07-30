@@ -25,8 +25,9 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class NoGuavaDirectExecutor extends Recipe {
     private static final MethodMatcher DIRECT_EXECUTOR = new MethodMatcher("com.google.common.util.concurrent.MoreExecutors directExecutor()");
@@ -43,7 +44,7 @@ public class NoGuavaDirectExecutor extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("guava");
+        return singleton("guava");
     }
 
     @Override

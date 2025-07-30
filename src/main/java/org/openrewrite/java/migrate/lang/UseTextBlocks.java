@@ -38,9 +38,9 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static org.openrewrite.Tree.randomId;
 
 @EqualsAndHashCode(callSuper = false)
@@ -127,7 +127,7 @@ public class UseTextBlocks extends Recipe {
                 StringBuilder originalContent = new StringBuilder();
                 stringLiterals = stringLiterals.stream()
                         .filter(s -> s.getValue() != null && !s.getValue().toString().isEmpty())
-                        .collect(Collectors.toList());
+                        .collect(toList());
                 for (int i = 0; i < stringLiterals.size(); i++) {
                     String s = requireNonNull(stringLiterals.get(i).getValue()).toString();
                     sb.append(s);

@@ -26,8 +26,9 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class NoGuavaListsNewArrayList extends Recipe {
     private static final MethodMatcher NEW_ARRAY_LIST = new MethodMatcher("com.google.common.collect.Lists newArrayList()");
@@ -46,7 +47,7 @@ public class NoGuavaListsNewArrayList extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("guava");
+        return singleton("guava");
     }
 
     @Override
