@@ -28,7 +28,8 @@ import org.openrewrite.java.tree.MethodCall;
 import org.openrewrite.marker.SearchResult;
 
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.joining;
 
 @EqualsAndHashCode(callSuper = false)
 @RequiredArgsConstructor
@@ -89,7 +90,7 @@ public class FindInternalJavaxApis extends Recipe {
                 methodType.getDeclaringType().toString(),
                 methodType.getName(),
                 methodType.getParameterTypes().stream().map(String::valueOf)
-                        .collect(Collectors.joining(", "))
+                        .collect(joining(", "))
         ));
     }
 }

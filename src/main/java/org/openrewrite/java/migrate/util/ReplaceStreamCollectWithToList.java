@@ -31,9 +31,10 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import static java.util.Collections.singletonList;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -68,7 +69,7 @@ public class ReplaceStreamCollectWithToList extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return new HashSet<>(Collections.singletonList("RSPEC-S6204"));
+        return new HashSet<>(singletonList("RSPEC-S6204"));
     }
 
     @Override

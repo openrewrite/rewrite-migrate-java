@@ -26,7 +26,7 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.JavaType.ShallowClass;
 import org.openrewrite.java.tree.Space;
 
-import java.util.Collections;
+import static java.util.Collections.emptyList;
 
 public class MigrateCollectionsSingletonList extends Recipe {
     private static final MethodMatcher SINGLETON_LIST = new MethodMatcher("java.util.Collections singletonList(..)", true);
@@ -61,7 +61,7 @@ public class MigrateCollectionsSingletonList extends Recipe {
                         return m.withSelect(((J.Identifier) m.getSelect()).withSimpleName("List").withType(classType));
                     }
                     return m.withSelect(new J.Identifier(
-                                    Tree.randomId(), m.getPrefix(), m.getMarkers(), Collections.emptyList(), "List", classType, null))
+                                    Tree.randomId(), m.getPrefix(), m.getMarkers(), emptyList(), "List", classType, null))
                             .withPrefix(Space.EMPTY);
                 }
                 return m;

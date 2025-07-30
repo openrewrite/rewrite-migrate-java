@@ -32,9 +32,11 @@ import org.openrewrite.java.tree.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 @EqualsAndHashCode(callSuper = false)
@@ -62,7 +64,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("lombok");
+        return singleton("lombok");
     }
 
     @Override
@@ -320,7 +322,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             return memberVariables
                     .stream()
                     .map(it -> it
-                            .withModifiers(Collections.emptyList())
+                            .withModifiers(emptyList())
                             .withVariables(it.getVariables())
                     )
                     .map(Statement.class::cast)
@@ -340,7 +342,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             return memberVariables
                     .stream()
                     .map(member -> String.format(TO_STRING_MEMBER_LINE_PATTERN, member, member))
-                    .collect(Collectors.joining(TO_STRING_MEMBER_DELIMITER));
+                    .collect(joining(TO_STRING_MEMBER_DELIMITER));
         }
 
         private static JavaType.Class buildRecordType(J.ClassDeclaration classDeclaration) {

@@ -25,7 +25,7 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.util.Collections;
+import static java.util.Collections.nCopies;
 
 public class NoGuavaPrimitiveAsList extends Recipe {
 
@@ -59,7 +59,7 @@ public class NoGuavaPrimitiveAsList extends Recipe {
                             maybeRemoveImport("com.google.common.primitives.Bytes");
                             maybeAddImport("java.util.Arrays");
 
-                            String args = String.join(",", Collections.nCopies(elem.getArguments().size(), "#{any()}"));
+                            String args = String.join(",", nCopies(elem.getArguments().size(), "#{any()}"));
                             return JavaTemplate
                                     .builder("Arrays.asList(" + args + ')')
                                     .imports("java.util.Arrays")

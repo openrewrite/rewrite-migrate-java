@@ -24,7 +24,8 @@ import org.openrewrite.marker.Markers;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Collections;
+
+import static java.util.Collections.emptyList;
 
 public class PlanJavaMigration extends ScanningRecipe<JavaVersionMigrationPlan.Row.Builder> {
     transient JavaVersionMigrationPlan plan = new JavaVersionMigrationPlan(this);
@@ -87,6 +88,6 @@ public class PlanJavaMigration extends ScanningRecipe<JavaVersionMigrationPlan.R
     @Override
     public Collection<? extends SourceFile> generate(JavaVersionMigrationPlan.Row.Builder acc, ExecutionContext ctx) {
         plan.insertRow(ctx, acc.build());
-        return Collections.emptyList();
+        return emptyList();
     }
 }

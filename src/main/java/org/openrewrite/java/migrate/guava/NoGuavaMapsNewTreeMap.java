@@ -25,8 +25,9 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class NoGuavaMapsNewTreeMap extends Recipe {
     private static final MethodMatcher NEW_TREE_MAP = new MethodMatcher("com.google.common.collect.Maps newTreeMap()");
@@ -45,7 +46,7 @@ public class NoGuavaMapsNewTreeMap extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("guava");
+        return singleton("guava");
     }
 
     @Override

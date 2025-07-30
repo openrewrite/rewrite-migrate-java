@@ -27,8 +27,9 @@ import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class LombokValToFinalVar extends Recipe {
 
@@ -47,7 +48,7 @@ public class LombokValToFinalVar extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("lombok");
+        return singleton("lombok");
     }
 
     @Override

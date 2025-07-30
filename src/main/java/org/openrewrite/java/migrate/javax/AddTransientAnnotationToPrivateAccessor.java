@@ -31,7 +31,8 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -67,7 +68,7 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                                 .flatMap(Collection::stream)
                                 .map(var -> var.getName().getFieldType())
                                 .filter(Objects::nonNull)
-                                .collect(Collectors.toList());
+                                .collect(toList());
                         return super.visitClassDeclaration(classDecl, ctx);
                     }
 
