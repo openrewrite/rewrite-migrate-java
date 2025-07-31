@@ -24,10 +24,7 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-
-import java.util.List;
 
 public class MigrateCollectionsUnmodifiableList extends Recipe {
     private static final MethodMatcher UNMODIFIABLE_LIST = new MethodMatcher("java.util.Collections unmodifiableList(java.util.List)", true);
