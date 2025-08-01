@@ -20,10 +20,12 @@ import lombok.Value;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.ArrayList;
@@ -35,8 +37,8 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
 import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class RefineSwitchCases extends Recipe {
     @Override
     public String getDisplayName() {
@@ -50,7 +52,13 @@ public class RefineSwitchCases extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(Preconditions.not(new KotlinFileChecker<>()), new JavaIsoVisitor<ExecutionContext>() {
+        TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
+                new UsesJavaVersion<>(21),
+                Preconditions.not(new KotlinFileChecker<>()),
+                Preconditions.not(new GroovyFileChecker<>())
+        );
+
+        return Preconditions.check(preconditions, new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.Switch visitSwitch(J.Switch sw, ExecutionContext ctx) {
                 J.Switch switch_ = super.visitSwitch(sw, ctx);
@@ -73,19 +81,24 @@ public class RefineSwitchCases extends Recipe {
                             }
                             return statement;
                         })));
-                return new JavaIsoVisitor<ExecutionContext>() {
-                    @Override
-                    public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
-                        // Remove any trailing new line in empty case body
-                        if (case_.getBody() instanceof J.Block) {
-                            J.Block body = (J.Block) case_.getBody();
-                            if (body.getStatements().isEmpty() && !body.getEnd().isEmpty()) {
-                                return case_.withBody(body.withEnd(Space.EMPTY));
+                if (mappedSwitch != switch_) {
+                    return new JavaIsoVisitor<ExecutionContext>() {
+                        @Override
+                        public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
+                            // Remove any trailing new line in empty case body
+                            if (case_.getBody() instanceof J.Block) {
+                                J.Block body = (J.Block) case_.getBody();
+                                if (body.getStatements().isEmpty() &&
+                                        body.getEnd().getComments().isEmpty() &&
+                                        !body.getEnd().isEmpty()) {
+                                    return case_.withBody(body.withEnd(Space.EMPTY));
+                                }
                             }
+                            return case_;
                         }
-                        return case_;
-                    }
-                }.visitSwitch(maybeAutoFormat(switch_, mappedSwitch, ctx), ctx);
+                    }.visitSwitch(autoFormat(mappedSwitch, ctx), ctx);
+                }
+                return switch_;
             }
 
             private Set<String> extractLabelVariables(J.Case case_) {

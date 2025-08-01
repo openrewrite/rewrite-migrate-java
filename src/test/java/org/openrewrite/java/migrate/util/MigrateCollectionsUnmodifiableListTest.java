@@ -77,7 +77,40 @@ class MigrateCollectionsUnmodifiableListTest implements RewriteTest {
                 import java.time.LocalDate;
 
                 class Test {
-                    List<LocalDate> s = List.of(LocalDate.of(2010, 1, 1), LocalDate.now());
+                    List<LocalDate> s = List.of(LocalDate.of(2010,1,1),LocalDate.now());
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/805")
+    @Test
+    void preserveComments() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.*;
+
+                class Test {
+                    List<String> bar = Collections.unmodifiableList(Arrays.asList(
+                        "1", // this is one
+                        "2" // this is two
+                    ));
+                }
+                """,
+              """
+                import java.util.List;
+
+                class Test {
+                    List<String> bar = List.of(
+                        "1", // this is one
+                        "2" // this is two
+                    );
                 }
                 """
             ),

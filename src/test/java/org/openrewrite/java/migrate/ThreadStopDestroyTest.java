@@ -30,8 +30,8 @@ class ThreadStopDestroyTest implements RewriteTest {
           .allSources(src -> src.markers(javaVersion(8)));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void retainThreadStop() {
         rewriteRun(
           //language=java

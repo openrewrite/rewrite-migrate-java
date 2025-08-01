@@ -34,8 +34,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.joining;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.test.RewriteTest.toRecipe;
 
@@ -74,7 +74,7 @@ class JodaTimeFlowSpecTest implements RewriteTest {
                   if (identifiers == null || identifiers.isEmpty()) {
                       return expression;
                   }
-                  String desc = identifiers.stream().map(J.Identifier::getSimpleName).collect(Collectors.joining(", "));
+                  String desc = identifiers.stream().map(J.Identifier::getSimpleName).collect(joining(", "));
                   return SearchResult.found(expression, desc);
               }
 

@@ -15,20 +15,27 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import lombok.experimental.UtilityClass;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.tree.*;
+import org.openrewrite.marker.Markers;
 
+import java.util.List;
+import java.util.function.UnaryOperator;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.Objects.requireNonNull;
+import static org.openrewrite.Tree.randomId;
+import static org.openrewrite.java.tree.Space.EMPTY;
 
+@UtilityClass
 final class DeclarationCheck {
 
-    private DeclarationCheck() {
-
-    }
-
     /**
-     * Determine if var is applicable with regard to location and decleation type.
+     * Determine if var is applicable with regard to location and declaration type.
      * <p>
      * Var is applicable inside methods and initializer blocks for single variable definition.
      * Var is *not* applicable to method definitions.
@@ -67,7 +74,7 @@ final class DeclarationCheck {
         }
 
         initializer = initializer.unwrap();
-        boolean isNullAssigment = initializer instanceof J.Literal && ((J.Literal) initializer).getValue() == null;
+        boolean isNullAssigment = J.Literal.isLiteralValue(initializer, null);
         boolean alreadyUseVar = typeExpression instanceof J.Identifier && "var".equals(((J.Identifier) typeExpression).getSimpleName());
         return !isNullAssigment && !alreadyUseVar;
     }
@@ -119,7 +126,7 @@ final class DeclarationCheck {
     }
 
     /**
-     * Determin if the initilizer uses the ternary operator <code>Expression ? if-then : else</code>
+     * Determine if the initializer uses the ternary operator <code>Expression ? if-then : else</code>
      *
      * @param vd variable declaration at hand
      * @return true iff the ternary operator is used in the initialization
@@ -136,7 +143,7 @@ final class DeclarationCheck {
      */
     private static boolean isInsideMethod(Cursor cursor) {
         Object value = cursor
-                .dropParentUntil(p -> p instanceof J.MethodDeclaration || p instanceof J.ClassDeclaration || p.equals(Cursor.ROOT_VALUE))
+                .dropParentUntil(p -> p instanceof J.MethodDeclaration || p instanceof J.ClassDeclaration || Cursor.ROOT_VALUE.equals(p))
                 .getValue();
 
         boolean isNotRoot = !Cursor.ROOT_VALUE.equals(value);
@@ -224,5 +231,30 @@ final class DeclarationCheck {
         }
 
         return invocation.getMethodType().hasFlags(Flag.Static);
+    }
+
+    public static J.VariableDeclarations transformToVar(J.VariableDeclarations vd) {
+        return transformToVar(vd, it -> it);
+    }
+
+    public static <T extends Expression> J.VariableDeclarations transformToVar(J.VariableDeclarations vd, UnaryOperator<T> transformerInitializer) {
+        T initializer = (T) vd.getVariables().get(0).getInitializer();
+        if (initializer == null) {
+            return vd;
+        }
+
+        Expression transformedInitializer = transformerInitializer.apply(initializer);
+
+        List<J.VariableDeclarations.NamedVariable> variables = ListUtils.mapFirst(vd.getVariables(), it -> {
+            JavaType.Variable variableType = it.getVariableType() == null ? null : it.getVariableType().withOwner(null);
+            return it
+                    .withName(it.getName().withType(transformedInitializer.getType()).withFieldType(variableType))
+                    .withInitializer(transformedInitializer)
+                    .withVariableType(variableType);
+        });
+        J.Identifier typeExpression = new J.Identifier(randomId(), vd.getTypeExpression() == null ? EMPTY : vd.getTypeExpression().getPrefix(),
+                Markers.build(singleton(JavaVarKeyword.build())), emptyList(), "var", transformedInitializer.getType(), null);
+
+        return vd.withVariables(variables).withTypeExpression(typeExpression);
     }
 }

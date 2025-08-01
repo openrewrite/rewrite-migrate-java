@@ -391,7 +391,7 @@ displayName: Update Jakarta EE annotation Dependencies to 2.1.x.
 description: Update Jakarta EE annotation Dependencies to 2.1.x.
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: jakarta.annotations
+      groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       newVersion: 2.1.x
   - org.openrewrite.java.ChangeType:

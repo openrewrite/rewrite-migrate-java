@@ -61,7 +61,8 @@ public class URLConstructorsToNewURI extends Recipe {
                                     nc.getArguments().get(0),
                                     nc.getArguments().get(1),
                                     nc.getArguments().get(2));
-                        } else if (methodMatcherFourArg.matches(nc)) {
+                        }
+                        if (methodMatcherFourArg.matches(nc)) {
                             JavaTemplate template = JavaTemplate.builder("new URI(#{any(String)}, null, #{any(String)}, #{any(int)}, #{any(String)}, null, null).toURL()")
                                     .imports(URI_FQN, URL_FQN)
                                     .contextSensitive()

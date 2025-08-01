@@ -31,8 +31,8 @@ class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
           .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml"));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void migrateJCP() {
         rewriteRun(
           //language=xml

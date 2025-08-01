@@ -31,8 +31,8 @@ class RemoveTemporalAnnotationTest implements RewriteTest {
           .recipe(new RemoveTemporalAnnotation());
     }
 
-    @Test
     @DocumentExample
+    @Test
     void removeTemporalAnnotation() {
         //language=java
         rewriteRun(

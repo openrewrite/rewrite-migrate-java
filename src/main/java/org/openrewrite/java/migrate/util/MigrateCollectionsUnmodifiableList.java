@@ -24,11 +24,7 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-
-import java.util.List;
-import java.util.StringJoiner;
 
 public class MigrateCollectionsUnmodifiableList extends Recipe {
     private static final MethodMatcher UNMODIFIABLE_LIST = new MethodMatcher("java.util.Collections unmodifiableList(java.util.List)", true);
@@ -59,15 +55,16 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
                             maybeRemoveImport("java.util.Collections");
                             maybeRemoveImport("java.util.Arrays");
                             maybeAddImport("java.util.List");
-                            StringJoiner setOf = new StringJoiner(", ", "List.of(", ")");
-                            List<Expression> args = arraysInvocation.getArguments();
-                            args.forEach(o -> setOf.add("#{any()}"));
 
-                            return JavaTemplate.builder(setOf.toString())
-                                    .contextSensitive()
+                            // Build the List.of() invocation while preserving the original method's formatting
+                            J.MethodInvocation listOf = JavaTemplate.builder("List.of()")
                                     .imports("java.util.List")
                                     .build()
-                                    .apply(updateCursor(m), m.getCoordinates().replace(), args.toArray());
+                                    .apply(updateCursor(m), m.getCoordinates().replace());
+
+                            // Replace the arguments while preserving their original formatting, comments, and padding
+                            return listOf.withArguments(arraysInvocation.getArguments())
+                                    .getPadding().withArguments(arraysInvocation.getPadding().getArguments());
                         }
                     }
                 }

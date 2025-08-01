@@ -80,8 +80,8 @@ class ReplaceComSunAWTUtilitiesMethodsTest implements RewriteTest {
           );
     }
 
-    @Test
     @DocumentExample
+    @Test
     void replaceComSunAWTUtilitiesClassesRemaining() {
         rewriteRun(
           //language=java

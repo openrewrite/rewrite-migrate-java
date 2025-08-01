@@ -66,7 +66,6 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void migrateWithSQLDataSource() {
         rewriteRun(

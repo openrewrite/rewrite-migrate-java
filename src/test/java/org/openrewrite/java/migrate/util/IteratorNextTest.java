@@ -140,4 +140,22 @@ class IteratorNextTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void implicitThisIteratorNextUnchanged() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+
+              class Foo extends ArrayList<String> {
+                  void bar() {
+                      String first = iterator().next();
+                  }
+              }
+              """
+          )
+        );
+    }
 }

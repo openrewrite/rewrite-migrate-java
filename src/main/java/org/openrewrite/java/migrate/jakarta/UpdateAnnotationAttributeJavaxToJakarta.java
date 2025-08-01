@@ -26,8 +26,8 @@ import org.openrewrite.java.trait.Annotated;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UpdateAnnotationAttributeJavaxToJakarta extends Recipe {
 
     @Override

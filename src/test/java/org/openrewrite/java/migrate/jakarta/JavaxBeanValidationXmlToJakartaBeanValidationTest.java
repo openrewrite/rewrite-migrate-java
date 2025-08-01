@@ -31,8 +31,8 @@ class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTes
           .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml"));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void migrateJCP() {
         rewriteRun(
           //language=xml

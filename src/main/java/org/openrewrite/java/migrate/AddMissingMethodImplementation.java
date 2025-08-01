@@ -27,8 +27,8 @@ import org.openrewrite.java.tree.TypeUtils;
 
 import static org.openrewrite.java.tree.J.ClassDeclaration.Kind.Type.Interface;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class AddMissingMethodImplementation extends Recipe {
 
     @Option(displayName = "Fully qualified class name",

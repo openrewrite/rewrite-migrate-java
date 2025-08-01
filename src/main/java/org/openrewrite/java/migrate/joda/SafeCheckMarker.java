@@ -29,8 +29,8 @@ import java.util.UUID;
  * A marker to indicate whether an expression is safe to migrate
  * and variables that are referenced in the expression.
  */
-@With
 @Value
+@With
 public class SafeCheckMarker implements Marker {
     @EqualsAndHashCode.Include
     UUID id;
