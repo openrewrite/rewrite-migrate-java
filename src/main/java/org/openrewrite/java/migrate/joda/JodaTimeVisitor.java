@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.joda;
 import lombok.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavadocVisitor;
 import org.openrewrite.java.migrate.joda.templates.AllTemplates;
 import org.openrewrite.java.migrate.joda.templates.MethodTemplate;
@@ -30,18 +29,14 @@ import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 class JodaTimeVisitor extends ScopeAwareVisitor {
 
-    private final boolean safeMigration;
-    private final JodaTimeRecipe.Accumulator acc;
-
-    public JodaTimeVisitor(JodaTimeRecipe.Accumulator acc, boolean safeMigration, LinkedList<VariablesInScope> scopes) {
+    public JodaTimeVisitor(JodaTimeRecipe.Accumulator acc, boolean b, LinkedList<VariablesInScope> scopes) {
         super(scopes);
-        this.acc = acc;
-        this.safeMigration = safeMigration;
     }
 
     @Override
@@ -107,6 +102,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             maybeAddImport(THREE_TEN_EXTRA_MONTHS);
             maybeAddImport(THREE_TEN_EXTRA_YEARS);
         }
+
         return j;
     }
 
@@ -116,47 +112,66 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         if (m.getReturnTypeExpression() == null || !m.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
             return m;
         }
-        if (safeMigration && !acc.getSafeMethodMap().getOrDefault(m.getMethodType(), false)) {
-            return m;
-        }
 
         JavaType.Class returnType = TimeClassMap.getJavaTimeType(((JavaType.Class) m.getType()).getFullyQualifiedName());
         J.Identifier returnExpr = TypeTree.build(returnType.getClassName()).withType(returnType).withPrefix(Space.format(" "));
-        return m.withReturnTypeExpression(returnExpr)
-          .withMethodType(m.getMethodType().withReturnType(returnType));
+
+        JavaType.Method methodType = m.getMethodType()
+                .withReturnType(returnType)
+                .withParameterTypes(m.getMethodType().getParameterTypes().stream().map(p -> visitTypeParameter(p, ctx)).collect(Collectors.toList()));
+
+        J.MethodDeclaration methodDeclaration = m
+                .withReturnTypeExpression(returnExpr)
+                .withMethodType(methodType);
+
+        return methodDeclaration;
+    }
+    JavaType visitTypeParameter(JavaType parameter, @NonNull ExecutionContext ctx){
+        if (parameter instanceof JavaType.Class) {return visitClassTypeParameter((JavaType.Class)parameter, ctx);}
+        if (parameter instanceof JavaType.Array) {return ((JavaType.Array)parameter).withElemType(visitClassTypeParameter((JavaType.Class)((JavaType.Array) parameter).getElemType(), ctx));}
+        return parameter;
+    }
+    JavaType visitClassTypeParameter(JavaType.Class classParameter, @NonNull ExecutionContext ctx) {
+        if (!classParameter.isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return classParameter;
+        }
+        return TimeClassMap.getJavaTimeType(classParameter.getFullyQualifiedName());
     }
 
     @Override
     public @NonNull J visitVariableDeclarations(@NonNull J.VariableDeclarations multiVariable, @NonNull ExecutionContext ctx) {
-        if (multiVariable.getTypeExpression() == null || !multiVariable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
-            return super.visitVariableDeclarations(multiVariable, ctx);
-        }
-        /*
-        if (multiVariable.getVariables().stream().anyMatch(acc.getUnsafeVars()::contains)) {
-            return multiVariable;
-        }
-         */
-        J.VariableDeclarations m = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
-        J.VariableDeclarations j = VarTemplates.getTemplate(multiVariable).<J.VariableDeclarations>map(t -> t.apply(
-                updateCursor(m),
-                m.getCoordinates().replace(),
-                VarTemplates.getTemplateArgs(m))).orElse(multiVariable);
+        J.VariableDeclarations mv = (J.VariableDeclarations) super.visitVariableDeclarations(multiVariable, ctx);
 
-        return autoFormat(j.withModifiers(m.getModifiers()), ctx);
+        if (!mv.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return mv;
+        }
+
+        String fullyQualifiedName = ((JavaType.Class) mv.getType()).getFullyQualifiedName();
+        JavaType.Class javaTimeType = TimeClassMap.getJavaTimeType(fullyQualifiedName);
+        String javaTimeShortName = TimeClassMap.getJavaTimeShortName(fullyQualifiedName);
+
+        J.Identifier typeExpression = (J.Identifier) mv.getTypeExpression();
+
+        if(javaTimeShortName != null){
+            typeExpression = typeExpression.withSimpleName(javaTimeShortName);
+        }
+
+        return autoFormat(mv.withTypeExpression(typeExpression.withType(javaTimeType)), ctx);
     }
 
     @Override
     public @NonNull J visitVariable(@NonNull J.VariableDeclarations.NamedVariable variable, @NonNull ExecutionContext ctx) {
-        if (!variable.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
-            return super.visitVariable(variable, ctx);
+        J.VariableDeclarations.NamedVariable v = (J.VariableDeclarations.NamedVariable) super.visitVariable(variable, ctx);
+        if (v.getType() instanceof JavaType.Array && ((JavaType.Array)v.getType()).getElemType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            JavaType.Array type = (JavaType.Array) v.getType();
+            JavaType.Class elemType = (JavaType.Class) type.getElemType();
+            return v.withType(type.withElemType(TimeClassMap.getJavaTimeType(elemType.getFullyQualifiedName())));
         }
-        if (/*acc.getUnsafeVars().contains(variable) || */ !(variable.getType() instanceof JavaType.Class)) {
-            return variable;
+        if (v.getType() instanceof JavaType.Class && v.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return v.withType(TimeClassMap.getJavaTimeType(((JavaType.Class) variable.getType()).getFullyQualifiedName()));
         }
-        JavaType.Class jodaType = (JavaType.Class) variable.getType();
-        return variable
-                .withType(TimeClassMap.getJavaTimeType(jodaType.getFullyQualifiedName()))
-                .withInitializer((Expression) visit(variable.getInitializer(), ctx));
+
+        return v;
     }
 
     @Override
@@ -170,7 +185,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         }
         J.Identifier varName = (J.Identifier) a.getVariable();
         Optional<NamedVariable> mayBeVar = findVarInScope(varName.getSimpleName());
-        if (!mayBeVar.isPresent() /*|| acc.getUnsafeVars().contains(mayBeVar.get())*/) {
+        if (!mayBeVar.isPresent()) {
             return assignment;
         }
         return VarTemplates.getTemplate(assignment).<J>map(t -> t.apply(
@@ -220,25 +235,40 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         return f.withType(javaTimeType);
     }
 
-        @Override
+    @Override
     public @NonNull J visitIdentifier(@NonNull J.Identifier ident, @NonNull ExecutionContext ctx) {
-        if (!isJodaVarRef(ident)) {
-            return super.visitIdentifier(ident, ctx);
+        J.Identifier i = (J.Identifier) super.visitIdentifier(ident, ctx);
+        //i.getType().isAssignableFrom(JODA_CLASS_PATTERN)
+        if (!isJodaVarRef(i)) {
+            return i;
         }
-        if (this.safeMigration) {
-            Optional<NamedVariable> mayBeVar = findVarInScope(ident.getSimpleName());
-            if (!mayBeVar.isPresent() /* || acc.getUnsafeVars().contains(mayBeVar.get())*/) {
-                return ident;
-            }
-        }
+        JavaType type = i.getType();
+        if(type instanceof JavaType.Array) {return visitArrayIdentifier(i, ctx);}
+        if(type instanceof JavaType.Class) {return visitClassIdentifier(i, ctx);}
 
-        JavaType.FullyQualified jodaType = ((JavaType.Class) ident.getType());
-        JavaType.FullyQualified fqType = TimeClassMap.getJavaTimeType(jodaType.getFullyQualifiedName());
-        if (fqType == null) {
-            return ident;
+        return i;
+    }
+    private @NonNull J visitArrayIdentifier(J.Identifier arrayIdentifier, @NonNull ExecutionContext ctx) {
+        JavaType.Array at = (JavaType.Array)arrayIdentifier.getType();
+        JavaType.Array javaTimeType = at.withElemType(TimeClassMap.getJavaTimeType(((JavaType.Class)at.getElemType()).getFullyQualifiedName()));
+
+        return arrayIdentifier.withType(javaTimeType)
+                .withFieldType(arrayIdentifier.getFieldType().withType(javaTimeType));
+    }
+    private @NonNull J visitClassIdentifier(J.Identifier classIdentifier, @NonNull ExecutionContext ctx) {
+        JavaType.Class javaTimeType = TimeClassMap.getJavaTimeType(((JavaType.Class)classIdentifier.getType()).getFullyQualifiedName());
+
+        return classIdentifier.withType(javaTimeType)
+                .withFieldType(classIdentifier.getFieldType().withType(javaTimeType));
+    }
+
+    @Override
+    public J visitArrayAccess(J.ArrayAccess arrayAccess, @NonNull ExecutionContext ctx){
+        J.ArrayAccess a = (J.ArrayAccess) super.visitArrayAccess(arrayAccess, ctx);
+        if (!a.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+            return a;
         }
-        return ident.withType(fqType)
-                .withFieldType(ident.getFieldType().withType(fqType));
+        return a.withType(TimeClassMap.getJavaTimeType(((JavaType.Class)a.getType()).getFullyQualifiedName()));
     }
 
     private J migrateMethodCall(MethodCall original, MethodCall updated) {
@@ -264,7 +294,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             return original; // unhandled case
         }
         Expression updatedExpr = (Expression) maybeUpdated.get();
-        if (!safeMigration || !isArgument(original)) {
+        if (!isArgument(original)) {
             return updatedExpr;
         }
         // this expression is an argument to a method call
@@ -287,22 +317,10 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
             return original;
         }
 
-        JavaType paramType = parameterTypes.get(argPos);
-        if (TypeUtils.isAssignableTo(paramType, updatedExpr.getType())) {
-            return updatedExpr;
-        }
-        String paramName = parentMethodType.getParameterNames().get(argPos);
-        NamedVariable var = acc.getVarTable().getVarByName(parentMethodType, paramName);
-        if (var != null /*&& !acc.getUnsafeVars().contains(var)*/) {
-            return updatedExpr;
-        }
-        return original;
+        return updatedExpr;
     }
 
     private J.MethodInvocation migrateNonJodaMethod(J.MethodInvocation original, J.MethodInvocation updated) {
-        if (safeMigration && !acc.getSafeMethodMap().getOrDefault(updated.getMethodType(), false)) {
-            return original;
-        }
         JavaType.Class returnType = (JavaType.Class) updated.getMethodType().getReturnType();
         JavaType.Class updatedReturnType = TimeClassMap.getJavaTimeType(returnType.getFullyQualifiedName());
         if (updatedReturnType == null) {
@@ -334,7 +352,18 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
     }
 
     private boolean isJodaVarRef(@Nullable Expression expr) {
-        if (expr == null || expr.getType() == null || !expr.getType().isAssignableFrom(JODA_CLASS_PATTERN)) {
+        if (expr == null) {
+            return false;
+        }
+        JavaType type = expr.getType();
+        if (type == null) {
+            return false;
+        }
+        if(type instanceof JavaType.Array){
+            type = ((JavaType.Array) type).getElemType();
+        }
+
+        if (!type.isAssignableFrom(JODA_CLASS_PATTERN )) {
             return false;
         }
         if (expr instanceof J.FieldAccess) {

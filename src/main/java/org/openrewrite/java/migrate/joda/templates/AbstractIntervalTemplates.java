@@ -48,7 +48,7 @@ public class AbstractIntervalTemplates implements Templates {
 
     private final JavaTemplate.Builder getStartTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.getStart()")
             .imports(JAVA_ZONE_ID);
-    private final JavaTemplate.Builder getEndTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.getEnd()")
+    private final JavaTemplate.Builder getEndTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.getEnd().atZone(ZoneId.systemDefault())")
             .imports(JAVA_ZONE_ID);
     private final JavaTemplate.Builder toDurationTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.toDuration()");
     private final JavaTemplate.Builder toDurationMillisTemplate = JavaTemplate.builder("#{any(" + THREE_TEN_EXTRA_INTERVAL + ")}.toDuration().toMillis()");

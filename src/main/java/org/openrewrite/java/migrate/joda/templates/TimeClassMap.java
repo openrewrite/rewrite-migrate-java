@@ -66,6 +66,7 @@ public class TimeClassMap {
             put(JODA_WEEKS, "Period");
             put(JODA_MONTHS, "Period");
             put(JODA_YEARS, "Period");
+            put(JODA_DATE_TIME_ZONE, "ZoneId");
             put(JODA_GEORGIAN_CHRONOLOGY, "IsoChronology");
         }
     };

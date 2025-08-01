@@ -183,6 +183,8 @@ public class DateTimeTemplates implements Templates {
     private final JavaTemplate.Builder minusHoursTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusHours(#{any(int)})");
     private final JavaTemplate.Builder minusMinutesTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusMinutes(#{any(int)})");
     private final JavaTemplate.Builder minusSecondsTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.minusSeconds(#{any(int)})");
+    private final JavaTemplate.Builder atStartOfDayTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalDate().atStartOfDay(ZoneId.systemDefault())")
+            .imports(JAVA_ZONE_ID);
     private final JavaTemplate.Builder toLocalDateTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalDateTime()");
     private final JavaTemplate.Builder toLocalDateTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalDate()");
     private final JavaTemplate.Builder toLocalTimeTemplate = JavaTemplate.builder("#{any(java.time.ZonedDateTime)}.toLocalTime()");
@@ -263,6 +265,7 @@ public class DateTimeTemplates implements Templates {
             add(new MethodTemplate(minusMinutes, build(minusMinutesTemplate)));
             add(new MethodTemplate(minusSeconds, build(minusSecondsTemplate)));
             add(new MethodTemplate(minusMillis, build(minusMillisTemplate)));
+            add(new MethodTemplate(toDateMidnight, build(atStartOfDayTemplate)));
             add(new MethodTemplate(toLocalDateTime, build(toLocalDateTimeTemplate)));
             add(new MethodTemplate(toLocalDate, build(toLocalDateTemplate)));
             add(new MethodTemplate(toLocalTime, build(toLocalTimeTemplate)));
