@@ -27,6 +27,7 @@
 11.0.27.fx-librca
 11.0.27.fx-zulu
 11.0.28-amzn
+11.0.28-kona
 11.0.28-librca
 11.0.28-ms
 11.0.28-sapmchn
@@ -34,6 +35,7 @@
 11.0.28-tem
 11.0.28-zulu
 11.0.28.fx-librca
+11.0.28.fx-zulu
 17.0.12-graal
 17.0.12-oracle
 17.0.13-albba
@@ -69,6 +71,7 @@
 17.0.15.fx-librca
 17.0.15.fx-zulu
 17.0.16-amzn
+17.0.16-kona
 17.0.16-librca
 17.0.16-ms
 17.0.16-sapmchn
@@ -76,7 +79,9 @@
 17.0.16-tem
 17.0.16-zulu
 17.0.16.crac-librca
+17.0.16.crac-zulu
 17.0.16.fx-librca
+17.0.16.fx-zulu
 17.0.9-graalce
 21.0.2-graalce
 21.0.2-open
@@ -118,6 +123,8 @@
 21.0.7.fx-zulu
 21.0.8-amzn
 21.0.8-graal
+21.0.8-jbr
+21.0.8-kona
 21.0.8-librca
 21.0.8-ms
 21.0.8-oracle
@@ -126,8 +133,11 @@
 21.0.8-tem
 21.0.8-zulu
 21.0.8.crac-librca
+21.0.8.crac-zulu
 21.0.8.fx-librca
+21.0.8.fx-zulu
 22.0.2-oracle
+22.0.2-sem
 22.1.0.1.r11-gln
 22.1.0.1.r17-gln
 22.3.5.r11-nik
@@ -141,6 +151,7 @@
 23.0.2-librca
 23.0.2-oracle
 23.0.2-sapmchn
+23.0.2-sem
 23.0.2-tem
 23.0.2-zulu
 23.0.2.fx-librca
@@ -191,7 +202,9 @@
 24.0.2-sapmchn
 24.0.2-tem
 24.0.2-zulu
+24.0.2.crac-zulu
 24.0.2.fx-librca
+24.0.2.fx-zulu
 24.0.2.r22-mandrel
 24.1.2.r23-mandrel
 24.1.2.r23-nik
@@ -238,8 +251,10 @@
 25.ea.29-open
 25.ea.30-graal
 25.ea.30-open
+25.ea.31-graal
 25.ea.31-open
 25.ea.32-open
+25.ea.33-open
 25.ea.8-graal
 26.ea.1-open
 26.ea.2-open
@@ -251,7 +266,9 @@
 26.ea.5-open
 26.ea.6-graal
 26.ea.6-open
+26.ea.7-graal
 26.ea.7-open
+26.ea.8-open
 6.0.119-zulu
 7.0.352-zulu
 8.0.282-trava
@@ -278,8 +295,10 @@
 8.0.452.fx-librca
 8.0.452.fx-zulu
 8.0.462-amzn
+8.0.462-kona
 8.0.462-librca
 8.0.462-sem
 8.0.462-tem
 8.0.462-zulu
 8.0.462.fx-librca
+8.0.462.fx-zulu
