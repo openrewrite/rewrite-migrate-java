@@ -198,11 +198,13 @@ class AddJaxwsDependenciesTest implements RewriteTest {
                   }
 
                   dependencies {
-                      implementation "com.sun.xml.ws:jaxws-rt:%s"
+                      compileOnly "com.sun.xml.ws:jaxws-rt:%s"
 
                       implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
+
+                      testImplementation "com.sun.xml.ws:jaxws-rt:%s"
                   }
-                  """.formatted(rtVersion, wsApiVersion);
+                  """.formatted(rtVersion, wsApiVersion, rtVersion);
             })
           ),
           pomXml(
@@ -299,11 +301,13 @@ class AddJaxwsDependenciesTest implements RewriteTest {
                   }
 
                   dependencies {
-                      implementation "com.sun.xml.ws:jaxws-rt:%s"
+                      compileOnly "com.sun.xml.ws:jaxws-rt:%s"
 
                       implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
+
+                      testImplementation "com.sun.xml.ws:jaxws-rt:%s"
                   }
-                  """.formatted(rtVersion, wsApiVersion);
+                  """.formatted(rtVersion, wsApiVersion, rtVersion);
             })
           ),
           pomXml(
