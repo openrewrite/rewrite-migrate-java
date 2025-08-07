@@ -123,8 +123,6 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
         return m
                 .withReturnTypeExpression(returnExpr)
                 .withMethodType(methodType);
-
-        return methodDeclaration;
     }
     JavaType visitTypeParameter(JavaType parameter, @NonNull ExecutionContext ctx){
         if (parameter instanceof JavaType.Class) {return visitClassTypeParameter((JavaType.Class)parameter, ctx);}
