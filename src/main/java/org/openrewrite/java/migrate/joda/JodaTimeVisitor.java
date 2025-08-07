@@ -120,7 +120,7 @@ class JodaTimeVisitor extends ScopeAwareVisitor {
                 .withReturnType(returnType)
                 .withParameterTypes(m.getMethodType().getParameterTypes().stream().map(p -> visitTypeParameter(p, ctx)).collect(Collectors.toList()));
 
-        J.MethodDeclaration methodDeclaration = m
+        return m
                 .withReturnTypeExpression(returnExpr)
                 .withMethodType(methodType);
 
