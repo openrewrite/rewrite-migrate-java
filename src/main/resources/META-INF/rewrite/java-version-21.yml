@@ -27,7 +27,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.UpgradeBuildToJava21
-  - org.openrewrite.java.migrate.RemoveIllegalSemicolons
+  - org.openrewrite.staticanalysis.RemoveExtraSemicolons
   - org.openrewrite.java.migrate.lang.ThreadStopUnsupported
   - org.openrewrite.java.migrate.net.URLConstructorToURICreate
   # Fails to introduce new exception handling https://github.com/openrewrite/rewrite-migrate-java/issues/467
