@@ -63,7 +63,7 @@ public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JodaTimeScanner(acc);
+        return new JodaTimeScanner(acc, safeMigration);
     }
 
     @Override
