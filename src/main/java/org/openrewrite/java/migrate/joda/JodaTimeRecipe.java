@@ -44,6 +44,7 @@ public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
                     "Safety checks include analyzing method parameters, return values, and variable usages across class boundaries.",
       required = false
     )
+    @Nullable
     Boolean safeMigration;
 
     @Override
@@ -63,12 +64,12 @@ public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JodaTimeScanner(acc, safeMigration);
+        return new JodaTimeScanner(acc, Boolean.TRUE.equals(safeMigration));
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
-        JodaTimeVisitor jodaTimeVisitor = new JodaTimeVisitor(acc, safeMigration, new LinkedList<>());
+        JodaTimeVisitor jodaTimeVisitor = new JodaTimeVisitor(acc, Boolean.TRUE.equals(safeMigration), new LinkedList<>());
         return Preconditions.check(new UsesType<>("org.joda.time.*", true), jodaTimeVisitor);
     }
 
