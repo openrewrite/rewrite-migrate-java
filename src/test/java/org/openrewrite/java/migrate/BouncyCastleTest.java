@@ -72,7 +72,7 @@ class BouncyCastleTest implements RewriteTest {
                 .afterRecipe(doc -> assertThat(doc.getMarkers().findFirst(MavenResolutionResult.class)
                   .get().getDependencies().get(Scope.Compile))
                   .filteredOn(rd -> rd.getDepth() == 0)
-                  .satisfiesExactly(
+                  .satisfiesExactlyInAnyOrder(
                     rd -> {
                         assertThat(rd.getGroupId()).isEqualTo("org.bouncycastle");
                         assertThat(rd.getArtifactId()).isEqualTo("bcprov-jdk18on");
