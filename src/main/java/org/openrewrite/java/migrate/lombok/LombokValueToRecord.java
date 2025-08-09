@@ -315,7 +315,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             // Handle both get* and is* methods
             if (methodName.startsWith(STANDARD_GETTER_PREFIX)) {
                 return recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
-            } else if (methodName.startsWith(BOOLEAN_GETTER_PREFIX)) {
+            }
+            if (methodName.startsWith(BOOLEAN_GETTER_PREFIX)) {
                 // For is* methods, check if the field exists (e.g., isBar -> bar)
                 String fieldName = booleanGetterMethodNameToFluentMethodName(methodName);
                 return recordTypeToMembers.get(classFqn).contains(fieldName);
@@ -410,7 +411,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         private boolean isBooleanType(JavaType type) {
             if (type instanceof JavaType.Primitive) {
                 return type == JavaType.Primitive.Boolean;
-            } else if (type instanceof JavaType.Class) {
+            }
+            if (type instanceof JavaType.Class) {
                 String fqn = ((JavaType.Class) type).getFullyQualifiedName();
                 return "java.lang.Boolean".equals(fqn);
             }
