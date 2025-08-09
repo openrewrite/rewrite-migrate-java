@@ -273,6 +273,96 @@ class LombokValueToRecordTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/812")
+    @Test
+    void booleanFieldWithIsGetter() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import lombok.Value;
+
+              @Value
+              public class Foo {
+                boolean bar;
+              }
+              """,
+            """
+              public record Foo(
+                boolean bar) {
+                  public boolean isBar() {
+                      return bar;
+                  }
+              }
+              """
+          ),
+          java(
+            """
+              public class Baz {
+                  public void baz(Foo foo) {
+                      foo.isBar();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/812")
+    @Test
+    void multipleBooleanFields() {
+        //language=java
+        rewriteRun(
+          s -> s.typeValidationOptions(TypeValidation.none()),
+          java(
+            """
+              import lombok.Value;
+
+              @Value
+              public class Config {
+                boolean enabled;
+                Boolean active;
+                String name;
+              }
+              """,
+            """
+              public record Config(
+                boolean enabled,
+                Boolean active,
+                String name) {
+                  public boolean isEnabled() {
+                      return enabled;
+                  }
+
+                  public Boolean isActive() {
+                      return active;
+                  }
+              }
+              """
+          ),
+          java(
+            """
+              public class ConfigUser {
+                  public void useConfig(Config config) {
+                      if (config.isEnabled() && config.isActive()) {
+                          System.out.println(config.getName());
+                      }
+                  }
+              }
+              """,
+            """
+              public class ConfigUser {
+                  public void useConfig(Config config) {
+                      if (config.isEnabled() && config.isActive()) {
+                          System.out.println(config.name());
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/449")
     @Test
     void methodReferences() {
