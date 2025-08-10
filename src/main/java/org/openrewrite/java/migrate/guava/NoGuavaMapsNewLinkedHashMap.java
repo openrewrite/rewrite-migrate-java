@@ -25,8 +25,9 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class NoGuavaMapsNewLinkedHashMap extends Recipe {
     private static final MethodMatcher NEW_LINKED_HASH_MAP = new MethodMatcher("com.google.common.collect.Maps newLinkedHashMap()");
@@ -44,7 +45,7 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("guava");
+        return singleton("guava");
     }
 
     @Override
@@ -62,7 +63,8 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
                             .imports("java.util.LinkedHashMap")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace());
-                } else if (NEW_LINKED_HASH_MAP_WITH_MAP.matches(method)) {
+                }
+                if (NEW_LINKED_HASH_MAP_WITH_MAP.matches(method)) {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.LinkedHashMap");
                     return JavaTemplate.builder("new LinkedHashMap<>(#{any(java.util.Map)})")

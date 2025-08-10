@@ -30,8 +30,9 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -53,7 +54,7 @@ public class ReplaceFileInOrOutputStreamFinalizeWithClose extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("JDK-8212050");
+        return singleton("JDK-8212050");
     }
 
     @Override

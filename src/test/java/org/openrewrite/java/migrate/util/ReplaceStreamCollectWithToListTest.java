@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -173,6 +174,101 @@ class ReplaceStreamCollectWithToListTest implements RewriteTest {
                       return stream
                           // Convert to list
                           .toList();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/791")
+    @Test
+    void doesNotReplaceWhenReturnTypeIsIncompatible() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.stream.Collectors;
+              import java.util.stream.Stream;
+              import java.util.List;
+
+              class Example {
+                  List<Number> foo() {
+                      return Stream.of(Integer.valueOf(1)).collect(Collectors.toUnmodifiableList());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/791")
+    @Test
+    void replacesWhenTypesAreCompatible() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.stream.Collectors;
+              import java.util.stream.Stream;
+              import java.util.List;
+
+              class Example {
+                  List<Integer> foo() {
+                      return Stream.of(Integer.valueOf(1)).collect(Collectors.toUnmodifiableList());
+                  }
+              }
+              """,
+            """
+              import java.util.stream.Stream;
+              import java.util.List;
+
+              class Example {
+                  List<Integer> foo() {
+                      return Stream.of(Integer.valueOf(1)).toList();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/791")
+    @Test
+    void doesNotReplaceInVariableAssignmentWithIncompatibleTypes() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.stream.Collectors;
+              import java.util.stream.Stream;
+              import java.util.List;
+
+              class Example {
+                  void foo() {
+                      List<Number> numbers = Stream.of(Integer.valueOf(1)).collect(Collectors.toUnmodifiableList());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/791")
+    @Test
+    void doesNotReplaceWithToListWhenConvertToListFlagIsTrue() {
+        rewriteRun(
+          recipeSpec -> recipeSpec.recipe(new ReplaceStreamCollectWithToList(true)),
+          //language=java
+          java(
+            """
+              import java.util.stream.Collectors;
+              import java.util.stream.Stream;
+              import java.util.List;
+
+              class Example {
+                  List<Number> foo() {
+                      return Stream.of(Integer.valueOf(1)).collect(Collectors.toList());
                   }
               }
               """

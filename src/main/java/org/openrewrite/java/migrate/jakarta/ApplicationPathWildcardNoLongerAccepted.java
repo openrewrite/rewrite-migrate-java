@@ -24,7 +24,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
-import java.util.Collections;
+import static java.util.Collections.singletonList;
 
 public class ApplicationPathWildcardNoLongerAccepted extends Recipe {
     @Override
@@ -61,7 +61,7 @@ public class ApplicationPathWildcardNoLongerAccepted extends Recipe {
                     String value = literal.getValue().toString();
                     if (value.endsWith("/*")) {
                         String newValue = "\"" + value.substring(0, value.length() - 2) + "\"";
-                        return a.withArguments(Collections.singletonList(assig.withAssignment(literal.withValue(newValue).withValueSource(newValue))));
+                        return a.withArguments(singletonList(assig.withAssignment(literal.withValue(newValue).withValueSource(newValue))));
                     }
                 } // Should we handle constants?
             } else if (it instanceof J.Literal) {
@@ -69,7 +69,7 @@ public class ApplicationPathWildcardNoLongerAccepted extends Recipe {
                 String value = literal.getValue().toString();
                 if (value.endsWith("/*")) {
                     String newValue = "\"" + value.substring(0, value.length() - 2) + "\"";
-                    return a.withArguments(Collections.singletonList(((J.Literal) it).withValue(newValue).withValueSource(newValue)));
+                    return a.withArguments(singletonList(((J.Literal) it).withValue(newValue).withValueSource(newValue)));
                 }
             }
 

@@ -26,9 +26,10 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
-import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.joining;
 
 public class NoGuavaSetsNewHashSet extends Recipe {
     private static final MethodMatcher NEW_HASH_SET = new MethodMatcher("com.google.common.collect.Sets newHashSet(..)");
@@ -45,7 +46,7 @@ public class NoGuavaSetsNewHashSet extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("guava");
+        return singleton("guava");
     }
 
     @Override
@@ -62,22 +63,22 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                                 .imports("java.util.HashSet")
                                 .build()
                                 .apply(getCursor(), method.getCoordinates().replace());
-                    } else if (method.getArguments().size() == 1 && TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
+                    }
+                    if (method.getArguments().size() == 1 && TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
                         return JavaTemplate.builder("new HashSet<>(#{any(java.util.Collection)})")
                                 .contextSensitive()
                                 .imports("java.util.HashSet")
                                 .build()
                                 .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
-                    } else {
-                        maybeAddImport("java.util.Arrays");
-                        JavaTemplate newHashSetVarargs = JavaTemplate.builder("new HashSet<>(Arrays.asList(" + method.getArguments().stream().map(a -> "#{any()}").collect(Collectors.joining(",")) + "))")
-                                .contextSensitive()
-                                .imports("java.util.Arrays")
-                                .imports("java.util.HashSet")
-                                .build();
-                        return newHashSetVarargs.apply(getCursor(), method.getCoordinates().replace(),
-                                method.getArguments().toArray());
                     }
+                    maybeAddImport("java.util.Arrays");
+                    JavaTemplate newHashSetVarargs = JavaTemplate.builder("new HashSet<>(Arrays.asList(" + method.getArguments().stream().map(a -> "#{any()}").collect(joining(",")) + "))")
+                            .contextSensitive()
+                            .imports("java.util.Arrays")
+                            .imports("java.util.HashSet")
+                            .build();
+                    return newHashSetVarargs.apply(getCursor(), method.getCoordinates().replace(),
+                            method.getArguments().toArray());
                 }
                 return super.visitMethodInvocation(method, ctx);
             }

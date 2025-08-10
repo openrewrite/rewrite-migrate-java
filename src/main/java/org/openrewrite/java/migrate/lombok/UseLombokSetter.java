@@ -27,8 +27,9 @@ import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -46,7 +47,7 @@ public class UseLombokSetter extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("lombok");
+        return singleton("lombok");
     }
 
     @Override
@@ -63,7 +64,8 @@ public class UseLombokSetter extends Recipe {
                                 LombokUtils.getAccessLevel(method)));
                         return null; //delete
 
-                    } else if (assignmentVariable instanceof J.Identifier &&
+                    }
+                    if (assignmentVariable instanceof J.Identifier &&
                             ((J.Identifier) assignmentVariable).getFieldType() != null) {
                         doAfterVisit(new FieldAnnotator(Setter.class,
                                 ((J.Identifier) assignmentVariable).getFieldType(),

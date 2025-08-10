@@ -138,12 +138,6 @@ recipeList:
       newGroupId: jakarta.xml.ws
       newArtifactId: jakarta.xml.ws-api
       newVersion: 2.3.x
-  - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
-      oldGroupId: javax.xml.ws
-      oldArtifactId: jaxws-api
-      newGroupId: jakarta.xml.ws
-      newArtifactId: jakarta.xml.ws-api
-      newVersion: 2.3.x
   # Add the jakarta JAXB artifact if it is missing but a project uses types in either javax.jws or javax.xml.ws
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.xml.ws
@@ -168,11 +162,11 @@ recipeList:
   - org.openrewrite.maven.RemoveRedundantDependencyVersions:
       groupPattern: jakarta.xml.ws
       artifactPattern: "*"
-      onlyIfVersionsMatch: true
+      onlyIfManagedVersionIs: EQ
   - org.openrewrite.maven.RemoveRedundantDependencyVersions:
       groupPattern: com.sun.xml.ws
       artifactPattern: "*"
-      onlyIfVersionsMatch: true
+      onlyIfManagedVersionIs: EQ
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.InternalBindPackages

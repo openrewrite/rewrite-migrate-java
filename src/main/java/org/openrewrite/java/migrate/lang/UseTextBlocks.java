@@ -38,9 +38,9 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static org.openrewrite.Tree.randomId;
 
 @EqualsAndHashCode(callSuper = false)
@@ -127,7 +127,7 @@ public class UseTextBlocks extends Recipe {
                 StringBuilder originalContent = new StringBuilder();
                 stringLiterals = stringLiterals.stream()
                         .filter(s -> s.getValue() != null && !s.getValue().toString().isEmpty())
-                        .collect(Collectors.toList());
+                        .collect(toList());
                 for (int i = 0; i < stringLiterals.size(); i++) {
                     String s = requireNonNull(stringLiterals.get(i).getValue()).toString();
                     sb.append(s);
@@ -204,8 +204,9 @@ public class UseTextBlocks extends Recipe {
             concatenationSb.append(b.getPrefix().getWhitespace()).append("-");
             concatenationSb.append(b.getPadding().getOperator().getBefore().getWhitespace()).append("-");
             return flatAdditiveStringLiterals(b.getLeft(), stringLiterals, contentSb, concatenationSb) &&
-                   flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
-        } else if (isRegularStringLiteral(expression)) {
+                    flatAdditiveStringLiterals(b.getRight(), stringLiterals, contentSb, concatenationSb);
+        }
+        if (isRegularStringLiteral(expression)) {
             J.Literal l = (J.Literal) expression;
             stringLiterals.add(l);
             contentSb.append(requireNonNull(l.getValue()));
@@ -243,11 +244,10 @@ public class UseTextBlocks extends Recipe {
         int spaceCount = tabAndSpaceCounts[1];
         if (useTabCharacter) {
             return StringUtils.repeat("\t", tabCount) +
-                   StringUtils.repeat(" ", spaceCount);
-        } else {
-            // replace tab with spaces if the style is using spaces
-            return StringUtils.repeat(" ", tabCount * tabSize + spaceCount);
+                    StringUtils.repeat(" ", spaceCount);
         }
+        // replace tab with spaces if the style is using spaces
+        return StringUtils.repeat(" ", tabCount * tabSize + spaceCount);
     }
 
     /**

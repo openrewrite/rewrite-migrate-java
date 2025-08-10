@@ -6235,6 +6235,34 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.SwitchCaseAssignmentsToSwitchExpression
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          void doFormat(Object obj) {
+              String formatted = "initialValue";
+              switch (obj) {
+                  case Integer i -> formatted = String.format("int %d", i);
+                  case Long l -> formatted = String.format("long %d", l);
+                  default -> formatted = "unknown";
+              }
+          }
+      }
+    after: |
+      class Test {
+          void doFormat(Object obj) {
+              String formatted = switch (obj) {
+                  case Integer i -> String.format("int %d", i);
+                  case Long l -> String.format("long %d", l);
+                  default -> "unknown";
+              };
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.SwitchCaseEnumGuardToLabel
 examples:
 - description: ''
@@ -6282,6 +6310,62 @@ examples:
       package suits;
       public enum Suit {
           CLUBS, DIAMONDS, HEARTS, SPADES, JOKER, SCORECARD
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.SwitchCaseReturnsToSwitchExpression
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          String doFormat(String str) {
+              switch (str) {
+                  case "foo": return "Foo";
+                  case "bar": return "Bar";
+                  case null, default: return "Other";
+              }
+          }
+      }
+    after: |
+      class Test {
+          String doFormat(String str) {
+              return switch (str) {
+                  case "foo" -> "Foo";
+                  case "bar" -> "Bar";
+                  case null, default -> "Other";
+              };
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.SwitchExpressionYieldToArrow
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          String format(String str) {
+              String formatted = switch (str) {
+                  case "foo": yield "Foo";
+                  case "bar": yield "Bar";
+                  case null, default: yield "unknown";
+              };
+              return formatted;
+          }
+      }
+    after: |
+      class Test {
+          String format(String str) {
+              String formatted = switch (str) {
+                  case "foo" -> "Foo";
+                  case "bar" -> "Bar";
+                  case null, default -> "unknown";
+              };
+              return formatted;
+          }
       }
     language: java
 ---
@@ -6656,6 +6740,27 @@ examples:
       class A {
           int foo = 9;
           int getFoo() { return foo; }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lombok.AdoptLombokSetterMethodNames
+examples:
+- description: ''
+  sources:
+  - before: |
+      class A {
+          int foo = 9;
+          public void storeFoo(int foo) {
+              this.foo = foo;
+          }
+      }
+    after: |
+      class A {
+          int foo = 9;
+          public void setFoo(int foo) {
+              this.foo = foo;
+          }
       }
     language: java
 ---

@@ -27,7 +27,7 @@ import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.TextComment;
 import org.openrewrite.marker.Markers;
 
-import java.util.Collections;
+import static java.util.Collections.singletonList;
 
 public class ThreadStopUnsupported extends Recipe {
     private static final MethodMatcher THREAD_STOP_MATCHER = new MethodMatcher("java.lang.Thread stop()");
@@ -75,7 +75,7 @@ public class ThreadStopUnsupported extends Recipe {
                                 prefixWhitespace + " * For detailed migration instructions see the migration guide available at" +
                                 prefixWhitespace + " * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html" +
                                 prefixWhitespace + " ";
-                return j.withComments(Collections.singletonList(new TextComment(true, commentText, prefixWhitespace, Markers.EMPTY)));
+                return j.withComments(singletonList(new TextComment(true, commentText, prefixWhitespace, Markers.EMPTY)));
             }
         };
     }

@@ -113,7 +113,8 @@ public class SwitchCaseEnumGuardToLabel extends Recipe {
                 }
                 if ((select instanceof J.FieldAccess || select instanceof J.Identifier) && equalTo instanceof J.Identifier && label.getName().getSimpleName().equals(((J.Identifier) equalTo).getSimpleName())) {
                     return select;
-                } else if ((equalTo instanceof J.FieldAccess || equalTo instanceof J.Identifier) && select instanceof J.Identifier && label.getName().getSimpleName().equals(((J.Identifier) select).getSimpleName())) {
+                }
+                if ((equalTo instanceof J.FieldAccess || equalTo instanceof J.Identifier) && select instanceof J.Identifier && label.getName().getSimpleName().equals(((J.Identifier) select).getSimpleName())) {
                     return equalTo;
                 }
                 return null;
