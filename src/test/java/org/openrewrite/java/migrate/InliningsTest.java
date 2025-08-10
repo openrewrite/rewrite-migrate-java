@@ -113,12 +113,10 @@ class InliningsTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              package m;
-
               import com.google.errorprone.annotations.InlineMe;
               import java.time.Duration;
 
-              public final class MyClass {
+              class Lib {
                   private final Duration deadline;
 
                   public Duration getDeadline() {
@@ -130,24 +128,31 @@ class InliningsTest implements RewriteTest {
                   public long getDeadlineMillis() {
                       return getDeadline().toMillis();
                   }
-              }
-              """,
-            SourceSpec::skip
-          ),
-          java(
-            """
-              import m.MyClass;
-              class Foo {
-                  void foo(MyClass myClass) {
-                      myClass.getDeadlineMillis();
+
+                  long usage() {
+                      return getDeadlineMillis();
                   }
               }
               """,
             """
-              import m.MyClass;
-              class Foo {
-                  void foo(MyClass myClass) {
-                      myClass.getDeadline().toMillis();
+              import com.google.errorprone.annotations.InlineMe;
+              import java.time.Duration;
+
+              class Lib {
+                  private final Duration deadline;
+
+                  public Duration getDeadline() {
+                      return deadline;
+                  }
+
+                  @Deprecated
+                  @InlineMe(replacement = "this.getDeadline().toMillis()")
+                  public long getDeadlineMillis() {
+                      return getDeadline().toMillis();
+                  }
+
+                  long usage() {
+                      return getDeadline().toMillis();
                   }
               }
               """
@@ -164,6 +169,32 @@ class InliningsTest implements RewriteTest {
               package m;
 
               import com.google.errorprone.annotations.InlineMe;
+
+              public final class MyClass {
+                  private java.time.Duration deadline;
+
+                  public void setDeadline(java.time.Duration deadline) {
+                      this.deadline = deadline;
+                  }
+
+                  @Deprecated
+                  @InlineMe(
+                      replacement = "this.setDeadline(Duration.ofMillis(millis))",
+                      imports = {"java.time.Duration"})
+                  public void setDeadline(long millis) {
+                      setDeadline(java.time.Duration.ofMillis(millis));
+                  }
+
+                  void usage() {
+                      setDeadline(1000L);
+                  }
+              }
+              """,
+            """
+              package m;
+
+              import com.google.errorprone.annotations.InlineMe;
+
               import java.time.Duration;
 
               public final class MyClass {
@@ -180,28 +211,9 @@ class InliningsTest implements RewriteTest {
                   public void setDeadline(long millis) {
                       setDeadline(Duration.ofMillis(millis));
                   }
-              }
-              """,
-            SourceSpec::skip
-          ),
-          java(
-            """
-              import m.MyClass;
 
-              class Foo {
-                  void foo(MyClass myClass) {
-                      myClass.setDeadline(1000L);
-                  }
-              }
-              """,
-            """
-              import m.MyClass;
-
-              import java.time.Duration;
-
-              class Foo {
-                  void foo(MyClass myClass) {
-                      myClass.setDeadline(Duration.ofMillis(1000L));
+                  void usage() {
+                      setDeadline(Duration.ofMillis(1000L));
                   }
               }
               """
@@ -219,7 +231,7 @@ class InliningsTest implements RewriteTest {
 
               import com.google.errorprone.annotations.InlineMe;
 
-              public final class Frobber {
+              class Frobber {
 
                   public static Frobber fromName(String name) {
                       return new Frobber();
@@ -232,25 +244,32 @@ class InliningsTest implements RewriteTest {
                   public static Frobber create(String name) {
                       return fromName(name);
                   }
-              }
-              """,
-            SourceSpec::skip
-          ),
-          java(
-            """
-              import com.google.frobber.Frobber;
 
-              class Foo {
-                  void foo() {
+                  void usage() {
                       Frobber f = Frobber.create("test");
                   }
               }
               """,
             """
-              import com.google.frobber.Frobber;
+              package com.google.frobber;
 
-              class Foo {
-                  void foo() {
+              import com.google.errorprone.annotations.InlineMe;
+
+              class Frobber {
+
+                  public static Frobber fromName(String name) {
+                      return new Frobber();
+                  }
+
+                  @Deprecated
+                  @InlineMe(
+                      replacement = "Frobber.fromName(name)",
+                      imports = {"com.google.frobber.Frobber"})
+                  public static Frobber create(String name) {
+                      return fromName(name);
+                  }
+
+                  void usage() {
                       Frobber f = Frobber.fromName("test");
                   }
               }

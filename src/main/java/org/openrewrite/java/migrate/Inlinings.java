@@ -70,6 +70,10 @@ public class Inlinings extends Recipe {
                         if (template == null) {
                             return mi;
                         }
+                        for (String importStr : values.getImports()) {
+                            maybeAddImport(importStr);
+                        }
+                        // TODO Add static imports
                         return JavaTemplate.builder(template.getString())
                                 .contextSensitive()
                                 .doBeforeParseTemplate(System.out::println)
@@ -92,6 +96,10 @@ public class Inlinings extends Recipe {
                         if (template == null) {
                             return nc;
                         }
+                        for (String importStr : values.getImports()) {
+                            maybeAddImport(importStr);
+                        }
+                        // TODO Add static imports
                         return JavaTemplate.builder(template.getString())
                                 .contextSensitive()
                                 .doBeforeParseTemplate(System.out::println)
