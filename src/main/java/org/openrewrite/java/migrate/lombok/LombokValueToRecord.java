@@ -264,19 +264,17 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 J.Identifier reference = memberReference.getReference();
                 String methodName = reference.getSimpleName();
 
-                if (recordTypeToMembers.containsKey(classFqn)) {
-                    // Handle get* and is* methods
-                    if (methodName.startsWith(STANDARD_GETTER_PREFIX) || methodName.startsWith(BOOLEAN_GETTER_PREFIX)) {
-                        String newSimpleName = getterMethodNameToFluentMethodName(methodName);
-                        if (recordTypeToMembers.get(classFqn).contains(newSimpleName)) {
-                            JavaType.Method methodType = memberReference.getMethodType();
-                            if (methodType != null) {
-                                methodType = methodType.withName(newSimpleName);
-                            }
-                            return memberReference
-                                    .withReference(reference.withSimpleName(newSimpleName))
-                                    .withMethodType(methodType);
+                if (recordTypeToMembers.containsKey(classFqn) &&
+                        (methodName.startsWith(STANDARD_GETTER_PREFIX) || methodName.startsWith(BOOLEAN_GETTER_PREFIX))) {
+                    String newSimpleName = getterMethodNameToFluentMethodName(methodName);
+                    if (recordTypeToMembers.get(classFqn).contains(newSimpleName)) {
+                        JavaType.Method methodType = memberReference.getMethodType();
+                        if (methodType != null) {
+                            methodType = methodType.withName(newSimpleName);
                         }
+                        return memberReference
+                                .withReference(reference.withSimpleName(newSimpleName))
+                                .withMethodType(methodType);
                     }
                 }
             }
@@ -297,15 +295,10 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             String methodName = methodInvocation.getName().getSimpleName();
             String classFqn = classType.getFullyQualifiedName();
 
-            if (!recordTypeToMembers.containsKey(classFqn)) {
-                return false;
-            }
+            return recordTypeToMembers.containsKey(classFqn) &&
+                    (methodName.startsWith(STANDARD_GETTER_PREFIX) || methodName.startsWith(BOOLEAN_GETTER_PREFIX)) &&
+                    recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
 
-            // Handle both get* and is* methods
-            if (methodName.startsWith(STANDARD_GETTER_PREFIX) || methodName.startsWith(BOOLEAN_GETTER_PREFIX)) {
-                return recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
-            }
-            return false;
         }
 
         private static boolean isClassExpression(@Nullable Expression expression) {
