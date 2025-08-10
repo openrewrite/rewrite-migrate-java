@@ -15,12 +15,11 @@
  */
 package org.openrewrite.java.migrate.joda;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Value;
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.ScanningRecipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
@@ -30,7 +29,23 @@ import java.util.*;
 
 import static java.util.Collections.emptyList;
 
+@EqualsAndHashCode(callSuper = false)
+@Value
 public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
+
+    /**
+     * Controls whether additional safety checks are performed during the migration process.
+     * When enabled, the recipe will verify that expressions are safe to migrate before performing the migration.
+     * This helps prevent potential issues or bugs that might arise from automatic migration.
+     */
+    @Option(displayName = "Safe migration only",
+      description = "When enabled, performs additional safety checks to verify that expressions are safe to migrate before converting them. " +
+                    "Safety checks include analyzing method parameters, return values, and variable usages across class boundaries.",
+      required = false
+    )
+    @Nullable
+    Boolean safeMigrationOnly;
+
     @Override
     public String getDisplayName() {
         return "Migrate Joda-Time to Java time";
@@ -48,12 +63,12 @@ public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JodaTimeScanner(acc);
+        return new JodaTimeScanner(acc, Boolean.TRUE.equals(safeMigrationOnly));
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
-        JodaTimeVisitor jodaTimeVisitor = new JodaTimeVisitor(acc, true, new LinkedList<>());
+        JodaTimeVisitor jodaTimeVisitor = new JodaTimeVisitor(acc, Boolean.TRUE.equals(safeMigrationOnly), new LinkedList<>());
         return Preconditions.check(new UsesType<>("org.joda.time.*", true), jodaTimeVisitor);
     }
 
