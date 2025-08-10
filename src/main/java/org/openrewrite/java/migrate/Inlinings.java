@@ -22,9 +22,9 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -58,10 +58,10 @@ public class Inlinings extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return //Preconditions.check(
 //                new UsesType<>(INLINE_ME, true), // FIXME Not picked up that we're calling an annotated method
-                new JavaIsoVisitor<ExecutionContext>() {
+                new JavaVisitor<ExecutionContext>() {
                     @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                        J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
+                    public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                        J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                         InlineMeValues values = findInlineMeValues(mi.getMethodType());
                         if (values == null) {
                             return mi;
@@ -86,8 +86,8 @@ public class Inlinings extends Recipe {
                     }
 
                     @Override
-                    public J.NewClass visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
-                        J.NewClass nc = super.visitNewClass(newClass, ctx);
+                    public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
+                        J.NewClass nc = (J.NewClass) super.visitNewClass(newClass, ctx);
                         InlineMeValues values = findInlineMeValues(nc.getConstructorType());
                         if (values == null) {
                             return nc;

@@ -20,7 +20,6 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.SourceSpec;
 
 import static org.openrewrite.java.Assertions.java;
 
@@ -166,11 +165,9 @@ class InliningsTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              package m;
-
               import com.google.errorprone.annotations.InlineMe;
 
-              public final class MyClass {
+              class MyClass {
                   private java.time.Duration deadline;
 
                   public void setDeadline(java.time.Duration deadline) {
@@ -191,13 +188,11 @@ class InliningsTest implements RewriteTest {
               }
               """,
             """
-              package m;
-
               import com.google.errorprone.annotations.InlineMe;
 
               import java.time.Duration;
 
-              public final class MyClass {
+              class MyClass {
                   private Duration deadline;
 
                   public void setDeadline(Duration deadline) {
@@ -289,7 +284,7 @@ class InliningsTest implements RewriteTest {
               import com.google.errorprone.annotations.InlineMe;
               import com.google.errorprone.annotations.InlineMeValidationDisabled;
 
-              public final class MyClass {
+              class MyClass {
 
                   @InlineMeValidationDisabled
                   @Deprecated
@@ -300,27 +295,35 @@ class InliningsTest implements RewriteTest {
                   }
 
                   public static MyClass create() {
-                      return new MyClass();
+                      return null; // `new MyClass();` would be replaced here as well, but we want to avoid that
                   }
-              }
-              """,
-            SourceSpec::skip
-          ),
-          java(
-            """
-              import com.google.frobber.MyClass;
 
-              class Foo {
-                  void foo() {
+                  void usage() {
                       MyClass obj = new MyClass();
                   }
               }
               """,
             """
-              import com.google.frobber.MyClass;
+              package com.google.frobber;
 
-              class Foo {
-                  void foo() {
+              import com.google.errorprone.annotations.InlineMe;
+              import com.google.errorprone.annotations.InlineMeValidationDisabled;
+
+              class MyClass {
+
+                  @InlineMeValidationDisabled
+                  @Deprecated
+                  @InlineMe(
+                      replacement = "MyClass.create()",
+                      imports = {"com.google.frobber.MyClass"})
+                  public MyClass() {
+                  }
+
+                  public static MyClass create() {
+                      return null; // `new MyClass();` would be replaced here as well, but we want to avoid that
+                  }
+
+                  void usage() {
                       MyClass obj = MyClass.create();
                   }
               }
@@ -335,11 +338,9 @@ class InliningsTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              package m;
-
               import com.google.errorprone.annotations.InlineMe;
 
-              public final class Calculator {
+              class Calculator {
 
                   public int addAndMultiply(int a, int b, int c) {
                       return (a + b) * c;
@@ -350,24 +351,27 @@ class InliningsTest implements RewriteTest {
                   public int compute(int x, int y, int z) {
                       return addAndMultiply(x, y, z);
                   }
-              }
-              """,
-            SourceSpec::skip
-          ),
-          java(
-            """
-              import m.Calculator;
 
-              class Foo {
                   void foo(Calculator calc) {
                       int result = calc.compute(1, 2, 3);
                   }
               }
               """,
             """
-              import m.Calculator;
+              import com.google.errorprone.annotations.InlineMe;
 
-              class Foo {
+              class Calculator {
+
+                  public int addAndMultiply(int a, int b, int c) {
+                      return (a + b) * c;
+                  }
+
+                  @Deprecated
+                  @InlineMe(replacement = "this.addAndMultiply(x, y, z)")
+                  public int compute(int x, int y, int z) {
+                      return addAndMultiply(x, y, z);
+                  }
+
                   void foo(Calculator calc) {
                       int result = calc.addAndMultiply(1, 2, 3);
                   }
@@ -383,11 +387,9 @@ class InliningsTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              package m;
-
               import com.google.errorprone.annotations.InlineMe;
 
-              public final class Builder {
+              class Builder {
 
                   public Builder withName(String name) {
                       return this;
@@ -402,24 +404,31 @@ class InliningsTest implements RewriteTest {
                   public Builder configure(String name, int age) {
                       return withName(name).withAge(age);
                   }
-              }
-              """,
-            SourceSpec::skip
-          ),
-          java(
-            """
-              import m.Builder;
 
-              class Foo {
                   void foo(Builder builder) {
                       builder.configure("John", 30);
                   }
               }
               """,
             """
-              import m.Builder;
+              import com.google.errorprone.annotations.InlineMe;
 
-              class Foo {
+              class Builder {
+
+                  public Builder withName(String name) {
+                      return this;
+                  }
+
+                  public Builder withAge(int age) {
+                      return this;
+                  }
+
+                  @Deprecated
+                  @InlineMe(replacement = "this.withName(name).withAge(age)")
+                  public Builder configure(String name, int age) {
+                      return withName(name).withAge(age);
+                  }
+
                   void foo(Builder builder) {
                       builder.withName("John").withAge(30);
                   }
