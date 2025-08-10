@@ -290,17 +290,20 @@ class LombokValueToRecordTest implements RewriteTest {
             """
               public record Foo(
                 boolean bar) {
-                  public boolean isBar() {
-                      return bar;
-                  }
-              }
-              """
+              }"""
           ),
           java(
             """
               public class Baz {
                   public void baz(Foo foo) {
                       foo.isBar();
+                  }
+              }
+              """,
+            """
+              public class Baz {
+                  public void baz(Foo foo) {
+                      foo.bar();
                   }
               }
               """
@@ -330,13 +333,6 @@ class LombokValueToRecordTest implements RewriteTest {
                 boolean enabled,
                 Boolean active,
                 String name) {
-                  public boolean isEnabled() {
-                      return enabled;
-                  }
-
-                  public Boolean isActive() {
-                      return active;
-                  }
               }
               """
           ),
@@ -353,7 +349,7 @@ class LombokValueToRecordTest implements RewriteTest {
             """
               public class ConfigUser {
                   public void useConfig(Config config) {
-                      if (config.isEnabled() && config.isActive()) {
+                      if (config.enabled() && config.active()) {
                           System.out.println(config.name());
                       }
                   }

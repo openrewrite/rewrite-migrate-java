@@ -117,7 +117,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         }
 
         private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
-            List<J.Annotation> allAnnotations = classDeclaration.getAllAnnotations();
             return classDeclaration.getType() != null &&
                    J.ClassDeclaration.Kind.Type.Record != classDeclaration.getKind() &&
                    hasMatchingAnnotations(classDeclaration) &&
@@ -228,7 +227,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 .contextSensitive()
                 .build();
 
-
         private static final String TO_STRING_MEMBER_LINE_PATTERN = "\"%s=\" + %s +";
         private static final String TO_STRING_MEMBER_DELIMITER = "\", \" +\n";
         private static final String STANDARD_GETTER_PREFIX = "get";
@@ -251,17 +249,9 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             }
 
             J.Identifier methodName = methodInvocation.getName();
-            String simpleName = methodName.getSimpleName();
-
-            // Don't convert is* methods as they will be provided by the generated methods
-            if (simpleName.startsWith(BOOLEAN_GETTER_PREFIX)) {
-                return methodInvocation;
-            }
-
-            return methodInvocation
-                    .withName(methodName
-                            .withSimpleName(getterMethodNameToFluentMethodName(simpleName))
-                    );
+            return methodInvocation.withName(
+                    methodName.withSimpleName(
+                            getterMethodNameToFluentMethodName(methodName.getSimpleName())));
         }
 
         @Override
@@ -275,8 +265,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 String methodName = reference.getSimpleName();
 
                 if (recordTypeToMembers.containsKey(classFqn)) {
-                    // Handle get* methods
-                    if (methodName.startsWith(STANDARD_GETTER_PREFIX)) {
+                    // Handle get* and is* methods
+                    if (methodName.startsWith(STANDARD_GETTER_PREFIX) || methodName.startsWith(BOOLEAN_GETTER_PREFIX)) {
                         String newSimpleName = getterMethodNameToFluentMethodName(methodName);
                         if (recordTypeToMembers.get(classFqn).contains(newSimpleName)) {
                             JavaType.Method methodType = memberReference.getMethodType();
@@ -284,11 +274,10 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                                 methodType = methodType.withName(newSimpleName);
                             }
                             return memberReference
-                                .withReference(reference.withSimpleName(newSimpleName))
-                                .withMethodType(methodType);
+                                    .withReference(reference.withSimpleName(newSimpleName))
+                                    .withMethodType(methodType);
                         }
                     }
-                    // Don't convert is* method references as they will be provided by generated methods
                 }
             }
             return memberReference;
@@ -313,15 +302,9 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             }
 
             // Handle both get* and is* methods
-            if (methodName.startsWith(STANDARD_GETTER_PREFIX)) {
+            if (methodName.startsWith(STANDARD_GETTER_PREFIX) || methodName.startsWith(BOOLEAN_GETTER_PREFIX)) {
                 return recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
             }
-            if (methodName.startsWith(BOOLEAN_GETTER_PREFIX)) {
-                // For is* methods, check if the field exists (e.g., isBar -> bar)
-                String fieldName = booleanGetterMethodNameToFluentMethodName(methodName);
-                return recordTypeToMembers.get(classFqn).contains(fieldName);
-            }
-
             return false;
         }
 
@@ -331,25 +314,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
         private static String getterMethodNameToFluentMethodName(String methodName) {
             StringBuilder fluentMethodName = new StringBuilder(
-                    methodName.replace(STANDARD_GETTER_PREFIX, ""));
-
-            if (fluentMethodName.length() == 0) {
-                return "";
-            }
-
-            char firstMemberChar = fluentMethodName.charAt(0);
-            fluentMethodName.setCharAt(0, Character.toLowerCase(firstMemberChar));
-
-            return fluentMethodName.toString();
-        }
-
-        private static String booleanGetterMethodNameToFluentMethodName(String methodName) {
-            if (!methodName.startsWith(BOOLEAN_GETTER_PREFIX)) {
-                return methodName;
-            }
-
-            StringBuilder fluentMethodName = new StringBuilder(
-                    methodName.substring(BOOLEAN_GETTER_PREFIX.length()));
+                    methodName.replaceFirst("^(get|is)", ""));
 
             if (fluentMethodName.length() == 0) {
                 return "";
@@ -379,44 +344,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                             classDeclaration.getBody().getCoordinates().lastStatement(),
                             classDeclaration.getSimpleName(),
                             memberVariablesToString(getMemberVariableNames(memberVariables))));
-        }
-
-        private J.ClassDeclaration addBooleanGetterMethods(J.ClassDeclaration classDeclaration,
-                                                           List<J.VariableDeclarations> memberVariables) {
-            List<String> booleanGetters = new ArrayList<>();
-            for (J.VariableDeclarations varDecl : memberVariables) {
-                JavaType type = varDecl.getType();
-                if (type != null && isBooleanType(type)) {
-                    for (J.VariableDeclarations.NamedVariable var : varDecl.getVariables()) {
-                        String fieldName = var.getSimpleName();
-                        String capitalizedFieldName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-                        String returnType = type instanceof JavaType.Primitive ? "boolean" : "Boolean";
-                        booleanGetters.add("public " + returnType + " is" + capitalizedFieldName + "() { return " + fieldName + "; }");
-                    }
-                }
-            }
-            if (!booleanGetters.isEmpty()) {
-                String allMethods = String.join("\n", booleanGetters);
-                JavaTemplate template = JavaTemplate
-                        .builder(allMethods)
-                        .contextSensitive()
-                        .build();
-                return classDeclaration.withBody(template
-                        .apply(new Cursor(getCursor(), classDeclaration.getBody()),
-                                classDeclaration.getBody().getCoordinates().lastStatement()));
-            }
-            return classDeclaration;
-        }
-
-        private boolean isBooleanType(JavaType type) {
-            if (type instanceof JavaType.Primitive) {
-                return type == JavaType.Primitive.Boolean;
-            }
-            if (type instanceof JavaType.Class) {
-                String fqn = ((JavaType.Class) type).getFullyQualifiedName();
-                return "java.lang.Boolean".equals(fqn);
-            }
-            return false;
         }
 
         private static String memberVariablesToString(Set<String> memberVariables) {
@@ -470,9 +397,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             if (useExactToString != null && useExactToString) {
                 classDeclaration = addExactToStringMethod(classDeclaration, memberVariables);
             }
-
-            // Add is* methods for boolean fields
-            classDeclaration = addBooleanGetterMethods(classDeclaration, memberVariables);
 
             return maybeAutoFormat(cd, classDeclaration, ctx);
         }
