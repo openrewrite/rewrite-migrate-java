@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
@@ -436,5 +437,54 @@ class InliningsTest implements RewriteTest {
               """
           )
         );
+    }
+
+    @Nested
+    class Guava {
+        @Test
+        void stringsRegular() {
+            rewriteRun(
+              java(
+                """
+                  import com.google.common.base.Strings;
+                  class Regular {
+                      String repeatString(String s, int n) {
+                          return Strings.repeat(s, n);
+                      }
+                  }
+                  """,
+                """
+                  class Regular {
+                      String repeatString(String s, int n) {
+                          return s.repeat(n);
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void stringsStaticImport() {
+            rewriteRun(
+              java(
+                """
+                  import static com.google.common.base.Strings.repeat;
+                  class StaticImport {
+                      String repeatString(String s, int n) {
+                          return repeat(s, n);
+                      }
+                  }
+                  """,
+                """
+                  class StaticImport {
+                      String repeatString(String s, int n) {
+                          return s.repeat(n);
+                      }
+                  }
+                  """
+              )
+            );
+        }
     }
 }
