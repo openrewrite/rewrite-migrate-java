@@ -71,6 +71,43 @@ class InliningsTest implements RewriteTest {
     }
 
     @Test
+    void inlineMeNonStatic() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.errorprone.annotations.InlineMe;
+
+              class Lib {
+                  @Deprecated
+                  @InlineMe(replacement = "this.replacement()")
+                  public void deprecated() {}
+                  public void replacement() {}
+
+                  public void usage() {
+                      deprecated();
+                  }
+              }
+              """,
+            """
+              import com.google.errorprone.annotations.InlineMe;
+
+              class Lib {
+                  @Deprecated
+                  @InlineMe(replacement = "this.replacement()")
+                  public void deprecated() {}
+                  public void replacement() {}
+
+                  public void usage() {
+                      replacement();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void inlineMeChained() {
         //language=java
         rewriteRun(
