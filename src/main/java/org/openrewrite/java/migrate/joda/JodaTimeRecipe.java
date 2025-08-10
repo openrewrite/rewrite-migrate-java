@@ -38,13 +38,13 @@ public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
      * When enabled, the recipe will verify that expressions are safe to migrate before performing the migration.
      * This helps prevent potential issues or bugs that might arise from automatic migration.
      */
-    @Option(displayName = "Enable safe migration",
+    @Option(displayName = "Safe migration only",
       description = "When enabled, performs additional safety checks to verify that expressions are safe to migrate before converting them. " +
                     "Safety checks include analyzing method parameters, return values, and variable usages across class boundaries.",
       required = false
     )
     @Nullable
-    Boolean safeMigration;
+    Boolean safeMigrationOnly;
 
     @Override
     public String getDisplayName() {
@@ -63,12 +63,12 @@ public class JodaTimeRecipe extends ScanningRecipe<JodaTimeRecipe.Accumulator> {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JodaTimeScanner(acc, Boolean.TRUE.equals(safeMigration));
+        return new JodaTimeScanner(acc, Boolean.TRUE.equals(safeMigrationOnly));
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
-        JodaTimeVisitor jodaTimeVisitor = new JodaTimeVisitor(acc, Boolean.TRUE.equals(safeMigration), new LinkedList<>());
+        JodaTimeVisitor jodaTimeVisitor = new JodaTimeVisitor(acc, Boolean.TRUE.equals(safeMigrationOnly), new LinkedList<>());
         return Preconditions.check(new UsesType<>("org.joda.time.*", true), jodaTimeVisitor);
     }
 
