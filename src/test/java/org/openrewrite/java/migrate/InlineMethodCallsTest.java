@@ -24,11 +24,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class InliningsTest implements RewriteTest {
+class InlineMethodCallsTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new Inlinings())
+        spec.recipe(new InlineMethodCalls())
           .parser(JavaParser.fromJavaVersion().classpath("guava", "error_prone_annotations"));
     }
 

@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
-public class Inlinings extends Recipe {
+public class InlineMethodCalls extends Recipe {
 
     private static final String INLINE_ME = "com.google.errorprone.annotations.InlineMe";
 
@@ -54,99 +54,97 @@ public class Inlinings extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return //Preconditions.check(
-//                new UsesType<>(INLINE_ME, true), // FIXME Not picked up that we're calling an annotated method
-                new JavaVisitor<ExecutionContext>() {
-                    @Override
-                    public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                        J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
-                        InlineMeValues values = findInlineMeValues(mi.getMethodType());
-                        if (values == null) {
-                            return mi;
-                        }
-                        Template template = values.template(mi);
-                        if (template == null) {
-                            return mi;
-                        }
-                        for (String importStr : values.getImports()) {
-                            maybeAddImport(importStr);
-                        }
-                        // TODO Add static imports
-                        J replacement = JavaTemplate.builder(template.getString())
-                                .contextSensitive()
-                                .imports(values.getImports())
-                                .staticImports(values.getStaticImports())
-                                .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
-                                .build()
-                                .apply(updateCursor(mi), mi.getCoordinates().replace(), template.getParameters());
-                        return avoidMethodSelfReferences(mi, replacement);
-                    }
+        // XXX Preconditions can not yet pick up the `@InlineMe` annotation on methods used
+        return new JavaVisitor<ExecutionContext>() {
+            @Override
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
+                InlineMeValues values = findInlineMeValues(mi.getMethodType());
+                if (values == null) {
+                    return mi;
+                }
+                Template template = values.template(mi);
+                if (template == null) {
+                    return mi;
+                }
+                for (String importStr : values.getImports()) {
+                    maybeAddImport(importStr);
+                }
+                // TODO Add static imports
+                J replacement = JavaTemplate.builder(template.getString())
+                        .contextSensitive()
+                        .imports(values.getImports())
+                        .staticImports(values.getStaticImports())
+                        .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
+                        .build()
+                        .apply(updateCursor(mi), mi.getCoordinates().replace(), template.getParameters());
+                return avoidMethodSelfReferences(mi, replacement);
+            }
 
-                    @Override
-                    public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
-                        J.NewClass nc = (J.NewClass) super.visitNewClass(newClass, ctx);
-                        InlineMeValues values = findInlineMeValues(nc.getConstructorType());
-                        if (values == null) {
-                            return nc;
-                        }
-                        Template template = values.template(nc);
-                        if (template == null) {
-                            return nc;
-                        }
-                        for (String importStr : values.getImports()) {
-                            maybeAddImport(importStr);
-                        }
-                        // TODO Add static imports
-                        J replacement = JavaTemplate.builder(template.getString())
-                                .contextSensitive()
-                                .imports(values.getImports())
-                                .staticImports(values.getStaticImports())
-                                .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
-                                .build()
-                                .apply(updateCursor(nc), nc.getCoordinates().replace(), template.getParameters());
-                        return avoidMethodSelfReferences(nc, replacement);
-                    }
+            @Override
+            public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
+                J.NewClass nc = (J.NewClass) super.visitNewClass(newClass, ctx);
+                InlineMeValues values = findInlineMeValues(nc.getConstructorType());
+                if (values == null) {
+                    return nc;
+                }
+                Template template = values.template(nc);
+                if (template == null) {
+                    return nc;
+                }
+                for (String importStr : values.getImports()) {
+                    maybeAddImport(importStr);
+                }
+                // TODO Add static imports
+                J replacement = JavaTemplate.builder(template.getString())
+                        .contextSensitive()
+                        .imports(values.getImports())
+                        .staticImports(values.getStaticImports())
+                        .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
+                        .build()
+                        .apply(updateCursor(nc), nc.getCoordinates().replace(), template.getParameters());
+                return avoidMethodSelfReferences(nc, replacement);
+            }
 
-                    private @Nullable InlineMeValues findInlineMeValues(JavaType.@Nullable Method methodType) {
-                        if (methodType == null) {
-                            return null;
-                        }
-                        List<JavaType.FullyQualified> annotations = methodType.getAnnotations();
-                        for (JavaType.FullyQualified annotation : annotations) {
-                            if (INLINE_ME.equals(annotation.getFullyQualifiedName())) {
-                                return InlineMeValues.parse((JavaType.Annotation) annotation);
-                            }
-                        }
-                        return null;
-                    }
-
-                    private J avoidMethodSelfReferences(MethodCall original, J replacement) {
-                        JavaType.Method replacementMethodType = replacement instanceof MethodCall ?
-                                ((MethodCall) replacement).getMethodType() : null;
-                        if (replacementMethodType == null) {
-                            return replacement;
-                        }
-
-                        Cursor cursor = getCursor();
-                        while ((cursor = cursor.getParent()) != null) {
-                            Object value = cursor.getValue();
-
-                            JavaType.Method cursorMethodType;
-                            if (value instanceof MethodCall) {
-                                cursorMethodType = ((MethodCall) value).getMethodType();
-                            } else if (value instanceof J.MethodDeclaration) {
-                                cursorMethodType = ((J.MethodDeclaration) value).getMethodType();
-                            } else {
-                                continue;
-                            }
-                            if (TypeUtils.isOfType(replacementMethodType, cursorMethodType)) {
-                                return original;
-                            }
-                        }
-                        return replacement;
+            private @Nullable InlineMeValues findInlineMeValues(JavaType.@Nullable Method methodType) {
+                if (methodType == null) {
+                    return null;
+                }
+                List<JavaType.FullyQualified> annotations = methodType.getAnnotations();
+                for (JavaType.FullyQualified annotation : annotations) {
+                    if (INLINE_ME.equals(annotation.getFullyQualifiedName())) {
+                        return InlineMeValues.parse((JavaType.Annotation) annotation);
                     }
                 }
-                /*)*/;
+                return null;
+            }
+
+            private J avoidMethodSelfReferences(MethodCall original, J replacement) {
+                JavaType.Method replacementMethodType = replacement instanceof MethodCall ?
+                        ((MethodCall) replacement).getMethodType() : null;
+                if (replacementMethodType == null) {
+                    return replacement;
+                }
+
+                Cursor cursor = getCursor();
+                while ((cursor = cursor.getParent()) != null) {
+                    Object value = cursor.getValue();
+
+                    JavaType.Method cursorMethodType;
+                    if (value instanceof MethodCall) {
+                        cursorMethodType = ((MethodCall) value).getMethodType();
+                    } else if (value instanceof J.MethodDeclaration) {
+                        cursorMethodType = ((J.MethodDeclaration) value).getMethodType();
+                    } else {
+                        continue;
+                    }
+                    if (TypeUtils.isOfType(replacementMethodType, cursorMethodType)) {
+                        return original;
+                    }
+                }
+                return replacement;
+            }
+        };
     }
 
     @Value
