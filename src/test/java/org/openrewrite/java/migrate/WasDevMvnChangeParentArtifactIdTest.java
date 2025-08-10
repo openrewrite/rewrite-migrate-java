@@ -17,17 +17,22 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class WasDevMvnChangeParentArtifactIdTest implements RewriteTest {
 
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.recipeFromResources("org.openrewrite.java.migrate.WasDevMvnChangeParentArtifactId");
+    }
+
     @DocumentExample
     @Test
     void mvnChangeParentArtifactId() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.WasDevMvnChangeParentArtifactId"),
           //language=XML
           pomXml(
             """
@@ -59,7 +64,6 @@ class WasDevMvnChangeParentArtifactIdTest implements RewriteTest {
     @Test
     void noChangeParentArtifactId() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.WasDevMvnChangeParentArtifactId"),
           //language=XML
           pomXml(
             """
