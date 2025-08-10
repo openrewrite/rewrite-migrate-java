@@ -295,7 +295,7 @@ class InliningsTest implements RewriteTest {
                   }
 
                   public static MyClass create() {
-                      return null; // `new MyClass();` would be replaced here as well, but we want to avoid that
+                      return new MyClass();
                   }
 
                   void usage() {
@@ -320,7 +320,7 @@ class InliningsTest implements RewriteTest {
                   }
 
                   public static MyClass create() {
-                      return null; // `new MyClass();` would be replaced here as well, but we want to avoid that
+                      return new MyClass();
                   }
 
                   void usage() {

@@ -19,16 +19,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.MethodCall;
+import org.openrewrite.java.tree.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,15 +72,14 @@ public class Inlinings extends Recipe {
                             maybeAddImport(importStr);
                         }
                         // TODO Add static imports
-                        return JavaTemplate.builder(template.getString())
+                        J replacement = JavaTemplate.builder(template.getString())
                                 .contextSensitive()
-                                .doBeforeParseTemplate(System.out::println)
-                                .doAfterVariableSubstitution(System.out::println)
                                 .imports(values.getImports())
                                 .staticImports(values.getStaticImports())
                                 .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
                                 .build()
                                 .apply(updateCursor(mi), mi.getCoordinates().replace(), template.getParameters());
+                        return avoidMethodSelfReferences(mi, replacement);
                     }
 
                     @Override
@@ -100,15 +97,14 @@ public class Inlinings extends Recipe {
                             maybeAddImport(importStr);
                         }
                         // TODO Add static imports
-                        return JavaTemplate.builder(template.getString())
+                        J replacement = JavaTemplate.builder(template.getString())
                                 .contextSensitive()
-                                .doBeforeParseTemplate(System.out::println)
-                                .doAfterVariableSubstitution(System.out::println)
                                 .imports(values.getImports())
                                 .staticImports(values.getStaticImports())
                                 .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
                                 .build()
                                 .apply(updateCursor(nc), nc.getCoordinates().replace(), template.getParameters());
+                        return avoidMethodSelfReferences(nc, replacement);
                     }
 
                     private @Nullable InlineMeValues findInlineMeValues(JavaType.@Nullable Method methodType) {
@@ -122,6 +118,32 @@ public class Inlinings extends Recipe {
                             }
                         }
                         return null;
+                    }
+
+                    private J avoidMethodSelfReferences(MethodCall original, J replacement) {
+                        JavaType.Method replacementMethodType = replacement instanceof MethodCall ?
+                                ((MethodCall) replacement).getMethodType() : null;
+                        if (replacementMethodType == null) {
+                            return replacement;
+                        }
+
+                        Cursor cursor = getCursor();
+                        while ((cursor = cursor.getParent()) != null) {
+                            Object value = cursor.getValue();
+
+                            JavaType.Method cursorMethodType;
+                            if (value instanceof MethodCall) {
+                                cursorMethodType = ((MethodCall) value).getMethodType();
+                            } else if (value instanceof J.MethodDeclaration) {
+                                cursorMethodType = ((J.MethodDeclaration) value).getMethodType();
+                            } else {
+                                continue;
+                            }
+                            if (TypeUtils.isOfType(replacementMethodType, cursorMethodType)) {
+                                return original;
+                            }
+                        }
+                        return replacement;
                     }
                 }
                 /*)*/;
