@@ -39,36 +39,30 @@ class InliningsTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              package a.b;
-
               import com.google.errorprone.annotations.InlineMe;
 
-              public class C {
+              class Lib {
                   @Deprecated
                   @InlineMe(replacement = "this.replacement()")
-                  public void deprecated() {
-                  }
+                  public void deprecated() {}
+                  public void replacement() {}
 
-                  public void replacement() {
-                  }
-              }
-              """,
-            SourceSpec::skip
-          ),
-          java(
-            """
-              import a.b.C;
-              class Foo {
-                  void foo(C c) {
-                      c.deprecated();
+                  public static void usage(Lib lib) {
+                      lib.deprecated();
                   }
               }
               """,
             """
-              import a.b.C;
-              class Foo {
-                  void foo(C c) {
-                      c.replacement();
+              import com.google.errorprone.annotations.InlineMe;
+
+              class Lib {
+                  @Deprecated
+                  @InlineMe(replacement = "this.replacement()")
+                  public void deprecated() {}
+                  public void replacement() {}
+
+                  public static void usage(Lib lib) {
+                      lib.replacement();
                   }
               }
               """
