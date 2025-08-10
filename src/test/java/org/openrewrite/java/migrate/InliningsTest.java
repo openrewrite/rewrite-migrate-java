@@ -34,7 +34,50 @@ class InliningsTest implements RewriteTest {
 
     @DocumentExample
     @Test
-    void inlineMe() {
+    void inlineMeSimple() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package a.b;
+
+              import com.google.errorprone.annotations.InlineMe;
+
+              public class C {
+                  @Deprecated
+                  @InlineMe(replacement = "this.replacement()")
+                  public void deprecated() {
+                  }
+
+                  public void replacement() {
+                  }
+              }
+              """,
+            SourceSpec::skip
+          ),
+          java(
+            """
+              import a.b.C;
+              class Foo {
+                  void foo(C c) {
+                      c.deprecated();
+                  }
+              }
+              """,
+            """
+              import a.b.C;
+              class Foo {
+                  void foo(C c) {
+                      c.replacement();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void inlineMeChained() {
         //language=java
         rewriteRun(
           java(
