@@ -316,7 +316,6 @@ class LombokValueToRecordTest implements RewriteTest {
     void multipleBooleanFields() {
         //language=java
         rewriteRun(
-          s -> s.typeValidationOptions(TypeValidation.none()),
           java(
             """
               import lombok.Value;
@@ -340,7 +339,7 @@ class LombokValueToRecordTest implements RewriteTest {
             """
               public class ConfigUser {
                   public void useConfig(Config config) {
-                      if (config.isEnabled() && config.isActive()) {
+                      if (config.isEnabled() && config.getActive()) {
                           System.out.println(config.getName());
                       }
                   }
