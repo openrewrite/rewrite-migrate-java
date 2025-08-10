@@ -18,10 +18,16 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Recipe;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 
 class InlineMethodCallsTest implements RewriteTest {
@@ -480,6 +486,30 @@ class InlineMethodCallsTest implements RewriteTest {
                   class StaticImport {
                       String repeatString(String s, int n) {
                           return s.repeat(n);
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void methodTypeParameterNames() {
+            rewriteRun(
+              spec -> spec.beforeRecipe(list -> {
+                    JavaSourceFile first = (JavaSourceFile) list.getFirst();
+                    J.MethodDeclaration foo = (J.MethodDeclaration) first.getClasses().getFirst().getBody().getStatements().getFirst();
+                    J.MethodInvocation repeat = (J.MethodInvocation) foo.getBody().getStatements().getFirst();
+                    List<String> parameterNames = repeat.getMethodType().getParameterNames();
+                    assertThat(parameterNames).containsExactly("string", "count");
+                })
+                .recipe(Recipe.noop()),
+              java(
+                """
+                  import com.google.common.base.Strings;
+                  class Foo {
+                      void foo(String s, int n) {
+                          Strings.repeat(s, n);
                       }
                   }
                   """
