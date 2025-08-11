@@ -89,8 +89,9 @@ public class SummarizeSetter extends Recipe {
                 boolean hasSetterAnnotation = variableDecls != visited;
                 if (hasSetterAnnotation) {
                     return fixFormat(variableDecls, visited, ctx);
-                } else if (variableDecls.hasModifier(J.Modifier.Type.Final) ||
-                        variableDecls.hasModifier(J.Modifier.Type.Static)) {
+                }
+                if (variableDecls.hasModifier(J.Modifier.Type.Final) ||
+                getCursor().putMessageOnFirstEnclosing(J.ClassDeclaration.class, ALL_FIELDS_DECORATED_ACC, false);
                     //final fields and static field don't need to have an annotation
                     return visited;
                 } else {
