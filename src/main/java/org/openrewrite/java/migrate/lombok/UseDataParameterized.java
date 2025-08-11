@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lombok;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -110,7 +111,7 @@ public class UseDataParameterized extends Recipe {
         }
 
         @Override
-        public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
+        public  J.@Nullable Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
             return annotationsToReplace.contains(annotation.getSimpleName()) &&
                     annotation.getArguments() == null //no arguments of any kind. Too strict?
                     //should only trigger on class annotation
