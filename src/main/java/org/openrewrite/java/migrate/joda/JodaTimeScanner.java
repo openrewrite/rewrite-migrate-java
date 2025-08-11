@@ -41,7 +41,6 @@ class JodaTimeScanner extends ScopeAwareVisitor {
 
     @Getter
     private final JodaTimeRecipe.Accumulator acc;
-    private final boolean safeMigrationOnly;
 
     private final Map<NamedVariable, Set<NamedVariable>> varDependencies = new HashMap<>();
     private final Map<JavaType, Set<String>> unsafeVarsByType = new HashMap<>();
@@ -49,13 +48,8 @@ class JodaTimeScanner extends ScopeAwareVisitor {
     private final Map<JavaType.Method, Set<UnresolvedVar>> methodUnresolvedReferencedVars = new HashMap<>();
 
     public JodaTimeScanner(JodaTimeRecipe.Accumulator acc) {
-        this(acc, true);
-    }
-
-    public JodaTimeScanner(JodaTimeRecipe.Accumulator acc, boolean safeMigrationOnly) {
         super(new LinkedList<>());
         this.acc = acc;
-        this.safeMigrationOnly = safeMigrationOnly;
     }
 
     @Override
@@ -73,9 +67,6 @@ class JodaTimeScanner extends ScopeAwareVisitor {
 
     @Override
     public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-        if (!safeMigrationOnly) { // skip scan if safe mode is disabled
-            return cu;
-        }
         super.visitCompilationUnit(cu, ctx);
         Set<NamedVariable> allReachable = new HashSet<>();
         for (NamedVariable var : acc.getUnsafeVars()) {
