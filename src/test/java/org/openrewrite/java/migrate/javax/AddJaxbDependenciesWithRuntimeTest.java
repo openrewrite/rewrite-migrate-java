@@ -30,14 +30,14 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 @SuppressWarnings("LanguageMismatch")
-class AddJaxbDependenciesTest implements RewriteTest {
+class AddJaxbDependenciesWithRuntimeTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(Environment.builder()
           .scanRuntimeClasspath("org.openrewrite.java.migrate.javax")
           .build()
-          .activateRecipes("org.openrewrite.java.migrate.javax.AddJaxbDependencies"));
+          .activateRecipes("org.openrewrite.java.migrate.javax.AddJaxbDependenciesWithRuntime"));
     }
 
     // language=java

@@ -16,6 +16,8 @@
 package org.openrewrite.java.migrate.joda;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.Cursor;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.ExecutionContext;
@@ -32,11 +34,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.joining;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.test.RewriteTest.toRecipe;
 
+@Execution(ExecutionMode.SAME_THREAD)
 class JodaTimeFlowSpecTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
@@ -71,7 +74,7 @@ class JodaTimeFlowSpecTest implements RewriteTest {
                   if (identifiers == null || identifiers.isEmpty()) {
                       return expression;
                   }
-                  String desc = identifiers.stream().map(J.Identifier::getSimpleName).collect(Collectors.joining(", "));
+                  String desc = identifiers.stream().map(J.Identifier::getSimpleName).collect(joining(", "));
                   return SearchResult.found(expression, desc);
               }
 

@@ -29,8 +29,9 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 public class ListFirstAndLast extends Recipe {
 
@@ -116,8 +117,8 @@ public class ListFirstAndLast extends Recipe {
                 arguments.add(mi.getArguments().get(1).withPrefix(Space.EMPTY));
                 newMethodType = originalMethodType
                         .withName(operation + firstOrLast)
-                        .withParameterNames(Collections.singletonList(originalMethodType.getParameterNames().get(1)))
-                        .withParameterTypes(Collections.singletonList(originalMethodType.getParameterTypes().get(1)));
+                        .withParameterNames(singletonList(originalMethodType.getParameterNames().get(1)))
+                        .withParameterTypes(singletonList(originalMethodType.getParameterTypes().get(1)));
             } else {
                 newMethodType = originalMethodType
                         .withName(operation + firstOrLast)

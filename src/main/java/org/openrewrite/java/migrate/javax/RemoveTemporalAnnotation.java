@@ -31,11 +31,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Value
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
+
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class RemoveTemporalAnnotation extends Recipe {
     /*
      * This rule scans for the following annotation-attribute combinations where data does not need to be converted
@@ -74,13 +76,13 @@ public class RemoveTemporalAnnotation extends Recipe {
                 JAVA_SQL_TIMESTAMP,
                 JAVA_SQL_TIME,
                 JAVA_SQL_DATE
-        ).collect(Collectors.toSet());
+        ).collect(toSet());
         // Combinations of TemporalType and java.sql classes that do not need removal
         Map<String, String> doNotRemove = Stream.of(new String[][]{
                 {"DATE", JAVA_SQL_TIMESTAMP},
                 {"TIME", JAVA_SQL_TIMESTAMP},
                 {"TIMESTAMP", JAVA_SQL_DATE}
-        }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
+        }).collect(toMap(data -> data[0], data -> data[1]));
         // TODO: maybe future recipe to handle these by creating a converter class
         // https://wiki.eclipse.org/EclipseLink/Examples/JPA/Migration/OpenJPA/Mappings#.40Temporal_on_java.sql.Date.2FTime.2FTimestamp_fields
 

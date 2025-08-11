@@ -28,8 +28,8 @@ import org.openrewrite.java.tree.JavaType;
 import static java.util.Comparator.comparing;
 import static lombok.AccessLevel.PUBLIC;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 class FieldAnnotator extends JavaIsoVisitor<ExecutionContext> {
 
     Class<?> annotation;

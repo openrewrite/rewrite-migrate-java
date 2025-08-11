@@ -103,15 +103,13 @@ class LombokUtils {
     }
 
     public static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {
-
         if (type == JavaType.Primitive.Boolean) {
             boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
                     fieldName.substring(0, 3).matches("is[A-Z]");
             if (alreadyStartsWithIs) {
                 return fieldName;
-            } else {
-                return "is" + StringUtils.capitalize(fieldName);
             }
+            return "is" + StringUtils.capitalize(fieldName);
         }
         return "get" + StringUtils.capitalize(fieldName);
     }
@@ -174,12 +172,48 @@ class LombokUtils {
         return method.getSimpleName().equals("set" + StringUtils.capitalize(simpleName));
     }
 
+    public static boolean isEffectivelySetter(J.MethodDeclaration method) {
+        if (method.getType() != JavaType.Primitive.Void) {
+            return false;
+        }
+        if (method.getParameters().size() != 1 || method.getParameters().get(0) instanceof J.Empty) {
+            return false;
+        }
+
+        J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) method.getParameters().get(0);
+        J.VariableDeclarations.NamedVariable param = variableDeclarations.getVariables().get(0);
+        String paramName = param.getName().toString();
+
+        if (method.getBody() == null ||
+                method.getBody().getStatements().size() != 1 ||
+                !(method.getBody().getStatements().get(0) instanceof J.Assignment)) {
+            return false;
+        }
+        J.Assignment assignment = (J.Assignment) method.getBody().getStatements().get(0);
+
+        if (!(assignment.getVariable() instanceof J.FieldAccess) && !(assignment.getVariable() instanceof J.Identifier)) {
+            return false;
+        }
+
+        JavaType fieldType = assignment.getVariable().getType();
+        // assigned value is exactly the parameter
+        return assignment.getAssignment().toString().equals(paramName) &&
+                        param.getType() != null &&
+                        param.getType().equals(fieldType);  // type of parameter and field have to match
+    }
+
+    public static String deriveSetterMethodName(JavaType.Variable fieldType) {
+        return "set" + StringUtils.capitalize(fieldType.getName());
+    }
+
     static AccessLevel getAccessLevel(J.MethodDeclaration methodDeclaration) {
         if (methodDeclaration.hasModifier(Public)) {
             return PUBLIC;
-        } else if (methodDeclaration.hasModifier(Protected)) {
+        }
+        if (methodDeclaration.hasModifier(Protected)) {
             return PROTECTED;
-        } else if (methodDeclaration.hasModifier(Private)) {
+        }
+        if (methodDeclaration.hasModifier(Private)) {
             return PRIVATE;
         }
         return PACKAGE;

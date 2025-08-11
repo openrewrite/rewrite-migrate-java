@@ -28,8 +28,8 @@ import org.openrewrite.java.tree.JavaSourceFile;
 
 import static java.util.Objects.requireNonNull;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UseTabsOrSpaces extends Recipe {
     @Option(displayName = "Use tabs",
             description = "Whether to use tabs for indentation.")

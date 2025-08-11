@@ -28,8 +28,8 @@ class URLConstructorsToNewURITest implements RewriteTest {
         spec.recipe(new URLConstructorsToNewURI());
     }
 
-    @Test
     @DocumentExample
+    @Test
     void urlConstructor() {
         rewriteRun(
           //language=java

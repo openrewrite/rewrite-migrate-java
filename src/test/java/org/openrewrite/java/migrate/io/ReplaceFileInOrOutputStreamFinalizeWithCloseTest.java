@@ -32,8 +32,8 @@ class ReplaceFileInOrOutputStreamFinalizeWithCloseTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(11)));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void removeFinalizerForFileInputStream() {
         //language=java
         rewriteRun(

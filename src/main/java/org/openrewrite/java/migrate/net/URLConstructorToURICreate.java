@@ -63,16 +63,13 @@ public class URLConstructorToURICreate extends Recipe {
                                 return nc;
                             }
 
-                            JavaTemplate template = JavaTemplate.builder("URI.create(#{any(String)}).toURL()")
+                            maybeRemoveImport(URL_FQN);
+                            maybeAddImport(URI_FQN);
+                            return JavaTemplate.builder("URI.create(#{any(String)}).toURL()")
                                     .imports(URI_FQN)
                                     .javaParser(JavaParser.fromJavaVersion())
-                                    .build();
-                            maybeAddImport(URI_FQN);
-                            maybeRemoveImport(URL_FQN);
-
-                            return template.apply(getCursor(),
-                                    nc.getCoordinates().replace(),
-                                    nc.getArguments().get(0));
+                                    .build()
+                                    .apply(getCursor(), nc.getCoordinates().replace(), nc.getArguments().get(0));
                         }
                         return super.visitNewClass(nc, ctx);
                     }
@@ -84,7 +81,8 @@ public class URLConstructorToURICreate extends Recipe {
                             String literalValueSource = ((J.Literal) arg).getValueSource();
                             // Remove quotations from string
                             return literalValueSource != null ? literalValueSource.substring(1, literalValueSource.length() - 1).trim() : null;
-                        } else if (arg instanceof J.Identifier &&
+                        }
+                        if (arg instanceof J.Identifier &&
                                 TypeUtils.isOfType(arg.getType(), JavaType.Primitive.String)) {
                             // find constant value of the identifier
                             try {

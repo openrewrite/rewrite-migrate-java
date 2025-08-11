@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
@@ -32,12 +31,19 @@ class ExplicitRecordImportTest implements RewriteTest {
         spec.recipe(new ExplicitRecordImport())
           //language=java
           .parser(JavaParser.fromJavaVersion().dependsOn("""
-            package com.acme.music;
-            public class Record {
-                String name;
-            }
-            """
-          )
+                package com.acme.music;
+                public class Record {
+                    public String name;
+                }
+                """,
+              """
+                package com.acme.music;
+                import java.util.List;
+                public class RecordList {
+                    public List<Record> records;
+                }
+                """
+            )
           );
     }
 
@@ -51,7 +57,7 @@ class ExplicitRecordImportTest implements RewriteTest {
             """
               package com.acme.music;
 
-              public class Test {
+              class Test {
                   Record record;
               }
               """,
@@ -60,8 +66,58 @@ class ExplicitRecordImportTest implements RewriteTest {
 
               import com.acme.music.Record;
 
-              public class Test {
+              class Test {
                   Record record;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void noChangeIfUsingVar() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package com.acme.music;
+
+              import com.acme.music.RecordList;
+
+              class Test {
+                  void test() {
+                      for (var record : new RecordList().records) {
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void genericUseOfRecordClass() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package com.acme.music;
+
+              import java.util.List;
+
+              class Test {
+                  List<Record> records;
+              }
+              """,
+            """
+              package com.acme.music;
+
+              import com.acme.music.Record;
+
+              import java.util.List;
+
+              class Test {
+                  List<Record> records;
               }
               """
           )
@@ -70,16 +126,25 @@ class ExplicitRecordImportTest implements RewriteTest {
 
 
     @Test
-    @Disabled("Not handled yet; deemed unlikely")
-    void noChangeIfAlreadyFullyQualified() {
+    void documentChangeWhenFullyQualified() {
         rewriteRun(
           //language=java
           java(
             """
               package com.acme.music;
 
-              public class Test {
+              class Test {
                   com.acme.music.Record record;
+              }
+              """,
+            // Perhaps undesired, but also unlikely, so not worth changing
+            """
+              package com.acme.music;
+
+              import com.acme.music.Record;
+
+              class Test {
+                  Record record;
               }
               """
           )
@@ -97,7 +162,7 @@ class ExplicitRecordImportTest implements RewriteTest {
 
               import com.acme.music.Record;
 
-              public class Test {
+              class Test {
                   Record record;
               }
               """
@@ -113,7 +178,7 @@ class ExplicitRecordImportTest implements RewriteTest {
             """
               package foo.bar;
 
-              public class Test {
+              class Test {
                   Record record;
               }
               """

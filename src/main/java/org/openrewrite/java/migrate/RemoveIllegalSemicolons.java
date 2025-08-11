@@ -15,14 +15,17 @@
  */
 package org.openrewrite.java.migrate;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.tree.J;
+import org.openrewrite.staticanalysis.RemoveExtraSemicolons;
 
+import java.util.List;
+
+import static java.util.Collections.singletonList;
+
+/**
+ * @deprecated Use {@link RemoveExtraSemicolons} instead.
+ */
+@Deprecated
 public class RemoveIllegalSemicolons extends Recipe {
     @Override
     public String getDisplayName() {
@@ -33,22 +36,11 @@ public class RemoveIllegalSemicolons extends Recipe {
     public String getDescription() {
         //language=markdown
         return "Remove semicolons after package declarations and imports, no longer accepted in Java 21 as of " +
-               "[JDK-8027682](https://bugs.openjdk.org/browse/JDK-8027682).";
+                "[JDK-8027682](https://bugs.openjdk.org/browse/JDK-8027682).";
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesJavaVersion<>(21), new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.Import visitImport(J.Import _import, ExecutionContext ctx) {
-                J.Import im = super.visitImport(_import, ctx);
-                if (im.getPrefix().getWhitespace().contains(";")) {
-                    im = im.withPrefix(im.getPrefix()
-                            .withWhitespace(im.getPrefix().getWhitespace()
-                                    .replaceAll("\\s*;(\\R*)\\s*", "$1")));
-                }
-                return im;
-            }
-        });
+    public List<Recipe> getRecipeList() {
+        return singletonList(new RemoveExtraSemicolons());
     }
 }

@@ -32,8 +32,8 @@ class JavaxInjectToJakartaInjectTest implements RewriteTest {
           "org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject");
     }
 
-    @Test
     @DocumentExample
+    @Test
     void projectWithJavaxInject() {
         rewriteRun(
           //language=xml
@@ -56,7 +56,7 @@ class JavaxInjectToJakartaInjectTest implements RewriteTest {
             spec -> spec.after(actual -> assertThat(actual)
               .contains("<groupId>jakarta.inject</groupId>")
               .contains("<artifactId>jakarta.inject-api</artifactId>")
-              .containsPattern("<version>[0-9]+\\.[0-9]+\\.[0-9]+</version>")
+              .containsPattern("<version>\\d+\\.\\d+\\.\\d+.*</version>")
               .actual())
           )
         );

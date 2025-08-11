@@ -18,11 +18,15 @@ package org.openrewrite.java.migrate.jakarta;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.gradle.Assertions.settingsGradle;
+import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.xml.Assertions.xml;
@@ -56,6 +60,16 @@ class JavaxToJakartaTest implements RewriteTest {
         public class A {
             public static void stat() {}
             public void foo() {}
+        }
+        """;
+
+    @Language("java")
+    private static final String jakartaAnnotation =
+      """
+        package jakarta.annotation;
+        public @interface Nonnull {
+        }
+        public @interface Nullable {
         }
         """;
 
@@ -441,9 +455,7 @@ class JavaxToJakartaTest implements RewriteTest {
             //language=xml
             pomXml(
               """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+                <project>
                     <modelVersion>4.0.0</modelVersion>
                     <parent>
                         <groupId>org.springframework.boot</groupId>
@@ -510,9 +522,7 @@ class JavaxToJakartaTest implements RewriteTest {
             //language=xml
             pomXml(
               """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+                <project>
                     <modelVersion>4.0.0</modelVersion>
                     <parent>
                         <groupId>org.springframework.boot</groupId>
@@ -537,9 +547,7 @@ class JavaxToJakartaTest implements RewriteTest {
                 </project>
                 """,
               """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+                <project>
                     <modelVersion>4.0.0</modelVersion>
                     <parent>
                         <groupId>org.springframework.boot</groupId>
@@ -574,7 +582,243 @@ class JavaxToJakartaTest implements RewriteTest {
     }
 
     @Test
-    void doNothingIfNotFoundTransitiveDependency() {
+    void projectWithSpringBoot3StarterWebShouldNotRemoveJakartaDependencyWhenUsingNonnullAnnotation() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javaxServlet, jakartaAnnotation)),
+          mavenProject(
+            "Sample",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-parent</artifactId>
+                        <version>3.2.5</version>
+                        <relativePath/> <!-- lookup parent from repository -->
+                    </parent>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.annotation</groupId>
+                            <artifactId>jakarta.annotation-api</artifactId>
+                            <version>1.3.5</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-web</artifactId>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-parent</artifactId>
+                        <version>3.2.5</version>
+                        <relativePath/> <!-- lookup parent from repository -->
+                    </parent>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.annotation</groupId>
+                            <artifactId>jakarta.annotation-api</artifactId>
+                            <version>2.0.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-web</artifactId>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            ),
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import jakarta.annotation.Nonnull;
+
+                  public class TestApplication {
+                      @Nonnull
+                      public String upperCase(@Nonnull String input) {
+                          return input.toUpperCase();
+                      }
+                  }
+                  """
+              )
+            )
+          )
+        );
+    }
+
+    @Test
+    void projectWithSpringBoot3StarterWebShouldNotRemoveJakartaDependencyWhenUsingNullableAnnotation() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javaxServlet, jakartaAnnotation)),
+          mavenProject(
+            "Sample",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-parent</artifactId>
+                        <version>3.2.5</version>
+                        <relativePath/> <!-- lookup parent from repository -->
+                    </parent>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.annotation</groupId>
+                            <artifactId>jakarta.annotation-api</artifactId>
+                            <version>1.3.5</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-web</artifactId>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-parent</artifactId>
+                        <version>3.2.5</version>
+                        <relativePath/> <!-- lookup parent from repository -->
+                    </parent>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.annotation</groupId>
+                            <artifactId>jakarta.annotation-api</artifactId>
+                            <version>2.0.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-web</artifactId>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            ),
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import jakarta.annotation.Nullable;
+
+                  public class TestApplication {
+                      @Nullable
+                      public String safeUpperCase(@Nullable String input) {
+                          return input == null ? null : input.toUpperCase();
+                      }
+                  }
+                  """
+              )
+            )
+          )
+        );
+    }
+
+    @Test
+    void multiProjectWithSpringBoot3StarterWebShouldRemoveJakartaDependencyWhenUsingNullableAnnotationWhenApplicable() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()).parser(JavaParser.fromJavaVersion().dependsOn(javaxServlet, jakartaAnnotation)),
+          mavenProject("multi-project-build",
+            //language=groovy
+            settingsGradle("""
+              include 'project-with-null-annotations'
+              include 'project-without-null-annotations'
+              """),
+            mavenProject("project-with-null-annotations",
+              //language=groovy
+              buildGradle(
+                """
+                  plugins {
+                      id 'java'
+                  }
+
+                  repositories {
+                      mavenCentral()
+                  }
+
+                  dependencies {
+                      implementation 'jakarta.annotation:jakarta.annotation-api:1.3.5'
+                      implementation 'org.springframework.boot:spring-boot-starter-web'
+                  }
+                  """,
+                """
+                  plugins {
+                      id 'java'
+                  }
+
+                  repositories {
+                      mavenCentral()
+                  }
+
+                  dependencies {
+                      implementation 'jakarta.annotation:jakarta.annotation-api:2.0.0'
+                      implementation 'org.springframework.boot:spring-boot-starter-web'
+                  }
+                  """
+              ),
+              srcMainJava(
+                //language=java
+                java(
+                  """
+                    import jakarta.annotation.Nullable;
+
+                    public class TestApplication {
+                        @Nullable
+                        public String safeUpperCase(@Nullable String input) {
+                            return input == null ? null : input.toUpperCase();
+                        }
+                    }
+                    """
+                )
+              )
+            ),
+            mavenProject("project-without-null-annotations",
+              //language=groovy
+              buildGradle(
+                """
+                  plugins {
+                      id 'java'
+                  }
+
+                  repositories {
+                      mavenCentral()
+                  }
+
+                  dependencies {
+                      implementation 'org.springframework.boot:spring-boot-starter-web'
+                  }
+                  """
+              )
+            )
+          )
+        );
+    }
+
+    @Test
+    void upgradeAnnotationApiFromV1ToV2() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javaxServlet)),
           mavenProject(
@@ -592,8 +836,7 @@ class JavaxToJakartaTest implements RewriteTest {
             //language=xml
             pomXml(
               """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                <project>
                   <modelVersion>4.0.0</modelVersion>
                   <groupId>org.sample</groupId>
                   <artifactId>sample</artifactId>
@@ -603,6 +846,21 @@ class JavaxToJakartaTest implements RewriteTest {
                       <groupId>jakarta.annotation</groupId>
                       <artifactId>jakarta.annotation-api</artifactId>
                       <version>1.3.5</version>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>jakarta.annotation</groupId>
+                      <artifactId>jakarta.annotation-api</artifactId>
+                      <version>2.0.0</version>
                     </dependency>
                   </dependencies>
                 </project>
@@ -638,6 +896,32 @@ class JavaxToJakartaTest implements RewriteTest {
                       </property>
                   </bean>
               </beans>
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/731")
+    @Test
+    void doNotChangeImportsOfJavaAnnotationProcessorApi() {
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+              import javax.annotation.processing.AbstractProcessor;
+              import javax.annotation.processing.RoundEnvironment;
+              import javax.annotation.processing.SupportedAnnotationTypes;
+              import javax.lang.model.element.TypeElement;
+
+              @SupportedAnnotationTypes("MyAnnotation")
+              public class MyAnnotationProcessor extends AbstractProcessor {
+
+                  @Override
+                  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+                      return false;
+                  }
+
+              }
               """
           )
         );

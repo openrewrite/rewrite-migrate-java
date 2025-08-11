@@ -36,8 +36,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.util.Collections.emptyList;
 import static org.openrewrite.internal.StringUtils.uncapitalize;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class DontOverfetchDto extends Recipe {
 
     @Option(displayName = "DTO type",
@@ -87,8 +87,8 @@ public class DontOverfetchDto extends Recipe {
                                                 JavaType.FullyQualified memberType = TypeUtils.asFullyQualified(member.getType());
                                                 memberTypeAtomic.set(memberType);
                                                 if (memberType != null) {
-                                                    maybeAddImport(memberType);
                                                     maybeRemoveImport(dtoType);
+                                                    maybeAddImport(memberType);
                                                     return v
                                                             .withType(memberType)
                                                             .withTypeExpression(TypeTree.build(memberType.getFullyQualifiedName()))

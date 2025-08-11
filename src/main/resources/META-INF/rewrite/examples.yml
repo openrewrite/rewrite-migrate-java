@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 type: specs.openrewrite.org/v1beta/example
-recipeName: org.openrewrite.java.jspecify.MigrateToJspecify
+recipeName: org.openrewrite.java.jspecify.JSpecifyBestPractices
 examples:
 - description: ''
   sources:
@@ -126,6 +126,39 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.AddStaticVariableOnProducerSessionBean
+examples:
+- description: ''
+  sources:
+  - before: |
+      package com.test;
+      import jakarta.ejb.Stateless;
+      import jakarta.enterprise.inject.Produces;
+
+      @Stateless
+      public class MySessionBean {
+          @Produces
+          private SomeDependency someDependency;
+          void exampleMethod() {
+             return;
+          }
+      }
+    after: |
+      package com.test;
+      import jakarta.ejb.Stateless;
+      import jakarta.enterprise.inject.Produces;
+
+      @Stateless
+      public class MySessionBean {
+          @Produces
+          private static SomeDependency someDependency;
+          void exampleMethod() {
+             return;
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ArrayStoreExceptionToTypeNotPresentException
 examples:
 - description: ''
@@ -218,11 +251,9 @@ examples:
   - before: |
       <project>
         <modelVersion>4.0.0</modelVersion>
-
         <groupId>com.mycompany.app</groupId>
         <artifactId>my-app</artifactId>
         <version>1</version>
-
         <dependencies>
           <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -994,27 +1025,6 @@ recipeName: org.openrewrite.java.migrate.UpgradePluginsForJava11
 examples:
 - description: ''
   sources:
-  - before: project
-    language: mavenProject
-  - before: |
-      <project>
-        <groupId>com.mycompany.app</groupId>
-        <artifactId>my-app</artifactId>
-        <version>1</version>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>jaxb2-maven-plugin</artifactId>
-              <version>2.3.1</version>
-            </plugin>
-          </plugins>
-        </build>
-      </project>
-    path: pom.xml
-    language: xml
-- description: ''
-  sources:
   - before: |
       <project>
         <groupId>com.mycompany.app</groupId>
@@ -1047,6 +1057,27 @@ examples:
               <groupId>ro.isdc.wro4j</groupId>
               <artifactId>wro4j-maven-plugin</artifactId>
               <version>${wro4j.version}</version>
+            </plugin>
+          </plugins>
+        </build>
+      </project>
+    path: pom.xml
+    language: xml
+- description: ''
+  sources:
+  - before: project
+    language: mavenProject
+  - before: |
+      <project>
+        <groupId>com.mycompany.app</groupId>
+        <artifactId>my-app</artifactId>
+        <version>1</version>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>jaxb2-maven-plugin</artifactId>
+              <version>2.3.1</version>
             </plugin>
           </plugins>
         </build>
@@ -3254,6 +3285,34 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.WasDevMvnChangeParentArtifactId
+examples:
+- description: ''
+  sources:
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+           <parent>
+                <groupId>net.wasdev.maven.parent</groupId>
+                 <artifactId>java8-parent</artifactId>
+                 <version>1.4</version>
+           </parent>
+           <artifactId>my-artifact</artifactId>
+      </project>
+    after: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+           <parent>
+                <groupId>net.wasdev.maven.parent</groupId>
+                 <artifactId>parent</artifactId>
+                 <version>1.4</version>
+           </parent>
+           <artifactId>my-artifact</artifactId>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
 examples:
 - description: ''
@@ -4096,7 +4155,68 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
-recipeName: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtml
+recipeName: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE10
+examples:
+- description: ''
+  sources:
+  - before: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <ui:composition
+              xmlns="http://www.w3.org/1999/xhtml"
+              xmlns:f="http://java.sun.com/jsf/core"
+              xmlns:h="http://java.sun.com/jsf/html"
+              xmlns:ui="http://java.sun.com/jsf/facelets"
+              xmlns:c="http://java.sun.com/jsp/jstl/core"
+              xmlns:p="http://primefaces.org/ui"
+              xmlns:pe="http://primefaces.org/ui/extensions">
+      <script src="https://www.gstatic.com/charts/loader.js"></script>
+      <p:outputPanel id="container" layout="block">
+          <h:panelGrid columns="4">
+              <p:inputText converter="jakarta.faces.Integer" value="#{basicGChartController.mushrooms}" />
+              <p:inputText converter="jakarta.faces.Integer" value="#{basicGChartController.onions}" />
+          </h:panelGrid>
+          <c:forEach items="#{sheetDynamicController.hoursOfDay}" var="hourOfDay" varStatus="status">
+                  <pe:sheetcolumn styleClass="htRight #{row.cells[status.index].style}"
+                                  headerText="#{hourOfDay}"
+                                  value="#{row.cells[status.index].value}"
+                                  readonlyCell="#{row.readOnly}"
+                                  colType="numeric">
+                      <f:converter converterId="jakarta.faces.Integer"/>
+                  </pe:sheetcolumn>
+          </c:forEach>
+      </p:outputPanel>
+      </ui:composition>
+    after: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <ui:composition
+              xmlns="http://www.w3.org/1999/xhtml"
+              xmlns:f="jakarta.faces.core"
+              xmlns:h="jakarta.faces.html"
+              xmlns:ui="jakarta.faces.facelets"
+              xmlns:c="jakarta.tags.core"
+              xmlns:p="primefaces"
+              xmlns:pe="primefaces.extensions">
+      <script src="https://www.gstatic.com/charts/loader.js"></script>
+      <p:outputPanel id="container" layout="block">
+          <h:panelGrid columns="4">
+              <p:inputText converter="jakarta.faces.Integer" value="#{basicGChartController.mushrooms}" />
+              <p:inputText converter="jakarta.faces.Integer" value="#{basicGChartController.onions}" />
+          </h:panelGrid>
+          <c:forEach items="#{sheetDynamicController.hoursOfDay}" var="hourOfDay" varStatus="status">
+                  <pe:sheetcolumn styleClass="htRight #{row.cells[status.index].style}"
+                                  headerText="#{hourOfDay}"
+                                  value="#{row.cells[status.index].value}"
+                                  readonlyCell="#{row.readOnly}"
+                                  colType="numeric">
+                      <f:converter converterId="jakarta.faces.Integer"/>
+                  </pe:sheetcolumn>
+          </c:forEach>
+      </p:outputPanel>
+      </ui:composition>
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE9
 examples:
 - description: ''
   sources:
@@ -4131,12 +4251,12 @@ examples:
       <?xml version="1.0" encoding="UTF-8"?>
       <ui:composition
               xmlns="http://www.w3.org/1999/xhtml"
-              xmlns:f="jakarta.faces.core"
-              xmlns:h="jakarta.faces.html"
-              xmlns:ui="jakarta.faces.facelets"
-              xmlns:c="jakarta.tags.core"
-              xmlns:p="primefaces"
-              xmlns:pe="primefaces.extensions">
+              xmlns:f="http://java.sun.com/jsf/core"
+              xmlns:h="http://java.sun.com/jsf/html"
+              xmlns:ui="http://java.sun.com/jsf/facelets"
+              xmlns:c="http://java.sun.com/jsp/jstl/core"
+              xmlns:p="http://primefaces.org/ui"
+              xmlns:pe="http://primefaces.org/ui/extensions">
       <script src="https://www.gstatic.com/charts/loader.js"></script>
       <p:outputPanel id="container" layout="block">
           <h:panelGrid columns="4">
@@ -4359,8 +4479,8 @@ examples:
       <?xml version="1.0" encoding="UTF-8"?>
       <faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd"
-                    version="4.0">
+                    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_3_0.xsd"
+                    version="3.0">
           <render-kit>
               <renderer>
                   <component-family>jakarta.faces.Output</component-family>
@@ -4390,10 +4510,10 @@ examples:
       </facelet-taglib>
     after: |
       <?xml version="1.0" encoding="UTF-8"?>
-      <facelet-taglib version="4.0"
+      <facelet-taglib version="3.0"
                       xmlns="https://jakarta.ee/xml/ns/jakartaee"
                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_0.xsd">
+                      xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_3_0.xsd">
           <function>
               <function-name>getFileContent</function-name>
               <function-class>jakarta.util.ShowcaseUtil</function-class>
@@ -4505,48 +4625,32 @@ examples:
       <?xml version="1.0" encoding="UTF-8"?>
       <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-               version="6.0">
+               xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+               version="5.0">
           <context-param>
               <param-name>jakarta.faces.PROJECT_STAGE</param-name>
               <param-value>Production</param-value>
           </context-param>
       </web-fragment>
     language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
+examples:
 - description: ''
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
-      <web-app xmlns="http://java.sun.com/xml/ns/javaee"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_0.xsd"
-               version="2.0">
-          <context-param>
-              <param-name>javax.faces.PROJECT_STAGE</param-name>
-              <param-value>Production</param-value>
-          </context-param>
-          <resource-ref>
-             <res-ref-name>myDataSource</res-ref-name>
-             <res-type>javax.sql.DataSource</res-type>
-             <res-auth>CONTAINER</res-auth>
-          </resource-ref>
-      </web-fragment>
+      <jxb:bindings version="1.0"
+                    xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+                    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      </jxb:bindings>
     after: |
       <?xml version="1.0" encoding="UTF-8"?>
-      <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-               version="6.0">
-          <context-param>
-              <param-name>jakarta.faces.PROJECT_STAGE</param-name>
-              <param-value>Production</param-value>
-          </context-param>
-          <resource-ref>
-             <res-ref-name>myDataSource</res-ref-name>
-             <res-type>javax.sql.DataSource</res-type>
-             <res-auth>CONTAINER</res-auth>
-          </resource-ref>
-      </web-fragment>
+      <jxb:bindings version="3.0"
+                    xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
+                    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      </jxb:bindings>
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
@@ -4726,30 +4830,24 @@ examples:
 - description: ''
   sources:
   - before: |
-      package com.test;
-
       import jakarta.faces.el.MethodBinding;
       import jakarta.faces.el.PropertyResolver;
       import jakarta.faces.el.ValueBinding;
 
-      public class Test {
-
-           public void testJakarta() {
+      class Test {
+           void testJakarta() {
                 MethodBinding methodBinding = null;
                 PropertyResolver propertyResolver = null;
                 ValueBinding valueBinding = null;
            }
       }
     after: |
-      package com.test;
-
       import jakarta.el.ELResolver;
       import jakarta.el.MethodExpression;
       import jakarta.el.ValueExpression;
 
-      public class Test {
-
-           public void testJakarta() {
+      class Test {
+           void testJakarta() {
                 MethodExpression methodBinding = null;
                 ELResolver propertyResolver = null;
                 ValueExpression valueBinding = null;
@@ -5839,7 +5937,7 @@ examples:
   - before: |
       package com.acme.music;
 
-      public class Test {
+      class Test {
           Record record;
       }
     after: |
@@ -5847,8 +5945,75 @@ examples:
 
       import com.acme.music.Record;
 
-      public class Test {
+      class Test {
           Record record;
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.FindVirtualThreadOpportunities
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {}
+          });
+      }
+    after: |
+      class Test {
+          Thread t = /*~~>*/new Thread(new Runnable() {
+            @Override
+            public void run() {}
+          });
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.IfElseIfConstructToSwitch
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          static String formatter(Object obj) {
+              String formatted = "initialValue";
+              if (obj == null) {
+                  formatted = "null";
+              } else if (obj instanceof Integer i)
+                  formatted = String.format("int %d", i);
+              else if (obj instanceof Long l) {
+                  formatted = String.format("long %d", l);
+              } else if (obj instanceof Double d) {
+                  formatted = String.format("double %f", d);
+              } else if (obj instanceof String s) {
+                  String str = "String";
+                  formatted = String.format("%s %s", str, s);
+              } else {
+                  formatted = "unknown";
+              }
+              return formatted;
+          }
+      }
+    after: |
+      class Test {
+          static String formatter(Object obj) {
+              String formatted = "initialValue";
+              switch (obj) {
+                  case null -> formatted = "null";
+                  case Integer i -> formatted = String.format("int %d", i);
+                  case Long l -> formatted = String.format("long %d", l);
+                  case Double d -> formatted = String.format("double %f", d);
+                  case String s -> {
+                      String str = "String";
+                      formatted = String.format("%s %s", str, s);
+                  }
+                  default -> formatted = "unknown";
+              }
+              return formatted;
+          }
       }
     language: java
 ---
@@ -5959,6 +6124,100 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.NullCheckAsSwitchCase
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          static String score(String obj) {
+              String formatted = "Score not translated yet";
+              if (obj == null) {
+                  formatted = "You did not enter the test yet";
+              }
+              switch (obj) {
+                  case "A", "B" -> formatted = "Very good";
+                  case "C" -> formatted = "Good";
+                  case "D" -> formatted = "Hmmm...";
+                  default -> formatted = "unknown";
+              }
+              return formatted;
+          }
+      }
+    after: |
+      class Test {
+          static String score(String obj) {
+              String formatted = "Score not translated yet";
+              switch (obj) {
+                  case null -> formatted = "You did not enter the test yet";
+                  case "A", "B" -> formatted = "Very good";
+                  case "C" -> formatted = "Good";
+                  case "D" -> formatted = "Hmmm...";
+                  default -> formatted = "unknown";
+              }
+              return formatted;
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.RefineSwitchCases
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          static void score(Object obj) {
+              switch (obj) {
+                  case null -> System.out.println("You did not enter the test yet");
+                  case Integer i -> {
+                      if (i >= 5 && i <= 10)
+                          System.out.println("You got it");
+                      else if (i >= 0 && i < 5)
+                          System.out.println("Shame");
+                      else
+                          System.out.println("Sorry?");
+                  }
+                  case String s -> {
+                      if (s.equalsIgnoreCase("YES"))
+                          System.out.println("You got it");
+                      else if ("NO".equalsIgnoreCase(s))
+                          System.out.println("Shame");
+                      else
+                          System.out.println("Sorry?");
+                  }
+                  default -> {
+                      // Comment retained
+                  }
+              }
+          }
+      }
+    after: |
+      class Test {
+          static void score(Object obj) {
+              switch (obj) {
+                  case null -> System.out.println("You did not enter the test yet");
+                  case Integer i when i >= 5 && i <= 10 ->
+                      System.out.println("You got it");
+                  case Integer i when i >= 0 && i < 5 ->
+                      System.out.println("Shame");
+                  case Integer i ->
+                      System.out.println("Sorry?");
+                  case String s when s.equalsIgnoreCase("YES") ->
+                      System.out.println("You got it");
+                  case String s when "NO".equalsIgnoreCase(s) ->
+                      System.out.println("Shame");
+                  case String s ->
+                      System.out.println("Sorry?");
+                  default -> {
+                      // Comment retained
+                  }
+              }
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.StringRulesRecipes
 examples:
 - description: ''
@@ -5972,6 +6231,141 @@ examples:
       class Test {
           String s1 = "hello";
           String s2 = "hello";
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.SwitchCaseAssignmentsToSwitchExpression
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          void doFormat(Object obj) {
+              String formatted = "initialValue";
+              switch (obj) {
+                  case Integer i -> formatted = String.format("int %d", i);
+                  case Long l -> formatted = String.format("long %d", l);
+                  default -> formatted = "unknown";
+              }
+          }
+      }
+    after: |
+      class Test {
+          void doFormat(Object obj) {
+              String formatted = switch (obj) {
+                  case Integer i -> String.format("int %d", i);
+                  case Long l -> String.format("long %d", l);
+                  default -> "unknown";
+              };
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.SwitchCaseEnumGuardToLabel
+examples:
+- description: ''
+  sources:
+  - before: |
+      import suits.Suit;
+      class Test {
+          void score(Object obj) {
+              switch (obj) {
+                  case null -> System.out.println("You did not enter the test yet");
+                  case Suit s when s == Suit.CLUBS -> System.out.println("Clubs");
+                  case Suit s when s.equals(Suit.DIAMONDS) -> System.out.println("Diamonds");
+                  case Suit s when Suit.HEARTS.equals(s) -> {
+                      System.out.println("Hearts");
+                  }
+                  case Suit s when Suit.SPADES == s -> System.out.println("Spades");
+                  case Suit s when Suit.JOKER == s -> System.out.println(s);
+                  case Integer i -> System.out.println("Sorry?");
+                  case String s -> System.out.println("Sorry?");
+                  default -> System.out.println("Sorry?");
+              }
+          }
+      }
+    after: |
+      import suits.Suit;
+      class Test {
+          void score(Object obj) {
+              switch (obj) {
+                  case null -> System.out.println("You did not enter the test yet");
+                  case Suit.CLUBS -> System.out.println("Clubs");
+                  case Suit.DIAMONDS -> System.out.println("Diamonds");
+                  case Suit.HEARTS -> {
+                      System.out.println("Hearts");
+                  }
+                  case Suit.SPADES -> System.out.println("Spades");
+                  case Suit.JOKER -> System.out.println(Suit.JOKER);
+                  case Integer i -> System.out.println("Sorry?");
+                  case String s -> System.out.println("Sorry?");
+                  default -> System.out.println("Sorry?");
+              }
+          }
+      }
+    language: java
+  - before: |
+      package suits;
+      public enum Suit {
+          CLUBS, DIAMONDS, HEARTS, SPADES, JOKER, SCORECARD
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.SwitchCaseReturnsToSwitchExpression
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          String doFormat(String str) {
+              switch (str) {
+                  case "foo": return "Foo";
+                  case "bar": return "Bar";
+                  case null, default: return "Other";
+              }
+          }
+      }
+    after: |
+      class Test {
+          String doFormat(String str) {
+              return switch (str) {
+                  case "foo" -> "Foo";
+                  case "bar" -> "Bar";
+                  case null, default -> "Other";
+              };
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.SwitchExpressionYieldToArrow
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Test {
+          String format(String str) {
+              String formatted = switch (str) {
+                  case "foo": yield "Foo";
+                  case "bar": yield "Bar";
+                  case null, default: yield "unknown";
+              };
+              return formatted;
+          }
+      }
+    after: |
+      class Test {
+          String format(String str) {
+              String formatted = switch (str) {
+                  case "foo" -> "Foo";
+                  case "bar" -> "Bar";
+                  case null, default -> "unknown";
+              };
+              return formatted;
+          }
       }
     language: java
 ---
@@ -6045,33 +6439,6 @@ examples:
                   WHERE something = 1;\
                   """;
       }
-    language: java
-- description: ''
-  sources:
-  - before: |
-      class A {
-          void welcome() {
-              log("\n========================================================="
-                  + "\n                                                         "
-                  + "\n          Welcome to Spring Integration!                 "
-                  + "\n                                                         "
-                  + "\n    For more information please visit:                   "
-                  + "\n    https://www.springsource.org/spring-integration      "
-                  + "\n                                                         "
-                  + "\n=========================================================");
-          }
-          void log(String s) {}
-      }
-    after: "class A {\n    void welcome() {\n        log(\"\"\"\n            \n  \
-      \          =========================================================\n     \
-      \                                                               \\s\n      \
-      \                Welcome to Spring Integration!                \\s\n       \
-      \                                                             \\s\n        \
-      \        For more information please visit:                  \\s\n         \
-      \       https://www.springsource.org/spring-integration     \\s\n          \
-      \                                                          \\s\n           \
-      \ =========================================================\\\n            \"\
-      \"\");\n    }\n    void log(String s) {}\n}\n"
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
@@ -6154,25 +6521,21 @@ examples:
 - description: ''
   sources:
   - before: |
-      package com.example.app;
-
       import java.util.List;
       import java.util.ArrayList;
 
       class A {
-        void m() {
-            List<String> strs = new ArrayList<>();
-        }
+          void m() {
+              List<String> strs = new ArrayList<>();
+          }
       }
     after: |
-      package com.example.app;
-
       import java.util.ArrayList;
 
       class A {
-        void m() {
-            var strs = new ArrayList<String>();
-        }
+          void m() {
+              var strs = new ArrayList<String>();
+          }
       }
     language: java
 ---
@@ -6195,21 +6558,6 @@ examples:
       class A {
         void m() {
             var o = new Object();
-        }
-      }
-    language: java
-- description: ''
-  sources:
-  - before: |
-      class A {
-        void m() {
-            final Object o = new Object();
-        }
-      }
-    after: |
-      class A {
-        void m() {
-            final var o = new Object();
         }
       }
     language: java
@@ -6396,6 +6744,27 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lombok.AdoptLombokSetterMethodNames
+examples:
+- description: ''
+  sources:
+  - before: |
+      class A {
+          int foo = 9;
+          public void storeFoo(int foo) {
+              this.foo = foo;
+          }
+      }
+    after: |
+      class A {
+          int foo = 9;
+          public void setFoo(int foo) {
+              this.foo = foo;
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.LombokBestPractices
 examples:
 - description: ''
@@ -6421,6 +6790,25 @@ examples:
       </project>
     path: pom.xml
     language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lombok.LombokOnXToOnX_
+examples:
+- description: ''
+  sources:
+  - before: |
+      import lombok.Getter;
+      class Example {
+          @Getter(onMethod=@__({@Deprecated}))
+          private String field;
+      }
+    after: |
+      import lombok.Getter;
+      class Example {
+          @Getter(onMethod_={@Deprecated})
+          private String field;
+      }
+    language: java
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.LombokValToFinalVar
