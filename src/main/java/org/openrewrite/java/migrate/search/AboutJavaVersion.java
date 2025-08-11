@@ -32,8 +32,8 @@ import org.openrewrite.marker.SearchResult;
 import java.util.HashSet;
 import java.util.Set;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class AboutJavaVersion extends Recipe {
     transient JavaVersionPerSourceSet javaVersionPerSourceSet = new JavaVersionPerSourceSet(this);
     transient Set<ProjectSourceSet> seenSourceSets = new HashSet<>();

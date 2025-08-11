@@ -16,6 +16,8 @@
 package org.openrewrite.java.migrate.joda;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -26,6 +28,7 @@ import java.util.LinkedList;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.test.RewriteTest.toRecipe;
 
+@Execution(ExecutionMode.SAME_THREAD)
 class JodaTimeVisitorTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {

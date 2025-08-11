@@ -27,8 +27,9 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.util.logging.LogManager getLoggingMXBean()");
@@ -45,7 +46,7 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("deprecated");
+        return singleton("deprecated");
     }
 
     @Override
@@ -68,9 +69,9 @@ public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
                 if (MATCHER.matches(m)) {
+                    maybeRemoveImport("java.util.logging.LogManager");
                     maybeAddImport("java.lang.management.ManagementFactory");
                     maybeAddImport("java.lang.management.PlatformLoggingMXBean");
-                    maybeRemoveImport("java.util.logging.LogManager");
                     m = JavaTemplate.builder("ManagementFactory.getPlatformMXBean(PlatformLoggingMXBean.class)")
                             .imports("java.lang.management.ManagementFactory")
                             .imports("java.lang.management.PlatformLoggingMXBean")

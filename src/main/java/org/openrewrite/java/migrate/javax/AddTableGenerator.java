@@ -33,8 +33,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class AddTableGenerator extends Recipe {
     @Override
     public String getDisplayName() {

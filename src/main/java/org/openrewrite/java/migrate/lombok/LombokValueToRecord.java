@@ -32,13 +32,15 @@ import org.openrewrite.java.tree.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>> {
 
     private static final AnnotationMatcher LOMBOK_VALUE_MATCHER = new AnnotationMatcher("@lombok.Value()");
@@ -62,7 +64,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("lombok");
+        return singleton("lombok");
     }
 
     @Override
@@ -115,7 +117,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         }
 
         private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
-            List<J.Annotation> allAnnotations = classDeclaration.getAllAnnotations();
             return classDeclaration.getType() != null &&
                    J.ClassDeclaration.Kind.Type.Record != classDeclaration.getKind() &&
                    hasMatchingAnnotations(classDeclaration) &&
@@ -157,9 +158,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 JavaType type = implemented.getType();
                 if (type instanceof JavaType.FullyQualified) {
                     return isConflictingInterface((JavaType.FullyQualified) type, memberVariableNames);
-                } else {
-                    return false;
                 }
+                return false;
             });
         }
 
@@ -230,6 +230,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         private static final String TO_STRING_MEMBER_LINE_PATTERN = "\"%s=\" + %s +";
         private static final String TO_STRING_MEMBER_DELIMITER = "\", \" +\n";
         private static final String STANDARD_GETTER_PREFIX = "get";
+        private static final String BOOLEAN_GETTER_PREFIX = "is";
 
         private final @Nullable Boolean useExactToString;
         private final Map<String, Set<String>> recordTypeToMembers;
@@ -248,10 +249,36 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             }
 
             J.Identifier methodName = methodInvocation.getName();
-            return methodInvocation
-                    .withName(methodName
-                            .withSimpleName(getterMethodNameToFluentMethodName(methodName.getSimpleName()))
-                    );
+            return methodInvocation.withName(
+                    methodName.withSimpleName(
+                            getterMethodNameToFluentMethodName(methodName.getSimpleName())));
+        }
+
+        @Override
+        public J.MemberReference visitMemberReference(J.MemberReference memberRef, ExecutionContext ctx) {
+            J.MemberReference memberReference = super.visitMemberReference(memberRef, ctx);
+
+            Expression containing = memberReference.getContaining();
+            if (containing.getType() instanceof JavaType.Class) {
+                String classFqn = ((JavaType.Class) containing.getType()).getFullyQualifiedName();
+                J.Identifier reference = memberReference.getReference();
+                String methodName = reference.getSimpleName();
+
+                if (recordTypeToMembers.containsKey(classFqn) &&
+                        (methodName.startsWith(STANDARD_GETTER_PREFIX) || methodName.startsWith(BOOLEAN_GETTER_PREFIX))) {
+                    String newSimpleName = getterMethodNameToFluentMethodName(methodName);
+                    if (recordTypeToMembers.get(classFqn).contains(newSimpleName)) {
+                        JavaType.Method methodType = memberReference.getMethodType();
+                        if (methodType != null) {
+                            methodType = methodType.withName(newSimpleName);
+                        }
+                        return memberReference
+                                .withReference(reference.withSimpleName(newSimpleName))
+                                .withMethodType(methodType);
+                    }
+                }
+            }
+            return memberReference;
         }
 
         private boolean isMethodInvocationOnRecordTypeClassMember(J.MethodInvocation methodInvocation) {
@@ -269,8 +296,9 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             String classFqn = classType.getFullyQualifiedName();
 
             return recordTypeToMembers.containsKey(classFqn) &&
-                   methodName.startsWith(STANDARD_GETTER_PREFIX) &&
-                   recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
+                    (methodName.startsWith(STANDARD_GETTER_PREFIX) || methodName.startsWith(BOOLEAN_GETTER_PREFIX)) &&
+                    recordTypeToMembers.get(classFqn).contains(getterMethodNameToFluentMethodName(methodName));
+
         }
 
         private static boolean isClassExpression(@Nullable Expression expression) {
@@ -279,7 +307,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
         private static String getterMethodNameToFluentMethodName(String methodName) {
             StringBuilder fluentMethodName = new StringBuilder(
-                    methodName.replace(STANDARD_GETTER_PREFIX, ""));
+                    methodName.replaceFirst("^(get|is)", ""));
 
             if (fluentMethodName.length() == 0) {
                 return "";
@@ -295,7 +323,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             return memberVariables
                     .stream()
                     .map(it -> it
-                            .withModifiers(Collections.emptyList())
+                            .withModifiers(emptyList())
                             .withVariables(it.getVariables())
                     )
                     .map(Statement.class::cast)
@@ -315,7 +343,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             return memberVariables
                     .stream()
                     .map(member -> String.format(TO_STRING_MEMBER_LINE_PATTERN, member, member))
-                    .collect(Collectors.joining(TO_STRING_MEMBER_DELIMITER));
+                    .collect(joining(TO_STRING_MEMBER_DELIMITER));
         }
 
         private static JavaType.Class buildRecordType(J.ClassDeclaration classDeclaration) {

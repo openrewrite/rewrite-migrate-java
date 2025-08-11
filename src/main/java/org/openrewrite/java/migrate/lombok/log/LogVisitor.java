@@ -25,7 +25,7 @@ import org.openrewrite.java.tree.TypeUtils;
 import static java.util.Comparator.comparing;
 
 @EqualsAndHashCode(callSuper = false)
-class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
+public class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
 
     private final String logType;
     private final String factoryType;

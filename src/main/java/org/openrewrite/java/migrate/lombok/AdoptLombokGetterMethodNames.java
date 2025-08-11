@@ -34,8 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class AdoptLombokGetterMethodNames extends ScanningRecipe<List<AdoptLombokGetterMethodNames.RenameRecord>> {
 
     private final static String DO_NOT_RENAME = "DO_NOT_RENAME";

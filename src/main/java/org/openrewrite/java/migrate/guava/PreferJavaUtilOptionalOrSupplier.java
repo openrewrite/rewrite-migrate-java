@@ -32,8 +32,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class PreferJavaUtilOptionalOrSupplier extends Recipe {
 
     static final MethodMatcher METHOD_MATCHER = new MethodMatcher("com.google.common.base.Optional or(com.google.common.base.Optional)");
@@ -76,8 +76,8 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
                                 method.getCoordinates().replace(),
                                 mi.getSelect(),
                                 mi.getArguments().get(0));
-                maybeAddImport("java.util.Optional");
                 maybeRemoveImport("com.google.common.base.Optional");
+                maybeAddImport("java.util.Optional");
             }
             return mi;
         }

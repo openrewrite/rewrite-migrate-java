@@ -16,6 +16,8 @@
 package org.openrewrite.java.migrate.joda;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.test.RecipeSpec;
@@ -29,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.test.RewriteTest.toRecipe;
 
+@Execution(ExecutionMode.SAME_THREAD)
 class JodaTimeScannerTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
@@ -102,9 +105,9 @@ class JodaTimeScannerTest implements RewriteTest {
         // The parameter 'dt' in the 'print' method is also unsafe because one of its method calls is unsafe.
         assertEquals(3, scanner.getAcc().getUnsafeVars().size());
         for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
-            assertTrue(var.getSimpleName().equals("dtz") ||
-                       var.getSimpleName().equals("dt") ||
-                       var.getSimpleName().equals("dateTime")
+            assertTrue("dtz".equals(var.getSimpleName()) ||
+                       "dt".equals(var.getSimpleName()) ||
+                       "dateTime".equals(var.getSimpleName())
             );
         }
     }
@@ -139,7 +142,7 @@ class JodaTimeScannerTest implements RewriteTest {
         // The local variable dt is unsafe due to class var datetime.
         assertEquals(2, scanner.getAcc().getUnsafeVars().size());
         for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
-            assertTrue(var.getSimpleName().equals("dateTime") || var.getSimpleName().equals("dt"));
+            assertTrue("dateTime".equals(var.getSimpleName()) || "dt".equals(var.getSimpleName()));
         }
     }
 
@@ -215,12 +218,12 @@ class JodaTimeScannerTest implements RewriteTest {
               import java.util.stream.Collectors;
               import java.util.stream.Stream;
               import java.util.List;
-              
+
               class A {
                   public Period period() {
                       return new Period();
                   }
-              
+
                   public void foo() {
                       List<Integer> list = Stream.of(1, 2, 3).peek(i -> {
                             Period p1 = period();
@@ -251,12 +254,12 @@ class JodaTimeScannerTest implements RewriteTest {
               import java.util.stream.Collectors;
               import java.util.stream.Stream;
               import java.util.List;
-              
+
               class A {
                   public Period period() {
                       return new Period();
                   }
-              
+
                   public void foo() {
                       List<Integer> list = Stream.of(1, 2, 3).peek(i -> {
                             Period p1 = period();

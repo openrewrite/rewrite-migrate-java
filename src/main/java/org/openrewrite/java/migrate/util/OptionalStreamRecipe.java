@@ -19,14 +19,14 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import static java.util.Objects.requireNonNull;
 
 public class OptionalStreamRecipe extends Recipe {
     @Override
@@ -69,27 +69,22 @@ public class OptionalStreamRecipe extends Recipe {
                 return mapInvocation;
             }
 
-            JRightPadded<Expression> filterSelect = filterInvocation.getPadding().getSelect();
-            JRightPadded<Expression> mapSelect = mapInvocation.getPadding().getSelect();
-            JavaType.Method mapInvocationType = mapInvocation.getMethodType();
-            Space flatMapComments = getFlatMapComments(mapSelect, filterSelect);
-            JavaTemplate template =
-                    JavaTemplate.builder("#{any(java.util.stream.Stream)}.flatMap(Optional::stream)")
-                            .imports("java.util.Optional")
-                            .build();
-            J.MethodInvocation flatMapInvocation = template
-                    .apply(updateCursor(mapInvocation), mapInvocation.getCoordinates().replace(), filterInvocation.getSelect());
+            JRightPadded<Expression> filterSelect = requireNonNull(filterInvocation.getPadding().getSelect());
+            JRightPadded<Expression> mapSelect = requireNonNull(mapInvocation.getPadding().getSelect());
+            JavaType.Method mapInvocationType = requireNonNull(mapInvocation.getMethodType());
+            J.MethodInvocation flatMapInvocation = JavaTemplate.builder("#{any(java.util.stream.Stream)}.flatMap(Optional::stream)")
+                    .imports("java.util.Optional")
+                    .build()
+                    .apply(updateCursor(mapInvocation), mapInvocation.getCoordinates().replace(), filterSelect.getElement());
+            Space flatMapComments = filterSelect.getAfter().withComments(ListUtils.concatAll(
+                    filterSelect.getAfter().getComments(),
+                    mapSelect.getAfter().getComments()
+            ));
             return flatMapInvocation.getPadding()
                     .withSelect(filterSelect.withAfter(flatMapComments))
                     .withMethodType(mapInvocationType.withName("flatMap"))
                     .withPrefix(mapInvocation.getPrefix());
         }
 
-        private static Space getFlatMapComments(JRightPadded<Expression> mapSelect, JRightPadded<Expression> filterSelect) {
-            List<Comment> comments = new ArrayList<>();
-            comments.addAll(filterSelect.getAfter().getComments());
-            comments.addAll(mapSelect.getAfter().getComments());
-            return filterSelect.getAfter().withComments(comments);
-        }
     }
 }

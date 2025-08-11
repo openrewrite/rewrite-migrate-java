@@ -56,8 +56,8 @@ class JavaxFacesConfigXmlToJakartaFacesConfigXmlTest implements RewriteTest {
               <?xml version="1.0" encoding="UTF-8"?>
               <faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
                             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd"
-                            version="4.0">
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_3_0.xsd"
+                            version="3.0">
                   <render-kit>
                       <renderer>
                           <component-family>jakarta.faces.Output</component-family>
@@ -96,8 +96,8 @@ class JavaxFacesConfigXmlToJakartaFacesConfigXmlTest implements RewriteTest {
               <?xml version="1.0" encoding="UTF-8"?>
               <faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
                             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd"
-                            version="4.0">
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_3_0.xsd"
+                            version="3.0">
                   <render-kit>
                       <renderer>
                           <component-family>jakarta.faces.Output</component-family>

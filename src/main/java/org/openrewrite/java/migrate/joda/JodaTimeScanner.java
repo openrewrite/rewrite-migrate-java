@@ -33,6 +33,8 @@ import org.openrewrite.java.tree.J.VariableDeclarations.NamedVariable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_CLASS_PATTERN;
 
 class JodaTimeScanner extends ScopeAwareVisitor {
@@ -78,7 +80,7 @@ class JodaTimeScanner extends ScopeAwareVisitor {
                 unsafeMethods.add(method);
                 return;
             }
-            Set<NamedVariable> intersection = new HashSet<>(methodReferencedVars.getOrDefault(method, Collections.emptySet()));
+            Set<NamedVariable> intersection = new HashSet<>(methodReferencedVars.getOrDefault(method, emptySet()));
             intersection.retainAll(acc.getUnsafeVars());
             if (!intersection.isEmpty()) {
                 unsafeMethods.add(method);
@@ -86,7 +88,7 @@ class JodaTimeScanner extends ScopeAwareVisitor {
         });
         for (JavaType.Method method : unsafeMethods) {
             acc.getSafeMethodMap().put(method, false);
-            acc.getUnsafeVars().addAll(methodReferencedVars.getOrDefault(method, Collections.emptySet()));
+            acc.getUnsafeVars().addAll(methodReferencedVars.getOrDefault(method, emptySet()));
         }
         return cu;
     }
@@ -149,7 +151,7 @@ class JodaTimeScanner extends ScopeAwareVisitor {
     @Override
     public J visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
         acc.getVarTable().addVars(method);
-        unsafeVarsByType.getOrDefault(method.getMethodType(), Collections.emptySet()).forEach(varName -> {
+        unsafeVarsByType.getOrDefault(method.getMethodType(), emptySet()).forEach(varName -> {
             NamedVariable var = acc.getVarTable().getVarByName(method.getMethodType(), varName);
             if (var != null) { // var can only be null if method is not correctly type attributed
                 acc.getUnsafeVars().add(var);
@@ -277,7 +279,7 @@ class JodaTimeScanner extends ScopeAwareVisitor {
     private List<Expression> findSinks(Cursor cursor) {
         Option<SinkFlowSummary> mayBeSinks = Dataflow.startingAt(cursor).findSinks(new JodaTimeFlowSpec());
         if (mayBeSinks.isNone()) {
-            return Collections.emptyList();
+            return emptyList();
         }
         return mayBeSinks.some().getExpressionSinks();
     }
@@ -291,7 +293,7 @@ class JodaTimeScanner extends ScopeAwareVisitor {
             return;
         }
         visited.add(root);
-        for (NamedVariable dep : varDependencies.getOrDefault(root, Collections.emptySet())) {
+        for (NamedVariable dep : varDependencies.getOrDefault(root, emptySet())) {
             dfs(dep, visited);
         }
     }

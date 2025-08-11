@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -131,6 +132,32 @@ class AddJaxwsDependenciesTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/760")
+    @Test
+    void dontAddGradleResolutionOnlyDependencies() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                   id 'java'
+               }
+               repositories {
+                   mavenCentral()
+               }
+               dependencies {
+                   compileOnly "com.sun.xml.ws:jaxws-rt:2.3.7"
+
+                   implementation "org.springframework.boot:spring-boot-starter-web-services:2.5.15"
+
+                   testImplementation "com.sun.xml.ws:jaxws-rt:2.3.7"
+               }
+              """
+          )
+        );
+    }
+
     @Test
     void removeReferenceImplementationRuntime() {
         rewriteRun(
@@ -171,11 +198,13 @@ class AddJaxwsDependenciesTest implements RewriteTest {
                   }
 
                   dependencies {
-                      implementation "com.sun.xml.ws:jaxws-rt:%s"
+                      compileOnly "com.sun.xml.ws:jaxws-rt:%s"
 
                       implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
+
+                      testImplementation "com.sun.xml.ws:jaxws-rt:%s"
                   }
-                  """.formatted(rtVersion, wsApiVersion);
+                  """.formatted(rtVersion, wsApiVersion, rtVersion);
             })
           ),
           pomXml(
@@ -272,11 +301,13 @@ class AddJaxwsDependenciesTest implements RewriteTest {
                   }
 
                   dependencies {
-                      implementation "com.sun.xml.ws:jaxws-rt:%s"
+                      compileOnly "com.sun.xml.ws:jaxws-rt:%s"
 
                       implementation "jakarta.xml.ws:jakarta.xml.ws-api:%s"
+
+                      testImplementation "com.sun.xml.ws:jaxws-rt:%s"
                   }
-                  """.formatted(rtVersion, wsApiVersion);
+                  """.formatted(rtVersion, wsApiVersion, rtVersion);
             })
           ),
           pomXml(

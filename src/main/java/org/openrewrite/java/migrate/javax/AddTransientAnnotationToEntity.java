@@ -33,8 +33,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class AddTransientAnnotationToEntity extends ScanningRecipe<AddTransientAnnotationToEntity.EntityAccumulator> {
 
     @Override
