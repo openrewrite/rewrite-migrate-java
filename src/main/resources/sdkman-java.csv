@@ -212,6 +212,7 @@
 24.2.1.r24-mandrel
 24.2.1.r24-nik
 24.2.2.fx-nik
+24.2.2.r24-mandrel
 24.2.2.r24-nik
 24.2.fx-nik
 24.2.r24-mandrel
@@ -253,8 +254,10 @@
 25.ea.30-open
 25.ea.31-graal
 25.ea.31-open
+25.ea.32-graal
 25.ea.32-open
 25.ea.33-open
+25.ea.34-open
 25.ea.8-graal
 26.ea.1-open
 26.ea.2-open
@@ -268,7 +271,9 @@
 26.ea.6-open
 26.ea.7-graal
 26.ea.7-open
+26.ea.8-graal
 26.ea.8-open
+26.ea.9-open
 6.0.119-zulu
 7.0.352-zulu
 8.0.282-trava
