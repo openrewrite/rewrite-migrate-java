@@ -93,9 +93,8 @@ public class NegligentlyConvertEquals extends Recipe {
             // The enclosing class of a J.MethodDeclaration must be known for a MethodMatcher to match it
             if (equalsMatcher.matches(method, classDecl) || hashCodeMatcher.matches(method, classDecl)) {
                 return null;
-            } else {
-                return method;
             }
+            return method;
         }
     }
 }
