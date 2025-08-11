@@ -28,8 +28,8 @@ import org.openrewrite.xml.tree.Xml;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class BeanDiscovery extends Recipe {
 
     private static final XPathMatcher BEANS_MATCHER = new XPathMatcher("/beans");
@@ -61,7 +61,7 @@ public class BeanDiscovery extends Recipe {
                 boolean hasBeanDiscoveryMode = false;
                 String idealVersion = null;
                 for (Xml.Attribute attribute : t.getAttributes()) {
-                    if (attribute.getKeyAsString().equals("bean-discovery-mode")) {
+                    if ("bean-discovery-mode".equals(attribute.getKeyAsString())) {
                         hasBeanDiscoveryMode = true;
                     } else if (attribute.getKeyAsString().endsWith("schemaLocation")) {
                         String schemaLocation = attribute.getValueAsString();

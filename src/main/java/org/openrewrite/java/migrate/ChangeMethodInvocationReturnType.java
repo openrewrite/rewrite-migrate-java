@@ -27,9 +27,9 @@ import static java.util.Collections.singletonList;
 /**
  * @deprecated in favor of {@link org.openrewrite.java.ChangeMethodInvocationReturnType}.
  */
-@Value
-@EqualsAndHashCode(callSuper = false)
 @Deprecated
+@EqualsAndHashCode(callSuper = false)
+@Value
 public class ChangeMethodInvocationReturnType extends Recipe {
 
     @Option(displayName = "Method pattern",

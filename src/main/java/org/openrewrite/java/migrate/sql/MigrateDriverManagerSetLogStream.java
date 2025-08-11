@@ -25,8 +25,9 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class MigrateDriverManagerSetLogStream extends Recipe {
     private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.sql.DriverManager setLogStream(java.io.PrintStream)");
@@ -43,7 +44,7 @@ public class MigrateDriverManagerSetLogStream extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("deprecated");
+        return singleton("deprecated");
     }
 
     @Override

@@ -29,8 +29,9 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends Recipe {
     private static final MethodMatcher NEW_INSTANCE_MATCHER = new MethodMatcher("java.lang.Class newInstance()");
@@ -47,7 +48,7 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("deprecated");
+        return singleton("deprecated");
     }
 
     @Override

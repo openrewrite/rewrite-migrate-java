@@ -37,7 +37,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxEjbToJakartaEjb
   - org.openrewrite.java.migrate.jakarta.JavaxElToJakartaEl
   - org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
-  - org.openrewrite.java.migrate.jakarta.JavaxFacesToJakartaFaces
+  - org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakartaFaces3x
   - org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
   - org.openrewrite.java.migrate.jakarta.JavaxInterceptorToJakartaInterceptor
   - org.openrewrite.java.migrate.jakarta.JavaxJmsToJakartaJms
@@ -112,23 +112,21 @@ recipeList:
       newGroupId: jakarta.annotation
       newArtifactId: jakarta.annotation-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      newVersion: 2.0.x
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.annotation
       newPackageName: jakarta.annotation
-      recursive: true
+      # Avoid changing javax.annotation.concurrent and javax.annotation.processing
+      recursive: false
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.annotation.processing
-      newPackageName: jakarta.annotation.processing
+      oldPackageName: javax.annotation.security
+      newPackageName: jakarta.annotation.security
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.annotation.concurrent
-      newPackageName: jakarta.annotation.concurrent
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Nullable
-      newFullyQualifiedTypeName: jakarta.annotation.Nullable
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Nonnull
-      newFullyQualifiedTypeName: jakarta.annotation.Nonnull
-
+      oldPackageName: javax.annotation.sql
+      newPackageName: jakarta.annotation.sql
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxAuthenticationMigrationToJakartaAuthentication
@@ -335,29 +333,6 @@ recipeList:
       recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.JavaxFacesToJakartaFaces
-displayName: Migrate deprecated `javax.faces` packages to `jakarta.faces`
-description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
-recipeList:
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: javax.faces
-      oldArtifactId: javax.faces-api
-      newGroupId: jakarta.faces
-      newArtifactId: jakarta.faces-api
-      newVersion: 3.0.x
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: jakarta.faces
-      artifactId: jakarta.faces-api
-      newVersion: 3.0.x
-  - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.faces
-      newPackageName: jakarta.faces
-      recursive: true
-  - org.openrewrite.java.ChangePackageInStringLiteral:
-      oldPackageName: javax.faces
-      newPackageName: jakarta.faces
----
-type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
 displayName: Migrate deprecated `javax.inject` packages to `jakarta.inject`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
@@ -486,6 +461,12 @@ description: Java EE has been rebranded to Jakarta EE, necessitating a package r
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.mail
+      oldArtifactId: mail
+      newGroupId: jakarta.mail
+      newArtifactId: jakarta.mail-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.mail
       oldArtifactId: javax.mail-api
       newGroupId: jakarta.mail
       newArtifactId: jakarta.mail-api
@@ -494,6 +475,11 @@ recipeList:
       groupId: jakarta.mail
       artifactId: jakarta.mail-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.mail
+      artifactId: jakarta.mail-api
+      version: 2.0.x
+      onlyIfUsing: javax.mail.*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.mail
       newPackageName: jakarta.mail
@@ -636,6 +622,26 @@ recipeList:
       groupId: jakarta.websocket
       artifactId: jakarta.websocket-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.websocket
+      oldArtifactId: javax.websocket-client-api
+      newGroupId: jakarta.websocket
+      newArtifactId: jakarta.websocket-client-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.websocket
+      artifactId: jakarta.websocket-client-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.websocket
+      oldArtifactId: javax.websocket-all
+      newGroupId: jakarta.websocket
+      newArtifactId: jakarta.websocket-all
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.websocket
+      artifactId: jakarta.websocket-all
+      newVersion: 2.0.x
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.websocket
       newPackageName: jakarta.websocket
@@ -656,6 +662,11 @@ recipeList:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.ws.rs
+      artifactId: jakarta.ws.rs-api
+      version: 3.0.x
+      onlyIfUsing: javax.ws.rs.core.*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.ws
       newPackageName: jakarta.ws
@@ -712,19 +723,25 @@ tags:
   - jaxb
   - javax
   - jakarta
+preconditions:
+  # IBM-specific exclusion
+  - org.openrewrite.xml.search.DoesNotUseNamespaceUri:
+      namespaceUri: http://websphere.ibm.com/xml/ns/javaee
 recipeList:
-  - org.openrewrite.xml.ChangeTagAttribute:
-      #language=xpath
-      elementName: "//*[namespace-uri() = 'http://java.sun.com/xml/ns/jaxb' and local-name() = 'bindings']"
-      attributeName: version
-      oldValue: 1.0
-      newValue: 3.0
+  # Update namespace first
   - org.openrewrite.xml.ChangeTagAttribute:
       #language=xpath
       elementName: "//*[namespace-uri() = 'http://java.sun.com/xml/ns/jaxb' and local-name() = 'bindings']"
       attributeName: xmlns:jxb
       oldValue: http://java.sun.com/xml/ns/jaxb
       newValue: https://jakarta.ee/xml/ns/jaxb
+  # Update version
+  - org.openrewrite.xml.ChangeTagAttribute:
+      #language=xpath
+      elementName: "//*[namespace-uri() = 'https://jakarta.ee/xml/ns/jaxb' and local-name() = 'bindings']"
+      attributeName: version
+      oldValue: 1.0
+      newValue: 3.0
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
@@ -765,17 +782,25 @@ recipeList:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       newVersion: 3.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: com.sun.xml.ws
-      artifactId: jaxws-rt
-      version: 3.x
-      scope: runtime
-      onlyIfUsing: javax.xml.ws..*
-      acceptTransitive: true
+  - org.openrewrite.maven.ChangeDependencyScope:
+      groupId: jakarta.xml.ws
+      artifactId: jakarta.xml.ws-api
+      newScope: provided
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
       newVersion: 3.x
+  - org.openrewrite.maven.ChangeDependencyScope:
+      groupId: com.sun.xml.ws
+      artifactId: jaxws-rt
+      newScope: provided
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: com.sun.xml.ws
+      artifactId: jaxws-rt
+      version: 3.x
+      scope: provided
+      onlyIfUsing: javax.xml.ws..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.xml.ws
       newPackageName: jakarta.xml.ws
@@ -1058,6 +1083,7 @@ name: org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependency
 displayName: Remove `jakarta.annotation-api` dependency when managed by Spring Boot
 description: Counteract the `jakarta.annotation-api` added by `org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies` for Spring Boot applications.
 preconditions:
+  - org.openrewrite.java.migrate.jakarta.HasNoJakartaAnnotations
   - org.openrewrite.java.dependencies.DependencyInsight:
       groupIdPattern: org.springframework.boot
       artifactIdPattern: spring-boot-starter

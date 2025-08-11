@@ -26,8 +26,9 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class MigrateHttpURLConnectionHttpServerErrorToHttpInternalError extends Recipe {
     @Override
@@ -42,7 +43,7 @@ public class MigrateHttpURLConnectionHttpServerErrorToHttpInternalError extends 
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("deprecated");
+        return singleton("deprecated");
     }
 
     @Override

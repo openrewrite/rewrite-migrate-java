@@ -30,8 +30,8 @@ import org.openrewrite.java.tree.J;
 import java.util.Comparator;
 import java.util.regex.Pattern;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class AddTransientAnnotationToCollections extends Recipe {
 
     @Override

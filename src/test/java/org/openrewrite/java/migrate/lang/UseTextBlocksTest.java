@@ -71,7 +71,6 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void newlineAtBeginningOfLines() {
         rewriteRun(
@@ -537,14 +536,17 @@ class UseTextBlocksTest implements RewriteTest {
       """)
     @Test
     void textBlockDemo() {
-        String s1 = "\n=========================================================" +
-                    "\n                                                         " +
-                    "\n          Welcome to Spring Integration!                 " +
-                    "\n                                                         " +
-                    "\n    For more information please visit:                   " +
-                    "\n    https://www.springsource.org/spring-integration      " +
-                    "\n                                                         " +
-                    "\n=========================================================";
+        String s1 = """
+                    
+                    =========================================================
+                                                                            \s
+                              Welcome to Spring Integration!                \s
+                                                                            \s
+                        For more information please visit:                  \s
+                        https://www.springsource.org/spring-integration     \s
+                                                                            \s
+                    =========================================================\
+                    """;
         String s2 = """
 
           =========================================================
@@ -790,8 +792,8 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/260")
+    @Test
         //@Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/261")
     void doNotPartiallyReplaceWithTextBlocks() {
         rewriteRun(
@@ -818,8 +820,8 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/261")
+    @Test
     void doNotPartiallyReplaceWithTextBlocksWithIntLiteral() {
         rewriteRun(
           //language=java
@@ -844,8 +846,8 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/501")
+    @Test
     void shouldNotUpdateKotlinCode() {
         rewriteRun(
           spec -> spec.expectedCyclesThatMakeChanges(0),
@@ -859,8 +861,8 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/555")
+    @Test
     void textBlockTrailingEscape() {
         rewriteRun(
           spec -> spec.recipe(new UseTextBlocks()),

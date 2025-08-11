@@ -28,8 +28,8 @@ import org.openrewrite.java.tree.J;
 import java.util.HashSet;
 import java.util.Set;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class FindJavaVersion extends Recipe {
 
     transient JavaVersionTable table = new JavaVersionTable(this);

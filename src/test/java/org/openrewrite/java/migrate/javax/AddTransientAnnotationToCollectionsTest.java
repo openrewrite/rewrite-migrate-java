@@ -31,8 +31,8 @@ class AddTransientAnnotationToCollectionsTest implements RewriteTest {
           .recipe(new AddTransientAnnotationToCollections());
     }
 
-    @Test
     @DocumentExample
+    @Test
     void addTransient() {
         //language=java
         rewriteRun(

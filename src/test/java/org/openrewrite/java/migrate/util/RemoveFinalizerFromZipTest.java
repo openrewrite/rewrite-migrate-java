@@ -31,8 +31,8 @@ class RemoveFinalizerFromZipTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(false));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void removeFinalizerForInflater() {
         //language=java
         rewriteRun(java(

@@ -382,6 +382,12 @@ class IBMSemeruTest implements RewriteTest {
                     <artifactId>gson</artifactId>
                     <version>2.10.1</version>
                   </dependency>
+                  <dependency>
+                        <groupId>javax.xml.ws</groupId>
+                        <artifactId>jaxws-api</artifactId>
+                        <version>2.2</version>
+                    <scope>provided</scope>
+                  </dependency>
                 </dependencies>
                 <build>
                   <plugins>
@@ -434,6 +440,7 @@ class IBMSemeruTest implements RewriteTest {
                   mavenCentral()
               }
               dependencies {
+                  compileOnly("javax.xml.ws:jaxws-api:2.0")
               }
               """
           )
@@ -500,6 +507,18 @@ class IBMSemeruTest implements RewriteTest {
                     <artifactId>gson</artifactId>
                     <version>2.10.1</version>
                   </dependency>
+                  <dependency>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                     <version>2.3.1</version>
+                    <scope>provided</scope>
+                  </dependency>
+                  <dependency>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>activation</artifactId>
+                    <version>1.1.1</version>
+                    <scope>provided</scope>
+                  </dependency>
                 </dependencies>
               </project>
               """
@@ -534,6 +553,8 @@ class IBMSemeruTest implements RewriteTest {
                   mavenCentral()
               }
               dependencies {
+                  compileOnly("javax.xml.bind:jaxb-api:2.3.1")
+                  compileOnly("javax.activation:activation:1.1.1")
               }
               """
           )

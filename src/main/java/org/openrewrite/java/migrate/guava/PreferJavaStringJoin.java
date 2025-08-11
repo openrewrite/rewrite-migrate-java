@@ -22,8 +22,9 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class PreferJavaStringJoin extends Recipe {
 
@@ -41,7 +42,7 @@ public class PreferJavaStringJoin extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("guava");
+        return singleton("guava");
     }
 
     @Override

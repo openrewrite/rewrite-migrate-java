@@ -24,8 +24,8 @@ import static org.openrewrite.java.Assertions.java;
 
 class FindDtoOverfetchingTest implements RewriteTest {
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     @ParameterizedTest
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @ValueSource(strings = {
       "java.time.LocalDate", "java.time.*"
     })

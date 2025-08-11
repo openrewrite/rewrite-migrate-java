@@ -30,8 +30,8 @@ class StringFormattedTest implements RewriteTest {
         spec.recipe(new StringFormatted(null));
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite/issues/2163")
+    @Test
     void textBlock() {
         //language=java
         rewriteRun(
@@ -142,8 +142,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    @Test
     void oneArgument() {
         //language=java
         rewriteRun(
@@ -165,8 +165,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    @Test
     void twoArguments() {
         //language=java
         rewriteRun(
@@ -188,8 +188,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    @Test
     void threeArguments() {
         //language=java
         rewriteRun(
@@ -211,8 +211,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    @Test
     void fourArguments() {
         //language=java
         rewriteRun(
@@ -233,8 +233,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    @Test
     void splitFirstArgument() {
         //language=java
         rewriteRun(
@@ -256,8 +256,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    @Test
     void splitSecondArgument() {
         //language=java
         rewriteRun(
@@ -278,8 +278,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    @Test
     void doNotWrapMethodInvocation() {
         //language=java
         rewriteRun(
@@ -306,8 +306,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    @Test
     void doNotWrapLocalVariable() {
         //language=java
         rewriteRun(
@@ -334,8 +334,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    @Test
     void doNotWrapField() {
         //language=java
         rewriteRun(
@@ -381,8 +381,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/77")
+    @Test
     void removeStaticImport() {
         //language=java
         rewriteRun(
@@ -405,8 +405,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
+    @Test
     void doNotMatchLocale() {
         //language=java
         rewriteRun(
@@ -423,8 +423,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
+    @Test
     void doNotChangeLackOfWhitespace() {
         //language=java
         rewriteRun(
@@ -446,8 +446,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
+    @Test
     void doNotChangeWhitespaceWithNewlines() {
         //language=java
         rewriteRun(
@@ -472,8 +472,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/122")
+    @Test
     void doNotChangeWhitespaceWithNewlinesAndComments() {
         //language=java
         rewriteRun(
@@ -500,8 +500,8 @@ class StringFormattedTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/453")
+    @Test
     void doNotRetainTrailingWhitespaceWhenFirstArgumentOnNewLine() {
         //language=java
         rewriteRun(

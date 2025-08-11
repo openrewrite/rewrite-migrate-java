@@ -16,6 +16,8 @@
 package org.openrewrite.java.migrate.joda;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -23,6 +25,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
+@Execution(ExecutionMode.SAME_THREAD)
 class JodaTimeRecipeTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
@@ -223,7 +226,7 @@ class JodaTimeRecipeTest implements RewriteTest {
               import java.time.Duration;
               import java.time.ZoneId;
               import java.time.ZonedDateTime;
-              
+
               class A {
                    public ZonedDateTime foo(String city) {
                        ZoneId dtz;

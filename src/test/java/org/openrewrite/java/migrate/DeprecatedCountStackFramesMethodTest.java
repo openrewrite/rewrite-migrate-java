@@ -28,8 +28,8 @@ class DeprecatedCountStackFramesMethodTest implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod");
     }
 
-    @Test
     @DocumentExample
+    @Test
     void deprecatedCountStackFrameRemoveMethod() {
         rewriteRun(
           //language=java
