@@ -64,7 +64,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.ApplicationPathWildcardNoLongerAccepted
   - org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
   - org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
-  - org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependency
+  - org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependencyWhenManagedBySpringBoot
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -1079,10 +1079,11 @@ recipeList:
       newVersion: 9.1.0
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependency
+name: org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependencyWhenManagedBySpringBoot
 displayName: Remove `jakarta.annotation-api` dependency when managed by Spring Boot
-description: Counteract the `jakarta.annotation-api` added by `org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies` for Spring Boot applications.
+description: Best practice recipe to cleanup a direct dependency which also comes transitively for Spring Boot applications.
 preconditions:
+  # TODO: This recipe can be broadened by checking if `jakarta.annotation-api` is transitively on the classpath OR move this recipe to be part of org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0 recipe.
   - org.openrewrite.java.migrate.jakarta.HasNoJakartaAnnotations
   - org.openrewrite.java.dependencies.DependencyInsight:
       groupIdPattern: org.springframework.boot

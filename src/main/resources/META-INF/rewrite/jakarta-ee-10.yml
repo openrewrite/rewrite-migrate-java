@@ -394,12 +394,6 @@ recipeList:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       newVersion: 2.1.x
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Nullable
-      newFullyQualifiedTypeName: jakarta.annotation.Nullable
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Nonnull
-      newFullyQualifiedTypeName: jakarta.annotation.Nonnull
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaXmlWsEE10
