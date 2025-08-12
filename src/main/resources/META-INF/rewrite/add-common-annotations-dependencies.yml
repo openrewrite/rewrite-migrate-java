@@ -33,7 +33,7 @@ recipeList:
       newGroupId: jakarta.annotation
       newArtifactId: jakarta.annotation-api
       newVersion: 1.3.x
-      # Even if the dependency is managed, we want to sure the version is set explicitly (a higher version does not have the javax namespace)
+      # set explicitly even if  managed, as higher versions do not have the javax namespace
       overrideManagedVersion: true
       changeManagedDependency: false
   # Jakarta EE recommends `provided` scope
