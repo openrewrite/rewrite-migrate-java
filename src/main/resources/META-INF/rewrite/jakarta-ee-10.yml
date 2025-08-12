@@ -57,11 +57,14 @@ tags:
   - jakarta
 # NOTE: The spec versions in this section comes from https://github.com/jakartaee/jakartaee-api/blob/10.0.0/pom.xml
 recipeList:
-  - org.openrewrite.java.migrate.jakarta.UpdateJakartaAnnotations2
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaXmlWsEE10
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.activation
       artifactId: jakarta.activation-api
+      newVersion: 2.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
       newVersion: 2.1.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.authentication
@@ -384,22 +387,6 @@ recipeList:
       groupId: jakarta.platform
       artifactId: "*"
       newVersion: 10.0.0
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.UpdateJakartaAnnotations2
-displayName: Update Jakarta EE annotation Dependencies to 2.1.x.
-description: Update Jakarta EE annotation Dependencies to 2.1.x.
-recipeList:
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: jakarta.annotation
-      artifactId: jakarta.annotation-api
-      newVersion: 2.1.x
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Nullable
-      newFullyQualifiedTypeName: jakarta.annotation.Nullable
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Nonnull
-      newFullyQualifiedTypeName: jakarta.annotation.Nonnull
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaXmlWsEE10
