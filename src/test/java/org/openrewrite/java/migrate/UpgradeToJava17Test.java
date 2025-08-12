@@ -17,7 +17,7 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -33,10 +33,8 @@ class UpgradeToJava17Test implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder()
-          .scanRuntimeClasspath("org.openrewrite.java.migrate")
-          .build()
-          .activateRecipes("org.openrewrite.java.migrate.UpgradeToJava17"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava17")
+          .parser(JavaParser.fromJavaVersion().classpath("javax.annotation-api-1.3.2"));
     }
 
     @DocumentExample
@@ -50,31 +48,48 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-                  
+
                     <properties>
                       <java.version>1.8</java.version>
                       <maven.compiler.source>1.8</maven.compiler.source>
                       <maven.compiler.target>1.8</maven.compiler.target>
                     </properties>
-                  
+
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
+
+                    <dependencies>
+                      <dependency>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>javax.annotation-api</artifactId>
+                        <version>1.3.2</version>
+                      </dependency>
+                    </dependencies>
                   </project>
                   """,
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-                  
+
                     <properties>
                       <java.version>17</java.version>
                       <maven.compiler.source>17</maven.compiler.source>
                       <maven.compiler.target>17</maven.compiler.target>
                     </properties>
-                  
+
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
+
+                    <dependencies>
+                      <dependency>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
+                        <version>2.0.0</version>
+                        <scope>provided</scope>
+                      </dependency>
+                    </dependencies>
                   </project>
                   """
               ),
@@ -83,20 +98,30 @@ class UpgradeToJava17Test implements RewriteTest {
                 java(
                   """
                     package com.abc;
-                    
+
+                    import javax.annotation.PostConstruct;
+
                     class A {
                        public String test() {
                            return String.format("Hello %s", "world");
                        }
+
+                       @PostConstruct
+                       void init() {}
                     }
                     """,
                   """
                     package com.abc;
-                    
+
+                    import jakarta.annotation.PostConstruct;
+
                     class A {
                        public String test() {
                            return "Hello %s".formatted("world");
                        }
+
+                       @PostConstruct
+                       void init() {}
                     }
                     """
                 )
@@ -116,13 +141,13 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-                  
+
                     <properties>
                       <java.version>1.8</java.version>
                       <maven.compiler.source>${java.version}</maven.compiler.source>
                       <maven.compiler.target>${java.version}</maven.compiler.target>
                     </properties>
-                  
+
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -131,13 +156,13 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-                  
+
                     <properties>
                       <java.version>17</java.version>
                       <maven.compiler.source>${java.version}</maven.compiler.source>
                       <maven.compiler.target>${java.version}</maven.compiler.target>
                     </properties>
-                  
+
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -149,7 +174,7 @@ class UpgradeToJava17Test implements RewriteTest {
                   //language=java
                   """
                     package com.abc;
-                    
+
                     class A {
                        public String test() {
                            return String.format("Hello %s", "world");
@@ -159,7 +184,7 @@ class UpgradeToJava17Test implements RewriteTest {
                   //language=java
                   """
                     package com.abc;
-                    
+
                     class A {
                        public String test() {
                            return "Hello %s".formatted("world");
@@ -186,9 +211,9 @@ class UpgradeToJava17Test implements RewriteTest {
                 import java.io.FileInputStream;
                 import java.io.FileNotFoundException;
                 import java.io.InputStream;
-                
+
                 import javax.security.cert.*;
-                
+
                 class Test {
                     void foo() throws CertificateException, FileNotFoundException {
                         InputStream inStream = new FileInputStream("cert");
@@ -203,9 +228,9 @@ class UpgradeToJava17Test implements RewriteTest {
                 import java.io.FileInputStream;
                 import java.io.FileNotFoundException;
                 import java.io.InputStream;
-                
+
                 import java.security.cert.*;
-                
+
                 class Test {
                     void foo() throws CertificateException, FileNotFoundException {
                         InputStream inStream = new FileInputStream("cert");
@@ -228,16 +253,16 @@ class UpgradeToJava17Test implements RewriteTest {
             java(
               """
                 import javax.net.ssl.SSLContext;
-                
+
                 class RemovedLegacySunJSSEProviderName {
                     String legacyProviderName = "com.sun.net.ssl.internal.ssl.Provider"; //flagged
                     String newProviderName = "SunJSSE"; //not flagged
-                
+
                     void test() throws Exception {
                         SSLContext.getInstance("TLS", "com.sun.net.ssl.internal.ssl.Provider"); //flagged
                         SSLContext.getInstance("TLS", "SunJSSE"); //not flagged
                     }
-                
+
                     void test2() throws Exception {
                         System.out.println("com.sun.net.ssl.internal.ssl.Provider"); //flagged
                     }
@@ -245,16 +270,16 @@ class UpgradeToJava17Test implements RewriteTest {
                 """,
               """
                 import javax.net.ssl.SSLContext;
-                
+
                 class RemovedLegacySunJSSEProviderName {
                     String legacyProviderName = "SunJSSE"; //flagged
                     String newProviderName = "SunJSSE"; //not flagged
-                
+
                     void test() throws Exception {
                         SSLContext.getInstance("TLS", "SunJSSE"); //flagged
                         SSLContext.getInstance("TLS", "SunJSSE"); //not flagged
                     }
-                
+
                     void test2() throws Exception {
                         System.out.println("SunJSSE"); //flagged
                     }
@@ -272,7 +297,7 @@ class UpgradeToJava17Test implements RewriteTest {
             java(
               """
                 import java.util.logging.LogRecord;
-                
+
                 class Foo {
                     void bar(LogRecord record) {
                         int threadID = record.getThreadID();
@@ -282,7 +307,7 @@ class UpgradeToJava17Test implements RewriteTest {
                 """,
               """
                 import java.util.logging.LogRecord;
-                
+
                 class Foo {
                     void bar(LogRecord record) {
                         long threadID = record.getLongThreadID();
@@ -355,39 +380,39 @@ class UpgradeToJava17Test implements RewriteTest {
             java(
               """
                 package com.test;
-                
+
                 import java.lang.instrument.Instrumentation;
-                
+
                 public class AgentMainPreMainPublicApp {
-                
+
                 	private static void premain(String agentArgs) {
                 		//This should flag
                 	}
-                
+
                 	public static void premain(String agentArgs, Instrumentation inst) {
                 		//This shouldn't flag
                 	}
-                
+
                 	public static void premain(String agentArgs, Instrumentation inst, String foo) {
                 		//This shouldn't flag
                 	}
-                
+
                 	private static void premain1(String agentArgs) {
                 		//This shouldn't flag
                 	}
-                
+
                 	protected void agentmain(String agentArgs) {
                 		//This should flag
                 	}
-                
+
                     static void agentmain(String agentArgs, Instrumentation inst) {
                 		//This should flag
                 	}
-                
+
                 	private static void agentmain(String agentArgs, Instrumentation inst, String foo) {
                 		//This shouldn't flag
                 	}
-                
+
                     private static void agentmain(String agentArgs, String inst) {
                 		//This shouldn't flag
                 	}
@@ -395,39 +420,39 @@ class UpgradeToJava17Test implements RewriteTest {
                 """,
               """
                 package com.test;
-                
+
                 import java.lang.instrument.Instrumentation;
-                
+
                 public class AgentMainPreMainPublicApp {
-                
+
                 	public static void premain(String agentArgs) {
                 		//This should flag
                 	}
-                
+
                 	public static void premain(String agentArgs, Instrumentation inst) {
                 		//This shouldn't flag
                 	}
-                
+
                 	public static void premain(String agentArgs, Instrumentation inst, String foo) {
                 		//This shouldn't flag
                 	}
-                
+
                 	private static void premain1(String agentArgs) {
                 		//This shouldn't flag
                 	}
-                
+
                 	public void agentmain(String agentArgs) {
                 		//This should flag
                 	}
-                
+
                     public static void agentmain(String agentArgs, Instrumentation inst) {
                 		//This should flag
                 	}
-                
+
                 	private static void agentmain(String agentArgs, Instrumentation inst, String foo) {
                 		//This shouldn't flag
                 	}
-                
+
                     private static void agentmain(String agentArgs, String inst) {
                 		//This shouldn't flag
                 	}

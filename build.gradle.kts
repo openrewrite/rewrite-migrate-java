@@ -77,6 +77,7 @@ dependencies {
     testRuntimeOnly("javax.mail:mail:1.4.7")
     testRuntimeOnly("javax.mail:javax.mail-api:1.6.2")
     testRuntimeOnly("javax.ws.rs:javax.ws.rs-api:2.1.1")
+    testRuntimeOnly("javax.annotation:javax.annotation-api:1.3.2")
     testRuntimeOnly(gradleApi())
 }
 
