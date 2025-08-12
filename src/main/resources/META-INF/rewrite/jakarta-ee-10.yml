@@ -389,6 +389,16 @@ recipeList:
       newVersion: 10.0.0
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateJakartaAnnotations2
+displayName: Update Jakarta EE annotation Dependencies to 2.1.x.
+description: Update Jakarta EE annotation Dependencies to 2.1.x.
+tags:
+  # This recipe has been inlined into `MigrationToJakarta10Apis`; drop the reference to this recipe,
+  # This placeholder is kept to avoid breaking existing recipes that reference this recipe still.
+  - deprecated
+recipeList: []
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaXmlWsEE10
 displayName: Update Jakarta EE XML Web Services Dependencies for EE 10.
 description: Update Jakarta EE XML Web Services Dependencies for EE 10.
