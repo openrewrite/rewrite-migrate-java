@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
@@ -49,48 +50,27 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-
                     <properties>
                       <java.version>1.8</java.version>
                       <maven.compiler.source>1.8</maven.compiler.source>
                       <maven.compiler.target>1.8</maven.compiler.target>
                     </properties>
-
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
-
-                    <dependencies>
-                      <dependency>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>javax.annotation-api</artifactId>
-                        <version>1.3.2</version>
-                      </dependency>
-                    </dependencies>
                   </project>
                   """,
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-
                     <properties>
                       <java.version>17</java.version>
                       <maven.compiler.source>17</maven.compiler.source>
                       <maven.compiler.target>17</maven.compiler.target>
                     </properties>
-
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
-
-                    <dependencies>
-                      <dependency>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                        <version>2.0.0</version>
-                        <scope>provided</scope>
-                      </dependency>
-                    </dependencies>
                   </project>
                   """
               ),
@@ -98,31 +78,17 @@ class UpgradeToJava17Test implements RewriteTest {
               srcMainJava(
                 java(
                   """
-                    package com.abc;
-
-                    import javax.annotation.PostConstruct;
-
                     class A {
                        public String test() {
                            return String.format("Hello %s", "world");
                        }
-
-                       @PostConstruct
-                       void init() {}
                     }
                     """,
                   """
-                    package com.abc;
-
-                    import jakarta.annotation.PostConstruct;
-
                     class A {
                        public String test() {
                            return "Hello %s".formatted("world");
                        }
-
-                       @PostConstruct
-                       void init() {}
                     }
                     """
                 )
@@ -142,13 +108,11 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-
                     <properties>
                       <java.version>1.8</java.version>
                       <maven.compiler.source>${java.version}</maven.compiler.source>
                       <maven.compiler.target>${java.version}</maven.compiler.target>
                     </properties>
-
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -157,13 +121,11 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-
                     <properties>
                       <java.version>17</java.version>
                       <maven.compiler.source>${java.version}</maven.compiler.source>
                       <maven.compiler.target>${java.version}</maven.compiler.target>
                     </properties>
-
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -174,8 +136,6 @@ class UpgradeToJava17Test implements RewriteTest {
                 java(
                   //language=java
                   """
-                    package com.abc;
-
                     class A {
                        public String test() {
                            return String.format("Hello %s", "world");
@@ -184,8 +144,6 @@ class UpgradeToJava17Test implements RewriteTest {
                     """,
                   //language=java
                   """
-                    package com.abc;
-
                     class A {
                        public String test() {
                            return "Hello %s".formatted("world");
@@ -545,4 +503,72 @@ class UpgradeToJava17Test implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/816")
+    @Test
+    void javaxAnnotationApiToJakarta() {
+        rewriteRun(
+          version(
+            mavenProject("project",
+              //language=xml
+              pomXml(
+                """
+                  <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <dependencies>
+                      <dependency>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>javax.annotation-api</artifactId>
+                        <version>1.3.2</version>
+                      </dependency>
+                    </dependencies>
+                  </project>
+                  """,
+                """
+                  <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                      <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                      <dependency>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
+                        <version>2.0.0</version>
+                        <scope>provided</scope>
+                      </dependency>
+                    </dependencies>
+                  </project>
+                  """
+              ),
+              //language=java
+              srcMainJava(
+                java(
+                  """
+                    import javax.annotation.PostConstruct;
+
+                    class A {
+                       @PostConstruct
+                       void init() {}
+                    }
+                    """,
+                  """
+                    import jakarta.annotation.PostConstruct;
+
+                    class A {
+                       @PostConstruct
+                       void init() {}
+                    }
+                    """
+                )
+              )
+            ),
+            8)
+        );
+    }
 }
