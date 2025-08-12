@@ -35,8 +35,7 @@ class UpgradeToJava17Test implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava17")
-          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.annotation-api-1.3.2"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava17");
     }
 
     @DocumentExample
@@ -507,6 +506,7 @@ class UpgradeToJava17Test implements RewriteTest {
     @Test
     void javaxAnnotationApiToJakarta() {
         rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.annotation-api-1.3.2")),
           version(
             mavenProject("project",
               //language=xml
