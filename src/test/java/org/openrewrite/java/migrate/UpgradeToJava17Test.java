@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
@@ -34,7 +35,7 @@ class UpgradeToJava17Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava17")
-          .parser(JavaParser.fromJavaVersion().classpath("javax.annotation-api-1.3.2"));
+          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.annotation-api-1.3.2"));
     }
 
     @DocumentExample
