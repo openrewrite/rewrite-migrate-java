@@ -55,6 +55,14 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                 Preconditions.not(new GroovyFileChecker<>())
         );
         return Preconditions.check(preconditions, new JavaIsoVisitor<ExecutionContext>() {
+            boolean supportsMultiCaseLabelsWithDefaultCase = false;
+
+            @Override
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
+                supportsMultiCaseLabelsWithDefaultCase = SwitchUtils.supportsMultiCaseLabelsWithDefaultCase(cu);
+                return super.visitCompilationUnit(cu, executionContext);
+            }
+
             @Override
             public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
                 J.Block b = super.visitBlock(block, ctx);
@@ -76,7 +84,12 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
             }
 
             private boolean canConvertToSwitchExpression(J.Switch switchStatement) {
-                for (Statement statement : switchStatement.getCases().getStatements()) {
+                List<Statement> statements = switchStatement.getCases().getStatements();
+                if (!supportsMultiCaseLabelsWithDefaultCase && SwitchUtils.hasMultiCaseLabelsWithDefault(statements)) {
+                    return false;
+                }
+
+                for (Statement statement : statements) {
                     if (!(statement instanceof J.Case)) {
                         return false;
                     }

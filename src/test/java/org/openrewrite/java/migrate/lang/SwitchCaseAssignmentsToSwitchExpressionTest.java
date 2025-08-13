@@ -622,4 +622,44 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void notConvertWhenDefaultAsSecondLabelColonCase() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class A {
+                  void doFormat(String str) {
+                      String formatted = "initialValue";
+                      switch (str) {
+                          case "foo": formatted = "Foo"; break;
+                          case "ignored", default: formatted = "unknown";
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void notConvertWhenDefaultAsSecondLabelArrowCase() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class B {
+                  void doFormat(String str) {
+                      String formatted = "initialValue";
+                      switch (str) {
+                          case "foo" -> formatted = "Foo";
+                          case "ignored", default -> formatted = "Other";
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
 }

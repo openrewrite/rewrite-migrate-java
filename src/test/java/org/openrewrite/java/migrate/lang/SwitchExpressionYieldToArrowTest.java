@@ -199,7 +199,7 @@ class SwitchExpressionYieldToArrowTest implements RewriteTest {
     }
 
     @Test
-    void supportMultiLabelWithNullSwitch() {
+    void supportMultiLabelWithNullSwitchIfPossible() {
         rewriteRun(
           version(
             //language=java

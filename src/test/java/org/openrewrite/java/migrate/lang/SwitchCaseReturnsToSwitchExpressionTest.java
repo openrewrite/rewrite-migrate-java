@@ -76,7 +76,7 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
                     switch (str) {
                         case "foo": return "Foo";
                         case "bar": return "Bar";
-                        case null, default: return "Other";
+                        default: return "Other";
                     }
                 }
             }
@@ -88,7 +88,7 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
                     return switch (str) {
                         case "foo" -> "Foo";
                         case "bar" -> "Bar";
-                        case null, default -> "Other";
+                        default -> "Other";
                     };
                 }
             }
@@ -302,7 +302,26 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
     }
 
     @Test
-    void supportMultiLabelWithNullSwitch() {
+    void doNotConvertMultiLabelWithNWithDefaultCaseWhenItsUnsupported() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class A {
+                  String doFormat(String str) {
+                      switch (str) {
+                          case "foo": return "Foo";
+                          case "ignored", default: return "Other";
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void supportMultiLabelWithNullSwitchIfPossible() {
         rewriteRun(
           version(
             //language=java

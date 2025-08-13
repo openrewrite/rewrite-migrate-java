@@ -15,15 +15,45 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.tree.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toSet;
 
 class SwitchUtils {
+    /**
+     * Checks if it's valid to use a switch expression construct like:
+     *
+     * <pre>
+     * <code>return switch (str) {
+     *   case "foo" -> "Foo";
+     *   case "ignore", default -> "Other";
+     * };</code>
+     * </pre>
+     * @param cu The compilation unit
+     * @return true if the used Java version supports this construct, false otherwise
+     */
+    public static boolean supportsMultiCaseLabelsWithDefaultCase(J.CompilationUnit cu) {
+        Optional<JavaVersion> version = cu.getMarkers().findFirst(JavaVersion.class);
+        return version.isPresent() && version.get().getMajorReleaseVersion() >= 21;
+    }
+
+    public static boolean hasMultiCaseLabelsWithDefault(List<Statement> cases) {
+        if (!cases.isEmpty() && cases.get(cases.size() - 1) instanceof J.Case) {
+            J.Case lastCase = (J.Case) cases.get(cases.size() - 1);
+            if (lastCase.getCaseLabels().size() > 1) {
+                J lastCaseLabel = lastCase.getCaseLabels().get(lastCase.getCaseLabels().size() - 1);
+                return lastCaseLabel instanceof J.Identifier && "default".equals(((J.Identifier) lastCaseLabel).getSimpleName());
+            }
+        }
+        return false;
+    }
+
     /**
      * Checks if a switch statement covers all possible values of its selector.
      * This is typically used to determine if a switch statement is "exhaustive" as per the Java language specification.
