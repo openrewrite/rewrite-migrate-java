@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
@@ -569,6 +570,80 @@ class UpgradeToJava17Test implements RewriteTest {
               )
             ),
             8)
+        );
+    }
+
+    @Test
+    void upgradeSpotbugsPluginVersion() {
+        rewriteRun(
+          pomXml(
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <dependencies>
+                  <dependency>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>3.1.0</version>
+                  </dependency>
+                </dependencies>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>com.github.spotbugs</groupId>
+                      <artifactId>spotbugs-maven-plugin</artifactId>
+                      <version>3.1.0</version>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """,
+            spec -> spec.after(actual ->
+              assertThat(actual)
+                .containsPattern("<version>4.9.\\d+(.\\d+)?</version>")
+                .doesNotContain("<version>3.1.0</version>")
+                .actual()
+            )
+          )
+        );
+    }
+
+    @Disabled("Disabled until I can finish this test up")
+    @Test
+    void upgradeMapstructAndAnnotationPaths() {
+        rewriteRun(
+          pomXml(
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <dependencies>
+                  <dependency>
+                    <groupId>org.mapstruct</groupId>
+                    <artifactId>mapstruct</artifactId>
+                    <version>1.4.0.Final</version>
+                  </dependency>
+                </dependencies>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <version>3.8.1</version>
+                      <
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """
+          )
         );
     }
 }
