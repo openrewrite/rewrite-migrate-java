@@ -21,14 +21,15 @@ import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.*;
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class SwitchExpressionYieldToArrowTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new SwitchExpressionYieldToArrow())
-          .allSources(s -> s.markers(javaVersion(17)));
+          .allSources(s -> s.markers(javaVersion(21)));
     }
 
     @DocumentExample
@@ -201,7 +202,6 @@ class SwitchExpressionYieldToArrowTest implements RewriteTest {
     @Test
     void supportMultiLabelWithNullSwitch() {
         rewriteRun(
-          version(
             //language=java
             java(
               """
@@ -226,8 +226,7 @@ class SwitchExpressionYieldToArrowTest implements RewriteTest {
                   }
               }
               """
-            ),
-            21)
+            )
         );
     }
 }
