@@ -58,8 +58,8 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
             boolean supportsMultiCaseLabelsWithDefaultCase = false;
 
             @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext executionContext) {
-                supportsMultiCaseLabelsWithDefaultCase = SwitchUtils.supportsMultiCaseLabelsWithDefaultCase(cu);
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                return super.visitCompilationUnit(cu, ctx);
                 return super.visitCompilationUnit(cu, executionContext);
             }
 
