@@ -21,8 +21,7 @@ import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.javaVersion;
+import static org.openrewrite.java.Assertions.*;
 
 class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
 
@@ -43,9 +42,9 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
                 class Test {
                     String doFormat(String str) {
                         switch (str) {
-                            case "foo": return "Foo";
-                            case "bar": return "Bar";
-                            case null, default: return "Other";
+                            case "foo", "bar": return "FooBar";
+                            case "baz": return "Baz";
+                            default: return "Other";
                         }
                     }
                 }
@@ -54,9 +53,9 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
                 class Test {
                     String doFormat(String str) {
                         return switch (str) {
-                            case "foo" -> "Foo";
-                            case "bar" -> "Bar";
-                            case null, default -> "Other";
+                            case "foo", "bar" -> "FooBar";
+                            case "baz" -> "Baz";
+                            default -> "Other";
                         };
                     }
                 }
@@ -299,6 +298,37 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
                 }
                 """
             )
+        );
+    }
+
+    @Test
+    void supportMultiLabelWithNullSwitch() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                class Test {
+                    String doFormat(String str) {
+                        switch (str) {
+                            case "foo", "bar": return "FooBar";
+                            case null, default: return "Other";
+                        }
+                    }
+                }
+                """,
+              """
+                class Test {
+                    String doFormat(String str) {
+                        return switch (str) {
+                            case "foo", "bar" -> "FooBar";
+                            case null, default -> "Other";
+                        };
+                    }
+                }
+                """
+            ),
+            21)
         );
     }
 }
