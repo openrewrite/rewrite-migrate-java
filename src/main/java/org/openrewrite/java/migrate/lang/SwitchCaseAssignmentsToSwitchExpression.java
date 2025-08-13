@@ -63,8 +63,8 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
 
             @Override
             public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                supportsMultiCaseLabelsWithDefaultCase = SwitchUtils.supportsMultiCaseLabelsWithDefaultCase(cu);
                 return super.visitCompilationUnit(cu, ctx);
-                return super.visitCompilationUnit(cu, executionContext);
             }
 
             @Override
