@@ -44,7 +44,7 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Switch statements where each case returns a value can be converted to a switch expression that returns the value directly." +
+        return "Switch statements where each case returns a value can be converted to a switch expression that returns the value directly. " +
                "This recipe is only applicable for Java 21 and later.";
     }
 
