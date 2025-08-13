@@ -36,6 +36,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxDecoratorToJakartaDecorator
   - org.openrewrite.java.migrate.jakarta.JavaxEjbToJakartaEjb
   - org.openrewrite.java.migrate.jakarta.JavaxElToJakartaEl
+  - org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
   - org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
   - org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakartaFaces3x
   - org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
@@ -311,6 +312,42 @@ recipeList:
       oldPackageName: javax.el
       newPackageName: jakarta.el
       recursive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name:  org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
+displayName: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
+description: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: commons-fileupload
+      oldArtifactId: commons-fileupload
+      newGroupId: org.apache.commons
+      newArtifactId: commons-fileupload2-jakarta
+      newVersion: 2.0.0-M1
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.commons
+      artifactId: commons-fileupload2-jakarta
+      newVersion: 2.0.0-M1
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.commons
+      artifactId: commons-fileupload2-core
+      newVersion: 2.0.0-M1
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.fileload.servlet.ServletFileUpload
+      newFullyQualifiedTypeName: org.apache.commons.fileload.jakarta.JakartaServletFileUpload
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileload.disk
+      newPackageName: org.apache.commons.fileload.core
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileload.servlet
+      newPackageName: org.apache.commons.fileload.jakarta
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileload
+      newPackageName: org.apache.commons.fileload.core
+      recursive: true
+  
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
