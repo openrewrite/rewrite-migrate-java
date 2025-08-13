@@ -44,13 +44,14 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Switch statements where each case returns a value can be converted to a switch expression that returns the value directly.";
+        return "Switch statements where each case returns a value can be converted to a switch expression that returns the value directly." +
+               "This recipe is only applicable for Java 21 and later.";
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
-                new UsesJavaVersion<>(14),
+                new UsesJavaVersion<>(21),
                 Preconditions.not(new KotlinFileChecker<>()),
                 Preconditions.not(new GroovyFileChecker<>())
         );
@@ -63,12 +64,7 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
                         J.Switch sw = (J.Switch) statement;
                         if (canConvertToSwitchExpression(sw)) {
                             J.SwitchExpression switchExpression = convertToSwitchExpression(sw);
-                            return new J.Return(
-                                    randomId(),
-                                    sw.getPrefix(),
-                                    Markers.EMPTY,
-                                    switchExpression
-                            );
+                            return new J.Return(randomId(), sw.getPrefix(), Markers.EMPTY, switchExpression);
                         }
                     }
                     return statement;
