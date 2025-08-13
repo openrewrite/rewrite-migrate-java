@@ -32,6 +32,7 @@ class EnhancedSwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest
           .allSources(source -> version(source, 21));
     }
 
+    @DocumentExample
     @Test
     void convertSimpleArrowCasesAssignment() {
         rewriteRun(
