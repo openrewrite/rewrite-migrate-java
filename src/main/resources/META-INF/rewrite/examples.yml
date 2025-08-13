@@ -1091,16 +1091,12 @@ examples:
 - description: ''
   sources:
   - before: |
-      package com.abc;
-
       class A {
          public String test() {
              return String.format("Hello %s", "world");
          }
       }
     after: |
-      package com.abc;
-
       class A {
          public String test() {
              return "Hello %s".formatted("world");
@@ -1112,13 +1108,11 @@ examples:
   - before: |
       <project>
         <modelVersion>4.0.0</modelVersion>
-
         <properties>
           <java.version>1.8</java.version>
           <maven.compiler.source>1.8</maven.compiler.source>
           <maven.compiler.target>1.8</maven.compiler.target>
         </properties>
-
         <groupId>com.mycompany.app</groupId>
         <artifactId>my-app</artifactId>
         <version>1</version>
@@ -1126,13 +1120,11 @@ examples:
     after: |
       <project>
         <modelVersion>4.0.0</modelVersion>
-
         <properties>
           <java.version>17</java.version>
           <maven.compiler.source>17</maven.compiler.source>
           <maven.compiler.target>17</maven.compiler.target>
         </properties>
-
         <groupId>com.mycompany.app</groupId>
         <artifactId>my-app</artifactId>
         <version>1</version>
