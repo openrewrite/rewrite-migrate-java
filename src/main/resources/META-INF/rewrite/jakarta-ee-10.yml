@@ -138,13 +138,12 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name:  org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
-displayName: Update Apache Commons FileUpload to 2.0.0-M4 for Jakarta
-description: Update Apache Commons FileUpload to 2.0.0-M4 for Jakarta.
+displayName: Update Apache Commons FileUpload2 package for EE10
+description: Update Apache Commons FileUpload2 package for EE10.
 recipeList:
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: org.apache.commons
-      artifactId: '*'
-      newVersion: 2.0.0-M4
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileupload2.jakarta.servlet5
+      newPackageName: org.apache.commons.fileupload2.jakarta.servlet6
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265

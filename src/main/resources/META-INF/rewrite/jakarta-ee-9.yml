@@ -329,31 +329,27 @@ recipeList:
       oldArtifactId: commons-fileupload
       newGroupId: org.apache.commons
       newArtifactId: commons-fileupload2-jakarta
-      newVersion: 2.0.0-M1
+      newVersion: 2.0.0-M4
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.commons
       artifactId: commons-fileupload2-jakarta
-      newVersion: 2.0.0-M1
+      newVersion: 2.0.0-M4
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.commons
       artifactId: commons-fileupload2-core
-      newVersion: 2.0.0-M1
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: org.apache.commons.fileload.servlet.ServletFileUpload
-      newFullyQualifiedTypeName: org.apache.commons.fileload.jakarta.JakartaServletFileUpload
+      newVersion: 2.0.0-M4
   - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.commons.fileload.disk
-      newPackageName: org.apache.commons.fileload.core
+      newPackageName: org.apache.commons.fileload2.core
       recursive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.commons.fileload.servlet
-      newPackageName: org.apache.commons.fileload.jakarta
+      newPackageName: org.apache.commons.fileupload2.jakarta.servlet5
       recursive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.commons.fileload
-      newPackageName: org.apache.commons.fileload.core
+      newPackageName: org.apache.commons.fileload2.core
       recursive: true
-  
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
