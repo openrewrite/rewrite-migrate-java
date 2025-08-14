@@ -141,6 +141,10 @@ name:  org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
 displayName: Update Apache Commons FileUpload2 package for EE10
 description: Update Apache Commons FileUpload2 package for EE10.
 recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.apache.commons
+      oldArtifactId: commons-fileupload2-jakarta-servlet5
+      newArtifactId: commons-fileupload2-jakarta-servlet6
   - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.commons.fileupload2.jakarta.servlet5
       newPackageName: org.apache.commons.fileupload2.jakarta.servlet6

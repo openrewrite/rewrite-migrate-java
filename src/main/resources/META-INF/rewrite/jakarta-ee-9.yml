@@ -328,15 +328,15 @@ recipeList:
       oldGroupId: commons-fileupload
       oldArtifactId: commons-fileupload
       newGroupId: org.apache.commons
-      newArtifactId: commons-fileupload2-jakarta
+      newArtifactId: commons-fileupload2-jakarta-servlet5
       newVersion: 2.0.0-M4
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.apache.commons
+      oldArtifactId: commons-fileupload2-jakarta
+      newArtifactId: commons-fileupload2-jakarta-servlet5
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.commons
-      artifactId: commons-fileupload2-jakarta
-      newVersion: 2.0.0-M4
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: org.apache.commons
-      artifactId: commons-fileupload2-core
+      artifactId: '*'
       newVersion: 2.0.0-M4
   - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.commons.fileload.disk
