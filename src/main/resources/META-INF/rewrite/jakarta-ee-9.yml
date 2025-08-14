@@ -1100,6 +1100,42 @@ displayName: Update Jetty9 to Jetty12 jakartaEE9
 description: Update Jetty9 to Jetty12 jakartaEE9
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.websocket
+      oldArtifactId: websocket-api
+      newGroupId: org.eclipse.jetty.websocket
+      newArtifactId: jetty-websocket-jetty-api
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.websocket
+      oldArtifactId: websocket-server
+      newGroupId: org.eclipse.jetty.ee9.websocket
+      newArtifactId: jetty-ee9-websocket-jetty-server
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.websocket
+      oldArtifactId: websocket-client
+      newGroupId: org.eclipse.jetty.ee9.websocket
+      newArtifactId: jetty-ee9-websocket-jetty-client
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.websocket
+      oldArtifactId: javax-websocket-server-impl
+      newGroupId: org.eclipse.jetty.websocket
+      newArtifactId: websocket-javax-server
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.websocket
+      oldArtifactId: javax-websocket-client-impl
+      newGroupId: org.eclipse.jetty.websocket
+      newArtifactId: websocket-javax-client
+      newVersion: 12.0.x
+ - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: apache-jsp
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-apache-jsp
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.eclipse.jetty
       oldArtifactId: jetty-servlets
       newGroupId: org.eclipse.jetty.ee9
