@@ -42,12 +42,13 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml
   - org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml
   - org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
-  - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
+  - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatforM40
   - org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
+  - org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2JakartaServelet6
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
@@ -134,6 +135,41 @@ recipeList:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       newVersion: 3.1.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name:  org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2JakartaServelet6
+displayName: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
+description: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: commons-fileupload
+      oldArtifactId: commons-fileupload
+      newGroupId: org.apache.commons
+      newArtifactId: commons-fileupload2-jakarta-servlet6
+      newVersion: 2.0.0-M4
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.commons
+      artifactId: commons-fileupload2-jakarta-servlet6
+      newVersion: 2.0.0-M4
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.commons
+      artifactId: commons-fileupload2-core
+      newVersion: 2.0.0-M4
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.fileload.servlet.ServletFileUpload
+      newFullyQualifiedTypeName: org.apache.commons.fileload.jakarta.JakartaServletFileUpload
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileload.disk
+      newPackageName: org.apache.commons.fileload.core
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileload.servlet
+      newPackageName: org.apache.commons.fileload.jakarta
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileload
+      newPackageName: org.apache.commons.fileload.core
+      recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -379,7 +415,7 @@ recipeList:
       fileName: jakarta.enterprise.inject.spi.Extension
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
+name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatforM40
 displayName: Update Jakarta EE Platform Dependencies to 10.0.0
 description: Update Jakarta EE Platform Dependencies to 10.0.0.
 recipeList:
