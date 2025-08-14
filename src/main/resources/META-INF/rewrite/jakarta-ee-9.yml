@@ -65,6 +65,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
   - org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
   - org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependencyWhenManagedBySpringBoot
+  - org.openrewrite.java.migrate.jakarta.JettyUpgradeEE9
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -1092,3 +1093,45 @@ recipeList:
   - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE9
+displayName: Update Jetty9 to Jetty12 jakartaEE9
+description: Update Jetty9 to Jetty12 jakartaEE9
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: jetty-servlets
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-servlets
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: jetty-servlet
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-servlet
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: jetty-webapp
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-webapp
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: jetty-security
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-security
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: jetty-proxy
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-proxy
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: jetty-annotations
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-annotations
+      newVersion: 12.0.x
