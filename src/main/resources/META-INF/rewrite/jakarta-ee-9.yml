@@ -327,15 +327,15 @@ recipeList:
       oldArtifactId: commons-fileupload
       newGroupId: org.apache.commons
       newArtifactId: commons-fileupload2-jakarta
-      newVersion: 2.0.0-M4
+      newVersion: 2.0.0-M1
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.commons
       artifactId: commons-fileupload2-jakarta
-      newVersion: 2.0.0-M4
+      newVersion: 2.0.0-M1
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.commons
       artifactId: commons-fileupload2-core
-      newVersion: 2.0.0-M4
+      newVersion: 2.0.0-M1
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.apache.commons.fileload.servlet.ServletFileUpload
       newFullyQualifiedTypeName: org.apache.commons.fileload.jakarta.JakartaServletFileUpload
