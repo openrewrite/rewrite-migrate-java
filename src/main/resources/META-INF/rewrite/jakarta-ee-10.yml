@@ -48,7 +48,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
-  - org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2JakartaServelet6
+  - org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2JakartaServlet6
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
@@ -137,7 +137,7 @@ recipeList:
       newVersion: 3.1.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name:  org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2JakartaServelet6
+name:  org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2JakartaServlet6
 displayName: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
 description: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
 recipeList:
