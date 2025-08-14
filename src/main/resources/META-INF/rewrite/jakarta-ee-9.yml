@@ -1096,13 +1096,12 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE9
-displayName: Update Jetty9 to Jetty12 jakartaEE9
-description: Update Jetty9 to Jetty12 jakartaEE9
+displayName: Update Jetty9 to Jetty12
+description: Update Jetty dependencies from version 9 to version 12.
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.eclipse.jetty.websocket
       oldArtifactId: websocket-api
-      newGroupId: org.eclipse.jetty.websocket
       newArtifactId: jetty-websocket-jetty-api
       newVersion: 12.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
@@ -1120,16 +1119,14 @@ recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.eclipse.jetty.websocket
       oldArtifactId: javax-websocket-server-impl
-      newGroupId: org.eclipse.jetty.websocket
       newArtifactId: websocket-javax-server
       newVersion: 12.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.eclipse.jetty.websocket
       oldArtifactId: javax-websocket-client-impl
-      newGroupId: org.eclipse.jetty.websocket
       newArtifactId: websocket-javax-client
       newVersion: 12.0.x
- - org.openrewrite.java.dependencies.ChangeDependency:
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.eclipse.jetty
       oldArtifactId: apache-jsp
       newGroupId: org.eclipse.jetty.ee9
