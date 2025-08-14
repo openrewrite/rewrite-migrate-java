@@ -29,7 +29,7 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new SwitchCaseAssignmentsToSwitchExpression())
-          .allSources(source -> version(source, 17));
+          .allSources(source -> version(source, 21));
     }
 
     @DocumentExample

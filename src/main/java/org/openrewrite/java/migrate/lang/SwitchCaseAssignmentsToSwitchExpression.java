@@ -48,13 +48,13 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
     @Override
     public String getDescription() {
         return "Switch statements for which each case is assigning a value to the same variable can be converted to a switch expression that returns the value of the variable. " +
-                "This is only applicable for Java 17 and later.";
+                "This recipe is only applicable for Java 21 and later.";
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
-                new UsesJavaVersion<>(17),
+                new UsesJavaVersion<>(21),
                 Preconditions.not(new KotlinFileChecker<>()),
                 Preconditions.not(new GroovyFileChecker<>())
         );
