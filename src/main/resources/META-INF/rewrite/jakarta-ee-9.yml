@@ -84,6 +84,10 @@ recipeList:
       newArtifactId: jakarta.activation-api
       newVersion: 2.0.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.sun.activation
+      artifactId: jakarta.activation
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.activation
       artifactId: jakarta.activation-api
       newVersion: 2.0.x
