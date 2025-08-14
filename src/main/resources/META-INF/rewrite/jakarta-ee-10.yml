@@ -47,8 +47,8 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
+  - org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
   - org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
-  - org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2JakartaServlet6
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
@@ -137,39 +137,14 @@ recipeList:
       newVersion: 3.1.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name:  org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2JakartaServlet6
-displayName: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
-description: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
+name:  org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
+displayName: Update Apache Commons FileUpload to 2.0.0-M4 for Jakarta
+description: Update Apache Commons FileUpload to 2.0.0-M4 for Jakarta.
 recipeList:
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: commons-fileupload
-      oldArtifactId: commons-fileupload
-      newGroupId: org.apache.commons
-      newArtifactId: commons-fileupload2-jakarta-servlet6
-      newVersion: 2.0.0-M4
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.commons
-      artifactId: commons-fileupload2-jakarta-servlet6
+      artifactId: '*'
       newVersion: 2.0.0-M4
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: org.apache.commons
-      artifactId: commons-fileupload2-core
-      newVersion: 2.0.0-M4
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: org.apache.commons.fileload.servlet.ServletFileUpload
-      newFullyQualifiedTypeName: org.apache.commons.fileload.jakarta.JakartaServletFileUpload
-  - org.openrewrite.java.ChangePackage:
-      oldPackageName: org.apache.commons.fileload.disk
-      newPackageName: org.apache.commons.fileload.core
-      recursive: true
-  - org.openrewrite.java.ChangePackage:
-      oldPackageName: org.apache.commons.fileload.servlet
-      newPackageName: org.apache.commons.fileload.jakarta
-      recursive: true
-  - org.openrewrite.java.ChangePackage:
-      oldPackageName: org.apache.commons.fileload
-      newPackageName: org.apache.commons.fileload.core
-      recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
