@@ -31,6 +31,7 @@ import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.openrewrite.Tree.randomId;
 
@@ -59,10 +60,15 @@ public class SwitchCaseReturnsToSwitchExpression extends Recipe {
             @Override
             public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
                 J.Block b = super.visitBlock(block, ctx);
+                AtomicReference<Boolean> newReturn = new AtomicReference<>(false);
                 return b.withStatements(ListUtils.map(b.getStatements(), statement -> {
+                    if (newReturn.get()) {
+                        return null; // Drop statements after the first converted switch expression
+                    }
                     if (statement instanceof J.Switch) {
                         J.Switch sw = (J.Switch) statement;
                         if (canConvertToSwitchExpression(sw)) {
+                            newReturn.set(true);
                             J.SwitchExpression switchExpression = convertToSwitchExpression(sw);
                             return new J.Return(randomId(), sw.getPrefix(), Markers.EMPTY, switchExpression);
                         }

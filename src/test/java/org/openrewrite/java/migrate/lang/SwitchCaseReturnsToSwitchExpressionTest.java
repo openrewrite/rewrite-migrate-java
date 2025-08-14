@@ -330,4 +330,41 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
             )
         );
     }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/828")
+    @Test
+    void removeUnreachableReturnAfterExhaustiveEnumSwitchWithMultipleValues() {
+        rewriteRun(
+            //language=java
+            java(
+                """
+                class Test {
+                    enum Color { RED, GREEN, BLUE }
+
+                    public String getName(Color color) {
+                        switch (color) {
+                            case RED: return "Red";
+                            case GREEN: return "Green";
+                            case BLUE: return "Blue";
+                        }
+                        return "Unknown";
+                    }
+                }
+                """,
+                """
+                class Test {
+                    enum Color { RED, GREEN, BLUE }
+
+                    public String getName(Color color) {
+                        return switch (color) {
+                            case RED -> "Red";
+                            case GREEN -> "Green";
+                            case BLUE -> "Blue";
+                        };
+                    }
+                }
+                """
+            )
+        );
+    }
 }
