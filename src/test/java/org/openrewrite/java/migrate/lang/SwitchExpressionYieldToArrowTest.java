@@ -29,7 +29,7 @@ class SwitchExpressionYieldToArrowTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new SwitchExpressionYieldToArrow())
-          .allSources(s -> s.markers(javaVersion(17)));
+          .allSources(s -> s.markers(javaVersion(21)));
     }
 
     @DocumentExample
@@ -43,9 +43,9 @@ class SwitchExpressionYieldToArrowTest implements RewriteTest {
                 class Test {
                     String format(String str) {
                         String formatted = switch (str) {
-                            case "foo": yield "Foo";
-                            case "bar": yield "Bar";
-                            case null, default: yield "unknown";
+                            case "foo", "bar": yield "FooBar";
+                            case "baz": yield "Baz";
+                            default: yield "unknown";
                         };
                         return formatted;
                     }
@@ -55,9 +55,9 @@ class SwitchExpressionYieldToArrowTest implements RewriteTest {
                 class Test {
                     String format(String str) {
                         String formatted = switch (str) {
-                            case "foo" -> "Foo";
-                            case "bar" -> "Bar";
-                            case null, default -> "unknown";
+                            case "foo", "bar" -> "FooBar";
+                            case "baz" -> "Baz";
+                            default -> "unknown";
                         };
                         return formatted;
                     }
@@ -178,6 +178,7 @@ class SwitchExpressionYieldToArrowTest implements RewriteTest {
     @Test
     void doNotConvertEmptyCases() {
         rewriteRun(
+          //language=java
           java(
             """
               class Test {
@@ -195,6 +196,37 @@ class SwitchExpressionYieldToArrowTest implements RewriteTest {
               }
               """
           )
+        );
+    }
+
+    @Test
+    void supportMultiLabelWithNullSwitch() {
+        rewriteRun(
+            //language=java
+            java(
+              """
+              class Test {
+                  String format(String str) {
+                      String formatted = switch (str) {
+                          case "foo", "bar": yield "FooBar";
+                          case null, default: yield "unknown";
+                      };
+                      return formatted;
+                  }
+              }
+              """,
+              """
+              class Test {
+                  String format(String str) {
+                      String formatted = switch (str) {
+                          case "foo", "bar" -> "FooBar";
+                          case null, default -> "unknown";
+                      };
+                      return formatted;
+                  }
+              }
+              """
+            )
         );
     }
 }

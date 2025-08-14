@@ -58,6 +58,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
   - org.openrewrite.java.migrate.jakarta.JavaxXmlWsMigrationToJakartaXmlWs
   - org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
+  - org.openrewrite.java.migrate.jakarta.JettyUpgradeEE9
   - org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.RestAssuredJavaxToJakarta
@@ -65,7 +66,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
   - org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
   - org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependencyWhenManagedBySpringBoot
-  - org.openrewrite.java.migrate.jakarta.JettyUpgradeEE9
+  - org.openrewrite.java.migrate.jakarta.UpdateRestLet2_6
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -82,6 +83,10 @@ recipeList:
       oldArtifactId: javax.activation-api
       newGroupId: jakarta.activation
       newArtifactId: jakarta.activation-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.sun.activation
+      artifactId: jakarta.activation
       newVersion: 2.0.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.activation
@@ -1168,3 +1173,21 @@ recipeList:
       newGroupId: org.eclipse.jetty.ee9
       newArtifactId: jetty-ee9-annotations
       newVersion: 12.0.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateRestLet2_6
+displayName: Update RestLet to 2.6.0
+description: Update RestLet to 2.6.0
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.restlet
+      artifactId: '*'
+      newVersion: 2.6.x
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: org.restlet.jee
+      artifactId: org.restlet.ext.httpclient
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.restlet.jee
+      newGroupId: org.restlet
+      oldArtifactId: '*'
+      newVersion: 2.6.x

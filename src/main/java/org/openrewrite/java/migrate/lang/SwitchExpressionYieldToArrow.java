@@ -43,13 +43,14 @@ public class SwitchExpressionYieldToArrow extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Convert switch expressions with colon cases and yield statements to arrow syntax.";
+        return "Convert switch expressions with colon cases and yield statements to arrow syntax. " +
+               "This recipe is only applicable for Java 21 and later.";
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
-                new UsesJavaVersion<>(14),
+                new UsesJavaVersion<>(21),
                 Preconditions.not(new KotlinFileChecker<>()),
                 Preconditions.not(new GroovyFileChecker<>())
         );
