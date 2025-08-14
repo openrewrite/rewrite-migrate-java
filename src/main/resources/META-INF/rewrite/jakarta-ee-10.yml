@@ -42,7 +42,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml
   - org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml
   - org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
-  - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatforM40
+  - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform40
   - org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
@@ -415,7 +415,7 @@ recipeList:
       fileName: jakarta.enterprise.inject.spi.Extension
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatforM40
+name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform40
 displayName: Update Jakarta EE Platform Dependencies to 10.0.0
 description: Update Jakarta EE Platform Dependencies to 10.0.0.
 recipeList:
