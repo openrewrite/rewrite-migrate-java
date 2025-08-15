@@ -6314,9 +6314,9 @@ examples:
       class Test {
           String doFormat(String str) {
               switch (str) {
-                  case "foo": return "Foo";
-                  case "bar": return "Bar";
-                  case null, default: return "Other";
+                  case "foo", "bar": return "FooBar";
+                  case "baz": return "Baz";
+                  default: return "Other";
               }
           }
       }
@@ -6324,9 +6324,9 @@ examples:
       class Test {
           String doFormat(String str) {
               return switch (str) {
-                  case "foo" -> "Foo";
-                  case "bar" -> "Bar";
-                  case null, default -> "Other";
+                  case "foo", "bar" -> "FooBar";
+                  case "baz" -> "Baz";
+                  default -> "Other";
               };
           }
       }
@@ -6341,9 +6341,9 @@ examples:
       class Test {
           String format(String str) {
               String formatted = switch (str) {
-                  case "foo": yield "Foo";
-                  case "bar": yield "Bar";
-                  case null, default: yield "unknown";
+                  case "foo", "bar": yield "FooBar";
+                  case "baz": yield "Baz";
+                  default: yield "unknown";
               };
               return formatted;
           }
@@ -6352,9 +6352,9 @@ examples:
       class Test {
           String format(String str) {
               String formatted = switch (str) {
-                  case "foo" -> "Foo";
-                  case "bar" -> "Bar";
-                  case null, default -> "unknown";
+                  case "foo", "bar" -> "FooBar";
+                  case "baz" -> "Baz";
+                  default -> "unknown";
               };
               return formatted;
           }
