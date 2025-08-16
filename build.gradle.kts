@@ -58,7 +58,8 @@ dependencies {
 
     testImplementation("org.assertj:assertj-core:latest.release")
 
-    testImplementation("com.google.guava:guava:33.0.0-jre")
+    testImplementation("com.google.errorprone:error_prone_annotations:latest.release")
+    testImplementation("com.google.guava:guava:33.4.8-jre")
     testImplementation("joda-time:joda-time:2.12.3")
     testImplementation("org.threeten:threeten-extra:1.8.0")
 
