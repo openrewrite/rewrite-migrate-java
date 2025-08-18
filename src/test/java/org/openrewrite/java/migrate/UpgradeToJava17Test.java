@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
@@ -585,6 +584,7 @@ class UpgradeToJava17Test implements RewriteTest {
                 <artifactId>my-app</artifactId>
                 <version>1</version>
                 <dependencies>
+                  <!-- Uncommon, but supported -->
                   <dependency>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
@@ -593,6 +593,7 @@ class UpgradeToJava17Test implements RewriteTest {
                 </dependencies>
                 <build>
                   <plugins>
+                    <!-- Expected and supported -->
                     <plugin>
                       <groupId>com.github.spotbugs</groupId>
                       <artifactId>spotbugs-maven-plugin</artifactId>
@@ -612,7 +613,6 @@ class UpgradeToJava17Test implements RewriteTest {
         );
     }
 
-    @Disabled("Disabled until I can finish this test up")
     @Test
     void upgradeMapstructAndAnnotationPaths() {
         rewriteRun(
@@ -637,12 +637,24 @@ class UpgradeToJava17Test implements RewriteTest {
                       <groupId>org.apache.maven.plugins</groupId>
                       <artifactId>maven-compiler-plugin</artifactId>
                       <version>3.8.1</version>
-                      <
+                      <configuration>
+                        <annotationProcessorPaths>
+                          <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>1.4.1.Final</version>
+                          </path>
+                        </annotationProcessorPaths>
+                      </configuration>
                     </plugin>
                   </plugins>
                 </build>
               </project>
-              """
+              """,
+            spec -> spec.after(actual ->
+              assertThat(actual)
+                .doesNotContain("1.4.0.Final", "1.4.1.Final")
+                .actual())
           )
         );
     }

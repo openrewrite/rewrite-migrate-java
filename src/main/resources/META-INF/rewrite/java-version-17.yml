@@ -351,11 +351,10 @@ recipeList:
       groupId: org.mapstruct
       artifactId: mapstruct
       newVersion: 1.6.x
-  - org.openrewrite.maven.AddAnnotationProcessor:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.mapstruct
-      artifactId: mapstruct
-      version: 1.6.x
-  # TODO: deal with annotationProcessor for Gradle
+      artifactId: mapstruct-processor
+      newVersion: 1.6.x
 ---
 # The scanning phase comes before the editing phase, therefor we check if a javax.annotation dependency is on the classpath (with whatever version)
 type: specs.openrewrite.org/v1beta/recipe
