@@ -1091,16 +1091,12 @@ examples:
 - description: ''
   sources:
   - before: |
-      package com.abc;
-
       class A {
          public String test() {
              return String.format("Hello %s", "world");
          }
       }
     after: |
-      package com.abc;
-
       class A {
          public String test() {
              return "Hello %s".formatted("world");
@@ -1112,13 +1108,11 @@ examples:
   - before: |
       <project>
         <modelVersion>4.0.0</modelVersion>
-
         <properties>
           <java.version>1.8</java.version>
           <maven.compiler.source>1.8</maven.compiler.source>
           <maven.compiler.target>1.8</maven.compiler.target>
         </properties>
-
         <groupId>com.mycompany.app</groupId>
         <artifactId>my-app</artifactId>
         <version>1</version>
@@ -1126,13 +1120,11 @@ examples:
     after: |
       <project>
         <modelVersion>4.0.0</modelVersion>
-
         <properties>
           <java.version>17</java.version>
           <maven.compiler.source>17</maven.compiler.source>
           <maven.compiler.target>17</maven.compiler.target>
         </properties>
-
         <groupId>com.mycompany.app</groupId>
         <artifactId>my-app</artifactId>
         <version>1</version>
@@ -6322,9 +6314,9 @@ examples:
       class Test {
           String doFormat(String str) {
               switch (str) {
-                  case "foo": return "Foo";
-                  case "bar": return "Bar";
-                  case null, default: return "Other";
+                  case "foo", "bar": return "FooBar";
+                  case "baz": return "Baz";
+                  default: return "Other";
               }
           }
       }
@@ -6332,9 +6324,9 @@ examples:
       class Test {
           String doFormat(String str) {
               return switch (str) {
-                  case "foo" -> "Foo";
-                  case "bar" -> "Bar";
-                  case null, default -> "Other";
+                  case "foo", "bar" -> "FooBar";
+                  case "baz" -> "Baz";
+                  default -> "Other";
               };
           }
       }
@@ -6349,9 +6341,9 @@ examples:
       class Test {
           String format(String str) {
               String formatted = switch (str) {
-                  case "foo": yield "Foo";
-                  case "bar": yield "Bar";
-                  case null, default: yield "unknown";
+                  case "foo", "bar": yield "FooBar";
+                  case "baz": yield "Baz";
+                  default: yield "unknown";
               };
               return formatted;
           }
@@ -6360,9 +6352,9 @@ examples:
       class Test {
           String format(String str) {
               String formatted = switch (str) {
-                  case "foo" -> "Foo";
-                  case "bar" -> "Bar";
-                  case null, default -> "unknown";
+                  case "foo", "bar" -> "FooBar";
+                  case "baz" -> "Baz";
+                  default -> "unknown";
               };
               return formatted;
           }

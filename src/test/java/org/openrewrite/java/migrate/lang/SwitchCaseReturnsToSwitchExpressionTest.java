@@ -29,7 +29,7 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new SwitchCaseReturnsToSwitchExpression())
-          .allSources(s -> s.markers(javaVersion(17)));
+          .allSources(s -> s.markers(javaVersion(21)));
     }
 
     @DocumentExample
@@ -43,9 +43,9 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
                 class Test {
                     String doFormat(String str) {
                         switch (str) {
-                            case "foo": return "Foo";
-                            case "bar": return "Bar";
-                            case null, default: return "Other";
+                            case "foo", "bar": return "FooBar";
+                            case "baz": return "Baz";
+                            default: return "Other";
                         }
                     }
                 }
@@ -54,9 +54,9 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
                 class Test {
                     String doFormat(String str) {
                         return switch (str) {
-                            case "foo" -> "Foo";
-                            case "bar" -> "Bar";
-                            case null, default -> "Other";
+                            case "foo", "bar" -> "FooBar";
+                            case "baz" -> "Baz";
+                            default -> "Other";
                         };
                     }
                 }
@@ -295,6 +295,72 @@ class SwitchCaseReturnsToSwitchExpressionTest implements RewriteTest {
                             case "bar": return "Bar";
                             default: return "Other";
                         }
+                    }
+                }
+                """
+            )
+        );
+    }
+
+    @Test
+    void supportMultiLabelWithNullSwitch() {
+        rewriteRun(
+            //language=java
+            java(
+              """
+                class Test {
+                    String doFormat(String str) {
+                        switch (str) {
+                            case "foo", "bar": return "FooBar";
+                            case null, default: return "Other";
+                        }
+                    }
+                }
+                """,
+              """
+                class Test {
+                    String doFormat(String str) {
+                        return switch (str) {
+                            case "foo", "bar" -> "FooBar";
+                            case null, default -> "Other";
+                        };
+                    }
+                }
+                """
+            )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/828")
+    @Test
+    void removeUnreachableReturnAfterExhaustiveEnumSwitchWithMultipleValues() {
+        rewriteRun(
+            //language=java
+            java(
+                """
+                class Test {
+                    enum Color { RED, GREEN, BLUE }
+
+                    public String getName(Color color) {
+                        switch (color) {
+                            case RED: return "Red";
+                            case GREEN: return "Green";
+                            case BLUE: return "Blue";
+                        }
+                        return "Unknown";
+                    }
+                }
+                """,
+                """
+                class Test {
+                    enum Color { RED, GREEN, BLUE }
+
+                    public String getName(Color color) {
+                        return switch (color) {
+                            case RED -> "Red";
+                            case GREEN -> "Green";
+                            case BLUE -> "Blue";
+                        };
                     }
                 }
                 """

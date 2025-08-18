@@ -69,9 +69,6 @@ recipeList:
       newVersion: 4.9.x
   - org.openrewrite.java.migrate.AddLombokMapstructBinding
   - org.openrewrite.java.migrate.UpgradeMapstructVersion
-  - org.openrewrite.java.migrate.lang.SwitchCaseAssignmentsToSwitchExpression
-  - org.openrewrite.java.migrate.lang.SwitchCaseReturnsToSwitchExpression
-  - org.openrewrite.java.migrate.lang.SwitchExpressionYieldToArrow
   - org.openrewrite.java.migrate.UpdateJakartaAnnotationsIfForJavax
   - org.openrewrite.java.migrate.UpdateJakartaAnnotationsIfExistsForJakarta
 

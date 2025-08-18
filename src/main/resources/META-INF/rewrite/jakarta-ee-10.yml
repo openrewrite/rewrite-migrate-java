@@ -47,6 +47,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
+  - org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
   - org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -134,6 +135,19 @@ recipeList:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       newVersion: 3.1.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name:  org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
+displayName: Update Apache Commons FileUpload2 package for EE10
+description: Update Apache Commons FileUpload2 package for EE10.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.apache.commons
+      oldArtifactId: commons-fileupload2-jakarta-servlet5
+      newArtifactId: commons-fileupload2-jakarta-servlet6
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileupload2.jakarta.servlet5
+      newPackageName: org.apache.commons.fileupload2.jakarta.servlet6
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265

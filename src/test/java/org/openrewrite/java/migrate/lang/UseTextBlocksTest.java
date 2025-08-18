@@ -257,6 +257,21 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
+    void preferNoChangeIfCarriageReturnInContent() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  String text = "Deliberate\\r\\n" +
+                          "carriage return";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void preferChangeIfNoNewLineInContent() {
         rewriteRun(
           //language=java
@@ -537,7 +552,7 @@ class UseTextBlocksTest implements RewriteTest {
     @Test
     void textBlockDemo() {
         String s1 = """
-                    
+
                     =========================================================
                                                                             \s
                               Welcome to Spring Integration!                \s

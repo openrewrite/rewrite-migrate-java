@@ -106,6 +106,10 @@ public class UseTextBlocks extends Recipe {
                 }
 
                 String content = contentSb.toString();
+                if (content.contains("\r")) {
+                    // Carriage returns aren't yet carried over into text blocks, which always end with a newline \n
+                    return super.visitBinary(binary, ctx);
+                }
 
                 if (!convertStringsWithoutNewlines && !containsNewLineInContent(content)) {
                     return super.visitBinary(binary, ctx);

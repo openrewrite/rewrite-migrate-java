@@ -156,7 +156,7 @@ class BouncyCastleTest implements RewriteTest {
                   .singleElement()
                   .satisfies(rd -> {
                       assertThat(rd.getGroupId()).isEqualTo("org.bouncycastle");
-                      assertThat(rd.getArtifactId()).isEqualTo(String.format("%s-%s", baseArtifactId, expectedArtifactSuffix));
+                      assertThat(rd.getArtifactId()).isEqualTo("%s-%s".formatted(baseArtifactId, expectedArtifactSuffix));
                   }))
             )
           )
