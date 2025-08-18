@@ -28,15 +28,14 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 public class InlineMethodCalls extends Recipe {
 
@@ -67,18 +66,39 @@ public class InlineMethodCalls extends Recipe {
                 if (template == null) {
                     return mi;
                 }
-                for (String importStr : values.getImports()) {
-                    maybeAddImport(importStr);
-                }
                 // TODO Add static imports
+                removeAndAddImports(method, values.getImports());
                 J replacement = JavaTemplate.builder(template.getString())
                         .contextSensitive()
-                        .imports(values.getImports())
-                        .staticImports(values.getStaticImports())
+                        .imports(values.getImports().toArray(new String[0]))
+                        .staticImports(values.getStaticImports().toArray(new String[0]))
                         .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
                         .build()
                         .apply(updateCursor(mi), mi.getCoordinates().replace(), template.getParameters());
                 return avoidMethodSelfReferences(mi, replacement);
+            }
+
+            private void removeAndAddImports(MethodCall method, Set<String> templateImports) {
+                Set<String> originalImports = new JavaVisitor<Set<String>>() {
+                    @Override
+                    public @Nullable JavaType visitType(@Nullable JavaType javaType, Set<String> strings) {
+                        JavaType jt = super.visitType(javaType, strings);
+                        if (jt instanceof JavaType.FullyQualified) {
+                            strings.add(((JavaType.FullyQualified) jt).getFullyQualifiedName());
+                        }
+                        return jt;
+                    }
+                }.reduce(method, new HashSet<>());
+                for (String originalImport : originalImports) {
+                    if (!templateImports.contains(originalImport)) {
+                        maybeRemoveImport(originalImport);
+                    }
+                }
+                for (String importStr : templateImports) {
+                    if (!originalImports.contains(importStr)) {
+                        maybeAddImport(importStr);
+                    }
+                }
             }
 
             @Override
@@ -92,14 +112,12 @@ public class InlineMethodCalls extends Recipe {
                 if (template == null) {
                     return nc;
                 }
-                for (String importStr : values.getImports()) {
-                    maybeAddImport(importStr);
-                }
+                removeAndAddImports(newClass, values.getImports());
                 // TODO Add static imports
                 J replacement = JavaTemplate.builder(template.getString())
                         .contextSensitive()
-                        .imports(values.getImports())
-                        .staticImports(values.getStaticImports())
+                        .imports(values.getImports().toArray(new String[0]))
+                        .staticImports(values.getStaticImports().toArray(new String[0]))
                         .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
                         .build()
                         .apply(updateCursor(nc), nc.getCoordinates().replace(), template.getParameters());
@@ -159,30 +177,28 @@ public class InlineMethodCalls extends Recipe {
         @Getter(AccessLevel.NONE)
         String replacement;
 
-        String[] imports;
-        String[] staticImports;
+        Set<String> imports;
+        Set<String> staticImports;
 
         static InlineMeValues parse(JavaType.Annotation annotation) {
             Map<String, Object> collect = annotation.getValues().stream().collect(toMap(
                     e -> ((JavaType.Method) e.getElement()).getName(),
                     JavaType.Annotation.ElementValue::getValue
             ));
-            String replacement = (String) collect.get("replacement");
-
             // Parse imports and static imports from the annotation values
-            String[] imports = parseImports(collect.get("imports"));
-            String[] staticImports = parseImports(collect.get("staticImports"));
-
-            return new InlineMeValues(replacement, imports, staticImports);
+            return new InlineMeValues(
+                    (String) collect.get("replacement"),
+                    parseImports(collect.get("imports")),
+                    parseImports(collect.get("staticImports")));
         }
 
-        private static String[] parseImports(@Nullable Object importsValue) {
+        private static Set<String> parseImports(@Nullable Object importsValue) {
             if (importsValue instanceof List) {
                 return ((List<?>) importsValue).stream()
                         .map(Object::toString)
-                        .toArray(String[]::new);
+                        .collect(toSet());
             }
-            return new String[]{};
+            return emptySet();
         }
 
         @Nullable
