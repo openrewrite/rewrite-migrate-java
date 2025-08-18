@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toMap;
 
 public class InlineMethodCalls extends Recipe {
 
@@ -158,11 +158,10 @@ public class InlineMethodCalls extends Recipe {
         String[] staticImports;
 
         static InlineMeValues parse(JavaType.Annotation annotation) {
-            Map<String, Object> collect = annotation.getValues().stream()
-                    .collect(Collectors.toMap(
-                            e -> ((JavaType.Method) e.getElement()).getName(),
-                            JavaType.Annotation.ElementValue::getValue
-                    ));
+            Map<String, Object> collect = annotation.getValues().stream().collect(toMap(
+                    e -> ((JavaType.Method) e.getElement()).getName(),
+                    JavaType.Annotation.ElementValue::getValue
+            ));
             String replacement = (String) collect.get("replacement");
 
             // Parse imports and static imports from the annotation values
