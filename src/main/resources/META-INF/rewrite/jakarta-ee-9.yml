@@ -44,6 +44,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxJmsToJakartaJms
   - org.openrewrite.java.migrate.jakarta.JavaxJsonToJakartaJson
   - org.openrewrite.java.migrate.jakarta.JavaxJwsToJakartaJws
+  - org.openrewrite.java.migrate.jakarta.JavaxJspToJakartaJsp
   - org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail
   - org.openrewrite.java.migrate.jakarta.JavaxOrmXmlToJakartaOrmXml
   - org.openrewrite.java.migrate.jakarta.JavaxPersistenceToJakartaPersistence
@@ -491,6 +492,32 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.jws
       newPackageName: jakarta.jws
+      recursive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxJspToJakartaJsp
+displayName: Migrate deprecated `javax.jsp` packages to `jakarta.jsp`
+description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.servlet.jsp
+      oldArtifactId: javax.servlet.jsp-api
+      newGroupId: jakarta.servlet.jsp
+      newArtifactId: jakarta.servlet.jsp-api
+      newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.servlet.jsp
+      oldArtifactId: jsp-api
+      newGroupId: jakarta.servlet.jsp
+      newArtifactId: jakarta.servlet.jsp-api
+      newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.servlet.jsp
+      artifactId: jakarta.servlet.jsp-api
+      newVersion: 3.0.x
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.servlet.jsp
+      newPackageName: jakarta.servlet.jsp
       recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
