@@ -47,6 +47,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
+  - org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
   - org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -57,11 +58,14 @@ tags:
   - jakarta
 # NOTE: The spec versions in this section comes from https://github.com/jakartaee/jakartaee-api/blob/10.0.0/pom.xml
 recipeList:
-  - org.openrewrite.java.migrate.jakarta.UpdateJakartaAnnotations2
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaXmlWsEE10
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.activation
       artifactId: jakarta.activation-api
+      newVersion: 2.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
       newVersion: 2.1.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.authentication
@@ -131,6 +135,19 @@ recipeList:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       newVersion: 3.1.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name:  org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
+displayName: Update Apache Commons FileUpload2 package for EE10
+description: Update Apache Commons FileUpload2 package for EE10.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.apache.commons
+      oldArtifactId: commons-fileupload2-jakarta-servlet5
+      newArtifactId: commons-fileupload2-jakarta-servlet6
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileupload2.jakarta.servlet5
+      newPackageName: org.apache.commons.fileupload2.jakarta.servlet6
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -389,17 +406,11 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaAnnotations2
 displayName: Update Jakarta EE annotation Dependencies to 2.1.x.
 description: Update Jakarta EE annotation Dependencies to 2.1.x.
-recipeList:
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: jakarta.annotation
-      artifactId: jakarta.annotation-api
-      newVersion: 2.1.x
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Nullable
-      newFullyQualifiedTypeName: jakarta.annotation.Nullable
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.annotation.Nonnull
-      newFullyQualifiedTypeName: jakarta.annotation.Nonnull
+tags:
+  # This recipe has been inlined into `MigrationToJakarta10Apis`; drop the reference to this recipe,
+  # This placeholder is kept to avoid breaking existing recipes that reference this recipe still.
+  - deprecated
+recipeList: []
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaXmlWsEE10

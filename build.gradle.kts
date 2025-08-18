@@ -12,6 +12,7 @@ recipeDependencies {
     parserClasspath("jakarta.servlet:jakarta.servlet-api:6.0.0")
     parserClasspath("javax.persistence:javax.persistence-api:2.2")
     parserClasspath("org.glassfish:javax.servlet:3.0")
+    parserClasspath("javax.annotation:javax.annotation-api:1.3.2")
 }
 
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()

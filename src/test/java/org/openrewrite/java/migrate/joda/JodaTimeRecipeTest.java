@@ -30,7 +30,7 @@ class JodaTimeRecipeTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new JodaTimeRecipe(true))
+          .recipe(new JodaTimeRecipe())
           .parser(JavaParser.fromJavaVersion().classpath("joda-time"));
     }
 

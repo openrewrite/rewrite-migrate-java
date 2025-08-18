@@ -36,6 +36,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxDecoratorToJakartaDecorator
   - org.openrewrite.java.migrate.jakarta.JavaxEjbToJakartaEjb
   - org.openrewrite.java.migrate.jakarta.JavaxElToJakartaEl
+  - org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
   - org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
   - org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakartaFaces3x
   - org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
@@ -43,6 +44,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxJmsToJakartaJms
   - org.openrewrite.java.migrate.jakarta.JavaxJsonToJakartaJson
   - org.openrewrite.java.migrate.jakarta.JavaxJwsToJakartaJws
+  - org.openrewrite.java.migrate.jakarta.JavaxJspToJakartaJsp
   - org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail
   - org.openrewrite.java.migrate.jakarta.JavaxOrmXmlToJakartaOrmXml
   - org.openrewrite.java.migrate.jakarta.JavaxPersistenceToJakartaPersistence
@@ -58,13 +60,15 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
   - org.openrewrite.java.migrate.jakarta.JavaxXmlWsMigrationToJakartaXmlWs
   - org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
+  - org.openrewrite.java.migrate.jakarta.JettyUpgradeEE9
   - org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.RestAssuredJavaxToJakarta
   - org.openrewrite.java.migrate.jakarta.ApplicationPathWildcardNoLongerAccepted
   - org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
   - org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
-  - org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependency
+  - org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependencyWhenManagedBySpringBoot
+  - org.openrewrite.java.migrate.jakarta.UpdateRestLet2_6
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -81,6 +85,10 @@ recipeList:
       oldArtifactId: javax.activation-api
       newGroupId: jakarta.activation
       newArtifactId: jakarta.activation-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.sun.activation
+      artifactId: jakarta.activation
       newVersion: 2.0.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.activation
@@ -313,6 +321,38 @@ recipeList:
       recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name:  org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
+displayName: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
+description: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: commons-fileupload
+      oldArtifactId: commons-fileupload
+      newGroupId: org.apache.commons
+      newArtifactId: commons-fileupload2-jakarta-servlet5
+      newVersion: 2.0.0-M4
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.apache.commons
+      oldArtifactId: commons-fileupload2-jakarta
+      newArtifactId: commons-fileupload2-jakarta-servlet5
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.commons
+      artifactId: '*'
+      newVersion: 2.0.0-M4
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileload.disk
+      newPackageName: org.apache.commons.fileload2.core
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileload.servlet
+      newPackageName: org.apache.commons.fileupload2.jakarta.servlet5
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileload
+      newPackageName: org.apache.commons.fileload2.core
+      recursive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
 displayName: Migrate deprecated `javax.enterprise` packages to `jakarta.enterprise`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
@@ -452,6 +492,32 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.jws
       newPackageName: jakarta.jws
+      recursive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxJspToJakartaJsp
+displayName: Migrate deprecated `javax.jsp` packages to `jakarta.jsp`
+description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.servlet.jsp
+      oldArtifactId: javax.servlet.jsp-api
+      newGroupId: jakarta.servlet.jsp
+      newArtifactId: jakarta.servlet.jsp-api
+      newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.servlet.jsp
+      oldArtifactId: jsp-api
+      newGroupId: jakarta.servlet.jsp
+      newArtifactId: jakarta.servlet.jsp-api
+      newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.servlet.jsp
+      artifactId: jakarta.servlet.jsp-api
+      newVersion: 3.0.x
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.servlet.jsp
+      newPackageName: jakarta.servlet.jsp
       recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -1079,10 +1145,11 @@ recipeList:
       newVersion: 9.1.0
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependency
+name: org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependencyWhenManagedBySpringBoot
 displayName: Remove `jakarta.annotation-api` dependency when managed by Spring Boot
-description: Counteract the `jakarta.annotation-api` added by `org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies` for Spring Boot applications.
+description: Best practice recipe to cleanup a direct dependency which also comes transitively for Spring Boot applications.
 preconditions:
+  # TODO: This recipe can be broadened by checking if `jakarta.annotation-api` is transitively on the classpath OR move this recipe to be part of org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0 recipe.
   - org.openrewrite.java.migrate.jakarta.HasNoJakartaAnnotations
   - org.openrewrite.java.dependencies.DependencyInsight:
       groupIdPattern: org.springframework.boot
@@ -1091,3 +1158,96 @@ recipeList:
   - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE9
+displayName: Update Jetty9 to Jetty12
+description: Update Jetty dependencies from version 9 to version 12.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.websocket
+      oldArtifactId: websocket-api
+      newArtifactId: jetty-websocket-jetty-api
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.websocket
+      oldArtifactId: websocket-server
+      newGroupId: org.eclipse.jetty.ee9.websocket
+      newArtifactId: jetty-ee9-websocket-jetty-server
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.websocket
+      oldArtifactId: websocket-client
+      newGroupId: org.eclipse.jetty.ee9.websocket
+      newArtifactId: jetty-ee9-websocket-jetty-client
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.websocket
+      oldArtifactId: javax-websocket-server-impl
+      newArtifactId: websocket-javax-server
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.websocket
+      oldArtifactId: javax-websocket-client-impl
+      newArtifactId: websocket-javax-client
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: apache-jsp
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-apache-jsp
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: jetty-servlets
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-servlets
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: jetty-servlet
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-servlet
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: jetty-webapp
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-webapp
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: jetty-security
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-security
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: jetty-proxy
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-proxy
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty
+      oldArtifactId: jetty-annotations
+      newGroupId: org.eclipse.jetty.ee9
+      newArtifactId: jetty-ee9-annotations
+      newVersion: 12.0.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpdateRestLet2_6
+displayName: Update RestLet to 2.6.0
+description: Update RestLet to 2.6.0
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.restlet
+      artifactId: '*'
+      newVersion: 2.6.x
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: org.restlet.jee
+      artifactId: org.restlet.ext.httpclient
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.restlet.jee
+      newGroupId: org.restlet
+      oldArtifactId: '*'
+      newVersion: 2.6.x
