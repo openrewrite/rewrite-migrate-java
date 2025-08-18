@@ -13,6 +13,9 @@ recipeDependencies {
     parserClasspath("javax.persistence:javax.persistence-api:2.2")
     parserClasspath("org.glassfish:javax.servlet:3.0")
     parserClasspath("javax.annotation:javax.annotation-api:1.3.2")
+    parserClasspath("com.google.guava:guava:33.0.0-jre")
+    parserClasspath("com.google.errorprone:error_prone_core:2.+")
+    parserClasspath("tech.picnic.error-prone-support:refaster-runner:0.24+")
 }
 
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
@@ -45,8 +48,6 @@ dependencies {
     runtimeOnly("org.openrewrite:rewrite-java-17")
     runtimeOnly("org.openrewrite:rewrite-java-21")
 
-    runtimeOnly("tech.picnic.error-prone-support:error-prone-contrib:latest.release:recipes")
-
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.+")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.+")
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
@@ -58,7 +59,6 @@ dependencies {
 
     testImplementation("org.assertj:assertj-core:latest.release")
 
-    testImplementation("com.google.guava:guava:33.0.0-jre")
     testImplementation("joda-time:joda-time:2.12.3")
     testImplementation("org.threeten:threeten-extra:1.8.0")
 
@@ -88,3 +88,8 @@ tasks.withType(Javadoc::class.java) {
 tasks.test {
     maxHeapSize = "2g"  // Set max heap size to 2GB or adjust as necessary
 }
+
+tasks.withType<JavaCompile> {
+    options.compilerArgs.add("-Arewrite.javaParserClasspathFrom=resources")
+}
+

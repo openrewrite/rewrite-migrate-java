@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -28,7 +29,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new PreferJavaStringJoin())
-          .parser(JavaParser.fromJavaVersion().classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
     @DocumentExample
@@ -44,7 +45,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
                   String s = Joiner.on(", ").join("a", "b");
               }
               """,
-            """                            
+            """
               class Test {
                   String s = String.join(", ", "a", "b");
               }
@@ -65,7 +66,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
                   String s = Joiner.on(", ").join(new String[] {"a"});
               }
               """,
-            """                            
+            """
               class Test {
                   String s = String.join(", ", new String[] {"a"});
               }
@@ -87,7 +88,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
                   String s = Joiner.on(", ").join(Set.of("a"));
               }
               """,
-            """                            
+            """
               import java.util.Set;
 
               class Test {
@@ -132,7 +133,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
                   String s = Joiner.on(", ").join(new HashSet<String>());
               }
               """,
-            """                            
+            """
               import java.util.HashSet;
 
               class Test {
@@ -156,7 +157,7 @@ class PreferJavaStringJoinTest implements RewriteTest {
                                    .join("a", "b");
               }
               """,
-            """                            
+            """
               class Test {
                   String s = String.join(", ", "a", "b");
               }
