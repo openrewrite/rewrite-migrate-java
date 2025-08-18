@@ -110,6 +110,11 @@ public class InlineMethodCalls extends Recipe {
                 if (methodType == null) {
                     return null;
                 }
+                List<String> parameterNames = methodType.getParameterNames();
+                if (!parameterNames.isEmpty() && "arg0".equals(parameterNames.get(0))) {
+                    return null; // We need `-parameters` before we're able to substitute parameters in the template
+                }
+
                 List<JavaType.FullyQualified> annotations = methodType.getAnnotations();
                 for (JavaType.FullyQualified annotation : annotations) {
                     if (INLINE_ME.equals(annotation.getFullyQualifiedName())) {
