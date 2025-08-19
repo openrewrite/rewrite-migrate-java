@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Recipe;
 import org.openrewrite.java.JavaParser;
@@ -471,7 +470,6 @@ class InlineMethodCallsTest implements RewriteTest {
             );
         }
 
-        @ExpectedToFail("Lingering import")
         @Test
         void stringsStaticImport() {
             rewriteRun(

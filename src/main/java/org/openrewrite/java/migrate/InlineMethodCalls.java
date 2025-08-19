@@ -66,8 +66,7 @@ public class InlineMethodCalls extends Recipe {
                 if (template == null) {
                     return mi;
                 }
-                // TODO Add static imports
-                removeAndAddImports(method, values.getImports());
+                removeAndAddImports(method, values.getImports(), values.getStaticImports());
                 J replacement = JavaTemplate.builder(template.getString())
                         .contextSensitive()
                         .imports(values.getImports().toArray(new String[0]))
@@ -78,7 +77,7 @@ public class InlineMethodCalls extends Recipe {
                 return avoidMethodSelfReferences(mi, replacement);
             }
 
-            private void removeAndAddImports(MethodCall method, Set<String> templateImports) {
+            private void removeAndAddImports(MethodCall method, Set<String> templateImports, Set<String> templateStaticImports) {
                 Set<String> originalImports = new JavaVisitor<Set<String>>() {
                     @Override
                     public @Nullable JavaType visitType(@Nullable JavaType javaType, Set<String> strings) {
@@ -99,6 +98,14 @@ public class InlineMethodCalls extends Recipe {
                         maybeAddImport(importStr);
                     }
                 }
+                for (String staticImport : templateStaticImports) {
+                    int lastDot = staticImport.lastIndexOf('.');
+                    if (0 < lastDot) {
+                        maybeAddImport(
+                                staticImport.substring(0, lastDot),
+                                staticImport.substring(lastDot + 1));
+                    }
+                }
             }
 
             @Override
@@ -112,8 +119,7 @@ public class InlineMethodCalls extends Recipe {
                 if (template == null) {
                     return nc;
                 }
-                removeAndAddImports(newClass, values.getImports());
-                // TODO Add static imports
+                removeAndAddImports(newClass, values.getImports(), values.getStaticImports());
                 J replacement = JavaTemplate.builder(template.getString())
                         .contextSensitive()
                         .imports(values.getImports().toArray(new String[0]))
