@@ -77,75 +77,6 @@ public class InlineMethodCalls extends Recipe {
                 return avoidMethodSelfReferences(mi, replacement);
             }
 
-            private void removeAndAddImports(MethodCall method, Set<String> templateImports, Set<String> templateStaticImports) {
-                // Collect all regular imports used in the original method call
-                Set<String> originalImports = new JavaVisitor<Set<String>>() {
-                    @Override
-                    public @Nullable JavaType visitType(@Nullable JavaType javaType, Set<String> strings) {
-                        JavaType jt = super.visitType(javaType, strings);
-                        if (jt instanceof JavaType.FullyQualified) {
-                            strings.add(((JavaType.FullyQualified) jt).getFullyQualifiedName());
-                        }
-                        return jt;
-                    }
-
-                    @Override
-                    public J visitMethodInvocation(J.MethodInvocation methodInvocation, Set<String> staticImports) {
-                        J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(methodInvocation, staticImports);
-                        // Check if this is a static method invocation without a select (meaning it might be statically imported)
-                        JavaType.Method methodType = mi.getMethodType();
-                        if (mi.getSelect() == null && methodType != null && methodType.hasFlags(Flag.Static)) {
-                            staticImports.add(String.format("%s.%s",
-                                    methodType.getDeclaringType().getFullyQualifiedName(),
-                                    methodType.getName()));
-                        }
-                        return mi;
-                    }
-
-                    @Override
-                    public J visitIdentifier(J.Identifier identifier, Set<String> staticImports) {
-                        J.Identifier id = (J.Identifier) super.visitIdentifier(identifier, staticImports);
-                        // Check if this is a static field reference
-                        JavaType.Variable fieldType = id.getFieldType();
-                        if (fieldType != null && fieldType.hasFlags(Flag.Static)) {
-                            if (fieldType.getOwner() instanceof JavaType.FullyQualified) {
-                                staticImports.add(String.format("%s.%s",
-                                        ((JavaType.FullyQualified) fieldType.getOwner()).getFullyQualifiedName(),
-                                        fieldType.getName()));
-                            }
-                        }
-                        return id;
-                    }
-                }.reduce(method, new HashSet<>());
-
-                // Remove regular and static imports that are no longer needed
-                for (String originalImport : originalImports) {
-                    if (!templateImports.contains(originalImport) &&
-                            !templateStaticImports.contains(originalImport)) {
-                        maybeRemoveImport(originalImport);
-                    }
-                }
-
-                // Add new regular imports needed by the template
-                for (String importStr : templateImports) {
-                    if (!originalImports.contains(importStr)) {
-                        maybeAddImport(importStr);
-                    }
-                }
-
-                // Add new static imports needed by the template
-                for (String staticImport : templateStaticImports) {
-                    if (!originalImports.contains(staticImport)) {
-                        int lastDot = staticImport.lastIndexOf('.');
-                        if (0 < lastDot) {
-                            maybeAddImport(
-                                    staticImport.substring(0, lastDot),
-                                    staticImport.substring(lastDot + 1));
-                        }
-                    }
-                }
-            }
-
             @Override
             public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                 J.NewClass nc = (J.NewClass) super.visitNewClass(newClass, ctx);
@@ -184,6 +115,79 @@ public class InlineMethodCalls extends Recipe {
                     }
                 }
                 return null;
+            }
+
+            private void removeAndAddImports(MethodCall method, Set<String> templateImports, Set<String> templateStaticImports) {
+                Set<String> originalImports = findOriginalImports(method);
+
+                // Remove regular and static imports that are no longer needed
+                for (String originalImport : originalImports) {
+                    if (!templateImports.contains(originalImport) &&
+                            !templateStaticImports.contains(originalImport)) {
+                        maybeRemoveImport(originalImport);
+                    }
+                }
+
+                // Add new regular imports needed by the template
+                for (String importStr : templateImports) {
+                    if (!originalImports.contains(importStr)) {
+                        maybeAddImport(importStr);
+                    }
+                }
+
+                // Add new static imports needed by the template
+                for (String staticImport : templateStaticImports) {
+                    if (!originalImports.contains(staticImport)) {
+                        int lastDot = staticImport.lastIndexOf('.');
+                        if (0 < lastDot) {
+                            maybeAddImport(
+                                    staticImport.substring(0, lastDot),
+                                    staticImport.substring(lastDot + 1));
+                        }
+                    }
+                }
+            }
+
+            private Set<String> findOriginalImports(MethodCall method) {
+                // Collect all regular and static imports used in the original method call
+                return new JavaVisitor<Set<String>>() {
+                    @Override
+                    public @Nullable JavaType visitType(@Nullable JavaType javaType, Set<String> strings) {
+                        JavaType jt = super.visitType(javaType, strings);
+                        if (jt instanceof JavaType.FullyQualified) {
+                            strings.add(((JavaType.FullyQualified) jt).getFullyQualifiedName());
+                        }
+                        return jt;
+                    }
+
+                    @Override
+                    public J visitMethodInvocation(J.MethodInvocation methodInvocation, Set<String> staticImports) {
+                        J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(methodInvocation, staticImports);
+                        // Check if this is a static method invocation without a select (meaning it might be statically imported)
+                        JavaType.Method methodType = mi.getMethodType();
+                        if (mi.getSelect() == null && methodType != null && methodType.hasFlags(Flag.Static)) {
+                            staticImports.add(String.format("%s.%s",
+                                    methodType.getDeclaringType().getFullyQualifiedName(),
+                                    methodType.getName()));
+                        }
+                        return mi;
+                    }
+
+                    @Override
+                    public J visitIdentifier(J.Identifier identifier, Set<String> staticImports) {
+                        J.Identifier id = (J.Identifier) super.visitIdentifier(identifier, staticImports);
+                        // Check if this is a static field reference
+                        JavaType.Variable fieldType = id.getFieldType();
+                        if (fieldType != null && fieldType.hasFlags(Flag.Static)) {
+                            if (fieldType.getOwner() instanceof JavaType.FullyQualified) {
+                                staticImports.add(String.format("%s.%s",
+                                        ((JavaType.FullyQualified) fieldType.getOwner()).getFullyQualifiedName(),
+                                        fieldType.getName()));
+                            }
+                        }
+                        return id;
+                    }
+                }.reduce(method, new HashSet<>());
             }
 
             private J avoidMethodSelfReferences(MethodCall original, J replacement) {
