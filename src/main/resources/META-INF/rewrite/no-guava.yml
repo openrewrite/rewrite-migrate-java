@@ -29,6 +29,7 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaJava21
   - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
+  - org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList
@@ -107,6 +108,20 @@ preconditions:
 recipeList:
   - org.openrewrite.java.migrate.guava.NoMapsAndSetsWithExpectedSize
   - org.openrewrite.java.migrate.guava.PreferMathClamp
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods
+displayName: Inline Guava method calls
+description: >-
+  Inline Guava method calls that are annotated with `@InlineMe` to their replacement method.
+tags:
+  - guava
+preconditions:
+  - org.openrewrite.analysis.search.FindMethods:
+      methodPattern: com.google.common..* *(..)
+recipeList:
+  - org.openrewrite.java.migrate.InlineMethodCalls
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
