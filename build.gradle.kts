@@ -93,4 +93,3 @@ tasks.test {
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-Arewrite.javaParserClasspathFrom=resources")
 }
-
