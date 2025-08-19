@@ -27,6 +27,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.Flag;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -78,6 +79,7 @@ public class InlineMethodCalls extends Recipe {
             }
 
             private void removeAndAddImports(MethodCall method, Set<String> templateImports, Set<String> templateStaticImports) {
+                // Collect all regular imports used in the original method call
                 Set<String> originalImports = new JavaVisitor<Set<String>>() {
                     @Override
                     public @Nullable JavaType visitType(@Nullable JavaType javaType, Set<String> strings) {
@@ -88,22 +90,69 @@ public class InlineMethodCalls extends Recipe {
                         return jt;
                     }
                 }.reduce(method, new HashSet<>());
+
+                // Collect all static imports used in the original method call
+                Set<String> originalStaticImports = new JavaVisitor<Set<String>>() {
+                    @Override
+                    public J visitMethodInvocation(J.MethodInvocation methodInvocation, Set<String> staticImports) {
+                        J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(methodInvocation, staticImports);
+                        // Check if this is a static method invocation without a select (meaning it might be statically imported)
+                        JavaType.Method methodType = mi.getMethodType();
+                        if (mi.getSelect() == null && methodType != null && methodType.hasFlags(Flag.Static)) {
+                            staticImports.add(String.format("%s.%s",
+                                    methodType.getDeclaringType().getFullyQualifiedName(),
+                                    methodType.getName()));
+                        }
+                        return mi;
+                    }
+
+                    @Override
+                    public J visitIdentifier(J.Identifier identifier, Set<String> staticImports) {
+                        J.Identifier id = (J.Identifier) super.visitIdentifier(identifier, staticImports);
+                        // Check if this is a static field reference
+                        JavaType.Variable fieldType = id.getFieldType();
+                        if (fieldType != null && fieldType.hasFlags(Flag.Static)) {
+                            if (fieldType.getOwner() instanceof JavaType.FullyQualified) {
+                                staticImports.add(String.format("%s.%s",
+                                        ((JavaType.FullyQualified) fieldType.getOwner()).getFullyQualifiedName(),
+                                        fieldType.getName()));
+                            }
+                        }
+                        return id;
+                    }
+                }.reduce(method, new HashSet<>());
+
+                // Remove regular imports that are no longer needed
                 for (String originalImport : originalImports) {
                     if (!templateImports.contains(originalImport)) {
                         maybeRemoveImport(originalImport);
                     }
                 }
+
+                // Remove static imports that are no longer needed
+                for (String originalStaticImport : originalStaticImports) {
+                    if (!templateStaticImports.contains(originalStaticImport)) {
+                        // Use the full qualified name format for removing static imports
+                        maybeRemoveImport(originalStaticImport);
+                    }
+                }
+
+                // Add new regular imports needed by the template
                 for (String importStr : templateImports) {
                     if (!originalImports.contains(importStr)) {
                         maybeAddImport(importStr);
                     }
                 }
+
+                // Add new static imports needed by the template
                 for (String staticImport : templateStaticImports) {
-                    int lastDot = staticImport.lastIndexOf('.');
-                    if (0 < lastDot) {
-                        maybeAddImport(
-                                staticImport.substring(0, lastDot),
-                                staticImport.substring(lastDot + 1));
+                    if (!originalStaticImports.contains(staticImport)) {
+                        int lastDot = staticImport.lastIndexOf('.');
+                        if (0 < lastDot) {
+                            maybeAddImport(
+                                    staticImport.substring(0, lastDot),
+                                    staticImport.substring(lastDot + 1));
+                        }
                     }
                 }
             }
