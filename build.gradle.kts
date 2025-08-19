@@ -15,7 +15,6 @@ recipeDependencies {
     parserClasspath("javax.annotation:javax.annotation-api:1.3.2")
     parserClasspath("com.google.guava:guava:33.0.0-jre")
     parserClasspath("com.google.errorprone:error_prone_core:2.+")
-    parserClasspath("tech.picnic.error-prone-support:refaster-runner:0.24+")
 }
 
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
@@ -47,6 +46,8 @@ dependencies {
     runtimeOnly("org.openrewrite:rewrite-java-11")
     runtimeOnly("org.openrewrite:rewrite-java-17")
     runtimeOnly("org.openrewrite:rewrite-java-21")
+
+    runtimeOnly("tech.picnic.error-prone-support:error-prone-contrib:latest.release:recipes")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.+")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.+")
