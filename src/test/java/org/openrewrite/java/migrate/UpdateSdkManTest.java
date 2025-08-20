@@ -21,7 +21,6 @@ import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.openrewrite.test.SourceSpecs.text;
 
 
@@ -118,7 +117,7 @@ class UpdateSdkManTest implements RewriteTest {
 
     @Test
     void emptyOptions() {
-        assertTrue(new UpdateSdkMan(null, null).validate(new InMemoryExecutionContext()).isInvalid());
+        assertThat(new UpdateSdkMan(null, null).validate(new InMemoryExecutionContext()).isInvalid()).isTrue();
     }
 
     @Test

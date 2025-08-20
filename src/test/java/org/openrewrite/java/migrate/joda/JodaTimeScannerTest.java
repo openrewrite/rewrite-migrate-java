@@ -26,8 +26,6 @@ import org.openrewrite.test.RewriteTest;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.test.RewriteTest.toRecipe;
 
@@ -68,7 +66,7 @@ class JodaTimeScannerTest implements RewriteTest {
               """
           )
         );
-        assertTrue(scanner.getAcc().getUnsafeVars().isEmpty());
+        assertThat(scanner.getAcc().getUnsafeVars()).isEmpty();
     }
 
     @Test
@@ -103,12 +101,11 @@ class JodaTimeScannerTest implements RewriteTest {
         );
         // The variable 'dtz' is unsafe due to the class variable 'dateTime'.
         // The parameter 'dt' in the 'print' method is also unsafe because one of its method calls is unsafe.
-        assertEquals(3, scanner.getAcc().getUnsafeVars().size());
+        assertThat(scanner.getAcc().getUnsafeVars()).hasSize(3);
         for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
-            assertTrue("dtz".equals(var.getSimpleName()) ||
-                       "dt".equals(var.getSimpleName()) ||
-                       "dateTime".equals(var.getSimpleName())
-            );
+            assertThat("dtz".equals(var.getSimpleName()) ||
+                    "dt".equals(var.getSimpleName()) ||
+                    "dateTime".equals(var.getSimpleName())).isTrue();
         }
     }
 
@@ -140,9 +137,9 @@ class JodaTimeScannerTest implements RewriteTest {
           )
         );
         // The local variable dt is unsafe due to class var datetime.
-        assertEquals(2, scanner.getAcc().getUnsafeVars().size());
+        assertThat(scanner.getAcc().getUnsafeVars()).hasSize(2);
         for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
-            assertTrue("dateTime".equals(var.getSimpleName()) || "dt".equals(var.getSimpleName()));
+            assertThat("dateTime".equals(var.getSimpleName()) || "dt".equals(var.getSimpleName())).isTrue();
         }
     }
 
@@ -200,9 +197,9 @@ class JodaTimeScannerTest implements RewriteTest {
           )
         );
         // The bar method parameter dt is unsafe because migration of toDateMidnight() is not yet implemented.
-        assertEquals(1, scanner.getAcc().getUnsafeVars().size());
+        assertThat(scanner.getAcc().getUnsafeVars()).hasSize(1);
         for (J.VariableDeclarations.NamedVariable var : scanner.getAcc().getUnsafeVars()) {
-            assertEquals("dt", var.getSimpleName());
+            assertThat(var.getSimpleName()).isEqualTo("dt");
         }
     }
 
