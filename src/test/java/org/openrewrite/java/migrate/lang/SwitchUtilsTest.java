@@ -23,8 +23,7 @@ import org.openrewrite.java.tree.J;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SwitchUtilsTest {
     private static J.Switch extractSwitch(@Language("java") String code) {
@@ -40,10 +39,9 @@ class SwitchUtilsTest {
 
     @Test
     void coversAllCasesAllEnums() {
-        assertTrue(
-          SwitchUtils.coversAllPossibleValues(
-            extractSwitch(
-              """
+        assertThat(SwitchUtils.coversAllPossibleValues(
+                extractSwitch(
+                        """
                 class Test {
                     void method(TrafficLight light) {
                         switch (light) {
@@ -55,17 +53,15 @@ class SwitchUtilsTest {
                     enum TrafficLight { RED, YELLOW, GREEN }
                 }
                 """
-            )
-          )
-        );
+                )
+        )).isTrue();
     }
 
     @Test
     void coversAllCasesMissingEnums() {
-        assertFalse(
-          SwitchUtils.coversAllPossibleValues(
-            extractSwitch(
-              """
+        assertThat(SwitchUtils.coversAllPossibleValues(
+                extractSwitch(
+                        """
                 class Test {
                     void method(TrafficLight light) {
                         switch (light) {
@@ -76,17 +72,15 @@ class SwitchUtilsTest {
                     enum TrafficLight { RED, YELLOW, GREEN }
                 }
                 """
-            )
-          )
-        );
+                )
+        )).isFalse();
     }
 
     @Test
     void coversAllCasesMissingEnumsWithDefault() {
-        assertTrue(
-          SwitchUtils.coversAllPossibleValues(
-            extractSwitch(
-              """
+        assertThat(SwitchUtils.coversAllPossibleValues(
+                extractSwitch(
+                        """
                 class Test {
                     void method(TrafficLight light) {
                         switch (light) {
@@ -98,17 +92,15 @@ class SwitchUtilsTest {
                     enum TrafficLight { RED, YELLOW, GREEN }
                 }
                 """
-            )
-          )
-        );
+                )
+        )).isTrue();
     }
 
     @Test
     void coversAllCasesEnumOnlyDefault() {
-        assertTrue(
-          SwitchUtils.coversAllPossibleValues(
-            extractSwitch(
-              """
+        assertThat(SwitchUtils.coversAllPossibleValues(
+                extractSwitch(
+                        """
                 class Test {
                     void method(TrafficLight light) {
                         switch (light) {
@@ -118,17 +110,15 @@ class SwitchUtilsTest {
                     enum TrafficLight { RED, YELLOW, GREEN }
                 }
                 """
-            )
-          )
-        );
+                )
+        )).isTrue();
     }
 
     @Test
     void coversAllCasesObjectOnlyDefault() {
-        assertTrue(
-          SwitchUtils.coversAllPossibleValues(
-            extractSwitch(
-              """
+        assertThat(SwitchUtils.coversAllPossibleValues(
+                extractSwitch(
+                        """
                 class Test {
                     void method(Object obj) {
                         switch (obj) {
@@ -137,17 +127,15 @@ class SwitchUtilsTest {
                     }
                 }
                 """
-            )
-          )
-        );
+                )
+        )).isTrue();
     }
 
     @Test
     void coversAllCasesAllSealedClasses() {
-        assertFalse(
-          SwitchUtils.coversAllPossibleValues(
-            extractSwitch(
-              """
+        assertThat(SwitchUtils.coversAllPossibleValues(
+                extractSwitch(
+                        """
                 class Test {
                     sealed abstract class Shape permits Circle, Square, Rectangle {}
                     void method(Shape shape) {
@@ -159,17 +147,15 @@ class SwitchUtilsTest {
                     }
                 }
                 """
-            )
-          ), "Not implemented yet for sealed classes"
-        );
+                )
+        )).as("Not implemented yet for sealed classes").isFalse();
     }
 
     @Test
     void coversAllCasesEnumWithExtraMembers() {
-        assertTrue(
-          SwitchUtils.coversAllPossibleValues(
-            extractSwitch(
-              """
+        assertThat(SwitchUtils.coversAllPossibleValues(
+                extractSwitch(
+                        """
                 class Test {
                     enum EnumWithExtraMembers {
                         ONE, TWO;
@@ -183,8 +169,7 @@ class SwitchUtilsTest {
                     }
                 }
                 """
-            )
-          )
-        );
+                )
+        )).isTrue();
     }
 }
