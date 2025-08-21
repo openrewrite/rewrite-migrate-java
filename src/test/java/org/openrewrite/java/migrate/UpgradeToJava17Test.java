@@ -27,6 +27,8 @@ import org.openrewrite.test.RewriteTest;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
@@ -654,6 +656,29 @@ class UpgradeToJava17Test implements RewriteTest {
             spec -> spec.after(actual ->
               assertThat(actual)
                 .doesNotContain("1.4.0.Final", "1.4.1.Final")
+                .actual())
+          )
+        );
+    }
+
+    @Test
+    void upgradeMapstructAndAnnotationPathsWithGradle() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=groovy
+            """
+              plugins { id 'java' }
+              repositories { mavenCentral() }
+              dependencies {
+                  implementation 'org.mapstruct:mapstruct:1.4.1.Final'
+                  annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.1.Final'
+              }
+              """,
+            spec -> spec.after(actual ->
+              assertThat(actual)
+                .doesNotContain("1.4.1.Final")
+                .containsPattern("1.6.\\d+(.\\d+)?")
                 .actual())
           )
         );

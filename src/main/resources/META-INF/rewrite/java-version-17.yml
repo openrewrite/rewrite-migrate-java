@@ -67,8 +67,11 @@ recipeList:
       groupId: com.github.spotbugs
       artifactId: spotbugs-maven-plugin
       newVersion: 4.9.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.mapstruct
+      artifactId: mapstruct*
+      newVersion: 1.6.x
   - org.openrewrite.java.migrate.AddLombokMapstructBinding
-  - org.openrewrite.java.migrate.UpgradeMapstructVersion
   - org.openrewrite.java.migrate.UpdateJakartaAnnotationsIfForJavax
   - org.openrewrite.java.migrate.UpdateJakartaAnnotationsIfExistsForJakarta
 
@@ -335,26 +338,6 @@ recipeList:
       groupId: org.projectlombok
       artifactId: lombok-mapstruct-binding
       version: 0.2.0
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpgradeMapstructVersion
-displayName: Upgrades `mapstruct` version and the usage in `maven-compiler-plugin`
-description: Upgrades the version of `mapstruct` and references to the dependency in the `annotationProcessorPaths` of `maven-compiler-plugin`.
-tags:
-  - java17
-preconditions:
-  - org.openrewrite.java.dependencies.DependencyInsight:
-      groupIdPattern: org.mapstruct
-      artifactIdPattern: mapstruct
-recipeList:
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: org.mapstruct
-      artifactId: mapstruct
-      newVersion: 1.6.x
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: org.mapstruct
-      artifactId: mapstruct-processor
-      newVersion: 1.6.x
 ---
 # The scanning phase comes before the editing phase, therefor we check if a javax.annotation dependency is on the classpath (with whatever version)
 type: specs.openrewrite.org/v1beta/recipe
