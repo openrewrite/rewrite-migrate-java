@@ -39,7 +39,7 @@ import static java.util.stream.Collectors.toSet;
 
 public class InlineMethodCalls extends Recipe {
 
-    private static final String INLINE_ME = "com.google.errorprone.annotations.InlineMe";
+    private static final String INLINE_ME = "InlineMe";
 
     @Override
     public String getDisplayName() {
@@ -110,7 +110,7 @@ public class InlineMethodCalls extends Recipe {
 
                 List<JavaType.FullyQualified> annotations = methodType.getAnnotations();
                 for (JavaType.FullyQualified annotation : annotations) {
-                    if (INLINE_ME.equals(annotation.getFullyQualifiedName())) {
+                    if (INLINE_ME.equals(annotation.getClassName())) {
                         return InlineMeValues.parse((JavaType.Annotation) annotation);
                     }
                 }
