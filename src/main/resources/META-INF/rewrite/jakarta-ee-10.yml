@@ -282,11 +282,11 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: validation-config
-      newValue: https://jakarta.ee/xml/ns/jakartaee
+      newValue: https://jakarta.ee/xml/ns/validation/configuration
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: validation-config
-      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/validation/configuration/validation-configuration-3.0.xsd
+      newValue: https://jakarta.ee/xml/ns/validation/configuration https://jakarta.ee/xml/ns/validation/validation-configuration-3.0.xsd
   - org.openrewrite.text.FindAndReplace:
       find: "javax."
       replace: "jakarta."
