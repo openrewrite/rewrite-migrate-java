@@ -638,6 +638,11 @@ recipeList:
       groupId: jakarta.servlet
       artifactId: jakarta.servlet-api
       newVersion: 5.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.servlet
+      artifactId: jakarta.servlet-api
+      version: 5.0.x
+      onlyIfUsing: javax.servlet.*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.servlet
       newPackageName: jakarta.servlet
