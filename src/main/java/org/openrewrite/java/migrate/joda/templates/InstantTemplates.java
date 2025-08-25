@@ -22,17 +22,16 @@ import org.openrewrite.java.MethodMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JAVA_INSTANT;
-import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.JODA_INSTANT;
+import static org.openrewrite.java.migrate.joda.templates.TimeClassNames.*;
 
 public class InstantTemplates implements Templates {
     private final MethodMatcher constructor = new MethodMatcher(JODA_INSTANT + " <constructor>()");
+    private final MethodMatcher constructorWithInstant = new MethodMatcher(JODA_INSTANT + " <constructor>(java.lang.Object)");
     private final MethodMatcher getMillis = new MethodMatcher(JODA_INSTANT + " getMillis()");
     private final MethodMatcher minusDuration = new MethodMatcher(JODA_INSTANT + " minus(org.joda.time.ReadableDuration)");
     private final MethodMatcher now = new MethodMatcher(JODA_INSTANT + " now()");
     private final MethodMatcher ofEpochMilli = new MethodMatcher(JODA_INSTANT + " ofEpochMilli(long)");
     private final MethodMatcher parse = new MethodMatcher(JODA_INSTANT + " parse(java.lang.String)");
-    private final MethodMatcher plusDuration = new MethodMatcher(JODA_INSTANT + " plus(org.joda.time.ReadableDuration)");
 
     private final JavaTemplate constructorTemplate = JavaTemplate.builder("Instant.now()")
             .imports(JAVA_INSTANT).build();
@@ -50,13 +49,14 @@ public class InstantTemplates implements Templates {
     private final List<MethodTemplate> templates = new ArrayList<MethodTemplate>() {
         {
             add(new MethodTemplate(constructor, constructorTemplate));
+            add(new MethodTemplate(constructorWithInstant, JODA_MULTIPLE_MAPPING_POSSIBLE_TEMPLATE));
             add(new MethodTemplate(getMillis, getMillisTemplate));
             add(new MethodTemplate(getMillis, getMillisTemplate));
             add(new MethodTemplate(minusDuration, minusDurationTemplate));
             add(new MethodTemplate(now, nowTemplate));
             add(new MethodTemplate(ofEpochMilli, ofEpochMilliTemplate));
             add(new MethodTemplate(parse, parseTemplate));
-            add(new MethodTemplate(plusDuration, plusDurationTemplate));
+            add(new MethodTemplate(parse, plusDurationTemplate));
         }
     };
 }
