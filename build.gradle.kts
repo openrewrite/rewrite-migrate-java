@@ -61,8 +61,6 @@ dependencies {
     testImplementation("org.assertj:assertj-core:latest.release")
 
     testImplementation("com.google.errorprone:error_prone_annotations:latest.release")
-    testImplementation("joda-time:joda-time:2.12.3")
-    testImplementation("org.threeten:threeten-extra:1.8.0")
 
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
