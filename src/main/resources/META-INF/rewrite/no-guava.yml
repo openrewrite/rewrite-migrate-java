@@ -121,7 +121,7 @@ preconditions:
   - org.openrewrite.analysis.search.FindMethods:
       methodPattern: com.google.common..* *(..)
 recipeList:
-  - org.openrewrite.java.migrate.InlineMethodCalls
+  - org.openrewrite.java.InlineMethodCalls
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

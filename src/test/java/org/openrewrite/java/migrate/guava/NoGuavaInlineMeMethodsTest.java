@@ -22,7 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class NoGuavaInlineMeMethods implements RewriteTest {
+class NoGuavaInlineMeMethodsTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {

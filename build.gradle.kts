@@ -60,8 +60,6 @@ dependencies {
 
     testImplementation("org.assertj:assertj-core:latest.release")
 
-    testImplementation("com.google.errorprone:error_prone_annotations:latest.release")
-
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind")
