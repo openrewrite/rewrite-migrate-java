@@ -60,10 +60,6 @@ dependencies {
 
     testImplementation("org.assertj:assertj-core:latest.release")
 
-    testImplementation("com.google.errorprone:error_prone_annotations:latest.release")
-    testImplementation("joda-time:joda-time:2.12.3")
-    testImplementation("org.threeten:threeten-extra:1.8.0")
-
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-databind")
@@ -79,6 +75,7 @@ dependencies {
     testRuntimeOnly("com.google.code.findbugs:jsr305:3.0.2")
     testRuntimeOnly("javax.mail:mail:1.4.7")
     testRuntimeOnly("javax.mail:javax.mail-api:1.6.2")
+    testRuntimeOnly("javax.servlet:javax.servlet-api:4.0.1")
     testRuntimeOnly("javax.ws.rs:javax.ws.rs-api:2.1.1")
     testRuntimeOnly(gradleApi())
 }

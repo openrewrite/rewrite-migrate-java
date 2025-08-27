@@ -24,18 +24,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-class JavaxMailToJakartaMailTest implements RewriteTest {
+class JavaxServletToJakartaServletTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpath("mail-1.4.7", "javax.mail-api-1.6.2"))
+            .classpath("javax.servlet-api-4.0.1"))
           .recipeFromResource(
             "/META-INF/rewrite/jakarta-ee-9.yml",
-            "org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail");
+            "org.openrewrite.java.migrate.jakarta.JavaxServletToJakartaServlet");
     }
 
     @Test
-    void switchesJavaxMailApiDependencyToJakartaMailApiDependency() {
+    void switchesJavaxServletApiDependencyToJakartaServletApiDependency() {
         rewriteRun(
           mavenProject(
             "Sample",
@@ -49,19 +49,19 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                     <version>0.0.1-SNAPSHOT</version>
                     <dependencies>
                         <dependency>
-                            <groupId>javax.mail</groupId>
-                            <artifactId>javax.mail-api</artifactId>
-                            <version>1.4.7</version>
+                            <groupId>javax.servlet</groupId>
+                            <artifactId>javax.servlet-api</artifactId>
+                            <version>4.0.1</version>
                         </dependency>
                     </dependencies>
                 </project>
                 """,
               spec -> spec.after(pom -> assertThat(pom)
-                .contains("<groupId>jakarta.mail</groupId>")
-                .contains("<artifactId>jakarta.mail-api</artifactId>")
-                .containsPattern("<version>2.0.\\d+</version>")
-                .doesNotContain("<groupId>javax.mail</groupId>")
-                .doesNotContain("<artifactId>javax.mail-api</artifactId>")
+                .contains("<groupId>jakarta.servlet</groupId>")
+                .contains("<artifactId>jakarta.servlet-api</artifactId>")
+                .containsPattern("<version>5.0.\\d+</version>")
+                .doesNotContain("<groupId>javax.servlet</groupId>")
+                .doesNotContain("<artifactId>javax.servlet-api</artifactId>")
                 .actual())
             )
           ),
@@ -69,12 +69,12 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
             //language=java
             java(
               """
-                import javax.mail.Session;
+                import javax.servlet.Filter;
                 public class TestApplication {
                 }
                 """,
               """
-                import jakarta.mail.Session;
+                import jakarta.servlet.Filter;
                 public class TestApplication {
                 }
                 """
@@ -84,56 +84,7 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
     }
 
     @Test
-    void switchesJavaxMailDependencyToJakartaMailApiDependency() {
-        rewriteRun(
-          mavenProject(
-            "Sample",
-            //language=xml
-            pomXml(
-              """
-                <project>
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example</groupId>
-                    <artifactId>demo</artifactId>
-                    <version>0.0.1-SNAPSHOT</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>javax.mail</groupId>
-                            <artifactId>mail</artifactId>
-                            <version>1.3.3</version>
-                        </dependency>
-                    </dependencies>
-                </project>
-                """,
-              spec -> spec.after(pom -> assertThat(pom)
-                .contains("<groupId>jakarta.mail</groupId>")
-                .contains("<artifactId>jakarta.mail-api</artifactId>")
-                .containsPattern("<version>2.0.\\d+</version>")
-                .doesNotContain("<groupId>javax.mail</groupId>")
-                .doesNotContain("<artifactId>mail</artifactId>")
-                .actual())
-            )
-          ),
-          srcMainJava(
-            //language=java
-            java(
-              """
-                import javax.mail.Session;
-                public class TestApplication {
-                }
-                """,
-              """
-                import jakarta.mail.Session;
-                public class TestApplication {
-                }
-                """
-            )
-          )
-        );
-    }
-
-    @Test
-    void addsJakartaMailApiDependencyIfJavaxMailApiOnlyExistingInTransitive() {
+    void addsJakartaServletApiDependencyIfJavaxServletApiOnlyExistsInTransitive() {
         rewriteRun(
           mavenProject(
             "Sample",
@@ -141,12 +92,12 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
               //language=java
               java(
                 """
-                  import javax.mail.Session;
+                  import javax.servlet.Filter;
                   public class TestApplication {
                   }
                   """,
                 """
-                  import jakarta.mail.Session;
+                  import jakarta.servlet.Filter;
                   public class TestApplication {
                   }
                   """
@@ -163,16 +114,16 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                     <dependencies>
                         <dependency>
                             <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-autoconfigure</artifactId>
-                            <version>2.1.0.RELEASE</version>
+                            <artifactId>spring-boot</artifactId>
+                            <version>2.1.9.RELEASE</version>
                         </dependency>
                     </dependencies>
                 </project>
                 """,
               spec -> spec.after(pom -> assertThat(pom)
-                .contains("<groupId>jakarta.mail</groupId>")
-                .contains("<artifactId>jakarta.mail-api</artifactId>")
-                .containsPattern("<version>2.0.\\d+</version>")
+                .contains("<groupId>jakarta.servlet</groupId>")
+                .contains("<artifactId>jakarta.servlet-api</artifactId>")
+                .containsPattern("<version>5.0.\\d+</version>")
                 .actual())
             )
           )
@@ -180,7 +131,7 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
     }
 
     @Test
-    void upgradesJakartaMailApiDependencyIfAlreadyExistingAtALowerVersion() {
+    void upgradesJakartaServletApiDependencyIfAlreadyExistingAtLowerVersion() {
         rewriteRun(
           mavenProject(
             "Sample",
@@ -194,15 +145,15 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                     <version>0.0.1-SNAPSHOT</version>
                     <dependencies>
                         <dependency>
-                            <groupId>jakarta.mail</groupId>
-                            <artifactId>jakarta.mail-api</artifactId>
-                            <version>1.6.8</version>
+                            <groupId>jakarta.servlet</groupId>
+                            <artifactId>jakarta.servlet-api</artifactId>
+                            <version>4.0.4</version>
                         </dependency>
                     </dependencies>
                 </project>
                 """,
               spec -> spec.after(pom -> assertThat(pom)
-                .containsPattern("<version>2.0.\\d+</version>")
+                .containsPattern("<version>5.0.\\d+</version>")
                 .actual())
             )
           )
@@ -210,7 +161,7 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
     }
 
     @Test
-    void ignoresJakartaMailApiDependencyIfAlreadyExisting() {
+    void ignoresJakartaServletApiDependencyIfAlreadyExisting() {
         rewriteRun(
           mavenProject(
             "Sample",
@@ -218,12 +169,12 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
               //language=java
               java(
                 """
-                  import javax.mail.Session;
+                  import javax.servlet.Filter;
                   public class TestApplication {
                   }
                   """,
                 """
-                  import jakarta.mail.Session;
+                  import jakarta.servlet.Filter;
                   public class TestApplication {
                   }
                   """
@@ -239,9 +190,9 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                     <version>0.0.1-SNAPSHOT</version>
                     <dependencies>
                         <dependency>
-                            <groupId>jakarta.mail</groupId>
-                            <artifactId>jakarta.mail-api</artifactId>
-                            <version>2.0.2</version>
+                            <groupId>jakarta.servlet</groupId>
+                            <artifactId>jakarta.servlet-api</artifactId>
+                            <version>5.0.0</version>
                         </dependency>
                     </dependencies>
                 </project>
