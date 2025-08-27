@@ -3495,6 +3495,26 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods
+examples:
+- description: ''
+  sources:
+  - before: |
+      import com.google.common.base.Strings;
+      class Regular {
+          String repeatString(String s, int n) {
+              return Strings.repeat(s, n);
+          }
+      }
+    after: |
+      class Regular {
+          String repeatString(String s, int n) {
+              return s.repeat(n);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
 examples:
 - description: ''
@@ -4306,9 +4326,9 @@ examples:
     after: |
       <?xml version="1.0" encoding="UTF-8"?>
       <validation-config
-           xmlns="https://jakarta.ee/xml/ns/jakartaee"
+           xmlns="https://jakarta.ee/xml/ns/validation/configuration"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/validation/configuration/validation-configuration-3.0.xsd"
+           xsi:schemaLocation="https://jakarta.ee/xml/ns/validation/configuration https://jakarta.ee/xml/ns/validation/validation-configuration-3.0.xsd"
            version="3.0">
 
           <default-provider>jakarta.acme.ValidationProvider</default-provider>
