@@ -218,13 +218,9 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
         d = (Xml.Document) new org.openrewrite.maven.UpgradeDependencyVersion(sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x", null, null, null)
                 .getVisitor()
                 .visitNonNull(d, ctx);
-        d = (Xml.Document) new org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId(
+        return (Xml.Document) new org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId(
                 glassfishJaxbRuntimeGroup, glassfishJaxbRuntimeArtifact,
-                sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x", null
-        ).getVisitor().visitNonNull(d, ctx);
-        return (Xml.Document) new org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId(
-                glassfishJaxbRuntimeGroup, glassfishJaxbRuntimeArtifact,
-                sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x"
-        ).getVisitor().visitNonNull(d, ctx);
+                sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x", null, false, true)
+                .getVisitor().visitNonNull(d, ctx);
     }
 }
