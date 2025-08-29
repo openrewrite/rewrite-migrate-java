@@ -124,17 +124,13 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                             // Upgrade any previous runtimes to the most current 2.3.x version
                             doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
                         }
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
-                                SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
-                        ).getVisitor().visitNonNull(g, ctx);
+                        g = (G.CompilationUnit) new ChangeDependency(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, true).getVisitor().visitNonNull(g, ctx);
                     } else {
                         if (getAfterVisit().isEmpty()) {
                             // Upgrade any previous runtimes to the most current 2.3.x version
                             doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
                         }
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
-                                GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
-                        ).getVisitor().visitNonNull(g, ctx);
+                        g = (G.CompilationUnit) new ChangeDependency(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, true).getVisitor().visitNonNull(g, ctx);
                     }
                     if(!acc.get()) {
                         return g;
