@@ -159,3 +159,14 @@ recipeList:
       groupId: javax.activation
       artifactId: activation
       newConfiguration: compileOnly
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.WasDevMvnChangeParentArtifactId
+displayName: Change `net.wasdev.maven.parent:java8-parent` to `:parent`
+description: This recipe changes the artifactId of the `<parent>` tag in the `pom.xml` from `java8-parent` to `parent`.
+recipeList:
+  - org.openrewrite.maven.ChangeParentPom:
+      oldGroupId: net.wasdev.maven.parent
+      oldArtifactId: java8-parent
+      newArtifactId: parent
+      newVersion: 1.4

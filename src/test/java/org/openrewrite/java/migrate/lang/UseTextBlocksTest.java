@@ -71,7 +71,6 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
     @Test
     void newlineAtBeginningOfLines() {
         rewriteRun(
@@ -251,6 +250,21 @@ class UseTextBlocksTest implements RewriteTest {
                          my_table
                          \""" +
                          "WHERE something = 1;";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void preferNoChangeIfCarriageReturnInContent() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  String text = "Deliberate\\r\\n" +
+                          "carriage return";
               }
               """
           )
@@ -538,7 +552,7 @@ class UseTextBlocksTest implements RewriteTest {
     @Test
     void textBlockDemo() {
         String s1 = """
-                    
+
                     =========================================================
                                                                             \s
                               Welcome to Spring Integration!                \s
@@ -793,8 +807,8 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/260")
+    @Test
         //@Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/261")
     void doNotPartiallyReplaceWithTextBlocks() {
         rewriteRun(
@@ -821,8 +835,8 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/261")
+    @Test
     void doNotPartiallyReplaceWithTextBlocksWithIntLiteral() {
         rewriteRun(
           //language=java
@@ -847,8 +861,8 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/501")
+    @Test
     void shouldNotUpdateKotlinCode() {
         rewriteRun(
           spec -> spec.expectedCyclesThatMakeChanges(0),
@@ -862,8 +876,8 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @Test
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/555")
+    @Test
     void textBlockTrailingEscape() {
         rewriteRun(
           spec -> spec.recipe(new UseTextBlocks()),

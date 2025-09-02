@@ -31,8 +31,8 @@ class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTes
           .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml"));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void migrateJCP() {
         rewriteRun(
           //language=xml
@@ -71,9 +71,9 @@ class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTes
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <validation-config
-                   xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                   xmlns="https://jakarta.ee/xml/ns/validation/configuration"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/validation/configuration/validation-configuration-3.0.xsd"
+                   xsi:schemaLocation="https://jakarta.ee/xml/ns/validation/configuration https://jakarta.ee/xml/ns/validation/validation-configuration-3.0.xsd"
                    version="3.0">
 
                   <default-provider>jakarta.acme.ValidationProvider</default-provider>

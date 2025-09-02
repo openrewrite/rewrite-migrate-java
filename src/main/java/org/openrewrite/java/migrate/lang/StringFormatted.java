@@ -35,8 +35,8 @@ import java.util.List;
 import static java.util.Collections.singletonList;
 import static org.openrewrite.Tree.randomId;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class StringFormatted extends Recipe {
 
     private static final MethodMatcher STRING_FORMAT = new MethodMatcher("java.lang.String format(String, ..)");
@@ -84,7 +84,7 @@ public class StringFormatted extends Recipe {
                 maybeRemoveImport("java.lang.String.format");
                 J.MethodInvocation mi = methodInvocation.withName(methodInvocation.getName().withSimpleName("formatted"));
                 mi = mi.withMethodType(methodInvocation.getMethodType().getDeclaringType().getMethods().stream()
-                        .filter(it -> it.getName().equals("formatted"))
+                        .filter(it -> "formatted".equals(it.getName()))
                         .findAny()
                         .orElse(null));
                 if (mi.getName().getType() != null) {

@@ -17,7 +17,9 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.Issue;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -25,6 +27,8 @@ import org.openrewrite.test.RewriteTest;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
@@ -33,10 +37,7 @@ class UpgradeToJava17Test implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder()
-          .scanRuntimeClasspath("org.openrewrite.java.migrate")
-          .build()
-          .activateRecipes("org.openrewrite.java.migrate.UpgradeToJava17"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava17");
     }
 
     @DocumentExample
@@ -50,13 +51,11 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-                  
                     <properties>
                       <java.version>1.8</java.version>
                       <maven.compiler.source>1.8</maven.compiler.source>
                       <maven.compiler.target>1.8</maven.compiler.target>
                     </properties>
-                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -65,13 +64,11 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-                  
                     <properties>
                       <java.version>17</java.version>
                       <maven.compiler.source>17</maven.compiler.source>
                       <maven.compiler.target>17</maven.compiler.target>
                     </properties>
-                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -82,8 +79,6 @@ class UpgradeToJava17Test implements RewriteTest {
               srcMainJava(
                 java(
                   """
-                    package com.abc;
-                    
                     class A {
                        public String test() {
                            return String.format("Hello %s", "world");
@@ -91,8 +86,6 @@ class UpgradeToJava17Test implements RewriteTest {
                     }
                     """,
                   """
-                    package com.abc;
-                    
                     class A {
                        public String test() {
                            return "Hello %s".formatted("world");
@@ -116,13 +109,11 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-                  
                     <properties>
                       <java.version>1.8</java.version>
                       <maven.compiler.source>${java.version}</maven.compiler.source>
                       <maven.compiler.target>${java.version}</maven.compiler.target>
                     </properties>
-                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -131,13 +122,11 @@ class UpgradeToJava17Test implements RewriteTest {
                 """
                   <project>
                     <modelVersion>4.0.0</modelVersion>
-                  
                     <properties>
                       <java.version>17</java.version>
                       <maven.compiler.source>${java.version}</maven.compiler.source>
                       <maven.compiler.target>${java.version}</maven.compiler.target>
                     </properties>
-                  
                     <groupId>com.mycompany.app</groupId>
                     <artifactId>my-app</artifactId>
                     <version>1</version>
@@ -148,8 +137,6 @@ class UpgradeToJava17Test implements RewriteTest {
                 java(
                   //language=java
                   """
-                    package com.abc;
-                    
                     class A {
                        public String test() {
                            return String.format("Hello %s", "world");
@@ -158,8 +145,6 @@ class UpgradeToJava17Test implements RewriteTest {
                     """,
                   //language=java
                   """
-                    package com.abc;
-                    
                     class A {
                        public String test() {
                            return "Hello %s".formatted("world");
@@ -186,9 +171,9 @@ class UpgradeToJava17Test implements RewriteTest {
                 import java.io.FileInputStream;
                 import java.io.FileNotFoundException;
                 import java.io.InputStream;
-                
+
                 import javax.security.cert.*;
-                
+
                 class Test {
                     void foo() throws CertificateException, FileNotFoundException {
                         InputStream inStream = new FileInputStream("cert");
@@ -203,9 +188,9 @@ class UpgradeToJava17Test implements RewriteTest {
                 import java.io.FileInputStream;
                 import java.io.FileNotFoundException;
                 import java.io.InputStream;
-                
+
                 import java.security.cert.*;
-                
+
                 class Test {
                     void foo() throws CertificateException, FileNotFoundException {
                         InputStream inStream = new FileInputStream("cert");
@@ -228,16 +213,16 @@ class UpgradeToJava17Test implements RewriteTest {
             java(
               """
                 import javax.net.ssl.SSLContext;
-                
+
                 class RemovedLegacySunJSSEProviderName {
                     String legacyProviderName = "com.sun.net.ssl.internal.ssl.Provider"; //flagged
                     String newProviderName = "SunJSSE"; //not flagged
-                
+
                     void test() throws Exception {
                         SSLContext.getInstance("TLS", "com.sun.net.ssl.internal.ssl.Provider"); //flagged
                         SSLContext.getInstance("TLS", "SunJSSE"); //not flagged
                     }
-                
+
                     void test2() throws Exception {
                         System.out.println("com.sun.net.ssl.internal.ssl.Provider"); //flagged
                     }
@@ -245,16 +230,16 @@ class UpgradeToJava17Test implements RewriteTest {
                 """,
               """
                 import javax.net.ssl.SSLContext;
-                
+
                 class RemovedLegacySunJSSEProviderName {
                     String legacyProviderName = "SunJSSE"; //flagged
                     String newProviderName = "SunJSSE"; //not flagged
-                
+
                     void test() throws Exception {
                         SSLContext.getInstance("TLS", "SunJSSE"); //flagged
                         SSLContext.getInstance("TLS", "SunJSSE"); //not flagged
                     }
-                
+
                     void test2() throws Exception {
                         System.out.println("SunJSSE"); //flagged
                     }
@@ -272,7 +257,7 @@ class UpgradeToJava17Test implements RewriteTest {
             java(
               """
                 import java.util.logging.LogRecord;
-                
+
                 class Foo {
                     void bar(LogRecord record) {
                         int threadID = record.getThreadID();
@@ -282,7 +267,7 @@ class UpgradeToJava17Test implements RewriteTest {
                 """,
               """
                 import java.util.logging.LogRecord;
-                
+
                 class Foo {
                     void bar(LogRecord record) {
                         long threadID = record.getLongThreadID();
@@ -355,39 +340,39 @@ class UpgradeToJava17Test implements RewriteTest {
             java(
               """
                 package com.test;
-                
+
                 import java.lang.instrument.Instrumentation;
-                
+
                 public class AgentMainPreMainPublicApp {
-                
+
                 	private static void premain(String agentArgs) {
                 		//This should flag
                 	}
-                
+
                 	public static void premain(String agentArgs, Instrumentation inst) {
                 		//This shouldn't flag
                 	}
-                
+
                 	public static void premain(String agentArgs, Instrumentation inst, String foo) {
                 		//This shouldn't flag
                 	}
-                
+
                 	private static void premain1(String agentArgs) {
                 		//This shouldn't flag
                 	}
-                
+
                 	protected void agentmain(String agentArgs) {
                 		//This should flag
                 	}
-                
+
                     static void agentmain(String agentArgs, Instrumentation inst) {
                 		//This should flag
                 	}
-                
+
                 	private static void agentmain(String agentArgs, Instrumentation inst, String foo) {
                 		//This shouldn't flag
                 	}
-                
+
                     private static void agentmain(String agentArgs, String inst) {
                 		//This shouldn't flag
                 	}
@@ -395,39 +380,39 @@ class UpgradeToJava17Test implements RewriteTest {
                 """,
               """
                 package com.test;
-                
+
                 import java.lang.instrument.Instrumentation;
-                
+
                 public class AgentMainPreMainPublicApp {
-                
+
                 	public static void premain(String agentArgs) {
                 		//This should flag
                 	}
-                
+
                 	public static void premain(String agentArgs, Instrumentation inst) {
                 		//This shouldn't flag
                 	}
-                
+
                 	public static void premain(String agentArgs, Instrumentation inst, String foo) {
                 		//This shouldn't flag
                 	}
-                
+
                 	private static void premain1(String agentArgs) {
                 		//This shouldn't flag
                 	}
-                
+
                 	public void agentmain(String agentArgs) {
                 		//This should flag
                 	}
-                
+
                     public static void agentmain(String agentArgs, Instrumentation inst) {
                 		//This should flag
                 	}
-                
+
                 	private static void agentmain(String agentArgs, Instrumentation inst, String foo) {
                 		//This shouldn't flag
                 	}
-                
+
                     private static void agentmain(String agentArgs, String inst) {
                 		//This shouldn't flag
                 	}
@@ -519,4 +504,184 @@ class UpgradeToJava17Test implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/816")
+    @Test
+    void javaxAnnotationApiToJakarta() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.annotation-api-1.3.2")),
+          version(
+            mavenProject("project",
+              //language=xml
+              pomXml(
+                """
+                  <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <dependencies>
+                      <dependency>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>javax.annotation-api</artifactId>
+                        <version>1.3.2</version>
+                      </dependency>
+                    </dependencies>
+                  </project>
+                  """,
+                """
+                  <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                      <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                      <dependency>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
+                        <version>2.0.0</version>
+                        <scope>provided</scope>
+                      </dependency>
+                    </dependencies>
+                  </project>
+                  """
+              ),
+              //language=java
+              srcMainJava(
+                java(
+                  """
+                    import javax.annotation.PostConstruct;
+
+                    class A {
+                       @PostConstruct
+                       void init() {}
+                    }
+                    """,
+                  """
+                    import jakarta.annotation.PostConstruct;
+
+                    class A {
+                       @PostConstruct
+                       void init() {}
+                    }
+                    """
+                )
+              )
+            ),
+            8)
+        );
+    }
+
+    @Test
+    void upgradeSpotbugsPluginVersion() {
+        rewriteRun(
+          pomXml(
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <dependencies>
+                  <!-- Uncommon, but supported -->
+                  <dependency>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>3.1.0</version>
+                  </dependency>
+                </dependencies>
+                <build>
+                  <plugins>
+                    <!-- Expected and supported -->
+                    <plugin>
+                      <groupId>com.github.spotbugs</groupId>
+                      <artifactId>spotbugs-maven-plugin</artifactId>
+                      <version>3.1.0</version>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """,
+            spec -> spec.after(actual ->
+              assertThat(actual)
+                .containsPattern("<version>4.9.\\d+(.\\d+)?</version>")
+                .doesNotContain("<version>3.1.0</version>")
+                .actual()
+            )
+          )
+        );
+    }
+
+    @Test
+    void upgradeMapstructAndAnnotationPaths() {
+        rewriteRun(
+          pomXml(
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <dependencies>
+                  <dependency>
+                    <groupId>org.mapstruct</groupId>
+                    <artifactId>mapstruct</artifactId>
+                    <version>1.4.0.Final</version>
+                  </dependency>
+                </dependencies>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <version>3.8.1</version>
+                      <configuration>
+                        <annotationProcessorPaths>
+                          <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>1.4.1.Final</version>
+                          </path>
+                        </annotationProcessorPaths>
+                      </configuration>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """,
+            spec -> spec.after(actual ->
+              assertThat(actual)
+                .doesNotContain("1.4.0.Final")
+                // TODO .doesNotContain("1.4.1.Final") // after https://github.com/openrewrite/rewrite/pull/5936
+                .actual())
+          )
+        );
+    }
+
+    @Test
+    void upgradeMapstructAndAnnotationPathsWithGradle() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=groovy
+            """
+              plugins { id 'java' }
+              repositories { mavenCentral() }
+              dependencies {
+                  implementation 'org.mapstruct:mapstruct:1.4.1.Final'
+                  annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.1.Final'
+              }
+              """,
+            spec -> spec.after(actual ->
+              assertThat(actual)
+                .doesNotContain("1.4.1.Final")
+                .containsPattern("1.6.\\d+(.\\d+)?")
+                .actual())
+          )
+        );
+    }
 }

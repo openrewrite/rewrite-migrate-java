@@ -25,11 +25,24 @@ description: >-
 tags:
   - java25
 recipeList:
-  - org.openrewrite.java.migrate.RemoveSecurityAccessController
+  - org.openrewrite.java.migrate.UpgradeToJava21
+  - org.openrewrite.java.migrate.UpgradeBuildToJava25
+  - org.openrewrite.java.migrate.AccessController
   - org.openrewrite.java.migrate.RemoveSecurityPolicy
   - org.openrewrite.java.migrate.RemoveSecurityManager
   - org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
   - org.openrewrite.java.migrate.RelocateSuperCall
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava25
+displayName: Upgrade build to Java 25
+description: Updates build files to use Java 25 as the target/source.
+tags:
+  - java25
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 25
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -110,5 +123,5 @@ preconditions:
 recipeList:
   - org.openrewrite.java.ReplaceMethodInvocationWithConstant:
       methodPattern: java.lang.System#getSecurityManager()
-      constant: "null"
+      replacement: "null"
   - org.openrewrite.staticanalysis.SimplifyConstantIfBranchExecution

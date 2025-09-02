@@ -20,6 +20,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
@@ -41,9 +42,7 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
             //language=xml
             pomXml(
               """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+                <project>
                     <modelVersion>4.0.0</modelVersion>
                     <groupId>com.example</groupId>
                     <artifactId>demo</artifactId>
@@ -57,23 +56,13 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                     </dependencies>
                 </project>
                 """,
-              """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example</groupId>
-                    <artifactId>demo</artifactId>
-                    <version>0.0.1-SNAPSHOT</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.mail</groupId>
-                            <artifactId>jakarta.mail-api</artifactId>
-                            <version>2.0.1</version>
-                        </dependency>
-                    </dependencies>
-                </project>
-                """
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>jakarta.mail</groupId>")
+                .contains("<artifactId>jakarta.mail-api</artifactId>")
+                .containsPattern("<version>2.0.\\d+</version>")
+                .doesNotContain("<groupId>javax.mail</groupId>")
+                .doesNotContain("<artifactId>javax.mail-api</artifactId>")
+                .actual())
             )
           ),
           srcMainJava(
@@ -102,9 +91,7 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
             //language=xml
             pomXml(
               """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+                <project>
                     <modelVersion>4.0.0</modelVersion>
                     <groupId>com.example</groupId>
                     <artifactId>demo</artifactId>
@@ -118,23 +105,13 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                     </dependencies>
                 </project>
                 """,
-              """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example</groupId>
-                    <artifactId>demo</artifactId>
-                    <version>0.0.1-SNAPSHOT</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.mail</groupId>
-                            <artifactId>jakarta.mail-api</artifactId>
-                            <version>2.0.1</version>
-                        </dependency>
-                    </dependencies>
-                </project>
-                """
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>jakarta.mail</groupId>")
+                .contains("<artifactId>jakarta.mail-api</artifactId>")
+                .containsPattern("<version>2.0.\\d+</version>")
+                .doesNotContain("<groupId>javax.mail</groupId>")
+                .doesNotContain("<artifactId>mail</artifactId>")
+                .actual())
             )
           ),
           srcMainJava(
@@ -149,6 +126,125 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                 import jakarta.mail.Session;
                 public class TestApplication {
                 }
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void addsJakartaMailApiDependencyIfJavaxMailApiOnlyExistingInTransitive() {
+        rewriteRun(
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.mail.Session;
+                  public class TestApplication {
+                  }
+                  """,
+                """
+                  import jakarta.mail.Session;
+                  public class TestApplication {
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-autoconfigure</artifactId>
+                            <version>2.1.0.RELEASE</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>jakarta.mail</groupId>")
+                .contains("<artifactId>jakarta.mail-api</artifactId>")
+                .containsPattern("<version>2.0.\\d+</version>")
+                .actual())
+            )
+          )
+        );
+    }
+
+    @Test
+    void upgradesJakartaMailApiDependencyIfAlreadyExistingAtALowerVersion() {
+        rewriteRun(
+          mavenProject(
+            "Sample",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.mail</groupId>
+                            <artifactId>jakarta.mail-api</artifactId>
+                            <version>1.6.8</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .containsPattern("<version>2.0.\\d+</version>")
+                .actual())
+            )
+          )
+        );
+    }
+
+    @Test
+    void ignoresJakartaMailApiDependencyIfAlreadyExisting() {
+        rewriteRun(
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.mail.Session;
+                  public class TestApplication {
+                  }
+                  """,
+                """
+                  import jakarta.mail.Session;
+                  public class TestApplication {
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.mail</groupId>
+                            <artifactId>jakarta.mail-api</artifactId>
+                            <version>2.0.2</version>
+                        </dependency>
+                    </dependencies>
+                </project>
                 """
             )
           )

@@ -13,10 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.jspecify.JSpecifyBestPractices
+displayName: JSpecify best practices
+description: >-
+  Apply JSpecify best practices, such as migrating off of alternatives, and adding missing `@Nullable` annotations.
+tags:
+  - java
+recipeList:
+- org.openrewrite.java.jspecify.MigrateToJSpecify
+- org.openrewrite.staticanalysis.AnnotateNullableMethods
+- org.openrewrite.staticanalysis.AnnotateNullableParameters
+- org.openrewrite.staticanalysis.NullableOnMethodReturnType
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.jspecify.MigrateToJspecify
+name: org.openrewrite.java.jspecify.MigrateToJSpecify
 displayName: Migrate to JSpecify
 description: >-
   This recipe will migrate to JSpecify annotations from various other nullability annotation standards.
@@ -27,7 +40,7 @@ recipeList:
   - org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
   - org.openrewrite.java.jspecify.MigrateFromJetbrainsAnnotations
   # Running the following recipe on current versions of Spring can cause Spring to misunderstand a nullable field.
-  #   For instance, a custom Prometheus scrape endpoint with @Nullable Set<String> includedNames will fail if 
+  #   For instance, a custom Prometheus scrape endpoint with @Nullable Set<String> includedNames will fail if
   #   includedNames is null and if @Nullable is @org.jspecify.annotations.Nullable.
   # - org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations
 
@@ -42,6 +55,7 @@ recipeList:
       artifactId: jspecify
       version: latest.release
       onlyIfUsing: javax.annotation.*ull*
+      acceptTransitive: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -67,6 +81,7 @@ recipeList:
       artifactId: jspecify
       version: 1.0.0
       onlyIfUsing: jakarta.annotation.*ull*
+      acceptTransitive: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -88,6 +103,7 @@ recipeList:
       artifactId: jspecify
       version: 1.0.0
       onlyIfUsing: org.jetbrains.annotations.*ull*
+      acceptTransitive: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.jetbrains.annotations.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -109,6 +125,7 @@ recipeList:
       artifactId: jspecify
       version: 1.0.0
       onlyIfUsing: org.springframework.lang.*ull*
+      acceptTransitive: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.springframework.lang.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable

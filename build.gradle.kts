@@ -7,9 +7,14 @@ group = "org.openrewrite.recipe"
 description = "Migrate to later Java versions. Automatically."
 
 recipeDependencies {
-    parserClasspath("javax.persistence:javax.persistence-api:2.2")
     parserClasspath("jakarta.enterprise:jakarta.enterprise.cdi-api:3.0.0-M4")
+    parserClasspath("jakarta.inject:jakarta.inject-api:2.0.1")
+    parserClasspath("jakarta.servlet:jakarta.servlet-api:6.0.0")
+    parserClasspath("javax.persistence:javax.persistence-api:2.2")
     parserClasspath("org.glassfish:javax.servlet:3.0")
+    parserClasspath("javax.annotation:javax.annotation-api:1.3.2")
+    parserClasspath("com.google.guava:guava:33.4.8-jre")
+    parserClasspath("com.google.errorprone:error_prone_core:2.+")
 }
 
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
@@ -44,20 +49,16 @@ dependencies {
 
     runtimeOnly("tech.picnic.error-prone-support:error-prone-contrib:latest.release:recipes")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:latest.release")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.+")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.+")
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.3")
 
     testImplementation("org.openrewrite:rewrite-test")
     testImplementation("org.openrewrite:rewrite-kotlin")
     testImplementation("org.openrewrite.gradle.tooling:model:$rewriteVersion")
 
     testImplementation("org.assertj:assertj-core:latest.release")
-
-    testImplementation("com.google.guava:guava:33.0.0-jre")
-    testImplementation("joda-time:joda-time:2.12.3")
-    testImplementation("org.threeten:threeten-extra:1.8.0")
 
     testRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr353")
     testRuntimeOnly("com.fasterxml.jackson.core:jackson-core")
@@ -74,6 +75,7 @@ dependencies {
     testRuntimeOnly("com.google.code.findbugs:jsr305:3.0.2")
     testRuntimeOnly("javax.mail:mail:1.4.7")
     testRuntimeOnly("javax.mail:javax.mail-api:1.6.2")
+    testRuntimeOnly("javax.servlet:javax.servlet-api:4.0.1")
     testRuntimeOnly("javax.ws.rs:javax.ws.rs-api:2.1.1")
     testRuntimeOnly(gradleApi())
 }
@@ -84,4 +86,8 @@ tasks.withType(Javadoc::class.java) {
 
 tasks.test {
     maxHeapSize = "2g"  // Set max heap size to 2GB or adjust as necessary
+}
+
+tasks.withType<JavaCompile> {
+    options.compilerArgs.add("-Arewrite.javaParserClasspathFrom=resources")
 }

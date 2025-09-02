@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -27,7 +28,7 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResources("org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate")
-          .parser(JavaParser.fromJavaVersion().classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
     @DocumentExample
@@ -36,7 +37,7 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
         rewriteRun(
           //language=java
           java(
-            """   
+            """
               import com.google.common.base.Predicate;
 
               class A {
@@ -50,7 +51,7 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
                   }
               }
               """,
-            """ 
+            """
               import java.util.function.Predicate;
 
               class A {

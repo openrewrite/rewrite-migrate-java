@@ -26,6 +26,7 @@ import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.*;
 
+@SuppressWarnings({"ClassCanBeRecord", "LombokGetterMayBeUsed", "NullableProblems", "TypeParameterExplicitlyExtendsObject"})
 class LombokValueToRecordTest implements RewriteTest {
 
     @Override
@@ -40,14 +41,12 @@ class LombokValueToRecordTest implements RewriteTest {
           );
     }
 
-    @Test
     @DocumentExample
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/141")
+    @Test
     void convertOnlyValueAnnotatedClassWithoutDefaultValuesToRecord() {
         //language=java
         rewriteRun(
-          // TODO: find a way to please type validation so this workaround is not required anymore
-          s -> s.typeValidationOptions(TypeValidation.none()),
           java(
             """
               package example;
@@ -142,7 +141,6 @@ class LombokValueToRecordTest implements RewriteTest {
     void onlyRemoveAnnotationFromRecords() {
         //language=java
         rewriteRun(
-          s -> s.typeValidationOptions(TypeValidation.none()),
           java(
             """
               package example;
@@ -185,7 +183,6 @@ class LombokValueToRecordTest implements RewriteTest {
     void innerRecordsNotStatic() {
         //language=java
         rewriteRun(
-          s -> s.typeValidationOptions(TypeValidation.none()),
           java(
             """
               package example;
@@ -218,7 +215,6 @@ class LombokValueToRecordTest implements RewriteTest {
     void interfaceIsImplementedThatDoesNotDefineFieldGetter() {
         //language=java
         rewriteRun(
-          s -> s.typeValidationOptions(TypeValidation.none()),
           java(
             """
               package example;
@@ -248,13 +244,13 @@ class LombokValueToRecordTest implements RewriteTest {
     void plainLombokBuilder() {
         //language=java
         rewriteRun(
-          s -> s.typeValidationOptions(TypeValidation.none()),
           java(
             """
               package example;
 
               import lombok.Value;
               import lombok.Builder;
+              import java.io.Serializable;
 
               @Value
               @Builder
@@ -266,6 +262,7 @@ class LombokValueToRecordTest implements RewriteTest {
               package example;
 
               import lombok.Builder;
+              import java.io.Serializable;
 
               @Builder
               public record A(
@@ -274,7 +271,131 @@ class LombokValueToRecordTest implements RewriteTest {
               """
           )
         );
+    }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/812")
+    @Test
+    void booleanFieldWithIsGetter() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import lombok.Value;
+
+              @Value
+              public class Foo {
+                boolean bar;
+              }
+              """,
+            """
+              public record Foo(
+                boolean bar) {
+              }"""
+          ),
+          java(
+            """
+              public class Baz {
+                  public void baz(Foo foo) {
+                      foo.isBar();
+                  }
+              }
+              """,
+            """
+              public class Baz {
+                  public void baz(Foo foo) {
+                      foo.bar();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/812")
+    @Test
+    void multipleBooleanFields() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import lombok.Value;
+
+              @Value
+              public class Config {
+                boolean enabled;
+                Boolean active;
+                String name;
+              }
+              """,
+            """
+              public record Config(
+                boolean enabled,
+                Boolean active,
+                String name) {
+              }
+              """
+          ),
+          java(
+            """
+              public class ConfigUser {
+                  public void useConfig(Config config) {
+                      if (config.isEnabled() && config.getActive()) {
+                          System.out.println(config.getName());
+                      }
+                  }
+              }
+              """,
+            """
+              public class ConfigUser {
+                  public void useConfig(Config config) {
+                      if (config.enabled() && config.active()) {
+                          System.out.println(config.name());
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/449")
+    @Test
+    void methodReferences() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import lombok.Value;
+              import java.util.function.Supplier;
+
+              @Value
+              class A {
+                String test;
+              }
+
+              class Using {
+                 Supplier<String> usingMethodReference() {
+                    A a = new A("foo");
+                    return a::getTest;
+                }
+              }
+              """,
+            """
+              import java.util.function.Supplier;
+
+              record A(
+                String test) {
+              }
+
+              class Using {
+                 Supplier<String> usingMethodReference() {
+                    A a = new A("foo");
+                    return a::test;
+                }
+              }
+              """
+          )
+        );
     }
 
     @Nested
@@ -304,7 +425,7 @@ class LombokValueToRecordTest implements RewriteTest {
         void classWithFieldAnnotations() {
             //language=java
             rewriteRun(
-              s -> s.typeValidationOptions(TypeValidation.none()),
+              s -> s.typeValidationOptions(TypeValidation.all().identifiers(false)),
               java(
                 """
                   import com.fasterxml.jackson.annotation.JsonProperty;
@@ -433,7 +554,6 @@ class LombokValueToRecordTest implements RewriteTest {
         void nonStaticInnerClass() {
             //language=java
             rewriteRun(
-              s -> s.typeValidationOptions(TypeValidation.none()),
               java(
                 """
                   package example;
@@ -455,7 +575,6 @@ class LombokValueToRecordTest implements RewriteTest {
         void staticConstructor() {
             //language=java
             rewriteRun(
-              s -> s.typeValidationOptions(TypeValidation.none()),
               java(
                 """
                   package example;

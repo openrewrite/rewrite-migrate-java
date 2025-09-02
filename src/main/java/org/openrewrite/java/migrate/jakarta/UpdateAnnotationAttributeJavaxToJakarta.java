@@ -22,12 +22,12 @@ import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
-import org.openrewrite.java.trait.Traits;
+import org.openrewrite.java.trait.Annotated;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class UpdateAnnotationAttributeJavaxToJakarta extends Recipe {
 
     @Override
@@ -50,7 +50,7 @@ public class UpdateAnnotationAttributeJavaxToJakarta extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Traits.annotated(signature).asVisitor(ann -> ann.getTree()
+        return new Annotated.Matcher(signature).asVisitor(ann -> ann.getTree()
                 .withArguments(ListUtils.map(ann.getTree().getArguments(), arg -> {
                     if (arg instanceof J.Assignment) {
                         J.Assignment as = (J.Assignment) arg;

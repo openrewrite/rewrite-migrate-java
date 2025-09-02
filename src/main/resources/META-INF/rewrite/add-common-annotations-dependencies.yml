@@ -26,13 +26,16 @@ tags:
   - jsr250
   - jakarta
 recipeList:
-  # Add or update the jakarta.annotation-api to a maven project. This artifact still uses the javax.annotation name space.
+  # Add or update the jakarta.annotation-api. Use version 1.3.x, as this version still kept the old javax namespace (starting from 2.x it's changed to jakarta).
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.annotation
       oldArtifactId: javax.annotation-api
       newGroupId: jakarta.annotation
       newArtifactId: jakarta.annotation-api
       newVersion: 1.3.x
+      # set explicitly even if  managed, as higher versions do not have the javax namespace
+      overrideManagedVersion: true
+      changeManagedDependency: false
   # Jakarta EE recommends `provided` scope
   - org.openrewrite.maven.ChangeDependencyScope:
       groupId: jakarta.annotation

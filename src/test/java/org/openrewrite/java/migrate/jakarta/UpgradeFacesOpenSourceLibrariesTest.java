@@ -26,7 +26,7 @@ import static org.openrewrite.maven.Assertions.pomXml;
 class UpgradeFacesOpenSourceLibrariesTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.UpgradeFacesOpenSourceLibraries");
+        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.UpgradeFaces4OpenSourceLibraries");
     }
 
     @Test

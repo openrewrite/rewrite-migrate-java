@@ -58,7 +58,22 @@ recipeList:
       groupId: commons-codec
       artifactId: commons-codec
       newVersion: 1.17.x
+  # As it's a Maven plugin, we should only need Maven versions of these upgrades
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: com.github.spotbugs
+      artifactId: spotbugs-maven-plugin
+      newVersion: 4.9.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: com.github.spotbugs
+      artifactId: spotbugs-maven-plugin
+      newVersion: 4.9.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.mapstruct
+      artifactId: mapstruct*
+      newVersion: 1.6.x
   - org.openrewrite.java.migrate.AddLombokMapstructBinding
+  - org.openrewrite.java.migrate.UpdateJakartaAnnotationsIfForJavax
+  - org.openrewrite.java.migrate.UpdateJakartaAnnotationsIfExistsForJakarta
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -323,3 +338,28 @@ recipeList:
       groupId: org.projectlombok
       artifactId: lombok-mapstruct-binding
       version: 0.2.0
+---
+# The scanning phase comes before the editing phase, therefor we check if a javax.annotation dependency is on the classpath (with whatever version)
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpdateJakartaAnnotationsIfForJavax
+displayName: Update `jakarta.annotation-api` dependency if it exists
+description: Counteract the `jakarta.annotation-api` by updating to `jakarta` namespace
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: javax.annotation
+      artifactIdPattern: javax.annotation-api
+recipeList:
+  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpdateJakartaAnnotationsIfExistsForJakarta
+displayName: Update `jakarta.annotation-api` dependency if it exists
+description: Counteract the `jakarta.annotation-api` by updating to `jakarta` namespace
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: jakarta.annotation
+      artifactIdPattern: jakarta.annotation-api
+      version: 1.3.x
+recipeList:
+  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation

@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -29,11 +30,11 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaImmutableSetOf())
-          .parser(JavaParser.fromJavaVersion().classpath("guava"));
+          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
-    @Test
     @DocumentExample
+    @Test
     void replaceArguments() {
         //language=java
         rewriteRun(

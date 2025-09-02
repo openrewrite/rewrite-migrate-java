@@ -27,7 +27,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.UpgradeBuildToJava21
-  - org.openrewrite.java.migrate.RemoveIllegalSemicolons
+  - org.openrewrite.staticanalysis.RemoveExtraSemicolons
   - org.openrewrite.java.migrate.lang.ThreadStopUnsupported
   - org.openrewrite.java.migrate.net.URLConstructorToURICreate
   # Fails to introduce new exception handling https://github.com/openrewrite/rewrite-migrate-java/issues/467
@@ -39,6 +39,13 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradePluginsForJava21
   - org.openrewrite.java.migrate.DeleteDeprecatedFinalize
   - org.openrewrite.java.migrate.RemovedSubjectMethods
+  - org.openrewrite.java.migrate.lang.SwitchCaseAssignmentsToSwitchExpression
+  - org.openrewrite.java.migrate.lang.SwitchCaseReturnsToSwitchExpression
+  - org.openrewrite.java.migrate.lang.SwitchExpressionYieldToArrow
+  # TODO Reevaluate when these recipes are stable enough to be included by default
+  #- org.openrewrite.java.migrate.lang.IfElseIfConstructToSwitch
+  #- org.openrewrite.java.migrate.SwitchPatternMatching
+  #- org.openrewrite.java.migrate.lang.NullCheckAsSwitchCase
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -130,3 +137,15 @@ recipeList:
       methodPattern: java.awt.image.ColorModel finalize()
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.awt.image.IndexColorModel finalize()
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.SwitchPatternMatching
+displayName: Adopt switch pattern matching (JEP 441)
+description: >-
+  [JEP 441](https://openjdk.org/jeps/441) describes how some switch statements can be improved with pattern matching.
+  This recipe applies some of those improvements where applicable.
+tags:
+  - java21
+recipeList:
+  - org.openrewrite.java.migrate.lang.RefineSwitchCases
+  - org.openrewrite.java.migrate.lang.SwitchCaseEnumGuardToLabel

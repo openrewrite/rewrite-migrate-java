@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
+import org.openrewrite.gradle.ChangeDependency;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.search.FindGradleProject;
@@ -39,8 +40,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
     private static final String JACKSON_GROUP = "com.fasterxml.jackson.module";
     private static final String JACKSON_JAXB_ARTIFACT = "jackson-module-jaxb-annotations";
@@ -124,17 +125,13 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                             // Upgrade any previous runtimes to the most current 2.3.x version
                             doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
                         }
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT,
-                                SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
-                        ).getVisitor().visitNonNull(g, ctx);
+                        g = (G.CompilationUnit) new ChangeDependency(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, true).getVisitor().visitNonNull(g, ctx);
                     } else {
                         if (getAfterVisit().isEmpty()) {
                             // Upgrade any previous runtimes to the most current 2.3.x version
                             doAfterVisit(new org.openrewrite.gradle.UpgradeDependencyVersion(GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null).getVisitor());
                         }
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.ChangeDependency(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT,
-                                GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null
-                        ).getVisitor().visitNonNull(g, ctx);
+                        g = (G.CompilationUnit) new ChangeDependency(SUN_JAXB_RUNTIME_GROUP, SUN_JAXB_RUNTIME_ARTIFACT, GLASSFISH_JAXB_RUNTIME_GROUP, GLASSFISH_JAXB_RUNTIME_ARTIFACT, "2.3.x", null, null, true).getVisitor().visitNonNull(g, ctx);
                     }
                     if(!acc.get()) {
                         return g;
@@ -160,7 +157,7 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                         artifactId = SUN_JAXB_RUNTIME_ARTIFACT;
                     }
                     if (rc.findResolvedDependency(groupId, artifactId) == null) {
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(groupId, artifactId, version, null, "runtimeOnly", null, null, null, null)
+                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(groupId, artifactId, version, null, "runtimeOnly", null, null, null, null, null)
                                 .visitNonNull(g, ctx);
                     }
                     return g;
@@ -168,8 +165,8 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
             });
 
             final TreeVisitor<?, ExecutionContext> mavenVisitor = new MavenIsoVisitor<ExecutionContext>() {
-                @SuppressWarnings("ConstantConditions")
                 @Override
+                @SuppressWarnings("ConstantConditions")
                 public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
                     Xml.Document d = super.visitDocument(document, ctx);
 
@@ -218,14 +215,9 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
         d = (Xml.Document) new org.openrewrite.maven.UpgradeDependencyVersion(sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x", null, null, null)
                 .getVisitor()
                 .visitNonNull(d, ctx);
-        d = (Xml.Document) new org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId(
+        return (Xml.Document) new org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId(
                 glassfishJaxbRuntimeGroup, glassfishJaxbRuntimeArtifact,
-                sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x", null
-        ).getVisitor().visitNonNull(d, ctx);
-        d = (Xml.Document) new org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId(
-                glassfishJaxbRuntimeGroup, glassfishJaxbRuntimeArtifact,
-                sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x"
-        ).getVisitor().visitNonNull(d, ctx);
-        return d;
+                sunJaxbRuntimeGroup, sunJaxbRuntimeArtifact, "2.3.x", null, false, true)
+                .getVisitor().visitNonNull(d, ctx);
     }
 }

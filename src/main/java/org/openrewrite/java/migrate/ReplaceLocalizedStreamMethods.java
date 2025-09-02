@@ -27,8 +27,8 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
-@Value
 @EqualsAndHashCode(callSuper = false)
+@Value
 public class ReplaceLocalizedStreamMethods extends Recipe {
 
     @Option(displayName = "Method pattern to replace",

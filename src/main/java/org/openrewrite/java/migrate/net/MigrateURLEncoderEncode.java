@@ -27,8 +27,9 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
-import java.util.Collections;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class MigrateURLEncoderEncode extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.net.URLEncoder encode(String)");
@@ -45,7 +46,7 @@ public class MigrateURLEncoderEncode extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("deprecated");
+        return singleton("deprecated");
     }
 
     @Override
