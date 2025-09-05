@@ -25,7 +25,6 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 
 import java.util.Collections;
 import java.util.List;
@@ -44,9 +43,7 @@ public class MigrateProcessWaitForDuration extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(
-                new UsesJavaVersion<>(25),
-                new JavaVisitor<ExecutionContext>() {
+        return new JavaVisitor<ExecutionContext>() {
                     private final MethodMatcher waitForMatcher = new MethodMatcher("java.lang.Process waitFor(long, java.util.concurrent.TimeUnit)");
 
                     @Override
@@ -60,54 +57,108 @@ public class MigrateProcessWaitForDuration extends Recipe {
                                 Expression timeUnitArg = arguments.get(1);
 
                                 maybeAddImport("java.time.Duration");
-                                
-                                // Check if the TimeUnit is a constant we can map to a specific Duration method
-                                String durationMethod = null;
-                                if (timeUnitArg instanceof J.FieldAccess) {
-                                    J.FieldAccess fa = (J.FieldAccess) timeUnitArg;
-                                    if (fa.getSimpleName().equals("NANOSECONDS")) {
-                                        durationMethod = "ofNanos";
-                                    } else if (fa.getSimpleName().equals("MICROSECONDS")) {
-                                        durationMethod = "ofNanos"; // will multiply by 1000
-                                        timeoutArg = JavaTemplate.builder("#{any(long)} * 1000")
-                                                .build()
-                                                .apply(getCursor(), timeoutArg.getCoordinates().replace(), timeoutArg);
-                                    } else if (fa.getSimpleName().equals("MILLISECONDS")) {
-                                        durationMethod = "ofMillis";
-                                    } else if (fa.getSimpleName().equals("SECONDS")) {
-                                        durationMethod = "ofSeconds";
-                                    } else if (fa.getSimpleName().equals("MINUTES")) {
-                                        durationMethod = "ofMinutes";
-                                    } else if (fa.getSimpleName().equals("HOURS")) {
-                                        durationMethod = "ofHours";
-                                    } else if (fa.getSimpleName().equals("DAYS")) {
-                                        durationMethod = "ofDays";
-                                    }
-                                }
+
+                                // Check if we can determine the TimeUnit value
+                                String timeUnitName = getTimeUnitName(timeUnitArg);
+                                boolean isSimpleTimeout = isSimpleValue(timeoutArg);
 
                                 Expression durationArg;
-                                if (durationMethod != null && !durationMethod.equals("ofNanos") && 
-                                    (timeoutArg instanceof J.Literal || timeoutArg instanceof J.Identifier)) {
-                                    // Use the more expressive Duration method for simple timeout values
-                                    maybeRemoveImport("java.util.concurrent.TimeUnit");
-                                    JavaTemplate template = JavaTemplate.builder("Duration." + durationMethod + "(#{any(long)})")
-                                            .imports("java.time.Duration")
-                                            .build();
-                                    durationArg = template.apply(getCursor(), mi.getCoordinates().replaceArguments(), timeoutArg);
+                                if (timeUnitName != null && isSimpleTimeout) {
+                                    // Try to use expressive Duration methods
+                                    String durationMethod = null;
+                                    boolean needsChronoUnit = false;
+
+                                    switch (timeUnitName) {
+                                        case "NANOSECONDS":
+                                            durationMethod = "ofNanos";
+                                            break;
+                                        case "MICROSECONDS":
+                                            // Special case: Duration doesn't have ofMicros
+                                            needsChronoUnit = true;
+                                            break;
+                                        case "MILLISECONDS":
+                                            durationMethod = "ofMillis";
+                                            break;
+                                        case "SECONDS":
+                                            durationMethod = "ofSeconds";
+                                            break;
+                                        case "MINUTES":
+                                            durationMethod = "ofMinutes";
+                                            break;
+                                        case "HOURS":
+                                            durationMethod = "ofHours";
+                                            break;
+                                        case "DAYS":
+                                            durationMethod = "ofDays";
+                                            break;
+                                    }
+
+                                    if (needsChronoUnit) {
+                                        // Use Duration.of with ChronoUnit for MICROSECONDS
+                                        maybeAddImport("java.time.temporal.ChronoUnit");
+                                        maybeRemoveImport("java.util.concurrent.TimeUnit");
+                                        JavaTemplate template = JavaTemplate.builder("Duration.of(#{any(long)}, ChronoUnit.MICROS)")
+                                                .imports("java.time.Duration", "java.time.temporal.ChronoUnit")
+                                                .build();
+                                        mi = template.apply(getCursor(), method.getCoordinates().replaceArguments(), timeoutArg);
+                                    } else if (durationMethod != null) {
+                                        // Use expressive Duration method
+                                        maybeRemoveImport("java.util.concurrent.TimeUnit");
+                                        // Also remove static imports if present
+                                        maybeRemoveImport("java.util.concurrent.TimeUnit." + timeUnitName);
+                                        JavaTemplate template = JavaTemplate.builder("Duration." + durationMethod + "(#{any(long)})")
+                                                .imports("java.time.Duration")
+                                                .build();
+                                        mi = template.apply(getCursor(), method.getCoordinates().replaceArguments(), timeoutArg);
+                                    } else {
+                                        // Shouldn't happen, but fallback to generic conversion
+                                        JavaTemplate template = JavaTemplate.builder("Duration.of(#{any(long)}, #{any(java.util.concurrent.TimeUnit)}.toChronoUnit())")
+                                                .imports("java.time.Duration")
+                                                .build();
+                                        mi = template.apply(getCursor(), method.getCoordinates().replaceArguments(), timeoutArg, timeUnitArg);
+                                    }
                                 } else {
-                                    // Fall back to Duration.of with toChronoUnit conversion
+                                    // Complex case: use Duration.of with toChronoUnit
                                     JavaTemplate template = JavaTemplate.builder("Duration.of(#{any(long)}, #{any(java.util.concurrent.TimeUnit)}.toChronoUnit())")
                                             .imports("java.time.Duration")
                                             .build();
-                                    durationArg = template.apply(getCursor(), mi.getCoordinates().replaceArguments(), timeoutArg, timeUnitArg);
+                                    mi = template.apply(getCursor(), method.getCoordinates().replaceArguments(), timeoutArg, timeUnitArg);
                                 }
-
-                                return mi.withArguments(Collections.singletonList(durationArg));
                             }
                         }
                         return mi;
                     }
-                }
-        );
+
+                    private String getTimeUnitName(Expression timeUnitArg) {
+                        if (timeUnitArg instanceof J.FieldAccess) {
+                            J.FieldAccess fa = (J.FieldAccess) timeUnitArg;
+                            return fa.getSimpleName();
+                        } else if (timeUnitArg instanceof J.Identifier) {
+                            // Handle static imports
+                            J.Identifier id = (J.Identifier) timeUnitArg;
+                            String name = id.getSimpleName();
+                            // Check if it's a known TimeUnit constant
+                            if (isTimeUnitConstant(name)) {
+                                return name;
+                            }
+                        }
+                        return null;
+                    }
+
+                    private boolean isTimeUnitConstant(String name) {
+                        return "NANOSECONDS".equals(name) ||
+                               "MICROSECONDS".equals(name) ||
+                               "MILLISECONDS".equals(name) ||
+                               "SECONDS".equals(name) ||
+                               "MINUTES".equals(name) ||
+                               "HOURS".equals(name) ||
+                               "DAYS".equals(name);
+                    }
+
+                    private boolean isSimpleValue(Expression expr) {
+                        // Check if the expression is a literal or a simple identifier (not a method call or complex expression)
+                        return expr instanceof J.Literal || expr instanceof J.Identifier;
+                    }
+                };
     }
 }

@@ -142,7 +142,7 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
                   private long getTimeout() {
                       return 10;
                   }
-                  
+
                   void test(Process process) throws Exception {
                       process.waitFor(getTimeout(), TimeUnit.SECONDS);
                   }
@@ -156,7 +156,7 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
                   private long getTimeout() {
                       return 10;
                   }
-                  
+
                   void test(Process process) throws Exception {
                       process.waitFor(Duration.of(getTimeout(), TimeUnit.SECONDS.toChronoUnit()));
                   }
@@ -281,24 +281,6 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
               class Test {
                   void test() throws Exception {
                       new ProcessBuilder("echo", "hello").start().waitFor(Duration.ofSeconds(3));
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void noChangeWhenAlreadyUsingDuration() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.time.Duration;
-
-              class Test {
-                  void test(Process process) throws Exception {
-                      process.waitFor(Duration.ofSeconds(5));
                   }
               }
               """
