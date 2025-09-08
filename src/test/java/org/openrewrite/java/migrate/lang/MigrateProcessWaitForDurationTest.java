@@ -16,12 +16,14 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.junit.jupiter.api.condition.JRE.JAVA_25;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
@@ -68,9 +70,9 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
     @CsvSource(textBlock = """
       SECONDS, 5, ofSeconds
       MINUTES, 2, ofMinutes
-      HOURS, 24, ofHours
+      HOURS, 23, ofHours
       DAYS, 7, ofDays
-      MILLISECONDS, 1000, ofMillis
+      MILLISECONDS, 1001, ofMillis
       NANOSECONDS, 1000000, ofNanos
       """)
     @ParameterizedTest
@@ -109,7 +111,7 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
 
               class Test {
                   void test(Process process) throws Exception {
-                      process.waitFor(1000, TimeUnit.MICROSECONDS);
+                      process.waitFor(999, TimeUnit.MICROSECONDS);
                   }
               }
               """,
@@ -119,7 +121,7 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
 
               class Test {
                   void test(Process process) throws Exception {
-                      process.waitFor(Duration.of(1000, ChronoUnit.MICROS));
+                      process.waitFor(Duration.of(999, ChronoUnit.MICROS));
                   }
               }
               """
@@ -276,6 +278,25 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
               class Test {
                   void test() throws Exception {
                       new ProcessBuilder("echo", "hello").start().waitFor(Duration.ofSeconds(3));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @EnabledForJreRange(min = JAVA_25)
+    @Test
+    void noChangeForWaitForDuration() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.time.Duration;
+
+              class Test {
+                  void test(Process process) throws Exception {
+                      process.waitFor(Duration.ofSeconds(5));
                   }
               }
               """
