@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -29,9 +28,7 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec
-          .recipe(new MigrateProcessWaitForDuration())
-          .parser(JavaParser.fromJavaVersion());
+        spec.recipe(new MigrateProcessWaitForDuration());
     }
 
     @DocumentExample
@@ -66,17 +63,16 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
     }
 
     @CsvSource(textBlock = """
-        SECONDS, 5, ofSeconds
-        MINUTES, 2, ofMinutes
-        HOURS, 24, ofHours
-        DAYS, 7, ofDays
-        MILLISECONDS, 1000, ofMillis
-        NANOSECONDS, 1000000, ofNanos
-        """)
+      SECONDS, 5, ofSeconds
+      MINUTES, 2, ofMinutes
+      HOURS, 24, ofHours
+      DAYS, 7, ofDays
+      MILLISECONDS, 1000, ofMillis
+      NANOSECONDS, 1000000, ofNanos
+      """)
     @ParameterizedTest
     void migrateProcessWaitForWithExpressiveMethods(String timeUnit, String value, String durationMethod) {
         rewriteRun(
-          //language=java
           java(
             """
               import java.util.concurrent.TimeUnit;
