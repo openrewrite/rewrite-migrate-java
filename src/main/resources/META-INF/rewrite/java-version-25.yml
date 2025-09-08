@@ -31,7 +31,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemoveSecurityPolicy
   - org.openrewrite.java.migrate.RemoveSecurityManager
   - org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
-
+  - org.openrewrite.java.migrate.MigrateZipErrorToZipException
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava25
@@ -53,8 +53,8 @@ tags:
   - security
   - deprecation
 preconditions:
-  - org.openrewrite.java.migrate.search.FindJavaVersion:
-      version: 24
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.security.AccessController#checkPermission(..)
 recipeList:
@@ -73,8 +73,8 @@ tags:
   - security
   - deprecation
 preconditions:
-  - org.openrewrite.java.migrate.search.FindJavaVersion:
-      version: 24
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.security.Policy#setPolicy(..)
 recipeList:
@@ -93,8 +93,8 @@ tags:
   - security
   - deprecation
 preconditions:
-  - org.openrewrite.java.migrate.search.FindJavaVersion:
-      version: 24
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.lang.SecurityManager#check*(..)
 recipeList:
@@ -115,8 +115,8 @@ tags:
   - security
   - deprecation
 preconditions:
-  - org.openrewrite.java.migrate.search.FindJavaVersion:
-      version: 24
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.lang.System#getSecurityManager()
 recipeList:
@@ -124,3 +124,16 @@ recipeList:
       methodPattern: java.lang.System#getSecurityManager()
       replacement: "null"
   - org.openrewrite.staticanalysis.SimplifyConstantIfBranchExecution
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.MigrateZipErrorToZipException
+displayName: Use `ZipException` instead of `ZipError`
+description: Use `ZipException` instead of the deprecated `ZipError` in Java 9 or higher.
+preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[25,)"
+recipeList:
+   - org.openrewrite.java.ChangeType:
+       oldFullyQualifiedTypeName: java.util.zip.ZipError
+       newFullyQualifiedTypeName: java.util.zip.ZipException
