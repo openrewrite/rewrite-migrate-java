@@ -16,11 +16,13 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
@@ -38,7 +40,7 @@ public class MigrateProcessWaitForDuration extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesJavaVersion(25), new JavaVisitor<ExecutionContext>() {
             private final MethodMatcher waitForMatcher = new MethodMatcher("java.lang.Process waitFor(long, java.util.concurrent.TimeUnit)");
 
             @Override
@@ -70,7 +72,6 @@ public class MigrateProcessWaitForDuration extends Recipe {
                         mi = template.apply(getCursor(), mi.getCoordinates().replaceArguments(), valueArg, unitArg);
                     }
 
-                    // Handle all imports at the end
                     maybeAddImport("java.time.Duration");
                     maybeAddImport("java.time.temporal.ChronoUnit");
                     maybeRemoveImport("java.util.concurrent.TimeUnit");
@@ -108,6 +109,6 @@ public class MigrateProcessWaitForDuration extends Recipe {
                         return null;
                 }
             }
-        };
+        });
     }
 }
