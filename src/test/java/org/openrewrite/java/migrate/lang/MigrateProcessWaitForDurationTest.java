@@ -23,12 +23,15 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class MigrateProcessWaitForDurationTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new MigrateProcessWaitForDuration());
+        spec
+          .allSources(src -> src.markers(javaVersion(25)))
+          .recipe(new MigrateProcessWaitForDuration());
     }
 
     @DocumentExample
