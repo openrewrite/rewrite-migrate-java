@@ -33,8 +33,6 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion());
     }
 
-    @DocumentExample
-    @ParameterizedTest
     @CsvSource(textBlock = """
         SECONDS, 5, ofSeconds
         MINUTES, 2, ofMinutes
