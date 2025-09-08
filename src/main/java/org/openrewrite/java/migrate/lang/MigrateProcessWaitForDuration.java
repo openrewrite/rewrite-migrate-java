@@ -80,7 +80,7 @@ public class MigrateProcessWaitForDuration extends Recipe {
                 return mi;
             }
 
-            private String getTimeUnitName(Expression timeUnitArg) {
+            private @Nullable String getTimeUnitName(Expression timeUnitArg) {
                 if (timeUnitArg instanceof J.FieldAccess) {
                     J.FieldAccess fa = (J.FieldAccess) timeUnitArg;
                     return fa.getSimpleName();
