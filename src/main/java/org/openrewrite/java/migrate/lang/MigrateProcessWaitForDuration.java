@@ -84,7 +84,8 @@ public class MigrateProcessWaitForDuration extends Recipe {
                 if (timeUnitArg instanceof J.FieldAccess) {
                     J.FieldAccess fa = (J.FieldAccess) timeUnitArg;
                     return fa.getSimpleName();
-                } else if (timeUnitArg instanceof J.Identifier) {
+                }
+                if (timeUnitArg instanceof J.Identifier) {
                     J.Identifier id = (J.Identifier) timeUnitArg;
                     return id.getSimpleName();
                 }
