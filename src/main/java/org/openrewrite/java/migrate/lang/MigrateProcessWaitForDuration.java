@@ -43,7 +43,7 @@ public class MigrateProcessWaitForDuration extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesJavaVersion(25), new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesJavaVersion<>(25), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
