@@ -93,7 +93,10 @@ public class MigrateProcessWaitForDuration extends Recipe {
                 return null;
             }
 
-            private String getDurationMethod(String timeUnitName) {
+            private @Nullable String getDurationMethod(@Nullable String timeUnitName) {
+                if (timeUnitName == null) {
+                    return null;
+                }
                 switch (timeUnitName) {
                     case "NANOSECONDS":
                         return "ofNanos";
