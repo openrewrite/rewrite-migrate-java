@@ -41,6 +41,7 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
         MILLISECONDS, 1000, ofMillis
         NANOSECONDS, 1000000, ofNanos
         """)
+    @ParameterizedTest
     void migrateProcessWaitForWithExpressiveMethods(String timeUnit, String value, String durationMethod) {
         rewriteRun(
           //language=java
