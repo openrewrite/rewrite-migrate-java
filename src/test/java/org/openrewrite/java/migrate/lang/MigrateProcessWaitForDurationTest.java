@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.lang;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -31,6 +32,37 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
         spec
           .recipe(new MigrateProcessWaitForDuration())
           .parser(JavaParser.fromJavaVersion());
+    }
+
+    @DocumentExample
+    @Test
+    void migrateProcessWaitForWithStaticImport() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import static java.util.concurrent.TimeUnit.SECONDS;
+              import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+              class Test {
+                  void test(Process process) throws Exception {
+                      process.waitFor(5, SECONDS);
+                      process.waitFor(100, MILLISECONDS);
+                  }
+              }
+              """,
+            """
+              import java.time.Duration;
+
+              class Test {
+                  void test(Process process) throws Exception {
+                      process.waitFor(Duration.ofSeconds(5));
+                      process.waitFor(Duration.ofMillis(100));
+                  }
+              }
+              """
+          )
+        );
     }
 
     @CsvSource(textBlock = """
@@ -218,36 +250,6 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
                       if (process.waitFor(Duration.ofSeconds(5))) {
                           System.out.println("Process completed within timeout");
                       }
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void migrateProcessWaitForWithStaticImport() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import static java.util.concurrent.TimeUnit.SECONDS;
-              import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
-              class Test {
-                  void test(Process process) throws Exception {
-                      process.waitFor(5, SECONDS);
-                      process.waitFor(100, MILLISECONDS);
-                  }
-              }
-              """,
-            """
-              import java.time.Duration;
-
-              class Test {
-                  void test(Process process) throws Exception {
-                      process.waitFor(Duration.ofSeconds(5));
-                      process.waitFor(Duration.ofMillis(100));
                   }
               }
               """
