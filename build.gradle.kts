@@ -46,6 +46,7 @@ dependencies {
     runtimeOnly("org.openrewrite:rewrite-java-11")
     runtimeOnly("org.openrewrite:rewrite-java-17")
     runtimeOnly("org.openrewrite:rewrite-java-21")
+    runtimeOnly("org.openrewrite:rewrite-java-25")
 
     runtimeOnly("tech.picnic.error-prone-support:error-prone-contrib:latest.release:recipes")
 
