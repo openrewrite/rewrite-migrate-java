@@ -28,6 +28,8 @@ import org.openrewrite.java.tree.J;
 
 public class MigrateProcessWaitForDuration extends Recipe {
 
+    private static final MethodMatcher PROCESS_WAIT_FOR_MATCHER = new MethodMatcher("java.lang.Process waitFor(long, java.util.concurrent.TimeUnit)");
+
     @Override
     public String getDisplayName() {
         return "Use `Process#waitFor(Duration)`";
@@ -41,13 +43,11 @@ public class MigrateProcessWaitForDuration extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesJavaVersion(25), new JavaVisitor<ExecutionContext>() {
-            private final MethodMatcher waitForMatcher = new MethodMatcher("java.lang.Process waitFor(long, java.util.concurrent.TimeUnit)");
-
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
 
-                if (waitForMatcher.matches(mi)) {
+                if (PROCESS_WAIT_FOR_MATCHER.matches(mi)) {
                     Expression valueArg = mi.getArguments().get(0);
                     Expression unitArg = mi.getArguments().get(1);
                     String timeUnitName = getTimeUnitName(unitArg);
