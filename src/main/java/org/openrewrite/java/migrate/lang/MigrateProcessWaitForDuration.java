@@ -26,6 +26,7 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.staticanalysis.SimplifyDurationCreationUnits;
 
 public class MigrateProcessWaitForDuration extends Recipe {
 
@@ -56,27 +57,29 @@ public class MigrateProcessWaitForDuration extends Recipe {
 
                     boolean isSimpleValue = valueArg instanceof J.Literal || valueArg instanceof J.Identifier;
 
-                    if (isSimpleValue && "MICROSECONDS".equals(timeUnitName)) {
-                        JavaTemplate template = JavaTemplate.builder("Duration.of(#{any(long)}, ChronoUnit.MICROS)")
-                                .imports("java.time.Duration", "java.time.temporal.ChronoUnit")
-                                .build();
-                        mi = template.apply(getCursor(), mi.getCoordinates().replaceArguments(), valueArg);
-                    } else if (isSimpleValue && durationMethod != null) {
-                        JavaTemplate template = JavaTemplate.builder("Duration." + durationMethod + "(#{any(long)})")
-                                .imports("java.time.Duration")
-                                .build();
-                        mi = template.apply(getCursor(), mi.getCoordinates().replaceArguments(), valueArg);
-                    } else {
-                        JavaTemplate template = JavaTemplate.builder("Duration.of(#{any(long)}, #{any(java.util.concurrent.TimeUnit)}.toChronoUnit())")
-                                .imports("java.time.Duration")
-                                .build();
-                        mi = template.apply(getCursor(), mi.getCoordinates().replaceArguments(), valueArg, unitArg);
-                    }
-
-                    maybeAddImport("java.time.Duration");
-                    maybeAddImport("java.time.temporal.ChronoUnit");
                     maybeRemoveImport("java.util.concurrent.TimeUnit");
                     maybeRemoveImport("java.util.concurrent.TimeUnit." + timeUnitName);
+                    maybeAddImport("java.time.Duration");
+                    maybeAddImport("java.time.temporal.ChronoUnit");
+
+                    doAfterVisit(new SimplifyDurationCreationUnits().getVisitor());
+
+                    if (isSimpleValue && "MICROSECONDS".equals(timeUnitName)) {
+                        return JavaTemplate.builder("Duration.of(#{any(long)}, ChronoUnit.MICROS)")
+                                .imports("java.time.Duration", "java.time.temporal.ChronoUnit")
+                                .build()
+                                .apply(getCursor(), mi.getCoordinates().replaceArguments(), valueArg);
+                    }
+                    if (isSimpleValue && durationMethod != null) {
+                        return JavaTemplate.builder("Duration." + durationMethod + "(#{any(long)})")
+                                .imports("java.time.Duration")
+                                .build()
+                                .apply(getCursor(), mi.getCoordinates().replaceArguments(), valueArg);
+                    }
+                    return JavaTemplate.builder("Duration.of(#{any(long)}, #{any(java.util.concurrent.TimeUnit)}.toChronoUnit())")
+                            .imports("java.time.Duration")
+                            .build()
+                            .apply(getCursor(), mi.getCoordinates().replaceArguments(), valueArg, unitArg);
                 }
                 return mi;
             }
