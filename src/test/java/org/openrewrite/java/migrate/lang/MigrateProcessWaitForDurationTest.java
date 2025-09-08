@@ -208,8 +208,6 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
                   void test(Process process) throws Exception {
                       if (process.waitFor(5, TimeUnit.SECONDS)) {
                           System.out.println("Process completed within timeout");
-                      } else {
-                          System.out.println("Process did not complete within timeout");
                       }
                   }
               }
@@ -221,8 +219,6 @@ class MigrateProcessWaitForDurationTest implements RewriteTest {
                   void test(Process process) throws Exception {
                       if (process.waitFor(Duration.ofSeconds(5))) {
                           System.out.println("Process completed within timeout");
-                      } else {
-                          System.out.println("Process did not complete within timeout");
                       }
                   }
               }
