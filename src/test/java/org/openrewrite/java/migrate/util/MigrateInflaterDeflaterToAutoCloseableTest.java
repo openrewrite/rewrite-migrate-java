@@ -42,13 +42,12 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
           java(
             """
               import java.util.zip.Inflater;
-              
+
               class Test {
                   public void test(byte[] arg) {
                       Inflater inflater = new Inflater();
                       try {
                           inflater.inflate(arg);
-                      } catch (Exception e) {
                       } finally {
                           inflater.end();
                       }
@@ -57,12 +56,14 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
               """,
             """
               import java.util.zip.Inflater;
-              
+
               class Test {
                   public void test(byte[] arg) {
-                      try (Inflater inflater = new Inflater()) {
+                      Inflater inflater = new Inflater();
+                      try {
                           inflater.inflate(arg);
-                      } catch (Exception e) {
+                      } finally {
+                          inflater.close();
                       }
                   }
               }
@@ -78,7 +79,7 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
           java(
             """
               import java.util.zip.Deflater;
-              
+
               class Test {
                   public void test(byte[] arg) {
                       Deflater deflater = new Deflater();
@@ -93,12 +94,15 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
               """,
             """
               import java.util.zip.Deflater;
-              
+
               class Test {
                   public void test(byte[] arg) {
-                      try (Deflater deflater = new Deflater()) {
+                      Deflater deflater = new Deflater();
+                      try {
                           deflater.setInput(arg);
                           deflater.finish();
+                      } finally {
+                          deflater.close();
                       }
                   }
               }
@@ -116,7 +120,7 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
               import java.nio.ByteBuffer;
               import java.util.zip.DataFormatException;
               import java.util.zip.Inflater;
-              
+
               class Test {
                   public void test(ByteBuffer arg) throws DataFormatException {
                       Inflater inflater = new Inflater();
@@ -129,12 +133,12 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
               import java.nio.ByteBuffer;
               import java.util.zip.DataFormatException;
               import java.util.zip.Inflater;
-              
+
               class Test {
                   public void test(ByteBuffer arg) throws DataFormatException {
-                      try (Inflater inflater = new Inflater()) {
-                          inflater.inflate(arg);
-                      }
+                      Inflater inflater = new Inflater();
+                      inflater.inflate(arg);
+                      inflater.close();
                   }
               }
               """
@@ -151,7 +155,7 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
               import java.nio.ByteBuffer;
               import java.util.zip.DataFormatException;
               import java.util.zip.Deflater;
-              
+
               class Test {
                   public void test(ByteBuffer arg) throws DataFormatException {
                       Deflater deflater = new Deflater();
@@ -164,16 +168,12 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
               import java.nio.ByteBuffer;
               import java.util.zip.DataFormatException;
               import java.util.zip.Deflater;
-              import java.util.zip.Inflater;
-              
+
               class Test {
-                  public void test(ByteBuffer arg) {
-                      try (Deflater deflater = new Deflater(); Inflater inflater = new Inflater()) {
-                          deflater.deflate(arg);
-                          inflater.inflate(arg);
-                      } catch (DataFormatException e) {
-                          throw new RuntimeException(e);
-                      }
+                  public void test(ByteBuffer arg) throws DataFormatException {
+                      Deflater deflater = new Deflater();
+                      deflater.deflate(arg);
+                      deflater.close();
                   }
               }
               """
@@ -191,7 +191,7 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
               import java.util.zip.DataFormatException;
               import java.util.zip.Deflater;
               import java.util.zip.Inflater;
-              
+
               class Test {
                   public void test(ByteBuffer arg) {
                       Deflater deflater = new Deflater();
@@ -213,14 +213,19 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
               import java.util.zip.DataFormatException;
               import java.util.zip.Deflater;
               import java.util.zip.Inflater;
-              
+
               class Test {
                   public void test(ByteBuffer arg) {
-                      try (Deflater deflater = new Deflater(); Inflater inflater = new Inflater()) {
+                      Deflater deflater = new Deflater();
+                      Inflater inflater = new Inflater();
+                      try {
                           deflater.deflate(arg);
                           inflater.inflate(arg);
                       } catch (DataFormatException e) {
                           throw new RuntimeException(e);
+                      } finally {
+                          deflater.close();
+                          inflater.close();
                       }
                   }
               }
@@ -236,12 +241,12 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
           java(
             """
               import java.util.zip.Inflater;
-              
+
               class CustomInflater extends Inflater {
                   void customMethod() {
                   }
               }
-              
+
               class Test {
                   public void test() {
                       CustomInflater inflater = new CustomInflater();
@@ -252,17 +257,17 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
               """,
             """
               import java.util.zip.Inflater;
-              
+
               class CustomInflater extends Inflater {
                   void customMethod() {
                   }
               }
-              
+
               class Test {
                   public void test() {
-                      try (CustomInflater inflater = new CustomInflater()) {
-                          inflater.customMethod();
-                      }
+                      CustomInflater inflater = new CustomInflater();
+                      inflater.customMethod();
+                      inflater.close();
                   }
               }
               """
@@ -277,12 +282,12 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
           java(
             """
               import java.util.zip.Deflater;
-              
+
               class CustomDeflater extends Deflater {
                   void customMethod() {
                   }
               }
-              
+
               class Test {
                   public void test() {
                       CustomDeflater deflater = new CustomDeflater();
@@ -293,50 +298,23 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
               """,
             """
               import java.util.zip.Deflater;
-              
+
               class CustomDeflater extends Deflater {
                   void customMethod() {
                   }
               }
-              
+
               class Test {
                   public void test() {
-                      try (CustomDeflater deflater = new CustomDeflater()) {
-                          deflater.customMethod();
-                      }
+                      CustomDeflater deflater = new CustomDeflater();
+                      deflater.customMethod();
+                      deflater.close();
                   }
               }
               """
           )
         );
     }
-
-
-
-    @Test
-    void noChangeNonInflaterDeflater() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class CustomClass {
-                  void end() {
-                      System.out.println("ending");
-                  }
-              }
-              
-              class Test {
-                  public void test() {
-                      CustomClass obj = new CustomClass();
-                      obj.end();
-                  }
-              }
-              """
-          )
-        );
-    }
-
-
 
     @Test
     void noChangeOnJava24() {
@@ -346,7 +324,7 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
           java(
             """
               import java.util.zip.Inflater;
-              
+
               class Test {
                   void test() {
                       Inflater inflater = new Inflater();

@@ -28,6 +28,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
   - org.openrewrite.java.migrate.UpgradeBuildToJava25
   - org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
+  - org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToAutoCloseable
   - org.openrewrite.java.migrate.AccessController
   - org.openrewrite.java.migrate.RemoveSecurityPolicy
   - org.openrewrite.java.migrate.RemoveSecurityManager
