@@ -26,6 +26,7 @@ import org.openrewrite.java.RenameVariable;
 import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Statement;
 import org.openrewrite.staticanalysis.VariableReferences;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -53,17 +54,53 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesJavaVersion<>(25), new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
-                J.VariableDeclarations.NamedVariable v = super.visitVariable(variable, ctx);
-                if (UNDERSCORE.equals(v.getSimpleName())) {
-                    return v;
+            public J.ForEachLoop visitForEachLoop(J.ForEachLoop forLoop, ExecutionContext ctx) {
+                J.ForEachLoop l = super.visitForEachLoop(forLoop, ctx);
+                Statement variable = l.getControl().getVariable();
+                if (variable instanceof J.VariableDeclarations) {
+                    for (J.VariableDeclarations.NamedVariable namedVariable : ((J.VariableDeclarations) variable).getVariables()) {
+                        if (UNDERSCORE.equals(namedVariable.getSimpleName())) {
+                            return l;
+                        }
+                        if (replaceIfUnusedInContext(namedVariable, J.ForEachLoop.class, J.ForEachLoop::getBody)) {
+                            doAfterVisit(new RenameVariable<>(namedVariable, UNDERSCORE));
+                        }
+                    }
                 }
-                if (replaceIfUnusedInContext(v, J.ForEachLoop.class, J.ForEachLoop::getBody) ||
-                        replaceIfUnusedInContext(v, J.Try.Catch.class, J.Try.Catch::getBody) ||
-                        replaceIfUnusedInContext(v, J.Lambda.class, J.Lambda::getBody)) {
-                    doAfterVisit(new RenameVariable<>(variable, UNDERSCORE));
+                return l;
+            }
+
+            @Override
+            public J.Try.Catch visitCatch(J.Try.Catch _catch, ExecutionContext ctx) {
+                J.Try.Catch c = super.visitCatch(_catch, ctx);
+                for (J.VariableDeclarations.NamedVariable namedVariable : c.getParameter().getTree().getVariables()) {
+                    if (UNDERSCORE.equals(namedVariable.getSimpleName())) {
+                        return c;
+                    }
+                    if (replaceIfUnusedInContext(namedVariable, J.Try.Catch.class, J.Try.Catch::getBody)) {
+                        doAfterVisit(new RenameVariable<>(namedVariable, UNDERSCORE));
+                    }
                 }
-                return v;
+                return c;
+            }
+
+            @Override
+            public J.Lambda visitLambda(J.Lambda lambda, ExecutionContext ctx) {
+                J.Lambda l = super.visitLambda(lambda, ctx);
+                for (J param : l.getParameters().getParameters()) {
+                    if (param instanceof J.VariableDeclarations) {
+                        J.VariableDeclarations vd = (J.VariableDeclarations) param;
+                        for (J.VariableDeclarations.NamedVariable namedVariable : vd.getVariables()) {
+                            if (UNDERSCORE.equals(namedVariable.getSimpleName())) {
+                                return l;
+                            }
+                            if (replaceIfUnusedInContext(namedVariable, J.Lambda.class, J.Lambda::getBody)) {
+                                doAfterVisit(new RenameVariable<>(namedVariable, UNDERSCORE));
+                            }
+                        }
+                    }
+                }
+                return l;
             }
 
             private <T extends J> boolean replaceIfUnusedInContext(
