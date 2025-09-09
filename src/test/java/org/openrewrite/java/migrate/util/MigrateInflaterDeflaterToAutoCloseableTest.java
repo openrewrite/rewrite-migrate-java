@@ -29,7 +29,7 @@ class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipeFromResources("org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToAutoCloseable")
+          .recipeFromResources("org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToClose")
           .parser(JavaParser.fromJavaVersion())
           .allSources(s -> s.markers(javaVersion(25)));
     }

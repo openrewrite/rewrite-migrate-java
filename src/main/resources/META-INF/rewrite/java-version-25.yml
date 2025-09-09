@@ -28,7 +28,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
   - org.openrewrite.java.migrate.UpgradeBuildToJava25
   - org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
-  - org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToAutoCloseable
+  - org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToClose
   - org.openrewrite.java.migrate.AccessController
   - org.openrewrite.java.migrate.RemoveSecurityPolicy
   - org.openrewrite.java.migrate.RemoveSecurityManager
@@ -36,8 +36,8 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToAutoCloseable
-displayName: Replace `Inflater` and `Deflater` `end()` calls with `close()` calls
+name: org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToClose
+displayName: Replace `Inflater` and `Deflater` `end()` calls with `close()`
 description: >-
   Replace `end()` method calls with `close()` method calls for `Inflater` and `Deflater` classes in Java 25+, as they now implement AutoCloseable.
 preconditions:
