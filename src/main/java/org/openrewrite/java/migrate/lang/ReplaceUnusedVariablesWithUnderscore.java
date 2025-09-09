@@ -22,11 +22,11 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.RenameVariable;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.staticanalysis.VariableReferences;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 @EqualsAndHashCode(callSuper = false)
@@ -53,42 +53,21 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
             @Override
             public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
                 J.VariableDeclarations.NamedVariable v = super.visitVariable(variable, ctx);
-
                 if (UNDERSCORE.equals(v.getSimpleName())) {
                     return v;
                 }
-
-                Optional<J.VariableDeclarations.NamedVariable> result = replaceIfUnusedInContext(v, J.ForEachLoop.class, J.ForEachLoop::getBody);
-                if (result.isPresent()) {
-                    return result.get();
+                if (replaceIfUnusedInContext(v, J.ForEachLoop.class, J.ForEachLoop::getBody) ||
+                        replaceIfUnusedInContext(v, J.Try.Catch.class, J.Try.Catch::getBody) ||
+                        replaceIfUnusedInContext(v, J.Lambda.class, J.Lambda::getBody)) {
+                    doAfterVisit(new RenameVariable<>(variable, UNDERSCORE));
                 }
-
-                result = replaceIfUnusedInContext(v, J.Try.Catch.class, J.Try.Catch::getBody);
-                if (result.isPresent()) {
-                    return result.get();
-                }
-
-                result = replaceIfUnusedInContext(v, J.Lambda.class, J.Lambda::getBody);
-                return result.orElse(v);
-
+                return v;
             }
 
-            private <T extends J> Optional<J.VariableDeclarations.NamedVariable> replaceIfUnusedInContext(
-                    J.VariableDeclarations.NamedVariable variable,
-                    Class<T> contextClass,
-                    Function<T, J> bodyExtractor) {
+            private <T extends J> boolean replaceIfUnusedInContext(
+                    J.VariableDeclarations.NamedVariable variable, Class<T> contextClass, Function<T, J> bodyExtractor) {
                 T context = getCursor().firstEnclosing(contextClass);
-                if (context != null && VariableReferences.findRhsReferences(bodyExtractor.apply(context), variable.getName()).isEmpty()) {
-                    return Optional.of(replaceWithUnderscore(variable));
-                }
-                return Optional.empty();
-            }
-
-            private J.VariableDeclarations.NamedVariable replaceWithUnderscore(J.VariableDeclarations.NamedVariable variable) {
-                return variable.withName(variable.getName()
-                                .withSimpleName(UNDERSCORE)
-                                .withFieldType(variable.getName().getFieldType().withName(UNDERSCORE)))
-                        .withVariableType(variable.getVariableType().withName(UNDERSCORE));
+                return context != null && VariableReferences.findRhsReferences(bodyExtractor.apply(context), variable.getName()).isEmpty();
             }
         });
     }
