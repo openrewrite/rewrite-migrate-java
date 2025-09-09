@@ -313,4 +313,84 @@ class ReplaceUnusedVariablesWithUnderscoreTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void doNotReplaceUsedInMethodReference() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.stream.Stream;
+
+              class Test {
+                  void test() {
+                      Stream.of("a").forEach(item -> System.out.println(item.toString()));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceUnusedInNestedLambda() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.stream.Stream;
+
+              class Test {
+                  void test() {
+                      Stream.of("a").forEach(outer -> {
+                          Stream.of("b").forEach(inner -> System.out.println());
+                      });
+                  }
+              }
+              """,
+            """
+              import java.util.stream.Stream;
+
+              class Test {
+                  void test() {
+                      Stream.of("a").forEach(_ -> {
+                          Stream.of("b").forEach(_ -> System.out.println());
+                      });
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotReplaceWhenOuterVariableUsedInInnerLambda() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.stream.Stream;
+
+              class Test {
+                  void test() {
+                      Stream.of("a").forEach(outer -> {
+                          Stream.of("b").forEach(inner -> System.out.println(outer));
+                      });
+                  }
+              }
+              """,
+            """
+              import java.util.stream.Stream;
+
+              class Test {
+                  void test() {
+                      Stream.of("a").forEach(outer -> {
+                          Stream.of("b").forEach(_ -> System.out.println(outer));
+                      });
+                  }
+              }
+              """
+          )
+        );
+    }
 }

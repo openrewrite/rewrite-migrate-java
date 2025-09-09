@@ -22,15 +22,18 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
+
+    private static final String UNDERSCORE = "_";
 
     @Override
     public String getDisplayName() {
@@ -54,39 +57,47 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
                     public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
                         J.VariableDeclarations.NamedVariable v = super.visitVariable(variable, ctx);
 
-                        if ("_".equals(v.getSimpleName())) {
+                        if (UNDERSCORE.equals(v.getSimpleName())) {
                             return v;
                         }
 
-                        String varName = v.getSimpleName();
-
-                        // Check if this variable should be replaced with underscore
-                        J.ForEachLoop forLoop = getCursor().firstEnclosing(J.ForEachLoop.class);
-                        if (forLoop != null && !isVariableUsedInStatement(forLoop.getBody(), varName)) {
-                            J.VariableDeclarations.NamedVariable namedVariable = v.withName(v.getName().withSimpleName("_").withFieldType(v.getName().getFieldType().withName("_"))).withVariableType(v.getVariableType().withName("_"));
-                            return namedVariable;
+                        Optional<J.VariableDeclarations.NamedVariable> result = replaceIfUnusedInContext(v, J.ForEachLoop.class, J.ForEachLoop::getBody);
+                        if(result.isPresent()) {
+                            return result.get();
                         }
 
-                        J.Try.Catch catchClause = getCursor().firstEnclosing(J.Try.Catch.class);
-                        if (catchClause != null && !isVariableUsedInStatement(catchClause.getBody(), varName)) {
-                            J.VariableDeclarations.NamedVariable namedVariable = v.withName(v.getName().withSimpleName("_").withFieldType(v.getName().getFieldType().withName("_"))).withVariableType(v.getVariableType().withName("_"));
-                            return namedVariable;
+                        result = replaceIfUnusedInContext(v, J.Try.Catch.class, J.Try.Catch::getBody);
+                        if(result.isPresent()) {
+                            return result.get();
                         }
 
-                        J.Lambda lambda = getCursor().firstEnclosing(J.Lambda.class);
-                        if (lambda != null && !isVariableUsedInStatement(lambda.getBody(), varName)) {
-                            J.VariableDeclarations.NamedVariable namedVariable = v.withName(v.getName().withSimpleName("_").withFieldType(v.getName().getFieldType().withName("_"))).withVariableType(v.getVariableType().withName("_"));
-                            return namedVariable;
+                        result = replaceIfUnusedInContext(v, J.Lambda.class, J.Lambda::getBody);
+                        if(result.isPresent()) {
+                            return result.get();
                         }
 
                         return v;
                     }
 
-                    private boolean isVariableUsedInStatement(J statement, String varName) {
-                        if (statement == null || "_".equals(varName)) {
-                            return false;
+                    private <T extends J> Optional<J.VariableDeclarations.NamedVariable> replaceIfUnusedInContext(
+                            J.VariableDeclarations.NamedVariable variable,
+                            Class<T> contextClass,
+                            Function<T, J> bodyExtractor) {
+                        T context = getCursor().firstEnclosing(contextClass);
+                        if (context != null && !isVariableUsedInStatement(bodyExtractor.apply(context), variable.getSimpleName())) {
+                            return Optional.of(replaceWithUnderscore(variable));
                         }
+                        return Optional.empty();
+                    }
 
+                    private J.VariableDeclarations.NamedVariable replaceWithUnderscore(J.VariableDeclarations.NamedVariable variable) {
+                        return variable.withName(variable.getName()
+                                .withSimpleName(UNDERSCORE)
+                                .withFieldType(variable.getName().getFieldType().withName(UNDERSCORE)))
+                                .withVariableType(variable.getVariableType().withName(UNDERSCORE));
+                    }
+
+                    private boolean isVariableUsedInStatement(J statement, String varName) {
                         return new VariableUsageVisitor(varName).reduce(statement, new AtomicBoolean(false)).get();
                     }
 
