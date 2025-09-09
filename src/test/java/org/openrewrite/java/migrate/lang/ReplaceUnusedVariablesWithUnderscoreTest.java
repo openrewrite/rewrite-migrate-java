@@ -31,7 +31,7 @@ class ReplaceUnusedVariablesWithUnderscoreTest implements RewriteTest {
         spec
           .recipe(new ReplaceUnusedVariablesWithUnderscore())
           .parser(JavaParser.fromJavaVersion())
-          .allSources(s -> s.markers(javaVersion(22)));
+          .allSources(s -> s.markers(javaVersion(25)));
     }
 
     @DocumentExample

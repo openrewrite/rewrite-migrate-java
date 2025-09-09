@@ -49,76 +49,62 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(
-                new UsesJavaVersion<>(25),
-                new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesJavaVersion<>(25), new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
+                J.VariableDeclarations.NamedVariable v = super.visitVariable(variable, ctx);
 
-                    @Override
-                    public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
-                        J.VariableDeclarations.NamedVariable v = super.visitVariable(variable, ctx);
+                if (UNDERSCORE.equals(v.getSimpleName())) {
+                    return v;
+                }
 
-                        if (UNDERSCORE.equals(v.getSimpleName())) {
-                            return v;
-                        }
+                Optional<J.VariableDeclarations.NamedVariable> result = replaceIfUnusedInContext(v, J.ForEachLoop.class, J.ForEachLoop::getBody);
+                if (result.isPresent()) {
+                    return result.get();
+                }
 
-                        Optional<J.VariableDeclarations.NamedVariable> result = replaceIfUnusedInContext(v, J.ForEachLoop.class, J.ForEachLoop::getBody);
-                        if(result.isPresent()) {
-                            return result.get();
-                        }
+                result = replaceIfUnusedInContext(v, J.Try.Catch.class, J.Try.Catch::getBody);
+                if (result.isPresent()) {
+                    return result.get();
+                }
 
-                        result = replaceIfUnusedInContext(v, J.Try.Catch.class, J.Try.Catch::getBody);
-                        if(result.isPresent()) {
-                            return result.get();
-                        }
+                result = replaceIfUnusedInContext(v, J.Lambda.class, J.Lambda::getBody);
+                return result.orElse(v);
 
-                        result = replaceIfUnusedInContext(v, J.Lambda.class, J.Lambda::getBody);
-                        if(result.isPresent()) {
-                            return result.get();
-                        }
+            }
 
-                        return v;
-                    }
+            private <T extends J> Optional<J.VariableDeclarations.NamedVariable> replaceIfUnusedInContext(
+                    J.VariableDeclarations.NamedVariable variable,
+                    Class<T> contextClass,
+                    Function<T, J> bodyExtractor) {
+                T context = getCursor().firstEnclosing(contextClass);
+                if (context != null && !isVariableUsedInStatement(bodyExtractor.apply(context), variable.getSimpleName())) {
+                    return Optional.of(replaceWithUnderscore(variable));
+                }
+                return Optional.empty();
+            }
 
-                    private <T extends J> Optional<J.VariableDeclarations.NamedVariable> replaceIfUnusedInContext(
-                            J.VariableDeclarations.NamedVariable variable,
-                            Class<T> contextClass,
-                            Function<T, J> bodyExtractor) {
-                        T context = getCursor().firstEnclosing(contextClass);
-                        if (context != null && !isVariableUsedInStatement(bodyExtractor.apply(context), variable.getSimpleName())) {
-                            return Optional.of(replaceWithUnderscore(variable));
-                        }
-                        return Optional.empty();
-                    }
-
-                    private J.VariableDeclarations.NamedVariable replaceWithUnderscore(J.VariableDeclarations.NamedVariable variable) {
-                        return variable.withName(variable.getName()
+            private J.VariableDeclarations.NamedVariable replaceWithUnderscore(J.VariableDeclarations.NamedVariable variable) {
+                return variable.withName(variable.getName()
                                 .withSimpleName(UNDERSCORE)
                                 .withFieldType(variable.getName().getFieldType().withName(UNDERSCORE)))
-                                .withVariableType(variable.getVariableType().withName(UNDERSCORE));
-                    }
+                        .withVariableType(variable.getVariableType().withName(UNDERSCORE));
+            }
 
-                    private boolean isVariableUsedInStatement(J statement, String varName) {
-                        return new VariableUsageVisitor(varName).reduce(statement, new AtomicBoolean(false)).get();
-                    }
-
-                    private class VariableUsageVisitor extends JavaIsoVisitor<AtomicBoolean> {
-                        private final String varName;
-
-                        VariableUsageVisitor(String varName) {
-                            this.varName = varName;
-                        }
-
-                        @Override
-                        public J.Identifier visitIdentifier(J.Identifier identifier, AtomicBoolean used) {
-                            if (varName.equals(identifier.getSimpleName())) {
-                                if (!(getCursor().getParent().getValue() instanceof J.VariableDeclarations.NamedVariable)) {
-                                    used.set(true);
-                                    return identifier;
-                                }
+            private boolean isVariableUsedInStatement(J statement, String varName) {
+                return new JavaIsoVisitor<AtomicBoolean>() {
+                    @Override
+                    public J.Identifier visitIdentifier(J.Identifier identifier, AtomicBoolean used) {
+                        if (varName.equals(identifier.getSimpleName())) {
+                            if (!(getCursor().getParent().getValue() instanceof J.VariableDeclarations.NamedVariable)) {
+                                used.set(true);
+                                return identifier;
                             }
-                            return super.visitIdentifier(identifier, used);
                         }
+                        return super.visitIdentifier(identifier, used);
                     }
-                });
+                }.reduce(statement, new AtomicBoolean(false)).get();
+            }
+        });
     }
 }
