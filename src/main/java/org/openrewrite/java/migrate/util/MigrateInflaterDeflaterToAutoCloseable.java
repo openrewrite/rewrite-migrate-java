@@ -59,7 +59,7 @@ public class MigrateInflaterDeflaterToAutoCloseable extends Recipe {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
-                        if (JAVA_UTIL_ZIP_DEFLATER_END_MATCHER.matches(mi) || 
+                        if (JAVA_UTIL_ZIP_DEFLATER_END_MATCHER.matches(mi) ||
                             JAVA_UTIL_ZIP_INFLATER_END_MATCHER.matches(mi)) {
                             return mi.withName(mi.getName().withSimpleName("close"));
                         }
