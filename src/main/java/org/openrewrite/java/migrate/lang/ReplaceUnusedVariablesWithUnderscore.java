@@ -50,7 +50,7 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                new UsesJavaVersion<>(22),
+                new UsesJavaVersion<>(25),
                 new JavaIsoVisitor<ExecutionContext>() {
 
                     @Override
