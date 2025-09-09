@@ -30,7 +30,6 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.staticanalysis.VariableReferences;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -59,12 +58,7 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
                 Statement variable = l.getControl().getVariable();
                 if (variable instanceof J.VariableDeclarations) {
                     for (J.VariableDeclarations.NamedVariable namedVariable : ((J.VariableDeclarations) variable).getVariables()) {
-                        if (UNDERSCORE.equals(namedVariable.getSimpleName())) {
-                            return l;
-                        }
-                        if (replaceIfUnusedInContext(namedVariable, J.ForEachLoop.class, J.ForEachLoop::getBody)) {
-                            doAfterVisit(new RenameVariable<>(namedVariable, UNDERSCORE));
-                        }
+                        renameVariableIfUnusedInContext(namedVariable, l.getBody());
                     }
                 }
                 return l;
@@ -74,12 +68,7 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
             public J.Try.Catch visitCatch(J.Try.Catch _catch, ExecutionContext ctx) {
                 J.Try.Catch c = super.visitCatch(_catch, ctx);
                 for (J.VariableDeclarations.NamedVariable namedVariable : c.getParameter().getTree().getVariables()) {
-                    if (UNDERSCORE.equals(namedVariable.getSimpleName())) {
-                        return c;
-                    }
-                    if (replaceIfUnusedInContext(namedVariable, J.Try.Catch.class, J.Try.Catch::getBody)) {
-                        doAfterVisit(new RenameVariable<>(namedVariable, UNDERSCORE));
-                    }
+                    renameVariableIfUnusedInContext(namedVariable, c.getBody());
                 }
                 return c;
             }
@@ -89,29 +78,23 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
                 J.Lambda l = super.visitLambda(lambda, ctx);
                 for (J param : l.getParameters().getParameters()) {
                     if (param instanceof J.VariableDeclarations) {
-                        J.VariableDeclarations vd = (J.VariableDeclarations) param;
-                        for (J.VariableDeclarations.NamedVariable namedVariable : vd.getVariables()) {
-                            if (UNDERSCORE.equals(namedVariable.getSimpleName())) {
-                                return l;
-                            }
-                            if (replaceIfUnusedInContext(namedVariable, J.Lambda.class, J.Lambda::getBody)) {
-                                doAfterVisit(new RenameVariable<>(namedVariable, UNDERSCORE));
-                            }
+                        for (J.VariableDeclarations.NamedVariable namedVariable : ((J.VariableDeclarations) param).getVariables()) {
+                            renameVariableIfUnusedInContext(namedVariable, l.getBody());
                         }
                     }
                 }
                 return l;
             }
 
-            private <T extends J> boolean replaceIfUnusedInContext(
-                    J.VariableDeclarations.NamedVariable variable, Class<T> contextClass, Function<T, J> bodyExtractor) {
-                T context = getCursor().firstEnclosing(contextClass);
-                return context != null &&
-                        VariableReferences.findRhsReferences(bodyExtractor.apply(context), variable.getName()).isEmpty() &&
-                        !usedInModifyingUnary(context, variable.getName());
+            private void renameVariableIfUnusedInContext(J.VariableDeclarations.NamedVariable variable, J context) {
+                if (!UNDERSCORE.equals(variable.getName().getSimpleName()) &&
+                        VariableReferences.findRhsReferences(context, variable.getName()).isEmpty() &&
+                        !usedInModifyingUnary(context, variable.getName())) {
+                    doAfterVisit(new RenameVariable<>(variable, UNDERSCORE));
+                }
             }
 
-            private <T extends J> boolean usedInModifyingUnary(T context, J.Identifier name) {
+            private <T extends J> boolean usedInModifyingUnary(J context, J.Identifier name) {
                 return new JavaIsoVisitor<AtomicBoolean>() {
                     @Override
                     public J.Unary visitUnary(J.Unary unary, AtomicBoolean atomicBoolean) {
