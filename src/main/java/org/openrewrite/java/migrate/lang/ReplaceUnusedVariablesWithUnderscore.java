@@ -89,17 +89,17 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
             private void renameVariableIfUnusedInContext(J.VariableDeclarations.NamedVariable variable, J context) {
                 if (!UNDERSCORE.equals(variable.getName().getSimpleName()) &&
                         VariableReferences.findRhsReferences(context, variable.getName()).isEmpty() &&
-                        !usedInModifyingUnary(context, variable.getName())) {
+                        !usedInModifyingUnary(variable.getName(), context)) {
                     doAfterVisit(new RenameVariable<>(variable, UNDERSCORE));
                 }
             }
 
-            private <T extends J> boolean usedInModifyingUnary(J context, J.Identifier name) {
+            private boolean usedInModifyingUnary(J.Identifier identifier, J context) {
                 return new JavaIsoVisitor<AtomicBoolean>() {
                     @Override
                     public J.Unary visitUnary(J.Unary unary, AtomicBoolean atomicBoolean) {
                         if (unary.getOperator().isModifying() &&
-                                SemanticallyEqual.areEqual(name, unary.getExpression())) {
+                                SemanticallyEqual.areEqual(identifier, unary.getExpression())) {
                             atomicBoolean.set(true);
                         }
                         return super.visitUnary(unary, atomicBoolean);
