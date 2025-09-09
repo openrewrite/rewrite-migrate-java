@@ -23,10 +23,12 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.RenameVariable;
+import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.staticanalysis.VariableReferences;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 @EqualsAndHashCode(callSuper = false)
@@ -67,7 +69,22 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
             private <T extends J> boolean replaceIfUnusedInContext(
                     J.VariableDeclarations.NamedVariable variable, Class<T> contextClass, Function<T, J> bodyExtractor) {
                 T context = getCursor().firstEnclosing(contextClass);
-                return context != null && VariableReferences.findRhsReferences(bodyExtractor.apply(context), variable.getName()).isEmpty();
+                return context != null &&
+                        VariableReferences.findRhsReferences(bodyExtractor.apply(context), variable.getName()).isEmpty() &&
+                        !usedInModifyingUnary(context, variable.getName());
+            }
+
+            private <T extends J> boolean usedInModifyingUnary(T context, J.Identifier name) {
+                return new JavaIsoVisitor<AtomicBoolean>() {
+                    @Override
+                    public J.Unary visitUnary(J.Unary unary, AtomicBoolean atomicBoolean) {
+                        if (unary.getOperator().isModifying() &&
+                                SemanticallyEqual.areEqual(name, unary.getExpression())) {
+                            atomicBoolean.set(true);
+                        }
+                        return super.visitUnary(unary, atomicBoolean);
+                    }
+                }.reduce(context, new AtomicBoolean(false)).get();
             }
         });
     }

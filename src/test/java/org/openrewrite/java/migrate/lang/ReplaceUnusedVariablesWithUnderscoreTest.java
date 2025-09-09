@@ -16,6 +16,8 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -387,6 +389,51 @@ class ReplaceUnusedVariablesWithUnderscoreTest implements RewriteTest {
                       Stream.of("a").forEach(outer -> {
                           Stream.of("b").forEach(_ -> System.out.println(outer));
                       });
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+      "++number; // Weird, but allowed",
+      "number++;",
+    })
+    void doNotReplaceModifyingOperator(String body) {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.List;
+              import java.util.stream.Stream;
+
+              class Test {
+                  int forloop(List<Integer> numbers) {
+                      for (int number : numbers) {
+                          %s
+                      }
+                  }
+              }
+              """.formatted(body)
+          )
+        );
+    }
+
+    @Test
+    void doNotReplaceUnrelatedVariables() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.List;
+
+              class Test {
+                  int countOrders(List<String> orders) {
+                      for (String order : orders) {
+                          String o = order;
+                      }
                   }
               }
               """
