@@ -24,9 +24,9 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.staticanalysis.VariableReferences;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 @EqualsAndHashCode(callSuper = false)
@@ -78,7 +78,7 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
                     Class<T> contextClass,
                     Function<T, J> bodyExtractor) {
                 T context = getCursor().firstEnclosing(contextClass);
-                if (context != null && !isVariableUsedInStatement(bodyExtractor.apply(context), variable.getSimpleName())) {
+                if (context != null && VariableReferences.findRhsReferences(bodyExtractor.apply(context), variable.getName()).isEmpty()) {
                     return Optional.of(replaceWithUnderscore(variable));
                 }
                 return Optional.empty();
@@ -89,21 +89,6 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
                                 .withSimpleName(UNDERSCORE)
                                 .withFieldType(variable.getName().getFieldType().withName(UNDERSCORE)))
                         .withVariableType(variable.getVariableType().withName(UNDERSCORE));
-            }
-
-            private boolean isVariableUsedInStatement(J statement, String varName) {
-                return new JavaIsoVisitor<AtomicBoolean>() {
-                    @Override
-                    public J.Identifier visitIdentifier(J.Identifier identifier, AtomicBoolean used) {
-                        if (varName.equals(identifier.getSimpleName())) {
-                            if (!(getCursor().getParent().getValue() instanceof J.VariableDeclarations.NamedVariable)) {
-                                used.set(true);
-                                return identifier;
-                            }
-                        }
-                        return super.visitIdentifier(identifier, used);
-                    }
-                }.reduce(statement, new AtomicBoolean(false)).get();
             }
         });
     }
