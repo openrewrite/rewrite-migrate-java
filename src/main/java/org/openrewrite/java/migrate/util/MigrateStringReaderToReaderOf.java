@@ -102,13 +102,10 @@ public class MigrateStringReaderToReaderOf extends Recipe {
                         @Override
                         public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                             if (STRING_READER_CONSTRUCTOR.matches(newClass)) {
-                                Expression argument = newClass.getArguments().get(0);
-                                argument = optimizeCharSequenceToString(argument);
-                                JavaTemplate template = JavaTemplate.builder("Reader.of(#{any(java.lang.CharSequence)})")
+                                return JavaTemplate.builder("Reader.of(#{any(java.lang.CharSequence)})")
                                         .imports("java.io.Reader")
-                                        .build();
-
-                                return template.apply(getCursor(), newClass.getCoordinates().replace(), argument);
+                                        .build()
+                                        .apply(getCursor(), newClass.getCoordinates().replace(), optimizeCharSequenceToString(newClass.getArguments().get(0)));
                             }
                             return super.visitNewClass(newClass, ctx);
                         }
