@@ -22,6 +22,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
@@ -31,6 +32,7 @@ class MigrateStringReaderToReaderOfTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateStringReaderToReaderOf())
+          .afterTypeValidationOptions(TypeValidation.all().methodInvocations(false)) // Until we run tests on Java 25+
           .parser(JavaParser.fromJavaVersion())
           .allSources(s -> s.markers(javaVersion(25)));
     }
