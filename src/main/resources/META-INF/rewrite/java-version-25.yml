@@ -26,7 +26,11 @@ tags:
   - java25
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
-  - org.openrewrite.java.migrate.UpgradeBuildToJava25
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 25
+  - org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
+  - org.openrewrite.java.migrate.lang.ReplaceUnusedVariablesWithUnderscore
+  - org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToClose
   - org.openrewrite.java.migrate.AccessController
   - org.openrewrite.java.migrate.RemoveSecurityPolicy
   - org.openrewrite.java.migrate.RemoveSecurityManager
@@ -35,14 +39,20 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpgradeBuildToJava25
-displayName: Upgrade build to Java 25
-description: Updates build files to use Java 25 as the target/source.
-tags:
-  - java25
+name: org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToClose
+displayName: Replace `Inflater` and `Deflater` `end()` calls with `close()`
+description: >-
+  Replace `end()` method calls with `close()` method calls for `Inflater` and `Deflater` classes in Java 25+, as they now implement AutoCloseable.
+preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[25,)"
 recipeList:
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 25
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.zip.Deflater end()
+      newMethodName: close
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: java.util.zip.Inflater end()
+      newMethodName: close
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
