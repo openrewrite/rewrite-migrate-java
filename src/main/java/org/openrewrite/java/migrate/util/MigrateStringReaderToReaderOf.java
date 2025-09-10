@@ -26,7 +26,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -53,19 +53,15 @@ public class MigrateStringReaderToReaderOf extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                Preconditions.and(
-                        new UsesJavaVersion<>(25),
-                        new UsesType<>("java.io.StringReader", false)
-                ),
+                Preconditions.and(new UsesJavaVersion<>(25), new UsesMethod<>(STRING_READER_CONSTRUCTOR)),
                 new JavaVisitor<ExecutionContext>() {
-
                     @Override
                     public J visitVariableDeclarations(J.VariableDeclarations mV, ExecutionContext ctx) {
                         if (TypeUtils.isOfClassType(mV.getTypeAsFullyQualified(), "java.io.Reader")) {
                             return mV.withVariables(ListUtils.map(mV.getVariables(), v -> {
                                 maybeRemoveImport("java.io.StringReader");
                                 maybeAddImport("java.io.Reader");
-                                return (J.VariableDeclarations.NamedVariable) new TransformVisitor().visitNonNull(v, ctx, getCursor().getParent());
+                                return (J.VariableDeclarations.NamedVariable) new TransformVisitor().visitNonNull(v, ctx, getCursor().getParentOrThrow());
                             }));
                         }
                         return super.visitVariableDeclarations(mV, ctx);
@@ -78,7 +74,7 @@ public class MigrateStringReaderToReaderOf extends Recipe {
                             if (TypeUtils.isOfClassType(variable.getType(), "java.io.Reader")) {
                                 maybeRemoveImport("java.io.StringReader");
                                 maybeAddImport("java.io.Reader");
-                                return new TransformVisitor().visitNonNull(a, ctx, getCursor().getParent());
+                                return new TransformVisitor().visitNonNull(a, ctx, getCursor().getParentOrThrow());
                             }
                         }
                         return super.visitAssignment(a, ctx);
@@ -92,36 +88,36 @@ public class MigrateStringReaderToReaderOf extends Recipe {
                             if (TypeUtils.isOfClassType(returnType, "java.io.Reader")) {
                                 maybeRemoveImport("java.io.StringReader");
                                 maybeAddImport("java.io.Reader");
-                                return new TransformVisitor().visitNonNull(r, ctx, getCursor().getParent());
+                                return new TransformVisitor().visitNonNull(r, ctx, getCursor().getParentOrThrow());
                             }
                         }
                         return super.visitReturn(r, ctx);
                     }
-
-                    private class TransformVisitor extends JavaVisitor<ExecutionContext> {
-                        @Override
-                        public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
-                            if (STRING_READER_CONSTRUCTOR.matches(newClass)) {
-                                return JavaTemplate.builder("Reader.of(#{any(java.lang.CharSequence)})")
-                                        .imports("java.io.Reader")
-                                        .build()
-                                        .apply(getCursor(), newClass.getCoordinates().replace(), optimizeCharSequenceToString(newClass.getArguments().get(0)));
-                            }
-                            return super.visitNewClass(newClass, ctx);
-                        }
-
-                        private Expression optimizeCharSequenceToString(Expression expr) {
-                            if (expr instanceof J.MethodInvocation) {
-                                J.MethodInvocation mi = (J.MethodInvocation) expr;
-                                if (TO_STRING_METHOD.matches(mi) &&
-                                        mi.getSelect() != null && TypeUtils.isAssignableTo("java.lang.CharSequence", mi.getSelect().getType())) {
-                                    return mi.getSelect();
-                                }
-                            }
-                            return expr;
-                        }
-                    }
                 }
         );
+    }
+
+    private static class TransformVisitor extends JavaVisitor<ExecutionContext> {
+        @Override
+        public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
+            if (STRING_READER_CONSTRUCTOR.matches(newClass)) {
+                return JavaTemplate.builder("Reader.of(#{any(java.lang.CharSequence)})")
+                        .imports("java.io.Reader")
+                        .build()
+                        .apply(getCursor(), newClass.getCoordinates().replace(), optimizeCharSequenceToString(newClass.getArguments().get(0)));
+            }
+            return super.visitNewClass(newClass, ctx);
+        }
+
+        private Expression optimizeCharSequenceToString(Expression expr) {
+            if (expr instanceof J.MethodInvocation) {
+                J.MethodInvocation mi = (J.MethodInvocation) expr;
+                if (TO_STRING_METHOD.matches(mi) &&
+                        mi.getSelect() != null && TypeUtils.isAssignableTo("java.lang.CharSequence", mi.getSelect().getType())) {
+                    return mi.getSelect();
+                }
+            }
+            return expr;
+        }
     }
 }
