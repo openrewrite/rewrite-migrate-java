@@ -16,10 +16,14 @@
 package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
+import java.nio.CharBuffer;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
@@ -126,116 +130,32 @@ class MigrateStringReaderToReaderOfTest implements RewriteTest {
         );
     }
 
-    @Test
-    void migrateWithStringBuilder() {
+    @ParameterizedTest
+    @ValueSource(strings = {"StringBuilder", "StringBuffer", "CharBuffer", "CharSequence"})
+    void migrateCharSequenceVariants(String className) {
+        String extraImport = className.equals("CharBuffer") ? "\nimport java.nio.CharBuffer;" : "";
         rewriteRun(
           //language=java
           java(
-            """
-              import java.io.Reader;
-              import java.io.StringReader;
+            String.format("""
+                import java.io.Reader;
+                import java.io.StringReader;%s
 
-              class Test {
-                  void test(StringBuilder sb) {
-                      Reader reader = new StringReader(sb.toString());
-                  }
-              }
-              """,
-            """
-              import java.io.Reader;
+                class Test {
+                    void test(%s cs) {
+                        Reader reader = new StringReader(cs.toString());
+                    }
+                }
+                """, extraImport, className),
+            String.format("""
+                import java.io.Reader;%s
 
-              class Test {
-                  void test(StringBuilder sb) {
-                      Reader reader = Reader.of(sb);
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void migrateWithStringBuffer() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.io.Reader;
-              import java.io.StringReader;
-
-              class Test {
-                  void test(StringBuffer sb) {
-                      Reader reader = new StringReader(sb.toString());
-                  }
-              }
-              """,
-            """
-              import java.io.Reader;
-
-              class Test {
-                  void test(StringBuffer sb) {
-                      Reader reader = Reader.of(sb);
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void migrateWithCharBuffer() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.io.Reader;
-              import java.io.StringReader;
-              import java.nio.CharBuffer;
-
-              class Test {
-                  void test(CharBuffer cb) {
-                      Reader reader = new StringReader(cb.toString());
-                  }
-              }
-              """,
-            """
-              import java.io.Reader;
-              import java.nio.CharBuffer;
-
-              class Test {
-                  void test(CharBuffer cb) {
-                      Reader reader = Reader.of(cb);
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void migrateWithCharSequence() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.io.Reader;
-              import java.io.StringReader;
-
-              class Test {
-                  void test(CharSequence cs) {
-                      Reader reader = new StringReader(cs.toString());
-                  }
-              }
-              """,
-            """
-              import java.io.Reader;
-
-              class Test {
-                  void test(CharSequence cs) {
-                      Reader reader = Reader.of(cs);
-                  }
-              }
-              """
+                class Test {
+                    void test(%s cs) {
+                        Reader reader = Reader.of(cs);
+                    }
+                }
+                """, extraImport, className)
           )
         );
     }
