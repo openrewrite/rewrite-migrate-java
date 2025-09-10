@@ -144,8 +144,8 @@ class MigrateStringReaderToReaderOfTest implements RewriteTest {
                         Reader reader = new StringReader(cs.toString());
                     }
                 }
-                """, extraImport, className),
-            String.format("""
+                """.formatted( extraImport, className ),
+                  """
                 import java.io.Reader;%s
 
                 class Test {
