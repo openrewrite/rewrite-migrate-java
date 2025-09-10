@@ -22,7 +22,6 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -31,15 +30,8 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
-import java.util.ArrayList;
-
-/**
- * Migrates StringReader to Reader.of(CharSequence) for Java 25+.
- * This recipe only transforms:
- * 1. Assignments to variables of type Reader (not StringReader)
- * 2. Return statements from methods that return Reader (not StringReader)
- */
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class MigrateStringReaderToReaderOf extends Recipe {
@@ -53,8 +45,8 @@ public class MigrateStringReaderToReaderOf extends Recipe {
     @Override
     public String getDescription() {
         return "Migrate `new StringReader(String)` to `Reader.of(CharSequence)` in Java 25+. " +
-               "This only applies when assigning to `Reader` variables or returning from methods that return `Reader`. " +
-               "The new method creates non-synchronized readers which are more efficient when thread-safety is not required.";
+                "This only applies when assigning to `Reader` variables or returning from methods that return `Reader`. " +
+                "The new method creates non-synchronized readers which are more efficient when thread-safety is not required.";
     }
 
     @Override
@@ -68,19 +60,11 @@ public class MigrateStringReaderToReaderOf extends Recipe {
 
                     @Override
                     public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
-                        // Only process if the variable type is Reader (not StringReader)
-                        if (isReaderType(multiVariable.getTypeAsFullyQualified())) {
-                            // Check each variable in the declaration
+                        if (TypeUtils.isOfClassType(multiVariable.getTypeAsFullyQualified(), "java.io.Reader")) {
                             return multiVariable.withVariables(ListUtils.map(multiVariable.getVariables(), v -> {
-                                Expression initializer = v.getInitializer();
-                                if (initializer instanceof J.NewClass) {
-                                    J.NewClass nc = (J.NewClass) initializer;
-                                    if (STRING_READER_CONSTRUCTOR.matches(nc)) {
-                                        maybeRemoveImport("java.io.StringReader");
-                                        return (J.VariableDeclarations.NamedVariable) new TransformVisitor().visit(v, executionContext, getCursor().getParent());
-                                    }
-                                }
-                                return v;
+                                maybeRemoveImport("java.io.StringReader");
+                                maybeAddImport("java.io.Reader");
+                                return (J.VariableDeclarations.NamedVariable) new TransformVisitor().visit(v, executionContext, getCursor().getParent());
                             }));
                         }
                         return super.visitVariableDeclarations(multiVariable, executionContext);
@@ -88,18 +72,12 @@ public class MigrateStringReaderToReaderOf extends Recipe {
 
                     @Override
                     public J visitAssignment(J.Assignment assignment, ExecutionContext executionContext) {
-                        // Check if assigning new StringReader to a Reader variable
-                        if (assignment.getAssignment() instanceof J.NewClass) {
-                            J.NewClass nc = (J.NewClass) assignment.getAssignment();
-                            if (STRING_READER_CONSTRUCTOR.matches(nc)) {
-                                // Check if the variable being assigned to is of type Reader
-                                if (assignment.getVariable() instanceof J.Identifier) {
-                                    J.Identifier variable = (J.Identifier) assignment.getVariable();
-                                    if (isReaderType(variable.getType())) {
-                                        maybeRemoveImport("java.io.StringReader");
-                                        return new TransformVisitor().visit(assignment, executionContext, getCursor().getParent());
-                                    }
-                                }
+                        if (assignment.getVariable() instanceof J.Identifier) {
+                            J.Identifier variable = (J.Identifier) assignment.getVariable();
+                            if (TypeUtils.isOfClassType(variable.getType(), "java.io.Reader")) {
+                                maybeRemoveImport("java.io.StringReader");
+                                maybeAddImport("java.io.Reader");
+                                return new TransformVisitor().visit(assignment, executionContext, getCursor().getParent());
                             }
                         }
                         return super.visitAssignment(assignment, executionContext);
@@ -107,29 +85,16 @@ public class MigrateStringReaderToReaderOf extends Recipe {
 
                     @Override
                     public J visitReturn(J.Return return_, ExecutionContext executionContext) {
-                        // Check if returning new StringReader from a method that returns Reader
-                        if (return_.getExpression() instanceof J.NewClass) {
-                            J.NewClass nc = (J.NewClass) return_.getExpression();
-                            if (STRING_READER_CONSTRUCTOR.matches(nc)) {
-                                // Check if the method returns Reader (not StringReader)
-                                J.MethodDeclaration method = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                                if (method != null && method.getReturnTypeExpression() != null) {
-                                    JavaType returnType = method.getReturnTypeExpression().getType();
-                                    if (isReaderType(returnType)) {
-                                        maybeRemoveImport("java.io.StringReader");
-                                        return new TransformVisitor().visit(return_, executionContext, getCursor().getParent());
-                                    }
-                                }
+                        J.MethodDeclaration method = getCursor().firstEnclosing(J.MethodDeclaration.class);
+                        if (method != null && method.getReturnTypeExpression() != null) {
+                            JavaType returnType = method.getReturnTypeExpression().getType();
+                            if (TypeUtils.isOfClassType(returnType, "java.io.Reader")) {
+                                maybeRemoveImport("java.io.StringReader");
+                                maybeAddImport("java.io.Reader");
+                                return new TransformVisitor().visit(return_, executionContext, getCursor().getParent());
                             }
                         }
                         return super.visitReturn(return_, executionContext);
-                    }
-
-                    private boolean isReaderType(JavaType type) {
-                        if (type instanceof JavaType.FullyQualified) {
-                            return "java.io.Reader".equals(((JavaType.FullyQualified) type).getFullyQualifiedName());
-                        }
-                        return false;
                     }
 
                     private class TransformVisitor extends JavaVisitor<ExecutionContext> {
@@ -137,16 +102,12 @@ public class MigrateStringReaderToReaderOf extends Recipe {
                         public J visitNewClass(J.NewClass newClass, ExecutionContext executionContext) {
                             if (STRING_READER_CONSTRUCTOR.matches(newClass)) {
                                 Expression argument = newClass.getArguments().get(0);
-
-                                // Optimize CharSequence.toString() calls
                                 argument = optimizeCharSequenceToString(argument);
-
                                 JavaTemplate template = JavaTemplate.builder("Reader.of(#{any(java.lang.CharSequence)})")
                                         .imports("java.io.Reader")
                                         .contextSensitive()
                                         .build();
 
-                                maybeAddImport("java.io.Reader");
                                 return template.apply(getCursor(), newClass.getCoordinates().replace(), argument);
                             }
                             return super.visitNewClass(newClass, executionContext);
@@ -157,39 +118,11 @@ public class MigrateStringReaderToReaderOf extends Recipe {
                                 J.MethodInvocation mi = (J.MethodInvocation) expr;
                                 if ("toString".equals(mi.getSimpleName()) &&
                                         (mi.getArguments().isEmpty() || (mi.getArguments().size() == 1 && mi.getArguments().get(0) instanceof J.Empty)) &&
-                                    mi.getSelect() != null &&
-                                    isCharSequenceType(mi.getSelect().getType())) {
+                                        mi.getSelect() != null && TypeUtils.isAssignableTo("java.lang.CharSequence", mi.getSelect().getType())) {
                                     return mi.getSelect();
                                 }
                             }
                             return expr;
-                        }
-
-                        private boolean isCharSequenceType(JavaType type) {
-                            if (type instanceof JavaType.Class) {
-                                JavaType.Class classType = (JavaType.Class) type;
-                                String fqn = classType.getFullyQualifiedName();
-                                return "java.lang.CharSequence".equals(fqn) ||
-                                       "java.lang.String".equals(fqn) ||
-                                       "java.lang.StringBuilder".equals(fqn) ||
-                                       "java.lang.StringBuffer".equals(fqn) ||
-                                       "java.nio.CharBuffer".equals(fqn) ||
-                                       implementsCharSequence(classType);
-                            }
-                            return false;
-                        }
-
-                        private boolean implementsCharSequence(JavaType.Class classType) {
-                            for (JavaType.FullyQualified iface : classType.getInterfaces()) {
-                                if ("java.lang.CharSequence".equals(iface.getFullyQualifiedName())) {
-                                    return true;
-                                }
-                            }
-                            JavaType.FullyQualified supertype = classType.getSupertype();
-                            if (supertype instanceof JavaType.Class) {
-                                return implementsCharSequence((JavaType.Class) supertype);
-                            }
-                            return false;
                         }
                     }
                 }
