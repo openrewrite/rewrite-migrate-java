@@ -26,7 +26,8 @@ tags:
   - java25
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
-  - org.openrewrite.java.migrate.UpgradeBuildToJava25
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 25
   - org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
   - org.openrewrite.java.migrate.lang.ReplaceUnusedVariablesWithUnderscore
   - org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToClose
@@ -51,16 +52,6 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.zip.Inflater end()
       newMethodName: close
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpgradeBuildToJava25
-displayName: Upgrade build to Java 25
-description: Updates build files to use Java 25 as the target/source.
-tags:
-  - java25
-recipeList:
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 25
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -72,8 +63,8 @@ tags:
   - security
   - deprecation
 preconditions:
-  - org.openrewrite.java.migrate.search.FindJavaVersion:
-      version: 24
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.security.AccessController#checkPermission(..)
 recipeList:
@@ -92,8 +83,8 @@ tags:
   - security
   - deprecation
 preconditions:
-  - org.openrewrite.java.migrate.search.FindJavaVersion:
-      version: 24
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.security.Policy#setPolicy(..)
 recipeList:
@@ -112,8 +103,8 @@ tags:
   - security
   - deprecation
 preconditions:
-  - org.openrewrite.java.migrate.search.FindJavaVersion:
-      version: 24
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.lang.SecurityManager#check*(..)
 recipeList:
@@ -134,8 +125,8 @@ tags:
   - security
   - deprecation
 preconditions:
-  - org.openrewrite.java.migrate.search.FindJavaVersion:
-      version: 24
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.lang.System#getSecurityManager()
 recipeList:
