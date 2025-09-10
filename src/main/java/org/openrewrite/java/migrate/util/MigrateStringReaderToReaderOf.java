@@ -59,15 +59,15 @@ public class MigrateStringReaderToReaderOf extends Recipe {
                 new JavaVisitor<ExecutionContext>() {
 
                     @Override
-                    public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
+                    public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         if (TypeUtils.isOfClassType(multiVariable.getTypeAsFullyQualified(), "java.io.Reader")) {
                             return multiVariable.withVariables(ListUtils.map(multiVariable.getVariables(), v -> {
                                 maybeRemoveImport("java.io.StringReader");
                                 maybeAddImport("java.io.Reader");
-                                return (J.VariableDeclarations.NamedVariable) new TransformVisitor().visit(v, executionContext, getCursor().getParent());
+                                return (J.VariableDeclarations.NamedVariable) new TransformVisitor().visit(v, ctx, getCursor().getParent());
                             }));
                         }
-                        return super.visitVariableDeclarations(multiVariable, executionContext);
+                        return super.visitVariableDeclarations(multiVariable, ctx);
                     }
 
                     @Override
@@ -84,22 +84,22 @@ public class MigrateStringReaderToReaderOf extends Recipe {
                     }
 
                     @Override
-                    public J visitReturn(J.Return return_, ExecutionContext executionContext) {
+                    public J visitReturn(J.Return return_, ExecutionContext ctx) {
                         J.MethodDeclaration method = getCursor().firstEnclosing(J.MethodDeclaration.class);
                         if (method != null && method.getReturnTypeExpression() != null) {
                             JavaType returnType = method.getReturnTypeExpression().getType();
                             if (TypeUtils.isOfClassType(returnType, "java.io.Reader")) {
                                 maybeRemoveImport("java.io.StringReader");
                                 maybeAddImport("java.io.Reader");
-                                return new TransformVisitor().visit(return_, executionContext, getCursor().getParent());
+                                return new TransformVisitor().visit(return_, ctx, getCursor().getParent());
                             }
                         }
-                        return super.visitReturn(return_, executionContext);
+                        return super.visitReturn(return_, ctx);
                     }
 
                     private class TransformVisitor extends JavaVisitor<ExecutionContext> {
                         @Override
-                        public J visitNewClass(J.NewClass newClass, ExecutionContext executionContext) {
+                        public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                             if (STRING_READER_CONSTRUCTOR.matches(newClass)) {
                                 Expression argument = newClass.getArguments().get(0);
                                 argument = optimizeCharSequenceToString(argument);
@@ -110,7 +110,7 @@ public class MigrateStringReaderToReaderOf extends Recipe {
 
                                 return template.apply(getCursor(), newClass.getCoordinates().replace(), argument);
                             }
-                            return super.visitNewClass(newClass, executionContext);
+                            return super.visitNewClass(newClass, ctx);
                         }
 
                         private Expression optimizeCharSequenceToString(Expression expr) {
