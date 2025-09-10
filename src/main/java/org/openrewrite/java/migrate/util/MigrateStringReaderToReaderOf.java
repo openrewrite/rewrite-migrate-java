@@ -71,16 +71,16 @@ public class MigrateStringReaderToReaderOf extends Recipe {
                     }
 
                     @Override
-                    public J visitAssignment(J.Assignment assignment, ExecutionContext executionContext) {
+                    public J visitAssignment(J.Assignment assignment, ExecutionContext ctx) {
                         if (assignment.getVariable() instanceof J.Identifier) {
                             J.Identifier variable = (J.Identifier) assignment.getVariable();
                             if (TypeUtils.isOfClassType(variable.getType(), "java.io.Reader")) {
                                 maybeRemoveImport("java.io.StringReader");
                                 maybeAddImport("java.io.Reader");
-                                return new TransformVisitor().visit(assignment, executionContext, getCursor().getParent());
+                                return new TransformVisitor().visit(assignment, ctx, getCursor().getParent());
                             }
                         }
-                        return super.visitAssignment(assignment, executionContext);
+                        return super.visitAssignment(assignment, ctx);
                     }
 
                     @Override
