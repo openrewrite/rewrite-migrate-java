@@ -692,6 +692,37 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.MigrateZipErrorToZipException
+examples:
+- description: ''
+  sources:
+  - before: |
+      import java.util.zip.ZipError;
+
+      class Test {
+          void test() {
+              try {
+                  // Some zip operation
+              } catch (ZipError e) {
+                  System.out.println("Zip error occurred: " + e.getMessage());
+              }
+          }
+      }
+    after: |
+      import java.util.zip.ZipException;
+
+      class Test {
+          void test() {
+              try {
+                  // Some zip operation
+              } catch (ZipException e) {
+                  System.out.println("Zip error occurred: " + e.getMessage());
+              }
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ReferenceCloneMethod
 examples:
 - description: ''
@@ -1025,6 +1056,27 @@ recipeName: org.openrewrite.java.migrate.UpgradePluginsForJava11
 examples:
 - description: ''
   sources:
+  - before: project
+    language: mavenProject
+  - before: |
+      <project>
+        <groupId>com.mycompany.app</groupId>
+        <artifactId>my-app</artifactId>
+        <version>1</version>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>jaxb2-maven-plugin</artifactId>
+              <version>2.3.1</version>
+            </plugin>
+          </plugins>
+        </build>
+      </project>
+    path: pom.xml
+    language: xml
+- description: ''
+  sources:
   - before: |
       <project>
         <groupId>com.mycompany.app</groupId>
@@ -1057,27 +1109,6 @@ examples:
               <groupId>ro.isdc.wro4j</groupId>
               <artifactId>wro4j-maven-plugin</artifactId>
               <version>${wro4j.version}</version>
-            </plugin>
-          </plugins>
-        </build>
-      </project>
-    path: pom.xml
-    language: xml
-- description: ''
-  sources:
-  - before: project
-    language: mavenProject
-  - before: |
-      <project>
-        <groupId>com.mycompany.app</groupId>
-        <artifactId>my-app</artifactId>
-        <version>1</version>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>jaxb2-maven-plugin</artifactId>
-              <version>2.3.1</version>
             </plugin>
           </plugins>
         </build>
@@ -3333,25 +3364,6 @@ examples:
 - description: ''
   sources:
   - before: |
-      import com.google.common.base.MoreObjects;
-
-      class A {
-          Object foo(Object obj) {
-              return MoreObjects.firstNonNull(obj, "default");
-          }
-      }
-    after: |
-      import java.util.Objects;
-
-      class A {
-          Object foo(Object obj) {
-              return Objects.requireNonNullElse(obj, "default");
-          }
-      }
-    language: java
-- description: ''
-  sources:
-  - before: |
       import com.google.common.base.Optional;
 
       class A {
@@ -3392,6 +3404,25 @@ examples:
               } catch (NoSuchElementException e) {
                   return "";
               }
+          }
+      }
+    language: java
+- description: ''
+  sources:
+  - before: |
+      import com.google.common.base.MoreObjects;
+
+      class A {
+          Object foo(Object obj) {
+              return MoreObjects.firstNonNull(obj, "default");
+          }
+      }
+    after: |
+      import java.util.Objects;
+
+      class A {
+          Object foo(Object obj) {
+              return Objects.requireNonNullElse(obj, "default");
           }
       }
     language: java
@@ -6137,6 +6168,37 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.ReplaceUnusedVariablesWithUnderscore
+examples:
+- description: ''
+  sources:
+  - before: |
+      import java.util.List;
+
+      class Test {
+          int countOrders(List<String> orders) {
+              int total = 0;
+              for (String order : orders) {
+                  total++;
+              }
+              return total;
+          }
+      }
+    after: |
+      import java.util.List;
+
+      class Test {
+          int countOrders(List<String> orders) {
+              int total = 0;
+              for (String _ : orders) {
+                  total++;
+              }
+              return total;
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.StringRulesRecipes
 examples:
 - description: ''
@@ -7380,6 +7442,39 @@ examples:
 
       class Test {
           Set<String> set = Set.of("Hello");
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToClose
+examples:
+- description: ''
+  sources:
+  - before: |
+      import java.util.zip.Inflater;
+
+      class Test {
+          public void test(byte[] arg) {
+              Inflater inflater = new Inflater();
+              try {
+                  inflater.inflate(arg);
+              } finally {
+                  inflater.end();
+              }
+          }
+      }
+    after: |
+      import java.util.zip.Inflater;
+
+      class Test {
+          public void test(byte[] arg) {
+              Inflater inflater = new Inflater();
+              try {
+                  inflater.inflate(arg);
+              } finally {
+                  inflater.close();
+              }
+          }
       }
     language: java
 ---
