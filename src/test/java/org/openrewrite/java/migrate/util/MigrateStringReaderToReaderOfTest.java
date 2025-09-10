@@ -31,8 +31,8 @@ class MigrateStringReaderToReaderOfTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateStringReaderToReaderOf())
-            .parser(JavaParser.fromJavaVersion())
-            .allSources(s -> s.markers(javaVersion(25)));
+          .parser(JavaParser.fromJavaVersion())
+          .allSources(s -> s.markers(javaVersion(25)));
     }
 
     @DocumentExample
@@ -132,28 +132,27 @@ class MigrateStringReaderToReaderOfTest implements RewriteTest {
     @ValueSource(strings = {"StringBuilder", "StringBuffer", "CharBuffer", "CharSequence"})
     void migrateCharSequenceVariants(String className) {
         String extraImport = "CharBuffer".equals(className) ? "\nimport java.nio.CharBuffer;" : "";
-          //language=java
-          java(
-            String.format("""
-                import java.io.Reader;
-                import java.io.StringReader;%s
+        //language=java
+        java(
+          """
+            import java.io.Reader;
+            import java.io.StringReader;%s
 
-                class Test {
-                    void test(%s cs) {
-                        Reader reader = new StringReader(cs.toString());
-                    }
+            class Test {
+                void test(%s cs) {
+                    Reader reader = new StringReader(cs.toString());
                 }
-                """.formatted( extraImport, className ),
-                  """
-                import java.io.Reader;%s
+            }
+            """.formatted(extraImport, className),
+          """
+            import java.io.Reader;%s
 
-                class Test {
-                    void test(%s cs) {
-                        Reader reader = Reader.of(cs);
-                    }
+            class Test {
+                void test(%s cs) {
+                    Reader reader = Reader.of(cs);
                 }
-                """.formatted( extraImport, className )
-          )
+            }
+            """.formatted(extraImport, className)
         );
     }
 
