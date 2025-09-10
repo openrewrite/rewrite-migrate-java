@@ -131,8 +131,8 @@ class MigrateStringReaderToReaderOfTest implements RewriteTest {
     @ParameterizedTest
     @ValueSource(strings = {"StringBuilder", "StringBuffer", "CharBuffer", "CharSequence"})
     void migrateCharSequenceVariants(String className) {
-        String extraImport = className.equals("CharBuffer") ? "\nimport java.nio.CharBuffer;" : "";
-        rewriteRun(
+        String extraImport = "CharBuffer".equals(className) ? "\nimport java.nio.CharBuffer;" : "";
+                  """
           //language=java
           java(
             String.format("""
