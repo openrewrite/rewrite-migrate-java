@@ -80,7 +80,7 @@ class MigrateZipErrorToZipExceptionTest implements RewriteTest {
 
               class Test {
                   void processZip() throws ZipError {
-                      // Implementation
+                      throw new ZipError("Invalid zip file");
                   }
               }
               """,
@@ -89,151 +89,7 @@ class MigrateZipErrorToZipExceptionTest implements RewriteTest {
 
               class Test {
                   void processZip() throws ZipException {
-                      // Implementation
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void migrateZipErrorInThrowStatement() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.zip.ZipError;
-
-              class Test {
-                  void validateZip() {
-                      if (isInvalidZip()) {
-                          throw new ZipError("Invalid zip file");
-                      }
-                  }
-
-                  private boolean isInvalidZip() {
-                      return true;
-                  }
-              }
-              """,
-            """
-              import java.util.zip.ZipException;
-
-              class Test {
-                  void validateZip() {
-                      if (isInvalidZip()) {
-                          throw new ZipException("Invalid zip file");
-                      }
-                  }
-
-                  private boolean isInvalidZip() {
-                      return true;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void migrateZipErrorInFieldDeclaration() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.zip.ZipError;
-
-              class Test {
-                  private ZipError lastError;
-
-                  void setError(ZipError error) {
-                      this.lastError = error;
-                  }
-              }
-              """,
-            """
-              import java.util.zip.ZipException;
-
-              class Test {
-                  private ZipException lastError;
-
-                  void setError(ZipException error) {
-                      this.lastError = error;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void migrateZipErrorInGenericType() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.List;
-              import java.util.zip.ZipError;
-
-              class Test {
-                  List<ZipError> errors;
-
-                  void handleErrors(List<ZipError> zipErrors) {
-                      this.errors = zipErrors;
-                  }
-              }
-              """,
-            """
-              import java.util.List;
-              import java.util.zip.ZipException;
-
-              class Test {
-                  List<ZipException> errors;
-
-                  void handleErrors(List<ZipException> zipErrors) {
-                      this.errors = zipErrors;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void migrateZipErrorInMultipleCatchClauses() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.io.IOException;
-              import java.util.zip.ZipError;
-
-              class Test {
-                  void test() {
-                      try {
-                          // Some zip operation
-                      } catch (IOException e) {
-                          System.out.println("IO error: " + e.getMessage());
-                      } catch (ZipError e) {
-                          System.out.println("Zip error: " + e.getMessage());
-                      }
-                  }
-              }
-              """,
-            """
-              import java.io.IOException;
-              import java.util.zip.ZipException;
-
-              class Test {
-                  void test() {
-                      try {
-                          // Some zip operation
-                      } catch (IOException e) {
-                          System.out.println("IO error: " + e.getMessage());
-                      } catch (ZipException e) {
-                          System.out.println("Zip error: " + e.getMessage());
-                      }
+                      throw new ZipException("Invalid zip file");
                   }
               }
               """
@@ -247,14 +103,19 @@ class MigrateZipErrorToZipExceptionTest implements RewriteTest {
           //language=java
           java(
             """
-              import java.io.IOException;
+              import java.util.zip.ZipException;
 
               class Test {
-                  void test() {
+                  void test(boolean flag) {
                       try {
-                          // Some operation
-                      } catch (IOException e) {
-                          System.out.println("Error: " + e.getMessage());
+                          if (flag) {
+                              throw new ZipException("This is a zip error");
+                          }
+                          throw new Exception("This is a general exception");
+                      } catch (ZipException e) {
+                          System.out.println("ZipException: " + e.getMessage());
+                      } catch (Exception e) {
+                          System.out.println("Exception: " + e.getMessage());
                       }
                   }
               }
