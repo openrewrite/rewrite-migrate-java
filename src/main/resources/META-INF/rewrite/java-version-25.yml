@@ -35,6 +35,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemoveSecurityPolicy
   - org.openrewrite.java.migrate.RemoveSecurityManager
   - org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
+  - org.openrewrite.java.migrate.MigrateZipErrorToZipException
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -134,3 +135,16 @@ recipeList:
       methodPattern: java.lang.System#getSecurityManager()
       replacement: "null"
   - org.openrewrite.staticanalysis.SimplifyConstantIfBranchExecution
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.MigrateZipErrorToZipException
+displayName: Use `ZipException` instead of `ZipError`
+description: Use `ZipException` instead of the deprecated `ZipError` in Java 9 or higher.
+preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[25,)"
+recipeList:
+   - org.openrewrite.java.ChangeType:
+       oldFullyQualifiedTypeName: java.util.zip.ZipError
+       newFullyQualifiedTypeName: java.util.zip.ZipException
