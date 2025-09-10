@@ -132,7 +132,6 @@ class MigrateStringReaderToReaderOfTest implements RewriteTest {
     @ValueSource(strings = {"StringBuilder", "StringBuffer", "CharBuffer", "CharSequence"})
     void migrateCharSequenceVariants(String className) {
         String extraImport = "CharBuffer".equals(className) ? "\nimport java.nio.CharBuffer;" : "";
-                  """
           //language=java
           java(
             String.format("""
