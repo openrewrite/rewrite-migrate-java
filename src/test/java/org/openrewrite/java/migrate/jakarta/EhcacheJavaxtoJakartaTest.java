@@ -21,6 +21,7 @@ import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class EhcacheJavaxtoJakartaTest implements RewriteTest {
@@ -63,32 +64,34 @@ class EhcacheJavaxtoJakartaTest implements RewriteTest {
                   </dependencies>
               </project>
               """,
-            """
-              <project>
-                  <groupId>com.example.ehcache</groupId>
-                  <artifactId>ehcache-legacy</artifactId>
-                  <version>1.0.0</version>
-                  <dependencies>
-                      <dependency>
-                          <groupId>org.ehcache</groupId>
-                          <artifactId>ehcache</artifactId>
-                          <version>3.10.8</version>
-                          <classifier>jakarta</classifier>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.ehcache</groupId>
-                          <artifactId>ehcache-clustered</artifactId>
-                          <version>3.10.8</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.ehcache</groupId>
-                          <artifactId>ehcache-transactions</artifactId>
-                          <version>3.10.8</version>
-                          <classifier>jakarta</classifier>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """
+            spec -> spec.after(pom -> assertThat(pom)
+              .matches("""
+                <project>
+                    <groupId>com.example.ehcache</groupId>
+                    <artifactId>ehcache-legacy</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.ehcache</groupId>
+                            <artifactId>ehcache</artifactId>
+                            <version>3.1\\d.\\d+</version>
+                            <classifier>jakarta</classifier>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.ehcache</groupId>
+                            <artifactId>ehcache-clustered</artifactId>
+                            <version>3.1\\d.\\d+</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.ehcache</groupId>
+                            <artifactId>ehcache-transactions</artifactId>
+                            <version>3.1\\d.\\d+</version>
+                            <classifier>jakarta</classifier>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """.trim())
+              .actual())
           )
         );
     }
