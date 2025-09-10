@@ -153,7 +153,7 @@ class MigrateStringReaderToReaderOfTest implements RewriteTest {
                         Reader reader = Reader.of(cs);
                     }
                 }
-                """, extraImport, className)
+                """.formatted( extraImport, className )
           )
         );
     }
