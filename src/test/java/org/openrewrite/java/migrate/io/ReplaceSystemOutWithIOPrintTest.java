@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.io;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.search.FindMissingTypes;
 import org.openrewrite.test.RecipeSpec;
@@ -39,6 +40,7 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(25)));
     }
 
+    @DocumentExample
     @Test
     void replaceSystemOutPrint() {
         rewriteRun(

@@ -64,9 +64,9 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
             }
 
             private J.MethodInvocation applyTemplate(JavaTemplate tpl, J.MethodInvocation m) {
-                return m.getArguments().isEmpty()
-                        ? tpl.apply(getCursor(), m.getCoordinates().replace())
-                        : tpl.apply(getCursor(), m.getCoordinates().replace(), m.getArguments().get(0));
+                return m.getArguments().isEmpty() ?
+                        tpl.apply(getCursor(), m.getCoordinates().replace()) :
+                        tpl.apply(getCursor(), m.getCoordinates().replace(), m.getArguments().get(0));
             }
 
             private boolean isSystemOutMethod(J.MethodInvocation mi) {
@@ -76,8 +76,8 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
 
                 J.FieldAccess fieldAccess = (J.FieldAccess) mi.getSelect();
                 return fieldAccess.getTarget() instanceof J.Identifier &&
-                        ((J.Identifier) fieldAccess.getTarget()).getSimpleName().equals("System") && fieldAccess.getName().getSimpleName().equals("out") &&
-                        (mi.getName().getSimpleName().equals("print") || mi.getName().getSimpleName().equals("println"));
+                        "System".equals(((J.Identifier) fieldAccess.getTarget()).getSimpleName()) && "out".equals(fieldAccess.getName().getSimpleName()) &&
+                        ("print".equals(mi.getName().getSimpleName()) || "println".equals(mi.getName().getSimpleName()));
             }
         };
     }
