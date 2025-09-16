@@ -16,11 +16,13 @@
 package org.openrewrite.java.migrate.io;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
@@ -41,34 +43,20 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            private final JavaTemplate printTemplate = JavaTemplate.builder("IO.print(#{any()})").build();
-            private final JavaTemplate printlnTemplate = JavaTemplate.builder("IO.println(#{any()})").build();
-            private final JavaTemplate printEmptyTemplate = JavaTemplate.builder("IO.print()").build();
-            private final JavaTemplate printlnEmptyTemplate = JavaTemplate.builder("IO.println()").build();
+        return Preconditions.check(new UsesMethod<>(SYSTEM_OUT_PRINT), new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
-
                 if (!isSystemOutMethod(m)) {
                     return m;
                 }
                 String methodName = m.getName().getSimpleName();
-                JavaTemplate tpl;
-
-                if ("print".equals(methodName)) {
-                    tpl = m.getArguments().isEmpty() ? printEmptyTemplate : printTemplate;
-                } else if ("println".equals(methodName)) {
-                    tpl = m.getArguments().isEmpty() ? printlnEmptyTemplate : printlnTemplate;
-                } else {
-                    return m;
-                }
-
-                maybeRemoveImport("java.lang.System.out");
                 return m.getArguments().isEmpty() ?
-                        tpl.apply(getCursor(), m.getCoordinates().replace()) :
-                        tpl.apply(getCursor(), m.getCoordinates().replace(), m.getArguments().get(0));
+                        JavaTemplate.builder("IO.#{}()").build()
+                                .apply(getCursor(), m.getCoordinates().replace(), methodName) :
+                        JavaTemplate.builder("IO.#{}(#{any()})").build()
+                                .apply(getCursor(), m.getCoordinates().replace(), methodName, m.getArguments().get(0));
             }
 
             private boolean isSystemOutMethod(J.MethodInvocation mi) {
@@ -78,6 +66,7 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
                         return isSystemOut(((J.FieldAccess) expression).getName());
                     }
                     if (expression instanceof J.Identifier) {
+                        maybeRemoveImport("java.lang.System.out");
                         return isSystemOut((J.Identifier) expression);
                     }
                 }
@@ -89,6 +78,6 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
                         identifier.getFieldType() != null &&
                         TypeUtils.isAssignableTo("java.lang.System", identifier.getFieldType().getOwner());
             }
-        };
+        });
     }
 }
