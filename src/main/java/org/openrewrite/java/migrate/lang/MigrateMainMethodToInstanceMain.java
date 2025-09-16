@@ -20,14 +20,11 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.staticanalysis.VariableReferences;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.emptyList;
 
@@ -69,29 +66,12 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
                 }
 
                 // Remove the parameter if unused
-                if (argumentsUnused(param.getVariables().get(0).getName(), md.getBody())) {
+                J.Identifier variableName = param.getVariables().get(0).getName();
+                if (VariableReferences.findRhsReferences(md.getBody(), variableName).isEmpty()) {
                     md = md.withParameters(emptyList());
                 }
                 return md.withReturnTypeExpression(md.getReturnTypeExpression().withPrefix(md.getModifiers().get(0).getPrefix()))
                         .withModifiers(emptyList());
-            }
-
-            private boolean argumentsUnused(J.Identifier variableName, J context) {
-                return VariableReferences.findRhsReferences(context, variableName).isEmpty() &&
-                        !usedInModifyingUnary(variableName, context);
-            }
-
-            private boolean usedInModifyingUnary(J.Identifier variableName, J context) {
-                return new JavaIsoVisitor<AtomicBoolean>() {
-                    @Override
-                    public J.Unary visitUnary(J.Unary unary, AtomicBoolean atomicBoolean) {
-                        if (unary.getOperator().isModifying() &&
-                                SemanticallyEqual.areEqual(variableName, unary.getExpression())) {
-                            atomicBoolean.set(true);
-                        }
-                        return super.visitUnary(unary, atomicBoolean);
-                    }
-                }.reduce(context, new AtomicBoolean(false)).get();
             }
         });
     }
