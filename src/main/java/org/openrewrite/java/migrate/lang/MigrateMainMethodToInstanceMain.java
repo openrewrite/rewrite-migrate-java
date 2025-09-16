@@ -19,17 +19,14 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.staticanalysis.VariableReferences;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.emptyList;
@@ -55,92 +52,41 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
                 // Check if this is a main method: public static void main(String[] args)
                 if (!"main".equals(md.getSimpleName()) ||
                         md.getReturnTypeExpression() == null ||
-                        !md.getReturnTypeExpression().toString().equals("void") ||
-                        md.getParameters().size() != 1) {
+                        md.getReturnTypeExpression().getType() != JavaType.Primitive.Void ||
+                        !md.hasModifier(J.Modifier.Type.Public) ||
+                        !md.hasModifier(J.Modifier.Type.Static) ||
+                        md.getParameters().size() != 1 ||
+                        !(md.getParameters().get(0) instanceof J.VariableDeclarations) ||
+                        md.getBody() == null) {
                     return md;
                 }
-
-                // Check modifiers - must have public and static
-                boolean hasPublic = false;
-                boolean hasStatic = false;
-                for (J.Modifier modifier : md.getModifiers()) {
-                    if (modifier.getType() == J.Modifier.Type.Public) {
-                        hasPublic = true;
-                    } else if (modifier.getType() == J.Modifier.Type.Static) {
-                        hasStatic = true;
-                    }
-                }
-
-                if (!hasPublic || !hasStatic) {
-                    return md;
-                }
-
-                // Check parameter type
-                if (!(md.getParameters().get(0) instanceof J.VariableDeclarations)) {
-                    return md;
-                }
-
-                J.VariableDeclarations param = (J.VariableDeclarations) md.getParameters().get(0);
-                if (param.getVariables().isEmpty()) {
-                    return md;
-                }
-
-                J.VariableDeclarations.NamedVariable paramVar = param.getVariables().get(0);
-                String paramName = paramVar.getSimpleName();
 
                 // Check if parameter is String[] type
+                J.VariableDeclarations param = (J.VariableDeclarations) md.getParameters().get(0);
                 JavaType paramType = param.getType();
-                if (paramType == null || !TypeUtils.isOfClassType(paramType, "java.lang.String")) {
+                if (!TypeUtils.isOfClassType(paramType, "java.lang.String") || !(paramType instanceof JavaType.Array)) {
                     return md;
                 }
 
-                // Ensure it's an array
-                if (!(paramType instanceof JavaType.Array)) {
-                    return md;
-                }
-
-                // Check if the parameter is used in the method body
-                if (md.getBody() == null) {
-                    return md;
-                }
-
-                // Remove public and static modifiers using ListUtils.filter, preserve spacing
-                Space leadingSpace = md.getModifiers().isEmpty() ? null : md.getModifiers().get(0).getPrefix();
-
-                List<J.Modifier> newModifiers = ListUtils.filter(md.getModifiers(),
-                    modifier -> modifier.getType() != J.Modifier.Type.Public &&
-                               modifier.getType() != J.Modifier.Type.Static);
-
-                // If we removed modifiers and have remaining ones, fix the leading space on the first
-                if (!newModifiers.isEmpty() && newModifiers.size() < md.getModifiers().size()) {
-                    newModifiers = ListUtils.mapFirst(newModifiers, m -> m.withPrefix(leadingSpace));
-                }
-
-                // If no modifiers remain and we have a return type, preserve the spacing
-                if (newModifiers.isEmpty() && leadingSpace != null && md.getReturnTypeExpression() != null) {
-                    md = md.withReturnTypeExpression(md.getReturnTypeExpression().withPrefix(leadingSpace));
-                }
-
-                // Remove the parameter
-                if (argumentsUnused(paramVar, md.getBody())) {
+                // Remove the parameter if unused
+                if (argumentsUnused(param.getVariables().get(0).getName(), md.getBody())) {
                     md = md.withParameters(emptyList());
                 }
-
-                // Remove the modifiers
-                return md.withModifiers(newModifiers);
+                return md.withReturnTypeExpression(md.getReturnTypeExpression().withPrefix(md.getModifiers().get(0).getPrefix()))
+                        .withModifiers(emptyList());
             }
 
-            private boolean argumentsUnused(J.VariableDeclarations.NamedVariable variable, J context) {
-                return VariableReferences.findRhsReferences(context, variable.getName()).isEmpty() &&
-                        !usedInModifyingUnary(variable.getName(), context);
+            private boolean argumentsUnused(J.Identifier variableName, J context) {
+                return VariableReferences.findRhsReferences(context, variableName).isEmpty() &&
+                        !usedInModifyingUnary(variableName, context);
             }
 
-            private boolean usedInModifyingUnary(J.Identifier identifier, J context) {
+            private boolean usedInModifyingUnary(J.Identifier variableName, J context) {
                 return new JavaIsoVisitor<AtomicBoolean>() {
                     @Override
                     public J.Unary visitUnary(J.Unary unary, AtomicBoolean atomicBoolean) {
                         if (unary.getOperator().isModifying() &&
-                                SemanticallyEqual.areEqual(identifier, unary.getExpression())) {
+                                SemanticallyEqual.areEqual(variableName, unary.getExpression())) {
                             atomicBoolean.set(true);
                         }
                         return super.visitUnary(unary, atomicBoolean);
