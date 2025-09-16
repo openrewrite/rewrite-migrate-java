@@ -31,12 +31,13 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Migrate System.out.print to Java 25 IO utility class";
+        return "Migrate `System.out.print` to Java 25 IO utility class";
     }
 
     @Override
     public String getDescription() {
-        return "Replace System.out.print(), System.out.println() with IO.print() and IO.println(). Migrates to the new IO utility class introduced in Java 25.";
+        return "Replace `System.out.print()`, `System.out.println()` with `IO.print()` and `IO.println()`. " +
+                "Migrates to the new IO utility class introduced in Java 25.";
     }
 
     private static final MethodMatcher SYSTEM_OUT_PRINT = new MethodMatcher("java.io.PrintStream print*(..)");
@@ -44,7 +45,6 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesMethod<>(SYSTEM_OUT_PRINT), new JavaIsoVisitor<ExecutionContext>() {
-
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
