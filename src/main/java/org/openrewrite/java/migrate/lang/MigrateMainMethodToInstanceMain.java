@@ -19,6 +19,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
@@ -28,10 +29,10 @@ import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.staticanalysis.VariableReferences;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static java.util.Collections.emptyList;
 
 public class MigrateMainMethodToInstanceMain extends Recipe {
     @Override
@@ -103,24 +104,16 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
                     return md;
                 }
 
-                // Remove public and static modifiers, preserve spacing
-                List<J.Modifier> newModifiers = new ArrayList<>();
-                Space leadingSpace = null;
+                // Remove public and static modifiers using ListUtils.filter, preserve spacing
+                Space leadingSpace = md.getModifiers().isEmpty() ? null : md.getModifiers().get(0).getPrefix();
 
-                for (int i = 0; i < md.getModifiers().size(); i++) {
-                    J.Modifier modifier = md.getModifiers().get(i);
-                    if (modifier.getType() != J.Modifier.Type.Public &&
-                            modifier.getType() != J.Modifier.Type.Static) {
-                        if (!newModifiers.isEmpty() || leadingSpace == null) {
-                            newModifiers.add(modifier);
-                        } else {
-                            // Apply the leading space to the first remaining modifier
-                            newModifiers.add(modifier.withPrefix(leadingSpace));
-                        }
-                    } else if (leadingSpace == null) {
-                        // Capture the leading space from the first public/static modifier
-                        leadingSpace = modifier.getPrefix();
-                    }
+                List<J.Modifier> newModifiers = ListUtils.filter(md.getModifiers(),
+                    modifier -> modifier.getType() != J.Modifier.Type.Public &&
+                               modifier.getType() != J.Modifier.Type.Static);
+
+                // If we removed modifiers and have remaining ones, fix the leading space on the first
+                if (!newModifiers.isEmpty() && newModifiers.size() < md.getModifiers().size()) {
+                    newModifiers = ListUtils.mapFirst(newModifiers, m -> m.withPrefix(leadingSpace));
                 }
 
                 // If no modifiers remain and we have a return type, preserve the spacing
@@ -130,7 +123,7 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
 
                 // Remove the parameter
                 if (argumentsUnused(paramVar, md.getBody())) {
-                    md = md.withParameters(Collections.emptyList());
+                    md = md.withParameters(emptyList());
                 }
 
                 // Remove the modifiers
