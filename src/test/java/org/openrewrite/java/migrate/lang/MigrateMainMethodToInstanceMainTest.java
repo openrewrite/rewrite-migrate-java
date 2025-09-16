@@ -23,6 +23,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
+@SuppressWarnings("ConfusingMainMethod")
 class MigrateMainMethodToInstanceMainTest implements RewriteTest {
 
     @Override
@@ -238,7 +239,7 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
           java(
             """
               class Application {
-                  public static void main(String[] args, String extra) {
+                  public static void main(String first, String[] args) {
                       System.out.println("Invalid main method");
                   }
               }
