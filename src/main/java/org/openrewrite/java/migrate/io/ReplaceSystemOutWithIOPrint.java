@@ -20,7 +20,10 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 
 public class ReplaceSystemOutWithIOPrint extends Recipe {
 
@@ -33,6 +36,8 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
     public String getDescription() {
         return "Replace System.out.print(), System.out.println() with IO.print() and IO.println(). Migrates to the new IO utility class introduced in Java 25.";
     }
+
+    private static final MethodMatcher SYSTEM_OUT_PRINT = new MethodMatcher("java.io.PrintStream print*(..)");
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -60,24 +65,29 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
                     return m;
                 }
 
-                return applyTemplate(tpl, m);
-            }
-
-            private J.MethodInvocation applyTemplate(JavaTemplate tpl, J.MethodInvocation m) {
+                maybeRemoveImport("java.lang.System.out");
                 return m.getArguments().isEmpty() ?
                         tpl.apply(getCursor(), m.getCoordinates().replace()) :
                         tpl.apply(getCursor(), m.getCoordinates().replace(), m.getArguments().get(0));
             }
 
             private boolean isSystemOutMethod(J.MethodInvocation mi) {
-                if (!(mi.getSelect() instanceof J.FieldAccess)) {
-                    return false;
+                if (SYSTEM_OUT_PRINT.matches(mi)) {
+                    Expression expression = mi.getSelect();
+                    if (expression instanceof J.FieldAccess) {
+                        return isSystemOut(((J.FieldAccess) expression).getName());
+                    }
+                    if (expression instanceof J.Identifier) {
+                        return isSystemOut((J.Identifier) expression);
+                    }
                 }
+                return false;
+            }
 
-                J.FieldAccess fieldAccess = (J.FieldAccess) mi.getSelect();
-                return fieldAccess.getTarget() instanceof J.Identifier &&
-                        "System".equals(((J.Identifier) fieldAccess.getTarget()).getSimpleName()) && "out".equals(fieldAccess.getName().getSimpleName()) &&
-                        ("print".equals(mi.getName().getSimpleName()) || "println".equals(mi.getName().getSimpleName()));
+            private boolean isSystemOut(J.Identifier identifier) {
+                return "out".equals(identifier.getSimpleName()) &&
+                        identifier.getFieldType() != null &&
+                        TypeUtils.isAssignableTo("java.lang.System", identifier.getFieldType().getOwner());
             }
         };
     }

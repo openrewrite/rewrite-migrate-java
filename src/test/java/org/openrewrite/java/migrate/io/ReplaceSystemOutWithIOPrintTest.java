@@ -86,6 +86,30 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
     }
 
     @Test
+    void replaceSystemOutPrintlnWithStaticImport() {
+        rewriteRun(
+          java(
+            """
+              import static java.lang.System.out;
+
+              class Example {
+                  void test() {
+                      out.println("Hello");
+                  }
+              }
+              """,
+            """
+              class Example {
+                  void test() {
+                      IO.println("Hello");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void replaceSystemOutPrintWithVariable() {
         rewriteRun(
           java(
@@ -186,7 +210,6 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
           )
         );
     }
-
 
     @Test
     void doesNotReplaceSystemErrCalls() {
