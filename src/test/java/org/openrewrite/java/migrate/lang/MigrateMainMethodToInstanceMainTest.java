@@ -28,7 +28,7 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateMainMethodToInstanceMain())
-            .allSources(s -> s.markers(javaVersion(21)));
+          .allSources(s -> s.markers(javaVersion(25)));
     }
 
     @DocumentExample
@@ -36,22 +36,22 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     void migrateMainMethodWithUnusedArgs() {
         //language=java
         rewriteRun(
-            java(
-                """
-                    class Application {
-                        public static void main(String[] args) {
-                            System.out.println("Hello, World!");
-                        }
-                    }
-                    """,
-                """
-                    class Application {
-                        void main() {
-                            System.out.println("Hello, World!");
-                        }
-                    }
-                    """
-            )
+          java(
+            """
+              class Application {
+                  public static void main(String[] args) {
+                      System.out.println("Hello, World!");
+                  }
+              }
+              """,
+            """
+              class Application {
+                  void main() {
+                      System.out.println("Hello, World!");
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -59,17 +59,17 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     void doNotMigrateWhenArgsIsUsed() {
         //language=java
         rewriteRun(
-            java(
-                """
-                    class Application {
-                        public static void main(String[] args) {
-                            if (args.length > 0) {
-                                System.out.println("Args provided: " + args[0]);
-                            }
-                        }
-                    }
-                    """
-            )
+          java(
+            """
+              class Application {
+                  public static void main(String[] args) {
+                      if (args.length > 0) {
+                          System.out.println("Args provided: " + args[0]);
+                      }
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -77,19 +77,19 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     void doNotMigrateWhenArgsIsUsedInMethodCall() {
         //language=java
         rewriteRun(
-            java(
-                """
-                    class Application {
-                        public static void main(String[] args) {
-                            processArgs(args);
-                        }
+          java(
+            """
+              class Application {
+                  public static void main(String[] args) {
+                      processArgs(args);
+                  }
 
-                        private static void processArgs(String[] args) {
-                            // Process arguments
-                        }
-                    }
-                    """
-            )
+                  private static void processArgs(String[] args) {
+                      // Process arguments
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -97,20 +97,20 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     void migrateMainMethodWithEmptyBody() {
         //language=java
         rewriteRun(
-            java(
-                """
-                    class Application {
-                        public static void main(String[] args) {
-                        }
-                    }
-                    """,
-                """
-                    class Application {
-                        void main() {
-                        }
-                    }
-                    """
-            )
+          java(
+            """
+              class Application {
+                  public static void main(String[] args) {
+                  }
+              }
+              """,
+            """
+              class Application {
+                  void main() {
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -118,15 +118,15 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     void doNotMigrateNonMainMethod() {
         //language=java
         rewriteRun(
-            java(
-                """
-                    class Application {
-                        public static void notMain(String[] args) {
-                            System.out.println("Not a main method");
-                        }
-                    }
-                    """
-            )
+          java(
+            """
+              class Application {
+                  public static void notMain(String[] args) {
+                      System.out.println("Not a main method");
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -134,15 +134,15 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     void doNotMigrateMainWithDifferentSignature() {
         //language=java
         rewriteRun(
-            java(
-                """
-                    class Application {
-                        public static int main(String[] args) {
-                            return 0;
-                        }
-                    }
-                    """
-            )
+          java(
+            """
+              class Application {
+                  public static int main(String[] args) {
+                      return 0;
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -150,15 +150,15 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     void doNotMigratePrivateMain() {
         //language=java
         rewriteRun(
-            java(
-                """
-                    class Application {
-                        private static void main(String[] args) {
-                            System.out.println("Private main");
-                        }
-                    }
-                    """
-            )
+          java(
+            """
+              class Application {
+                  private static void main(String[] args) {
+                      System.out.println("Private main");
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -166,15 +166,15 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     void doNotMigrateInstanceMain() {
         //language=java
         rewriteRun(
-            java(
-                """
-                    class Application {
-                        public void main(String[] args) {
-                            System.out.println("Already instance main");
-                        }
-                    }
-                    """
-            )
+          java(
+            """
+              class Application {
+                  public void main(String[] args) {
+                      System.out.println("Already instance main");
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -182,32 +182,32 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     void migrateMainWithComplexUnusedArgs() {
         //language=java
         rewriteRun(
-            java(
-                """
-                    class Application {
-                        public static void main(String[] arguments) {
-                            System.out.println("Starting application...");
-                            new Application().run();
-                        }
+          java(
+            """
+              class Application {
+                  public static void main(String[] arguments) {
+                      System.out.println("Starting application...");
+                      new Application().run();
+                  }
 
-                        void run() {
-                            System.out.println("Running...");
-                        }
-                    }
-                    """,
-                """
-                    class Application {
-                        void main() {
-                            System.out.println("Starting application...");
-                            new Application().run();
-                        }
+                  void run() {
+                      System.out.println("Running...");
+                  }
+              }
+              """,
+            """
+              class Application {
+                  void main() {
+                      System.out.println("Starting application...");
+                      new Application().run();
+                  }
 
-                        void run() {
-                            System.out.println("Running...");
-                        }
-                    }
-                    """
-            )
+                  void run() {
+                      System.out.println("Running...");
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -215,15 +215,15 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     void doNotMigrateMainWithMultipleParameters() {
         //language=java
         rewriteRun(
-            java(
-                """
-                    class Application {
-                        public static void main(String[] args, String extra) {
-                            System.out.println("Invalid main method");
-                        }
-                    }
-                    """
-            )
+          java(
+            """
+              class Application {
+                  public static void main(String[] args, String extra) {
+                      System.out.println("Invalid main method");
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -231,15 +231,15 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     void doNotMigrateMainWithNoParameters() {
         //language=java
         rewriteRun(
-            java(
-                """
-                    class Application {
-                        public static void main() {
-                            System.out.println("No parameters");
-                        }
-                    }
-                    """
-            )
+          java(
+            """
+              class Application {
+                  public static void main() {
+                      System.out.println("No parameters");
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -247,24 +247,24 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     void migrateMainWithAnnotations() {
         //language=java
         rewriteRun(
-            java(
-                """
-                    class Application {
-                        @SuppressWarnings("unused")
-                        public static void main(String[] args) {
-                            System.out.println("Hello!");
-                        }
-                    }
-                    """,
-                """
-                    class Application {
-                        @SuppressWarnings("unused")
-                        void main() {
-                            System.out.println("Hello!");
-                        }
-                    }
-                    """
-            )
+          java(
+            """
+              class Application {
+                  @SuppressWarnings("unused")
+                  public static void main(String[] args) {
+                      System.out.println("Hello!");
+                  }
+              }
+              """,
+            """
+              class Application {
+                  @SuppressWarnings("unused")
+                  void main() {
+                      System.out.println("Hello!");
+                  }
+              }
+              """
+          )
         );
     }
 }

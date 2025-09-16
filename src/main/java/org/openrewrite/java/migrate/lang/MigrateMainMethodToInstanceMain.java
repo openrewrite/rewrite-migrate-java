@@ -15,11 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
@@ -65,9 +61,9 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
 
             // Check if this is a main method: public static void main(String[] args)
             if (!"main".equals(md.getSimpleName()) ||
-                md.getReturnTypeExpression() == null ||
-                !md.getReturnTypeExpression().toString().equals("void") ||
-                md.getParameters().size() != 1) {
+                    md.getReturnTypeExpression() == null ||
+                    !md.getReturnTypeExpression().toString().equals("void") ||
+                    md.getParameters().size() != 1) {
                 return md;
             }
 
@@ -122,7 +118,7 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
             for (int i = 0; i < md.getModifiers().size(); i++) {
                 J.Modifier modifier = md.getModifiers().get(i);
                 if (modifier.getType() != J.Modifier.Type.Public &&
-                    modifier.getType() != J.Modifier.Type.Static) {
+                        modifier.getType() != J.Modifier.Type.Static) {
                     if (!newModifiers.isEmpty() || leadingSpace == null) {
                         newModifiers.add(modifier);
                     } else {
@@ -142,7 +138,7 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
 
             // Remove the parameter
             md = md.withModifiers(newModifiers)
-                   .withParameters(new ArrayList<>());
+                    .withParameters(new ArrayList<>());
 
             return md;
         }
