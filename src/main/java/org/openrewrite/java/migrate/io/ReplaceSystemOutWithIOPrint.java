@@ -40,44 +40,50 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
                 "Migrates to the new IO utility class introduced in Java 25.";
     }
 
-    private static final MethodMatcher SYSTEM_OUT_PRINT = new MethodMatcher("java.io.PrintStream print*(..)");
+    private static final MethodMatcher SYSTEM_OUT_PRINT = new MethodMatcher("java.io.PrintStream print(..)");
+    private static final MethodMatcher SYSTEM_OUT_PRINTLN = new MethodMatcher("java.io.PrintStream println(..)");
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesMethod<>(SYSTEM_OUT_PRINT), new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
-                if (!isSystemOutMethod(m)) {
-                    return m;
-                }
-                String methodName = m.getName().getSimpleName();
-                return m.getArguments().isEmpty() ?
-                        JavaTemplate.builder("IO.#{}()").build()
-                                .apply(getCursor(), m.getCoordinates().replace(), methodName) :
-                        JavaTemplate.builder("IO.#{}(#{any()})").build()
-                                .apply(getCursor(), m.getCoordinates().replace(), methodName, m.getArguments().get(0));
-            }
-
-            private boolean isSystemOutMethod(J.MethodInvocation mi) {
-                if (SYSTEM_OUT_PRINT.matches(mi)) {
-                    Expression expression = mi.getSelect();
-                    if (expression instanceof J.FieldAccess) {
-                        return isSystemOut(((J.FieldAccess) expression).getName());
+        return Preconditions.check(
+                Preconditions.or(
+                        new UsesMethod<>(SYSTEM_OUT_PRINT),
+                        new UsesMethod<>(SYSTEM_OUT_PRINTLN)
+                ),
+                new JavaIsoVisitor<ExecutionContext>() {
+                    @Override
+                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                        J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
+                        if (!isSystemOutMethod(m)) {
+                            return m;
+                        }
+                        String methodName = m.getName().getSimpleName();
+                        return m.getArguments().isEmpty() ?
+                                JavaTemplate.builder("IO.#{}()").build()
+                                        .apply(getCursor(), m.getCoordinates().replace(), methodName) :
+                                JavaTemplate.builder("IO.#{}(#{any()})").build()
+                                        .apply(getCursor(), m.getCoordinates().replace(), methodName, m.getArguments().get(0));
                     }
-                    if (expression instanceof J.Identifier) {
-                        maybeRemoveImport("java.lang.System.out");
-                        return isSystemOut((J.Identifier) expression);
-                    }
-                }
-                return false;
-            }
 
-            private boolean isSystemOut(J.Identifier identifier) {
-                return "out".equals(identifier.getSimpleName()) &&
-                        identifier.getFieldType() != null &&
-                        TypeUtils.isAssignableTo("java.lang.System", identifier.getFieldType().getOwner());
-            }
-        });
+                    private boolean isSystemOutMethod(J.MethodInvocation mi) {
+                        if (SYSTEM_OUT_PRINT.matches(mi) || SYSTEM_OUT_PRINTLN.matches(mi)) {
+                            Expression expression = mi.getSelect();
+                            if (expression instanceof J.FieldAccess) {
+                                return isSystemOut(((J.FieldAccess) expression).getName());
+                            }
+                            if (expression instanceof J.Identifier) {
+                                maybeRemoveImport("java.lang.System.out");
+                                return isSystemOut((J.Identifier) expression);
+                            }
+                        }
+                        return false;
+                    }
+
+                    private boolean isSystemOut(J.Identifier identifier) {
+                        return "out".equals(identifier.getSimpleName()) &&
+                                identifier.getFieldType() != null &&
+                                TypeUtils.isAssignableTo("java.lang.System", identifier.getFieldType().getOwner());
+                    }
+                });
     }
 }

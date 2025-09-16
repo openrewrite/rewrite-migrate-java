@@ -245,4 +245,19 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void doesNotReplacePrintf() {
+        rewriteRun(
+          java(
+            """
+              class Example {
+                  void test() {
+                      System.out.printf("Hello%n");
+                  }
+              }
+              """
+          )
+        );
+    }
 }
