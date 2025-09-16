@@ -56,7 +56,7 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     }
 
     @Test
-    void doNotMigrateWhenArgsIsUsed() {
+    void retainArgsWhenUsed() {
         //language=java
         rewriteRun(
           java(
@@ -68,19 +68,39 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
                       }
                   }
               }
+              """,
+            """
+              class Application {
+                  void main(String[] args) {
+                      if (args.length > 0) {
+                          System.out.println("Args provided: " + args[0]);
+                      }
+                  }
+              }
               """
           )
         );
     }
 
     @Test
-    void doNotMigrateWhenArgsIsUsedInMethodCall() {
+    void retainArgsWhenUsedInMethodCall() {
         //language=java
         rewriteRun(
           java(
             """
               class Application {
                   public static void main(String[] args) {
+                      processArgs(args);
+                  }
+
+                  private static void processArgs(String[] args) {
+                      // Process arguments
+                  }
+              }
+              """,
+            """
+              class Application {
+                  void main(String[] args) {
                       processArgs(args);
                   }
 

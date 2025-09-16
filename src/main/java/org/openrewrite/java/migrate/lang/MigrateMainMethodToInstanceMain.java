@@ -15,15 +15,21 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import org.openrewrite.*;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.staticanalysis.VariableReferences;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -93,7 +99,7 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
                 }
 
                 // Check if the parameter is used in the method body
-                if (md.getBody() == null || isParameterUsed(md.getBody(), paramName)) {
+                if (md.getBody() == null) {
                     return md;
                 }
 
@@ -123,28 +129,30 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
                 }
 
                 // Remove the parameter
-                md = md.withModifiers(newModifiers)
-                        .withParameters(new ArrayList<>());
+                if (argumentsUnused(paramVar, md.getBody())) {
+                    md = md.withParameters(Collections.emptyList());
+                }
 
-                return md;
+                // Remove the modifiers
+                return md.withModifiers(newModifiers);
             }
 
-            private boolean isParameterUsed(J.Block body, String paramName) {
-                AtomicBoolean used = new AtomicBoolean(false);
-                new JavaIsoVisitor<ExecutionContext>() {
+            private boolean argumentsUnused(J.VariableDeclarations.NamedVariable variable, J context) {
+                return VariableReferences.findRhsReferences(context, variable.getName()).isEmpty() &&
+                        !usedInModifyingUnary(variable.getName(), context);
+            }
+
+            private boolean usedInModifyingUnary(J.Identifier identifier, J context) {
+                return new JavaIsoVisitor<AtomicBoolean>() {
                     @Override
-                    public J.Identifier visitIdentifier(J.Identifier identifier, ExecutionContext ctx) {
-                        if (paramName.equals(identifier.getSimpleName())) {
-                            // Check if this identifier is a variable declaration (not a usage)
-                            J.VariableDeclarations.NamedVariable namedVar = getCursor().firstEnclosing(J.VariableDeclarations.NamedVariable.class);
-                            if (namedVar == null || !paramName.equals(namedVar.getSimpleName())) {
-                                used.set(true);
-                            }
+                    public J.Unary visitUnary(J.Unary unary, AtomicBoolean atomicBoolean) {
+                        if (unary.getOperator().isModifying() &&
+                                SemanticallyEqual.areEqual(identifier, unary.getExpression())) {
+                            atomicBoolean.set(true);
                         }
-                        return super.visitIdentifier(identifier, ctx);
+                        return super.visitUnary(unary, atomicBoolean);
                     }
-                }.visit(body, new InMemoryExecutionContext());
-                return used.get();
+                }.reduce(context, new AtomicBoolean(false)).get();
             }
         });
     }
