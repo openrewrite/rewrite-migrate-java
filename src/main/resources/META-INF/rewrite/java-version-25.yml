@@ -30,6 +30,8 @@ recipeList:
       version: 25
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 25
+  - org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
+  - org.openrewrite.java.migrate.lang.MigrateMainMethodToInstanceMain
   - org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
   - org.openrewrite.java.migrate.lang.ReplaceUnusedVariablesWithUnderscore
   - org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToClose

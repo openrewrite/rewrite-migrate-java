@@ -3896,6 +3896,25 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Example {
+          void test() {
+              System.out.print("Hello");
+          }
+      }
+    after: |
+      class Example {
+          void test() {
+              IO.print("Hello");
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jacoco.UpgradeJaCoCo
 examples:
 - description: ''
@@ -7474,6 +7493,30 @@ examples:
               } finally {
                   inflater.close();
               }
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.MigrateStringReaderToReaderOf
+examples:
+- description: ''
+  sources:
+  - before: |
+      import java.io.Reader;
+      import java.io.StringReader;
+
+      class Test {
+          void test(String content) {
+              Reader reader = new StringReader(content);
+          }
+      }
+    after: |
+      import java.io.Reader;
+
+      class Test {
+          void test(String content) {
+              Reader reader = Reader.of(content);
           }
       }
     language: java
