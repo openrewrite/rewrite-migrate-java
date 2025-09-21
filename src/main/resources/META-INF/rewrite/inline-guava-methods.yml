@@ -1,0 +1,297 @@
+#
+# Generated InlineMe recipes from TypeTable
+#
+
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods
+displayName: Inline methods annotated with `@InlineMe`
+description: >-
+  Automatically generated recipes to inline method calls based on `@InlineMe` annotations
+  discovered in the type table.
+recipeList:
+
+  # From com.google.guava:guava:33.4.8-jre
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.primitives.Booleans compare(boolean, boolean)'
+      replacement: 'Boolean.compare(a, b)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.primitives.Longs compare(long, long)'
+      replacement: 'Long.compare(a, b)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.primitives.Ints compare(int, int)'
+      replacement: 'Integer.compare(a, b)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.graph.ImmutableValueGraph copyOf(com.google.common.graph.ImmutableValueGraph)'
+      replacement: 'checkNotNull(graph)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.primitives.Doubles compare(double, double)'
+      replacement: 'Double.compare(a, b)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Streams stream(java.util.Collection)'
+      replacement: 'collection.stream()'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Streams stream(java.util.Optional)'
+      replacement: 'optional.stream()'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Streams stream(java.util.OptionalInt)'
+      replacement: 'optional.stream()'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Streams stream(java.util.OptionalLong)'
+      replacement: 'optional.stream()'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Streams stream(java.util.OptionalDouble)'
+      replacement: 'optional.stream()'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Range apply(java.lang.Comparable)'
+      replacement: 'this.contains(input)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Range test(java.lang.Comparable)'
+      replacement: 'this.contains(input)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.FluentIterable from(com.google.common.collect.FluentIterable)'
+      replacement: 'checkNotNull(iterable)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.ImmutableList asList()'
+      replacement: 'this'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.primitives.Chars compare(char, char)'
+      replacement: 'Character.compare(a, b)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.TreeBasedTable rowComparator()'
+      replacement: 'requireNonNull(this.rowKeySet().comparator())'
+      staticImports:
+        - 'java.util.Objects.requireNonNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Multisets unmodifiableMultiset(com.google.common.collect.ImmutableMultiset)'
+      replacement: 'checkNotNull(multiset)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Iterators unmodifiableIterator(com.google.common.collect.UnmodifiableIterator)'
+      replacement: 'checkNotNull(iterator)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Iterators peekingIterator(com.google.common.collect.PeekingIterator)'
+      replacement: 'checkNotNull(iterator)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Ordering from(com.google.common.collect.Ordering)'
+      replacement: 'checkNotNull(ordering)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Ordering binarySearch(java.util.List, java.lang.Object)'
+      replacement: 'Collections.binarySearch(sortedList, key, this)'
+      imports:
+        - 'java.util.Collections'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Multimaps unmodifiableMultimap(com.google.common.collect.ImmutableMultimap)'
+      replacement: 'checkNotNull(delegate)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Multimaps unmodifiableSetMultimap(com.google.common.collect.ImmutableSetMultimap)'
+      replacement: 'checkNotNull(delegate)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Multimaps unmodifiableListMultimap(com.google.common.collect.ImmutableListMultimap)'
+      replacement: 'checkNotNull(delegate)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.base.Equivalence test(java.lang.Object, java.lang.Object)'
+      replacement: 'this.equivalent(t, u)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Sets newSetFromMap(java.util.Map)'
+      replacement: 'Collections.newSetFromMap(map)'
+      imports:
+        - 'java.util.Collections'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.base.Strings repeat(java.lang.String, int)'
+      replacement: 'string.repeat(count)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.hash.BloomFilter apply(java.lang.Object)'
+      replacement: 'this.mightContain(input)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.hash.BloomFilter test(java.lang.Object)'
+      replacement: 'this.mightContain(input)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.base.CharMatcher apply(java.lang.Character)'
+      replacement: 'this.matches(character)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.base.CharMatcher test(java.lang.Character)'
+      replacement: 'this.matches(character)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.ComparisonChain compare(java.lang.Boolean, java.lang.Boolean)'
+      replacement: 'this.compareFalseFirst(left, right)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.io.Files toString(java.io.File, java.nio.charset.Charset)'
+      replacement: 'Files.asCharSource(file, charset).read()'
+      imports:
+        - 'com.google.common.io.Files'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.io.Files write(java.lang.CharSequence, java.io.File, java.nio.charset.Charset)'
+      replacement: 'Files.asCharSink(to, charset).write(from)'
+      imports:
+        - 'com.google.common.io.Files'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.io.Files copy(java.io.File, java.nio.charset.Charset, java.lang.Appendable)'
+      replacement: 'Files.asCharSource(from, charset).copyTo(to)'
+      imports:
+        - 'com.google.common.io.Files'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.io.Files append(java.lang.CharSequence, java.io.File, java.nio.charset.Charset)'
+      replacement: 'Files.asCharSink(to, charset, FileWriteMode.APPEND).write(from)'
+      imports:
+        - 'com.google.common.io.FileWriteMode'
+        - 'com.google.common.io.Files'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.io.Files readFirstLine(java.io.File, java.nio.charset.Charset)'
+      replacement: 'Files.asCharSource(file, charset).readFirstLine()'
+      imports:
+        - 'com.google.common.io.Files'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.io.Files readLines(java.io.File, java.nio.charset.Charset, com.google.common.io.LineProcessor)'
+      replacement: 'Files.asCharSource(file, charset).readLines(callback)'
+      imports:
+        - 'com.google.common.io.Files'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.io.Files readBytes(java.io.File, com.google.common.io.ByteProcessor)'
+      replacement: 'Files.asByteSource(file).read(processor)'
+      imports:
+        - 'com.google.common.io.Files'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.io.Files hash(java.io.File, com.google.common.hash.HashFunction)'
+      replacement: 'Files.asByteSource(file).hash(hashFunction)'
+      imports:
+        - 'com.google.common.io.Files'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.util.concurrent.FluentFuture from(com.google.common.util.concurrent.FluentFuture)'
+      replacement: 'checkNotNull(future)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.base.Converter apply(java.lang.Object)'
+      replacement: 'this.convert(a)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.primitives.Shorts compare(short, short)'
+      replacement: 'Short.compare(a, b)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.graph.ImmutableGraph copyOf(com.google.common.graph.ImmutableGraph)'
+      replacement: 'checkNotNull(graph)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.primitives.Floats compare(float, float)'
+      replacement: 'Float.compare(a, b)'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.collect.Iterables unmodifiableIterable(com.google.common.collect.ImmutableCollection)'
+      replacement: 'checkNotNull(iterable)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.graph.ImmutableNetwork copyOf(com.google.common.graph.ImmutableNetwork)'
+      replacement: 'checkNotNull(network)'
+      staticImports:
+        - 'com.google.common.base.Preconditions.checkNotNull'
+      classpathFromResources:
+        - 'guava-33.4.8-jre'

@@ -26,8 +26,7 @@ class NoGuavaInlineMeMethodsTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResource(
-          "/META-INF/rewrite/no-guava.yml",
+        spec.recipeFromResources(
           "org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods");
     }
 
