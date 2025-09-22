@@ -30,7 +30,7 @@ class NoGuavaTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipeFromResource("/META-INF/rewrite/no-guava.yml", "org.openrewrite.java.migrate.guava.NoGuava")
+          .recipeFromResources("org.openrewrite.java.migrate.guava.NoGuava")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 

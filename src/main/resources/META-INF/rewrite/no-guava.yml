@@ -111,20 +111,6 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods
-displayName: Inline Guava method calls
-description: >-
-  Inline Guava method calls that are annotated with `@InlineMe` to their replacement method.
-tags:
-  - guava
-preconditions:
-  - org.openrewrite.analysis.search.FindMethods:
-      methodPattern: com.google.common..* *(..)
-recipeList:
-  - org.openrewrite.java.InlineMethodCalls
-
----
-type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaNioCharsetStandardCharsets
 displayName: Prefer `java.nio.charset.StandardCharsets`
 description: Prefer `java.nio.charset.StandardCharsets` instead of using `com.google.common.base.Charsets`.
