@@ -229,6 +229,14 @@
 24.ea.36-open
 24.fx-librca
 24.fx-zulu
+25-amzn
+25-graal
+25-graalce
+25-librca
+25-oracle
+25-sapmchn
+25-zulu
+25.crac-zulu
 25.ea.10-open
 25.ea.13-graal
 25.ea.14-graal
@@ -272,6 +280,8 @@
 25.ea.36-graal
 25.ea.36-open
 25.ea.8-graal
+25.fx-librca
+25.fx-zulu
 26.ea.1-open
 26.ea.10-graal
 26.ea.10-open
@@ -282,6 +292,7 @@
 26.ea.13-graal
 26.ea.13-open
 26.ea.14-open
+26.ea.15-open
 26.ea.2-open
 26.ea.3-graal
 26.ea.3-open
