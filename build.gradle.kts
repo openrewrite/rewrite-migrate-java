@@ -13,7 +13,7 @@ recipeDependencies {
     parserClasspath("javax.persistence:javax.persistence-api:2.2")
     parserClasspath("org.glassfish:javax.servlet:3.0")
     parserClasspath("javax.annotation:javax.annotation-api:1.3.2")
-    parserClasspath("com.google.guava:guava:33.4.8-jre")
+    parserClasspath("com.google.guava:guava:33.5.0-jre")
     parserClasspath("com.google.errorprone:error_prone_core:2.+")
 }
 
