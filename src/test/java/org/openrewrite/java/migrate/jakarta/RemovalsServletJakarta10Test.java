@@ -28,7 +28,6 @@ class RemovalsServletJakarta10Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .logCompilationWarningsAndErrors(true)
             .classpathFromResources(new InMemoryExecutionContext(),
               "jakarta.servlet-api-5.0"))
           .recipeFromResource("/META-INF/rewrite/jakarta-ee-10.yml", "org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10");
