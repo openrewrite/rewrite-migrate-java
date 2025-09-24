@@ -170,7 +170,9 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: web-app
+      oldValue: ^[1234]\.\d+$
       newValue: 5.0
+      regex: true
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: web-app
@@ -178,7 +180,9 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: web-app
+      oldValue: .*xml/ns/javaee.*
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd
+      regex: true
   - org.openrewrite.text.FindAndReplace:
       find: "javax."
       replace: "jakarta."
