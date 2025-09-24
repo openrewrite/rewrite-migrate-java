@@ -15,7 +15,9 @@ recipeDependencies {
     parserClasspath("javax.annotation:javax.annotation-api:1.3.2")
     parserClasspath("com.google.guava:guava:33.5.0-jre")
     parserClasspath("com.google.errorprone:error_prone_core:2.+")
-    testParserClasspath("jakarta.servlet:jakarta.servlet-api:5.0.+")
+
+    testParserClasspath("javax.servlet:javax.servlet-api:4.0.1")
+    testParserClasspath("jakarta.servlet:jakarta.servlet-api:5.0.0")
 }
 
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
