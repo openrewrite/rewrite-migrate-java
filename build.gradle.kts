@@ -16,8 +16,22 @@ recipeDependencies {
     parserClasspath("com.google.guava:guava:33.5.0-jre")
     parserClasspath("com.google.errorprone:error_prone_core:2.+")
 
-    testParserClasspath("javax.servlet:javax.servlet-api:4.0.1")
+    testParserClasspath("com.sun.faces:jsf-api:2.1.29-11")
+    testParserClasspath("jakarta.el:jakarta.el-api:4.0.0")
+    testParserClasspath("jakarta.enterprise:jakarta.enterprise.cdi-api:4.0.1")
+    testParserClasspath("jakarta.faces:jakarta.faces-api:3.0.0")
+    testParserClasspath("jakarta.faces:jakarta.faces-api:4.0.0-M6")
+    testParserClasspath("jakarta.faces:jakarta.faces-api:4.0.1")
+    testParserClasspath("jakarta.servlet:jakarta.servlet-api:4.0.2")
     testParserClasspath("jakarta.servlet:jakarta.servlet-api:5.0.0")
+    testParserClasspath("jakarta.ws.rs:jakarta.ws.rs-api:3.1.0")
+    testParserClasspath("jakarta.xml.soap:jakarta.xml.soap-api:2.0.1")
+    testParserClasspath("javax.enterprise:cdi-api:2.0.SP1")
+    testParserClasspath("javax.servlet:javax.servlet-api:4.0.1")
+    testParserClasspath("org.apache.ws.security:wss4j:1.6.19")
+    testParserClasspath("org.apache.wss4j:wss4j-ws-security-common:2.0.0")
+    testParserClasspath("org.glassfish:jakarta.faces:2.3.19")
+    testParserClasspath("org.glassfish:jakarta.faces:3.0.3")
 }
 
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
