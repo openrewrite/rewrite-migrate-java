@@ -199,8 +199,8 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: web-app
-      oldValue: (?<prefix>https://jakarta\.ee/xml/ns/jakartaee\s+https://jakarta\.ee/xml/ns/jakartaee/web-app_)5_\d+(?<extension>\.xsd)
-      newValue: ${prefix}6_0${extension}
+      oldValue: (?<prefix>[\S\s]*https://jakarta\.ee/xml/ns/jakartaee/web-app_)5_\d+(?<suffix>\.xsd[\S\s]*)
+      newValue: ${prefix}6_0${suffix}
       regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
