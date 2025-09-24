@@ -15,6 +15,7 @@ recipeDependencies {
     parserClasspath("javax.annotation:javax.annotation-api:1.3.2")
     parserClasspath("com.google.guava:guava:33.5.0-jre")
     parserClasspath("com.google.errorprone:error_prone_core:2.+")
+    testParserClasspath("jakarta.servlet:jakarta.servlet-api:5.0.+")
 }
 
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
@@ -76,7 +77,6 @@ dependencies {
     testRuntimeOnly("com.google.code.findbugs:jsr305:3.0.2")
     testRuntimeOnly("javax.mail:mail:1.4.7")
     testRuntimeOnly("javax.mail:javax.mail-api:1.6.2")
-    testRuntimeOnly("javax.servlet:javax.servlet-api:4.0.1")
     testRuntimeOnly("javax.ws.rs:javax.ws.rs-api:2.1.1")
     testRuntimeOnly(gradleApi())
 }
