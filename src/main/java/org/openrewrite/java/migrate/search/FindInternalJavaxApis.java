@@ -20,11 +20,13 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.StringUtils;
+import org.openrewrite.java.TypeMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.table.MethodCalls;
 import org.openrewrite.java.trait.MethodAccess;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.MethodCall;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.SearchResult;
 
 import java.util.regex.Pattern;
@@ -58,7 +60,7 @@ public class FindInternalJavaxApis extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        Pattern javaxType = Pattern.compile(StringUtils.aspectjNameToPattern("javax..*"));
+        TypeMatcher javaxType = new TypeMatcher("javax..*");
         return Preconditions.check(new UsesType<>("javax..*", null),
                 (StringUtils.isBlank(methodPattern) ? new MethodAccess.Matcher() : new MethodAccess.Matcher(methodPattern))
                         .asVisitor((ma, ctx) -> {
@@ -68,12 +70,12 @@ public class FindInternalJavaxApis extends Recipe {
                             if (methodType == null || methodType.getReturnType() == null || methodType.getReturnType() instanceof JavaType.Unknown) {
                                 return call;
                             }
-                            if (methodType.getReturnType().isAssignableFrom(javaxType)) {
+                            if (TypeUtils.isAssignableTo(javaxType::matches, methodType.getReturnType())) {
                                 insertRow(ma, ctx, methodType);
                                 return SearchResult.found(call);
                             }
                             for (JavaType parameterType : methodType.getParameterTypes()) {
-                                if (parameterType.isAssignableFrom(javaxType)) {
+                                if (TypeUtils.isAssignableTo(javaxType::matches, parameterType)) {
                                     insertRow(ma, ctx, methodType);
                                     return SearchResult.found(call);
                                 }
