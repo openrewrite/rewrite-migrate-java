@@ -145,8 +145,7 @@ public class UseTextBlocks extends Recipe {
                     }
                 }
 
-                TabsAndIndentsStyle tabsAndIndentsStyle = Optional.ofNullable(getCursor().firstEnclosingOrThrow(SourceFile.class)
-                        .getStyle(TabsAndIndentsStyle.class)).orElse(IntelliJ.tabsAndIndents());
+                TabsAndIndentsStyle tabsAndIndentsStyle = Optional.ofNullable(Style.from( TabsAndIndentsStyle.class, getCursor().firstEnclosingOrThrow( SourceFile.class ) )).orElse(IntelliJ.tabsAndIndents());
                 boolean useTab = tabsAndIndentsStyle.getUseTabCharacter();
                 int tabSize = tabsAndIndentsStyle.getTabSize();
 
