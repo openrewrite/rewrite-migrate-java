@@ -30,6 +30,7 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
+import org.openrewrite.style.Style;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -37,7 +38,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
@@ -145,7 +145,7 @@ public class UseTextBlocks extends Recipe {
                     }
                 }
 
-                TabsAndIndentsStyle tabsAndIndentsStyle = Optional.ofNullable(Style.from( TabsAndIndentsStyle.class, getCursor().firstEnclosingOrThrow( SourceFile.class ) )).orElse(IntelliJ.tabsAndIndents());
+                TabsAndIndentsStyle tabsAndIndentsStyle = Style.from(TabsAndIndentsStyle.class, getCursor().firstEnclosingOrThrow(SourceFile.class), IntelliJ::tabsAndIndents);
                 boolean useTab = tabsAndIndentsStyle.getUseTabCharacter();
                 int tabSize = tabsAndIndentsStyle.getTabSize();
 

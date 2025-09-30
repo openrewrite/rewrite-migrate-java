@@ -25,6 +25,7 @@ import org.openrewrite.java.style.IntelliJ;
 import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.style.Style;
 
 import static java.util.Objects.requireNonNull;
 
