@@ -193,11 +193,15 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: web-app
+      oldValue: ^[12345]\.\d+$
       newValue: 6.0
+      regex: true
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: web-app
-      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd
+      oldValue: (?s)(?<prefix>.*https://jakarta\.ee/xml/ns/jakartaee/web-app_)5_\d+(?<suffix>\.xsd.*)
+      newValue: ${prefix}6_0${suffix}
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
