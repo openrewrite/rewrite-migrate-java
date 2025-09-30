@@ -44,7 +44,7 @@ public class UseTabsOrSpaces extends Recipe {
     @Override
     public String getDescription() {
         return "This is useful for one-off migrations of a codebase that has mixed indentation styles, while " +
-               "preserving all other auto-detected formatting rules.";
+                "preserving all other auto-detected formatting rules.";
     }
 
     @Override
@@ -54,7 +54,7 @@ public class UseTabsOrSpaces extends Recipe {
             public J visit(@Nullable Tree tree, ExecutionContext ctx) {
                 if (tree instanceof JavaSourceFile) {
                     JavaSourceFile cu = (JavaSourceFile) requireNonNull(tree);
-                    TabsAndIndentsStyle style = Style.from( TabsAndIndentsStyle.class, ((SourceFile) cu) );
+                    TabsAndIndentsStyle style = Style.from(TabsAndIndentsStyle.class, cu);
                     if (style == null) {
                         style = IntelliJ.tabsAndIndents();
                     }
