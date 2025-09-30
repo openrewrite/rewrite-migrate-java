@@ -25,6 +25,7 @@ import org.openrewrite.java.style.IntelliJ;
 import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.style.Style;
 
 import static java.util.Objects.requireNonNull;
 
@@ -43,7 +44,7 @@ public class UseTabsOrSpaces extends Recipe {
     @Override
     public String getDescription() {
         return "This is useful for one-off migrations of a codebase that has mixed indentation styles, while " +
-               "preserving all other auto-detected formatting rules.";
+                "preserving all other auto-detected formatting rules.";
     }
 
     @Override
@@ -53,11 +54,8 @@ public class UseTabsOrSpaces extends Recipe {
             public J visit(@Nullable Tree tree, ExecutionContext ctx) {
                 if (tree instanceof JavaSourceFile) {
                     JavaSourceFile cu = (JavaSourceFile) requireNonNull(tree);
-                    TabsAndIndentsStyle style = ((SourceFile) cu).getStyle(TabsAndIndentsStyle.class);
-                    if (style == null) {
-                        style = IntelliJ.tabsAndIndents();
-                    }
-                    style = style.withUseTabCharacter(useTabs);
+                    TabsAndIndentsStyle style = Style.from(TabsAndIndentsStyle.class, cu, IntelliJ::tabsAndIndents)
+                            .withUseTabCharacter(useTabs);
                     return new NormalizeTabsOrSpacesVisitor<>(style).visit(tree, ctx);
                 }
                 return (J) tree;
