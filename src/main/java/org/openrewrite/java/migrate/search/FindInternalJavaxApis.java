@@ -29,8 +29,6 @@ import org.openrewrite.java.tree.MethodCall;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.SearchResult;
 
-import java.util.regex.Pattern;
-
 import static java.util.stream.Collectors.joining;
 
 @EqualsAndHashCode(callSuper = false)
