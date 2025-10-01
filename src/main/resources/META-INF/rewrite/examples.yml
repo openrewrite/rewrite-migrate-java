@@ -6034,6 +6034,25 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.MigrateMainMethodToInstanceMain
+examples:
+- description: ''
+  sources:
+  - before: |
+      class Application {
+          public static void main(String[] args) {
+              System.out.println("Hello, World!");
+          }
+      }
+    after: |
+      class Application {
+          void main() {
+              System.out.println("Hello, World!");
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
 examples:
 - description: ''
