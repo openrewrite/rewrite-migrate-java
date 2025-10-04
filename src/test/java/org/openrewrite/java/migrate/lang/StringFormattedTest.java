@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -28,6 +29,33 @@ class StringFormattedTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new StringFormatted(null));
+    }
+
+    @DocumentExample
+    @Test
+    void concatenatedText() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                package com.example.app;
+                class A {
+                    String str = String.format("foo"
+                            + "%s", "a");
+                }
+                """,
+              """
+                package com.example.app;
+                class A {
+                    String str = ("foo"
+                            + "%s").formatted("a");
+                }
+                """
+            ),
+            17
+          )
+        );
     }
 
     @Issue("https://github.com/openrewrite/rewrite/issues/2163")
@@ -53,32 +81,6 @@ class StringFormattedTest implements RewriteTest {
                     foo
                     %s
                     \""".formatted("a");
-                }
-                """
-            ),
-            17
-          )
-        );
-    }
-
-    @Test
-    void concatenatedText() {
-        //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                package com.example.app;
-                class A {
-                    String str = String.format("foo"
-                            + "%s", "a");
-                }
-                """,
-              """
-                package com.example.app;
-                class A {
-                    String str = ("foo"
-                            + "%s").formatted("a");
                 }
                 """
             ),

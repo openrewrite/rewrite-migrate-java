@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
@@ -30,6 +31,7 @@ class UseLocaleOfTest implements RewriteTest {
         spec.recipe(new UseLocaleOf());
     }
 
+    @DocumentExample
     @Test
     void localeOf() {
         //language=java

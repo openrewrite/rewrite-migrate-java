@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
@@ -32,6 +33,7 @@ class NoGuavaJava21Test implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
+    @DocumentExample
     @Test
     void preferMathClampForDouble() {
         //language=java

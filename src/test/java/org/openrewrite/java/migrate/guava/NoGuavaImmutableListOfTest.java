@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
@@ -31,6 +32,34 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
         spec
           .recipe(new NoGuavaImmutableListOf())
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
+    }
+
+    @DocumentExample
+    @Test
+    void replaceArguments() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import java.util.List;
+                import com.google.common.collect.ImmutableList;
+
+                class Test {
+                    List<String> m = ImmutableList.of("A", "B", "C", "D");
+                }
+                """,
+              """
+                import java.util.List;
+
+                class Test {
+                    List<String> m = List.of("A", "B", "C", "D");
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Test
@@ -163,33 +192,6 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                 """
             )
             , 9)
-        );
-    }
-
-    @Test
-    void replaceArguments() {
-        rewriteRun(
-          version(
-            //language=java
-            java(
-              """
-                import java.util.List;
-                import com.google.common.collect.ImmutableList;
-
-                class Test {
-                    List<String> m = ImmutableList.of("A", "B", "C", "D");
-                }
-                """,
-              """
-                import java.util.List;
-
-                class Test {
-                    List<String> m = List.of("A", "B", "C", "D");
-                }
-                """
-            ),
-            9
-          )
         );
     }
 

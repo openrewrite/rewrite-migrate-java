@@ -15,7 +15,7 @@
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.jspecify.JSpecifyBestPractices
 examples:
-- description: ''
+- description: '`JSpecifyBestPracticesTest#migrateFromJavaxAnnotationApiToJspecify`'
   sources:
   - before: |
       @ParametersAreNonnullByDefault
@@ -27,6 +27,7 @@ examples:
       package org.openrewrite.example;
 
       import org.jspecify.annotations.NullMarked;
+    path: src/main/java/org/openrewrite/example/package-info.java
     language: java
   - before: |
       import javax.annotation.Nonnull;
@@ -108,7 +109,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.AddMissingMethodImplementation
 examples:
-- description: ''
+- description: '`AddMissingMethodImplementationTest#happyPath`'
   parameters:
   - I1
   - '*..* m1()'
@@ -128,7 +129,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.AddStaticVariableOnProducerSessionBean
 examples:
-- description: ''
+- description: '`AddStaticVariableOnProducerSessionBeanTest#addStaticOnProducesMarkedStateless`'
   sources:
   - before: |
       package com.test;
@@ -161,7 +162,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ArrayStoreExceptionToTypeNotPresentException
 examples:
-- description: ''
+- description: '`ArrayStoreExceptionToTypeNotPresentExceptionTest#replaceCaughtException`'
   sources:
   - before: |
       import java.lang.annotation.*;
@@ -206,7 +207,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.BeanDiscovery
 examples:
-- description: ''
+- description: '`BeanDiscoveryTest#noVersionOrMode`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -220,12 +221,13 @@ examples:
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd" bean-discovery-mode="all" version="3.0">
       </beans>
+    path: beans.xml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.BeansXmlNamespace
 examples:
-- description: ''
+- description: '`BeansXmlNamespaceTest#noSchemaCD1`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -239,12 +241,13 @@ examples:
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
       </beans>
+    path: beans.xml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On
 examples:
-- description: ''
+- description: '`BouncyCastleTest#document`'
   sources:
   - before: project
     language: mavenProject
@@ -273,7 +276,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.CastArraysAsListToList
 examples:
-- description: ''
+- description: '`CastArraysAsListToListTest#positiveCases`'
   sources:
   - before: |
       import java.util.Arrays;
@@ -300,7 +303,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ChangeDefaultKeyStore
 examples:
-- description: ''
+- description: '`ChangeDefaultKeyStoreTest#keyStoreDefaultTypeChangedToExplicitType`'
   sources:
   - after: "import java.io.FileInputStream;\nimport java.io.IOException;\nimport java.security.Key;\n\
       import java.security.KeyStore;\n\nclass Foo {\n \tvoid bar() {\n \t\ttry{\n\
@@ -314,7 +317,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ChangeMethodInvocationReturnType
 examples:
-- description: ''
+- description: '`ChangeMethodInvocationReturnTypeTest#replaceVariableAssignment`'
   parameters:
   - java.lang.Integer parseInt(String)
   - long
@@ -336,7 +339,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.DeleteDeprecatedFinalize
 examples:
-- description: ''
+- description: '`DeleteDeprecatedFinalizeTest#deleteDeprecatedFinalize`'
   sources:
   - before: "package java.awt.color;\n\nimport java.awt.color.ICC_Profile;\nimport\
       \ java.awt.image.ColorModel;\nimport java.awt.image.IndexColorModel;\n\npublic\
@@ -359,7 +362,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
 examples:
-- description: ''
+- description: '`DeprecatedCountStackFramesMethodTest#deprecatedCountStackFrameRemoveMethod`'
   sources:
   - before: |
       import java.lang.Thread;
@@ -383,7 +386,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.IBMJDKtoOracleJDK
 examples:
-- description: ''
+- description: '`IBMJDKtoOracleJDKTest#Krb5LoginModuleTest`'
   sources:
   - before: |
       import com.ibm.security.auth.module.Krb5LoginModule;
@@ -408,7 +411,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.IBMSemeru
 examples:
-- description: ''
+- description: '`IBMSemeruTest#doNotUseSunNetSslInternalWwwProtocolHttpsHandler`'
   sources:
   - before: |
       import com.sun.net.ssl.internal.www.protocol.https.*;  //do NOT flag this
@@ -462,7 +465,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.IllegalArgumentExceptionToAlreadyConnectedException
 examples:
-- description: ''
+- description: '`IllegalArgumentExceptionToAlreadyConnectedExceptionTest#catchException`'
   sources:
   - before: |
       import java.nio.ByteBuffer;
@@ -500,7 +503,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.InternalBindPackages
 examples:
-- description: ''
+- description: '`InternalBindPackagesTest#contextFactoryImportVariants`'
   sources:
   - before: |
       class Foo {
@@ -561,7 +564,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.JREThrowableFinalMethods
 examples:
-- description: ''
+- description: '`JREThrowableFinalMethodsTest#renameMethodDeclarationsAndUsagesElsewhere`'
   parameters:
   - '*..* add1Suppressed(Throwable)'
   - '*..* get1Suppressed()'
@@ -608,7 +611,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.Java8toJava11
 examples:
-- description: ''
+- description: '`PathsGetToPathOfTest#convertPathsGetToPathOf`'
   sources:
   - before: |
       import java.nio.file.Path;
@@ -632,7 +635,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.JpaCacheProperties
 examples:
-- description: ''
+- description: '`JpaCachePropertiesTest#set_set_set1`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -665,7 +668,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.MXBeanRule
 examples:
-- description: ''
+- description: '`MXBeanRuleTest#classAndNonPublicInterface`'
   sources:
   - before: |
       import javax.management.MXBean;
@@ -694,7 +697,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.MigrateZipErrorToZipException
 examples:
-- description: ''
+- description: '`MigrateZipErrorToZipExceptionTest#migrateZipErrorInCatchClause`'
   sources:
   - before: |
       import java.util.zip.ZipError;
@@ -725,7 +728,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ReferenceCloneMethod
 examples:
-- description: ''
+- description: '`ReferenceCloneMethodTest#referenceCloneRemoval`'
   sources:
   - before: |
       import java.lang.ref.WeakReference;
@@ -762,7 +765,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
 examples:
-- description: ''
+- description: '`RemovedModifierAndConstantBootstrapsConstructorsTest#moveToStaticTest`'
   sources:
   - before: |
       import java.lang.invoke.ConstantBootstraps;
@@ -809,7 +812,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.RemovedToolProviderConstructor
 examples:
-- description: ''
+- description: '`RemovedToolProviderConstructorTest#moveToStaticTest`'
   sources:
   - before: |
       import javax.tools.ToolProvider;
@@ -848,7 +851,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ReplaceAWTGetPeerMethod
 examples:
-- description: ''
+- description: '`ReplaceAWTGetPeerMethodTest#instanceAndGetPeerMethodControlParentheses`'
   parameters:
   - com.test.Component1 getPeer()
   - com.test.TestDummy
@@ -893,7 +896,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ReplaceComSunAWTUtilitiesMethods
 examples:
-- description: ''
+- description: '`ReplaceComSunAWTUtilitiesMethodsTest#replaceComSunAWTUtilitiesClassesRemaining`'
   parameters:
   - com.test.AWTUtilitiesTest isTranslucencySupported1(com.test.AWTUtilitiesTest.Translucency)
   - com.test.AWTUtilitiesTest isWindowOpaque(java.awt.Window)
@@ -951,7 +954,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
 examples:
-- description: ''
+- description: '`ReplaceLocalizedStreamMethodsTest#replaceGetLocalizedInputStream`'
   parameters:
   - com.test.Runtime1 getLocalizedInputStream1(java.io.InputStream)
   - com.test.Runtime1 getLocalizedOutputStream1(java.io.OutputStream)
@@ -979,7 +982,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.SunNetSslPackageUnavailable
 examples:
-- description: ''
+- description: '`SunNetSslPackageUnavailableTest#sunNetSslPackageUnavailableTest`'
   sources:
   - before: |
       import com.sun.net.ssl.HttpsURLConnection;
@@ -1002,7 +1005,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ThreadStopDestroy
 examples:
-- description: ''
+- description: '`ThreadStopDestroyTest#retainThreadStop`'
   sources:
   - before: |
       class Foo {
@@ -1016,7 +1019,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradeJavaVersion
 examples:
-- description: ''
+- description: '`Maven#mavenUpgradeFromJava8ToJava17ViaProperties`'
   parameters:
   - '17'
   sources:
@@ -1054,7 +1057,28 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradePluginsForJava11
 examples:
-- description: ''
+- description: '`Java8toJava11Test#needToJaxb2MavenPlugin`'
+  sources:
+  - before: project
+    language: mavenProject
+  - before: |
+      <project>
+        <groupId>com.mycompany.app</groupId>
+        <artifactId>my-app</artifactId>
+        <version>1</version>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>jaxb2-maven-plugin</artifactId>
+              <version>2.3.1</version>
+            </plugin>
+          </plugins>
+        </build>
+      </project>
+    path: pom.xml
+    language: xml
+- description: '`UpgradeWro4jMavenPluginVersionTest#v1OnJava11`'
   sources:
   - before: |
       <project>
@@ -1094,32 +1118,11 @@ examples:
       </project>
     path: pom.xml
     language: xml
-- description: ''
-  sources:
-  - before: project
-    language: mavenProject
-  - before: |
-      <project>
-        <groupId>com.mycompany.app</groupId>
-        <artifactId>my-app</artifactId>
-        <version>1</version>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>jaxb2-maven-plugin</artifactId>
-              <version>2.3.1</version>
-            </plugin>
-          </plugins>
-        </build>
-      </project>
-    path: pom.xml
-    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradeToJava17
 examples:
-- description: ''
+- description: '`UpgradeToJava17Test#upgradeFromJava8ToJava17`'
   sources:
   - before: |
       class A {
@@ -1166,7 +1169,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradeToJava6
 examples:
-- description: ''
+- description: '`UpgradeToJava6Test#dataSource`'
   sources:
   - before: "package com.test.withoutWrapperMethods;\n\nimport java.io.PrintWriter;\n\
       import java.sql.Connection;\nimport java.sql.SQLException;\n\nimport javax.sql.DataSource;\n\
@@ -1208,7 +1211,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradeToJava7
 examples:
-- description: ''
+- description: '`UpgradeToJava7Test#callableStatement`'
   sources:
   - before: |
       package com.test.withoutV170Methods;
@@ -3196,7 +3199,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradeToJava8
 examples:
-- description: ''
+- description: '`UpgradeToJava8Test#upgradeFromJava7ToJava8`'
   sources:
   - before: |
       package com.abc;
@@ -3253,7 +3256,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UseJavaUtilBase64
 examples:
-- description: ''
+- description: '`UseJavaUtilBase64Test#encodeDecode`'
   parameters:
   - test.sun.misc
   - 'false'
@@ -3295,7 +3298,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UseTabsOrSpaces
 examples:
-- description: ''
+- description: '`UseTabsOrSpacesTest#useTabs`'
   parameters:
   - 'true'
   sources:
@@ -3310,7 +3313,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.WasDevMvnChangeParentArtifactId
 examples:
-- description: ''
+- description: '`WasDevMvnChangeParentArtifactIdTest#mvnChangeParentArtifactId`'
   sources:
   - before: |
       <project>
@@ -3338,7 +3341,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
 examples:
-- description: ''
+- description: '`JavaConcurrentAPIsTest#atomicBooleanWeakCompareAndSet`'
   sources:
   - before: |
       import java.util.concurrent.atomic.AtomicBoolean;
@@ -3361,7 +3364,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuava
 examples:
-- description: ''
+- description: '`NoGuavaTest#moreObjectsFirstNonNullToObjectsRequireNonNullElse`'
   sources:
   - before: |
       import com.google.common.base.MoreObjects;
@@ -3380,7 +3383,7 @@ examples:
           }
       }
     language: java
-- description: ''
+- description: '`PreferJavaUtilOptionalTest#absentToEmpty`'
   sources:
   - before: |
       import com.google.common.base.Optional;
@@ -3399,7 +3402,7 @@ examples:
           }
       }
     language: java
-- description: ''
+- description: '`NotYetImplemented#getCatchIllegalStateExceptionToNoSuchElementException`'
   sources:
   - before: |
       import com.google.common.base.Optional;
@@ -3430,7 +3433,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference
 examples:
-- description: ''
+- description: '`NoGuavaAtomicsNewReferenceTest#noNewReference`'
   sources:
   - before: |
       import com.google.common.util.concurrent.Atomics;
@@ -3451,7 +3454,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
 examples:
-- description: ''
+- description: '`NoGuavaCreateTempDirTest#inMethodThrowingException`'
   sources:
   - before: |
       import java.io.File;
@@ -3488,7 +3491,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
 examples:
-- description: ''
+- description: '`NoGuavaDirectExecutorTest#noDirectExecutor`'
   sources:
   - before: |
       import java.util.concurrent.Executor;
@@ -3508,7 +3511,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf
 examples:
-- description: ''
+- description: '`NoGuavaImmutableSetOfTest#replaceArguments`'
   sources:
   - before: |
       import java.util.Set;
@@ -3528,7 +3531,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods
 examples:
-- description: ''
+- description: '`NoGuavaInlineMeMethodsTest#stringsRegular`'
   sources:
   - before: |
       import com.google.common.base.Strings;
@@ -3548,7 +3551,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
 examples:
-- description: ''
+- description: '`NoGuavaListsNewArrayListTest#replaceWithNewArrayList`'
   sources:
   - before: |
       import com.google.common.collect.*;
@@ -3570,7 +3573,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList
 examples:
-- description: ''
+- description: '`NoGuavaListsNewCopyOnWriteArrayListTest#replaceWithNewCopyOnWriteArrayList`'
   sources:
   - before: |
       import com.google.common.collect.*;
@@ -3592,7 +3595,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList
 examples:
-- description: ''
+- description: '`NoGuavaListsNewLinkedListTest#replaceWithNewLinkedList`'
   sources:
   - before: |
       import com.google.common.collect.*;
@@ -3614,7 +3617,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaMapsNewHashMap
 examples:
-- description: ''
+- description: '`NoGuavaMapsNewHashMapTest#replaceWithNewHashMap`'
   sources:
   - before: |
       import com.google.common.collect.*;
@@ -3635,7 +3638,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaMapsNewLinkedHashMap
 examples:
-- description: ''
+- description: '`NoGuavaMapsNewLinkedHashMapTest#replaceWithNewLinkedHashMap`'
   sources:
   - before: |
       import com.google.common.collect.*;
@@ -3657,7 +3660,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaMapsNewTreeMap
 examples:
-- description: ''
+- description: '`NoGuavaMapsNewTreeMapTest#replaceWithNewTreeMap`'
   sources:
   - before: |
       import com.google.common.collect.*;
@@ -3678,7 +3681,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaPrimitiveAsList
 examples:
-- description: ''
+- description: '`NoGuavaPrimitiveAsListTest#replaceBoolean`'
   sources:
   - before: |
       import com.google.common.primitives.Booleans;
@@ -3699,7 +3702,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes
 examples:
-- description: ''
+- description: '`NoGuavaRefasterTest#preconditionsCheckNotNullToObjectsRequireNonNull`'
   sources:
   - before: |
       import com.google.common.base.Preconditions;
@@ -3722,7 +3725,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet
 examples:
-- description: ''
+- description: '`NoGuavaSetsNewConcurrentHashSetTest#replaceWithNewConcurrentHashSet`'
   sources:
   - before: |
       import com.google.common.collect.*;
@@ -3745,7 +3748,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet
 examples:
-- description: ''
+- description: '`NoGuavaSetsNewHashSetTest#replaceWithNewHashSet`'
   sources:
   - before: |
       import com.google.common.collect.*;
@@ -3767,7 +3770,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet
 examples:
-- description: ''
+- description: '`NoGuavaSetsNewLinkedHashSetTest#replaceWithNewLinkedHashSet`'
   sources:
   - before: |
       import com.google.common.collect.*;
@@ -3789,7 +3792,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoMapsAndSetsWithExpectedSize
 examples:
-- description: ''
+- description: '`NoMapsAndSetsWithExpectedSizeTest#noMapSetWithExpectedSize`'
   sources:
   - before: |
       import com.google.common.collect.Maps;
@@ -3821,7 +3824,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.PreferJavaStringJoin
 examples:
-- description: ''
+- description: '`PreferJavaStringJoinTest#joinStrings`'
   sources:
   - before: |
       import com.google.common.base.Joiner;
@@ -3838,7 +3841,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate
 examples:
-- description: ''
+- description: '`PreferJavaUtilPredicateTest#changeTypeAndMethodName`'
   sources:
   - before: |
       import com.google.common.base.Predicate;
@@ -3871,7 +3874,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.io.ReplaceFileInOrOutputStreamFinalizeWithClose
 examples:
-- description: ''
+- description: '`ReplaceFileInOrOutputStreamFinalizeWithCloseTest#removeFinalizerForFileInputStream`'
   sources:
   - before: |
       import java.io.FileInputStream;
@@ -3898,7 +3901,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
 examples:
-- description: ''
+- description: '`ReplaceSystemOutWithIOPrintTest#replaceSystemOutPrint`'
   sources:
   - before: |
       class Example {
@@ -3917,7 +3920,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jacoco.UpgradeJaCoCo
 examples:
-- description: ''
+- description: '`UpgradeJaCoCoTest#pluginWithProperty`'
   sources:
   - before: |
       <project>
@@ -3943,7 +3946,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.ApplicationPathWildcardNoLongerAccepted
 examples:
-- description: ''
+- description: '`ApplicationPathWildcardNoLongerAcceptedTest#updateAnnotation`'
   sources:
   - before: |
       import jakarta.ws.rs.ApplicationPath;
@@ -3962,7 +3965,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
 examples:
-- description: ''
+- description: '`EhcacheJavaxtoJakartaTest#migrateEhcacheDependencies`'
   sources:
   - before: |
       <project>
@@ -3993,7 +3996,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
 examples:
-- description: ''
+- description: '`FacesJNDINamesChangedTest#replaceJNDI`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -4028,7 +4031,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
 examples:
-- description: ''
+- description: '`FacesManagedBeansRemovedTest#updateFacesManagedBeanFromEE8`'
   sources:
   - before: |
       import javax.faces.bean.ApplicationScoped;
@@ -4067,7 +4070,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
 examples:
-- description: ''
+- description: '`JacksonJavaxtoJakartaTest#migrateJacksonDependencies`'
   sources:
   - before: |
       <project>
@@ -4171,7 +4174,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JakartaEE10
 examples:
-- description: ''
+- description: '`UpdateAnnotationAttributeJavaxToJakartaTest#replaceInterfaceName`'
   sources:
   - before: |
       import javax.jms.*;
@@ -4194,7 +4197,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE10
 examples:
-- description: ''
+- description: '`JakartaFacesXhtmlEE10Test#migrateSun`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -4250,12 +4253,13 @@ examples:
           </c:forEach>
       </p:outputPanel>
       </ui:composition>
+    path: gchart-sun.xhtml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE9
 examples:
-- description: ''
+- description: '`JakartaFacesXhtmlEE9Test#migrateSun`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -4311,12 +4315,13 @@ examples:
           </c:forEach>
       </p:outputPanel>
       </ui:composition>
+    path: gchart-sun.xhtml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml
 examples:
-- description: ''
+- description: '`JavaxBeanValidationXmlToJakartaBeanValidationXmlTest#migrateJCP`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -4377,12 +4382,13 @@ examples:
 
           <property name="jakarta.validator.fail_fast">false</property>
       </validation-config>
+    path: validation.xml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml
 examples:
-- description: ''
+- description: '`JavaxBeansXmlToJakartaBeansXmlTest#noSchemaCD1`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -4396,12 +4402,13 @@ examples:
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd">
       </beans>
+    path: beans.xml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml
 examples:
-- description: ''
+- description: '`JavaxEjbJarXmlToJakartaEjbJarXmlTest#migrateJCP`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -4491,12 +4498,13 @@ examples:
               </assembly-descriptor>
           </enterprise-beans>
       </ejb-jar>
+    path: ejb-jar.xml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxFacesConfigXmlToJakartaFacesConfigXml
 examples:
-- description: ''
+- description: '`JavaxFacesConfigXmlToJakartaFacesConfigXmlTest#migrateSun`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -4526,12 +4534,13 @@ examples:
               </renderer>
           </render-kit>
       </faces-config>
+    path: faces-config.xml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXml
 examples:
-- description: ''
+- description: '`JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXmlTest#migrateSun`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -4557,12 +4566,13 @@ examples:
               <function-signature>java.lang.String getFileContent(java.lang.String)</function-signature>
           </function>
       </facelet-taglib>
+    path: faces-taglib.xml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
 examples:
-- description: ''
+- description: '`JavaxInjectToJakartaInjectTest#projectWithJavaxInject`'
   sources:
   - before: |
       <project>
@@ -4584,7 +4594,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
 examples:
-- description: ''
+- description: '`JavaxToJakartaTest#changeImport`'
   sources:
   - before: |
       import javax.xml.bind.annotation.A;
@@ -4599,7 +4609,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxTransactionMigrationToJakartaTransaction
 examples:
-- description: ''
+- description: '`JavaxTransactionMigrationToJakartaTransactionTest#changeImportWhenPackageFromJakartaTransaction`'
   sources:
   - before: |
       import javax.transaction.Transactional;
@@ -4618,7 +4628,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxWebFragmentXmlToJakartaWebFragmentXml
 examples:
-- description: ''
+- description: '`JavaxWebFragmentXmlToJakartaWebFragmentXmlTest#migrateSun`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -4640,12 +4650,13 @@ examples:
                  <listener-class>jakarta.faces.UploadedFileCleanerListener</listener-class>
              </listener>
       </web-fragment>
+    path: web-fragment.xml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxWebXmlToJakartaWebXml
 examples:
-- description: ''
+- description: '`JavaxWebXmlToJakartaWebXmlTest#migrateSun`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -4669,12 +4680,13 @@ examples:
               <param-value>Production</param-value>
           </context-param>
       </web-fragment>
+    path: web.xml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
 examples:
-- description: ''
+- description: '`Migrate#both`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -4693,7 +4705,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10
 examples:
-- description: ''
+- description: '`RemovalsServletJakarta10Test#servletReplacements`'
   sources:
   - before: |
       import java.io.IOException;
@@ -4806,7 +4818,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.RemoveBeanIsNullable
 examples:
-- description: ''
+- description: '`RemoveBeanIsNullableTest#removeBeanIsNullable`'
   sources:
   - before: |
       import jakarta.enterprise.inject.spi.Bean;
@@ -4833,7 +4845,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
 examples:
-- description: ''
+- description: '`RemovedIsParmetersProvidedMethodTest#removedIsParametersProvidedMethod`'
   sources:
   - before: |
       package com.test;
@@ -4864,7 +4876,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesExpressionLanguageClasses
 examples:
-- description: ''
+- description: '`RemovedJakartaFacesExpressionLanguageClassesTest#removedExpressionLanguageTestJakarta_1`'
   sources:
   - before: |
       import jakarta.faces.el.MethodBinding;
@@ -4895,7 +4907,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.RemovedJakartaFacesResourceResolver
 examples:
-- description: ''
+- description: '`RemovedJakartaFacesResourceResolverTest#removedJakartaFacesResourceResolver_1`'
   sources:
   - before: |
       package com.test;
@@ -4936,7 +4948,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
 examples:
-- description: ''
+- description: '`RemovedSOAPElementFactoryTest#removeSOAPElementFactory`'
   sources:
   - before: |
       package com.test;
@@ -4981,7 +4993,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
 examples:
-- description: ''
+- description: '`RemovedStateManagerMethodsTest#stateManagerReplacement`'
   sources:
   - before: |
       import jakarta.faces.application.StateManager;
@@ -5022,7 +5034,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
 examples:
-- description: ''
+- description: '`RemovedUIComponentConstantTest#removedUIComponentConstant_1`'
   sources:
   - before: |
       import jakarta.faces.component.UIComponent;
@@ -5051,7 +5063,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
 examples:
-- description: ''
+- description: '`ServletCookieBehaviorChangeRFC6265Test#removeMethodsJakarta`'
   sources:
   - before: |
       package com.test;
@@ -5098,7 +5110,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.UpdateAddAnnotatedTypes
 examples:
-- description: ''
+- description: '`UpdateAddAnnotatedTypesTest#addAnnotatedType`'
   sources:
   - before: |
       import jakarta.enterprise.inject.spi.AnnotatedType;
@@ -5131,7 +5143,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
 examples:
-- description: ''
+- description: '`UpdateApacheWSSecurityPackagesTest#updateApacheWSSecurityPackages`'
   sources:
   - before: |
       import org.apache.ws.security.WSSecurityException;
@@ -5156,7 +5168,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.UpdateBeanManagerMethods
 examples:
-- description: ''
+- description: '`UpdateBeanManagerMethodsTest#fireEvent`'
   sources:
   - before: |
       import jakarta.enterprise.inject.spi.BeanManager;
@@ -5183,7 +5195,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.UpdateGetRealPath
 examples:
-- description: ''
+- description: '`UpdateGetRealPathTest#servletReplacements`'
   sources:
   - before: |
       import jakarta.servlet.http.HttpServletRequest;
@@ -5208,7 +5220,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
 examples:
-- description: ''
+- description: '`WsWsocServerContainerDeprecationTest#deprecateWsWsocServerContainer`'
   sources:
   - before: |
       import javax.servlet.http.HttpServletRequest;
@@ -5239,7 +5251,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
 examples:
-- description: ''
+- description: '`OpenJPAPersistenceProviderTest#openJPAPersistenceProvider`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -5306,7 +5318,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javaee8.ApacheDefaultProvider
 examples:
-- description: ''
+- description: '`ApacheDefaultProviderTest#apacheDefaultProvider`'
   sources:
   - before: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -5338,7 +5350,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javaee8.ServletIsRequestedSessionIdFromURL
 examples:
-- description: ''
+- description: '`ServletIsRequestedSessionIdFromURLTest#servletIsRequestedSessionIdFromURL`'
   sources:
   - before: |
       import javax.servlet.http.HttpServletRequestWrapper;
@@ -5359,7 +5371,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.AddColumnAnnotation
 examples:
-- description: ''
+- description: '`AddColumnAnnotationTest#addColumnAnnotationAlongElementCollection`'
   sources:
   - before: |
       import java.util.List;
@@ -5398,7 +5410,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.AddDefaultConstructorToEntityClass
 examples:
-- description: ''
+- description: '`AddDefaultConstructorToEntityClassTest#addMissingDefaultConstructorToEntity`'
   sources:
   - before: |
       import javax.persistence.Entity;
@@ -5434,7 +5446,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.AddScopeToInjectedClass
 examples:
-- description: ''
+- description: '`AddScopeToInjectedClassTest#scopeRequired`'
   sources:
   - before: |
       package com.sample.service;
@@ -5464,7 +5476,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.AddTableGenerator
 examples:
-- description: ''
+- description: '`AddTableGeneratorTest#generatedValueExample`'
   sources:
   - before: |
       import javax.persistence.Entity;
@@ -5522,7 +5534,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.AddTransientAnnotationToCollections
 examples:
-- description: ''
+- description: '`AddTransientAnnotationToCollectionsTest#addTransient`'
   sources:
   - before: |
       import java.util.Collection;
@@ -5562,7 +5574,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.AddTransientAnnotationToEntity
 examples:
-- description: ''
+- description: '`AddTransientAnnotationToEntityTest#addTransient`'
   sources:
   - before: |
       import javax.persistence.Entity;
@@ -5603,7 +5615,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.AddTransientAnnotationToPrivateAccessor
 examples:
-- description: ''
+- description: '`AddTransientAnnotationToPrivateAccessorTest#addTransientToMethodReturningIdentifier`'
   sources:
   - before: |
       package entities;
@@ -5652,7 +5664,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.HttpSessionInvalidate
 examples:
-- description: ''
+- description: '`HttpSessionInvalidateTest#useLogoutWhenHttpServletRequestExistsInScope`'
   sources:
   - before: |
       import javax.servlet.http.HttpServletResponse;
@@ -5683,7 +5695,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.JavaxLangModelUtil
 examples:
-- description: ''
+- description: '`JavaxLangModelUtilTest#abstractAnnotationValueVisitor6`'
   sources:
   - before: |
       import javax.lang.model.util.AbstractAnnotationValueVisitor6;
@@ -5698,7 +5710,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
 examples:
-- description: ''
+- description: '`JavaxManagementMonitorAPIsTest#counterMonitorSetInitThreshold`'
   sources:
   - before: |
       import javax.management.monitor.CounterMonitor;
@@ -5723,7 +5735,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
 examples:
-- description: ''
+- description: '`JavaxXmlStreamAPIsTest#xmlEventFactoryNewInstance`'
   sources:
   - before: |
       import javax.xml.stream.XMLEventFactory;
@@ -5746,7 +5758,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.RemoveEmbeddableId
 examples:
-- description: ''
+- description: '`RemoveEmbeddableIdTest#removeIdFromEmbeddableObject`'
   sources:
   - before: |
       import javax.persistence.Embeddable;
@@ -5779,7 +5791,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.RemoveTemporalAnnotation
 examples:
-- description: ''
+- description: '`RemoveTemporalAnnotationTest#removeTemporalAnnotation`'
   sources:
   - before: |
       import javax.persistence.Temporal;
@@ -5832,7 +5844,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.UseJoinColumnForMapping
 examples:
-- description: ''
+- description: '`UseJoinColumnForMappingTest#useJoinColumnForManyToOne`'
   sources:
   - before: |
       import javax.persistence.Entity;
@@ -5875,7 +5887,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.ExplicitRecordImport
 examples:
-- description: ''
+- description: '`ExplicitRecordImportTest#addImportFromSamePackage`'
   sources:
   - before: |
       package com.acme.music;
@@ -5896,7 +5908,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.FindVirtualThreadOpportunities
 examples:
-- description: ''
+- description: '`UseThreadsOrExecutorsTest#findThreadConstructorWithRunnable`'
   sources:
   - before: |
       class Test {
@@ -5917,7 +5929,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.IfElseIfConstructToSwitch
 examples:
-- description: ''
+- description: '`IfElseIfConstructToSwitchTest#defaultSwitchBlockWithNullCheckAndFinalElseStatement`'
   sources:
   - before: |
       class Test {
@@ -5963,7 +5975,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.JavaLangAPIs
 examples:
-- description: ''
+- description: '`JavaLangAPIsTest#characterIsJavaLetterToIsJavaIdentifierStart`'
   sources:
   - before: |
       package com.abc;
@@ -5986,7 +5998,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.MigrateClassLoaderDefineClass
 examples:
-- description: ''
+- description: '`MigrateClassLoaderDefineClassTest#migrateDefineClass`'
   sources:
   - before: |
       package org.openrewrite;
@@ -6011,7 +6023,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.MigrateClassNewInstanceToGetDeclaredConstructorNewInstance
 examples:
-- description: ''
+- description: '`MigrateClassNewInstanceToGetDeclaredConstructorNewInstanceTest#methodThrowsThrowable`'
   sources:
   - before: |
       package com.abc;
@@ -6036,7 +6048,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.MigrateMainMethodToInstanceMain
 examples:
-- description: ''
+- description: '`MigrateMainMethodToInstanceMainTest#migrateMainMethodWithUnusedArgs`'
   sources:
   - before: |
       class Application {
@@ -6055,7 +6067,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
 examples:
-- description: ''
+- description: '`MigrateProcessWaitForDurationTest#migrateProcessWaitForWithStaticImport`'
   sources:
   - before: |
       import static java.util.concurrent.TimeUnit.SECONDS;
@@ -6081,7 +6093,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.MigrateSecurityManagerMulticast
 examples:
-- description: ''
+- description: '`MigrateSecurityManagerMulticastTest#migrateCheckMulticast`'
   sources:
   - before: |
       package org.openrewrite;
@@ -6114,7 +6126,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.NullCheckAsSwitchCase
 examples:
-- description: ''
+- description: '`NullCheckAsSwitchCaseTest#mergeNullCheckWithSwitch`'
   sources:
   - before: |
       class Test {
@@ -6151,7 +6163,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.RefineSwitchCases
 examples:
-- description: ''
+- description: '`RefineSwitchCasesTest#refineCases`'
   sources:
   - before: |
       class Test {
@@ -6208,7 +6220,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.ReplaceUnusedVariablesWithUnderscore
 examples:
-- description: ''
+- description: '`ReplaceUnusedVariablesWithUnderscoreTest#replaceUnusedForEachVariable`'
   sources:
   - before: |
       import java.util.List;
@@ -6239,7 +6251,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.StringRulesRecipes
 examples:
-- description: ''
+- description: '`StringRulesTest#substring`'
   sources:
   - before: |
       class Test {
@@ -6256,7 +6268,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.SwitchCaseAssignmentsToSwitchExpression
 examples:
-- description: ''
+- description: '`SwitchCaseAssignmentsToSwitchExpressionTest#convertSimpleArrowCasesAssignment`'
   sources:
   - before: |
       class Test {
@@ -6284,7 +6296,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.SwitchCaseEnumGuardToLabel
 examples:
-- description: ''
+- description: '`SwitchCaseEnumGuardToLabelTest#enumValuesPatternMatching`'
   sources:
   - before: |
       import suits.Suit;
@@ -6335,7 +6347,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.SwitchCaseReturnsToSwitchExpression
 examples:
-- description: ''
+- description: '`SwitchCaseReturnsToSwitchExpressionTest#convertSimpleSwitchWithReturns`'
   sources:
   - before: |
       class Test {
@@ -6362,7 +6374,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.SwitchExpressionYieldToArrow
 examples:
-- description: ''
+- description: '`SwitchExpressionYieldToArrowTest#convertSwitchExpressionWithYield`'
   sources:
   - before: |
       class Test {
@@ -6391,7 +6403,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.ThreadStopUnsupported
 examples:
-- description: ''
+- description: '`ThreadStopUnsupportedTest#addCommentPreJava21`'
   sources:
   - before: |
       class Foo {
@@ -6415,7 +6427,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.UseStringIsEmptyRecipe
 examples:
-- description: ''
+- description: '`UseStringIsEmptyTest#lengthGreaterZero`'
   sources:
   - before: |
       class Test {
@@ -6442,7 +6454,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.UseTextBlocks
 examples:
-- description: ''
+- description: '`UseTextBlocksTest#regular`'
   sources:
   - before: |
       class Test {
@@ -6463,7 +6475,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.UseVar
 examples:
-- description: ''
+- description: '`Applicable#forString`'
   sources:
   - before: |
       package com.example.app;
@@ -6482,7 +6494,7 @@ examples:
         }
       }
     language: java
-- description: ''
+- description: '`Applicable#withDiamondOperator`'
   sources:
   - before: |
       package com.example.app;
@@ -6510,7 +6522,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.var.UseVarForGenericMethodInvocations
 examples:
-- description: ''
+- description: '`Applicable#withJDKFactoryMethods`'
   sources:
   - before: |
       package com.example.app;
@@ -6537,7 +6549,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.var.UseVarForGenericsConstructors
 examples:
-- description: ''
+- description: '`Applicable#withTypeParameterInDefinitionOnly`'
   sources:
   - before: |
       import java.util.List;
@@ -6561,7 +6573,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.var.UseVarForObject
 examples:
-- description: ''
+- description: '`Applicable#inMethodBody`'
   sources:
   - before: |
       package com.example.app;
@@ -6584,7 +6596,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.var.UseVarForPrimitive
 examples:
-- description: ''
+- description: '`Applicable#forChar`'
   sources:
   - before: |
       package com.example.app;
@@ -6607,7 +6619,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.logging.JavaLoggingAPIs
 examples:
-- description: ''
+- description: '`JavaLoggingAPIsTest#loggingMXBeanToPlatformLoggingMXBean`'
   sources:
   - before: |
       import java.util.logging.LoggingMXBean;
@@ -6630,7 +6642,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.logging.MigrateGetLoggingMXBeanToGetPlatformMXBean
 examples:
-- description: ''
+- description: '`MigrateGetLoggingMXBeanToGetPlatformMXBeanTest#getLoggingMXBeanToGetPlatformMXBean`'
   sources:
   - before: |
       import java.util.logging.LoggingMXBean;
@@ -6655,7 +6667,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.logging.MigrateLogRecordSetMillisToSetInstant
 examples:
-- description: ''
+- description: '`MigrateLogRecordSetMillisToSetInstantTest#setMillisToSetInstantWhenParameterIsIdentifier`'
   sources:
   - before: |
       package org.openrewrite.example;
@@ -6687,7 +6699,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.logging.MigrateLoggerGlobalToGetGlobal
 examples:
-- description: ''
+- description: '`MigrateLoggerGlobalToGetGlobalTest#globalToGetGlobal`'
   sources:
   - before: |
       package org.openrewrite.example;
@@ -6714,7 +6726,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.logging.MigrateLoggerLogrbToUseResourceBundle
 examples:
-- description: ''
+- description: '`MigrateLoggerLogrbToUseResourceBundleTest#logrbToLogrbResourceBundle`'
   sources:
   - before: |
       package org.openrewrite.example;
@@ -6748,7 +6760,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.AdoptLombokGetterMethodNames
 examples:
-- description: ''
+- description: '`AdoptLombokGetterMethodNamesTest#renameInSingleClass`'
   sources:
   - before: |
       class A {
@@ -6765,7 +6777,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.AdoptLombokSetterMethodNames
 examples:
-- description: ''
+- description: '`AdoptLombokSetterMethodNamesTest#renameInSingleClass`'
   sources:
   - before: |
       class A {
@@ -6786,7 +6798,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.LombokBestPractices
 examples:
-- description: ''
+- description: '`LombokBestPracticesTest#providedScope`'
   sources:
   - before: |
       <project>
@@ -6813,7 +6825,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.LombokOnXToOnX_
 examples:
-- description: ''
+- description: '`LombokOnXToOnX_Test#migrateGetterOnMethod`'
   sources:
   - before: |
       import lombok.Getter;
@@ -6832,7 +6844,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.LombokValToFinalVar
 examples:
-- description: ''
+- description: '`LombokValToFinalVarTest#replaceAssignmentVal`'
   sources:
   - before: |
       import lombok.val;
@@ -6852,7 +6864,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.LombokValueToRecord
 examples:
-- description: ''
+- description: '`LombokValueToRecordTest#convertOnlyValueAnnotatedClassWithoutDefaultValuesToRecord`'
   parameters:
   - 'false'
   sources:
@@ -6907,7 +6919,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.UseLombokGetter
 examples:
-- description: ''
+- description: '`UseLombokGetterTest#replaceGetter`'
   sources:
   - before: |
       class A {
@@ -6931,7 +6943,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.UseLombokSetter
 examples:
-- description: ''
+- description: '`UseLombokSetterTest#replaceSetter`'
   sources:
   - before: |
       class A {
@@ -6955,7 +6967,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.UseNoArgsConstructor
 examples:
-- description: ''
+- description: '`UseNoArgsConstructorTest#replaceEmptyPublicConstructor`'
   sources:
   - before: |
       class A {
@@ -6972,7 +6984,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.log.UseLombokLogAnnotations
 examples:
-- description: ''
+- description: '`ConvertAnyLogTest#replaceAllLoggers`'
   sources:
   - before: |
       class A {
@@ -7039,7 +7051,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.log.UseSlf4j
 examples:
-- description: ''
+- description: '`ConvertToLogAnnotationTest#replaceSlf4j`'
   parameters:
   - 'null'
   sources:
@@ -7058,7 +7070,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.maven.UpdateMavenProjectPropertyJavaVersion
 examples:
-- description: ''
+- description: '`UpdateMavenProjectPropertyJavaVersionTest#basic`'
   parameters:
   - '17'
   sources:
@@ -7102,7 +7114,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration
 examples:
-- description: ''
+- description: '`UseMavenCompilerPluginReleaseConfigurationTest#replacesSourceAndTargetConfig`'
   parameters:
   - '11'
   sources:
@@ -7157,7 +7169,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.metrics.SimplifyMicrometerMeterTags
 examples:
-- description: ''
+- description: '`SimplifyMicrometerMeterTagsTest#simplifyNewArray`'
   sources:
   - before: |
       import io.micrometer.core.instrument.*;
@@ -7178,7 +7190,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.net.JavaNetAPIs
 examples:
-- description: ''
+- description: '`JavaNetAPIsTest#multicastSocketGetTTLToGetTimeToLive`'
   sources:
   - before: |
       package org.openrewrite.example;
@@ -7207,7 +7219,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.net.MigrateHttpURLConnectionHttpServerErrorToHttpInternalError
 examples:
-- description: ''
+- description: '`MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorTest#httpUrlConnectionHttpServerErrorToHttpInternalError`'
   sources:
   - before: |
       import java.net.HttpURLConnection;
@@ -7234,7 +7246,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.net.MigrateMulticastSocketSetTTLToSetTimeToLive
 examples:
-- description: ''
+- description: '`MigrateMulticastSocketSetTTLToSetTimeToLiveTest#multicastSocketSetTTLToSetTimeToLive`'
   sources:
   - before: |
       package org.openrewrite.example;
@@ -7263,7 +7275,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.net.MigrateURLDecoderDecode
 examples:
-- description: ''
+- description: '`MigrateURLDecoderDecodeTest#urlDecoderDecode`'
   sources:
   - before: |
       package org.openrewrite.example;
@@ -7291,7 +7303,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.net.MigrateURLEncoderEncode
 examples:
-- description: ''
+- description: '`MigrateURLEncoderEncodeTest#urlEncoderEncode`'
   sources:
   - before: |
       package org.openrewrite.example;
@@ -7319,7 +7331,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.net.URLConstructorToURICreate
 examples:
-- description: ''
+- description: '`URLConstructorToURICreateTest#urlConstructor`'
   sources:
   - before: |
       import java.net.URL;
@@ -7334,7 +7346,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.net.URLConstructorsToNewURI
 examples:
-- description: ''
+- description: '`URLConstructorsToNewURITest#urlConstructor`'
   sources:
   - before: |
       import java.net.URL;
@@ -7362,7 +7374,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.search.AboutJavaVersion
 examples:
-- description: ''
+- description: '`AboutJavaVersionTest#aboutJavaVersion`'
   parameters:
   - 'null'
   sources:
@@ -7384,7 +7396,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.search.FindJavaVersion
 examples:
-- description: ''
+- description: '`FindJavaVersionTest#twoClassesWithSameMarkerLeadToOneRow`'
   sources:
   - before: |
       class A {
@@ -7398,7 +7410,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.sql.MigrateDriverManagerSetLogStream
 examples:
-- description: ''
+- description: '`MigrateDriverManagerSetLogStreamTest#migrateDefineClass`'
   sources:
   - before: |
       package org.openrewrite;
@@ -7425,7 +7437,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.IteratorNext
 examples:
-- description: ''
+- description: '`IteratorNextTest#listIteratorNextToGetFirst`'
   sources:
   - before: |
       import java.util.*;
@@ -7448,7 +7460,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.MigrateCollectionsSingletonList
 examples:
-- description: ''
+- description: '`MigrateCollectionsSingletonListTest#singletonList`'
   sources:
   - before: |
       import java.util.*;
@@ -7467,7 +7479,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.MigrateCollectionsSingletonSet
 examples:
-- description: ''
+- description: '`MigrateCollectionsSingletonSetTest#singleTonSet`'
   sources:
   - before: |
       import java.util.*;
@@ -7486,7 +7498,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToClose
 examples:
-- description: ''
+- description: '`MigrateInflaterDeflaterToAutoCloseableTest#migrateInflaterEndInTryFinally`'
   sources:
   - before: |
       import java.util.zip.Inflater;
@@ -7519,7 +7531,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.MigrateStringReaderToReaderOf
 examples:
-- description: ''
+- description: '`MigrateStringReaderToReaderOfTest#migrateReaderVariableWithString`'
   sources:
   - before: |
       import java.io.Reader;
@@ -7543,7 +7555,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.OptionalStreamRecipe
 examples:
-- description: ''
+- description: '`OptionalStreamRecipeTest#basic_case`'
   sources:
   - before: |
       import java.util.Optional;
@@ -7571,7 +7583,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.RemoveFinalizerFromZip
 examples:
-- description: ''
+- description: '`RemoveFinalizerFromZipTest#removeFinalizerForInflater`'
   sources:
   - before: |
       import java.util.zip.Inflater;
@@ -7595,7 +7607,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.ReplaceMathRandomWithThreadLocalRandomRecipe
 examples:
-- description: ''
+- description: '`ReplaceMathRandomWithThreadLocalRandomRecipeTest#replacesMathRandom`'
   sources:
   - before: |
       class Example {
@@ -7616,7 +7628,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.ReplaceStreamCollectWithToList
 examples:
-- description: ''
+- description: '`ReplaceStreamCollectWithToListTest#replacesToUnmodifiableList`'
   parameters:
   - 'false'
   sources:
@@ -7644,7 +7656,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.StreamFindFirst
 examples:
-- description: ''
+- description: '`StreamFindFirstTest#sequencedCollection`'
   sources:
   - before: |
       import java.util.*;
@@ -7667,7 +7679,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.UseMapOf
 examples:
-- description: ''
+- description: '`UseMapOfTest#anonymousClass`'
   sources:
   - before: |
       import java.util.HashMap;

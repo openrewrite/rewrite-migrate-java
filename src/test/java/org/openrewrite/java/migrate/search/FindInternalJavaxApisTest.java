@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -28,6 +29,7 @@ class FindInternalJavaxApisTest implements RewriteTest {
         spec.recipe(new FindInternalJavaxApis(null));
     }
 
+    @DocumentExample
     @Test
     void returnsJavaxApi() {
         //language=java
