@@ -28,8 +28,9 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeTree;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import static java.util.Objects.requireNonNull;
 
 public class UseVarForGenericMethodInvocations extends Recipe {
     @Override
@@ -103,8 +104,7 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 return mi;
             }
 
-            J.ParameterizedType leftType = (J.ParameterizedType) vd.getTypeExpression();
-            List<Expression> leftTypeParams = leftType.getTypeParameters();
+            List<Expression> leftTypeParams = ((J.ParameterizedType) vd.getTypeExpression()).getTypeParameters();
             if (leftTypeParams == null || leftTypeParams.isEmpty()) {
                 return mi;
             }
@@ -113,41 +113,29 @@ public class UseVarForGenericMethodInvocations extends Recipe {
             return mi.withArguments(ListUtils.map(mi.getArguments(), arg -> {
                 if (arg instanceof J.NewClass) {
                     J.NewClass newClass = (J.NewClass) arg;
-                    List<JavaType> rightTypeParams = extractJavaTypes(newClass);
                     // Check if using diamond operator (rightTypeParams is empty)
-                    if (rightTypeParams != null && rightTypeParams.isEmpty() && newClass.getClazz() instanceof J.ParameterizedType) {
+                    if (!hasTypeParams(newClass.getClazz())) {
                         // Copy type parameters from left side to right side
                         J.ParameterizedType rightType = (J.ParameterizedType) newClass.getClazz();
-                        return newClass.withClazz(
-                                rightType.withTypeParameters(leftTypeParams)
-                        );
+                        return newClass.withClazz(requireNonNull(rightType).withTypeParameters(leftTypeParams));
                     }
                 }
                 return arg;
             }));
         }
 
-        /**
-         * Extract JavaTypes from a NewClass expression's type parameters.
-         *
-         * @return null if not a parameterized type, or an empty list for diamond operator.
-         */
-        private @Nullable List<JavaType> extractJavaTypes(J.NewClass newClass) {
-            TypeTree clazz = newClass.getClazz();
+        private static boolean hasTypeParams(@Nullable TypeTree clazz) {
             if (clazz instanceof J.ParameterizedType) {
                 List<Expression> typeParameters = ((J.ParameterizedType) clazz).getTypeParameters();
-                List<JavaType> params = new ArrayList<>();
                 if (typeParameters != null) {
                     for (Expression curType : typeParameters) {
-                        JavaType type = curType.getType();
-                        if (type != null) {
-                            params.add(type);
+                        if (curType.getType() != null) {
+                            return true;
                         }
                     }
                 }
-                return params;
             }
-            return null;
+            return false;
         }
 
         private static boolean allArgumentsEmpty(J.MethodInvocation invocation) {
