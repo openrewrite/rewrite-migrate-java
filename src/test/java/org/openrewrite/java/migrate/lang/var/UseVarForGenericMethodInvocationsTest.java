@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.lang.var;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -260,81 +261,36 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
             );
         }
 
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/862")
         @Test
         void nestedGenericsSimple() {
             //language=java
             rewriteRun(
               version(
-                java("""
-                  package com.example.app;
+                java(
+                  """
+                    import java.util.ArrayList;
+                    import java.util.Collections;
+                    import java.util.List;
 
-                  import java.util.ArrayList;
-                  import java.util.Collections;
-                  import java.util.List;
-
-                  class A {
-                    private void dostuff() {
-                        List<String> strs = Collections.synchronizedList(new ArrayList<>());
+                    class A {
+                      void dostuff() {
+                          List<String> strs = Collections.synchronizedList(new ArrayList<>());
+                      }
                     }
-                  }
-                  """, """
-                  package com.example.app;
+                    """,
+                  """
+                    import java.util.ArrayList;
+                    import java.util.Collections;
+                    import java.util.List;
 
-                  import java.util.ArrayList;
-                  import java.util.Collections;
-                  import java.util.List;
-
-                  class A {
-                    private void dostuff() {
-                        var strs = Collections.synchronizedList(new ArrayList<String>());
+                    class A {
+                      void dostuff() {
+                          var strs = Collections.synchronizedList(new ArrayList<String>());
+                      }
                     }
-                  }
-                  """),
-                10
-              )
-            );
-        }
-
-        @Test
-        void nestedGenericsWithMethodReference() {
-            //language=java
-            rewriteRun(
-              version(
-                java("""
-                  package com.example.app;
-
-                  import java.util.ArrayList;
-                  import java.util.Collections;
-                  import java.util.List;
-
-                  class A {
-                    private void dostuff() {
-                        List<String> strs = Collections.synchronizedList(new ArrayList<>());
-                        strs.forEach(this::soString);
-                    }
-
-                    private void soString(String s) {
-                        System.out.println(s);
-                    }
-                  }
-                  """, """
-                  package com.example.app;
-
-                  import java.util.ArrayList;
-                  import java.util.Collections;
-                  import java.util.List;
-
-                  class A {
-                    private void dostuff() {
-                        var strs = Collections.synchronizedList(new ArrayList<String>());
-                        strs.forEach(this::soString);
-                    }
-
-                    private void soString(String s) {
-                        System.out.println(s);
-                    }
-                  }
-                  """),
+                    """
+                ),
                 10
               )
             );

@@ -42,7 +42,7 @@ public class UseVarForGenericMethodInvocations extends Recipe {
     public String getDescription() {
         //language=markdown
         return "Apply `var` to variables initialized by invocations of generic methods. " +
-               "This recipe ignores generic factory methods without parameters, because open rewrite cannot handle them correctly ATM.";
+                "This recipe ignores generic factory methods without parameters, because open rewrite cannot handle them correctly ATM.";
     }
 
     @Override
@@ -119,7 +119,7 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                         // Copy type parameters from left side to right side
                         J.ParameterizedType rightType = (J.ParameterizedType) newClass.getClazz();
                         return newClass.withClazz(
-                            rightType.withTypeParameters(leftTypeParams)
+                                rightType.withTypeParameters(leftTypeParams)
                         );
                     }
                 }
@@ -129,7 +129,8 @@ public class UseVarForGenericMethodInvocations extends Recipe {
 
         /**
          * Extract JavaTypes from a NewClass expression's type parameters.
-         * Returns null if not a parameterized type, or an empty list for diamond operator.
+         *
+         * @return null if not a parameterized type, or an empty list for diamond operator.
          */
         private @Nullable List<JavaType> extractJavaTypes(J.NewClass newClass) {
             TypeTree clazz = newClass.getClazz();
