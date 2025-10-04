@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -33,6 +34,7 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
           .allSources(src -> src.markers(javaVersion(8)));
     }
 
+    @DocumentExample
     @Test
     void addDependencyIfAnnotationJsr250Present() {
         rewriteRun(

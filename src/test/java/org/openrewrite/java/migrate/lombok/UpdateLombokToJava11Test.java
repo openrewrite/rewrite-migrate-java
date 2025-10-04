@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.lombok;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -69,6 +70,7 @@ class UpdateLombokToJava11Test implements RewriteTest {
           );
     }
 
+    @DocumentExample
     @SuppressWarnings({"DeprecatedLombok", "deprecation", "Lombok", "RedundantModifiersValueLombok"})
     @Test
     void updateLombokToJava11() {

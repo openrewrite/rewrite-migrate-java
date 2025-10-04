@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -35,6 +36,7 @@ class JavaxServletToJakartaServletTest implements RewriteTest {
             "org.openrewrite.java.migrate.jakarta.JavaxServletToJakartaServlet");
     }
 
+    @DocumentExample
     @Test
     void switchesJavaxServletApiDependencyToJakartaServletApiDependency() {
         rewriteRun(

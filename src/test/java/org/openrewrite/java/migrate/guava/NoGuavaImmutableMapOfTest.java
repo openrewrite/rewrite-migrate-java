@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
@@ -32,6 +33,34 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
         spec
           .recipe(new NoGuavaImmutableMapOf())
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
+    }
+
+    @DocumentExample
+    @Test
+    void replaceArguments() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.Map;
+                import com.google.common.collect.ImmutableMap;
+
+                class Test {
+                    Map<String, String> m = ImmutableMap.of("A", "B", "C", "D");
+                }
+                """,
+              """
+                import java.util.Map;
+
+                class Test {
+                    Map<String, String> m = Map.of("A", "B", "C", "D");
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Test
@@ -147,33 +176,6 @@ class NoGuavaImmutableMapOfTest implements RewriteTest {
                   }
               }
               """
-          )
-        );
-    }
-
-    @Test
-    void replaceArguments() {
-        //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.Map;
-                import com.google.common.collect.ImmutableMap;
-
-                class Test {
-                    Map<String, String> m = ImmutableMap.of("A", "B", "C", "D");
-                }
-                """,
-              """
-                import java.util.Map;
-
-                class Test {
-                    Map<String, String> m = Map.of("A", "B", "C", "D");
-                }
-                """
-            ),
-            9
           )
         );
     }
