@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.lang.var;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -255,6 +256,41 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                     }
                   }
                   """),
+                10
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/862")
+        @Test
+        void nestedGenericsSimple() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    import java.util.ArrayList;
+                    import java.util.Collections;
+                    import java.util.List;
+
+                    class A {
+                      void dostuff() {
+                          List<String> strs = Collections.synchronizedList(new ArrayList<>());
+                      }
+                    }
+                    """,
+                  """
+                    import java.util.ArrayList;
+                    import java.util.Collections;
+                    import java.util.List;
+
+                    class A {
+                      void dostuff() {
+                          var strs = Collections.synchronizedList(new ArrayList<String>());
+                      }
+                    }
+                    """
+                ),
                 10
               )
             );
