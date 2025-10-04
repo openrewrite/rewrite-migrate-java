@@ -15,15 +15,21 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeTree;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class UseVarForGenericMethodInvocations extends Recipe {
     @Override
@@ -82,16 +88,65 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 maybeRemoveImport((JavaType.FullyQualified) vd.getType());
             }
 
-            return DeclarationCheck.transformToVar(vd);
-            // TODO implement to support cases like `var strs = List.<String>of();`
-            /*J.VariableDeclarations finalVd = vd;
-            return DeclarationCheck.<J.MethodInvocation>transformToVar(vd, it -> {
-                // If left has generics but right has not, copy types parameters
-                if (finalVd.getTypeExpression() instanceof J.ParameterizedType && !((J.ParameterizedType) finalVd.getTypeExpression()).getTypeParameters().isEmpty() && it.getTypeParameters() == null) {
-                    return it.withTypeParameters(((J.ParameterizedType) finalVd.getTypeExpression()).getPadding().getTypeParameters());
+            // Make nested generic types explicit before converting to var
+            J.VariableDeclarations finalVd = vd;
+            return DeclarationCheck.transformToVar(vd, (J.MethodInvocation mi) -> makeNestedGenericsExplicit(mi, finalVd));
+        }
+
+        /**
+         * Makes nested generic types explicit by replacing diamond operators in constructor calls
+         * with explicit type parameters based on the variable declaration type.
+         */
+        private J.MethodInvocation makeNestedGenericsExplicit(J.MethodInvocation mi, J.VariableDeclarations vd) {
+            // Extract type parameters from the variable declaration
+            if (!(vd.getTypeExpression() instanceof J.ParameterizedType)) {
+                return mi;
+            }
+
+            J.ParameterizedType leftType = (J.ParameterizedType) vd.getTypeExpression();
+            List<Expression> leftTypeParams = leftType.getTypeParameters();
+            if (leftTypeParams == null || leftTypeParams.isEmpty()) {
+                return mi;
+            }
+
+            // Visit arguments and replace diamond operators with explicit type parameters
+            return mi.withArguments(ListUtils.map(mi.getArguments(), arg -> {
+                if (arg instanceof J.NewClass) {
+                    J.NewClass newClass = (J.NewClass) arg;
+                    List<JavaType> rightTypeParams = extractJavaTypes(newClass);
+                    // Check if using diamond operator (rightTypeParams is empty)
+                    if (rightTypeParams != null && rightTypeParams.isEmpty() && newClass.getClazz() instanceof J.ParameterizedType) {
+                        // Copy type parameters from left side to right side
+                        J.ParameterizedType rightType = (J.ParameterizedType) newClass.getClazz();
+                        return newClass.withClazz(
+                            rightType.withTypeParameters(leftTypeParams)
+                        );
+                    }
                 }
-                return it;
-            });*/
+                return arg;
+            }));
+        }
+
+        /**
+         * Extract JavaTypes from a NewClass expression's type parameters.
+         * Returns null if not a parameterized type, or an empty list for diamond operator.
+         */
+        private @Nullable List<JavaType> extractJavaTypes(J.NewClass newClass) {
+            TypeTree clazz = newClass.getClazz();
+            if (clazz instanceof J.ParameterizedType) {
+                List<Expression> typeParameters = ((J.ParameterizedType) clazz).getTypeParameters();
+                List<JavaType> params = new ArrayList<>();
+                if (typeParameters != null) {
+                    for (Expression curType : typeParameters) {
+                        JavaType type = curType.getType();
+                        if (type != null) {
+                            params.add(type);
+                        }
+                    }
+                }
+                return params;
+            }
+            return null;
         }
 
         private static boolean allArgumentsEmpty(J.MethodInvocation invocation) {

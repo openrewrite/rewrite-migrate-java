@@ -259,5 +259,85 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
               )
             );
         }
+
+        @Test
+        void nestedGenericsSimple() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  package com.example.app;
+
+                  import java.util.ArrayList;
+                  import java.util.Collections;
+                  import java.util.List;
+
+                  class A {
+                    private void dostuff() {
+                        List<String> strs = Collections.synchronizedList(new ArrayList<>());
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  import java.util.ArrayList;
+                  import java.util.Collections;
+                  import java.util.List;
+
+                  class A {
+                    private void dostuff() {
+                        var strs = Collections.synchronizedList(new ArrayList<String>());
+                    }
+                  }
+                  """),
+                10
+              )
+            );
+        }
+
+        @Test
+        void nestedGenericsWithMethodReference() {
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  package com.example.app;
+
+                  import java.util.ArrayList;
+                  import java.util.Collections;
+                  import java.util.List;
+
+                  class A {
+                    private void dostuff() {
+                        List<String> strs = Collections.synchronizedList(new ArrayList<>());
+                        strs.forEach(this::soString);
+                    }
+
+                    private void soString(String s) {
+                        System.out.println(s);
+                    }
+                  }
+                  """, """
+                  package com.example.app;
+
+                  import java.util.ArrayList;
+                  import java.util.Collections;
+                  import java.util.List;
+
+                  class A {
+                    private void dostuff() {
+                        var strs = Collections.synchronizedList(new ArrayList<String>());
+                        strs.forEach(this::soString);
+                    }
+
+                    private void soString(String s) {
+                        System.out.println(s);
+                    }
+                  }
+                  """),
+                10
+              )
+            );
+        }
     }
 }
