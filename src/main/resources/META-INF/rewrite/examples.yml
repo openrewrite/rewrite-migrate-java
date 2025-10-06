@@ -384,6 +384,47 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.DontOverfetchDto
+examples:
+- description: '`DontOverfetchDtoTest#findDtoOverfetching`'
+  parameters:
+  - animals.Dog
+  - name
+  sources:
+  - before: |
+      import animals.Dog;
+
+      class Test {
+          boolean test(Dog dog, int age) {
+              if(dog.getName() != null) {
+                  return true;
+              }
+          }
+      }
+    after: |
+      class Test {
+          boolean test(java.lang.String name, int age) {
+              if(name != null) {
+                  return true;
+              }
+          }
+      }
+    language: java
+  - before: |
+      package animals;
+      public class Dog {
+          String name;
+          String breed;
+          public String getName() {
+              return name;
+          }
+          public String getBreed() {
+              return breed;
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.IBMJDKtoOracleJDK
 examples:
 - description: '`IBMJDKtoOracleJDKTest#Krb5LoginModuleTest`'
@@ -3364,6 +3405,23 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuava
 examples:
+- description: '`NoGuavaJava21Test#preferMathClampForDouble`'
+  sources:
+  - before: |
+      import com.google.common.primitives.Doubles;
+
+      class Test {
+          public double testMethod() {
+              return Doubles.constrainToRange(20D, 10D, 100D);
+          }
+      }
+    after: |
+      class Test {
+          public double testMethod() {
+              return Math.clamp(20D, 10D, 100D);
+          }
+      }
+    language: java
 - description: '`NoGuavaTest#moreObjectsFirstNonNullToObjectsRequireNonNullElse`'
   sources:
   - before: |
@@ -3505,6 +3563,46 @@ examples:
 
       class Test {
           Executor executor = Runnable::run;
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
+examples:
+- description: '`NoGuavaImmutableListOfTest#replaceArguments`'
+  sources:
+  - before: |
+      import java.util.List;
+      import com.google.common.collect.ImmutableList;
+
+      class Test {
+          List<String> m = ImmutableList.of("A", "B", "C", "D");
+      }
+    after: |
+      import java.util.List;
+
+      class Test {
+          List<String> m = List.of("A", "B", "C", "D");
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
+examples:
+- description: '`NoGuavaImmutableMapOfTest#replaceArguments`'
+  sources:
+  - before: |
+      import java.util.Map;
+      import com.google.common.collect.ImmutableMap;
+
+      class Test {
+          Map<String, String> m = ImmutableMap.of("A", "B", "C", "D");
+      }
+    after: |
+      import java.util.Map;
+
+      class Test {
+          Map<String, String> m = Map.of("A", "B", "C", "D");
       }
     language: java
 ---
@@ -4592,6 +4690,39 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail
+examples:
+- description: '`JavaxMailToJakartaMailTest#switchesJavaxMailApiDependencyToJakartaMailApiDependency`'
+  sources:
+  - before: |
+      import javax.mail.Session;
+      public class TestApplication {
+      }
+    after: |
+      import jakarta.mail.Session;
+      public class TestApplication {
+      }
+    language: java
+  - before: Sample
+    language: mavenProject
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <dependencies>
+              <dependency>
+                  <groupId>javax.mail</groupId>
+                  <artifactId>javax.mail-api</artifactId>
+                  <version>1.4.7</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
 examples:
 - description: '`JavaxToJakartaTest#changeImport`'
@@ -4605,6 +4736,39 @@ examples:
       public class B {
       }
     language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxServletToJakartaServlet
+examples:
+- description: '`JavaxServletToJakartaServletTest#switchesJavaxServletApiDependencyToJakartaServletApiDependency`'
+  sources:
+  - before: |
+      import javax.servlet.Filter;
+      public class TestApplication {
+      }
+    after: |
+      import jakarta.servlet.Filter;
+      public class TestApplication {
+      }
+    language: java
+  - before: Sample
+    language: mavenProject
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <dependencies>
+              <dependency>
+                  <groupId>javax.servlet</groupId>
+                  <artifactId>javax.servlet-api</artifactId>
+                  <version>4.0.1</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxTransactionMigrationToJakartaTransaction
@@ -4681,6 +4845,63 @@ examples:
           </context-param>
       </web-fragment>
     path: web.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxWsToJakartaWs
+examples:
+- description: '`JavaxWsToJakartaWsTest#switchesJavaxWsApiDependencyToJakartaWsApiDependency`'
+  sources:
+  - before: |
+      import javax.ws.rs.core.MediaType;
+      public class TestApplication {
+          MediaType getType() {
+              return MediaType.APPLICATION_JSON_TYPE;
+          }
+      }
+    after: |
+      import jakarta.ws.rs.core.MediaType;
+      public class TestApplication {
+          MediaType getType() {
+              return MediaType.APPLICATION_JSON_TYPE;
+          }
+      }
+    language: java
+  - before: Sample
+    language: mavenProject
+  - before: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <dependencies>
+              <dependency>
+                  <groupId>javax.ws.rs</groupId>
+                  <artifactId>javax.ws.rs-api</artifactId>
+                  <version>2.1.1</version>
+              </dependency>
+          </dependencies>
+      </project>
+    after: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <dependencies>
+              <dependency>
+                  <groupId>jakarta.ws.rs</groupId>
+                  <artifactId>jakarta.ws.rs-api</artifactId>
+                  <version>3.0.0</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
@@ -5406,6 +5627,45 @@ examples:
           private List<String> listofStrings;
       }
     language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies
+examples:
+- description: '`AddCommonAnnotationsDependenciesTest#addDependencyIfAnnotationJsr250Present`'
+  sources:
+  - before: |
+      import javax.annotation.Generated;
+
+      @Generated("Hello")
+      class A {
+      }
+    language: java
+  - before: my-project
+    language: mavenProject
+  - before: |
+      <project>
+        <modelVersion>4.0.0</modelVersion>
+        <groupId>org.sample</groupId>
+        <artifactId>sample</artifactId>
+        <version>1.0.0</version>
+      </project>
+    after: |
+      <project>
+        <modelVersion>4.0.0</modelVersion>
+        <groupId>org.sample</groupId>
+        <artifactId>sample</artifactId>
+        <version>1.0.0</version>
+        <dependencies>
+          <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>1.3.5</version>
+            <scope>provided</scope>
+          </dependency>
+        </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.AddDefaultConstructorToEntityClass
@@ -6249,6 +6509,27 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.StringFormatted
+examples:
+- description: '`StringFormattedTest#concatenatedText`'
+  parameters:
+  - 'null'
+  sources:
+  - before: |
+      package com.example.app;
+      class A {
+          String str = String.format("foo"
+                  + "%s", "a");
+      }
+    after: |
+      package com.example.app;
+      class A {
+          String str = ("foo"
+                  + "%s").formatted("a");
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.StringRulesRecipes
 examples:
 - description: '`StringRulesTest#substring`'
@@ -6917,6 +7198,53 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lombok.UpdateLombokToJava11
+examples:
+- description: '`UpdateLombokToJava11Test#updateLombokToJava11`'
+  sources:
+  - before: |
+      import lombok.experimental.Wither;
+      import lombok.experimental.Builder;
+      import lombok.experimental.Value;
+
+      @Wither
+      @Builder
+      @Value
+      public class Fred {
+          private String firstName;
+          private String lastName;
+      }
+    after: |
+      import lombok.Value;
+      import lombok.With;
+      import lombok.Builder;
+
+      @With
+      @Builder
+      @Value
+      public class Fred {
+          private String firstName;
+          private String lastName;
+      }
+    language: java
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example.jackson</groupId>
+          <artifactId>jackson-legacy</artifactId>
+          <version>1.0.0</version>
+          <dependencies>
+              <dependency>
+                  <groupId>org.projectlombok</groupId>
+                  <artifactId>lombok</artifactId>
+                  <version>1.18.6</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.UseLombokGetter
 examples:
 - description: '`UseLombokGetterTest#replaceGetter`'
@@ -7394,6 +7722,42 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.search.FindInternalJavaxApis
+examples:
+- description: '`FindInternalJavaxApisTest#returnsJavaxApi`'
+  parameters:
+  - 'null'
+  sources:
+  - before: |
+      package org.openrewrite;
+
+      import javax.xml.stream.StreamFilter;
+
+      class Consumer {
+          void test(Api api) {
+              StreamFilter sf = api.test();
+          }
+      }
+    after: |
+      package org.openrewrite;
+
+      import javax.xml.stream.StreamFilter;
+
+      class Consumer {
+          void test(Api api) {
+              StreamFilter sf = /*~~>*/api.test();
+          }
+      }
+    language: java
+  - before: |
+      package org.openrewrite;
+
+      interface Api {
+          javax.xml.stream.StreamFilter test();
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.search.FindJavaVersion
 examples:
 - description: '`FindJavaVersionTest#twoClassesWithSameMarkerLeadToOneRow`'
@@ -7553,6 +7917,52 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
+examples:
+- description: '`OptionalNotEmptyToIsPresentTest#replaceNotIsEmptyWithIsPresent`'
+  sources:
+  - before: |
+      package com.example.app;
+      import java.util.Optional;
+      class App {
+          boolean notEmpty(Optional<String> bar){
+              return !bar.isEmpty();
+          }
+      }
+    after: |
+      package com.example.app;
+      import java.util.Optional;
+      class App {
+          boolean notEmpty(Optional<String> bar){
+              return bar.isPresent();
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
+examples:
+- description: '`OptionalNotPresentToIsEmptyTest#replaceNotIsPresentWithIsEmpty`'
+  sources:
+  - before: |
+      package com.example.app;
+      import java.util.Optional;
+      class App {
+          boolean notPresent(Optional<String> bar){
+              return !bar.isPresent();
+          }
+      }
+    after: |
+      package com.example.app;
+      import java.util.Optional;
+      class App {
+          boolean notPresent(Optional<String> bar){
+              return bar.isEmpty();
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.OptionalStreamRecipe
 examples:
 - description: '`OptionalStreamRecipeTest#basic_case`'
@@ -7673,6 +8083,59 @@ examples:
           void bar(SequencedCollection<String> collection) {
               String first = collection.getFirst();
           }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.UseEnumSetOf
+examples:
+- description: '`UseEnumSetOfTest#changeDeclaration`'
+  sources:
+  - before: |
+      import java.util.Set;
+
+      class Test {
+          public enum Color {
+              RED, GREEN, BLUE
+          }
+          public void method() {
+              Set<Color> warm = Set.of(Color.RED, Color.GREEN);
+          }
+      }
+    after: |
+      import java.util.EnumSet;
+      import java.util.Set;
+
+      class Test {
+          public enum Color {
+              RED, GREEN, BLUE
+          }
+          public void method() {
+              Set<Color> warm = EnumSet.of(Color.RED, Color.GREEN);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.UseLocaleOf
+examples:
+- description: '`UseLocaleOfTest#localeOf`'
+  sources:
+  - before: |
+      import java.util.Locale;
+
+      class Test {
+          Locale locale1 = new Locale("english");
+          Locale locale2 = new Locale("english", "us");
+          Locale locale3 = new Locale("english", "us", "");
+      }
+    after: |
+      import java.util.Locale;
+
+      class Test {
+          Locale locale1 = Locale.of("english");
+          Locale locale2 = Locale.of("english", "us");
+          Locale locale3 = Locale.of("english", "us", "");
       }
     language: java
 ---
