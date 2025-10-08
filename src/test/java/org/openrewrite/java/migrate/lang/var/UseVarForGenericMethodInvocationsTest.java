@@ -295,5 +295,79 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
               )
             );
         }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/868")
+        @Test
+        void applyVarAndAddExplicitTypeArgumentForNestedGenericFactoryMethod() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    public class A<T> {
+                        void getX(final Root<T> root) {
+                            Path<T> x = root.get("x");
+                        }
+                    }
+                    interface Root<X>{
+                        <Y> Path<Y> get(String var1);
+                    }
+                    interface Path<X> { }
+                    """,
+                  """
+                    public class A<T> {
+                        void getX(final Root<T> root) {
+                            var x = root.<T>get("x");
+                        }
+                    }
+                    interface Root<X>{
+                        <Y> Path<Y> get(String var1);
+                    }
+                    interface Path<X> { }
+                    """
+                ),
+                10
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/868")
+        @Test
+        void genericsCollectorsRegression() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    import java.time.LocalDate;
+                    import java.util.ArrayList;
+                    import java.util.Set;
+                    import java.util.stream.Collectors;
+
+                    public class A {
+                        void getX() {
+                            Set<String> strDates = new ArrayList<LocalDate>().stream()
+                                    .map(date -> date.toString()).collect(Collectors.toSet());
+                        }
+                    }
+                    """,
+                  """
+                    import java.time.LocalDate;
+                    import java.util.ArrayList;
+                    import java.util.Set;
+                    import java.util.stream.Collectors;
+
+                    public class A {
+                        void getX() {
+                            var strDates = new ArrayList<LocalDate>().stream()
+                                    .map(date -> date.toString()).collect(Collectors.toSet());
+                        }
+                    }
+                    """
+                ),
+                10
+              )
+            );
+        }
     }
 }
