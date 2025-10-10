@@ -109,23 +109,18 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 return mi;
             }
 
-            // Check if method invocation needs explicit type parameters
-            // This happens when the method is generic and the return type's type parameter
-            // matches a type parameter from the declaring class
-            J.MethodInvocation result = mi;
+            // Add explicit type parameters when the method is generic and the return type's type parameter matches a type parameter from the declaring class
             if (mi.getTypeParameters() == null && mi.getMethodType() != null && containsGenericTypeVariable(mi.getMethodType().getReturnType())) {
                 // Create JRightPadded list from leftTypeParams
                 List<JRightPadded<Expression>> typeParamsList = new ArrayList<>();
                 for (Expression typeParam : leftTypeParams) {
                     typeParamsList.add(JRightPadded.build(typeParam));
                 }
-                result = mi.getPadding().withTypeParameters(
-                        JContainer.build(Space.EMPTY, typeParamsList, Markers.EMPTY)
-                );
+                mi = mi.withTypeParameters(JContainer.build(Space.EMPTY, typeParamsList, Markers.EMPTY));
             }
 
             // Visit arguments and replace diamond operators with explicit type parameters
-            return result.withArguments(ListUtils.map(result.getArguments(), arg -> {
+            return mi.withArguments(ListUtils.map(mi.getArguments(), arg -> {
                 if (arg instanceof J.NewClass) {
                     J.NewClass newClass = (J.NewClass) arg;
                     // Check if using diamond operator (rightTypeParams is empty)
