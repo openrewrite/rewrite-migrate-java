@@ -304,7 +304,7 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
               version(
                 java(
                   """
-                    public class A<T> {
+                    class A<T> {
                         void getX(final Root<T> root) {
                             Path<T> x = root.get("x");
                         }
@@ -315,7 +315,7 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                     interface Path<X> { }
                     """,
                   """
-                    public class A<T> {
+                    class A<T> {
                         void getX(final Root<T> root) {
                             var x = root.<T>get("x");
                         }
