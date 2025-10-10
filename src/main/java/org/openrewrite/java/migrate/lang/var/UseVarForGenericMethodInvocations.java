@@ -23,11 +23,10 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.TypeTree;
+import org.openrewrite.java.tree.*;
+import org.openrewrite.marker.Markers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
@@ -97,6 +96,7 @@ public class UseVarForGenericMethodInvocations extends Recipe {
         /**
          * Makes nested generic types explicit by replacing diamond operators in constructor calls
          * with explicit type parameters based on the variable declaration type.
+         * Also adds explicit type parameters to the method invocation itself when needed.
          */
         private J.MethodInvocation makeNestedGenericsExplicit(J.MethodInvocation mi, J.VariableDeclarations vd) {
             // Extract type parameters from the variable declaration
@@ -107,6 +107,16 @@ public class UseVarForGenericMethodInvocations extends Recipe {
             List<Expression> leftTypeParams = ((J.ParameterizedType) vd.getTypeExpression()).getTypeParameters();
             if (leftTypeParams == null || leftTypeParams.isEmpty()) {
                 return mi;
+            }
+
+            // Add explicit type parameters when the method is generic and the return type's type parameter matches a type parameter from the declaring class
+            if (mi.getTypeParameters() == null && mi.getMethodType() != null && containsGenericTypeVariable(mi.getMethodType().getReturnType())) {
+                // Create JRightPadded list from leftTypeParams
+                List<JRightPadded<Expression>> typeParamsList = new ArrayList<>();
+                for (Expression typeParam : leftTypeParams) {
+                    typeParamsList.add(JRightPadded.build(typeParam));
+                }
+                mi = mi.withTypeParameters(JContainer.build(Space.EMPTY, typeParamsList, Markers.EMPTY));
             }
 
             // Visit arguments and replace diamond operators with explicit type parameters
@@ -122,6 +132,22 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 }
                 return arg;
             }));
+        }
+
+        private boolean containsGenericTypeVariable(JavaType type) {
+            if (type instanceof JavaType.GenericTypeVariable) {
+                return true;
+            }
+
+            if (type instanceof JavaType.Parameterized) {
+                for (JavaType typeParam : ((JavaType.Parameterized) type).getTypeParameters()) {
+                    if (containsGenericTypeVariable(typeParam)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private static boolean hasTypeParams(@Nullable TypeTree clazz) {
