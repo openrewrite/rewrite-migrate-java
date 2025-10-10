@@ -22,6 +22,7 @@ import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
@@ -62,6 +63,10 @@ class LombokUtils {
         if (returnExpression instanceof J.Identifier) {
             J.Identifier identifier = (J.Identifier) returnExpression;
             if (identifier.getFieldType() != null && declaringType == identifier.getFieldType().getOwner()) {
+                // Don't replace instance methods accessing static fields
+                if (identifier.getFieldType().hasFlags(Flag.Static)) {
+                    return false;
+                }
                 // Check return: type and matching field name
                 return hasMatchingTypeAndGetterName(method, identifier.getType(), identifier.getSimpleName());
             }
@@ -70,6 +75,11 @@ class LombokUtils {
             Expression target = fieldAccess.getTarget();
             if (target instanceof J.Identifier && ((J.Identifier) target).getFieldType() != null &&
                     declaringType == ((J.Identifier) target).getFieldType().getOwner()) {
+                // Don't replace instance methods accessing static fields
+                if (fieldAccess.getName().getFieldType() != null &&
+                        fieldAccess.getName().getFieldType().hasFlags(Flag.Static)) {
+                    return false;
+                }
                 // Check return: type and matching field name
                 return hasMatchingTypeAndGetterName(method, fieldAccess.getType(), fieldAccess.getSimpleName());
             }
@@ -153,15 +163,22 @@ class LombokUtils {
             J.Identifier assignedVar = (J.Identifier) variable;
             if (hasMatchingSetterMethodName(method, assignedVar.getSimpleName())) {
                 // Check field is declared on method type
-                return assignedVar.getFieldType() != null && declaringType == assignedVar.getFieldType().getOwner();
+                if (assignedVar.getFieldType() != null && declaringType == assignedVar.getFieldType().getOwner()) {
+                    // Don't replace instance methods accessing static fields
+                    return !assignedVar.getFieldType().hasFlags(Flag.Static);
+                }
             }
         } else if (variable instanceof J.FieldAccess) {
             J.FieldAccess assignedField = (J.FieldAccess) variable;
             if (hasMatchingSetterMethodName(method, assignedField.getSimpleName())) {
                 Expression target = assignedField.getTarget();
                 // Check field is declared on method type
-                return target instanceof J.Identifier && ((J.Identifier) target).getFieldType() != null &&
-                        declaringType == ((J.Identifier) target).getFieldType().getOwner();
+                if (target instanceof J.Identifier && ((J.Identifier) target).getFieldType() != null &&
+                        declaringType == ((J.Identifier) target).getFieldType().getOwner()) {
+                    // Don't replace instance methods accessing static fields
+                    return assignedField.getName().getFieldType() != null &&
+                            !assignedField.getName().getFieldType().hasFlags(Flag.Static);
+                }
             }
         }
 

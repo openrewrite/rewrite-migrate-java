@@ -588,4 +588,38 @@ class UseLombokSetterTest implements RewriteTest {
           )
         );
     }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/870")
+    @Test
+    void noChangeWhenInstanceMethodAccessesStaticField() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+                  static int field;
+                  void setField(int field) {
+                      A.field = field;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/870")
+    @Test
+    void noChangeWhenInstanceMethodAccessesStaticFieldWithThis() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+                  static int field;
+                  void setField(int field) {
+                      this.field = field;
+                  }
+              }
+              """
+          )
+        );
+    }
 }
