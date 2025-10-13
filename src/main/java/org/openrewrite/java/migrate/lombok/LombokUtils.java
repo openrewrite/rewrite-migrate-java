@@ -175,12 +175,14 @@ class LombokUtils {
             J.FieldAccess assignedField = (J.FieldAccess) variable;
             if (hasMatchingSetterMethodName(method, assignedField.getSimpleName())) {
                 Expression target = assignedField.getTarget();
-                // Check field is declared on method type
-                if (target instanceof J.Identifier && ((J.Identifier) target).getFieldType() != null &&
-                        declaringType == ((J.Identifier) target).getFieldType().getOwner()) {
-                    // Don't replace instance methods accessing static fields
-                    return assignedField.getName().getFieldType() != null &&
-                            !assignedField.getName().getFieldType().hasFlags(Flag.Static);
+                // Only handle "this.field" pattern, not "someObject.field"
+                if (target instanceof J.Identifier && "this".equals(((J.Identifier) target).getSimpleName())) {
+                    // Check field is declared on method type
+                    if (assignedField.getName().getFieldType() != null &&
+                            declaringType == assignedField.getName().getFieldType().getOwner()) {
+                        // Don't replace instance methods accessing static fields
+                        return !assignedField.getName().getFieldType().hasFlags(Flag.Static);
+                    }
                 }
             }
         }
