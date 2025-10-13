@@ -613,4 +613,29 @@ class UseLombokGetterTest implements RewriteTest {
           )
         );
     }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/872")
+    @Test
+    void noChangeWhenMethodReturnsFieldOfAnotherObject() {
+        rewriteRun(// language=java
+          java(
+            """
+              public class A {
+
+                  private class Sample {
+                      public Long number;
+                  }
+
+                  private class Inner {
+                      static Sample sample = null;
+
+                      private Long getNumber() {
+                          return sample.number;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
 }

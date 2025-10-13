@@ -73,15 +73,18 @@ class LombokUtils {
         } else if (returnExpression instanceof J.FieldAccess) {
             J.FieldAccess fieldAccess = (J.FieldAccess) returnExpression;
             Expression target = fieldAccess.getTarget();
-            if (target instanceof J.Identifier && ((J.Identifier) target).getFieldType() != null &&
-                    declaringType == ((J.Identifier) target).getFieldType().getOwner()) {
-                // Don't replace instance methods accessing static fields
+            // Only handle "this.field" pattern, not "someObject.field"
+            if (target instanceof J.Identifier && "this".equals(((J.Identifier) target).getSimpleName())) {
+                // Check field is declared on method type
                 if (fieldAccess.getName().getFieldType() != null &&
-                        fieldAccess.getName().getFieldType().hasFlags(Flag.Static)) {
-                    return false;
+                        declaringType == fieldAccess.getName().getFieldType().getOwner()) {
+                    // Don't replace instance methods accessing static fields
+                    if (fieldAccess.getName().getFieldType().hasFlags(Flag.Static)) {
+                        return false;
+                    }
+                    // Check return: type and matching field name
+                    return hasMatchingTypeAndGetterName(method, fieldAccess.getType(), fieldAccess.getSimpleName());
                 }
-                // Check return: type and matching field name
-                return hasMatchingTypeAndGetterName(method, fieldAccess.getType(), fieldAccess.getSimpleName());
             }
         }
         return false;
@@ -172,12 +175,14 @@ class LombokUtils {
             J.FieldAccess assignedField = (J.FieldAccess) variable;
             if (hasMatchingSetterMethodName(method, assignedField.getSimpleName())) {
                 Expression target = assignedField.getTarget();
-                // Check field is declared on method type
-                if (target instanceof J.Identifier && ((J.Identifier) target).getFieldType() != null &&
-                        declaringType == ((J.Identifier) target).getFieldType().getOwner()) {
-                    // Don't replace instance methods accessing static fields
-                    return assignedField.getName().getFieldType() != null &&
-                            !assignedField.getName().getFieldType().hasFlags(Flag.Static);
+                // Only handle "this.field" pattern, not "someObject.field"
+                if (target instanceof J.Identifier && "this".equals(((J.Identifier) target).getSimpleName())) {
+                    // Check field is declared on method type
+                    if (assignedField.getName().getFieldType() != null &&
+                            declaringType == assignedField.getName().getFieldType().getOwner()) {
+                        // Don't replace instance methods accessing static fields
+                        return !assignedField.getName().getFieldType().hasFlags(Flag.Static);
+                    }
                 }
             }
         }

@@ -622,4 +622,29 @@ class UseLombokSetterTest implements RewriteTest {
           )
         );
     }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/872")
+    @Test
+    void noChangeWhenMethodSetsFieldOfAnotherObject() {
+        rewriteRun(// language=java
+          java(
+            """
+              public class A {
+
+                  private class Sample {
+                      public Long number;
+                  }
+
+                  private class Inner {
+                      static Sample sample = null;
+
+                      private void setNumber(Long value) {
+                          sample.number = value;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
 }
