@@ -46,7 +46,9 @@ public class FindImmutableThreadLocalVariables extends ScanningRecipe<FindImmuta
     @Override
     public String getDescription() {
         return "Find `ThreadLocal` variables that are never mutated and could be candidates for migration to `ScopedValue` in Java 25+. " +
-               "This recipe identifies `ThreadLocal` variables that are only initialized but never reassigned or modified through `set()` or `remove()` methods.";
+               "This recipe identifies `ThreadLocal` variables that are only initialized but never reassigned or modified through `set()` or `remove()` methods. " +
+               "Note: This recipe only analyzes mutations within the same source file. ThreadLocal fields accessible from other classes " +
+               "(public, protected, or package-private) may be mutated elsewhere in the codebase.";
     }
 
     @Value
@@ -184,10 +186,16 @@ public class FindImmutableThreadLocalVariables extends ScanningRecipe<FindImmuta
                     if (isThreadLocalType(variable.getType())) {
                         ThreadLocalVariable tlVar = ThreadLocalVariable.fromVariable(variable, classDecl);
                         if (acc.isImmutable(tlVar)) {
-                            return SearchResult.found(
-                                multiVariable,
-                                "ThreadLocal candidate for ScopedValue migration - never mutated after initialization"
-                            );
+                            // Only mark private fields as candidates, since public/protected/package-private
+                            // fields could be mutated from other classes
+                            boolean isPrivate = multiVariable.getModifiers().stream()
+                                    .anyMatch(mod -> mod.getType() == J.Modifier.Type.Private);
+
+                            String message = isPrivate
+                                ? "ThreadLocal candidate for ScopedValue migration - never mutated after initialization"
+                                : "ThreadLocal candidate for ScopedValue migration - never mutated in this file (but may be mutated elsewhere due to non-private access)";
+
+                            return SearchResult.found(multiVariable, message);
                         }
                     }
                 }

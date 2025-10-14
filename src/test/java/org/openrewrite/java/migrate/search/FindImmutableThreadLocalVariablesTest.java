@@ -268,6 +268,58 @@ class FindImmutableThreadLocalVariablesTest implements RewriteTest {
     }
 
     @Test
+    void warnAboutPackagePrivateThreadLocal() {
+        rewriteRun(
+          java(
+            """
+              class Example {
+                  static final ThreadLocal<String> PACKAGE_TL = new ThreadLocal<>();
+
+                  public String getValue() {
+                      return PACKAGE_TL.get();
+                  }
+              }
+              """,
+            """
+              class Example {
+                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated in this file (but may be mutated elsewhere due to non-private access))~~>*/static final ThreadLocal<String> PACKAGE_TL = new ThreadLocal<>();
+
+                  public String getValue() {
+                      return PACKAGE_TL.get();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void warnAboutProtectedThreadLocal() {
+        rewriteRun(
+          java(
+            """
+              class Example {
+                  protected static final ThreadLocal<String> PROTECTED_TL = new ThreadLocal<>();
+
+                  public String getValue() {
+                      return PROTECTED_TL.get();
+                  }
+              }
+              """,
+            """
+              class Example {
+                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated in this file (but may be mutated elsewhere due to non-private access))~~>*/protected static final ThreadLocal<String> PROTECTED_TL = new ThreadLocal<>();
+
+                  public String getValue() {
+                      return PROTECTED_TL.get();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void handleInheritableThreadLocal() {
         rewriteRun(
           java(
