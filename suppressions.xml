@@ -1,12 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-    <suppress>
-        <notes><![CDATA[
-            file name: snakeyaml-1.33.jar
-            Severity: HIGH
-            False positive: We are not parsing untrusted user input. Not used directly in this repository.
-        ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-        <cve>CVE-2022-1471</cve>
-    </suppress>
 </suppressions>
