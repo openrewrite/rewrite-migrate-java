@@ -139,7 +139,9 @@ public class ConvertImmutableClassToRecord extends Recipe {
             if (!classDecl.getImplements().isEmpty()) {
                 recordTemplate.append(" implements ");
                 for (int i = 0; i < classDecl.getImplements().size(); i++) {
-                    if (i > 0) recordTemplate.append(", ");
+                    if (i > 0) {
+                        recordTemplate.append( ", " );
+                    }
                     recordTemplate.append("#{any()}");
                 }
             }
@@ -243,8 +245,7 @@ public class ConvertImmutableClassToRecord extends Recipe {
                     && method.getParameters().size() == 1;
         }
 
-        @Nullable
-        private String getFieldNameFromGetter(J.MethodDeclaration getter) {
+        private @Nullable String getFieldNameFromGetter(J.MethodDeclaration getter) {
             String methodName = getter.getSimpleName();
             if (methodName.startsWith("get") && methodName.length() > 3) {
                 return Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
