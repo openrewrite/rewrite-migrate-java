@@ -282,7 +282,7 @@ class FindImmutableThreadLocalVariablesTest implements RewriteTest {
               """,
             """
               class Example {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated in this file (but may be mutated elsewhere due to non-private access))~~>*/static final ThreadLocal<String> PACKAGE_TL = new ThreadLocal<>();
+                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated in project (but accessible from outside due to non-private access))~~>*/static final ThreadLocal<String> PACKAGE_TL = new ThreadLocal<>();
 
                   public String getValue() {
                       return PACKAGE_TL.get();
@@ -308,7 +308,7 @@ class FindImmutableThreadLocalVariablesTest implements RewriteTest {
               """,
             """
               class Example {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated in this file (but may be mutated elsewhere due to non-private access))~~>*/protected static final ThreadLocal<String> PROTECTED_TL = new ThreadLocal<>();
+                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated in project (but accessible from outside due to non-private access))~~>*/protected static final ThreadLocal<String> PROTECTED_TL = new ThreadLocal<>();
 
                   public String getValue() {
                       return PROTECTED_TL.get();

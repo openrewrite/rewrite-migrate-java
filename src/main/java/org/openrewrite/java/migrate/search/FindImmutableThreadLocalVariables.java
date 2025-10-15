@@ -19,19 +19,21 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
+import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.SearchResult;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.nio.file.Path;
+import java.util.*;
 
 @EqualsAndHashCode(callSuper = false)
-public class FindImmutableThreadLocalVariables extends ScanningRecipe<FindImmutableThreadLocalVariables.ThreadLocalAccumulator> {
+public class FindImmutableThreadLocalVariables extends ScanningRecipe<FindImmutableThreadLocalVariables.ThreadLocalUsageAccumulator> {
 
     private static final MethodMatcher THREAD_LOCAL_SET = new MethodMatcher("java.lang.ThreadLocal set(..)");
     private static final MethodMatcher THREAD_LOCAL_REMOVE = new MethodMatcher("java.lang.ThreadLocal remove()");
@@ -47,55 +49,153 @@ public class FindImmutableThreadLocalVariables extends ScanningRecipe<FindImmuta
     public String getDescription() {
         return "Find `ThreadLocal` variables that are never mutated and could be candidates for migration to `ScopedValue` in Java 25+. " +
                "This recipe identifies `ThreadLocal` variables that are only initialized but never reassigned or modified through `set()` or `remove()` methods. " +
-               "Note: This recipe only analyzes mutations within the same source file. ThreadLocal fields accessible from other classes " +
-               "(public, protected, or package-private) may be mutated elsewhere in the codebase.";
+               "The recipe analyzes mutations across all source files in the project to provide accurate results.";
     }
 
     @Value
-    static class ThreadLocalAccumulator {
-        Set<ThreadLocalVariable> allThreadLocals = new HashSet<>();
-        Set<ThreadLocalVariable> mutatedThreadLocals = new HashSet<>();
+    static class ThreadLocalUsageAccumulator {
+        // Map of ThreadLocal declarations: fullyQualifiedName -> declaration info
+        Map<String, ThreadLocalDeclaration> declarations = new HashMap<>();
+        // Map of ThreadLocal mutations: fullyQualifiedName -> list of mutation locations
+        Map<String, List<MutationLocation>> mutations = new HashMap<>();
+        // Map of ThreadLocal accesses: fullyQualifiedName -> list of access locations
+        Map<String, List<AccessLocation>> accesses = new HashMap<>();
 
-        public boolean isImmutable(ThreadLocalVariable var) {
-            return allThreadLocals.contains(var) && !mutatedThreadLocals.contains(var);
+        void addDeclaration(String fullyQualifiedName, ThreadLocalDeclaration declaration) {
+            declarations.put(fullyQualifiedName, declaration);
+        }
+
+        void addMutation(String fullyQualifiedName, MutationLocation mutation) {
+            mutations.computeIfAbsent(fullyQualifiedName, k -> new ArrayList<>()).add(mutation);
+        }
+
+        void addAccess(String fullyQualifiedName, AccessLocation access) {
+            accesses.computeIfAbsent(fullyQualifiedName, k -> new ArrayList<>()).add(access);
+        }
+
+        boolean hasExternalMutations(String fullyQualifiedName) {
+            List<MutationLocation> mutationList = mutations.get(fullyQualifiedName);
+            if (mutationList == null || mutationList.isEmpty()) {
+                return false;
+            }
+
+            ThreadLocalDeclaration declaration = declarations.get(fullyQualifiedName);
+            if (declaration == null) {
+                return true; // Conservative: if we can't find the declaration, assume it can be mutated
+            }
+
+            // Check if any mutation is from a different file than the declaration
+            for (MutationLocation mutation : mutationList) {
+                if (!mutation.getSourcePath().equals(declaration.getSourcePath())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        boolean hasMutations(String fullyQualifiedName) {
+            return mutations.containsKey(fullyQualifiedName) && !mutations.get(fullyQualifiedName).isEmpty();
         }
     }
 
     @Value
-    static class ThreadLocalVariable {
-        String name;
+    static class ThreadLocalDeclaration {
+        String fullyQualifiedName;  // e.g., "com.example.MyClass.MY_THREAD_LOCAL"
         String className;
+        String fieldName;
+        boolean isPrivate;
+        boolean isStatic;
+        boolean isFinal;
+        Path sourcePath;
+    }
 
-        static ThreadLocalVariable fromVariable(J.VariableDeclarations.NamedVariable variable, J.ClassDeclaration classDecl) {
-            String className = classDecl != null && classDecl.getType() != null ?
-                    classDecl.getType().getFullyQualifiedName() : "";
-            return new ThreadLocalVariable(variable.getName().getSimpleName(), className);
+    @Value
+    static class MutationLocation {
+        Path sourcePath;
+        String className;
+        String methodName;
+        MutationType type;
+
+        enum MutationType {
+            REASSIGNMENT,
+            SET_CALL,
+            REMOVE_CALL,
+            OTHER
+        }
+    }
+
+    @Value
+    static class AccessLocation {
+        Path sourcePath;
+        String className;
+        String methodName;
+        AccessType type;
+
+        enum AccessType {
+            GET_CALL,
+            FIELD_READ,
+            OTHER
         }
     }
 
     @Override
-    public ThreadLocalAccumulator getInitialValue(ExecutionContext ctx) {
-        return new ThreadLocalAccumulator();
+    public ThreadLocalUsageAccumulator getInitialValue(ExecutionContext ctx) {
+        return new ThreadLocalUsageAccumulator();
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(ThreadLocalAccumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(ThreadLocalUsageAccumulator acc) {
         return new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                // Store the current compilation unit's path for tracking locations
+                getCursor().putMessage("currentSourcePath", cu.getSourcePath());
+                return super.visitCompilationUnit(cu, ctx);
+            }
+
             @Override
             public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
                 variable = super.visitVariable(variable, ctx);
 
                 if (isThreadLocalType(variable.getType())) {
-                    J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                    ThreadLocalVariable tlVar = ThreadLocalVariable.fromVariable(variable, classDecl);
-                    acc.allThreadLocals.add(tlVar);
-
-                    // Check if this is a local variable - we don't mark local variables
-                    J.Block enclosingBlock = getCursor().firstEnclosing(J.Block.class);
+                    // Check if this is a field (not a local variable)
+                    // A field is declared directly in a class, not inside a method
                     J.MethodDeclaration enclosingMethod = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                    if (enclosingMethod != null && enclosingBlock != null && enclosingBlock != enclosingMethod.getBody()) {
-                        // This is a local variable inside a method
-                        acc.mutatedThreadLocals.add(tlVar);
+                    J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+
+                    // It's a field if there's no enclosing method, or if the variable is declared
+                    // directly in the class body (not inside a method body)
+                    boolean isField = classDecl != null && (enclosingMethod == null ||
+                        getCursor().getPathAsStream()
+                            .filter(J.Block.class::isInstance)
+                            .map(J.Block.class::cast)
+                            .noneMatch(block -> block == enclosingMethod.getBody()));
+
+                    if (isField) {
+                        J.VariableDeclarations variableDecls = getCursor().firstEnclosing(J.VariableDeclarations.class);
+
+                        if (classDecl != null && variableDecls != null) {
+                            String className = classDecl.getType() != null ?
+                                classDecl.getType().getFullyQualifiedName() : "UnknownClass";
+                            String fieldName = variable.getName().getSimpleName();
+                            String fullyQualifiedName = className + "." + fieldName;
+
+                            boolean isPrivate = variableDecls.getModifiers().stream()
+                                    .anyMatch(mod -> mod.getType() == J.Modifier.Type.Private);
+                            boolean isStatic = variableDecls.getModifiers().stream()
+                                    .anyMatch(mod -> mod.getType() == J.Modifier.Type.Static);
+                            boolean isFinal = variableDecls.getModifiers().stream()
+                                    .anyMatch(mod -> mod.getType() == J.Modifier.Type.Final);
+
+                            Path sourcePath = getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath();
+
+                            ThreadLocalDeclaration declaration = new ThreadLocalDeclaration(
+                                fullyQualifiedName, className, fieldName,
+                                isPrivate, isStatic, isFinal, sourcePath
+                            );
+
+                            acc.addDeclaration(fullyQualifiedName, declaration);
+                        }
                     }
                 }
                 return variable;
@@ -105,14 +205,22 @@ public class FindImmutableThreadLocalVariables extends ScanningRecipe<FindImmuta
             public J.Assignment visitAssignment(J.Assignment assignment, ExecutionContext ctx) {
                 assignment = super.visitAssignment(assignment, ctx);
 
-                // Check if we're reassigning a ThreadLocal variable
-                if (assignment.getVariable() instanceof J.Identifier) {
-                    J.Identifier id = (J.Identifier) assignment.getVariable();
-                    if (isThreadLocalType(id.getType())) {
+                // Check if we're reassigning a ThreadLocal field
+                if (isThreadLocalFieldAccess(assignment.getVariable())) {
+                    String fullyQualifiedName = getFieldFullyQualifiedName(assignment.getVariable());
+                    if (fullyQualifiedName != null) {
+                        Path sourcePath = getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath();
                         J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                        J.MethodDeclaration methodDecl = getCursor().firstEnclosing(J.MethodDeclaration.class);
+
                         String className = classDecl != null && classDecl.getType() != null ?
-                                classDecl.getType().getFullyQualifiedName() : "";
-                        acc.mutatedThreadLocals.add(new ThreadLocalVariable(id.getSimpleName(), className));
+                                classDecl.getType().getFullyQualifiedName() : "UnknownClass";
+                        String methodName = methodDecl != null ? methodDecl.getSimpleName() : "UnknownMethod";
+
+                        MutationLocation mutation = new MutationLocation(
+                            sourcePath, className, methodName, MutationLocation.MutationType.REASSIGNMENT
+                        );
+                        acc.addMutation(fullyQualifiedName, mutation);
                     }
                 }
                 return assignment;
@@ -126,55 +234,80 @@ public class FindImmutableThreadLocalVariables extends ScanningRecipe<FindImmuta
                 if (THREAD_LOCAL_SET.matches(method) || THREAD_LOCAL_REMOVE.matches(method) ||
                     INHERITABLE_THREAD_LOCAL_SET.matches(method) || INHERITABLE_THREAD_LOCAL_REMOVE.matches(method)) {
 
-                    J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                    String className = classDecl != null && classDecl.getType() != null ?
-                            classDecl.getType().getFullyQualifiedName() : "";
+                    String fullyQualifiedName = getFieldFullyQualifiedName(method.getSelect());
+                    if (fullyQualifiedName != null) {
+                        Path sourcePath = getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath();
+                        J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                        J.MethodDeclaration methodDecl = getCursor().firstEnclosing(J.MethodDeclaration.class);
 
-                    // Get the ThreadLocal instance being mutated
-                    String varName = null;
-                    if (method.getSelect() instanceof J.Identifier) {
-                        varName = ((J.Identifier) method.getSelect()).getSimpleName();
-                    } else if (method.getSelect() instanceof J.FieldAccess) {
-                        varName = ((J.FieldAccess) method.getSelect()).getSimpleName();
+                        String className = classDecl != null && classDecl.getType() != null ?
+                                classDecl.getType().getFullyQualifiedName() : "UnknownClass";
+                        String methodName = methodDecl != null ? methodDecl.getSimpleName() : "UnknownMethod";
+
+                        MutationLocation.MutationType mutationType =
+                            (THREAD_LOCAL_SET.matches(method) || INHERITABLE_THREAD_LOCAL_SET.matches(method)) ?
+                            MutationLocation.MutationType.SET_CALL : MutationLocation.MutationType.REMOVE_CALL;
+
+                        MutationLocation mutation = new MutationLocation(
+                            sourcePath, className, methodName, mutationType
+                        );
+                        acc.addMutation(fullyQualifiedName, mutation);
                     }
+                } else if (method.getSimpleName().equals("get") && isThreadLocalType(method.getType())) {
+                    // Track get() calls for completeness
+                    String fullyQualifiedName = getFieldFullyQualifiedName(method.getSelect());
+                    if (fullyQualifiedName != null) {
+                        Path sourcePath = getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath();
+                        J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                        J.MethodDeclaration methodDecl = getCursor().firstEnclosing(J.MethodDeclaration.class);
 
-                    if (varName != null) {
-                        acc.mutatedThreadLocals.add(new ThreadLocalVariable(varName, className));
+                        String className = classDecl != null && classDecl.getType() != null ?
+                                classDecl.getType().getFullyQualifiedName() : "UnknownClass";
+                        String methodName = methodDecl != null ? methodDecl.getSimpleName() : "UnknownMethod";
+
+                        AccessLocation access = new AccessLocation(
+                            sourcePath, className, methodName, AccessLocation.AccessType.GET_CALL
+                        );
+                        acc.addAccess(fullyQualifiedName, access);
                     }
                 }
                 return method;
             }
 
-            @Override
-            public J.Unary visitUnary(J.Unary unary, ExecutionContext ctx) {
-                unary = super.visitUnary(unary, ctx);
+            private boolean isThreadLocalFieldAccess(Expression expression) {
+                if (expression instanceof J.Identifier) {
+                    J.Identifier id = (J.Identifier) expression;
+                    return isThreadLocalType(id.getType());
+                } else if (expression instanceof J.FieldAccess) {
+                    J.FieldAccess fieldAccess = (J.FieldAccess) expression;
+                    return isThreadLocalType(fieldAccess.getType());
+                }
+                return false;
+            }
 
-                // Check for operations that would mutate the ThreadLocal reference (unlikely but thorough)
-                if (unary.getExpression() instanceof J.Identifier) {
-                    J.Identifier id = (J.Identifier) unary.getExpression();
-                    if (isThreadLocalType(id.getType())) {
-                        switch (unary.getOperator()) {
-                            case PreIncrement:
-                            case PreDecrement:
-                            case PostIncrement:
-                            case PostDecrement:
-                                J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                                String className = classDecl != null && classDecl.getType() != null ?
-                                        classDecl.getType().getFullyQualifiedName() : "";
-                                acc.mutatedThreadLocals.add(new ThreadLocalVariable(id.getSimpleName(), className));
-                                break;
-                            default:
-                                break;
-                        }
+            private String getFieldFullyQualifiedName(Expression expression) {
+                if (expression instanceof J.Identifier) {
+                    J.Identifier id = (J.Identifier) expression;
+                    JavaType.Variable varType = id.getFieldType();
+                    if (varType != null && varType.getOwner() instanceof JavaType.FullyQualified) {
+                        JavaType.FullyQualified owner = (JavaType.FullyQualified) varType.getOwner();
+                        return owner.getFullyQualifiedName() + "." + varType.getName();
+                    }
+                } else if (expression instanceof J.FieldAccess) {
+                    J.FieldAccess fieldAccess = (J.FieldAccess) expression;
+                    JavaType.Variable varType = fieldAccess.getName().getFieldType();
+                    if (varType != null && varType.getOwner() instanceof JavaType.FullyQualified) {
+                        JavaType.FullyQualified owner = (JavaType.FullyQualified) varType.getOwner();
+                        return owner.getFullyQualifiedName() + "." + varType.getName();
                     }
                 }
-                return unary;
+                return null;
             }
         };
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(ThreadLocalAccumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(ThreadLocalUsageAccumulator acc) {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
@@ -182,20 +315,39 @@ public class FindImmutableThreadLocalVariables extends ScanningRecipe<FindImmuta
 
                 // Check if any of the variables in this declaration are immutable ThreadLocals
                 J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+
                 for (J.VariableDeclarations.NamedVariable variable : multiVariable.getVariables()) {
-                    if (isThreadLocalType(variable.getType())) {
-                        ThreadLocalVariable tlVar = ThreadLocalVariable.fromVariable(variable, classDecl);
-                        if (acc.isImmutable(tlVar)) {
-                            // Only mark private fields as candidates, since public/protected/package-private
-                            // fields could be mutated from other classes
-                            boolean isPrivate = multiVariable.getModifiers().stream()
-                                    .anyMatch(mod -> mod.getType() == J.Modifier.Type.Private);
+                    if (isThreadLocalType(variable.getType()) && classDecl != null) {
+                        String className = classDecl.getType() != null ?
+                                classDecl.getType().getFullyQualifiedName() : "UnknownClass";
+                        String fieldName = variable.getName().getSimpleName();
+                        String fullyQualifiedName = className + "." + fieldName;
 
-                            String message = isPrivate
-                                ? "ThreadLocal candidate for ScopedValue migration - never mutated after initialization"
-                                : "ThreadLocal candidate for ScopedValue migration - never mutated in this file (but may be mutated elsewhere due to non-private access)";
+                        ThreadLocalDeclaration declaration = acc.declarations.get(fullyQualifiedName);
+                        if (declaration != null) {
+                            boolean hasMutations = acc.hasMutations(fullyQualifiedName);
+                            boolean hasExternalMutations = acc.hasExternalMutations(fullyQualifiedName);
 
-                            return SearchResult.found(multiVariable, message);
+                            if (!hasMutations) {
+                                // No mutations at all
+                                String message = declaration.isPrivate() ?
+                                    "ThreadLocal candidate for ScopedValue migration - never mutated after initialization" :
+                                    "ThreadLocal candidate for ScopedValue migration - never mutated in project (but accessible from outside due to non-private access)";
+                                return SearchResult.found(multiVariable, message);
+                            } else if (!hasExternalMutations && declaration.isPrivate()) {
+                                // Has mutations, but only in the declaring file and it's private
+                                // This is still safe since no external access is possible
+                                // However, we should check if mutations are only in the initializer
+                                List<MutationLocation> mutations = acc.mutations.get(fullyQualifiedName);
+                                boolean onlyLocalMutations = mutations.stream()
+                                    .allMatch(m -> m.getSourcePath().equals(declaration.getSourcePath()));
+
+                                if (onlyLocalMutations) {
+                                    // Check if it's only mutated in the same class
+                                    // For now, we'll be conservative and not mark it
+                                    continue;
+                                }
+                            }
                         }
                     }
                 }
