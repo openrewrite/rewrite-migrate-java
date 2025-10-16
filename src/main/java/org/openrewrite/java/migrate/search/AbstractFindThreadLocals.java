@@ -16,11 +16,11 @@
 package org.openrewrite.java.migrate.search;
 
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
@@ -66,7 +66,7 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
             }
         }
 
-        public ThreadLocalInfo getInfo(String fqn) {
+        public @Nullable ThreadLocalInfo getInfo(String fqn) {
             return threadLocals.get(fqn);
         }
 
@@ -76,7 +76,7 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
     }
 
     public static class ThreadLocalInfo {
-        private Path declarationPath;
+        private @Nullable Path declarationPath;
         private boolean isPrivate;
         private boolean isStatic;
         private boolean isFinal;
@@ -161,28 +161,40 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
                         J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
                     variable = super.visitVariable(variable, ctx);
 
-                    if (isThreadLocalType(variable.getType())) {
-                        // Only track fields, not local variables
-                        J.MethodDeclaration enclosingMethod = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                        J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
-
-                        if (classDecl != null && enclosingMethod == null) {
-                            // It's a field
-                            J.VariableDeclarations variableDecls = getCursor().firstEnclosing(J.VariableDeclarations.class);
-                            if (variableDecls != null) {
-                                String className = classDecl.getType() != null ?
-                                    classDecl.getType().getFullyQualifiedName() : "UnknownClass";
-                                String fqn = className + "." + variable.getName().getSimpleName();
-
-                                boolean isPrivate = hasModifier(variableDecls.getModifiers(), J.Modifier.Type.Private);
-                                boolean isStatic = hasModifier(variableDecls.getModifiers(), J.Modifier.Type.Static);
-                                boolean isFinal = hasModifier(variableDecls.getModifiers(), J.Modifier.Type.Final);
-                                Path sourcePath = getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath();
-
-                                acc.recordDeclaration(fqn, sourcePath, isPrivate, isStatic, isFinal);
-                            }
-                        }
+                    // Early return for non-ThreadLocal types
+                    if (!isThreadLocalType(variable.getType())) {
+                        return variable;
                     }
+
+                    // Early return for local variables (not fields)
+                    J.MethodDeclaration enclosingMethod = getCursor().firstEnclosing(J.MethodDeclaration.class);
+                    if (enclosingMethod != null) {
+                        return variable;
+                    }
+
+                    // Early return if not in a class
+                    J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                    if (classDecl == null) {
+                        return variable;
+                    }
+
+                    // Early return if we can't find the variable declarations
+                    J.VariableDeclarations variableDecls = getCursor().firstEnclosing(J.VariableDeclarations.class);
+                    if (variableDecls == null) {
+                        return variable;
+                    }
+
+                    // Process ThreadLocal field declaration
+                    JavaType.@Nullable FullyQualified classType = classDecl.getType();
+                    String className = classType != null ? classType.getFullyQualifiedName() : "UnknownClass";
+                    String fqn = className + "." + variable.getName().getSimpleName();
+
+                    boolean isPrivate = variableDecls.hasModifier(J.Modifier.Type.Private);
+                    boolean isStatic = variableDecls.hasModifier(J.Modifier.Type.Static);
+                    boolean isFinal = variableDecls.hasModifier(J.Modifier.Type.Final);
+                    Path sourcePath = getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath();
+
+                    acc.recordDeclaration(fqn, sourcePath, isPrivate, isStatic, isFinal);
                     return variable;
                 }
 
@@ -190,17 +202,20 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
                 public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                     method = super.visitMethodInvocation(method, ctx);
 
-                    // Check for ThreadLocal.set() or ThreadLocal.remove() calls
-                    if (THREAD_LOCAL_SET.matches(method) || THREAD_LOCAL_REMOVE.matches(method) ||
-                        INHERITABLE_THREAD_LOCAL_SET.matches(method) || INHERITABLE_THREAD_LOCAL_REMOVE.matches(method)) {
-
-                        String fqn = getFieldFullyQualifiedName(method.getSelect());
-                        if (fqn != null) {
-                            Path sourcePath = getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath();
-                            boolean isInitContext = isInInitializationContext();
-                            acc.recordMutation(fqn, sourcePath, isInitContext);
-                        }
+                    // Early return if not a ThreadLocal mutation method
+                    if (!THREAD_LOCAL_SET.matches(method) && !THREAD_LOCAL_REMOVE.matches(method) &&
+                        !INHERITABLE_THREAD_LOCAL_SET.matches(method) && !INHERITABLE_THREAD_LOCAL_REMOVE.matches(method)) {
+                        return method;
                     }
+
+                    @Nullable String fqn = getFieldFullyQualifiedName(method.getSelect());
+                    if (fqn == null) {
+                        return method;
+                    }
+
+                    Path sourcePath = getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath();
+                    boolean isInitContext = isInInitializationContext();
+                    acc.recordMutation(fqn, sourcePath, isInitContext);
                     return method;
                 }
 
@@ -208,15 +223,19 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
                 public J.Assignment visitAssignment(J.Assignment assignment, ExecutionContext ctx) {
                     assignment = super.visitAssignment(assignment, ctx);
 
-                    // Check if we're reassigning a ThreadLocal field
-                    if (isThreadLocalFieldAccess(assignment.getVariable())) {
-                        String fqn = getFieldFullyQualifiedName(assignment.getVariable());
-                        if (fqn != null) {
-                            Path sourcePath = getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath();
-                            boolean isInitContext = isInInitializationContext();
-                            acc.recordMutation(fqn, sourcePath, isInitContext);
-                        }
+                    // Early return if not a ThreadLocal field access
+                    if (!isThreadLocalFieldAccess(assignment.getVariable())) {
+                        return assignment;
                     }
+
+                    @Nullable String fqn = getFieldFullyQualifiedName(assignment.getVariable());
+                    if (fqn == null) {
+                        return assignment;
+                    }
+
+                    Path sourcePath = getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath();
+                    boolean isInitContext = isInInitializationContext();
+                    acc.recordMutation(fqn, sourcePath, isInitContext);
                     return assignment;
                 }
 
@@ -244,25 +263,30 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
                     return false;
                 }
 
-                private String getFieldFullyQualifiedName(Expression expression) {
-                    JavaType.Variable varType = null;
+                private @Nullable String getFieldFullyQualifiedName(@Nullable Expression expression) {
+                    if (expression == null) {
+                        return null;
+                    }
 
+                    JavaType.@Nullable Variable varType = null;
                     if (expression instanceof J.Identifier) {
                         varType = ((J.Identifier) expression).getFieldType();
                     } else if (expression instanceof J.FieldAccess) {
                         varType = ((J.FieldAccess) expression).getName().getFieldType();
                     }
 
-                    if (varType != null && varType.getOwner() instanceof JavaType.FullyQualified) {
-                        JavaType.FullyQualified owner = (JavaType.FullyQualified) varType.getOwner();
-                        return owner.getFullyQualifiedName() + "." + varType.getName();
+                    if (varType == null) {
+                        return null;
                     }
-                    return null;
+
+                    @Nullable JavaType owner = varType.getOwner();
+                    if (!(owner instanceof JavaType.FullyQualified)) {
+                        return null;
+                    }
+
+                    return ((JavaType.FullyQualified) owner).getFullyQualifiedName() + "." + varType.getName();
                 }
 
-                private boolean hasModifier(List<J.Modifier> modifiers, J.Modifier.Type type) {
-                    return modifiers.stream().anyMatch(m -> m.getType() == type);
-                }
             });
     }
 
@@ -302,8 +326,8 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
                                         getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath().toString(),
                                         className,
                                         fieldName,
-                                        getAccessModifier(multiVariable.getModifiers()),
-                                        getModifiers(multiVariable.getModifiers()),
+                                        getAccessModifier(multiVariable),
+                                        getModifiers(multiVariable),
                                         mutationType,
                                         message
                                     ));
@@ -317,31 +341,28 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
                     return multiVariable;
                 }
 
-                private String getAccessModifier(List<J.Modifier> modifiers) {
-                    if (hasModifier(modifiers, J.Modifier.Type.Private)) {
+                private String getAccessModifier(J.VariableDeclarations variableDecls) {
+                    if (variableDecls.hasModifier(J.Modifier.Type.Private)) {
                         return "private";
-                    } else if (hasModifier(modifiers, J.Modifier.Type.Protected)) {
+                    } else if (variableDecls.hasModifier(J.Modifier.Type.Protected)) {
                         return "protected";
-                    } else if (hasModifier(modifiers, J.Modifier.Type.Public)) {
+                    } else if (variableDecls.hasModifier(J.Modifier.Type.Public)) {
                         return "public";
                     }
                     return "package-private";
                 }
 
-                private String getModifiers(List<J.Modifier> modifiers) {
+                private String getModifiers(J.VariableDeclarations variableDecls) {
                     List<String> mods = new ArrayList<>();
-                    if (hasModifier(modifiers, J.Modifier.Type.Static)) {
+                    if (variableDecls.hasModifier(J.Modifier.Type.Static)) {
                         mods.add("static");
                     }
-                    if (hasModifier(modifiers, J.Modifier.Type.Final)) {
+                    if (variableDecls.hasModifier(J.Modifier.Type.Final)) {
                         mods.add("final");
                     }
                     return String.join(" ", mods);
                 }
 
-                private boolean hasModifier(List<J.Modifier> modifiers, J.Modifier.Type type) {
-                    return modifiers.stream().anyMatch(m -> m.getType() == type);
-                }
             });
     }
 
@@ -349,7 +370,7 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
     protected abstract String getMessage(ThreadLocalInfo info);
     protected abstract String getMutationType(ThreadLocalInfo info);
 
-    protected static boolean isThreadLocalType(JavaType type) {
+    protected static boolean isThreadLocalType(@Nullable JavaType type) {
         return TypeUtils.isOfClassType(type, THREAD_LOCAL_FQN) ||
                TypeUtils.isOfClassType(type, INHERITED_THREAD_LOCAL_FQN);
     }

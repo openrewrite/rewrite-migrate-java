@@ -22,11 +22,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class FindThreadLocalsMutatableFromOutsideTest implements RewriteTest {
+class FindThreadLocalsMutableFromOutsideTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new FindThreadLocalsMutatableFromOutside());
+        spec.recipe(new FindThreadLocalsMutableFromOutside());
     }
 
     @DocumentExample

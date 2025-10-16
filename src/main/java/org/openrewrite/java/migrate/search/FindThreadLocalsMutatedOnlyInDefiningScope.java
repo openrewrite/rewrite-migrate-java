@@ -16,7 +16,13 @@
 package org.openrewrite.java.migrate.search;
 
 import lombok.EqualsAndHashCode;
+import lombok.Value;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+@Value
 @EqualsAndHashCode(callSuper = false)
 public class FindThreadLocalsMutatedOnlyInDefiningScope extends AbstractFindThreadLocals {
 
@@ -33,28 +39,35 @@ public class FindThreadLocalsMutatedOnlyInDefiningScope extends AbstractFindThre
     }
 
     @Override
+    public Set<String> getTags() {
+        return new HashSet<>(Arrays.asList("java25", "threadlocal", "scopedvalue", "migration"));
+    }
+
+    @Override
     protected boolean shouldMarkThreadLocal(ThreadLocalInfo info) {
-        // Mark private ThreadLocals that ARE mutated, but only locally
-        return info.hasAnyMutation() &&
-               info.isPrivate() &&
-               info.isOnlyLocallyMutated();
+        // Early return for ThreadLocals without mutations
+        if (!info.hasAnyMutation()) {
+            return false;
+        }
+        // Early return for non-private ThreadLocals
+        if (!info.isPrivate()) {
+            return false;
+        }
+        // Mark if only locally mutated
+        return info.isOnlyLocallyMutated();
     }
 
     @Override
     protected String getMessage(ThreadLocalInfo info) {
-        if (info.hasOnlyInitMutations()) {
-            return "ThreadLocal is only mutated during initialization (constructor/static initializer)";
-        } else {
-            return "ThreadLocal is only mutated within its defining class";
-        }
+        return info.hasOnlyInitMutations()
+            ? "ThreadLocal is only mutated during initialization (constructor/static initializer)"
+            : "ThreadLocal is only mutated within its defining class";
     }
 
     @Override
     protected String getMutationType(ThreadLocalInfo info) {
-        if (info.hasOnlyInitMutations()) {
-            return "Mutated only in initialization";
-        } else {
-            return "Mutated in defining class";
-        }
+        return info.hasOnlyInitMutations()
+            ? "Mutated only in initialization"
+            : "Mutated in defining class";
     }
 }

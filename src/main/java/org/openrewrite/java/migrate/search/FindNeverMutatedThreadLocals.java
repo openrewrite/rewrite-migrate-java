@@ -16,7 +16,13 @@
 package org.openrewrite.java.migrate.search;
 
 import lombok.EqualsAndHashCode;
+import lombok.Value;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+@Value
 @EqualsAndHashCode(callSuper = false)
 public class FindNeverMutatedThreadLocals extends AbstractFindThreadLocals {
 
@@ -30,6 +36,11 @@ public class FindNeverMutatedThreadLocals extends AbstractFindThreadLocals {
         return "Find `ThreadLocal` variables that are never mutated after initialization. " +
                "These are prime candidates for migration to `ScopedValue` in Java 25+ as they are effectively immutable. " +
                "The recipe identifies `ThreadLocal` variables that are only initialized but never reassigned or modified through `set()` or `remove()` methods.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return new HashSet<>(Arrays.asList("java25", "threadlocal", "scopedvalue", "migration"));
     }
 
     @Override

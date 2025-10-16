@@ -16,13 +16,19 @@
 package org.openrewrite.java.migrate.search;
 
 import lombok.EqualsAndHashCode;
+import lombok.Value;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+@Value
 @EqualsAndHashCode(callSuper = false)
-public class FindThreadLocalsMutatableFromOutside extends AbstractFindThreadLocals {
+public class FindThreadLocalsMutableFromOutside extends AbstractFindThreadLocals {
 
     @Override
     public String getDisplayName() {
-        return "Find ThreadLocal variables mutatable from outside their defining class";
+        return "Find ThreadLocal variables mutable from outside their defining class";
     }
 
     @Override
@@ -30,6 +36,11 @@ public class FindThreadLocalsMutatableFromOutside extends AbstractFindThreadLoca
         return "Find `ThreadLocal` variables that can be mutated from outside their defining class. " +
                "These ThreadLocals have the highest risk as they can be modified by any code with access to them. " +
                "This includes non-private ThreadLocals or those mutated from other classes in the codebase.";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return new HashSet<>(Arrays.asList("java25", "threadlocal", "scopedvalue", "migration", "security"));
     }
 
     @Override
