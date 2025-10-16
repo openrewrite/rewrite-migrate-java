@@ -22,11 +22,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class FindImmutableThreadLocalVariablesTest implements RewriteTest {
+class FindNeverMutatedThreadLocalsTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new FindImmutableThreadLocalVariables());
+        spec.recipe(new FindNeverMutatedThreadLocals());
     }
 
     @DocumentExample
@@ -45,7 +45,7 @@ class FindImmutableThreadLocalVariablesTest implements RewriteTest {
               """,
             """
               class Example {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated after initialization)~~>*/private static final ThreadLocal<String> TL = new ThreadLocal<>();
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/private static final ThreadLocal<String> TL = new ThreadLocal<>();
 
                   public String getValue() {
                       return TL.get();
@@ -71,7 +71,7 @@ class FindImmutableThreadLocalVariablesTest implements RewriteTest {
               """,
             """
               class Example {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated after initialization)~~>*/private static final ThreadLocal<Integer> COUNTER = ThreadLocal.withInitial(() -> 0);
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/private static final ThreadLocal<Integer> COUNTER = ThreadLocal.withInitial(() -> 0);
 
                   public int getCount() {
                       return COUNTER.get();
@@ -170,9 +170,9 @@ class FindImmutableThreadLocalVariablesTest implements RewriteTest {
               """,
             """
               class Example {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated after initialization)~~>*/private static final ThreadLocal<String> IMMUTABLE_TL = new ThreadLocal<>();
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/private static final ThreadLocal<String> IMMUTABLE_TL = new ThreadLocal<>();
                   private static final ThreadLocal<Integer> MUTABLE_TL = new ThreadLocal<>();
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated after initialization)~~>*/private static final ThreadLocal<Boolean> ANOTHER_IMMUTABLE = ThreadLocal.withInitial(() -> false);
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/private static final ThreadLocal<Boolean> ANOTHER_IMMUTABLE = ThreadLocal.withInitial(() -> false);
 
                   public void updateMutable(int value) {
                       MUTABLE_TL.set(value);
@@ -206,7 +206,7 @@ class FindImmutableThreadLocalVariablesTest implements RewriteTest {
               """,
             """
               class Example {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated after initialization)~~>*/private final ThreadLocal<String> instanceTL = new ThreadLocal<>();
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/private final ThreadLocal<String> instanceTL = new ThreadLocal<>();
 
                   public String getValue() {
                       return instanceTL.get();
@@ -237,7 +237,7 @@ class FindImmutableThreadLocalVariablesTest implements RewriteTest {
               import java.text.SimpleDateFormat;
 
               class Example {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated after initialization)~~>*/private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT =
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT =
                       ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
 
                   public String formatDate(java.util.Date date) {
@@ -269,6 +269,9 @@ class FindImmutableThreadLocalVariablesTest implements RewriteTest {
 
     @Test
     void warnAboutPackagePrivateThreadLocal() {
+        // Package-private ThreadLocals without mutations are still flagged by FindNeverMutatedThreadLocals
+        // but should NOT be flagged by FindThreadLocalsMutatableFromOutside if they have no mutations
+        // For this test, we'll test that it's flagged as never mutated
         rewriteRun(
           java(
             """
@@ -282,7 +285,7 @@ class FindImmutableThreadLocalVariablesTest implements RewriteTest {
               """,
             """
               class Example {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated in project (but accessible from outside due to non-private access))~~>*/static final ThreadLocal<String> PACKAGE_TL = new ThreadLocal<>();
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/static final ThreadLocal<String> PACKAGE_TL = new ThreadLocal<>();
 
                   public String getValue() {
                       return PACKAGE_TL.get();
@@ -308,7 +311,7 @@ class FindImmutableThreadLocalVariablesTest implements RewriteTest {
               """,
             """
               class Example {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated in project (but accessible from outside due to non-private access))~~>*/protected static final ThreadLocal<String> PROTECTED_TL = new ThreadLocal<>();
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/protected static final ThreadLocal<String> PROTECTED_TL = new ThreadLocal<>();
 
                   public String getValue() {
                       return PROTECTED_TL.get();
@@ -334,7 +337,7 @@ class FindImmutableThreadLocalVariablesTest implements RewriteTest {
               """,
             """
               class Example {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated after initialization)~~>*/private static final InheritableThreadLocal<String> ITL = new InheritableThreadLocal<>();
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/private static final InheritableThreadLocal<String> ITL = new InheritableThreadLocal<>();
 
                   public String getValue() {
                       return ITL.get();

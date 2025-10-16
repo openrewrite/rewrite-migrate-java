@@ -22,11 +22,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class FindImmutableThreadLocalVariablesCrossFileTest implements RewriteTest {
+class FindNeverMutatedThreadLocalsCrossFileTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new FindImmutableThreadLocalVariables());
+        spec.recipe(new FindNeverMutatedThreadLocals());
     }
 
     @DocumentExample
@@ -86,7 +86,7 @@ class FindImmutableThreadLocalVariablesCrossFileTest implements RewriteTest {
               package com.example;
 
               public class ReadOnlyHolder {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated in project (but accessible from outside due to non-private access))~~>*/public static final ThreadLocal<Integer> COUNTER = ThreadLocal.withInitial(() -> 0);
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/public static final ThreadLocal<Integer> COUNTER = ThreadLocal.withInitial(() -> 0);
 
                   public int getCount() {
                       return COUNTER.get();
@@ -180,7 +180,7 @@ class FindImmutableThreadLocalVariablesCrossFileTest implements RewriteTest {
               package com.example;
 
               public class PrivateHolder {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated after initialization)~~>*/private static final ThreadLocal<String> PRIVATE_TL = new ThreadLocal<>();
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/private static final ThreadLocal<String> PRIVATE_TL = new ThreadLocal<>();
 
                   public String getValue() {
                       return PRIVATE_TL.get();
@@ -291,9 +291,9 @@ class FindImmutableThreadLocalVariablesCrossFileTest implements RewriteTest {
               package com.example;
 
               public class MultipleThreadLocals {
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated after initialization)~~>*/private static final ThreadLocal<String> PRIVATE_IMMUTABLE = new ThreadLocal<>();
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/private static final ThreadLocal<String> PRIVATE_IMMUTABLE = new ThreadLocal<>();
                   static final ThreadLocal<String> PACKAGE_MUTATED = new ThreadLocal<>();
-                  /*~~(ThreadLocal candidate for ScopedValue migration - never mutated in project (but accessible from outside due to non-private access))~~>*/public static final ThreadLocal<String> PUBLIC_READ_ONLY = new ThreadLocal<>();
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/public static final ThreadLocal<String> PUBLIC_READ_ONLY = new ThreadLocal<>();
                   protected static final ThreadLocal<String> PROTECTED_MUTATED = new ThreadLocal<>();
 
                   public void readAll() {
