@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.search;
+package org.openrewrite.java.migrate.search.threadlocal;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -24,18 +24,19 @@ import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class FindNeverMutatedThreadLocals extends AbstractFindThreadLocals {
+public class FindThreadLocalsMutatedOnlyInDefiningScope extends AbstractFindThreadLocals {
 
     @Override
     public String getDisplayName() {
-        return "Find ThreadLocal variables that are never mutated";
+        return "Find ThreadLocal variables mutated only in their defining scope";
     }
 
     @Override
     public String getDescription() {
-        return "Find `ThreadLocal` variables that are never mutated after initialization. " +
-               "These are prime candidates for migration to `ScopedValue` in Java 25+ as they are effectively immutable. " +
-               "The recipe identifies `ThreadLocal` variables that are only initialized but never reassigned or modified through `set()` or `remove()` methods.";
+        //language=markdown
+        return "Find `ThreadLocal` variables that are only mutated within their defining class or initialization context (constructor/static initializer). " +
+               "These may be candidates for refactoring as they have limited mutation scope. " +
+               "The recipe identifies `ThreadLocal` variables that are only modified during initialization or within their declaring class.";
     }
 
     @Override
@@ -45,17 +46,30 @@ public class FindNeverMutatedThreadLocals extends AbstractFindThreadLocals {
 
     @Override
     protected boolean shouldMarkThreadLocal(ThreadLocalInfo info) {
-        // Mark ThreadLocals that have no mutations at all
-        return !info.hasAnyMutation();
+        if (info.hasNoMutation()) {
+            return false;
+        }
+        if (!info.isPrivate()) {
+            return false;
+        }
+        return info.isOnlyLocallyMutated();
     }
 
     @Override
     protected String getMessage(ThreadLocalInfo info) {
-        return "ThreadLocal is never mutated and could be replaced with ScopedValue";
+        if (info.hasOnlyInitMutations()) {
+            return "ThreadLocal is only mutated during initialization (constructor/static initializer)";
+        }
+
+        return "ThreadLocal is only mutated within its defining class";
     }
 
     @Override
     protected String getMutationType(ThreadLocalInfo info) {
-        return "Never mutated";
+        if (info.hasOnlyInitMutations()) {
+            return "Mutated only in initialization";
+        }
+
+        return "Mutated in defining class";
     }
 }

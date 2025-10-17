@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.search;
+package org.openrewrite.java.migrate.search.threadlocal;
 
+import lombok.Getter;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -23,6 +24,7 @@ import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.migrate.search.ThreadLocalTable;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
@@ -33,7 +35,9 @@ import org.openrewrite.marker.SearchResult;
 import java.nio.file.Path;
 import java.util.*;
 
-import static org.openrewrite.Preconditions.*;
+import static org.openrewrite.Preconditions.check;
+import static org.openrewrite.Preconditions.or;
+
 
 public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFindThreadLocals.ThreadLocalAccumulator> {
 
@@ -45,8 +49,7 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
     private static final MethodMatcher INHERITABLE_THREAD_LOCAL_SET = new MethodMatcher(INHERITED_THREAD_LOCAL_FQN + " set(..)");
     private static final MethodMatcher INHERITABLE_THREAD_LOCAL_REMOVE = new MethodMatcher(INHERITED_THREAD_LOCAL_FQN + " remove()");
 
-    @Nullable
-    protected transient ThreadLocalTable dataTable;
+    transient ThreadLocalTable dataTable = new ThreadLocalTable(this);
 
     @Value
     public static class ThreadLocalAccumulator {
@@ -77,9 +80,13 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
 
     public static class ThreadLocalInfo {
         private @Nullable Path declarationPath;
+        @Getter
         private boolean isPrivate;
+        @Getter
         private boolean isStatic;
+        @Getter
         private boolean isFinal;
+        @Getter
         private boolean declared;
         private final Set<Path> initMutationPaths = new HashSet<>();
         private final Set<Path> regularMutationPaths = new HashSet<>();
@@ -92,38 +99,37 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
             this.declared = true;
         }
 
+        /**
+         * Records a mutation from an initialization context (constructor/static initializer).
+         */
         void addInitMutation(Path path) {
             initMutationPaths.add(path);
         }
 
+        /**
+         * Records a regular (non-initialization) mutation.
+         */
         void addRegularMutation(Path path) {
             regularMutationPaths.add(path);
         }
 
-        public boolean isPrivate() {
-            return isPrivate;
+        /**
+         * Checks if there are no mutations (both init and regular).
+         */
+        public boolean hasNoMutation() {
+            return initMutationPaths.isEmpty() && regularMutationPaths.isEmpty();
         }
 
-        public boolean isStatic() {
-            return isStatic;
-        }
-
-        public boolean isFinal() {
-            return isFinal;
-        }
-
-        public boolean isDeclared() {
-            return declared;
-        }
-
-        public boolean hasAnyMutation() {
-            return !initMutationPaths.isEmpty() || !regularMutationPaths.isEmpty();
-        }
-
+        /**
+         * Checks if there are only mutations from initialization contexts (constructors/static initializers).
+         */
         public boolean hasOnlyInitMutations() {
             return !initMutationPaths.isEmpty() && regularMutationPaths.isEmpty();
         }
 
+        /**
+         * Checks if there are any mutations (both init and regular) from files other than the declaration file.
+         */
         public boolean hasExternalMutations() {
             if (!declared || declarationPath == null) {
                 return true; // Conservative
@@ -134,6 +140,9 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
                    regularMutationPaths.stream().anyMatch(p -> !p.equals(declarationPath));
         }
 
+        /**
+         * Checks if all mutations (both init and regular) are from the same file as the declaration.
+         */
         public boolean isOnlyLocallyMutated() {
             if (!declared || declarationPath == null) {
                 return false;
@@ -208,7 +217,7 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
                         return method;
                     }
 
-                    @Nullable String fqn = getFieldFullyQualifiedName(method.getSelect());
+                    String fqn = getFieldFullyQualifiedName(method.getSelect());
                     if (fqn == null) {
                         return method;
                     }
@@ -228,7 +237,7 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
                         return assignment;
                     }
 
-                    @Nullable String fqn = getFieldFullyQualifiedName(assignment.getVariable());
+                    String fqn = getFieldFullyQualifiedName(assignment.getVariable());
                     if (fqn == null) {
                         return assignment;
                     }
@@ -256,9 +265,10 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
 
                 private boolean isThreadLocalFieldAccess(Expression expression) {
                     if (expression instanceof J.Identifier) {
-                        return isThreadLocalType(((J.Identifier) expression).getType());
-                    } else if (expression instanceof J.FieldAccess) {
-                        return isThreadLocalType(((J.FieldAccess) expression).getType());
+                        return isThreadLocalType(expression.getType());
+                    }
+                    if (expression instanceof J.FieldAccess) {
+                        return isThreadLocalType(expression.getType());
                     }
                     return false;
                 }
@@ -279,7 +289,7 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
                         return null;
                     }
 
-                    @Nullable JavaType owner = varType.getOwner();
+                    JavaType owner = varType.getOwner();
                     if (!(owner instanceof JavaType.FullyQualified)) {
                         return null;
                     }
@@ -294,22 +304,19 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
     public TreeVisitor<?, ExecutionContext> getVisitor(ThreadLocalAccumulator acc) {
         return check(acc.hasDeclarations(),
             new JavaIsoVisitor<ExecutionContext>() {
-                @Override
-                public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-                    if (dataTable == null) {
-                        dataTable = new ThreadLocalTable(AbstractFindThreadLocals.this);
-                    }
-                    return super.visitCompilationUnit(cu, ctx);
-                }
+
 
                 @Override
                 public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                     multiVariable = super.visitVariableDeclarations(multiVariable, ctx);
 
                     J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                    if(classDecl == null) {
+                       return multiVariable;
+                    }
 
                     for (J.VariableDeclarations.NamedVariable variable : multiVariable.getVariables()) {
-                        if (isThreadLocalType(variable.getType()) && classDecl != null) {
+                        if (isThreadLocalType(variable.getType())) {
                             String className = classDecl.getType() != null ?
                                 classDecl.getType().getFullyQualifiedName() : "UnknownClass";
                             String fieldName = variable.getName().getSimpleName();
@@ -320,18 +327,15 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
                                 String message = getMessage(info);
                                 String mutationType = getMutationType(info);
 
-                                // Add to data table
-                                if (dataTable != null) {
-                                    dataTable.insertRow(ctx, new ThreadLocalTable.Row(
-                                        getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath().toString(),
-                                        className,
-                                        fieldName,
-                                        getAccessModifier(multiVariable),
-                                        getModifiers(multiVariable),
-                                        mutationType,
-                                        message
-                                    ));
-                                }
+                                dataTable.insertRow(ctx, new ThreadLocalTable.Row(
+                                    getCursor().firstEnclosingOrThrow(SourceFile.class).getSourcePath().toString(),
+                                    className,
+                                    fieldName,
+                                    getAccessModifier(multiVariable),
+                                    getFieldModifiers(multiVariable),
+                                    mutationType,
+                                    message
+                                 ));
 
                                 return SearchResult.found(multiVariable, message);
                             }
@@ -344,15 +348,17 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
                 private String getAccessModifier(J.VariableDeclarations variableDecls) {
                     if (variableDecls.hasModifier(J.Modifier.Type.Private)) {
                         return "private";
-                    } else if (variableDecls.hasModifier(J.Modifier.Type.Protected)) {
+                    }
+                    if (variableDecls.hasModifier(J.Modifier.Type.Protected)) {
                         return "protected";
-                    } else if (variableDecls.hasModifier(J.Modifier.Type.Public)) {
+                    }
+                    if (variableDecls.hasModifier(J.Modifier.Type.Public)) {
                         return "public";
                     }
                     return "package-private";
                 }
 
-                private String getModifiers(J.VariableDeclarations variableDecls) {
+                private String getFieldModifiers(J.VariableDeclarations variableDecls) {
                     List<String> mods = new ArrayList<>();
                     if (variableDecls.hasModifier(J.Modifier.Type.Static)) {
                         mods.add("static");
@@ -366,8 +372,33 @@ public abstract class AbstractFindThreadLocals extends ScanningRecipe<AbstractFi
             });
     }
 
+    /**
+     * Determines whether a ThreadLocal should be marked based on its usage info.
+     * Implementations should define the criteria for marking.
+     * It is used to decide if a ThreadLocal variable should be highlighted in the results.
+     * If an expected ThreadLocal instance is missing from the results, consider adjusting this method.
+     *
+     * @param info The ThreadLocalInfo containing usage details.
+     * @return true if the ThreadLocal should be marked, false otherwise.
+     */
     protected abstract boolean shouldMarkThreadLocal(ThreadLocalInfo info);
+    /**
+     * Generates a descriptive message about the ThreadLocal's usage pattern.
+     * Implementations should provide context-specific messages.
+     * It is used to receive the Markers message and the Data Tables detailed message.
+     *
+     * @param info The ThreadLocalInfo containing usage details.
+     * @return A string message describing the ThreadLocal's usage.
+     */
     protected abstract String getMessage(ThreadLocalInfo info);
+    /**
+     * Determines the mutation type of the ThreadLocal based on its usage info.
+     * Implementations should define the mutation categories.
+     * It is used to populate the Data Tables human-readable mutation type column.
+     *
+     * @param info The ThreadLocalInfo containing usage details.
+     * @return A string representing the mutation type.
+     */
     protected abstract String getMutationType(ThreadLocalInfo info);
 
     protected static boolean isThreadLocalType(@Nullable JavaType type) {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.search;
+package org.openrewrite.java.migrate.search.threadlocal;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -33,6 +33,7 @@ public class FindThreadLocalsMutableFromOutside extends AbstractFindThreadLocals
 
     @Override
     public String getDescription() {
+        //language=markdown
         return "Find `ThreadLocal` variables that can be mutated from outside their defining class. " +
                "These ThreadLocals have the highest risk as they can be modified by any code with access to them. " +
                "This includes non-private ThreadLocals or those mutated from other classes in the codebase.";
@@ -55,19 +56,19 @@ public class FindThreadLocalsMutableFromOutside extends AbstractFindThreadLocals
     protected String getMessage(ThreadLocalInfo info) {
         if (info.hasExternalMutations()) {
             return "ThreadLocal is mutated from outside its defining class";
-        } else {
-            // Non-private but not currently mutated externally
-            String access = info.isStatic() ? "static " : "";
-            return "ThreadLocal is " + access + "non-private and can potentially be mutated from outside";
         }
+
+        // Non-private but not currently mutated externally
+        String access = info.isStatic() ? "static " : "";
+        return "ThreadLocal is " + access + "non-private and can potentially be mutated from outside";
     }
 
     @Override
     protected String getMutationType(ThreadLocalInfo info) {
         if (info.hasExternalMutations()) {
             return "Mutated externally";
-        } else {
-            return "Potentially mutable";
         }
+
+        return "Potentially mutable";
     }
 }
