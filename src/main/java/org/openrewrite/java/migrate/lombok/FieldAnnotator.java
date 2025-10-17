@@ -40,13 +40,19 @@ class FieldAnnotator extends JavaIsoVisitor<ExecutionContext> {
     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
         for (J.VariableDeclarations.NamedVariable variable : multiVariable.getVariables()) {
             if (variable.getName().getFieldType() == field) {
-                maybeAddImport(annotation.getName());
-                maybeAddImport("lombok.AccessLevel");
-                String suffix = accessLevel == PUBLIC ? "" : String.format("(AccessLevel.%s)", accessLevel.name());
-                return JavaTemplate.builder("@" + annotation.getSimpleName() + suffix)
-                        .imports(annotation.getName(), "lombok.AccessLevel")
-                        .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
-                        .build().apply(getCursor(), multiVariable.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+                // Check if the annotation already exists (can happen with multiple variable declarations)
+                String annotationName = annotation.getSimpleName();
+                if (multiVariable.getLeadingAnnotations().stream()
+                        .noneMatch(ann -> annotationName.equals(ann.getSimpleName()))) {
+                    maybeAddImport(annotation.getName());
+                    maybeAddImport("lombok.AccessLevel");
+                    String suffix = accessLevel == PUBLIC ? "" : String.format("(AccessLevel.%s)", accessLevel.name());
+                    return JavaTemplate.builder("@" + annotation.getSimpleName() + suffix)
+                            .imports(annotation.getName(), "lombok.AccessLevel")
+                            .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
+                            .build().apply(getCursor(), multiVariable.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+                }
+                return multiVariable;
             }
         }
         return multiVariable;
