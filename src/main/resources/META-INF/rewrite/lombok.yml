@@ -23,6 +23,7 @@ recipeList:
   - org.openrewrite.java.migrate.lombok.UpdateLombokToJava11
   - org.openrewrite.java.migrate.lombok.log.UseLombokLogAnnotations
   - org.openrewrite.java.migrate.lombok.UseLombokGetter
+  - org.openrewrite.java.migrate.lombok.SummarizeGetter
   - org.openrewrite.java.migrate.lombok.UseLombokSetter
   - org.openrewrite.java.migrate.lombok.UseNoArgsConstructor
   - org.openrewrite.maven.ChangeDependencyScope:
