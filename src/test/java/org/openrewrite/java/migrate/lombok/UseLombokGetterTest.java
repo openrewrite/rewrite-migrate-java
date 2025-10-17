@@ -638,4 +638,36 @@ class UseLombokGetterTest implements RewriteTest {
           )
         );
     }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/876")
+    @Test
+    void multipleVariableDeclarations() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo, bar = 9;
+
+                  public int getFoo() {
+                      return foo;
+                  }
+
+                  public int getBar() {
+                      return bar;
+                  }
+              }
+              """,
+            """
+              import lombok.Getter;
+
+              class A {
+
+                  @Getter
+                  int foo, bar = 9;
+              }
+              """
+          )
+        );
+    }
 }
