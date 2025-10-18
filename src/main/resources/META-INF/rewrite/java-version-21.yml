@@ -42,10 +42,9 @@ recipeList:
   - org.openrewrite.java.migrate.lang.SwitchCaseAssignmentsToSwitchExpression
   - org.openrewrite.java.migrate.lang.SwitchCaseReturnsToSwitchExpression
   - org.openrewrite.java.migrate.lang.SwitchExpressionYieldToArrow
-  # TODO Reevaluate when these recipes are stable enough to be included by default
-  #- org.openrewrite.java.migrate.lang.IfElseIfConstructToSwitch
-  #- org.openrewrite.java.migrate.SwitchPatternMatching
-  #- org.openrewrite.java.migrate.lang.NullCheckAsSwitchCase
+  #- org.openrewrite.java.migrate.lang.IfElseIfConstructToSwitch # FIXME `casecase` seen near non JDK types
+  - org.openrewrite.java.migrate.SwitchPatternMatching
+  - org.openrewrite.java.migrate.lang.NullCheckAsSwitchCase
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
