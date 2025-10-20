@@ -55,22 +55,33 @@ public class NoGuavaSetsNewHashSet extends Recipe {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (NEW_HASH_SET.matches(method)) {
-                    maybeRemoveImport("com.google.common.collect.Sets");
-                    maybeAddImport("java.util.HashSet");
                     if (method.getArguments().isEmpty() || method.getArguments().get(0) instanceof J.Empty) {
+                        maybeRemoveImport("com.google.common.collect.Sets");
+                        maybeAddImport("java.util.HashSet");
                         return JavaTemplate.builder("new HashSet<>()")
                                 .contextSensitive()
                                 .imports("java.util.HashSet")
                                 .build()
                                 .apply(getCursor(), method.getCoordinates().replace());
                     }
-                    if (method.getArguments().size() == 1 && TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
-                        return JavaTemplate.builder("new HashSet<>(#{any(java.util.Collection)})")
-                                .contextSensitive()
-                                .imports("java.util.HashSet")
-                                .build()
-                                .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
+                    if (method.getArguments().size() == 1) {
+                        // Only handle if it's a Collection (not just any Iterable)
+                        if (TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
+                            maybeRemoveImport("com.google.common.collect.Sets");
+                            maybeAddImport("java.util.HashSet");
+                            return JavaTemplate.builder("new HashSet<>(#{any(java.util.Collection)})")
+                                    .contextSensitive()
+                                    .imports("java.util.HashSet")
+                                    .build()
+                                    .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
+                        }
+                        // Skip Iterable-only cases to avoid generating broken code
+                        if (TypeUtils.isAssignableTo("java.lang.Iterable", method.getArguments().get(0).getType())) {
+                            return method;
+                        }
                     }
+                    maybeRemoveImport("com.google.common.collect.Sets");
+                    maybeAddImport("java.util.HashSet");
                     maybeAddImport("java.util.Arrays");
                     JavaTemplate newHashSetVarargs = JavaTemplate.builder("new HashSet<>(Arrays.asList(" + method.getArguments().stream().map(a -> "#{any()}").collect(joining(",")) + "))")
                             .contextSensitive()
