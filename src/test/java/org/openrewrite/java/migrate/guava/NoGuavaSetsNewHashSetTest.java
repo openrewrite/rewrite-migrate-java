@@ -132,7 +132,7 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
               import com.google.common.collect.Sets;
 
               class Test {
-                  public static void test() {
+                  void test() {
                       final List<ClassCastException> result = new ArrayList<ClassCastException>();
                       List<Exception> myExceptions = new ArrayList<Exception>();
                       result.addAll(Sets.newHashSet(Iterables.filter(myExceptions, ClassCastException.class)));
@@ -152,8 +152,7 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
               import com.google.common.collect.Sets;
 
               class Test {
-                  public static void test() {
-                      Iterable<String> myIterable = () -> java.util.List.of("a", "b").iterator();
+                  void test(Iterable<String> myIterable) {
                       var result = Sets.newHashSet(myIterable);
                   }
               }
@@ -170,26 +169,22 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
             """
               import com.google.common.collect.Sets;
 
-              import java.util.ArrayList;
               import java.util.List;
               import java.util.Set;
 
               class Test {
-                  public static void test() {
-                      List<String> myList = new ArrayList<>();
+                  public static void test(List<String> myList) {
                       Set<String> result = Sets.newHashSet(myList);
                   }
               }
               """,
             """
-              import java.util.ArrayList;
               import java.util.HashSet;
               import java.util.List;
               import java.util.Set;
 
               class Test {
-                  public static void test() {
-                      List<String> myList = new ArrayList<>();
+                  public static void test(List<String> myList) {
                       Set<String> result = new HashSet<>(myList);
                   }
               }
