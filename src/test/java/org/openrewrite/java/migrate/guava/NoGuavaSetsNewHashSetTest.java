@@ -118,4 +118,83 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void setsNewHashSetWithIterablesFilter() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              import com.google.common.collect.Iterables;
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  public static void test() {
+                      final List<ClassCastException> result = new ArrayList<ClassCastException>();
+                      List<Exception> myExceptions = new ArrayList<Exception>();
+                      result.addAll(Sets.newHashSet(Iterables.filter(myExceptions, ClassCastException.class)));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void setsNewHashSetWithCustomIterable() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  public static void test() {
+                      Iterable<String> myIterable = () -> java.util.List.of("a", "b").iterator();
+                      var result = Sets.newHashSet(myIterable);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void setsNewHashSetWithCollectionStillWorks() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.Sets;
+
+              import java.util.ArrayList;
+              import java.util.List;
+              import java.util.Set;
+
+              class Test {
+                  public static void test() {
+                      List<String> myList = new ArrayList<>();
+                      Set<String> result = Sets.newHashSet(myList);
+                  }
+              }
+              """,
+            """
+              import java.util.ArrayList;
+              import java.util.HashSet;
+              import java.util.List;
+              import java.util.Set;
+
+              class Test {
+                  public static void test() {
+                      List<String> myList = new ArrayList<>();
+                      Set<String> result = new HashSet<>(myList);
+                  }
+              }
+              """
+          )
+        );
+    }
 }
