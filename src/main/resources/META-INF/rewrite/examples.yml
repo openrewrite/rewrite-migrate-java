@@ -3777,6 +3777,30 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaPredicatesAndOr
+examples:
+- description: '`NoGuavaPredicatesAndOrTest#replacePredicatesAnd`'
+  sources:
+  - before: |
+      import com.google.common.base.Predicate;
+      import com.google.common.base.Predicates;
+
+      class Test {
+          Predicate<String> isNotNull = s -> s != null;
+          Predicate<String> isNotEmpty = s -> !s.isEmpty();
+          Predicate<String> combined = Predicates.and(isNotNull, isNotEmpty);
+      }
+    after: |
+      import com.google.common.base.Predicate;
+
+      class Test {
+          Predicate<String> isNotNull = s -> s != null;
+          Predicate<String> isNotEmpty = s -> !s.isEmpty();
+          Predicate<String> combined = isNotNull.and(isNotEmpty);
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaPrimitiveAsList
 examples:
 - description: '`NoGuavaPrimitiveAsListTest#replaceBoolean`'
