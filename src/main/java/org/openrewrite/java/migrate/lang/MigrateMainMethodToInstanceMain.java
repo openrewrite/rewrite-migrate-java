@@ -123,7 +123,7 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
                     return false;
                 }
 
-                // Search for method references to main
+                // XXX Only picks up references in the same compilation unit; convert to scanning recipe if needed
                 return new JavaIsoVisitor<AtomicBoolean>() {
                     @Override
                     public J.MemberReference visitMemberReference(J.MemberReference memberRef, AtomicBoolean referenced) {
