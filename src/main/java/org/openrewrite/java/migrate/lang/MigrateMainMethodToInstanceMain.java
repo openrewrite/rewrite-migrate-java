@@ -30,9 +30,9 @@ import org.openrewrite.staticanalysis.VariableReferences;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 
 public class MigrateMainMethodToInstanceMain extends Recipe {
 
@@ -104,7 +104,7 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
                         .filter(stmt -> stmt instanceof J.MethodDeclaration)
                         .map(stmt -> (J.MethodDeclaration) stmt)
                         .filter(J.MethodDeclaration::isConstructor)
-                        .collect(Collectors.toList());
+                        .collect(toList());
 
                 // If no constructors are declared, the class has an implicit no-arg constructor
                 if (constructors.isEmpty()) {
@@ -124,7 +124,7 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
                 }
 
                 // Search for method references to main
-                return new JavaIsoVisitor<AtomicBoolean>(){
+                return new JavaIsoVisitor<AtomicBoolean>() {
                     @Override
                     public J.MemberReference visitMemberReference(J.MemberReference memberRef, AtomicBoolean referenced) {
                         // Check if this is a reference to the main method
