@@ -26,6 +26,10 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.staticanalysis.VariableReferences;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
 import static java.util.Collections.emptyList;
 
 public class MigrateMainMethodToInstanceMain extends Recipe {
@@ -65,6 +69,27 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
                     return md;
                 }
 
+                // Get the enclosing class
+                J.ClassDeclaration enclosingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                if (enclosingClass == null) {
+                    return md;
+                }
+
+                // Check 1: Do not migrate if class has @SpringBootApplication annotation
+                if (hasSpringBootApplicationAnnotation(enclosingClass)) {
+                    return md;
+                }
+
+                // Check 2: Do not migrate if class doesn't have a no-arg constructor
+                if (!hasNoArgConstructor(enclosingClass)) {
+                    return md;
+                }
+
+                // Check 3: Do not migrate if main method is used as a method reference
+                if (isMainMethodReferenced(md)) {
+                    return md;
+                }
+
                 // Remove the parameter if unused
                 J.Identifier variableName = param.getVariables().get(0).getName();
                 if (VariableReferences.findRhsReferences(md.getBody(), variableName).isEmpty()) {
@@ -73,7 +98,50 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
                 return md.withReturnTypeExpression(md.getReturnTypeExpression().withPrefix(md.getModifiers().get(0).getPrefix()))
                         .withModifiers(emptyList());
             }
+
+            private boolean hasSpringBootApplicationAnnotation(J.ClassDeclaration classDecl) {
+                return classDecl.getLeadingAnnotations().stream()
+                        .anyMatch(ann -> TypeUtils.isOfClassType(ann.getType(), "org.springframework.boot.autoconfigure.SpringBootApplication"));
+            }
+
+            private boolean hasNoArgConstructor(J.ClassDeclaration classDecl) {
+                List<J.MethodDeclaration> constructors = classDecl.getBody().getStatements().stream()
+                        .filter(stmt -> stmt instanceof J.MethodDeclaration)
+                        .map(stmt -> (J.MethodDeclaration) stmt)
+                        .filter(J.MethodDeclaration::isConstructor)
+                        .collect(Collectors.toList());
+
+                // If no constructors are declared, the class has an implicit no-arg constructor
+                if (constructors.isEmpty()) {
+                    return true;
+                }
+
+                // Check if any explicit constructor is a no-arg constructor
+                return constructors.stream()
+                        .anyMatch(ctor -> ctor.getParameters().isEmpty() ||
+                                (ctor.getParameters().size() == 1 && ctor.getParameters().get(0) instanceof J.Empty));
+            }
+
+            private boolean isMainMethodReferenced(J.MethodDeclaration mainMethod) {
+                J.CompilationUnit cu = getCursor().firstEnclosing(J.CompilationUnit.class);
+                if (cu == null) {
+                    return false;
+                }
+
+                // Search for method references to main
+                return new JavaIsoVisitor<AtomicBoolean>(){
+                    @Override
+                    public J.MemberReference visitMemberReference(J.MemberReference memberRef, AtomicBoolean referenced) {
+                        // Check if this is a reference to the main method
+                        if ("main".equals(memberRef.getReference().getSimpleName()) &&
+                                memberRef.getMethodType() != null &&
+                                TypeUtils.isOfType(memberRef.getMethodType(), mainMethod.getMethodType())) {
+                            referenced.set(true);
+                        }
+                        return super.visitMemberReference(memberRef, referenced);
+                    }
+                }.reduce(cu, new AtomicBoolean()).get();
+            }
         });
     }
-
 }
