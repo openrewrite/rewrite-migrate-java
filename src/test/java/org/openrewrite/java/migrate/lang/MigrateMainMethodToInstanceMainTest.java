@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -282,6 +283,90 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
                   @SuppressWarnings("unused")
                   void main() {
                       System.out.println("Hello!");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotMigrateMainUsedAsMethodReference() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              interface MainMethod {
+                  void run(String[] args);
+              }
+              """
+          ),
+          java(
+            """
+              class Application {
+                  public static void main(String[] args) {
+                      System.out.println("Hello from main");
+                  }
+              }
+
+              class Runner {
+                  void executeMain() {
+                      MainMethod foo = Application::main;
+                      foo.run(null);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotMigrateMainWithNonDefaultConstructor() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              class Application {
+                  public static void main(String[] args) {
+                      System.out.println("Hello!");
+                  }
+
+                  public Application(String config) {
+                      // Non-default constructor
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotMigrateMainInSpringBootApplication() {
+        //language=java
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
+            """
+              package org.springframework.boot.autoconfigure;
+              public @interface SpringBootApplication {}
+              """,
+            """
+              package org.springframework.boot;
+              public class SpringApplication {
+                  public static void run(Class<?> primarySource, String... args) {}
+              }
+              """
+          )),
+          java(
+            """
+              package com.example.demo;
+
+              import org.springframework.boot.SpringApplication;
+              import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+              @SpringBootApplication
+              class DemoApplication {
+                  public static void main(String[] args) {
+                      SpringApplication.run(DemoApplication.class, args);
                   }
               }
               """
