@@ -20,6 +20,8 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.DeclaresMethod;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -33,6 +35,9 @@ import java.util.stream.Collectors;
 import static java.util.Collections.emptyList;
 
 public class MigrateMainMethodToInstanceMain extends Recipe {
+
+    private static final MethodMatcher MAIN_METHOD_MATCHER = new MethodMatcher("*..* main(String[])", false);
+
     @Override
     public String getDisplayName() {
         return "Migrate `public static void main(String[] args)` to instance `void main()`";
@@ -45,19 +50,23 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesJavaVersion<>(25), new JavaIsoVisitor<ExecutionContext>() {
+        TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
+                new UsesJavaVersion<>(25),
+                new DeclaresMethod<>(MAIN_METHOD_MATCHER)
+        );
+        return Preconditions.check(preconditions, new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+                J.ClassDeclaration enclosingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
                 J.MethodDeclaration md = super.visitMethodDeclaration(method, ctx);
 
                 // Check if this is a main method: public static void main(String[] args)
-                if (!"main".equals(md.getSimpleName()) ||
+                if (enclosingClass == null ||
+                        !MAIN_METHOD_MATCHER.matches(md, enclosingClass) ||
                         md.getReturnTypeExpression() == null ||
                         md.getReturnTypeExpression().getType() != JavaType.Primitive.Void ||
                         !md.hasModifier(J.Modifier.Type.Public) ||
                         !md.hasModifier(J.Modifier.Type.Static) ||
-                        md.getParameters().size() != 1 ||
-                        !(md.getParameters().get(0) instanceof J.VariableDeclarations) ||
                         md.getBody() == null) {
                     return md;
                 }
@@ -69,24 +78,10 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
                     return md;
                 }
 
-                // Get the enclosing class
-                J.ClassDeclaration enclosingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                if (enclosingClass == null) {
-                    return md;
-                }
-
-                // Check 1: Do not migrate if class has @SpringBootApplication annotation
-                if (hasSpringBootApplicationAnnotation(enclosingClass)) {
-                    return md;
-                }
-
-                // Check 2: Do not migrate if class doesn't have a no-arg constructor
-                if (!hasNoArgConstructor(enclosingClass)) {
-                    return md;
-                }
-
-                // Check 3: Do not migrate if main method is used as a method reference
-                if (isMainMethodReferenced(md)) {
+                // Do not migrate in any of these cases
+                if (hasSpringBootApplicationAnnotation(enclosingClass) ||
+                        !hasNoArgConstructor(enclosingClass) ||
+                        isMainMethodReferenced(md)) {
                     return md;
                 }
 
