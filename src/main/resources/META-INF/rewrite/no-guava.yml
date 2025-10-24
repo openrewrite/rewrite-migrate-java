@@ -27,6 +27,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaJava11
   - org.openrewrite.java.migrate.guava.NoGuavaJava21
+  - org.openrewrite.java.migrate.guava.NoGuavaCollections2Filter
   - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
   - org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods
