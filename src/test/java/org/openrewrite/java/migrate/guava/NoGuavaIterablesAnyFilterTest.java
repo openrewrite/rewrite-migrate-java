@@ -48,9 +48,7 @@ class NoGuavaIterablesAnyFilterTest implements RewriteTest {
               import com.google.common.collect.Iterables;
 
               class Test {
-                  public static boolean test() {
-                      Collection<Object> collection = new ArrayList<>();
-                      Predicate<Object> isNotNull = Objects::nonNull;
+                  boolean test(Collection<Object> collection, Predicate<Object> isNotNull) {
                       return Iterables.any(collection, isNotNull);
                   }
               }
@@ -63,9 +61,7 @@ class NoGuavaIterablesAnyFilterTest implements RewriteTest {
               import com.google.common.base.Predicate;
 
               class Test {
-                  public static boolean test() {
-                      Collection<Object> collection = new ArrayList<>();
-                      Predicate<Object> isNotNull = Objects::nonNull;
+                  boolean test(Collection<Object> collection, Predicate<Object> isNotNull) {
                       return collection.stream().anyMatch(isNotNull);
                   }
               }
@@ -75,22 +71,18 @@ class NoGuavaIterablesAnyFilterTest implements RewriteTest {
     }
 
     @Test
-    void IterablesAnyWithIterable() {
+    void iterablesAnyWithIterable() {
         //language=java
         rewriteRun(
           java(
             """
-              import java.util.ArrayList;
               import java.lang.Iterable;
-              import java.util.Objects;
 
               import com.google.common.base.Predicate;
               import com.google.common.collect.Iterables;
 
               class Test {
-                  public static boolean test() {
-                      Iterable<Object> iterable = new ArrayList<>();
-                      Predicate<Object> isNotNull = Objects::nonNull;
+                  boolean test(Iterable<Object> iterable, Predicate<Object> isNotNull) {
                       return Iterables.any(iterable, isNotNull);
                   }
               }
@@ -105,32 +97,24 @@ class NoGuavaIterablesAnyFilterTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              import java.util.ArrayList;
               import java.util.Collection;
-              import java.util.Objects;
 
               import com.google.common.base.Predicate;
               import com.google.common.collect.Iterables;
 
               class Test {
-                  public static Iterable<Object> test() {
-                      Collection<Object> collection = new ArrayList<>();
-                      Predicate<Object> isNotNull = Objects::nonNull;
+                  Iterable<Object> test(Collection<Object> collection, Predicate<Object> isNotNull) {
                       return Iterables.filter(collection, isNotNull);
                   }
               }
               """,
             """
-              import java.util.ArrayList;
               import java.util.Collection;
-              import java.util.Objects;
 
               import com.google.common.base.Predicate;
 
               class Test {
-                  public static Iterable<Object> test() {
-                      Collection<Object> collection = new ArrayList<>();
-                      Predicate<Object> isNotNull = Objects::nonNull;
+                  Iterable<Object> test(Collection<Object> collection, Predicate<Object> isNotNull) {
                       return collection.stream().filter(isNotNull).toList();
                   }
               }
@@ -140,22 +124,18 @@ class NoGuavaIterablesAnyFilterTest implements RewriteTest {
     }
 
     @Test
-    void IterablesFilterWithIterable() {
+    void iterablesFilterWithIterable() {
         //language=java
         rewriteRun(
           java(
             """
-              import java.util.ArrayList;
               import java.lang.Iterable;
-              import java.util.Objects;
 
               import com.google.common.base.Predicate;
               import com.google.common.collect.Iterables;
 
               class Test {
-                  public static Iterable<Object> test() {
-                      Iterable<Object> iterable = new ArrayList<>();
-                      Predicate<Object> isNotNull = Objects::nonNull;
+                  Iterable<Object> test(Iterable<Object> iterable, Predicate<Object> isNotNull) {
                       return Iterables.filter(iterable, isNotNull);
                   }
               }
