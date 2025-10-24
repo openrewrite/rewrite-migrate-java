@@ -50,7 +50,7 @@ public class NoGuavaCollections2Filter extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                new UsesMethod<>("com.google.common.collect.Collections2 filter(java.util.Collection, com.google.common.base.Predicate)"),
+                new UsesMethod<>(COLLECTIONS2_FILTER),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {

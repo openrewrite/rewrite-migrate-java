@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,37 +35,29 @@ class NoGuavaCollections2FilterTest implements RewriteTest {
 
     @DocumentExample
     @Test
-    void replaceSetsFilter() {
+    void replaceCollections2Filter() {
         //language=java
         rewriteRun(
           java(
             """
-              import java.util.ArrayList;
               import java.util.Collection;
-              import java.util.Objects;
 
               import com.google.common.base.Predicate;
               import com.google.common.collect.Collections2;
 
               class Test {
-                  public static Collection<Object> test() {
-                      Collection<Object> collection = new ArrayList<>();
-                      Predicate<Object> isNotNull = Objects::nonNull;
+                  Collection<Object> test(Collection<Object> collection, Predicate<Object> isNotNull) {
                       return Collections2.filter(collection, isNotNull);
                   }
               }
               """,
             """
-              import java.util.ArrayList;
               import java.util.Collection;
-              import java.util.Objects;
 
               import com.google.common.base.Predicate;
 
               class Test {
-                  public static Collection<Object> test() {
-                      Collection<Object> collection = new ArrayList<>();
-                      Predicate<Object> isNotNull = Objects::nonNull;
+                  Collection<Object> test(Collection<Object> collection, Predicate<Object> isNotNull) {
                       return collection.stream().filter(isNotNull).toList();
                   }
               }
