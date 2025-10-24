@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.guava;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -91,25 +92,27 @@ class NoGuavaPredicatesAndOrTest implements RewriteTest {
     }
 
     @Test
-    void replacePredicatesAndWithMethodReferences() {
+    void replacePredicatesAndWithLambdas() {
         //language=java
         rewriteRun(
           java(
             """
               import com.google.common.base.Predicate;
               import com.google.common.base.Predicates;
-              import java.util.Objects;
 
               class Test {
-                  Predicate<String> combined = Predicates.and(Objects::nonNull, s -> s.length() > 5);
+                  Predicate<String> isNotNull = s -> s != null;
+                  Predicate<String> isLong = s -> s.length() > 5;
+                  Predicate<String> combined = Predicates.and(isNotNull, isLong);
               }
               """,
             """
               import com.google.common.base.Predicate;
-              import java.util.Objects;
 
               class Test {
-                  Predicate<String> combined = Objects::nonNull.and(s -> s.length() > 5);
+                  Predicate<String> isNotNull = s -> s != null;
+                  Predicate<String> isLong = s -> s.length() > 5;
+                  Predicate<String> combined = isNotNull.and(isLong);
               }
               """
           )
@@ -141,6 +144,68 @@ class NoGuavaPredicatesAndOrTest implements RewriteTest {
                   Predicate<Integer> isEven = n -> n % 2 == 0;
                   Predicate<Integer> isLessThan100 = n -> n < 100;
                   Predicate<Integer> combined = isPositive.and(isEven.and(isLessThan100));
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/893")
+    @Test
+    void replacePredicatesAndWithMoreThanTwoParameters() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class Test {
+                  Predicate<String> isNotNull = s -> s != null;
+                  Predicate<String> isNotEmpty = s -> !s.isEmpty();
+                  Predicate<String> containsA = s -> s.contains("A");
+                  Predicate<String> combined = Predicates.and(isNotNull, isNotEmpty, containsA);
+              }
+              """,
+            """
+              import com.google.common.base.Predicate;
+
+              class Test {
+                  Predicate<String> isNotNull = s -> s != null;
+                  Predicate<String> isNotEmpty = s -> !s.isEmpty();
+                  Predicate<String> containsA = s -> s.contains("A");
+                  Predicate<String> combined = isNotNull.and(isNotEmpty).and(containsA);
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/893")
+    @Test
+    void replacePredicatesOrWithMoreThanTwoParameters() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class Test {
+                  Predicate<String> isNotNull = s -> s != null;
+                  Predicate<String> isNotEmpty = s -> !s.isEmpty();
+                  Predicate<String> containsA = s -> s.contains("A");
+                  Predicate<String> combined = Predicates.or(isNotNull, isNotEmpty, containsA);
+              }
+              """,
+            """
+              import com.google.common.base.Predicate;
+
+              class Test {
+                  Predicate<String> isNotNull = s -> s != null;
+                  Predicate<String> isNotEmpty = s -> !s.isEmpty();
+                  Predicate<String> containsA = s -> s.contains("A");
+                  Predicate<String> combined = isNotNull.or(isNotEmpty).or(containsA);
               }
               """
           )
