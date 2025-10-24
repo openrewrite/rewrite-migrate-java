@@ -50,7 +50,7 @@ public class NoGuavaSetsFilter extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                new UsesMethod<>("com.google.common.collect.Sets filter(java.util.Set, com.google.common.base.Predicate)"),
+                new UsesMethod<>(SETS_FILTER),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
