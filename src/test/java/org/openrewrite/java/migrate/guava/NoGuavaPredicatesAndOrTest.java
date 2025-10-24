@@ -120,6 +120,32 @@ class NoGuavaPredicatesAndOrTest implements RewriteTest {
     }
 
     @Test
+    void replacePredicatesAndWithMethodReference() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+              import java.util.Objects;
+
+              class Test {
+                  Predicate<String> combined = Predicates.and(Objects::nonNull, s -> s.length() > 5);
+              }
+              """,
+            """
+              import com.google.common.base.Predicate;
+              import java.util.Objects;
+
+              class Test {
+                  Predicate<String> combined = ((Predicate<String>) Objects::nonNull).and(s -> s.length() > 5);
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void replacePredicatesAndNestedCalls() {
         //language=java
         rewriteRun(
