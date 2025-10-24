@@ -22,16 +22,19 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.ShortenFullyQualifiedTypeReferences;
 import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
+import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.singleton;
 
 public class NoGuavaPredicatesAndOr extends Recipe {
-    private static final MethodMatcher PREDICATES_AND = new MethodMatcher("com.google.common.base.Predicates and(com.google.common.base.Predicate, com.google.common.base.Predicate)");
-    private static final MethodMatcher PREDICATES_OR = new MethodMatcher("com.google.common.base.Predicates or(com.google.common.base.Predicate, com.google.common.base.Predicate)");
+    private static final MethodMatcher PREDICATES_AND = new MethodMatcher("com.google.common.base.Predicates and(..)");
+    private static final MethodMatcher PREDICATES_OR = new MethodMatcher("com.google.common.base.Predicates or(..)");
 
     @Override
     public String getDisplayName() {
@@ -55,34 +58,40 @@ public class NoGuavaPredicatesAndOr extends Recipe {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (PREDICATES_AND.matches(method)) {
-                    maybeRemoveImport("com.google.common.base.Predicate");
-                    maybeRemoveImport("com.google.common.base.Predicates");
-                    maybeAddImport("java.util.function.Predicate");
-                    if (method.getArguments().size() == 2) {
-                        return JavaTemplate.builder("#{any(java.util.function.Predicate)}.and(#{any(java.util.function.Predicate)})")
-                                .build()
-                                .apply(getCursor(),
-                                        method.getCoordinates().replace(),
-                                        method.getArguments().get(0),
-                                        method.getArguments().get(1));
-                    }
+                    return handlePredicatesMethod(method, "and");
                 }
                 if (PREDICATES_OR.matches(method)) {
-                    maybeRemoveImport("com.google.common.base.Predicate");
-                    maybeRemoveImport("com.google.common.base.Predicates");
-                    maybeAddImport("java.util.function.Predicate");
-                    if (method.getArguments().size() == 2) {
-                        return JavaTemplate.builder("#{any(java.util.function.Predicate)}.or(#{any(java.util.function.Predicate)})")
-                                .build()
-                                .apply(getCursor(),
-                                        method.getCoordinates().replace(),
-                                        method.getArguments().get(0),
-                                        method.getArguments().get(1));
-                    }
+                    return handlePredicatesMethod(method, "or");
                 }
 
                 return super.visitMethodInvocation(method, ctx);
             }
+
+            private J handlePredicatesMethod(J.MethodInvocation method, String operation) {
+                List<Expression> arguments = method.getArguments();
+                if (arguments.size() < 2) {
+                    return method;
+                }
+
+                maybeRemoveImport("com.google.common.base.Predicates");
+
+                // Build the chain: first.operation(second).operation(third)...
+                Expression result = arguments.get(0);
+
+                // If the first argument is a method reference, wrap it with a cast
+                if (result instanceof J.MemberReference && result.getType() != null) {
+                    String typeString = result.getType().toString().replace("com.google.common.base.", "");
+                    result = JavaTemplate.apply("((" + typeString + ") #{any()})", getCursor(), method.getCoordinates().replace(), result);
+                }
+                for (int i = 1; i < arguments.size(); i++) {
+                    result = JavaTemplate.apply("#{any(java.util.function.Predicate)}." + operation + "(#{any(java.util.function.Predicate)})",
+                            getCursor(), method.getCoordinates().replace(), result, arguments.get(i));
+                }
+
+                doAfterVisit(ShortenFullyQualifiedTypeReferences.modifyOnly(result));
+                return result;
+            }
+
         });
     }
 }
