@@ -22,11 +22,10 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.ShortenFullyQualifiedTypeReferences;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -74,59 +73,25 @@ public class NoGuavaPredicatesAndOr extends Recipe {
                     return method;
                 }
 
-                maybeRemoveImport("com.google.common.base.Predicate");
                 maybeRemoveImport("com.google.common.base.Predicates");
-                maybeAddImport("java.util.function.Predicate");
 
                 // Build the chain: first.operation(second).operation(third)...
                 Expression result = arguments.get(0);
 
                 // If the first argument is a method reference, wrap it with a cast
                 if (result instanceof J.MemberReference && result.getType() != null) {
-                    JavaType type = result.getType();
-                    String typeString = getTypeString(type);
-                    if (typeString != null) {
-                        result = JavaTemplate.builder("((" + typeString + ") #{any()})")
-                                .build()
-                                .apply(getCursor(),
-                                        method.getCoordinates().replace(),
-                                        result);
-                    }
+                    String typeString = result.getType().toString().replace("com.google.common.base.", "");
+                    result = JavaTemplate.apply("((" + typeString + ") #{any()})", getCursor(), method.getCoordinates().replace(), result);
                 }
-
                 for (int i = 1; i < arguments.size(); i++) {
-                    result = JavaTemplate.builder("#{any(java.util.function.Predicate)}." + operation + "(#{any(java.util.function.Predicate)})")
-                            .build()
-                            .apply(getCursor(),
-                                    method.getCoordinates().replace(),
-                                    result,
-                                    arguments.get(i));
+                    result = JavaTemplate.apply("#{any(java.util.function.Predicate)}." + operation + "(#{any(java.util.function.Predicate)})",
+                            getCursor(), method.getCoordinates().replace(), result, arguments.get(i));
                 }
 
+                doAfterVisit(ShortenFullyQualifiedTypeReferences.modifyOnly(result));
                 return result;
             }
 
-            private String getTypeString(JavaType type) {
-                if (type instanceof JavaType.Parameterized) {
-                    JavaType.Parameterized parameterized = (JavaType.Parameterized) type;
-                    JavaType.FullyQualified fq = TypeUtils.asFullyQualified(parameterized.getType());
-                    if (fq != null && !parameterized.getTypeParameters().isEmpty()) {
-                        StringBuilder sb = new StringBuilder(fq.getClassName());
-                        sb.append("<");
-                        for (int i = 0; i < parameterized.getTypeParameters().size(); i++) {
-                            if (i > 0) sb.append(", ");
-                            JavaType param = parameterized.getTypeParameters().get(i);
-                            JavaType.FullyQualified paramFq = TypeUtils.asFullyQualified(param);
-                            if (paramFq != null) {
-                                sb.append(paramFq.getClassName());
-                            }
-                        }
-                        sb.append(">");
-                        return sb.toString();
-                    }
-                }
-                return null;
-            }
         });
     }
 }
