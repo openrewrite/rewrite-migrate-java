@@ -7180,13 +7180,13 @@ examples:
 
       @Value
       public class A {
-         String test;
+          String test;
       }
     after: |
       package example;
 
       public record A(
-         String test) {
+              String test) {
       }
     language: java
   - before: |
