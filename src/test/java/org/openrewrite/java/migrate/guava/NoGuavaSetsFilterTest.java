@@ -66,4 +66,40 @@ class NoGuavaSetsFilterTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void replaceSetsFilterUsingSortedSet() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+              import java.util.SortedSet;
+
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  public static Set<Object> test(SortedSet<Object> set, Predicate<Object> isNotNull) {
+                      return Sets.filter(set, isNotNull);
+                  }
+              }
+              """,
+            """
+              import java.util.Set;
+              import java.util.SortedSet;
+              import java.util.TreeSet;
+              import java.util.stream.Collectors;
+
+              import com.google.common.base.Predicate;
+
+              class Test {
+                  public static Set<Object> test(SortedSet<Object> set, Predicate<Object> isNotNull) {
+                      return set.stream().filter(isNotNull).collect(Collectors.toCollection(TreeSet::new));
+                  }
+              }
+              """
+          )
+        );
+    }
 }
