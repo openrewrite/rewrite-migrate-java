@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,33 +40,25 @@ class NoGuavaSetsFilterTest implements RewriteTest {
         rewriteRun(
           java(
             """
-              import java.util.HashSet;
-              import java.util.Objects;
               import java.util.Set;
 
               import com.google.common.base.Predicate;
               import com.google.common.collect.Sets;
 
               class Test {
-                  public static Set<Object> test() {
-                      Set<Object> set = new HashSet<>();
-                      Predicate<Object> isNotNull = Objects::nonNull;
+                  public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
                       return Sets.filter(set, isNotNull);
                   }
               }
               """,
             """
-              import java.util.HashSet;
-              import java.util.Objects;
               import java.util.Set;
               import java.util.stream.Collectors;
 
               import com.google.common.base.Predicate;
 
               class Test {
-                  public static Set<Object> test() {
-                      Set<Object> set = new HashSet<>();
-                      Predicate<Object> isNotNull = Objects::nonNull;
+                  public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
                       return set.stream().filter(isNotNull).collect(Collectors.toSet());
                   }
               }
