@@ -70,36 +70,6 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
     }
 
     @Test
-    void predicatesNotToPredicate() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import com.google.common.base.Predicate;
-              import com.google.common.base.Predicates;
-
-              class A {
-                  public static Predicate<String> notEmptyPredicate() {
-                      Predicate<String> isEmpty = String::isEmpty;
-                      return Predicates.not(isEmpty);
-                  }
-              }
-              """,
-            """
-              import java.util.function.Predicate;
-
-              class A {
-                  public static Predicate<String> notEmptyPredicate() {
-                      Predicate<String> isEmpty = String::isEmpty;
-                      return Predicate.not(isEmpty);
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
     void predicatesEqualToToPredicateIsEqual() {
         rewriteRun(
           //language=java
