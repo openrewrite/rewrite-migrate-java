@@ -27,7 +27,9 @@ import static org.openrewrite.java.Assertions.java;
 class PreferJavaUtilPredicateTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate")
+        spec.recipeFromResource(
+            "/META-INF/rewrite/no-guava.yml",
+            "org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
@@ -62,6 +64,34 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
                               return input.isEmpty();
                           }
                       };
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void predicatesNotToPredicate() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+              class A {
+                  public static Predicate<String> notEmptyPredicate() {
+                      Predicate<String> isEmpty = String::isEmpty;
+                      return Predicates.not(isEmpty);
+                  }
+              }
+              """,
+            """
+              import java.util.function.Predicate;
+              class A {
+                  public static Predicate<String> notEmptyPredicate() {
+                      Predicate<String> isEmpty = String::isEmpty;
+                      return Predicate.not(isEmpty);
                   }
               }
               """
