@@ -50,7 +50,7 @@ public class NoGuavaFunctionsCompose extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                new UsesMethod<>("com.google.common.base.Functions compose(com.google.common.base.Function, com.google.common.base.Function)"),
+                new UsesMethod<>(FUNCTIONS_COMPOSE),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
