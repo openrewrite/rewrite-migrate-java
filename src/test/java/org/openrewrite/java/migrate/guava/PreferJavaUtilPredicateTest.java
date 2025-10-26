@@ -79,6 +79,7 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
             """
               import com.google.common.base.Predicate;
               import com.google.common.base.Predicates;
+
               class A {
                   public static Predicate<String> notEmptyPredicate() {
                       Predicate<String> isEmpty = String::isEmpty;
@@ -88,6 +89,7 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
               """,
             """
               import java.util.function.Predicate;
+
               class A {
                   public static Predicate<String> notEmptyPredicate() {
                       Predicate<String> isEmpty = String::isEmpty;
