@@ -181,4 +181,112 @@ class NoGuavaPredicateTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void doNotChangeWhenUsingIteratorsFilter() {
+        // Iterators.filter requires Guava Predicate as last parameter
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Iterators;
+
+              import java.util.Iterator;
+
+              class Test {
+                  Predicate<Integer> isPositive = n -> n > 0;
+
+                  public Iterator<Integer> filterPositive(Iterator<Integer> numbers) {
+                      return Iterators.filter(numbers, isPositive);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeWhenUsingIterablesAny() {
+        // Iterables.any requires Guava Predicate as last parameter
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Iterables;
+              import java.util.List;
+
+              class Test {
+                  public boolean any(List<Integer> input, Predicate<Integer> aPredicate) {
+                      return Iterables.any(input, aPredicate);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeWhenUsingMapsFilterEntries() {
+        // Maps.filterEntries requires Guava Predicate as last parameter
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Maps;
+              import java.util.Map;
+
+              class Test {
+                  public Map<String, String> filterMap(Map<String, String> input, Predicate<Map.Entry<String,String>> aPredicate) {
+                      return Maps.filterEntries(input, aPredicate);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeWhenUsingMapsFilterValues() {
+        // Maps.filterValues requires Guava Predicate as last parameter
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Maps;
+              import java.util.Map;
+
+              class Test {
+                  public Map<String, String> filterMap(Map<String, String> input, Predicate<String> aPredicate) {
+                      return Maps.filterValues(input, aPredicate);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeWhenUsingMapsFilterKeys() {
+        // Maps.filterKeys requires Guava Predicate as last parameter
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Maps;
+              import java.util.Map;
+
+              class Test {
+                  public Map<String, String> filterMap(Map<String, String> input, Predicate<String> aPredicate) {
+                      return Maps.filterKeys(input, aPredicate);
+                  }
+              }
+              """
+          )
+        );
+    }
 }
