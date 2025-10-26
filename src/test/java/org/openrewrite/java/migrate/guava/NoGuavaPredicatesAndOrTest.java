@@ -237,4 +237,29 @@ class NoGuavaPredicatesAndOrTest implements RewriteTest {
           )
         );
     }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/903")
+    @Test
+    void doNotConvertPredicatesEqualToWhenUsedInMethodChain() {
+        // Converting Predicates.equalTo() to Predicate.isEqual() breaks type inference when chained with .and()
+        // The issue is that Predicate.isEqual() returns Predicate<? super T> which causes compilation errors
+        // when chained with other methods
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+              import java.util.Collection;
+
+              class A {
+                  public static Predicate<Collection<String>> combinedPredicate(Collection<String> aCollection) {
+                      Predicate<Collection<String>> anotherPredicate = c -> !c.isEmpty();
+                      return Predicates.and(Predicates.equalTo(aCollection), anotherPredicate);
+                  }
+              }
+              """
+          )
+        );
+    }
 }

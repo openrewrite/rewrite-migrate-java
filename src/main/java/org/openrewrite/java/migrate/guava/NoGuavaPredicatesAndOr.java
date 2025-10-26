@@ -78,6 +78,11 @@ public class NoGuavaPredicatesAndOr extends Recipe {
                 // Build the chain: first.operation(second).operation(third)...
                 Expression result = arguments.get(0);
 
+                // Avoid generic type issues by not making any changes just yet
+                if (result instanceof J.MethodInvocation) {
+                    return method;
+                }
+
                 // If the first argument is a method reference, wrap it with a cast
                 if (result instanceof J.MemberReference && result.getType() != null) {
                     String typeString = result.getType().toString().replace("com.google.common.base.", "");
