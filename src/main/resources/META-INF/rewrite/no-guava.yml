@@ -195,9 +195,7 @@ recipeList:
       methodPattern: com.google.common.base.Predicate apply(..)
       newMethodName: test
       matchOverrides: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: com.google.common.base.Predicate
-      newFullyQualifiedTypeName: java.util.function.Predicate
+  - org.openrewrite.java.migrate.guava.NoGuavaPredicate
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

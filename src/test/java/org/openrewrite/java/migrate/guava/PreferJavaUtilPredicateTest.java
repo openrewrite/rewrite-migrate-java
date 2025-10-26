@@ -27,7 +27,9 @@ import static org.openrewrite.java.Assertions.java;
 class PreferJavaUtilPredicateTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate")
+        spec.recipeFromResource(
+            "/META-INF/rewrite/no-guava.yml",
+            "org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
