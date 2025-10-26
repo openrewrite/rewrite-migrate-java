@@ -89,10 +89,12 @@ class NoGuavaPredicateTest implements RewriteTest {
         );
     }
 
-    // Unfortunately also not changed now that we exclude all methods that take a Guava Predicate as precondition
     @Test
-    void doNotChangePredicatesNot() {
+    void changePredicatesNot() {
         rewriteRun(
+          spec -> spec.recipeFromResource(
+            "/META-INF/rewrite/no-guava.yml",
+            "org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate"),
           //language=java
           java(
             """
@@ -100,9 +102,19 @@ class NoGuavaPredicateTest implements RewriteTest {
               import com.google.common.base.Predicates;
 
               class A {
-                  public static Predicate<String> notEmptyPredicate() {
+                  Predicate<String> notEmptyPredicate() {
                       Predicate<String> isEmpty = String::isEmpty;
                       return Predicates.not(isEmpty);
+                  }
+              }
+              """,
+            """
+              import java.util.function.Predicate;
+
+              class A {
+                  Predicate<String> notEmptyPredicate() {
+                      Predicate<String> isEmpty = String::isEmpty;
+                      return Predicate.not(isEmpty);
                   }
               }
               """
