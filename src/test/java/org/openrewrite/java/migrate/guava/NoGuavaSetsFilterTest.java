@@ -16,6 +16,8 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
+import org.junitpioneer.jupiter.Issue;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
@@ -103,6 +105,8 @@ class NoGuavaSetsFilterTest implements RewriteTest {
         );
     }
 
+    @ExpectedToFail("Sets.filter has special handling for sorted sets which now gets lost")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/898#discussion_r2461706208")
     @Test
     void replaceSetsFilterIndirectlyUsingSortedSet() {
         //language=java
@@ -121,22 +125,8 @@ class NoGuavaSetsFilterTest implements RewriteTest {
                       return Sets.filter(indirectSet, isNotNull);
                   }
               }
-              """,
-            """
-              import java.util.Set;
-              import java.util.SortedSet;
-              import java.util.TreeSet;
-              import java.util.stream.Collectors;
-
-              import com.google.common.base.Predicate;
-
-              class Test {
-                  public static Set<Object> test(SortedSet<Object> set, Predicate<Object> isNotNull) {
-                      Set<Object> indirectSet = set;
-                      return indirectSet.stream().filter(isNotNull).collect(Collectors.toCollection(TreeSet::new));
-                  }
-              }
               """
+            // This now gets converted, but skips past a `instanceof SortedSet` check that keeps it a sorted set
           )
         );
     }
