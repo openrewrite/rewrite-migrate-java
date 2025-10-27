@@ -15,10 +15,8 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
+import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -42,11 +40,23 @@ public class NoGuavaPredicate extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 Preconditions.not(new UsesPredicateMethod<>()),
-                new ChangeType(
-                        "com.google.common.base.Predicate",
-                        "java.util.function.Predicate",
-                        false)
-                        .getVisitor()
+                new TreeVisitor<Tree, ExecutionContext>() {
+                    @Override
+                    public Tree preVisit(Tree tree, ExecutionContext ctx) {
+                        Tree t = tree;
+                        t = new ChangeMethodName(
+                                "com.google.common.base.Predicate apply(..)",
+                                "test",
+                                true,
+                                false
+                        ).getVisitor().visitNonNull(t, ctx, getCursor().getParentOrThrow());
+                        return new ChangeType(
+                                "com.google.common.base.Predicate",
+                                "java.util.function.Predicate",
+                                false
+                        ).getVisitor().visitNonNull(t, ctx, getCursor().getParentOrThrow());
+                    }
+                }
         );
     }
 

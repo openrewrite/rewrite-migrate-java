@@ -191,10 +191,6 @@ recipeList:
       methodPattern: com.google.common.base.Predicates isEqual(..)
       fullyQualifiedTargetTypeName: java.util.function.Predicate
 
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: com.google.common.base.Predicate apply(..)
-      newMethodName: test
-      matchOverrides: true
   - org.openrewrite.java.migrate.guava.NoGuavaPredicate
 
 ---
