@@ -54,7 +54,7 @@ class NoGuavaPredicatesEqualToTest implements RewriteTest {
 
               class A {
                   public static Predicate<String> isHelloPredicate() {
-                      return Predicate.<String>isEqual("hello");
+                      return Predicate.isEqual("hello");
                   }
               }
               """

@@ -22,6 +22,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.ShortenFullyQualifiedTypeReferences;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -59,15 +60,16 @@ public class NoGuavaPredicatesEqualTo extends Recipe {
                             maybeRemoveImport("com.google.common.base.Predicates");
                             maybeAddImport("java.util.function.Predicate");
 
-                            JavaType parameterType = method.getArguments().get(0).getType();
-                            if (parameterType != null) {
-                                String typeString = parameterType.toString();
-                                return JavaTemplate.builder("Predicate.<" + typeString + ">isEqual(#{any(java.lang.Object)})")
+                            if (method.getMethodType().getParameterTypes().get(0) instanceof JavaType.Parameterized) {
+                                String typeString = method.getArguments().get(0).getType().toString();
+                                J.MethodInvocation genericMethod = JavaTemplate.builder("Predicate.<" + typeString + ">isEqual(#{any(java.lang.Object)})")
                                         .imports("java.util.function.Predicate")
                                         .build()
                                         .apply(getCursor(),
                                                 method.getCoordinates().replace(),
                                                 method.getArguments().get(0));
+                                doAfterVisit(ShortenFullyQualifiedTypeReferences.modifyOnly(genericMethod));
+                                return genericMethod;
                             }
                             // Fallback is not type is found.
                             return JavaTemplate.builder("Predicate.isEqual(#{any(java.lang.Object)})")
