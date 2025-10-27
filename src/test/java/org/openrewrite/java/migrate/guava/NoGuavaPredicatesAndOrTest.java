@@ -101,18 +101,38 @@ class NoGuavaPredicatesAndOrTest implements RewriteTest {
               import com.google.common.base.Predicates;
 
               class Test {
-                  Predicate<String> isNotNull = s -> s != null;
-                  Predicate<String> isLong = s -> s.length() > 5;
-                  Predicate<String> combined = Predicates.and(isNotNull, isLong);
+                  Predicate<String> combined = Predicates.and(s -> s != null, s -> s.length() > 5);
               }
               """,
             """
               import com.google.common.base.Predicate;
 
               class Test {
-                  Predicate<String> isNotNull = s -> s != null;
-                  Predicate<String> isLong = s -> s.length() > 5;
-                  Predicate<String> combined = isNotNull.and(isLong);
+                  Predicate<String> combined = ((Predicate<String>) s -> s != null).and(s -> s.length() > 5);
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replacePredicatesOrWithLambdas() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class Test {
+                  Predicate<String> combined = Predicates.or(s -> s != null, s -> s.length() > 5);
+              }
+              """,
+            """
+              import com.google.common.base.Predicate;
+
+              class Test {
+                  Predicate<String> combined = ((Predicate<String>) s -> s != null).or(s -> s.length() > 5);
               }
               """
           )

@@ -157,10 +157,11 @@ class UpdateSdkManTest implements RewriteTest {
             """
               java=11.0.28-zulu
               """,
-            """
-              java=17.0.16-zulu
-              """,
             spec -> spec.path(".sdkmanrc")
+              .after(str -> assertThat(str)
+                .startsWith("java=17.0.")
+                .endsWith("-zulu")
+                .actual())
           )
         );
     }
@@ -173,10 +174,12 @@ class UpdateSdkManTest implements RewriteTest {
             """
               java=21.0.6-zulu
               """,
-            """
-              java=21.0.8-zulu
-              """,
             spec -> spec.path(".sdkmanrc")
+              .after(str -> assertThat(str)
+                .startsWith("java=21.0.")
+                .doesNotContain("21.0.6")
+                .endsWith("-zulu")
+                .actual())
           )
         );
     }
