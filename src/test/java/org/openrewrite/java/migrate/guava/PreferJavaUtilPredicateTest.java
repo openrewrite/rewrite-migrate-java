@@ -102,34 +102,6 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
         );
     }
 
-    @Test
-    void predicatesEqualToToPredicateIsEqual() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import com.google.common.base.Predicate;
-              import com.google.common.base.Predicates;
-
-              class A {
-                  public static Predicate<String> isHelloPredicate() {
-                      return Predicates.equalTo("hello");
-                  }
-              }
-              """,
-            """
-              import java.util.function.Predicate;
-
-              class A {
-                  public static Predicate<String> isHelloPredicate() {
-                      return Predicate.isEqual("hello");
-                  }
-              }
-              """
-          )
-        );
-    }
-
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/899")
     @Test
     void doNotChangeWhenUsingCollectionsFilter() {

@@ -184,13 +184,6 @@ recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.base.Predicates not(com.google.common.base.Predicate)
       fullyQualifiedTargetTypeName: java.util.function.Predicate
-
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: com.google.common.base.Predicates equalTo(..)
-      newMethodName: isEqual
-  - org.openrewrite.java.ChangeMethodTargetToStatic:
-      methodPattern: com.google.common.base.Predicates isEqual(..)
-      fullyQualifiedTargetTypeName: java.util.function.Predicate
   - org.openrewrite.java.migrate.guava.NoGuavaPredicate
 
 ---
