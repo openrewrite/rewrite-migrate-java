@@ -26,7 +26,10 @@ import org.openrewrite.java.ShortenFullyQualifiedTypeReferences;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -35,7 +38,8 @@ import static java.util.Collections.singleton;
 public class NoGuavaPredicatesAndOr extends Recipe {
     private static final MethodMatcher PREDICATES_AND = new MethodMatcher("com.google.common.base.Predicates and(..)");
     private static final MethodMatcher PREDICATES_OR = new MethodMatcher("com.google.common.base.Predicates or(..)");
-    private static final MethodMatcher PREDICATES_EQUAL_TO = new MethodMatcher("com.google.common.base.Predicates equalTo(..)");
+    private static final List<MethodMatcher> PREDICATES_METHODS_HANDLED = Arrays.asList(new MethodMatcher("com.google.common.base.Predicates equalTo(..)"),
+            PREDICATES_AND, PREDICATES_OR, new MethodMatcher("com.google.common.base.Predicates not(..)"));
 
     @Override
     public String getDisplayName() {
@@ -74,17 +78,17 @@ public class NoGuavaPredicatesAndOr extends Recipe {
                     return method;
                 }
 
+                // Avoid generic type issues, for method of "com.google.common.base.Predicates", by not making any changes just yet
+                if (atLeastOneArgumentIsMethodInvocationOfPredicates(arguments)) {
+                    return method;
+                }
+
                 maybeRemoveImport("com.google.common.base.Predicates");
 
                 // Build the chain: first.operation(second).operation(third)...
                 Expression result = arguments.get(0);
 
-                // Avoid generic type issues by not making any changes just yet
-                if (result instanceof J.MethodInvocation && !PREDICATES_EQUAL_TO.matches(result)) {
-                    return method;
-                }
-
-                // If the first argument is a method reference or a lambda, wrap it with a cast
+               // If the first argument is a method reference or a lambda, wrap it with a cast
                 if ((result instanceof J.MemberReference || result instanceof J.Lambda) && result.getType() != null) {
                     String typeString = result.getType().toString().replace("com.google.common.base.", "");
                     result = JavaTemplate.apply("((" + typeString + ") #{any()})", getCursor(), method.getCoordinates().replace(), result);
@@ -99,5 +103,30 @@ public class NoGuavaPredicatesAndOr extends Recipe {
             }
 
         });
+    }
+
+    private boolean atLeastOneArgumentIsMethodInvocationOfPredicates(List<Expression> arguments) {
+        for (Expression expression : arguments) {
+            if (expression instanceof J.MethodInvocation) {
+                if (!isMethodHandled((J.MethodInvocation) expression)) {
+                    JavaType.Method methodType = ((J.MethodInvocation) expression).getMethodType();
+                    if (methodType != null) {
+                        if (TypeUtils.isOfClassType(methodType.getDeclaringType(), "com.google.common.base.Predicates")) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isMethodHandled(J.MethodInvocation methodInvocation) {
+        for (MethodMatcher methodMatcher : PREDICATES_METHODS_HANDLED) {
+            if (methodMatcher.matches(methodInvocation)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
