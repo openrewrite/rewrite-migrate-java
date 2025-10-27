@@ -3567,6 +3567,50 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaFunctionsCompose
+examples:
+- description: '`NoGuavaFunctionsComposeTest#replaceFunctionsCompose`'
+  sources:
+  - before: |
+      import com.google.common.base.Function;
+      import com.google.common.base.Functions;
+
+      class Test {
+          public static void test() {
+              Function<Object, Integer> composed = Functions.compose(new Function<String, Integer>() {
+                  @Override
+                  public Integer apply(String input) {
+                      return input.length();
+                  }
+              }, new Function<Object, String>() {
+                  @Override
+                  public String apply(Object input) {
+                      return input.toString();
+                  }
+              });
+          }
+      }
+    after: |
+      import com.google.common.base.Function;
+
+      class Test {
+          public static void test() {
+              Function<Object, Integer> composed = new Function<String, Integer>() {
+                  @Override
+                  public Integer apply(String input) {
+                      return input.length();
+                  }
+              }.compose(new Function<Object, String>() {
+                  @Override
+                  public String apply(Object input) {
+                      return input.toString();
+                  }
+              });
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
 examples:
 - description: '`NoGuavaImmutableListOfTest#replaceArguments`'
@@ -3642,6 +3686,38 @@ examples:
       class Regular {
           String repeatString(String s, int n) {
               return s.repeat(n);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaIterablesAnyFilter
+examples:
+- description: '`NoGuavaIterablesAnyFilterTest#replaceIterablesAny`'
+  sources:
+  - before: |
+      import java.util.ArrayList;
+      import java.util.Collection;
+      import java.util.Objects;
+
+      import com.google.common.base.Predicate;
+      import com.google.common.collect.Iterables;
+
+      class Test {
+          boolean test(Collection<Object> collection, Predicate<Object> isNotNull) {
+              return Iterables.any(collection, isNotNull);
+          }
+      }
+    after: |
+      import java.util.ArrayList;
+      import java.util.Collection;
+      import java.util.Objects;
+
+      import com.google.common.base.Predicate;
+
+      class Test {
+          boolean test(Collection<Object> collection, Predicate<Object> isNotNull) {
+              return collection.stream().anyMatch(isNotNull);
           }
       }
     language: java
@@ -3777,6 +3853,25 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaPredicate
+examples:
+- description: '`NoGuavaPredicateTest#changeGuavaPredicateToJavaUtilPredicate`'
+  sources:
+  - before: |
+      import com.google.common.base.Predicate;
+
+      class Test {
+          Predicate<String> predicate = input -> input != null && !input.isEmpty();
+      }
+    after: |
+      import java.util.function.Predicate;
+
+      class Test {
+          Predicate<String> predicate = input -> input != null && !input.isEmpty();
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaPredicatesAndOr
 examples:
 - description: '`NoGuavaPredicatesAndOrTest#replacePredicatesAnd`'
@@ -3840,6 +3935,35 @@ examples:
       class A {
           Object foo(Object obj) {
               return requireNonNull(obj);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaSetsFilter
+examples:
+- description: '`NoGuavaSetsFilterTest#replaceSetsFilter`'
+  sources:
+  - before: |
+      import java.util.Set;
+
+      import com.google.common.base.Predicate;
+      import com.google.common.collect.Sets;
+
+      class Test {
+          public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
+              return Sets.filter(set, isNotNull);
+          }
+      }
+    after: |
+      import java.util.Set;
+      import java.util.stream.Collectors;
+
+      import com.google.common.base.Predicate;
+
+      class Test {
+          public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
+              return set.stream().filter(isNotNull).collect(Collectors.toSet());
           }
       }
     language: java
