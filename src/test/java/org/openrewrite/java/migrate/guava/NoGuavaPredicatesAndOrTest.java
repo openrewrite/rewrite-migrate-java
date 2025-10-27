@@ -196,6 +196,37 @@ class NoGuavaPredicatesAndOrTest implements RewriteTest {
         );
     }
 
+    @Test
+    void replacePredicatesOrNestedCalls() {
+        //language=java
+        rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(2),
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class Test {
+                  Predicate<Integer> isPositive = n -> n > 0;
+                  Predicate<Integer> isEven = n -> n % 2 == 0;
+                  Predicate<Integer> isLessThan100 = n -> n < 100;
+                  Predicate<Integer> combined = Predicates.and(isPositive, Predicates.or(isEven, isLessThan100));
+              }
+              """,
+            """
+              import com.google.common.base.Predicate;
+
+              class Test {
+                  Predicate<Integer> isPositive = n -> n > 0;
+                  Predicate<Integer> isEven = n -> n % 2 == 0;
+                  Predicate<Integer> isLessThan100 = n -> n < 100;
+                  Predicate<Integer> combined = isPositive.and(isEven.or(isLessThan100));
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/893")
     @Test
     void replacePredicatesAndWithMoreThanTwoParameters() {
@@ -252,6 +283,185 @@ class NoGuavaPredicatesAndOrTest implements RewriteTest {
                   Predicate<String> isNotEmpty = s -> !s.isEmpty();
                   Predicate<String> containsA = s -> s.contains("A");
                   Predicate<String> combined = isNotNull.or(isNotEmpty).or(containsA);
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replacePredicatesAndWithOtherClassMethodAsParameters() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+              import java.util.Objects;
+
+              class Test {
+                  Predicate<String> getNotNullPredicate() {
+                      return Objects::nonNull;
+                  }
+                  Predicate<String> getMaxLengthPredicate() {
+                      return s -> s.length() > 5;
+                  }
+                  Predicate<String> combined = Predicates.and(getNotNullPredicate(), getMaxLengthPredicate());
+              }
+              """,
+            """
+              import com.google.common.base.Predicate;
+              import java.util.Objects;
+
+              class Test {
+                  Predicate<String> getNotNullPredicate() {
+                      return Objects::nonNull;
+                  }
+                  Predicate<String> getMaxLengthPredicate() {
+                      return s -> s.length() > 5;
+                  }
+                  Predicate<String> combined = getNotNullPredicate().and(getMaxLengthPredicate());
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replacePredicatesAndWithNotMethodAsParameters() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+              import java.util.Objects;
+
+              class Test {
+                  Predicate<String> getNotNullPredicate() {
+                      return Objects::nonNull;
+                  }
+                  Predicate<String> getMaxLengthPredicate() {
+                      return s -> s.length() > 5;
+                  }
+                  Predicate<String> combined = Predicates.and(Predicates.not(getNotNullPredicate()), getMaxLengthPredicate());
+              }
+              """,
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+              import java.util.Objects;
+
+              class Test {
+                  Predicate<String> getNotNullPredicate() {
+                      return Objects::nonNull;
+                  }
+                  Predicate<String> getMaxLengthPredicate() {
+                      return s -> s.length() > 5;
+                  }
+                  Predicate<String> combined = Predicates.not(getNotNullPredicate()).and(getMaxLengthPredicate());
+              }
+              """
+          )
+        );
+    }
+
+
+    @Test
+    void replacePredicatesAndWithEqualToMethodAsParameters() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+              import java.util.Objects;
+
+              class Test {
+                  Predicate<String> getNotNullPredicate() {
+                      return Objects::nonNull;
+                  }
+                  Predicate<String> getMaxLengthPredicate() {
+                      return s -> s.length() < 10;
+                  }
+                  Predicate<String> combined = Predicates.and(Predicates.equalTo("MyTest"), getMaxLengthPredicate());
+              }
+              """,
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+              import java.util.Objects;
+
+              class Test {
+                  Predicate<String> getNotNullPredicate() {
+                      return Objects::nonNull;
+                  }
+                  Predicate<String> getMaxLengthPredicate() {
+                      return s -> s.length() < 10;
+                  }
+                  Predicate<String> combined = Predicates.equalTo("MyTest").and(getMaxLengthPredicate());
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotReplacePredicatesAndWithNotHandledPredicatesMethodAsFirstParameter() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              import java.util.Collection;
+              import java.util.Objects;
+
+              class Test {
+                  Predicate<String> getMinSizePredicate() {
+                      return new Predicate<String>() {
+                          @Override
+                          public boolean apply(String input) {
+                              return input.length() > 5;
+                          }
+                      };
+                  }
+
+                  public void test(Collection<String> aCollection) {
+                      Predicate<String> combined = Predicates.and(Predicates.in(aCollection), getMinSizePredicate());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotReplacePredicatesAndWithNotHandledPredicatesMethodAsSecondParameter() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              import java.util.Collection;
+              import java.util.Objects;
+
+              class Test {
+                  Predicate<String> getMinSizePredicate() {
+                      return new Predicate<String>() {
+                          @Override
+                          public boolean apply(String input) {
+                              return input.length() > 5;
+                          }
+                      };
+                  }
+
+                  public void test(Collection<String> aCollection) {
+                      Predicate<String> combined = Predicates.and(getMinSizePredicate(), Predicates.in(aCollection));
+                  }
               }
               """
           )
