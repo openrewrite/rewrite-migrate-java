@@ -35,6 +35,7 @@ import static java.util.Collections.singleton;
 public class NoGuavaPredicatesAndOr extends Recipe {
     private static final MethodMatcher PREDICATES_AND = new MethodMatcher("com.google.common.base.Predicates and(..)");
     private static final MethodMatcher PREDICATES_OR = new MethodMatcher("com.google.common.base.Predicates or(..)");
+    private static final MethodMatcher PREDICATES_EQUAL_TO = new MethodMatcher("com.google.common.base.Predicates equalTo(..)");
 
     @Override
     public String getDisplayName() {
@@ -79,7 +80,7 @@ public class NoGuavaPredicatesAndOr extends Recipe {
                 Expression result = arguments.get(0);
 
                 // Avoid generic type issues by not making any changes just yet
-                if (result instanceof J.MethodInvocation) {
+                if (result instanceof J.MethodInvocation && !PREDICATES_EQUAL_TO.matches(result)) {
                     return method;
                 }
 
