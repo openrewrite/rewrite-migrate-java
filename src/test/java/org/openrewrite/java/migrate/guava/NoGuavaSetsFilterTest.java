@@ -31,7 +31,7 @@ class NoGuavaSetsFilterTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new NoGuavaSetsFilter())
+          .recipeFromResources("org.openrewrite.java.migrate.guava.NoGuava")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
@@ -55,9 +55,8 @@ class NoGuavaSetsFilterTest implements RewriteTest {
               """,
             """
               import java.util.Set;
+              import java.util.function.Predicate;
               import java.util.stream.Collectors;
-
-              import com.google.common.base.Predicate;
 
               class Test {
                   public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
@@ -91,9 +90,8 @@ class NoGuavaSetsFilterTest implements RewriteTest {
               import java.util.Set;
               import java.util.SortedSet;
               import java.util.TreeSet;
+              import java.util.function.Predicate;
               import java.util.stream.Collectors;
-
-              import com.google.common.base.Predicate;
 
               class Test {
                   public static Set<Object> test(SortedSet<Object> set, Predicate<Object> isNotNull) {
