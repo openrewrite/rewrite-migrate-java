@@ -37,6 +37,7 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList
   - org.openrewrite.java.migrate.guava.NoGuavaMapsNewTreeMap
   - org.openrewrite.java.migrate.guava.NoGuavaPredicatesAndOr
+  - org.openrewrite.java.migrate.guava.NoGuavaPredicatesEqualTo
   - org.openrewrite.java.migrate.guava.NoGuavaPrimitiveAsList
   - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes
   - org.openrewrite.java.migrate.guava.NoGuavaMapsNewHashMap
@@ -190,7 +191,6 @@ recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.base.Predicates isEqual(..)
       fullyQualifiedTargetTypeName: java.util.function.Predicate
-
   - org.openrewrite.java.migrate.guava.NoGuavaPredicate
 
 ---
