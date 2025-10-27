@@ -83,8 +83,8 @@ public class NoGuavaPredicatesAndOr extends Recipe {
                     return method;
                 }
 
-                // If the first argument is a method reference, wrap it with a cast
-                if (result instanceof J.MemberReference && result.getType() != null) {
+                // If the first argument is a method reference or a lambda, wrap it with a cast
+                if ((result instanceof J.MemberReference || result instanceof J.Lambda) && result.getType() != null) {
                     String typeString = result.getType().toString().replace("com.google.common.base.", "");
                     result = JavaTemplate.apply("((" + typeString + ") #{any()})", getCursor(), method.getCoordinates().replace(), result);
                 }
