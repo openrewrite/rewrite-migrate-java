@@ -183,7 +183,11 @@ class NoGuavaPredicateTest implements RewriteTest {
               import java.util.Collection;
 
               class Test {
-                  Predicate<String> notEmpty = s -> !s.isEmpty();
+                  Predicate<String> notEmpty = new Predicate<String>() {
+                      @Override public boolean apply(String s) {
+                          return !s.isEmpty();
+                      }
+                  };
 
                   public Collection<String> filterCollection(Collection<String> input) {
                       return Collections2.filter(input, notEmpty);
