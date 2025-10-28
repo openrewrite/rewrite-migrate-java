@@ -324,13 +324,14 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
             );
         }
 
-        @ExpectedToFail("Not yet implemented")
         @Test
         void asSetToStreamCollectToSet() {
             // Comparison to java.util.Optional: this method has no equivalent in Java 8's Optional class. However, some use cases can be written with calls to optional.stream().
             //language=java
             rewriteRun(java(
                 """
+                  import java.util.Set;
+
                   import com.google.common.base.Optional;
 
                   class A {
