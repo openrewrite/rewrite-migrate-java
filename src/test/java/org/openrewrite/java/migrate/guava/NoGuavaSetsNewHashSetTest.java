@@ -144,6 +144,28 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
     }
 
     @Test
+    void setsNewHashSetWithIteratorsFilter() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Collection;
+              import java.util.Iterator;
+
+              import com.google.common.collect.Iterators;
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  public Collection<String> collectExistingRepresentations(Iterator<Object> iterator) {
+                      return Sets.newHashSet(Iterators.filter(iterator, String.class));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void setsNewHashSetWithCustomIterable() {
         //language=java
         rewriteRun(
