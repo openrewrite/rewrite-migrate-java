@@ -32,6 +32,8 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaFunctionsCompose
   - org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods
   - org.openrewrite.java.migrate.guava.NoGuavaIterablesAnyFilter
+  - org.openrewrite.java.migrate.guava.NoGuavaIterablesTransform
+  - org.openrewrite.java.migrate.guava.NoGuavaCollections2Transform
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList
