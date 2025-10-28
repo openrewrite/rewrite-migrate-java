@@ -62,7 +62,7 @@ class LombokValueToRecordTest implements RewriteTest {
               package example;
 
               public record A(
-                  String test) {
+                      String test) {
               }
               """
           ),
@@ -121,9 +121,9 @@ class LombokValueToRecordTest implements RewriteTest {
               """,
             """
               public record Test(
-                  String field1,
+                      String field1,
 
-                  String field2) {
+                      String field2) {
                   @Override
                   public String toString() {
                       return "Test(" +
@@ -166,7 +166,7 @@ class LombokValueToRecordTest implements RewriteTest {
               import lombok.Value;
 
               public record A(
-                  String test) {
+                      String test) {
               }
 
               @Value
@@ -201,14 +201,12 @@ class LombokValueToRecordTest implements RewriteTest {
 
               public class A {
                   record B(
-                      String test) {
+                          String test) {
                   }
               }
               """
           )
         );
-
-
     }
 
     @Test
@@ -233,7 +231,7 @@ class LombokValueToRecordTest implements RewriteTest {
               import java.io.Serializable;
 
               public record A(
-                  String test) implements Serializable {
+                      String test) implements Serializable {
               }
               """
           )
@@ -266,7 +264,7 @@ class LombokValueToRecordTest implements RewriteTest {
 
               @Builder
               public record A(
-                  String test) implements Serializable {
+                      String test) implements Serializable {
               }
               """
           )
@@ -289,7 +287,7 @@ class LombokValueToRecordTest implements RewriteTest {
               """,
             """
               public record Foo(
-                  boolean bar) {
+                      boolean bar) {
               }"""
           ),
           java(
@@ -329,9 +327,9 @@ class LombokValueToRecordTest implements RewriteTest {
               """,
             """
               public record Config(
-                  boolean enabled,
-                  Boolean active,
-                  String name) {
+                      boolean enabled,
+                      Boolean active,
+                      String name) {
               }
               """
           ),
@@ -384,7 +382,7 @@ class LombokValueToRecordTest implements RewriteTest {
               import java.util.function.Supplier;
 
               record A(
-                  String test) {
+                      String test) {
               }
 
               class Using {

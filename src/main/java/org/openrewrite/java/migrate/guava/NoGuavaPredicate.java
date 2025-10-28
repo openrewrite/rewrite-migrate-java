@@ -40,21 +40,20 @@ public class NoGuavaPredicate extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 Preconditions.not(new UsesPredicateMethod<>()),
-                new TreeVisitor<Tree, ExecutionContext>() {
+                new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public Tree preVisit(Tree tree, ExecutionContext ctx) {
-                        Tree t = tree;
-                        t = new ChangeMethodName(
+                    public J preVisit(J java, ExecutionContext ctx) {
+                        J j = (J) new ChangeMethodName(
                                 "com.google.common.base.Predicate apply(..)",
                                 "test",
                                 true,
                                 false
-                        ).getVisitor().visitNonNull(t, ctx, getCursor().getParentOrThrow());
-                        return new ChangeType(
+                        ).getVisitor().visitNonNull(java, ctx, getCursor().getParentOrThrow());
+                        return (J) new ChangeType(
                                 "com.google.common.base.Predicate",
                                 "java.util.function.Predicate",
                                 false
-                        ).getVisitor().visitNonNull(t, ctx, getCursor().getParentOrThrow());
+                        ).getVisitor().visitNonNull(j, ctx, getCursor().getParentOrThrow());
                     }
                 }
         );
