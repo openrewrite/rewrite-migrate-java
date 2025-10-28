@@ -372,15 +372,21 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             classDeclaration = new RemoveAnnotationVisitor(LOMBOK_VALUE_MATCHER).visitClassDeclaration(classDeclaration, ctx);
             maybeRemoveImport("lombok.Value");
 
+            List<J.Modifier> mappedModifiers = ListUtils.map(classDeclaration.getModifiers(), modifier -> {
+                J.Modifier.Type type = modifier.getType();
+                if (type == J.Modifier.Type.Static || type == J.Modifier.Type.Final) {
+                    return null;
+                }
+                return modifier;
+            });
+            J.ClassDeclaration.Kind kind = classDeclaration.withKind(J.ClassDeclaration.Kind.Type.Record).getPadding().getKind();
+            if (mappedModifiers.isEmpty()) {
+                kind = kind.withPrefix(kind.getPrefix().withWhitespace(""));
+            }
+
             classDeclaration = classDeclaration
-                    .withKind(J.ClassDeclaration.Kind.Type.Record)
-                    .withModifiers(ListUtils.map(classDeclaration.getModifiers(), modifier -> {
-                        J.Modifier.Type type = modifier.getType();
-                        if (type == J.Modifier.Type.Static || type == J.Modifier.Type.Final) {
-                            return null;
-                        }
-                        return modifier;
-                    }))
+                    .getPadding().withKind(kind)
+                    .withModifiers(mappedModifiers)
                     .withType(buildRecordType(classDeclaration))
                     .withBody(classDeclaration.getBody()
                             .withStatements(bodyStatements)
