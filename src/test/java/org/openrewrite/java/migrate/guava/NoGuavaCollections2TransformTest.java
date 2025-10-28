@@ -53,12 +53,13 @@ class NoGuavaCollections2TransformTest implements RewriteTest {
               """,
             """
               import java.util.Collection;
+              import java.util.stream.Collectors;
 
               import com.google.common.base.Function;
 
               class Test {
                   Iterable<Integer> test(Collection<String> collection, Function<String, Integer> toSize) {
-                      return collection.stream().map(toSize).toList();
+                      return collection.stream().map(toSize).collect(Collectors.toList());
                   }
               }
               """

@@ -35,12 +35,12 @@ public class NoGuavaCollections2Transform extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Prefer `Collection.stream().transform(Function)`";
+        return "Prefer `Collection.stream().map(Function)` over `Collections2.transform`";
     }
 
     @Override
     public String getDescription() {
-        return "Prefer `Collection.stream().transform(Function)` over `Collections2.transform(Collection, Function)`.";
+        return "Prefer `Collection.stream().map(Function)` over `Collections2.transform(Collection, Function)`.";
     }
 
     @Override
@@ -59,9 +59,11 @@ public class NoGuavaCollections2Transform extends Recipe {
                             maybeRemoveImport("com.google.common.base.Function");
                             maybeRemoveImport("com.google.common.collect.Collections2");
                             maybeAddImport("java.util.function.Function");
+                            maybeAddImport("java.util.stream.Collectors");
 
                             if (TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
-                                return JavaTemplate.builder("#{any(java.util.Collection)}.stream().map(#{any(java.util.function.Function)}).toList()")
+                                return JavaTemplate.builder("#{any(java.util.Collection)}.stream().map(#{any(java.util.function.Function)}).collect(Collectors.toList())")
+                                        .imports("java.util.stream.Collectors")
                                         .build()
                                         .apply(getCursor(),
                                                 method.getCoordinates().replace(),
