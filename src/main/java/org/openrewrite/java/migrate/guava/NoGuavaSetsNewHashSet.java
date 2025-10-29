@@ -75,8 +75,8 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                                     .build()
                                     .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
                         }
-                        // Skip Iterable-only cases to avoid generating broken code
-                        if (TypeUtils.isAssignableTo("java.lang.Iterable", method.getArguments().get(0).getType())) {
+                        // Skip Iterable-only and Iterator-only cases to avoid generating broken code
+                        if (TypeUtils.isAssignableTo("java.lang.Iterable", method.getArguments().get(0).getType()) || TypeUtils.isAssignableTo("java.util.Iterator", method.getArguments().get(0).getType())) {
                             return method;
                         }
                     }
