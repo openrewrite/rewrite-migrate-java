@@ -32,6 +32,7 @@ tags:
   - jakarta
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava8
+  - org.openrewrite.java.migrate.UpgradeBuildToJava11
   - org.openrewrite.java.migrate.UseJavaUtilBase64
   - org.openrewrite.java.migrate.CastArraysAsListToList
   # Add an explicit JAXB/JAX-WS runtime and upgrade the dependencies to Jakarta EE 8
@@ -58,9 +59,9 @@ recipeList:
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
   - org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
   - org.openrewrite.java.migrate.UpgradeBuildToJava11
-# Disabled due to null safety issues in the current implementation
-# https://github.com/openrewrite/rewrite-migrate-java/issues/250
-#  - org.openrewrite.java.migrate.util.JavaUtilAPIs
+  # Disabled due to null safety issues in the current implementation
+  # https://github.com/openrewrite/rewrite-migrate-java/issues/250
+  #  - org.openrewrite.java.migrate.util.JavaUtilAPIs
   - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
   - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
   - org.openrewrite.java.migrate.util.OptionalStreamRecipe
@@ -221,3 +222,14 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.nio.file.Path get(..)
       newMethodName: of
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava11
+displayName: Upgrade build to Java 11
+description: Updates build files to use Java 11 as the target/source.
+tags:
+  - java11
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 11

@@ -24,6 +24,7 @@ description: >-
 tags:
   - java6
 recipeList:
+  - org.openrewrite.java.migrate.UpgradeBuildToJava6
   - org.openrewrite.java.migrate.jacoco.UpgradeJaCoCo
   - org.openrewrite.java.migrate.util.UseEnumSetOf
   - org.openrewrite.java.migrate.JREWrapperInterface
@@ -41,3 +42,14 @@ recipeList:
       fullyQualifiedClassName: java.sql.Wrapper
       methodPattern: "*..* unwrap(..)"
       methodTemplateString: "public <T> T unwrap(Class<T> iface) throws java.sql.SQLException { \n\t// TODO Auto-generated method stub\n try { if (iface != null && iface.isAssignableFrom(this.getClass())) { return (T) this; } throw new java.sql.SQLException(\"Auto-generated unwrap failed; Revisit implementation\"); } catch (Exception e) { throw new java.sql.SQLException(e); } }"
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava6
+displayName: Upgrade build to Java 6
+description: Updates build files to use Java 6 as the target/source.
+tags:
+  - java6
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 6

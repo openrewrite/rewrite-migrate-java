@@ -25,7 +25,19 @@ tags:
   - java8
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava7
+  - org.openrewrite.java.migrate.UpgradeBuildToJava8
   - org.openrewrite.java.migrate.MXBeanRule
   - org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.lang.Thread destroy()
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava8
+displayName: Upgrade build to Java 8
+description: Updates build files to use Java 8 as the target/source.
+tags:
+  - java8
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 8
