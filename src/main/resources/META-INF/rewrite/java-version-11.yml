@@ -58,9 +58,9 @@ recipeList:
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
   - org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
   - org.openrewrite.java.migrate.UpgradeBuildToJava11
-  # Disabled due to null safety issues in the current implementation
-  # https://github.com/openrewrite/rewrite-migrate-java/issues/250
-  #  - org.openrewrite.java.migrate.util.JavaUtilAPIs
+# Disabled due to null safety issues in the current implementation
+# https://github.com/openrewrite/rewrite-migrate-java/issues/250
+#  - org.openrewrite.java.migrate.util.JavaUtilAPIs
   - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
   - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
   - org.openrewrite.java.migrate.util.OptionalStreamRecipe
