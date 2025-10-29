@@ -16,8 +16,11 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
+import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class JakartaEE10Test implements RewriteTest {
@@ -47,21 +50,12 @@ class JakartaEE10Test implements RewriteTest {
                   </dependencies>
               </project>
               """,
-            """
-              <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>com.example</groupId>
-                  <artifactId>demo</artifactId>
-                  <version>0.0.1-SNAPSHOT</version>
-                  <dependencies>
-                      <dependency>
-                          <groupId>org.eclipse.jetty.ee10.websocket</groupId>
-                          <artifactId>jetty-ee10-websocket-jetty-server</artifactId>
-                          <version>12.1.3</version>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """
+            spec -> spec.after(pom ->
+              assertThat(pom)
+                .as("websocket dependencies").doesNotContain("org.eclipse.jetty.websocket", "websocket-server")
+                .as("EE9 dependencies").doesNotContain("org.eclipse.jetty.ee9.websocket", "jetty-ee9-websocket-jetty-server")
+                .as("EE10 dependencies").contains("org.eclipse.jetty.ee10.websocket", "jetty-ee10-websocket-jetty-server")
+                .actual())
           )
         );
     }
