@@ -25,7 +25,6 @@ tags:
   - java7
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava6
-  - org.openrewrite.java.migrate.UpgradeBuildToJava7
   - org.openrewrite.java.migrate.JREJdbcInterfaceNewMethods
   - org.openrewrite.java.migrate.JREThrowableFinalMethods
   - org.openrewrite.java.migrate.util.ReplaceMathRandomWithThreadLocalRandomRecipe
@@ -72,14 +71,3 @@ recipeList:
       fullyQualifiedClassName: javax.sql.CommonDataSource
       methodPattern: "*..* getParentLogger()"
       methodTemplateString: "public java.util.logging.Logger getParentLogger() { \n\t// TODO Auto-generated method stub\n return null; }"
-
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpgradeBuildToJava7
-displayName: Upgrade build to Java 7
-description: Updates build files to use Java 7 as the target/source.
-tags:
-  - java7
-recipeList:
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 7
