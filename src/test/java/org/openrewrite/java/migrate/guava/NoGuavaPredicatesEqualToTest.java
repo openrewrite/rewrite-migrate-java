@@ -54,7 +54,7 @@ class NoGuavaPredicatesEqualToTest implements RewriteTest {
 
               class A {
                   public static Predicate<String> isHelloPredicate() {
-                      return Predicate.isEqual("hello");
+                      return Predicate.<String>isEqual("hello");
                   }
               }
               """
@@ -64,7 +64,7 @@ class NoGuavaPredicatesEqualToTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/903")
     @Test
-    void inlinedPredicatesEqualToToPredicateIsEqual() {
+    void inlinedPredicatesEqualToWithParameterizedType() {
         rewriteRun(
           //language=java
           java(
@@ -87,6 +87,42 @@ class NoGuavaPredicatesEqualToTest implements RewriteTest {
               class Test {
                   public static void test(Collection<String> aCollection, Predicate<Collection<String>> anotherPredicate) {
                       Predicate<Collection<String>> combined = Predicate.<Collection<String>>isEqual(aCollection).and(anotherPredicate);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void inlinedPredicatesEqualToWithStandardType() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicates;
+              import com.google.common.base.Predicate;
+
+              class Test {
+                  static Predicate<String> getMaxLengthPredicate() {
+                          return s -> s.length() < 10;
+                  }
+
+                  public static void test() {
+                      Predicate<String> combined = Predicates.and(Predicates.equalTo("MyTest"), getMaxLengthPredicate());
+                  }
+              }
+              """,
+            """
+              import java.util.function.Predicate;
+
+              class Test {
+                  static Predicate<String> getMaxLengthPredicate() {
+                          return s -> s.length() < 10;
+                  }
+
+                  public static void test() {
+                      Predicate<String> combined = Predicate.<String>isEqual("MyTest").and(getMaxLengthPredicate());
                   }
               }
               """

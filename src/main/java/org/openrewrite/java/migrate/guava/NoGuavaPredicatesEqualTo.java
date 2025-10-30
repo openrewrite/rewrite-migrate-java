@@ -25,8 +25,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.ShortenFullyQualifiedTypeReferences;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 
+import java.util.Objects;
 import java.util.Set;
 
 import static java.util.Collections.singleton;
@@ -60,8 +60,8 @@ public class NoGuavaPredicatesEqualTo extends Recipe {
                             maybeRemoveImport("com.google.common.base.Predicates");
                             maybeAddImport("java.util.function.Predicate");
 
-                            if (method.getMethodType().getParameterTypes().get(0) instanceof JavaType.Parameterized) {
-                                String typeString = method.getArguments().get(0).getType().toString();
+                            try {
+                                String typeString = Objects.requireNonNull(method.getArguments().get(0).getType()).toString();
                                 J.MethodInvocation genericMethod = JavaTemplate.builder("Predicate.<" + typeString + ">isEqual(#{any(java.lang.Object)})")
                                         .imports("java.util.function.Predicate")
                                         .build()
@@ -70,14 +70,15 @@ public class NoGuavaPredicatesEqualTo extends Recipe {
                                                 method.getArguments().get(0));
                                 doAfterVisit(ShortenFullyQualifiedTypeReferences.modifyOnly(genericMethod));
                                 return genericMethod;
+                            } catch (NullPointerException e) {
+                                // Fallback if no type is found.
+                                return JavaTemplate.builder("Predicate.isEqual(#{any(java.lang.Object)})")
+                                        .imports("java.util.function.Predicate")
+                                        .build()
+                                        .apply(getCursor(),
+                                                method.getCoordinates().replace(),
+                                                method.getArguments().get(0));
                             }
-                            // Fallback is not type is found.
-                            return JavaTemplate.builder("Predicate.isEqual(#{any(java.lang.Object)})")
-                                    .imports("java.util.function.Predicate")
-                                    .build()
-                                    .apply(getCursor(),
-                                            method.getCoordinates().replace(),
-                                            method.getArguments().get(0));
                         }
                         return super.visitMethodInvocation(method, ctx);
                     }
