@@ -24,6 +24,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
   - org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
+  - org.openrewrite.java.migrate.jakarta.JettyUpgradeEE10
   - org.openrewrite.java.migrate.jakarta.Faces3xMigrationToFaces4x
   - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
   - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
@@ -522,4 +523,67 @@ recipeList:
       groupId: org.eclipse
       artifactId: yasson
       newVersion: 3.0.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE10
+displayName: Update Jetty EE9 to Jetty EE10
+description: Update Jetty dependencies from EE9 to EE10, changing the groupId and artifactIds as needed.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9.websocket
+      oldArtifactId: jetty-ee9-websocket-jetty-server
+      newGroupId: org.eclipse.jetty.ee10.websocket
+      newArtifactId: jetty-ee10-websocket-jetty-server
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9.websocket
+      oldArtifactId: jetty-ee9-websocket-jetty-client
+      newGroupId: org.eclipse.jetty.ee10.websocket
+      newArtifactId: jetty-ee10-websocket-jetty-client
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-apache-jsp
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-apache-jsp
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-servlets
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-servlets
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-servlet
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-servlet
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-webapp
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-webapp
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-security
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-security
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-proxy
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-proxy
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-annotations
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-annotations
+      newVersion: 12.0.x
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.eclipse.jetty.util.resource.ResourceCollection
+      newFullyQualifiedTypeName: org.eclipse.jetty.util.resource.Resource
 ---
