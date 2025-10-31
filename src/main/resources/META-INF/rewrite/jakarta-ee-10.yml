@@ -526,75 +526,60 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE10
-displayName: Update Jetty9 to Jetty12
-description: Update Jetty dependencies from version 9 to version 12.
+displayName: Update Jetty EE9 to Jetty EE10
+description: Update Jetty dependencies from EE9 to EE10, changing the groupId and artifactIds as needed.
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty.websocket
-      oldArtifactId: websocket-api
-      newArtifactId: jetty-websocket-jetty-api
-      newVersion: 12.0.x
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty.websocket
-      oldArtifactId: websocket-server
+      oldGroupId: org.eclipse.jetty.ee9.websocket
+      oldArtifactId: jetty-ee9-websocket-jetty-server
       newGroupId: org.eclipse.jetty.ee10.websocket
       newArtifactId: jetty-ee10-websocket-jetty-server
       newVersion: 12.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty.websocket
-      oldArtifactId: websocket-client
+      oldGroupId: org.eclipse.jetty.ee9.websocket
+      oldArtifactId: jetty-ee9-websocket-jetty-client
       newGroupId: org.eclipse.jetty.ee10.websocket
       newArtifactId: jetty-ee10-websocket-jetty-client
       newVersion: 12.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty.websocket
-      oldArtifactId: javax-websocket-server-impl
-      newArtifactId: websocket-javax-server
-      newVersion: 12.0.x
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty.websocket
-      oldArtifactId: javax-websocket-client-impl
-      newArtifactId: websocket-javax-client
-      newVersion: 12.0.x
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty
-      oldArtifactId: apache-jsp
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-apache-jsp
       newGroupId: org.eclipse.jetty.ee10
       newArtifactId: jetty-ee10-apache-jsp
       newVersion: 12.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty
-      oldArtifactId: jetty-servlets
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-servlets
       newGroupId: org.eclipse.jetty.ee10
       newArtifactId: jetty-ee10-servlets
       newVersion: 12.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty
-      oldArtifactId: jetty-servlet
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-servlet
       newGroupId: org.eclipse.jetty.ee10
       newArtifactId: jetty-ee10-servlet
       newVersion: 12.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty
-      oldArtifactId: jetty-webapp
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-webapp
       newGroupId: org.eclipse.jetty.ee10
       newArtifactId: jetty-ee10-webapp
       newVersion: 12.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty
-      oldArtifactId: jetty-security
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-security
       newGroupId: org.eclipse.jetty.ee10
       newArtifactId: jetty-ee10-security
       newVersion: 12.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty
-      oldArtifactId: jetty-proxy
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-proxy
       newGroupId: org.eclipse.jetty.ee10
       newArtifactId: jetty-ee10-proxy
       newVersion: 12.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty
-      oldArtifactId: jetty-annotations
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-annotations
       newGroupId: org.eclipse.jetty.ee10
       newArtifactId: jetty-ee10-annotations
       newVersion: 12.0.x
