@@ -26,7 +26,7 @@ recipeList:
       oldGroupId: org.jvnet.jax-ws-commons
       oldArtifactId: jaxws-maven-plugin
       newGroupId: com.sun.xml.ws
-      newVersion: 2.3.5
+      newVersion: 2.3.X
   - org.openrewrite.maven.ChangePluginExecutions:
       groupId: org.jvnet.jax-ws-commons
       artifactId: jaxws-maven-plugin
