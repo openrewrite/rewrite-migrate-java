@@ -15,17 +15,19 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.*;
+import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JLeftPadded;
+import org.openrewrite.java.tree.JRightPadded;
+import org.openrewrite.java.tree.Space;
+import org.openrewrite.marker.Markers;
+
 import java.util.Set;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 
 public class NoGuavaPredicatesInstanceOf extends Recipe {
@@ -33,12 +35,12 @@ public class NoGuavaPredicatesInstanceOf extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Prefer `ASpecificClass.class::isInstance`";
+        return "Prefer `A.class::isInstance`";
     }
 
     @Override
     public String getDescription() {
-        return "Prefer `ASpecificClass.class::isInstance` over `Predicates.instanceOf(ASpecificClass.class)`.";
+        return "Prefer `A.class::isInstance` over `Predicates.instanceOf(A.class)`.";
     }
 
     @Override
@@ -50,17 +52,30 @@ public class NoGuavaPredicatesInstanceOf extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 new UsesMethod<>(PREDICATES_INSTANCE_OF),
-                new JavaIsoVisitor<ExecutionContext>() {
+                new JavaVisitor<ExecutionContext>() {
                     @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                    public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         if (PREDICATES_INSTANCE_OF.matches(method)) {
                             maybeRemoveImport("com.google.common.base.Predicates");
-
-                            return JavaTemplate.builder("#{any()}::isInstance")
-                                    .build()
-                                    .apply(getCursor(),
-                                            method.getCoordinates().replace(),
-                                            method.getArguments().get(0));
+                            // XXX `JavaTemplate.builder("#{any()}::isInstance")` failed here
+                            // TODO Add type information for reference and identifier
+                            return new J.MemberReference(
+                                    Tree.randomId(),
+                                    method.getPrefix(),
+                                    Markers.EMPTY,
+                                    JRightPadded.build(method.getArguments().get(0)),
+                                    null,
+                                    JLeftPadded.build(new J.Identifier(
+                                            Tree.randomId(),
+                                            Space.EMPTY,
+                                            Markers.EMPTY,
+                                            emptyList(),
+                                            "isInstance",
+                                            null,
+                                            null)),
+                                    null,
+                                    null,
+                                    null);
                         }
                         return super.visitMethodInvocation(method, ctx);
                     }

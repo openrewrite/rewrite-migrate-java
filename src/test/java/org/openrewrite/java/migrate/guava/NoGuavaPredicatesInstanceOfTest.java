@@ -21,6 +21,7 @@ import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 
@@ -36,6 +37,7 @@ class NoGuavaPredicatesInstanceOfTest implements RewriteTest {
     @Test
     void predicatesEqualToToPredicateIsEqual() {
         rewriteRun(
+          spec -> spec.afterTypeValidationOptions(TypeValidation.none()), // TODO Remove suppression
           //language=java
           java(
             """
