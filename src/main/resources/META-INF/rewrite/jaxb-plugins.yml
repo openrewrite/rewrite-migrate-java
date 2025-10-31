@@ -26,11 +26,11 @@ recipeList:
       oldGroupId: org.jvnet.jax-ws-commons
       oldArtifactId: jaxws-maven-plugin
       newGroupId: com.sun.xml.ws
-      newVersion: 2.3.X
+      newVersion: 2.3.5
   - org.openrewrite.maven.ChangePluginExecutions:
       groupId: org.jvnet.jax-ws-commons
       artifactId: jaxws-maven-plugin
       executions: "<id>wsimport-from-jdk</id><phase>generate-sources</phase><goals><goal>wsimport</goal></goals>"
   - org.openrewrite.xml.ChangeTagName:
-      elementName: /plugin/executions/execution/configuration/nocompile
+      elementName: '/project/build/plugins/plugin/executions/execution/configuration/nocompile'
       newName: xnocompile
