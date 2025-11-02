@@ -3671,26 +3671,6 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
-recipeName: org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods
-examples:
-- description: '`NoGuavaInlineMeMethodsTest#stringsRegular`'
-  sources:
-  - before: |
-      import com.google.common.base.Strings;
-      class Regular {
-          String repeatString(String s, int n) {
-              return Strings.repeat(s, n);
-          }
-      }
-    after: |
-      class Regular {
-          String repeatString(String s, int n) {
-              return s.repeat(n);
-          }
-      }
-    language: java
----
-type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaIterablesAnyFilter
 examples:
 - description: '`NoGuavaIterablesAnyFilterTest#replaceIterablesAny`'
