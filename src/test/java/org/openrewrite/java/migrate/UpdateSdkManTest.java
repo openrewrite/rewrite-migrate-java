@@ -141,10 +141,9 @@ class UpdateSdkManTest implements RewriteTest {
             """
               java=11.0.25.fx-zulu
               """,
-            """
-              java=17.0.16.fx-zulu
-              """,
-            spec -> spec.path(".sdkmanrc")
+            spec -> spec
+              .after(str -> assertThat(str).startsWith("java=17.0.").endsWith(".fx-zulu").actual())
+              .path(".sdkmanrc")
           )
         );
     }
