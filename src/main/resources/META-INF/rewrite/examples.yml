@@ -3422,6 +3422,50 @@ examples:
           }
       }
     language: java
+- description: '`NoGuavaPredicatesEqualToTest#predicatesEqualToToPredicateIsEqual`'
+  sources:
+  - before: |
+      import com.google.common.base.Predicate;
+      import com.google.common.base.Predicates;
+
+      class A {
+          public static Predicate<String> isHelloPredicate() {
+              return Predicates.equalTo("hello");
+          }
+      }
+    after: |
+      import java.util.function.Predicate;
+
+      class A {
+          public static Predicate<String> isHelloPredicate() {
+              return Predicate.isEqual("hello");
+          }
+      }
+    language: java
+- description: '`NoGuavaSetsFilterTest#replaceSetsFilter`'
+  sources:
+  - before: |
+      import java.util.Set;
+
+      import com.google.common.base.Predicate;
+      import com.google.common.collect.Sets;
+
+      class Test {
+          public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
+              return Sets.filter(set, isNotNull);
+          }
+      }
+    after: |
+      import java.util.Set;
+      import java.util.function.Predicate;
+      import java.util.stream.Collectors;
+
+      class Test {
+          public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
+              return set.stream().filter(isNotNull).collect(Collectors.toSet());
+          }
+      }
+    language: java
 - description: '`NoGuavaTest#moreObjectsFirstNonNullToObjectsRequireNonNullElse`'
   sources:
   - before: |
@@ -3506,6 +3550,35 @@ examples:
       class Test {
           Object o1 = new AtomicReference<>();
           Object o2 = new AtomicReference<>(0);
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaCollections2Transform
+examples:
+- description: '`NoGuavaCollections2TransformTest#replaceCollections2Transform`'
+  sources:
+  - before: |
+      import java.util.Collection;
+
+      import com.google.common.base.Function;
+      import com.google.common.collect.Collections2;
+
+      class Test {
+          Iterable<Integer> test(Collection<String> collection, Function<String, Integer> toSize) {
+              return Collections2.transform(collection, toSize);
+          }
+      }
+    after: |
+      import java.util.Collection;
+      import java.util.stream.Collectors;
+
+      import com.google.common.base.Function;
+
+      class Test {
+          Iterable<Integer> test(Collection<String> collection, Function<String, Integer> toSize) {
+              return collection.stream().map(toSize).collect(Collectors.toList());
+          }
       }
     language: java
 ---
@@ -3698,6 +3771,35 @@ examples:
       class Test {
           boolean test(Collection<Object> collection, Predicate<Object> isNotNull) {
               return collection.stream().anyMatch(isNotNull);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaIterablesTransform
+examples:
+- description: '`NoGuavaIterablesTransformTest#replaceIterablesTransform`'
+  sources:
+  - before: |
+      import java.util.Collection;
+
+      import com.google.common.base.Function;
+      import com.google.common.collect.Iterables;
+
+      class Test {
+          Iterable<Integer> test(Collection<String> collection, Function<String, Integer> toSize) {
+              return Iterables.transform(collection, toSize);
+          }
+      }
+    after: |
+      import java.util.Collection;
+      import java.util.stream.Collectors;
+
+      import com.google.common.base.Function;
+
+      class Test {
+          Iterable<Integer> test(Collection<String> collection, Function<String, Integer> toSize) {
+              return collection.stream().map(toSize).collect(Collectors.toList());
           }
       }
     language: java
@@ -3915,35 +4017,6 @@ examples:
       class A {
           Object foo(Object obj) {
               return requireNonNull(obj);
-          }
-      }
-    language: java
----
-type: specs.openrewrite.org/v1beta/example
-recipeName: org.openrewrite.java.migrate.guava.NoGuavaSetsFilter
-examples:
-- description: '`NoGuavaSetsFilterTest#replaceSetsFilter`'
-  sources:
-  - before: |
-      import java.util.Set;
-
-      import com.google.common.base.Predicate;
-      import com.google.common.collect.Sets;
-
-      class Test {
-          public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
-              return Sets.filter(set, isNotNull);
-          }
-      }
-    after: |
-      import java.util.Set;
-      import java.util.stream.Collectors;
-
-      import com.google.common.base.Predicate;
-
-      class Test {
-          public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
-              return set.stream().filter(isNotNull).collect(Collectors.toSet());
           }
       }
     language: java
@@ -4400,6 +4473,24 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JakartaEE10
 examples:
+- description: '`JakartaEE10Test#chainedJettyUpgradeEE10`'
+  sources:
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <dependencies>
+              <dependency>
+                  <groupId>org.eclipse.jetty.websocket</groupId>
+                  <artifactId>websocket-server</artifactId>
+                  <version>9.4.58.v20250814</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
 - description: '`UpdateAnnotationAttributeJavaxToJakartaTest#replaceInterfaceName`'
   sources:
   - before: |
