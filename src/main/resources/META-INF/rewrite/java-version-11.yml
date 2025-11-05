@@ -109,6 +109,10 @@ recipeList:
       groupId: org.codehaus.mojo
       artifactId: jaxb2-maven-plugin
       newVersion: 2.5.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.jvnet.jaxb
+      artifactId: jaxb-maven-plugin
+      newVersion: 2.0.X
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxwsDependencies
