@@ -1,5 +1,5 @@
 #
-# Copyright 2024 the original author or authors.
+# Copyright 2025 the original author or authors.
 # <p>
 # Licensed under the Moderne Source Available License (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,11 +26,10 @@ recipeList:
       oldGroupId: org.jvnet.jax-ws-commons
       oldArtifactId: jaxws-maven-plugin
       newGroupId: com.sun.xml.ws
-      newVersion: 2.3.5
-  - org.openrewrite.maven.ChangePluginExecutions:
-      groupId: org.jvnet.jax-ws-commons
-      artifactId: jaxws-maven-plugin
-      executions: "<id>wsimport-from-jdk</id><phase>generate-sources</phase><goals><goal>wsimport</goal></goals>"
+      newVersion: 2.3.7
+  - org.openrewrite.xml.AddOrUpdateChildTag:
+      parentXPath: //plugin[artifactId='jaxws-maven-plugin']/executions/execution
+      newChildTag: <phase>generate-sources</phase>
   - org.openrewrite.xml.ChangeTagName:
-      elementName: '/project/build/plugins/plugin/executions/execution/configuration/nocompile'
+      elementName: //plugin[artifactId='jaxws-maven-plugin']/executions/execution/configuration/nocompile
       newName: xnocompile

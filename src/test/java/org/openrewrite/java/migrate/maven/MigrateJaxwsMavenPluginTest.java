@@ -20,6 +20,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class MigrateJaxwsMavenPluginTest implements RewriteTest {
@@ -67,6 +68,18 @@ class MigrateJaxwsMavenPluginTest implements RewriteTest {
                                   </execution>
                               </executions>
                           </plugin>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-compiler-plugin</artifactId>
+                              <version>3.14.1</version>
+                              <executions>
+                                  <execution>
+                                      <configuration>
+                                          <nocompile>true</nocompile>
+                                      </configuration>
+                                  </execution>
+                              </executions>
+                          </plugin>
                       </plugins>
                   </build>
               </project>
@@ -82,7 +95,7 @@ class MigrateJaxwsMavenPluginTest implements RewriteTest {
                           <plugin>
                               <groupId>com.sun.xml.ws</groupId>
                               <artifactId>jaxws-maven-plugin</artifactId>
-                              <version>2.3.5</version>
+                              <version>2.3.7</version>
                               <executions>
                                   <execution>
                                       <id>wsimport-from-jdk</id>
@@ -99,6 +112,19 @@ class MigrateJaxwsMavenPluginTest implements RewriteTest {
                                           <keep>true</keep>
                                           <xnocompile>true</xnocompile>
                                           <verbose>true</verbose>
+                                      </configuration>
+                                      <phase>generate-sources</phase>
+                                  </execution>
+                              </executions>
+                          </plugin>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-compiler-plugin</artifactId>
+                              <version>3.14.1</version>
+                              <executions>
+                                  <execution>
+                                      <configuration>
+                                          <nocompile>true</nocompile>
                                       </configuration>
                                   </execution>
                               </executions>
