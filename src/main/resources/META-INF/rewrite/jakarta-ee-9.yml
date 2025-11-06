@@ -781,9 +781,9 @@ recipeList:
       artifactId: jaxb2-maven-plugin
       newVersion: 3.x
   - org.openrewrite.maven.UpgradePluginVersion:
-      groupId: org.codehaus.mojo
+      groupId: org.jvnet.jaxb
       artifactId: jaxb-maven-plugin
-      newVersion: 4.x
+      newVersion: 3.x
   - org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
 ---
 type: specs.openrewrite.org/v1beta/recipe
