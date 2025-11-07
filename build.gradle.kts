@@ -56,7 +56,6 @@ dependencies {
     implementation("org.openrewrite.recipe:rewrite-java-dependencies:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-static-analysis:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-jenkins:$rewriteVersion")
-    implementation("org.openrewrite.recipe:rewrite-third-party:${rewriteVersion}")
     implementation("org.openrewrite:rewrite-templating:$rewriteVersion")
     implementation("org.openrewrite.meta:rewrite-analysis:$rewriteVersion")
 
