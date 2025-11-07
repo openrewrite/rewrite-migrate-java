@@ -37,6 +37,7 @@ recipeList:
   # Add an explicit JAXB/JAX-WS runtime and upgrade the dependencies to Jakarta EE 8
   - org.openrewrite.java.migrate.javax.AddJaxbDependenciesWithRuntime
   - org.openrewrite.java.migrate.javax.AddJaxwsDependencies
+  - org.openrewrite.java.migrate.javax.MigrateJaxBWSPlugin
   - org.openrewrite.java.migrate.javax.AddInjectDependencies
   - org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies
   # Remediate deprecations
