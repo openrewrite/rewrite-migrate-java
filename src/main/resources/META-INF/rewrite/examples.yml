@@ -13,6 +13,26 @@
 # limitations under the License.
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: com.google.guava.InlineGuavaMethods
+examples:
+- description: '`InlineGuavaMethodsTest#stringsRegular`'
+  sources:
+  - before: |
+      import com.google.common.base.Strings;
+      class Regular {
+          String repeatString(String s, int n) {
+              return Strings.repeat(s, n);
+          }
+      }
+    after: |
+      class Regular {
+          String repeatString(String s, int n) {
+              return s.repeat(n);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.jspecify.JSpecifyBestPractices
 examples:
 - description: '`JSpecifyBestPracticesTest#migrateFromJavaxAnnotationApiToJspecify`'
@@ -6233,6 +6253,109 @@ examples:
           }
       }
     language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.javax.MigrateJaxBWSPlugin
+examples:
+- description: '`MigrateJaxwsMavenPluginTest#migrateJaxwsPluginFromJvnetToSunXmlWs`'
+  sources:
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>jaxws-service</artifactId>
+          <version>1.0.0</version>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.jvnet.jax-ws-commons</groupId>
+                      <artifactId>jaxws-maven-plugin</artifactId>
+                      <version>2.1</version>
+                      <executions>
+                          <execution>
+                              <id>wsimport-from-jdk</id>
+                              <goals>
+                                  <goal>wsimport</goal>
+                              </goals>
+                              <configuration>
+                                  <sourceDestDir>${project.build.directory}/generated-sources/wsimport</sourceDestDir>
+                                  <wsdlDirectory>${project.basedir}/src/main/resources/wsdl</wsdlDirectory>
+                                  <wsdlFiles>
+                                      <wsdlFile>STSSAPPrimingService.wsdl</wsdlFile>
+                                  </wsdlFiles>
+                                  <packageName>org.example.generated</packageName>
+                                  <keep>true</keep>
+                                  <nocompile>true</nocompile>
+                                  <verbose>true</verbose>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <version>3.14.1</version>
+                      <executions>
+                          <execution>
+                              <configuration>
+                                  <nocompile>true</nocompile>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+              </plugins>
+          </build>
+      </project>
+    after: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>jaxws-service</artifactId>
+          <version>1.0.0</version>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>com.sun.xml.ws</groupId>
+                      <artifactId>jaxws-maven-plugin</artifactId>
+                      <version>2.3.7</version>
+                      <executions>
+                          <execution>
+                              <id>wsimport-from-jdk</id>
+                              <goals>
+                                  <goal>wsimport</goal>
+                              </goals>
+                              <configuration>
+                                  <sourceDestDir>${project.build.directory}/generated-sources/wsimport</sourceDestDir>
+                                  <wsdlDirectory>${project.basedir}/src/main/resources/wsdl</wsdlDirectory>
+                                  <wsdlFiles>
+                                      <wsdlFile>STSSAPPrimingService.wsdl</wsdlFile>
+                                  </wsdlFiles>
+                                  <packageName>org.example.generated</packageName>
+                                  <keep>true</keep>
+                                  <xnocompile>true</xnocompile>
+                                  <verbose>true</verbose>
+                              </configuration>
+                              <phase>generate-sources</phase>
+                          </execution>
+                      </executions>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <version>3.14.1</version>
+                      <executions>
+                          <execution>
+                              <configuration>
+                                  <nocompile>true</nocompile>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+              </plugins>
+          </build>
+      </project>
+    path: pom.xml
+    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.RemoveEmbeddableId
