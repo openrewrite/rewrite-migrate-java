@@ -373,4 +373,46 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void doNotMigrateMainWithPrivateNoArgConstructor() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              class Foo {
+                  private Foo() {}
+                  public static void main(String[] args) {
+                      System.out.println("Hello, World!");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void migrateMainWithPublicNoArgConstructor() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              class Application {
+                  public Application() {}
+                  public static void main(String[] args) {
+                      System.out.println("Hello, World!");
+                  }
+              }
+              """,
+            """
+              class Application {
+                  public Application() {}
+                  void main() {
+                      System.out.println("Hello, World!");
+                  }
+              }
+              """
+          )
+        );
+    }
 }

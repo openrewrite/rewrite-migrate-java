@@ -106,15 +106,16 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
                         .filter(J.MethodDeclaration::isConstructor)
                         .collect(toList());
 
-                // If no constructors are declared, the class has an implicit no-arg constructor
+                // If no constructors are declared, the class has an implicit public no-arg constructor
                 if (constructors.isEmpty()) {
                     return true;
                 }
 
-                // Check if any explicit constructor is a no-arg constructor
+                // Instance main requires a public no args constructor
                 return constructors.stream()
-                        .anyMatch(ctor -> ctor.getParameters().isEmpty() ||
-                                (ctor.getParameters().size() == 1 && ctor.getParameters().get(0) instanceof J.Empty));
+                        .anyMatch(ctor -> (ctor.getParameters().isEmpty() ||
+                                (ctor.getParameters().size() == 1 && ctor.getParameters().get(0) instanceof J.Empty)) &&
+                                ctor.hasModifier(J.Modifier.Type.Public));
             }
 
             private boolean isMainMethodReferenced(J.MethodDeclaration mainMethod) {

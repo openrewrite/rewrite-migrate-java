@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.guava;
+package com.google.guava;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
@@ -22,12 +22,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class NoGuavaInlineMeMethodsTest implements RewriteTest {
+class InlineGuavaMethodsTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources(
-          "org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods");
+        spec.recipeFromResources("com.google.guava.InlineGuavaMethods");
     }
 
     @DocumentExample

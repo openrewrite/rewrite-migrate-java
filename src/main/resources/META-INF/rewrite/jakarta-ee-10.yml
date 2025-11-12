@@ -24,6 +24,7 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
   - org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
+  - org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta10
   - org.openrewrite.java.migrate.jakarta.JettyUpgradeEE10
   - org.openrewrite.java.migrate.jakarta.Faces3xMigrationToFaces4x
   - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
@@ -464,6 +465,10 @@ recipeList:
       groupId: org.glassfish.jersey.ext
       artifactId: "*"
       newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.tyrus
+      artifactId: "*"
+      newVersion: 2.1.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
@@ -587,3 +592,16 @@ recipeList:
       oldFullyQualifiedTypeName: org.eclipse.jetty.util.resource.ResourceCollection
       newFullyQualifiedTypeName: org.eclipse.jetty.util.resource.Resource
 ---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta10
+displayName: Update Plugins for Jakarta EE 10
+description: Update plugin to be compatible with Jakarta EE 10.
+recipeList:
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.codehaus.mojo
+      artifactId: jaxb2-maven-plugin
+      newVersion: 4.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.jvnet.jaxb
+      artifactId: jaxb-maven-plugin
+      newVersion: 4.x
