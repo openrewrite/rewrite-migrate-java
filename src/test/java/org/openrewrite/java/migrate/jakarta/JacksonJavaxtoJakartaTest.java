@@ -354,4 +354,46 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void rewriteJaxbAnnotationIntrospectorToJakartaXmlBindAnnotationIntrospector() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath("jackson-module-jaxb-annotations")),
+          //language=java
+          java(
+            """
+              import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+
+              public class A extends JaxbAnnotationIntrospector {}
+              """,
+            """
+              import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
+
+              public class A extends JakartaXmlBindAnnotationIntrospector {}
+              """
+          )
+        );
+    }
+
+    @Test
+    void rewriteJacksonJsonProviderToJacksonJsonProvider() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
+            "jackson-databind",
+            "jackson-jaxrs-json-provider")),
+          //language=java
+          java(
+            """
+              import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+
+              public class A extends JacksonJsonProvider {}
+              """,
+            """
+              import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
+
+              public class A extends JacksonJsonProvider {}
+              """
+          )
+        );
+    }
 }
