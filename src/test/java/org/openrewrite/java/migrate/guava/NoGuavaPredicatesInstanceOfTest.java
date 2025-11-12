@@ -37,7 +37,8 @@ class NoGuavaPredicatesInstanceOfTest implements RewriteTest {
     @Test
     void predicatesEqualToToPredicateIsEqual() {
         rewriteRun(
-          spec -> spec.afterTypeValidationOptions(TypeValidation.none()), // TODO Remove suppression
+          // XXX Pending JavaTemplate support for MemberReference
+          spec -> spec.afterTypeValidationOptions(TypeValidation.none()),
           //language=java
           java(
             """
