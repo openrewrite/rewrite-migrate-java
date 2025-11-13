@@ -3458,7 +3458,7 @@ examples:
 
       class A {
           public static Predicate<String> isHelloPredicate() {
-              return Predicate.isEqual("hello");
+              return Predicate.<String>isEqual("hello");
           }
       }
     language: java
@@ -3994,6 +3994,34 @@ examples:
           Predicate<String> isNotNull = s -> s != null;
           Predicate<String> isNotEmpty = s -> !s.isEmpty();
           Predicate<String> combined = isNotNull.and(isNotEmpty);
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaPredicatesInstanceOf
+examples:
+- description: '`NoGuavaPredicatesInstanceOfTest#predicatesEqualToToPredicateIsEqual`'
+  sources:
+  - before: |
+      import java.util.Collection;
+
+      import com.google.common.base.Predicates;
+      import com.google.common.collect.Iterables;
+
+      class Test {
+          boolean test(Collection<Object> collection) {
+              return Iterables.all(collection, Predicates.instanceOf(String.class));
+          }
+      }
+    after: |
+      import java.util.Collection;
+
+      import com.google.common.collect.Iterables;
+
+      class Test {
+          boolean test(Collection<Object> collection) {
+              return Iterables.all(collection, String.class::isInstance);
+          }
       }
     language: java
 ---
