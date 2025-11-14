@@ -504,6 +504,10 @@ recipeList:
       groupId: org.apache.shiro
       artifactId: "*"
       newClassifier: jakarta
+  - org.openrewrite.gradle.ChangeDependencyClassifier:
+      groupId: org.apache.shiro
+      artifactId: "*"
+      newClassifier: jakarta
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.shiro
       artifactId: "*"
