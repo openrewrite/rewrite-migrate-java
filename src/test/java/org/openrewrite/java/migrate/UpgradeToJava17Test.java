@@ -611,4 +611,213 @@ class UpgradeToJava17Test implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void addsLombokMapstructBindingIfBothLombokAndMapstruct() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          mavenProject("project",
+            //language=groovy
+            buildGradle(
+              """
+                plugins { id 'java' }
+                repositories { mavenCentral() }
+                dependencies {
+                    implementation "org.projectlombok:lombok:1.18.42"
+                    implementation "org.mapstruct:mapstruct:1.6.3"
+                }
+                """,
+              """
+                plugins { id 'java' }
+                repositories { mavenCentral() }
+                dependencies {
+                    annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+
+                    implementation "org.projectlombok:lombok:1.18.42"
+                    implementation "org.mapstruct:mapstruct:1.6.3"
+                }
+                """
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>11</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.42</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct</artifactId>
+                            <version>1.6.3</version>
+                        </dependency>
+                    </dependencies>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <configuration>
+                                <annotationProcessorPaths>
+                                    <path>
+                                        <groupId>org.projectlombok</groupId>
+                                        <artifactId>lombok</artifactId>
+                                    </path>
+                                </annotationProcessorPaths>
+                            </configuration>
+                            <version>3.14.1</version>
+                        </plugin>
+                    </plugins>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.42</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>0.2.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct</artifactId>
+                            <version>1.6.3</version>
+                        </dependency>
+                    </dependencies>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <configuration>
+                                <annotationProcessorPaths>
+                                    <path>
+                                        <groupId>org.projectlombok</groupId>
+                                        <artifactId>lombok</artifactId>
+                                    </path>
+                                    <path>
+                                        <groupId>org.projectlombok</groupId>
+                                        <artifactId>lombok-mapstruct-binding</artifactId>
+                                        <version>0.2.0</version>
+                                    </path>
+                                </annotationProcessorPaths>
+                            </configuration>
+                            <version>3.14.1</version>
+                        </plugin>
+                    </plugins>
+                </project>
+                """
+            ),
+            mavenProject("anotherProject",
+              //language=xml
+              pomXml(
+                """
+                  <project>
+                      <groupId>org.someother</groupId>
+                      <artifactId>anotherproject</artifactId>
+                      <version>1.0.0</version>
+                      <properties>
+                          <maven.compiler.release>17</maven.compiler.release>
+                      </properties>
+                      <dependencies>
+                      </dependencies>
+                  </project>
+                  """
+              )
+            )
+          )
+        );
+    }
+
+    @Test
+    void doesNotDuplicateLombokMapstructBinding() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          mavenProject("project",
+            //language=groovy
+            buildGradle(
+              """
+                plugins { id 'java' }
+                repositories { mavenCentral() }
+                dependencies {
+                    annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+
+                    implementation "org.projectlombok:lombok:1.18.42"
+                    implementation "org.mapstruct:mapstruct:1.6.3"
+                }
+                """
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                        <lombok.mapstruct.binding.version>0.2.0</lombok.mapstruct.binding.version>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.42</version>
+                            <scope>provided</scope>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>${lombok.mapstruct.binding.version}</version>
+                            <scope>provided</scope>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct</artifactId>
+                            <version>1.6.3</version>
+                        </dependency>
+                    </dependencies>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <configuration>
+                                <annotationProcessorPaths>
+                                    <path>
+                                        <groupId>org.projectlombok</groupId>
+                                        <artifactId>lombok</artifactId>
+                                    </path>
+                                    <path>
+                                        <groupId>org.projectlombok</groupId>
+                                        <artifactId>lombok-mapstruct-binding</artifactId>
+                                        <version>0.2.0</version>
+                                    </path>
+                                </annotationProcessorPaths>
+                            </configuration>
+                            <version>3.14.1</version>
+                        </plugin>
+                    </plugins>
+                </project>
+                """
+            )
+          )
+        );
+    }
 }
