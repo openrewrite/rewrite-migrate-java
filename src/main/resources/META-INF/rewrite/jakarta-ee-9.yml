@@ -335,10 +335,6 @@ recipeList:
       oldGroupId: org.apache.commons
       oldArtifactId: commons-fileupload2-jakarta
       newArtifactId: commons-fileupload2-jakarta-servlet5
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: org.apache.commons
-      artifactId: '*'
-      newVersion: 2.0.0-M4
   - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.commons.fileload.disk
       newPackageName: org.apache.commons.fileload2.core
