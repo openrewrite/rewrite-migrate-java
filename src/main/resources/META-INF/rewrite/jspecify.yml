@@ -25,6 +25,7 @@ recipeList:
 - org.openrewrite.java.jspecify.MigrateToJSpecify
 - org.openrewrite.staticanalysis.AnnotateNullableMethods
 - org.openrewrite.staticanalysis.AnnotateNullableParameters
+- org.openrewrite.staticanalysis.AnnotateRequiredParameters
 - org.openrewrite.staticanalysis.NullableOnMethodReturnType
 
 ---
