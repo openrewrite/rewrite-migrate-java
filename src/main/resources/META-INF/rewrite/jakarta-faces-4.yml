@@ -118,14 +118,6 @@ recipeList:
       find: "http://xmlns.jcp.org/jsf"
       replace: "jakarta.faces"
       filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://primefaces.org/ui/extensions"
-      replace: "primefaces.extensions"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://primefaces.org/ui"
-      replace: "primefaces"
-      filePattern: '**/*.xhtml'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaFacesConfigXml4
