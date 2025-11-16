@@ -128,4 +128,36 @@ class NoGuavaTest implements RewriteTest {
           )
         );
     }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/920")
+    @Test
+    void iterablesAllMigration() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Collection;
+
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Iterables;
+
+              class Test {
+                  boolean test(Collection<String> collection, Predicate<String> aPredicate) {
+                      return Iterables.all(collection, aPredicate);
+                  }
+              }
+              """,
+            """
+              import java.util.Collection;
+              import java.util.function.Predicate;
+
+              class Test {
+                  boolean test(Collection<String> collection, Predicate<String> aPredicate) {
+                      return collection.stream().allMatch(aPredicate);
+                  }
+              }
+              """
+          )
+        );
+    }
 }
