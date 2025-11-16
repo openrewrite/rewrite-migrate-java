@@ -31,6 +31,7 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
   - org.openrewrite.java.migrate.guava.NoGuavaFunctionsCompose
+  - org.openrewrite.java.migrate.guava.NoGuavaIterablesAll
   - org.openrewrite.java.migrate.guava.NoGuavaIterablesAnyFilter
   - org.openrewrite.java.migrate.guava.NoGuavaIterablesTransform
   - org.openrewrite.java.migrate.guava.NoGuavaCollections2Transform
