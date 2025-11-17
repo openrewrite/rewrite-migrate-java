@@ -3764,6 +3764,34 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaIterablesAll
+examples:
+- description: '`NoGuavaIterablesAllTest#replaceIterablesAll`'
+  sources:
+  - before: |
+      import java.util.Collection;
+
+      import com.google.common.base.Predicate;
+      import com.google.common.collect.Iterables;
+
+      class Test {
+          boolean test(Collection<String> collection, Predicate<String> aPredicate) {
+              return Iterables.all(collection, aPredicate);
+          }
+      }
+    after: |
+      import java.util.Collection;
+
+      import com.google.common.base.Predicate;
+
+      class Test {
+          boolean test(Collection<String> collection, Predicate<String> aPredicate) {
+              return collection.stream().allMatch(aPredicate);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaIterablesAnyFilter
 examples:
 - description: '`NoGuavaIterablesAnyFilterTest#replaceIterablesAny`'
@@ -5627,6 +5655,32 @@ examples:
         }
       }
     language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
+examples:
+- description: '`UpdateApacheShiroDependenciesTest#migrateShiroDependenciesMaven`'
+  sources:
+  - before: |
+      <project>
+          <groupId>com.example.shiro</groupId>
+          <artifactId>shiro-legacy</artifactId>
+          <version>1.0.0</version>
+          <dependencies>
+              <dependency>
+                  <groupId>org.apache.shiro</groupId>
+                  <artifactId>shiro-core</artifactId>
+                  <version>1.13.0</version>
+              </dependency>
+              <dependency>
+                  <groupId>org.apache.shiro</groupId>
+                  <artifactId>shiro-web</artifactId>
+                  <version>1.13.0</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
