@@ -51,6 +51,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
   - org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
+  - org.openrewrite.java.migrate.jakarta.MigrateFastjsonForJakarta10
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
@@ -532,13 +533,11 @@ recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.pac4j
       oldArtifactId: javaee-pac4j
-      newGroupId: org.pac4j
       newArtifactId: pac4j-jakartaee
       newVersion: 6.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.pac4j
       oldArtifactId: pac4j-javaee
-      newGroupId: org.pac4j
       newArtifactId: pac4j-jakartaee
       newVersion: 6.x
 ---
@@ -622,8 +621,8 @@ recipeList:
       newArtifactId: jetty-ee10-annotations
       newVersion: 12.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: org.eclipse.jetty.websocket
-      oldArtifactId: websocket-server
+      oldGroupId: org.eclipse.jetty.ee9.websocket
+      oldArtifactId: jetty-ee9-websocket-jetty-server
       newGroupId: org.eclipse.jetty.ee10.websocket
       newArtifactId: jetty-ee10-websocket-jakarta-server
       newVersion: 12.x
