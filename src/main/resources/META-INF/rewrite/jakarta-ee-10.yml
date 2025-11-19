@@ -520,6 +520,18 @@ recipeList:
       groupId: org.pac4j
       artifactId: "*"
       newVersion: 6.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.pac4j
+      oldArtifactId: javaee-pac4j
+      newGroupId: org.pac4j
+      newArtifactId: pac4j-jakartaee
+      newVersion: 6.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.pac4j
+      oldArtifactId: pac4j-javaee
+      newGroupId: org.pac4j
+      newArtifactId: pac4j-jakartaee
+      newVersion: 6.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
