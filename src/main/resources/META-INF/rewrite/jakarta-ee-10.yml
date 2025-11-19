@@ -516,11 +516,11 @@ recipeList:
       oldPackageName: org.apache.shiro.codec
       newPackageName: org.apache.shiro.lang.codec
   - org.openrewrite.java.ChangeType:
-      oldPackageName: org.apache.shiro.util.ByteSource
-      newPackageName: org.apache.shiro.lang.util.ByteSource
+      oldFullyQualifiedTypeName: org.apache.shiro.util.ByteSource
+      newFullyQualifiedTypeName: org.apache.shiro.lang.util.ByteSource
   - org.openrewrite.java.ChangeType:
-      oldPackageName: org.apache.shiro.util.StringUtils
-      newPackageName: org.apache.shiro.lang.util.StringUtils
+      oldFullyQualifiedTypeName: org.apache.shiro.util.StringUtils
+      newFullyQualifiedTypeName: org.apache.shiro.lang.util.StringUtils
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: io.buji
       artifactId: buji-pac4j
