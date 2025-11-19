@@ -512,6 +512,14 @@ recipeList:
       groupId: org.apache.shiro
       artifactId: "*"
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: io.buji
+      artifactId: buji-pac4j
+      newVersion: 9.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.pac4j
+      artifactId: "*"
+      newVersion: 6.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
@@ -592,6 +600,12 @@ recipeList:
       newGroupId: org.eclipse.jetty.ee10
       newArtifactId: jetty-ee10-annotations
       newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.websocket
+      oldArtifactId: websocket-server
+      newGroupId: org.eclipse.jetty.ee10.websocket
+      newArtifactId: jetty-ee10-websocket-jakarta-server
+      newVersion: 12.x
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.eclipse.jetty.util.resource.ResourceCollection
       newFullyQualifiedTypeName: org.eclipse.jetty.util.resource.Resource
@@ -609,3 +623,15 @@ recipeList:
       groupId: org.jvnet.jaxb
       artifactId: jaxb-maven-plugin
       newVersion: 4.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.MigrateFastjsonForJakarta10
+displayName: Update Fastjson for Jakarta EE 10
+description: Update Fastjson to be compatible with Jakarta EE 10.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.alibaba
+      oldArtifactId: fastjson
+      newGroupId: com.alibaba.fastjson2
+      newArtifactId: fastjson2
+      newVersion: 2.x
