@@ -655,6 +655,54 @@ recipeList:
       newGroupId: com.alibaba.fastjson2
       newArtifactId: fastjson2
       newVersion: 2.x
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.parser.ParserConfig
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.reader.ObjectReaderProvider
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.parser.deserializer.ExtraProcessor
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.ExtraProcessor
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.parser.deserializer.ObjectDeserializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.reader.ObjectReader
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.AfterFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.AfterFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.BeforeFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.BeforeFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.ContextValueFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.ContextValueFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.LabelFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.LabelFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.NameFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.NameFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.PascalNameFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.PascalNameFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.PropertyFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.PropertyFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.ObjectSerializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.writer.ObjectWriter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.SerializeConfig
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.writer.ObjectWriterProvider
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.ToStringSerializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.writer.ObjectWriterImplToString
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.ValueFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.ValueFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.SerializerFeature
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.JSONReader.Feature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.parser.Feature
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.JSONWriter.Feature
   - org.openrewrite.java.ChangePackage:
       oldPackageName: com.alibaba.fastjson
       newPackageName: com.alibaba.fastjson2
