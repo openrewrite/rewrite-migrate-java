@@ -127,6 +127,32 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.AddLombokMapstructBinding
+examples:
+- description: '`AddLombokMapstructBindingTest#addForGradle`'
+  sources:
+  - before: |
+      plugins { id 'java' }
+      repositories { mavenCentral() }
+      dependencies {
+          implementation "org.projectlombok:lombok:1.18.42"
+          implementation "org.mapstruct:mapstruct:1.6.3"
+      }
+    after: |
+      plugins { id 'java' }
+      repositories { mavenCentral() }
+      dependencies {
+          annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+
+          implementation "org.projectlombok:lombok:1.18.42"
+          implementation "org.mapstruct:mapstruct:1.6.3"
+      }
+    path: build.gradle
+    language: groovy
+  - before: project
+    language: mavenProject
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.AddMissingMethodImplementation
 examples:
 - description: '`AddMissingMethodImplementationTest#happyPath`'
