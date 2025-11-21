@@ -32,7 +32,7 @@ class JSpecifyBestPracticesTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipeFromResource("/META-INF/rewrite/jspecify.yml", "org.openrewrite.java.jspecify.JSpecifyBestPractices")
-          .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jakarta.annotation-api", "annotations", "spring-core"));
+          .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jakarta.annotation-api", "annotations", "spring-core", "micronaut-core"));
     }
 
     @DocumentExample
@@ -412,6 +412,98 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                             <groupId>org.springframework</groupId>
                             <artifactId>spring-core</artifactId>
                             <version>6.1.13</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void migrateFromMicronautAnnotationToJspecify() {
+        rewriteRun(
+          mavenProject("foo",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import io.micronaut.core.annotation.NonNull;
+                  import io.micronaut.core.annotation.Nullable;
+
+                  public class Test {
+                      @NonNull
+                      public String field1;
+                      @Nullable
+                      public String field2;
+                      @Nullable
+                      public Foo.Bar foobar;
+                  }
+
+                  interface Foo {
+                    class Bar {
+                      @NonNull
+                      public String barField;
+                    }
+                  }
+                  """,
+                """
+                  import org.jspecify.annotations.NonNull;
+                  import org.jspecify.annotations.Nullable;
+
+                  public class Test {
+                      @NonNull
+                      public String field1;
+                      @Nullable
+                      public String field2;
+
+                      public Foo.@Nullable Bar foobar;
+                  }
+
+                  interface Foo {
+                    class Bar {
+                      @NonNull
+                      public String barField;
+                    }
+                  }
+                  """
+              )
+            )
+            ,
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.micronaut</groupId>
+                            <artifactId>micronaut-core</artifactId>
+                            <version>4.10.8</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.micronaut</groupId>
+                            <artifactId>micronaut-core</artifactId>
+                            <version>4.10.8</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jspecify</groupId>
+                            <artifactId>jspecify</artifactId>
+                            <version>1.0.0</version>
                         </dependency>
                     </dependencies>
                 </project>
