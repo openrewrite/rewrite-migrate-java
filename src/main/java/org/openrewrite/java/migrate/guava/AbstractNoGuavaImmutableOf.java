@@ -110,7 +110,10 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                         .apply(getCursor(), mi.getCoordinates().replace(), templateArguments);
                 m = m.getPadding().withArguments(mi.getPadding().getArguments());
                 JavaType.Method newType = (JavaType.Method) visitType(mi.getMethodType(), ctx);
-                m = m.withMethodType(newType).withName(m.getName().withType(newType));
+                m = m.withMethodType(newType)
+                        .withName(m.getName().withType(newType))
+                        .withPrefix(mi.getPrefix());
+
                 return super.visitMethodInvocation(m, ctx);
             }
 
