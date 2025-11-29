@@ -48,41 +48,43 @@ public class UseMapOf extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(10),
-            new UsesMethod<>(NEW_HASH_MAP)), new UseMapOfVisitor());
-    }
+        return Preconditions.check(
+                Preconditions.and(
+                        new UsesJavaVersion<>(10),
+                        new UsesMethod<>(NEW_HASH_MAP)),
+                new JavaVisitor<ExecutionContext>() {
+                    @Override
+                    public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
+                        J.NewClass n = (J.NewClass) super.visitNewClass(newClass, ctx);
+                        J.Block body = n.getBody();
+                        if (NEW_HASH_MAP.matches(n) && body != null && body.getStatements().size() == 1) {
+                            Statement statement = body.getStatements().get(0);
+                            if (statement instanceof J.Block) {
+                                List<Expression> args = new ArrayList<>();
+                                StringJoiner mapOf = new StringJoiner(", ", "Map.of(", ")");
+                                for (Statement stat : ((J.Block) statement).getStatements()) {
+                                    if (!(stat instanceof J.MethodInvocation) || !MAP_PUT.matches((Expression) stat)) {
+                                        return n;
+                                    }
+                                    J.MethodInvocation put = (J.MethodInvocation) stat;
+                                    args.addAll(put.getArguments());
+                                    mapOf.add("#{any()}");
+                                    mapOf.add("#{any()}");
+                                }
 
-    private static class UseMapOfVisitor extends JavaVisitor<ExecutionContext> {
-        @Override
-        public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
-            J.NewClass n = (J.NewClass) super.visitNewClass(newClass, ctx);
-            J.Block body = n.getBody();
-            if (NEW_HASH_MAP.matches(n) && body != null && body.getStatements().size() == 1) {
-                Statement statement = body.getStatements().get(0);
-                if (statement instanceof J.Block) {
-                    List<Expression> args = new ArrayList<>();
-                    StringJoiner mapOf = new StringJoiner(", ", "Map.of(", ")");
-                    for (Statement stat : ((J.Block) statement).getStatements()) {
-                        if (!(stat instanceof J.MethodInvocation) || !MAP_PUT.matches((Expression) stat)) {
-                            return n;
+                                maybeRemoveImport("java.util.HashMap");
+                                maybeAddImport("java.util.Map");
+                                return JavaTemplate.builder(mapOf.toString())
+                                        .contextSensitive()
+                                        .imports("java.util.Map")
+                                        .build()
+                                        .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
+                            }
                         }
-                        J.MethodInvocation put = (J.MethodInvocation) stat;
-                        args.addAll(put.getArguments());
-                        mapOf.add("#{any()}");
-                        mapOf.add("#{any()}");
+
+                        return n;
                     }
-
-                    maybeRemoveImport("java.util.HashMap");
-                    maybeAddImport("java.util.Map");
-                    return JavaTemplate.builder(mapOf.toString())
-                        .contextSensitive()
-                        .imports("java.util.Map")
-                        .build()
-                        .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
-                }
-            }
-
-            return n;
-        }
+                });
     }
+
 }
