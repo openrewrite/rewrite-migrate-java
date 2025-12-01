@@ -30,13 +30,13 @@ class UpdateSdkManTest implements RewriteTest {
     @Test
     void updateVersionExact() {
         rewriteRun(
-          spec -> spec.recipe(new UpdateSdkMan("17.0.16", null)),
+          spec -> spec.recipe(new UpdateSdkMan("17.0.17", null)),
           text(
             """
               java=11.1.2-tem
               """,
             """
-              java=17.0.16-tem
+              java=17.0.17-tem
               """,
             spec -> spec.path(".sdkmanrc")
           )
@@ -63,10 +63,10 @@ class UpdateSdkManTest implements RewriteTest {
           spec -> spec.recipe(new UpdateSdkMan(null, "amzn")),
           text(
             """
-              java=11.0.28-tem
+              java=11.0.29-tem
               """,
             """
-              java=11.0.28-amzn
+              java=11.0.29-amzn
               """,
             spec -> spec.path(".sdkmanrc")
           )
