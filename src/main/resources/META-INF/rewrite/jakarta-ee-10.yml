@@ -90,12 +90,6 @@ recipeList:
       groupId: jakarta.mail
       artifactId: jakarta.mail-api
       newVersion: 2.1.x
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: com.sun.mail
-      oldArtifactId: jakarta.mail
-      newGroupId: jakarta.mail
-      newArtifactId: jakarta.mail-api
-      newVersion: 2.1.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
