@@ -83,6 +83,10 @@ recipeList:
       artifactId: jakarta.batch-api
       newVersion: 2.1.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.mail
+      artifactId: jakarta.mail-api
+      newVersion: 2.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.validation
       artifactId: jakarta.validation-api
       newVersion: 3.0.x

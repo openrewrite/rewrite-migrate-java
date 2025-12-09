@@ -522,6 +522,18 @@ displayName: Migrate deprecated `javax.mail` packages to `jakarta.mail`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.mail
+      oldArtifactId: javax.mail
+      newGroupId: jakarta.mail
+      newArtifactId: jakarta.mail-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.mail
+      oldArtifactId: jakarta.mail
+      newGroupId: jakarta.mail
+      newArtifactId: jakarta.mail-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.mail
       oldArtifactId: mail
       newGroupId: jakarta.mail
