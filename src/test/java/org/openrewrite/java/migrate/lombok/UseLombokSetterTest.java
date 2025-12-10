@@ -248,15 +248,15 @@ class UseLombokSetterTest implements RewriteTest {
 			  }
 			  """,
 			"""
-			  import lombok.AccessLevel;
-			  import lombok.Setter;
+              import lombok.AccessLevel;
+              import lombok.Setter;
 
-			  class A {
+              class A {
 
-				  @Setter(value = AccessLevel.PRIVATE, onMethod_ = {@Deprecated})
-				  int foo = 9;
-			  }
-			  """
+                  @Setter(value = AccessLevel.PRIVATE, onMethod_ = {@Deprecated})
+                  int foo = 9;
+              }
+              """
 		  )
 		);
 	}

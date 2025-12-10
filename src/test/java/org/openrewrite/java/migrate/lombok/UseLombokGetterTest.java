@@ -572,7 +572,7 @@ class UseLombokGetterTest implements RewriteTest {
 
                   @Deprecated
                   @SuppressWarnings("deprecation")
-                  private int getFoo() {
+                  public int getFoo() {
                       return foo;
                   }
               }
