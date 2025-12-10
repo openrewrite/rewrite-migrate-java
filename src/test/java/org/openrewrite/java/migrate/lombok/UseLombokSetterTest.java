@@ -232,6 +232,35 @@ class UseLombokSetterTest implements RewriteTest {
         );
     }
 
+	@Test
+	void replacePrivateSetterAnnotated() {
+		rewriteRun(// language=java
+		  java(
+			"""
+			  class A {
+
+				  int foo = 9;
+
+				  @Deprecated
+				  private void setFoo(int foo) {
+					  this.foo = foo;
+				  }
+			  }
+			  """,
+			"""
+			  import lombok.AccessLevel;
+			  import lombok.Setter;
+
+			  class A {
+
+				  @Setter(value = AccessLevel.PRIVATE, onMethod_ = {@Deprecated})
+				  int foo = 9;
+			  }
+			  """
+		  )
+		);
+	}
+
     @Test
     void replaceJustTheMatchingSetter() {
         rewriteRun(// language=java
