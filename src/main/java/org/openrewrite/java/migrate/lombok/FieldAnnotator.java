@@ -27,9 +27,10 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
 import java.util.List;
-import static java.util.stream.Collectors.joining;
+import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PUBLIC;
 
 @EqualsAndHashCode(callSuper = false)
@@ -60,6 +61,7 @@ class FieldAnnotator extends JavaIsoVisitor<ExecutionContext> {
 						 suffix = valueArg.isEmpty() ? "" : String.format("(%s)", valueArg);
 					} else {
 						String onMethodArg = String.format("onMethod_ = {%s}", onMethodAnnotations.stream().map(J.Annotation::toString).collect(joining(",")));
+						suffix = valueArg.isEmpty() ? String.format("(%s)", onMethodArg) : String.format("(value = %s, %s)", valueArg,  onMethodArg);
 					}
 
 					return JavaTemplate.builder("@" + annotation.getSimpleName() + suffix)
