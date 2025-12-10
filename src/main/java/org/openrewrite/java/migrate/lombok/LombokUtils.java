@@ -19,23 +19,17 @@ import lombok.AccessLevel;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
 import org.openrewrite.internal.StringUtils;
-import org.openrewrite.java.AnnotationMatcher;
-import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-
-import java.util.List;
 
 import static lombok.AccessLevel.*;
 import static org.openrewrite.java.tree.J.Modifier.Type.*;
 
 class LombokUtils {
 
-    private static final AnnotationMatcher OVERRIDE_MATCHER = new AnnotationMatcher("java.lang.Override");
-
-    static boolean isGetter(Cursor cursor, AnnotationService service) {
+    static boolean isGetter(Cursor cursor) {
         if (!(cursor.getValue() instanceof J.MethodDeclaration)) {
             return false;
         }
@@ -51,10 +45,6 @@ class LombokUtils {
         if (method.getBody() == null ||
                 method.getBody().getStatements().size() != 1 ||
                 !(method.getBody().getStatements().get(0) instanceof J.Return)) {
-            return false;
-        }
-        // Check there is no annotation except @Overwrite
-        if (hasAnyAnnotatioOtherThanOverride(cursor, service)) {
             return false;
         }
         // Check field is declared on method type
@@ -127,7 +117,7 @@ class LombokUtils {
         return "get" + StringUtils.capitalize(fieldName);
     }
 
-    static boolean isSetter(Cursor cursor, AnnotationService service) {
+    static boolean isSetter(Cursor cursor) {
         if (!(cursor.getValue() instanceof J.MethodDeclaration)) {
             return false;
         }
@@ -145,11 +135,6 @@ class LombokUtils {
         if (method.getBody() == null || //abstract methods can be null
                 method.getBody().getStatements().size() != 1 ||
                 !(method.getBody().getStatements().get(0) instanceof J.Assignment)) {
-            return false;
-        }
-
-        // Check there is no annotation except @Overwrite
-        if (hasAnyAnnotatioOtherThanOverride(cursor, service)) {
             return false;
         }
 
@@ -241,8 +226,4 @@ class LombokUtils {
         return PACKAGE;
     }
 
-    private static boolean hasAnyAnnotatioOtherThanOverride(Cursor cursor, AnnotationService service) {
-        List<J.Annotation> annotations = service.getAllAnnotations(cursor);
-        return !(annotations.isEmpty() || (annotations.size() == 1 && OVERRIDE_MATCHER.matches(annotations.get(0))));
-    }
 }

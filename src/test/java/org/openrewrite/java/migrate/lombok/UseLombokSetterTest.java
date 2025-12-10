@@ -541,19 +541,28 @@ class UseLombokSetterTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite/issues/5015")
     @Test
-    void noChangeIfAnnotated() {
+    void addOnMethodArgIfAnnotated() {
         rewriteRun(// language=java
-          java("@interface MyOtherAnnotation {}"),
           java(
             """
               class A {
 
                   int foo = 9;
 
-                  @MyOtherAnnotation
+                  @Deprecated
+                  @SuppressWarnings("deprecation")
                   public void setFoo(int fub) {
                       this.foo = fub;
                   }
+              }
+              """,
+			"""
+              import lombok.Setter;
+
+              class A {
+
+                  @Setter(onMethod_ = {@Deprecated, @SuppressWarnings("deprecation")})
+                  int foo = 9;
               }
               """
           )

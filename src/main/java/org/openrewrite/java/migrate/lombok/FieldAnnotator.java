@@ -19,11 +19,15 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
 import static lombok.AccessLevel.PUBLIC;
@@ -32,11 +36,14 @@ import static lombok.AccessLevel.PUBLIC;
 @Value
 class FieldAnnotator extends JavaIsoVisitor<ExecutionContext> {
 
-    Class<?> annotation;
+	private static final AnnotationMatcher OVERRIDE_MATCHER = new AnnotationMatcher("java.lang.Override");
+
+	Class<?> annotation;
     JavaType field;
     AccessLevel accessLevel;
+	List<J.Annotation> onMethodAnnotations;
 
-    @Override
+	@Override
     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
         for (J.VariableDeclarations.NamedVariable variable : multiVariable.getVariables()) {
             if (variable.getName().getFieldType() == field) {
@@ -46,8 +53,17 @@ class FieldAnnotator extends JavaIsoVisitor<ExecutionContext> {
                         .noneMatch(ann -> annotationName.equals(ann.getSimpleName()))) {
                     maybeAddImport(annotation.getName());
                     maybeAddImport("lombok.AccessLevel");
-                    String suffix = accessLevel == PUBLIC ? "" : String.format("(AccessLevel.%s)", accessLevel.name());
-                    return JavaTemplate.builder("@" + annotation.getSimpleName() + suffix)
+                    String valueArg = accessLevel == PUBLIC ? "" : String.format("AccessLevel.%s", accessLevel.name());
+					String suffix;
+					onMethodAnnotations.removeIf(OVERRIDE_MATCHER::matches);
+					if (onMethodAnnotations.isEmpty()) {
+						 suffix = valueArg.isEmpty() ? "" : String.format("(%s)", valueArg);
+					} else {
+						String onMethodArg = String.format("onMethod_ = {%s}", onMethodAnnotations.stream().map(J.Annotation::toString).collect(Collectors.joining(",")));
+						suffix = valueArg.isEmpty() ? String.format("(%s)", onMethodArg) : String.format("(value = %s, %s)", valueArg,  onMethodArg);
+					}
+
+					return JavaTemplate.builder("@" + annotation.getSimpleName() + suffix)
                             .imports(annotation.getName(), "lombok.AccessLevel")
                             .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
                             .build().apply(getCursor(), multiVariable.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
