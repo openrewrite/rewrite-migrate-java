@@ -561,7 +561,7 @@ class UseLombokGetterTest implements RewriteTest {
     }
 
 	@Test
-	void noChangeRecordWithCompactContractor() {
+	void noChangeRecordWithCompactConstructor() {
 		rewriteRun(// language=java
 		  java(
 			"""
