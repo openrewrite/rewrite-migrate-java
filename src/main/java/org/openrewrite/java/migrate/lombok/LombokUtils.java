@@ -19,6 +19,7 @@ import lombok.AccessLevel;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
 import org.openrewrite.internal.StringUtils;
+import org.openrewrite.java.marker.CompactConstructor;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
@@ -38,7 +39,7 @@ class LombokUtils {
             return false;
         }
         // Check signature: no parameters
-        if (!(method.getParameters().get(0) instanceof J.Empty) || method.getReturnTypeExpression() == null) {
+        if (method.getMarkers().findFirst(CompactConstructor.class).isPresent() || !(method.getParameters().get(0) instanceof J.Empty) || method.getReturnTypeExpression() == null) {
             return false;
         }
         // Check body: just a return statement

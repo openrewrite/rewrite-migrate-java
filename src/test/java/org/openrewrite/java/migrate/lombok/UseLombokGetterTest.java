@@ -560,6 +560,23 @@ class UseLombokGetterTest implements RewriteTest {
         );
     }
 
+	@Test
+	void noChangeRecordWithCompactContractor() {
+		rewriteRun(// language=java
+		  java(
+			"""
+			  public record Foo(String id) {
+			      public Foo {
+			  		if (id == null || id.isBlank()) {
+			  			throw new IllegalArgumentException("ID cannot be null or blank");
+			  		}
+			  	}
+			  }
+			  """
+		  )
+		);
+	}
+
     @Issue("https://github.com/openrewrite/rewrite/issues/5015")
     @Test
     void addOnMethodArgIfAnnotated() {
