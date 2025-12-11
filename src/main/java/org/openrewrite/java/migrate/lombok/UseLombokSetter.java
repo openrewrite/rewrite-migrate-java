@@ -27,6 +27,7 @@ import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
+import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.singleton;
@@ -55,13 +56,15 @@ public class UseLombokSetter extends Recipe {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                if (LombokUtils.isSetter(getCursor(), service(AnnotationService.class))) {
+                if (LombokUtils.isSetter(getCursor())) {
                     Expression assignmentVariable = ((J.Assignment) method.getBody().getStatements().get(0)).getVariable();
-                    if (assignmentVariable instanceof J.FieldAccess &&
+					List<J.Annotation> onMethodAnnotations = service(AnnotationService.class).getAllAnnotations(getCursor());
+					if (assignmentVariable instanceof J.FieldAccess &&
                             ((J.FieldAccess) assignmentVariable).getName().getFieldType() != null) {
                         doAfterVisit(new FieldAnnotator(Setter.class,
                                 ((J.FieldAccess) assignmentVariable).getName().getFieldType(),
-                                LombokUtils.getAccessLevel(method)));
+                                LombokUtils.getAccessLevel(method),
+								onMethodAnnotations));
                         return null; //delete
 
                     }
@@ -69,7 +72,8 @@ public class UseLombokSetter extends Recipe {
                             ((J.Identifier) assignmentVariable).getFieldType() != null) {
                         doAfterVisit(new FieldAnnotator(Setter.class,
                                 ((J.Identifier) assignmentVariable).getFieldType(),
-                                LombokUtils.getAccessLevel(method)));
+                                LombokUtils.getAccessLevel(method),
+								onMethodAnnotations));
                         return null; //delete
                     }
                 }

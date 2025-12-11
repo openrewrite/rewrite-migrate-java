@@ -197,6 +197,36 @@ class UseLombokGetterTest implements RewriteTest {
         );
     }
 
+	@Test
+	void replacePrivateGetterAnnotated() {
+		rewriteRun(// language=java
+		  java(
+			"""
+			  class A {
+
+				  int foo = 9;
+
+				  @Deprecated
+				  private int getFoo() {
+					  return foo;
+				  }
+			  }
+			  """,
+			"""
+              import lombok.AccessLevel;
+              import lombok.Getter;
+
+              class A {
+
+                  @Getter(value = AccessLevel.PRIVATE, onMethod_ = {@Deprecated})
+                  int foo = 9;
+              }
+              """
+
+		  )
+		);
+	}
+
     @Test
     void replaceJustTheMatchingGetter() {
         rewriteRun(// language=java
@@ -532,19 +562,28 @@ class UseLombokGetterTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite/issues/5015")
     @Test
-    void noChangeIfAnnotated() {
+    void addOnMethodArgIfAnnotated() {
         rewriteRun(// language=java
-          java("@interface MyOtherAnnotation {}"),
           java(
             """
               class A {
 
                   int foo = 9;
 
-                  @MyOtherAnnotation
+                  @Deprecated
+                  @SuppressWarnings("deprecation")
                   public int getFoo() {
                       return foo;
                   }
+              }
+              """,
+			"""
+              import lombok.Getter;
+
+              class A {
+
+                  @Getter(onMethod_ = {@Deprecated, @SuppressWarnings("deprecation")})
+                  int foo = 9;
               }
               """
           )

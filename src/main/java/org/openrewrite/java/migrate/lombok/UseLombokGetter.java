@@ -27,6 +27,7 @@ import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
+import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.singleton;
@@ -56,14 +57,16 @@ public class UseLombokGetter extends Recipe {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                if (LombokUtils.isGetter(getCursor(), service(AnnotationService.class))) {
+                if (LombokUtils.isGetter(getCursor())) {
                     Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
-                    if (returnExpression instanceof J.Identifier &&
+					List<J.Annotation> onMethodAnnotations = service(AnnotationService.class).getAllAnnotations(getCursor());
+					if (returnExpression instanceof J.Identifier &&
                             ((J.Identifier) returnExpression).getFieldType() != null) {
                         doAfterVisit(new FieldAnnotator(
                                 Getter.class,
                                 ((J.Identifier) returnExpression).getFieldType(),
-                                LombokUtils.getAccessLevel(method)));
+                                LombokUtils.getAccessLevel(method),
+								onMethodAnnotations));
                         return null;
                     }
                     if (returnExpression instanceof J.FieldAccess &&
@@ -71,7 +74,8 @@ public class UseLombokGetter extends Recipe {
                         doAfterVisit(new FieldAnnotator(
                                 Getter.class,
                                 ((J.FieldAccess) returnExpression).getName().getFieldType(),
-                                LombokUtils.getAccessLevel(method)));
+                                LombokUtils.getAccessLevel(method),
+								onMethodAnnotations));
                         return null;
                     }
                 }
