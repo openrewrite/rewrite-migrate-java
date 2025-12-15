@@ -22,14 +22,16 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 @SuppressWarnings("UnusedAssignment")
 class UseEnumSetOfTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new UseEnumSetOf());
+        spec
+          .recipe(new UseEnumSetOf(null))
+          .allSources(s -> s.markers(javaVersion(9)));
     }
 
     @DocumentExample
@@ -37,35 +39,32 @@ class UseEnumSetOfTest implements RewriteTest {
     void changeDeclaration() {
         //language=java
         rewriteRun(
-          version(
-            java(
+          java(
+            """
+              import java.util.Set;
+
+              class Test {
+                  public enum Color {
+                      RED, GREEN, BLUE
+                  }
+                  public void method() {
+                      Set<Color> warm = Set.of(Color.RED, Color.GREEN);
+                  }
+              }
+              """,
+            """
+              import java.util.EnumSet;
+              import java.util.Set;
+
+              class Test {
+                  public enum Color {
+                      RED, GREEN, BLUE
+                  }
+                  public void method() {
+                      Set<Color> warm = EnumSet.of(Color.RED, Color.GREEN);
+                  }
+              }
               """
-                import java.util.Set;
-                
-                class Test {
-                    public enum Color {
-                        RED, GREEN, BLUE
-                    }
-                    public void method() {
-                        Set<Color> warm = Set.of(Color.RED, Color.GREEN);
-                    }
-                }
-                """,
-              """
-                import java.util.EnumSet;
-                import java.util.Set;
-                
-                class Test {
-                    public enum Color {
-                        RED, GREEN, BLUE
-                    }
-                    public void method() {
-                        Set<Color> warm = EnumSet.of(Color.RED, Color.GREEN);
-                    }
-                }
-                """
-            ),
-            9
           )
         );
     }
@@ -74,37 +73,34 @@ class UseEnumSetOfTest implements RewriteTest {
     void changeAssignment() {
         //language=java
         rewriteRun(
-          version(
-            java(
+          java(
+            """
+              import java.util.Set;
+
+              class Test {
+                  public enum Color {
+                      RED, GREEN, BLUE
+                  }
+                  public void method() {
+                      Set<Color> warm;
+                      warm = Set.of(Color.RED);
+                  }
+              }
+              """,
+            """
+              import java.util.EnumSet;
+              import java.util.Set;
+
+              class Test {
+                  public enum Color {
+                      RED, GREEN, BLUE
+                  }
+                  public void method() {
+                      Set<Color> warm;
+                      warm = EnumSet.of(Color.RED);
+                  }
+              }
               """
-                import java.util.Set;
-                
-                class Test {
-                    public enum Color {
-                        RED, GREEN, BLUE
-                    }
-                    public void method() {
-                        Set<Color> warm;
-                        warm = Set.of(Color.RED);
-                    }
-                }
-                """,
-              """
-                import java.util.EnumSet;
-                import java.util.Set;
-                
-                class Test {
-                    public enum Color {
-                        RED, GREEN, BLUE
-                    }
-                    public void method() {
-                        Set<Color> warm;
-                        warm = EnumSet.of(Color.RED);
-                    }
-                }
-                """
-            ),
-            9
           )
         );
     }
@@ -114,22 +110,19 @@ class UseEnumSetOfTest implements RewriteTest {
     void dontChangeVarargs() {
         //language=java
         rewriteRun(
-          version(
-            java(
+          java(
+            """
+              import java.util.Set;
+
+              class Test {
+                  public enum Color {
+                      RED, GREEN, BLUE
+                  }
+                  public void method(final Color... colors) {
+                      Set<Color> s = Set.of(colors);
+                  }
+              }
               """
-                import java.util.Set;
-                
-                class Test {
-                    public enum Color {
-                        RED, GREEN, BLUE
-                    }
-                    public void method(final Color... colors) {
-                        Set<Color> s = Set.of(colors);
-                    }
-                }
-                """
-            ),
-            9
           )
         );
     }
@@ -139,23 +132,20 @@ class UseEnumSetOfTest implements RewriteTest {
     void dontChangeArray() {
         //language=java
         rewriteRun(
-          version(
-            java(
+          java(
+            """
+              import java.util.Set;
+
+              class Test {
+                  public enum Color {
+                      RED, GREEN, BLUE
+                  }
+                  public void method() {
+                      Color[] colors = {};
+                      Set<Color> s = Set.of(colors);
+                  }
+              }
               """
-                import java.util.Set;
-                
-                class Test {
-                    public enum Color {
-                        RED, GREEN, BLUE
-                    }
-                    public void method() {
-                        Color[] colors = {};
-                        Set<Color> s = Set.of(colors);
-                    }
-                }
-                """
-            ),
-            9
           )
         );
     }
@@ -165,32 +155,52 @@ class UseEnumSetOfTest implements RewriteTest {
     void dontHaveArgs() {
         //language=java
         rewriteRun(
-          version(
-            java(
+          java(
+            """
+              import java.util.Set;
+              import java.util.concurrent.TimeUnit;
+              class Test {
+
+                  public void method() {
+                      Set<TimeUnit> warm = Set.of();
+                  }
+              }
+              """,
+            """
+              import java.util.EnumSet;
+              import java.util.Set;
+              import java.util.concurrent.TimeUnit;
+
+              class Test {
+
+                  public void method() {
+                      Set<TimeUnit> warm = EnumSet.noneOf(TimeUnit.class);
+                  }
+              }
               """
-                import java.util.Set;
-                import java.util.concurrent.TimeUnit;
-                class Test {
-                
-                    public void method() {
-                        Set<TimeUnit> warm = Set.of();
-                    }
-                }
-                """,
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/958")
+    @Test
+    void retainEmptySetOf() {
+        //language=java
+        rewriteRun(
+          spec -> spec.recipe(new UseEnumSetOf(false)),
+          java(
+            """
+              import java.util.Set;
+
+              class Test {
+                  public enum Color {
+                      RED, GREEN, BLUE
+                  }
+                  public void method() {
+                      Set<Color> warm = Set.of();
+                  }
+              }
               """
-                import java.util.EnumSet;
-                import java.util.Set;
-                import java.util.concurrent.TimeUnit;
-                
-                class Test {
-                
-                    public void method() {
-                        Set<TimeUnit> warm = EnumSet.noneOf(TimeUnit.class);
-                    }
-                }
-                """
-            ),
-            9
           )
         );
     }

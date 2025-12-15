@@ -25,7 +25,8 @@ tags:
   - java6
 recipeList:
   - org.openrewrite.java.migrate.jacoco.UpgradeJaCoCo
-  - org.openrewrite.java.migrate.util.UseEnumSetOf
+  - org.openrewrite.java.migrate.util.UseEnumSetOf:
+      convertEmptySet: false
   - org.openrewrite.java.migrate.JREWrapperInterface
 ---
 type: specs.openrewrite.org/v1beta/recipe
