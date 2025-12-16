@@ -55,7 +55,7 @@ public class UseEnumSetOf extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Prefer `EnumSet of(..)` instead of using `Set of(..)` when the arguments are enums in Java 5 or higher.";
+        return "Prefer `EnumSet of(..)` instead of using `Set of(..)` when the arguments are enums in Java 9 or higher.";
     }
 
     @Override
