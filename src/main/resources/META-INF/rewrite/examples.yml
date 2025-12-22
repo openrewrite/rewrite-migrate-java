@@ -8540,6 +8540,8 @@ type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.UseEnumSetOf
 examples:
 - description: '`UseEnumSetOfTest#changeDeclaration`'
+  parameters:
+  - 'null'
   sources:
   - before: |
       import java.util.Set;

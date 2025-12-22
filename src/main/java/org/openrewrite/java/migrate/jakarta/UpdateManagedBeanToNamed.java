@@ -65,8 +65,8 @@ public class UpdateManagedBeanToNamed extends Recipe {
                         Optional<Annotated> annotated = new Annotated.Matcher(MANAGED_BEAN_MATCHER).get(getCursor());
                         if (annotated.isPresent()) {
                             maybeRemoveImport("javax.faces.bean.ManagedBean");
-                            maybeAddImport("jakarta.inject.Named");
                             maybeRemoveImport("jakarta.faces.bean.ManagedBean");
+                            maybeAddImport("jakarta.inject.Named");
                             // Get the name from the @ManagedBean annotation
                             String beanName = annotated
                                     .flatMap(a -> a.getDefaultAttribute("name"))
