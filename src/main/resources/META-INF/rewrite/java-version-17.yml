@@ -338,7 +338,7 @@ name: org.openrewrite.java.migrate.AddLombokMapstructBindingMavenDependencyOnly
 displayName: Add `lombok-mapstruct-binding` dependency for Maven when both MapStruct and Lombok are used
 description: >-
   Add the `lombok-mapstruct-binding` when both MapStruct and Lombok are used, and the dependency does not already exist.
-  Only to be called from `org.openrewrite.java.migrate.AddLombokMapstructBinding` to reduce redundant checks
+  Only to be called from `org.openrewrite.java.migrate.AddLombokMapstructBinding` to reduce redundant checks.
 preconditions:
   - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
       groupId: org.projectlombok

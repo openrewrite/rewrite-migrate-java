@@ -37,7 +37,7 @@ public class HasNoJakartaAnnotations extends ScanningRecipe<HasNoJakartaAnnotati
     @Override
     public String getDescription() {
         return "Mark all source as found per `JavaProject` where no Jakarta annotations are found. " +
-                "This is useful mostly as a precondition for recipes that require Jakarta annotations to be present";
+                "This is useful mostly as a precondition for recipes that require Jakarta annotations to be present.";
     }
 
     @Value
