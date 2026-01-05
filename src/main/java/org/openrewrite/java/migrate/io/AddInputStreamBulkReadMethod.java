@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 public class AddInputStreamBulkReadMethod extends Recipe {
 
@@ -54,8 +53,7 @@ public class AddInputStreamBulkReadMethod extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        DeclaresType<ExecutionContext> precondition = new DeclaresType<>(JAVA_IO_INPUT_STREAM, true);
-        return Preconditions.check(/*TODO precondition*/true, new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(new DeclaresType<>(JAVA_IO_INPUT_STREAM, true), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
@@ -107,17 +105,10 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                     return SearchResult.found(tree, MARKER_MESSAGE);
                 }
 
-                // Simple delegation - add bulk read method
+                // Simple delegation - add bulk read method right after the single-byte read method
                 Statement bulkMethod = createBulkReadMethod(result.getDelegate(), result.isHasNullCheck(), result.isUsesIfStyle(), body);
-                J.MethodDeclaration targetMethod = result.getReadMethod();
-                J.Block newBody = body.withStatements(
-                        ListUtils.flatMap(body.getStatements(), stmt -> {
-                            if (stmt == targetMethod) {
-                                return Arrays.asList(stmt, bulkMethod);
-                            }
-                            return singletonList(stmt);
-                        })
-                );
+                J.Block newBody = body.withStatements(ListUtils.flatMap(body.getStatements(),
+                        stmt -> stmt == result.getReadMethod() ? Arrays.asList(stmt, bulkMethod) : stmt));
 
                 if (tree instanceof J.ClassDeclaration) {
                     return (T) ((J.ClassDeclaration) tree).withBody(newBody);
@@ -295,11 +286,10 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                 }
                 Expression left = binary.getLeft();
                 Expression right = binary.getRight();
-                boolean leftIsNull = J.Literal.isLiteralValue(left, null);
-                boolean rightIsNull = J.Literal.isLiteralValue(right, null);
-                boolean leftIsIdent = left instanceof J.Identifier;
-                boolean rightIsIdent = right instanceof J.Identifier;
-                return (leftIsNull && rightIsIdent) || (rightIsNull && leftIsIdent);
+                if (J.Literal.isLiteralValue(left, null)) {
+                    return right instanceof J.Identifier;
+                }
+                return left instanceof J.Identifier && J.Literal.isLiteralValue(right, null);
             }
 
             private @Nullable String findDelegate(J.MethodDeclaration method) {

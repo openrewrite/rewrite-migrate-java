@@ -1036,5 +1036,47 @@ class AddInputStreamBulkReadMethodTest implements RewriteTest {
               )
             );
         }
+
+        @Test
+        void markAnonymousClassWithQualifiedNullCheckForReview() {
+            rewriteRun(
+              java(
+                """
+                  import java.io.IOException;
+                  import java.io.InputStream;
+
+                  class Example {
+                      private InputStream body;
+
+                      InputStream getBody() {
+                          return new InputStream() {
+                              @Override
+                              public int read() throws IOException {
+                                  return Example.this.body == null ? -1 : Example.this.body.read();
+                              }
+                          };
+                      }
+                  }
+                  """,
+                """
+                  import java.io.IOException;
+                  import java.io.InputStream;
+
+                  class Example {
+                      private InputStream body;
+
+                      InputStream getBody() {
+                          return /*~~(Missing bulk read method may cause significant performance degradation)~~>*/new InputStream() {
+                              @Override
+                              public int read() throws IOException {
+                                  return Example.this.body == null ? -1 : Example.this.body.read();
+                              }
+                          };
+                      }
+                  }
+                  """
+              )
+            );
+        }
     }
 }
