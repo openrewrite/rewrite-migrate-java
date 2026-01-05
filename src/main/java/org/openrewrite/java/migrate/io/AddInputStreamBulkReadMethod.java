@@ -47,16 +47,15 @@ public class AddInputStreamBulkReadMethod extends Recipe {
     @Override
     public String getDescription() {
         return "Adds a `read(byte[], int, int)` method to `InputStream` subclasses that only override the single-byte " +
-               "`read()` method. Java's default `InputStream.read(byte[], int, int)` implementation calls the " +
-               "single-byte `read()` method in a loop, which can cause severe performance degradation (up to 350x " +
-               "slower) for bulk reads. This recipe detects `InputStream` implementations that delegate to another " +
-               "stream and adds the missing bulk read method to delegate bulk reads as well.";
+                "`read()` method. Java's default `InputStream.read(byte[], int, int)` implementation calls the " +
+                "single-byte `read()` method in a loop, which can cause severe performance degradation (up to 350x " +
+                "slower) for bulk reads. This recipe detects `InputStream` implementations that delegate to another " +
+                "stream and adds the missing bulk read method to delegate bulk reads as well.";
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
-
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
@@ -145,7 +144,7 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                         continue;
                     }
                     if (method.getParameters().isEmpty() ||
-                        (method.getParameters().size() == 1 && method.getParameters().get(0) instanceof J.Empty)) {
+                            (method.getParameters().size() == 1 && method.getParameters().get(0) instanceof J.Empty)) {
                         readMethod = method;
                     } else if (method.getParameters().size() == 3) {
                         hasBulkRead = true;
@@ -218,7 +217,7 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                     }
                     // Check true part is a literal (like -1)
                     if (!(ternary.getTruePart() instanceof J.Literal) &&
-                        !(ternary.getTruePart() instanceof J.Unary)) {
+                            !(ternary.getTruePart() instanceof J.Unary)) {
                         return false;
                     }
                     expr = ternary.getFalsePart();
@@ -253,7 +252,7 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                 }
                 J.Return thenReturn = (J.Return) thenStmt;
                 if (!(thenReturn.getExpression() instanceof J.Literal) &&
-                    !(thenReturn.getExpression() instanceof J.Unary)) {
+                        !(thenReturn.getExpression() instanceof J.Unary)) {
                     return false;
                 }
 
@@ -282,7 +281,7 @@ public class AddInputStreamBulkReadMethod extends Recipe {
 
                 // Should have no arguments (single-byte read)
                 if (!mi.getArguments().isEmpty() &&
-                    !(mi.getArguments().size() == 1 && mi.getArguments().get(0) instanceof J.Empty)) {
+                        !(mi.getArguments().size() == 1 && mi.getArguments().get(0) instanceof J.Empty)) {
                     return false;
                 }
 
@@ -299,8 +298,8 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                 }
                 Expression left = binary.getLeft();
                 Expression right = binary.getRight();
-                boolean leftIsNull = left instanceof J.Literal && ((J.Literal) left).getValue() == null;
-                boolean rightIsNull = right instanceof J.Literal && ((J.Literal) right).getValue() == null;
+                boolean leftIsNull = J.Literal.isLiteralValue(left, null);
+                boolean rightIsNull = J.Literal.isLiteralValue(right, null);
                 boolean leftIsIdent = left instanceof J.Identifier;
                 boolean rightIsIdent = right instanceof J.Identifier;
                 return (leftIsNull && rightIsIdent) || (rightIsNull && leftIsIdent);
@@ -358,23 +357,21 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                     return null;
                 }
 
-                Set<String> foundDelegates = new HashSet<>();
-                new JavaIsoVisitor<Integer>() {
+                Set<String> foundDelegates = new JavaIsoVisitor<Set<String>>() {
                     @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, Integer p) {
+                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, Set<String> foundDelegates) {
                         if ("read".equals(mi.getSimpleName()) &&
-                            mi.getSelect() != null &&
-                            TypeUtils.isAssignableTo("java.io.InputStream", mi.getSelect().getType())) {
+                                mi.getSelect() != null &&
+                                TypeUtils.isAssignableTo("java.io.InputStream", mi.getSelect().getType())) {
                             if (mi.getSelect() instanceof J.Identifier) {
                                 foundDelegates.add(((J.Identifier) mi.getSelect()).getSimpleName());
                             } else if (mi.getSelect() instanceof J.FieldAccess) {
                                 foundDelegates.add(((J.FieldAccess) mi.getSelect()).getSimpleName());
                             }
                         }
-                        return super.visitMethodInvocation(mi, p);
+                        return super.visitMethodInvocation(mi, foundDelegates);
                     }
-                }.visit(method.getBody(), 0);
-
+                }.reduce(method.getBody(), new HashSet<>());
                 return foundDelegates.size() == 1 ? foundDelegates.iterator().next() : null;
             }
 
@@ -426,46 +423,42 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                 Expression left = binary.getLeft();
                 Expression right = binary.getRight();
 
-                if (right instanceof J.Literal && ((J.Literal) right).getValue() == null) {
-                    if (left instanceof J.Identifier) {
-                        return ((J.Identifier) left).getSimpleName();
-                    }
+                if (J.Literal.isLiteralValue(right, null) && left instanceof J.Identifier) {
+                    return ((J.Identifier) left).getSimpleName();
                 }
-                if (left instanceof J.Literal && ((J.Literal) left).getValue() == null) {
-                    if (right instanceof J.Identifier) {
-                        return ((J.Identifier) right).getSimpleName();
-                    }
+                if (J.Literal.isLiteralValue(left, null) && right instanceof J.Identifier) {
+                    return ((J.Identifier) right).getSimpleName();
                 }
                 return null;
             }
 
-            private @Nullable Statement createBulkReadMethod(String delegate, boolean hasNullCheck, boolean usesIfStyle, J.Block body) {
+            private Statement createBulkReadMethod(String delegate, boolean hasNullCheck, boolean usesIfStyle, J.Block body) {
                 String bulkReadMethod;
                 if (hasNullCheck) {
                     if (usesIfStyle) {
                         bulkReadMethod = String.format(
                                 "@Override\n" +
-                                "public int read(byte[] b, int off, int len) throws IOException {\n" +
-                                "    if (%s == null) {\n" +
-                                "        return -1;\n" +
-                                "    }\n" +
-                                "    return %s.read(b, off, len);\n" +
-                                "}",
+                                        "public int read(byte[] b, int off, int len) throws IOException {\n" +
+                                        "    if (%s == null) {\n" +
+                                        "        return -1;\n" +
+                                        "    }\n" +
+                                        "    return %s.read(b, off, len);\n" +
+                                        "}",
                                 delegate, delegate);
                     } else {
                         bulkReadMethod = String.format(
                                 "@Override\n" +
-                                "public int read(byte[] b, int off, int len) throws IOException {\n" +
-                                "    return %s == null ? -1 : %s.read(b, off, len);\n" +
-                                "}",
+                                        "public int read(byte[] b, int off, int len) throws IOException {\n" +
+                                        "    return %s == null ? -1 : %s.read(b, off, len);\n" +
+                                        "}",
                                 delegate, delegate);
                     }
                 } else {
                     bulkReadMethod = String.format(
                             "@Override\n" +
-                            "public int read(byte[] b, int off, int len) throws IOException {\n" +
-                            "    return %s.read(b, off, len);\n" +
-                            "}",
+                                    "public int read(byte[] b, int off, int len) throws IOException {\n" +
+                                    "    return %s.read(b, off, len);\n" +
+                                    "}",
                             delegate);
                 }
 
@@ -491,7 +484,10 @@ public class AddInputStreamBulkReadMethod extends Recipe {
     private static class AnalysisResult {
         J.MethodDeclaration readMethod;
         boolean hasBulkRead;
-        @Nullable String delegate;
+
+        @Nullable
+        String delegate;
+
         boolean hasNullCheck;
         boolean usesIfStyle;
         boolean complex;
