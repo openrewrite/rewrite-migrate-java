@@ -17,13 +17,11 @@ package org.openrewrite.java.migrate.io;
 
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.Cursor;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.search.DeclaresType;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.SearchResult;
 
@@ -38,6 +36,7 @@ import static java.util.Collections.singletonList;
 public class AddInputStreamBulkReadMethod extends Recipe {
 
     private static final String MARKER_MESSAGE = "Missing bulk read method may cause significant performance degradation";
+    private static final String JAVA_IO_INPUT_STREAM = "java.io.InputStream";
 
     @Override
     public String getDisplayName() {
@@ -55,13 +54,14 @@ public class AddInputStreamBulkReadMethod extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+        DeclaresType<ExecutionContext> precondition = new DeclaresType<>(JAVA_IO_INPUT_STREAM, true);
+        return Preconditions.check(/*TODO precondition*/true, new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
 
                 // Skip if not extending InputStream
-                if (cd.getExtends() == null || !TypeUtils.isAssignableTo("java.io.InputStream", cd.getType())) {
+                if (cd.getExtends() == null || !TypeUtils.isAssignableTo(JAVA_IO_INPUT_STREAM, cd.getType())) {
                     return cd;
                 }
 
@@ -83,7 +83,7 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                 }
 
                 // Must extend InputStream
-                if (!TypeUtils.isAssignableTo("java.io.InputStream", nc.getType())) {
+                if (!TypeUtils.isAssignableTo(JAVA_IO_INPUT_STREAM, nc.getType())) {
                     return nc;
                 }
 
@@ -329,7 +329,7 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                     }
 
                     // The select must be an InputStream
-                    if (!TypeUtils.isAssignableTo("java.io.InputStream", mi.getSelect().getType())) {
+                    if (!TypeUtils.isAssignableTo(JAVA_IO_INPUT_STREAM, mi.getSelect().getType())) {
                         continue;
                     }
 
@@ -360,7 +360,7 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, Set<String> foundDelegates) {
                         if ("read".equals(mi.getSimpleName()) &&
                                 mi.getSelect() != null &&
-                                TypeUtils.isAssignableTo("java.io.InputStream", mi.getSelect().getType())) {
+                                TypeUtils.isAssignableTo(JAVA_IO_INPUT_STREAM, mi.getSelect().getType())) {
                             if (mi.getSelect() instanceof J.Identifier) {
                                 foundDelegates.add(((J.Identifier) mi.getSelect()).getSimpleName());
                             } else if (mi.getSelect() instanceof J.FieldAccess) {
@@ -475,7 +475,7 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                 String existingWhitespace = bulkMethod.getPrefix().getWhitespace();
                 return bulkMethod.withPrefix(Space.format("\n" + existingWhitespace));
             }
-        };
+        });
     }
 
     @Value
