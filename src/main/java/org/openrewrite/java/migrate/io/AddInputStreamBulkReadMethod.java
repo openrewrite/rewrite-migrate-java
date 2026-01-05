@@ -104,15 +104,11 @@ public class AddInputStreamBulkReadMethod extends Recipe {
 
                 // No delegate found or complex body - add marker for manual implementation
                 if (result.getDelegate() == null || result.isComplex()) {
-                    return (T) SearchResult.found(tree, MARKER_MESSAGE);
+                    return SearchResult.found(tree, MARKER_MESSAGE);
                 }
 
                 // Simple delegation - add bulk read method
                 Statement bulkMethod = createBulkReadMethod(result.getDelegate(), result.isHasNullCheck(), result.isUsesIfStyle(), body);
-                if (bulkMethod == null) {
-                    return tree;
-                }
-
                 J.MethodDeclaration targetMethod = result.getReadMethod();
                 J.Block newBody = body.withStatements(
                         ListUtils.flatMap(body.getStatements(), stmt -> {
@@ -125,7 +121,8 @@ public class AddInputStreamBulkReadMethod extends Recipe {
 
                 if (tree instanceof J.ClassDeclaration) {
                     return (T) ((J.ClassDeclaration) tree).withBody(newBody);
-                } else if (tree instanceof J.NewClass) {
+                }
+                if (tree instanceof J.NewClass) {
                     return (T) ((J.NewClass) tree).withBody(newBody);
                 }
                 return tree;
@@ -339,7 +336,8 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                     // Get the delegate name
                     if (mi.getSelect() instanceof J.Identifier) {
                         return ((J.Identifier) mi.getSelect()).getSimpleName();
-                    } else if (mi.getSelect() instanceof J.FieldAccess) {
+                    }
+                    if (mi.getSelect() instanceof J.FieldAccess) {
                         J.FieldAccess fa = (J.FieldAccess) mi.getSelect();
                         return fa.print(getCursor());
                     }
