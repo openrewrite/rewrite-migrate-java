@@ -4273,6 +4273,50 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.io.AddInputStreamBulkReadMethod
+examples:
+- description: '`Transform#anonymousClassWithSimpleDelegation`'
+  sources:
+  - before: |
+      import java.io.IOException;
+      import java.io.InputStream;
+
+      class Example {
+          private InputStream delegate;
+
+          InputStream getWrappedStream() {
+              return new InputStream() {
+                  @Override
+                  public int read() throws IOException {
+                      return delegate.read();
+                  }
+              };
+          }
+      }
+    after: |
+      import java.io.IOException;
+      import java.io.InputStream;
+
+      class Example {
+          private InputStream delegate;
+
+          InputStream getWrappedStream() {
+              return new InputStream() {
+                  @Override
+                  public int read() throws IOException {
+                      return delegate.read();
+                  }
+
+                  @Override
+                  public int read(byte[] b, int off, int len) throws IOException {
+                      return delegate.read(b, off, len);
+                  }
+              };
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.io.ReplaceFileInOrOutputStreamFinalizeWithClose
 examples:
 - description: '`ReplaceFileInOrOutputStreamFinalizeWithCloseTest#removeFinalizerForFileInputStream`'
