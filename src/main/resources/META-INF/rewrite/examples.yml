@@ -1144,6 +1144,27 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradePluginsForJava11
 examples:
+- description: '`Java8toJava11Test#needToJaxb2MavenPlugin`'
+  sources:
+  - before: project
+    language: mavenProject
+  - before: |
+      <project>
+        <groupId>com.mycompany.app</groupId>
+        <artifactId>my-app</artifactId>
+        <version>1</version>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>jaxb2-maven-plugin</artifactId>
+              <version>2.3.1</version>
+            </plugin>
+          </plugins>
+        </build>
+      </project>
+    path: pom.xml
+    language: xml
 - description: '`UpgradeWro4jMavenPluginVersionTest#v1OnJava11`'
   sources:
   - before: |
@@ -1178,27 +1199,6 @@ examples:
               <groupId>ro.isdc.wro4j</groupId>
               <artifactId>wro4j-maven-plugin</artifactId>
               <version>${wro4j.version}</version>
-            </plugin>
-          </plugins>
-        </build>
-      </project>
-    path: pom.xml
-    language: xml
-- description: '`Java8toJava11Test#needToJaxb2MavenPlugin`'
-  sources:
-  - before: project
-    language: mavenProject
-  - before: |
-      <project>
-        <groupId>com.mycompany.app</groupId>
-        <artifactId>my-app</artifactId>
-        <version>1</version>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>jaxb2-maven-plugin</artifactId>
-              <version>2.3.1</version>
             </plugin>
           </plugins>
         </build>
@@ -3451,6 +3451,43 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuava
 examples:
+- description: '`NoGuavaJava21Test#preferMathClampForDouble`'
+  sources:
+  - before: |
+      import com.google.common.primitives.Doubles;
+
+      class Test {
+          public double testMethod() {
+              return Doubles.constrainToRange(20D, 10D, 100D);
+          }
+      }
+    after: |
+      class Test {
+          public double testMethod() {
+              return Math.clamp(20D, 10D, 100D);
+          }
+      }
+    language: java
+- description: '`NoGuavaPredicatesEqualToTest#predicatesEqualToToPredicateIsEqual`'
+  sources:
+  - before: |
+      import com.google.common.base.Predicate;
+      import com.google.common.base.Predicates;
+
+      class A {
+          public static Predicate<String> isHelloPredicate() {
+              return Predicates.equalTo("hello");
+          }
+      }
+    after: |
+      import java.util.function.Predicate;
+
+      class A {
+          public static Predicate<String> isHelloPredicate() {
+              return Predicate.<String>isEqual("hello");
+          }
+      }
+    language: java
 - description: '`NoGuavaSetsFilterTest#replaceSetsFilter`'
   sources:
   - before: |
@@ -3494,62 +3531,6 @@ examples:
           }
       }
     language: java
-- description: '`NoGuavaJava21Test#preferMathClampForDouble`'
-  sources:
-  - before: |
-      import com.google.common.primitives.Doubles;
-
-      class Test {
-          public double testMethod() {
-              return Doubles.constrainToRange(20D, 10D, 100D);
-          }
-      }
-    after: |
-      class Test {
-          public double testMethod() {
-              return Math.clamp(20D, 10D, 100D);
-          }
-      }
-    language: java
-- description: '`NoGuavaPredicatesEqualToTest#predicatesEqualToToPredicateIsEqual`'
-  sources:
-  - before: |
-      import com.google.common.base.Predicate;
-      import com.google.common.base.Predicates;
-
-      class A {
-          public static Predicate<String> isHelloPredicate() {
-              return Predicates.equalTo("hello");
-          }
-      }
-    after: |
-      import java.util.function.Predicate;
-
-      class A {
-          public static Predicate<String> isHelloPredicate() {
-              return Predicate.<String>isEqual("hello");
-          }
-      }
-    language: java
-- description: '`PreferJavaUtilOptionalTest#absentToEmpty`'
-  sources:
-  - before: |
-      import com.google.common.base.Optional;
-
-      class A {
-          Optional<String> foo() {
-              return Optional.absent();
-          }
-      }
-    after: |
-      import java.util.Optional;
-
-      class A {
-          Optional<String> foo() {
-              return Optional.empty();
-          }
-      }
-    language: java
 - description: '`NotYetImplemented#getCatchIllegalStateExceptionToNoSuchElementException`'
   sources:
   - before: |
@@ -3574,6 +3555,25 @@ examples:
               } catch (NoSuchElementException e) {
                   return "";
               }
+          }
+      }
+    language: java
+- description: '`PreferJavaUtilOptionalTest#absentToEmpty`'
+  sources:
+  - before: |
+      import com.google.common.base.Optional;
+
+      class A {
+          Optional<String> foo() {
+              return Optional.absent();
+          }
+      }
+    after: |
+      import java.util.Optional;
+
+      class A {
+          Optional<String> foo() {
+              return Optional.empty();
           }
       }
     language: java
