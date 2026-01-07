@@ -3531,25 +3531,6 @@ examples:
           }
       }
     language: java
-- description: '`PreferJavaUtilOptionalTest#absentToEmpty`'
-  sources:
-  - before: |
-      import com.google.common.base.Optional;
-
-      class A {
-          Optional<String> foo() {
-              return Optional.absent();
-          }
-      }
-    after: |
-      import java.util.Optional;
-
-      class A {
-          Optional<String> foo() {
-              return Optional.empty();
-          }
-      }
-    language: java
 - description: '`NotYetImplemented#getCatchIllegalStateExceptionToNoSuchElementException`'
   sources:
   - before: |
@@ -3574,6 +3555,25 @@ examples:
               } catch (NoSuchElementException e) {
                   return "";
               }
+          }
+      }
+    language: java
+- description: '`PreferJavaUtilOptionalTest#absentToEmpty`'
+  sources:
+  - before: |
+      import com.google.common.base.Optional;
+
+      class A {
+          Optional<String> foo() {
+              return Optional.absent();
+          }
+      }
+    after: |
+      import java.util.Optional;
+
+      class A {
+          Optional<String> foo() {
+              return Optional.empty();
           }
       }
     language: java
