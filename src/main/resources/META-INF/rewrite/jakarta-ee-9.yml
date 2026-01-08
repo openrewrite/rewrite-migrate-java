@@ -1087,12 +1087,10 @@ recipeList:
       groupId: org.ehcache
       artifactId: ehcache
       newClassifier: jakarta
-      changeManagedDependency: true
   - org.openrewrite.maven.ChangeDependencyClassifier:
       groupId: org.ehcache
       artifactId: ehcache-transactions
       newClassifier: jakarta
-      changeManagedDependency: true
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
