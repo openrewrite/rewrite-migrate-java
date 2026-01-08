@@ -20,77 +20,100 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class JakartaEE9Test implements RewriteTest {
-
-    @Override
-    public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JakartaEE10");
-    }
 
     @DocumentExample
     @Test
     void echacheFromJavaxToJakarta() {
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta"),
-          pomXml(
-            """
-              <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>com.example</groupId>
-                  <artifactId>parent</artifactId>
-                  <version>1.2.3</version>
-                  <packaging>pom</packaging>
-                  <dependencyManagement>
-                      <dependencies>
-                          <dependency>
-                              <groupId>org.ehcache</groupId>
-                              <artifactId>ehcache</artifactId>
-                              <version>3.10.9</version>
-                          </dependency>
-                      </dependencies>
-                  </dependencyManagement>
-              </project>
-              """,
-            """
-              <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>com.example</groupId>
-                  <artifactId>parent</artifactId>
-                  <version>1.2.3</version>
-                  <packaging>pom</packaging>
-                  <dependencyManagement>
-                      <dependencies>
-                          <dependency>
-                              <groupId>org.ehcache</groupId>
-                              <artifactId>ehcache</artifactId>
-                              <version>3.10.0</version>
-                              <classifier>jakarta</classifier>
-                          </dependency>
-                      </dependencies>
-                  </dependencyManagement>
-              </project>
+          mavenProject("parent",
+            pomXml(
               """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>parent</artifactId>
+                    <version>1.2.3</version>
+                    <packaging>pom</packaging>
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.ehcache</groupId>
+                                <artifactId>ehcache</artifactId>
+                                <version>3.9.9</version>
+                            </dependency>
+                        </dependencies>
+                    </dependencyManagement>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>parent</artifactId>
+                    <version>1.2.3</version>
+                    <packaging>pom</packaging>
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.ehcache</groupId>
+                                <artifactId>ehcache</artifactId>
+                                <version>3.10.0</version>
+                                <classifier>jakarta</classifier>
+                            </dependency>
+                        </dependencies>
+                    </dependencyManagement>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .containsPattern("<version>3\\.10\\.\\d+</version>")
+                  .actual())
+            )
           ),
-          pomXml(
-            """
-              <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <parent>
-                      <groupId>com.example</groupId>
-                      <artifactId>parent</artifactId>
-                      <version>1.2.3</version>
-                  </parent>
-                  <artifactId>child</artifactId>
-                  <dependencies>
-                      <dependency>
-                          <groupId>org.ehcache</groupId>
-                          <artifactId>ehcache</artifactId>
-                      </dependency>
-                  </dependencies>
-              </project>
+          mavenProject("child",
+            pomXml(
               """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>com.example</groupId>
+                        <artifactId>parent</artifactId>
+                        <version>1.2.3</version>
+                    </parent>
+                    <artifactId>child</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.ehcache</groupId>
+                            <artifactId>ehcache</artifactId>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>com.example</groupId>
+                        <artifactId>parent</artifactId>
+                        <version>1.2.3</version>
+                    </parent>
+                    <artifactId>child</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.ehcache</groupId>
+                            <artifactId>ehcache</artifactId>
+                            <classifier>jakarta</classifier>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
           )
         );
     }
