@@ -94,7 +94,7 @@ class EhcacheJavaxToJakartaTest implements RewriteTest {
     }
 
     @Test
-    void echacheFromJavaxToJakarta() {
+    void multiModuleManagedDependencyClassifierChanged() {
         rewriteRun(
           mavenProject("parent",
             pomXml(
@@ -116,28 +116,10 @@ class EhcacheJavaxToJakartaTest implements RewriteTest {
                     </dependencyManagement>
                 </project>
                 """,
-              """
-                <project>
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example</groupId>
-                    <artifactId>parent</artifactId>
-                    <version>1.2.3</version>
-                    <packaging>pom</packaging>
-                    <dependencyManagement>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.ehcache</groupId>
-                                <artifactId>ehcache</artifactId>
-                                <version>3.10.0</version>
-                                <classifier>jakarta</classifier>
-                            </dependency>
-                        </dependencies>
-                    </dependencyManagement>
-                </project>
-                """,
               spec -> spec.after(actual ->
                 assertThat(actual)
                   .containsPattern("<version>3\\.10\\.\\d+</version>")
+                  .contains("<classifier>jakarta</classifier>")
                   .actual())
             )
           ),
