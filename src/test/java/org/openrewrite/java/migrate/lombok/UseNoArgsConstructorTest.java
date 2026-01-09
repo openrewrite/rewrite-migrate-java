@@ -69,6 +69,24 @@ class UseNoArgsConstructorTest implements RewriteTest {
         );
     }
 
+	@Test
+	void keepCompactConstructor() {
+		rewriteRun(
+		  //language=java
+		  java(
+			"""
+			  public record Foo(String id) {
+			      public Foo {
+			  		if (id == null || id.isBlank()) {
+			  			throw new IllegalArgumentException("ID cannot be null or blank");
+			  		}
+			  	}
+			  }
+			  """
+		  )
+		);
+	}
+
     @Test
     void replaceEmptyProtectedConstructor() {
         rewriteRun(
