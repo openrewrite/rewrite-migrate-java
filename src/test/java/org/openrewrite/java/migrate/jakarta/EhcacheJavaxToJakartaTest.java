@@ -17,21 +17,18 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-class EhcacheJavaxtoJakartaTest implements RewriteTest {
+class EhcacheJavaxToJakartaTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder()
-          .scanRuntimeClasspath("org.openrewrite.java.migrate")
-          .build()
-          .activateRecipes("org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta");
     }
 
     @DocumentExample
@@ -92,6 +89,78 @@ class EhcacheJavaxtoJakartaTest implements RewriteTest {
                 </project>
                 """.trim())
               .actual())
+          )
+        );
+    }
+
+    @Test
+    void multiModuleManagedDependencyClassifierChanged() {
+        rewriteRun(
+          mavenProject("parent",
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>parent</artifactId>
+                    <version>1.2.3</version>
+                    <packaging>pom</packaging>
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.ehcache</groupId>
+                                <artifactId>ehcache</artifactId>
+                                <version>3.9.9</version>
+                            </dependency>
+                        </dependencies>
+                    </dependencyManagement>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .containsPattern("<version>3\\.10\\.\\d+</version>")
+                  .contains("<classifier>jakarta</classifier>")
+                  .actual())
+            )
+          ),
+          mavenProject("child",
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>com.example</groupId>
+                        <artifactId>parent</artifactId>
+                        <version>1.2.3</version>
+                    </parent>
+                    <artifactId>child</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.ehcache</groupId>
+                            <artifactId>ehcache</artifactId>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>com.example</groupId>
+                        <artifactId>parent</artifactId>
+                        <version>1.2.3</version>
+                    </parent>
+                    <artifactId>child</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.ehcache</groupId>
+                            <artifactId>ehcache</artifactId>
+                            <classifier>jakarta</classifier>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
           )
         );
     }
