@@ -53,7 +53,7 @@ public class UseNoArgsConstructor extends Recipe {
             @Override
             public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
 				if (method.isConstructor() &&
-						method.getMarkers().findFirst(CompactConstructor.class).isEmpty() &&
+						!method.getMarkers().findFirst(CompactConstructor.class).isPresent() &&
 						method.getParameters().get(0) instanceof J.Empty &&
                         method.getBody() != null && method.getBody().getStatements().isEmpty()) {
                     J.ClassDeclaration enclosing = getCursor().firstEnclosing(J.ClassDeclaration.class);
