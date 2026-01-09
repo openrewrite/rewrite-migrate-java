@@ -24,13 +24,78 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-class JakartaEE9Test implements RewriteTest {
+class EhcacheJavaxToJakartaTest implements RewriteTest {
+
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta");
+    }
 
     @DocumentExample
     @Test
+    void migrateEhcacheDependencies() {
+        rewriteRun(
+          //language=xml
+          pomXml(
+            """
+              <project>
+                  <groupId>com.example.ehcache</groupId>
+                  <artifactId>ehcache-legacy</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.ehcache</groupId>
+                          <artifactId>ehcache</artifactId>
+                          <version>3.9.10</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.ehcache</groupId>
+                          <artifactId>ehcache-clustered</artifactId>
+                          <version>3.9.10</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.ehcache</groupId>
+                          <artifactId>ehcache-transactions</artifactId>
+                          <version>3.9.10</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> assertThat(pom)
+              .matches("""
+                <project>
+                    <groupId>com.example.ehcache</groupId>
+                    <artifactId>ehcache-legacy</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.ehcache</groupId>
+                            <artifactId>ehcache</artifactId>
+                            <version>3.1\\d.\\d+</version>
+                            <classifier>jakarta</classifier>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.ehcache</groupId>
+                            <artifactId>ehcache-clustered</artifactId>
+                            <version>3.1\\d.\\d+</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.ehcache</groupId>
+                            <artifactId>ehcache-transactions</artifactId>
+                            <version>3.1\\d.\\d+</version>
+                            <classifier>jakarta</classifier>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """.trim())
+              .actual())
+          )
+        );
+    }
+
+    @Test
     void echacheFromJavaxToJakarta() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta"),
           mavenProject("parent",
             pomXml(
               """
