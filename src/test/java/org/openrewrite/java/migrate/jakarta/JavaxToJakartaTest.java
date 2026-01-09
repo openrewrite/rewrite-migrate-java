@@ -474,14 +474,13 @@ class JavaxToJakartaTest implements RewriteTest {
                     <dependencies>
                         <dependency>
                              <groupId>jakarta.servlet</groupId>
-                         <artifactId>jakarta.servlet-api</artifactId>
+                             <artifactId>jakarta.servlet-api</artifactId>
                          </dependency>
                         <dependency>
                             <groupId>org.springframework.boot</groupId>
                             <artifactId>spring-boot-starter-web</artifactId>
                         </dependency>
                     </dependencies>
-
                     <build>
                         <plugins>
                             <plugin>
@@ -490,7 +489,44 @@ class JavaxToJakartaTest implements RewriteTest {
                             </plugin>
                         </plugins>
                     </build>
-
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-parent</artifactId>
+                        <version>2.7.6</version>
+                        <relativePath/> <!-- lookup parent from repository -->
+                    </parent>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <name>demo</name>
+                    <description>Demo project for Spring Boot</description>
+                    <properties>
+                        <jakarta-servlet.version>5.0.0</jakarta-servlet.version>
+                        <java.version>17</java.version>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                             <groupId>jakarta.servlet</groupId>
+                             <artifactId>jakarta.servlet-api</artifactId>
+                         </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-web</artifactId>
+                        </dependency>
+                    </dependencies>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot-maven-plugin</artifactId>
+                            </plugin>
+                        </plugins>
+                    </build>
                 </project>
                 """
             ),
