@@ -52,9 +52,9 @@ public class UseNoArgsConstructor extends Recipe {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-				boolean isCompactConstructor = method.getMarkers().findFirst(CompactConstructor.class).isPresent();
 				if (method.isConstructor() &&
-						(isCompactConstructor || method.getParameters().get(0) instanceof J.Empty) &&
+						method.getMarkers().findFirst(CompactConstructor.class).isEmpty() &&
+						method.getParameters().get(0) instanceof J.Empty &&
                         method.getBody() != null && method.getBody().getStatements().isEmpty()) {
                     J.ClassDeclaration enclosing = getCursor().firstEnclosing(J.ClassDeclaration.class);
                     AccessLevel accessLevel = LombokUtils.getAccessLevel(method);
