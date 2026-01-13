@@ -61,19 +61,13 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
             example = "glassfish")
     String runtime;
 
-    @Override
-    public String getDisplayName() {
-        return "Use latest JAXB API and runtime for Jakarta EE 8";
-    }
+    String displayName = "Use latest JAXB API and runtime for Jakarta EE 8";
 
-    @Override
-    public String getDescription() {
-        return "Update build files to use the latest JAXB runtime from Jakarta EE 8 to maintain compatibility with " +
+    String description = "Update build files to use the latest JAXB runtime from Jakarta EE 8 to maintain compatibility with " +
                "Java version 11 or greater. The recipe will add a JAXB run-time, in Gradle " +
                "`compileOnly`+`testImplementation` and Maven `provided` scope, to any project that has a transitive " +
                "dependency on the JAXB API. **The resulting dependencies still use the `javax` namespace, despite " +
                "the move to the Jakarta artifact**.";
-    }
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {

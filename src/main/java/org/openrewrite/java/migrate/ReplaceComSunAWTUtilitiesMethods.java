@@ -87,17 +87,11 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
         setWindowOpacityPattern = "com.sun.awt.AWTUtilities setWindowOpacity(java.awt.Window, float)";
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Replace `com.sun.awt.AWTUtilities` static method invocations";
-    }
+    String displayName = "Replace `com.sun.awt.AWTUtilities` static method invocations";
 
-    @Override
-    public String getDescription() {
-        return "This recipe replaces several static calls  in `com.sun.awt.AWTUtilities` with the JavaSE 11 equivalent. " +
+    String description = "This recipe replaces several static calls  in `com.sun.awt.AWTUtilities` with the JavaSE 11 equivalent. " +
                "The methods replaced are `AWTUtilities.isTranslucencySupported()`, `AWTUtilities.setWindowOpacity()`, `AWTUtilities.getWindowOpacity()`, " +
                "`AWTUtilities.getWindowShape()`, `AWTUtilities.isWindowOpaque()`, `AWTUtilities.isTranslucencyCapable()` and `AWTUtilities.setComponentMixingCutoutShape()`.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

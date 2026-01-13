@@ -35,18 +35,12 @@ import java.util.Comparator;
 @Value
 public class AddColumnAnnotation extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        return "`@ElementCollection` annotations must be accompanied by a defined `@Column` annotation";
-    }
+    String displayName = "`@ElementCollection` annotations must be accompanied by a defined `@Column` annotation";
 
-    @Override
-    public String getDescription() {
-        return "When an attribute is annotated with `@ElementCollection`, a separate table is created for the attribute that includes the attribute \n" +
+    String description = "When an attribute is annotated with `@ElementCollection`, a separate table is created for the attribute that includes the attribute \n" +
                "ID and value. In OpenJPA, the column for the annotated attribute is named element, whereas EclipseLink names the column based on \n" +
                "the name of the attribute. To remain compatible with tables that were created with OpenJPA, add a `@Column` annotation with the name \n" +
                "attribute set to element.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

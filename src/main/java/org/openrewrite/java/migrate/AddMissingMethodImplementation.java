@@ -46,15 +46,9 @@ public class AddMissingMethodImplementation extends Recipe {
             example = "public String hello() { return \\\"Hello from #{}!\\\"; }")
     String methodTemplateString;
 
-    @Override
-    public String getDisplayName() {
-        return "Adds missing method implementations";
-    }
+    String displayName = "Adds missing method implementations";
 
-    @Override
-    public String getDescription() {
-        return "Check for missing methods required by interfaces and adds them.";
-    }
+    String description = "Check for missing methods required by interfaces and adds them.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

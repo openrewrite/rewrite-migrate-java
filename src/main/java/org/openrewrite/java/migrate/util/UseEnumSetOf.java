@@ -48,15 +48,9 @@ public class UseEnumSetOf extends Recipe {
     @Nullable
     Boolean convertEmptySet;
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `EnumSet of(..)`";
-    }
+    String displayName = "Prefer `EnumSet of(..)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `EnumSet of(..)` instead of using `Set of(..)` when the arguments are enums in Java 9 or higher.";
-    }
+    String description = "Prefer `EnumSet of(..)` instead of using `Set of(..)` when the arguments are enums in Java 9 or higher.";
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {

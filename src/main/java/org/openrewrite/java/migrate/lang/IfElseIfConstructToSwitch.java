@@ -43,16 +43,10 @@ import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class IfElseIfConstructToSwitch extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "If-else-if-else to switch";
-    }
+    String displayName = "If-else-if-else to switch";
 
-    @Override
-    public String getDescription() {
-        return "Replace if-else-if-else with switch statements. In order to be replaced with a switch, " +
+    String description = "Replace if-else-if-else with switch statements. In order to be replaced with a switch, " +
                 "all conditions must be on the same variable and there must be at least three cases.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

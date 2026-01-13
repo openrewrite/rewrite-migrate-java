@@ -40,18 +40,12 @@ public class UpgradeJavaVersion extends Recipe {
             example = "11")
     Integer version;
 
-    @Override
-    public String getDisplayName() {
-        return "Upgrade Java version";
-    }
+    String displayName = "Upgrade Java version";
 
-    @Override
-    public String getDescription() {
-        return "Upgrade build plugin configuration to use the specified Java version. " +
+    String description = "Upgrade build plugin configuration to use the specified Java version. " +
                 "This recipe changes `java.toolchain.languageVersion` in `build.gradle(.kts)` of gradle projects, " +
                 "or maven-compiler-plugin target version and related settings. " +
                 "Will not downgrade if the version is newer than the specified version.";
-    }
 
     @Override
     public List<Recipe> getRecipeList() {

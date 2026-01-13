@@ -31,19 +31,11 @@ import org.openrewrite.java.tree.JavaType;
 @Value
 public class UseVarForObject extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        //language=markdown
-        return "Use `var` for reference-typed variables";
-    }
+    String displayName = "Use `var` for reference-typed variables";
 
 
-    @Override
-    public String getDescription() {
-        //language=markdown
-        return "Try to apply local variable type inference `var` to variables containing Objects where possible. " +
+    String description = "Try to apply local variable type inference `var` to variables containing Objects where possible. " +
                "This recipe will not touch variable declarations with generics or initializers containing ternary operators.";
-    }
 
 
     @Override

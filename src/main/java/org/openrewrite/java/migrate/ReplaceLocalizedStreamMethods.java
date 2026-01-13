@@ -53,16 +53,10 @@ public class ReplaceLocalizedStreamMethods extends Recipe {
                 "java.lang.Runtime getLocalizedOutputStream(java.io.OutputStream)" : localizedOutputStreamMethodMatcher;
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Replace `getLocalizedInputStream` and `getLocalizedOutputStream` with direct assignment";
-    }
+    String displayName = "Replace `getLocalizedInputStream` and `getLocalizedOutputStream` with direct assignment";
 
-    @Override
-    public String getDescription() {
-        return "Replaces `Runtime.getLocalizedInputStream(InputStream)` and `Runtime.getLocalizedOutputStream(OutputStream)` with their direct arguments. " +
+    String description = "Replaces `Runtime.getLocalizedInputStream(InputStream)` and `Runtime.getLocalizedOutputStream(OutputStream)` with their direct arguments. " +
                "This modification is made because the previous implementation of `getLocalizedInputStream` and `getLocalizedOutputStream` merely returned the arguments provided.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

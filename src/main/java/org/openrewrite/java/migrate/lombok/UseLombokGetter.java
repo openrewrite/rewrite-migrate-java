@@ -36,16 +36,9 @@ import static java.util.Collections.singleton;
 @Value
 public class UseLombokGetter extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        return "Convert getter methods to annotations";
-    }
+    String displayName = "Convert getter methods to annotations";
 
-    @Override
-    public String getDescription() {
-        //language=markdown
-        return "Convert trivial getter methods to `@Getter` annotations on their respective fields.";
-    }
+    String description = "Convert trivial getter methods to `@Getter` annotations on their respective fields.";
 
     @Override
     public Set<String> getTags() {

@@ -38,16 +38,10 @@ import static org.openrewrite.Tree.randomId;
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class SwitchCaseReturnsToSwitchExpression extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Convert switch cases where every case returns into a returned switch expression";
-    }
+    String displayName = "Convert switch cases where every case returns into a returned switch expression";
 
-    @Override
-    public String getDescription() {
-        return "Switch statements where each case returns a value can be converted to a switch expression that returns the value directly. " +
+    String description = "Switch statements where each case returns a value can be converted to a switch expression that returns the value directly. " +
                "This recipe is only applicable for Java 21 and later.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

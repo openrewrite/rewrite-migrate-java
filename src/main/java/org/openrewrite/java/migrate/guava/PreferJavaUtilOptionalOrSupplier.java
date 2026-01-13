@@ -38,15 +38,9 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
 
     static final MethodMatcher METHOD_MATCHER = new MethodMatcher("com.google.common.base.Optional or(com.google.common.base.Optional)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `java.util.Optional#or(Supplier<T extends java.util.Optional<T>>)`";
-    }
+    String displayName = "Prefer `java.util.Optional#or(Supplier<T extends java.util.Optional<T>>)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `java.util.Optional#or(Supplier<T extends java.util.Optional<T>>)` over `com.google.common.base.Optional#or(com.google.common.base.Optional).";
-    }
+    String description = "Prefer `java.util.Optional#or(Supplier<T extends java.util.Optional<T>>)` over `com.google.common.base.Optional#or(com.google.common.base.Optional).";
 
     @Override
     public Set<String> getTags() {

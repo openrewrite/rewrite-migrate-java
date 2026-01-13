@@ -38,17 +38,11 @@ public class MigrateStringReaderToReaderOf extends Recipe {
     private static final MethodMatcher STRING_READER_CONSTRUCTOR = new MethodMatcher("java.io.StringReader <constructor>(java.lang.String)");
     private static final MethodMatcher TO_STRING_METHOD = new MethodMatcher("java.lang.Object toString()", true);
 
-    @Override
-    public String getDisplayName() {
-        return "Use `Reader.of(CharSequence)` for non-synchronized readers";
-    }
+    String displayName = "Use `Reader.of(CharSequence)` for non-synchronized readers";
 
-    @Override
-    public String getDescription() {
-        return "Migrate `new StringReader(String)` to `Reader.of(CharSequence)` in Java 25+. " +
+    String description = "Migrate `new StringReader(String)` to `Reader.of(CharSequence)` in Java 25+. " +
                 "This only applies when assigning to `Reader` variables or returning from methods that return `Reader`. " +
                 "The new method creates non-synchronized readers which are more efficient when thread-safety is not required.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
