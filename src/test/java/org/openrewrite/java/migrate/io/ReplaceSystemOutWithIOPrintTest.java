@@ -33,7 +33,7 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
         spec.recipe(new ReplaceSystemOutWithIOPrint())
           .afterTypeValidationOptions(TypeValidation.all().allowMissingType(o -> {
               assert o instanceof FindMissingTypes.MissingTypeResult;
-              FindMissingTypes.MissingTypeResult result = (FindMissingTypes.MissingTypeResult) o;
+              var result = (FindMissingTypes.MissingTypeResult) o;
               return result.getPrintedTree().contains("IO");
           })) // TODO remove once tests run on Java 25+
           .parser(JavaParser.fromJavaVersion())
