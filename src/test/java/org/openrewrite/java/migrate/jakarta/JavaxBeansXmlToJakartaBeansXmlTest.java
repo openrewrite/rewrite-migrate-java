@@ -28,11 +28,7 @@ import static org.openrewrite.xml.Assertions.xml;
 class JavaxBeansXmlToJakartaBeansXmlTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "cdi-api-2.0.SP1", "jsf-api-2.1.29-11", "jakarta.enterprise.cdi-api-4.0.1"))
-          .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxBeansXmlToJakartaBeansXml");
     }
 
     @DocumentExample
