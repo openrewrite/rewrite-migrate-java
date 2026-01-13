@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.io;
 
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
@@ -32,6 +33,8 @@ import java.util.Set;
 
 import static java.util.Collections.emptyList;
 
+@Value
+@EqualsAndHashCode(callSuper = false)
 public class AddInputStreamBulkReadMethod extends Recipe {
 
     private static final String MARKER_MESSAGE = "Missing bulk read method may cause significant performance degradation";

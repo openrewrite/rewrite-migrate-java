@@ -37,6 +37,7 @@ import org.openrewrite.xml.tree.Xml;
 import java.time.Duration;
 import java.util.*;
 
+@Value
 @EqualsAndHashCode(callSuper = false)
 public class AddJaxwsRuntime extends Recipe {
 
@@ -45,9 +46,6 @@ public class AddJaxwsRuntime extends Recipe {
 
     private static final String SUN_JAXWS_RUNTIME_GROUP = "com.sun.xml.ws";
     private static final String SUN_JAXWS_RUNTIME_ARTIFACT = "jaxws-rt";
-
-    private final AddJaxwsRuntimeGradle addJaxwsRuntimeGradle = new AddJaxwsRuntimeGradle();
-    private final AddJaxwsRuntimeMaven addJaxwsRuntimeMaven = new AddJaxwsRuntimeMaven();
 
     String displayName = "Use the latest JAX-WS API and runtime for Jakarta EE 8";
 
@@ -69,7 +67,7 @@ public class AddJaxwsRuntime extends Recipe {
 
     @Override
     public List<Recipe> getRecipeList() {
-        return Arrays.asList(addJaxwsRuntimeGradle, addJaxwsRuntimeMaven);
+        return Arrays.asList(new AddJaxwsRuntimeGradle(), new AddJaxwsRuntimeMaven());
     }
 
     @EqualsAndHashCode(callSuper = false)

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
@@ -28,6 +29,8 @@ import org.openrewrite.marker.SearchResult;
 import java.util.HashSet;
 import java.util.Set;
 
+@Value
+@EqualsAndHashCode(callSuper = false)
 public class HasNoJakartaAnnotations extends ScanningRecipe<HasNoJakartaAnnotations.Accumulator> {
     String displayName = "Project has no Jakarta annotations";
 
