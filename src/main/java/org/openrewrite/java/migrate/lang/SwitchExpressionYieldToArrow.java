@@ -36,16 +36,10 @@ import static java.util.Objects.requireNonNull;
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class SwitchExpressionYieldToArrow extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Convert switch expression yield to arrow";
-    }
+    String displayName = "Convert switch expression yield to arrow";
 
-    @Override
-    public String getDescription() {
-        return "Convert switch expressions with colon cases and yield statements to arrow syntax. " +
+    String description = "Convert switch expressions with colon cases and yield statements to arrow syntax. " +
                "This recipe is only applicable for Java 21 and later.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

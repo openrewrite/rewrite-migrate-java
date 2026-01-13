@@ -36,16 +36,10 @@ public class FindDataUsedOnDto extends Recipe {
             example = "com.example.dto.*")
     String dtoType;
 
-    @Override
-    public String getDisplayName() {
-        return "Find data used on DTOs";
-    }
+    String displayName = "Find data used on DTOs";
 
-    @Override
-    public String getDescription() {
-        return "Find data elements used on DTOs. This is useful to provide " +
+    String description = "Find data elements used on DTOs. This is useful to provide " +
                "information where data over-fetching may be a problem.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

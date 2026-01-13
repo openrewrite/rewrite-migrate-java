@@ -40,15 +40,9 @@ import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class RefineSwitchCases extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Use switch cases refinement when possible";
-    }
+    String displayName = "Use switch cases refinement when possible";
 
-    @Override
-    public String getDescription() {
-        return "Use guarded switch case labels and guards if all the statements in the switch block do if/else if/else on the guarded label.";
-    }
+    String description = "Use guarded switch case labels and guards if all the statements in the switch block do if/else if/else on the guarded label.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

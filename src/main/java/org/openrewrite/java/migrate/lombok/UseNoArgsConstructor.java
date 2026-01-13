@@ -35,17 +35,9 @@ import static java.util.Comparator.comparing;
 @Value
 public class UseNoArgsConstructor extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        //language=markdown
-        return "Use `@NoArgsConstructor` where applicable";
-    }
+    String displayName = "Use `@NoArgsConstructor` where applicable";
 
-    @Override
-    public String getDescription() {
-        //language=markdown
-        return "Prefer the Lombok `@NoArgsConstructor` annotation over explicitly written out constructors.";
-    }
+    String description = "Prefer the Lombok `@NoArgsConstructor` annotation over explicitly written out constructors.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

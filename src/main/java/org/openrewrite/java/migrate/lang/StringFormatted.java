@@ -48,15 +48,9 @@ public class StringFormatted extends Recipe {
     @Nullable
     Boolean addParentheses;
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `String.formatted(Object...)`";
-    }
+    String displayName = "Prefer `String.formatted(Object...)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `String.formatted(Object...)` over `String.format(String, Object...)` in Java 17 or higher.";
-    }
+    String description = "Prefer `String.formatted(Object...)` over `String.format(String, Object...)` in Java 17 or higher.";
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {

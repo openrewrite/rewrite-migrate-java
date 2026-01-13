@@ -52,17 +52,11 @@ public class ReplaceAWTGetPeerMethod extends Recipe {
         lightweightPeerFQCN = "java.awt.peer.LightweightPeer";
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Replace AWT `getPeer()` method";
-    }
+    String displayName = "Replace AWT `getPeer()` method";
 
-    @Override
-    public String getDescription() {
-        return "This recipe replaces the use of `getPeer()` method in `java.awt.*` classes. " +
+    String description = "This recipe replaces the use of `getPeer()` method in `java.awt.*` classes. " +
                 "`component.getPeer() != null` is replaced with `component.isDisplayable()` and " +
                 "`component.getPeer() instanceof LightweightPeer` is replaced with `component.isLightweight()`.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

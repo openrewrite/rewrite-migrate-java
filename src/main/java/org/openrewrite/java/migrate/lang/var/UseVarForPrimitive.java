@@ -33,19 +33,11 @@ import static org.openrewrite.java.tree.JavaType.Primitive.*;
 @Value
 public class UseVarForPrimitive extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        //language=markdown
-        return "Use `var` for primitive-typed variables";
-    }
+    String displayName = "Use `var` for primitive-typed variables";
 
 
-    @Override
-    public String getDescription() {
-        //language=markdown
-        return "Try to apply local variable type inference `var` to primitive variables where possible. " +
+    String description = "Try to apply local variable type inference `var` to primitive variables where possible. " +
                "This recipe will not touch variable declarations with initializers containing ternary operators.";
-    }
 
 
     @Override

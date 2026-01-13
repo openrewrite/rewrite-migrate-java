@@ -39,15 +39,9 @@ public class FindDtoOverfetching extends Recipe {
             example = "com.example.dto.*")
     String dtoType;
 
-    @Override
-    public String getDisplayName() {
-        return "Find methods that only use one DTO data element";
-    }
+    String displayName = "Find methods that only use one DTO data element";
 
-    @Override
-    public String getDescription() {
-        return "Find methods that have 'opportunities' for improvement.";
-    }
+    String description = "Find methods that have 'opportunities' for improvement.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

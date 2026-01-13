@@ -35,15 +35,9 @@ public class BeanDiscovery extends Recipe {
     private static final XPathMatcher BEANS_MATCHER = new XPathMatcher("/beans");
     private static final Pattern VERSION_PATTERN = Pattern.compile("_([^\\/\\.]+)\\.xsd");
 
-    @Override
-    public String getDisplayName() {
-        return "Behavior change to bean discovery in modules with `beans.xml` file with no version specified";
-    }
+    String displayName = "Behavior change to bean discovery in modules with `beans.xml` file with no version specified";
 
-    @Override
-    public String getDescription() {
-        return "Alters beans with missing version attribute to include this attribute as well as the bean-discovery-mode=\"all\" attribute to maintain an explicit bean archive.";
-    }
+    String description = "Alters beans with missing version attribute to include this attribute as well as the bean-discovery-mode=\"all\" attribute to maintain an explicit bean archive.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

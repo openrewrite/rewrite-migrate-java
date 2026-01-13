@@ -44,16 +44,10 @@ public class AboutJavaVersion extends Recipe {
     @Nullable
     String whenUsesType;
 
-    @Override
-    public String getDisplayName() {
-        return "Find which Java version is in use";
-    }
+    String displayName = "Find which Java version is in use";
 
-    @Override
-    public String getDescription() {
-        return "A diagnostic for studying the distribution of Java language version levels " +
+    String description = "A diagnostic for studying the distribution of Java language version levels " +
                "(both source and target compatibility across files and source sets).";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

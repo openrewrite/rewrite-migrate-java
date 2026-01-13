@@ -42,15 +42,9 @@ public class ReplaceFileInOrOutputStreamFinalizeWithClose extends Recipe {
     private static final String JAVA_IO_FILE_OUTPUT_STREAM = "java.io.FileOutputStream";
     private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.lang.Object finalize()");
 
-    @Override
-    public String getDisplayName() {
-        return "Replace invocations of `finalize()` on `FileInputStream` and `FileOutputStream` with `close()`";
-    }
+    String displayName = "Replace invocations of `finalize()` on `FileInputStream` and `FileOutputStream` with `close()`";
 
-    @Override
-    public String getDescription() {
-        return "Replace invocations of the deprecated `finalize()` method on `FileInputStream` and `FileOutputStream` with `close()`.";
-    }
+    String description = "Replace invocations of the deprecated `finalize()` method on `FileInputStream` and `FileOutputStream` with `close()`.";
 
     @Override
     public Set<String> getTags() {

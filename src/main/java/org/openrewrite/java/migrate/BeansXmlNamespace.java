@@ -37,15 +37,9 @@ public class BeansXmlNamespace extends Recipe {
     private static final String SUN_SCHEMA_LOCATION = "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd";
     private static final String JCP_SCHEMA_LOCATION = "http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd";
 
-    @Override
-    public String getDisplayName() {
-        return "Change `beans.xml` `schemaLocation` to match XML namespace";
-    }
+    String displayName = "Change `beans.xml` `schemaLocation` to match XML namespace";
 
-    @Override
-    public String getDescription() {
-        return "Set the `schemaLocation` that corresponds to the `xmlns` set in `beans.xml` files.";
-    }
+    String description = "Set the `schemaLocation` that corresponds to the `xmlns` set in `beans.xml` files.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -33,15 +33,9 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class HttpSessionInvalidate extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Use HttpServletRequest `logout` method for programmatic security logout in Servlet 3.0";
-    }
+    String displayName = "Use HttpServletRequest `logout` method for programmatic security logout in Servlet 3.0";
 
-    @Override
-    public String getDescription() {
-        return "Do not rely on HttpSession `invalidate` method for programmatic security logout. Add the HttpServletRequest `logout` method which was introduced in Java EE 6 as part of the Servlet 3.0 specification.";
-    }
+    String description = "Do not rely on HttpSession `invalidate` method for programmatic security logout. Add the HttpServletRequest `logout` method which was introduced in Java EE 6 as part of the Servlet 3.0 specification.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

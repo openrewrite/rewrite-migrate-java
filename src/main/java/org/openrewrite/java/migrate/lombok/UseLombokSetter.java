@@ -36,15 +36,9 @@ import static java.util.Collections.singleton;
 @Value
 public class UseLombokSetter extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        return "Convert setter methods to annotations";
-    }
+    String displayName = "Convert setter methods to annotations";
 
-    @Override
-    public String getDescription() {
-        return "Convert trivial setter methods to `@Setter` annotations on their respective fields.";
-    }
+    String description = "Convert trivial setter methods to `@Setter` annotations on their respective fields.";
 
     @Override
     public Set<String> getTags() {

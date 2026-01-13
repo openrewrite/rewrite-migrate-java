@@ -38,16 +38,10 @@ import java.util.Set;
 @Value
 public class UpdateManagedBeanToNamed extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        return "Update Faces `@ManagedBean` to use CDI `@Named`";
-    }
+    String displayName = "Update Faces `@ManagedBean` to use CDI `@Named`";
 
-    @Override
-    public String getDescription() {
-        return "Faces ManagedBean was deprecated in JSF 2.3 (EE8) and removed in Jakarta Faces 4.0 (EE10). " +
+    String description = "Faces ManagedBean was deprecated in JSF 2.3 (EE8) and removed in Jakarta Faces 4.0 (EE10). " +
                 "Replace `@ManagedBean` with `@Named` for CDI-based bean management.";
-    }
 
     @Override
     public Set<String> getTags() {

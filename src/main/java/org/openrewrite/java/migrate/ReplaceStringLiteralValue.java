@@ -53,15 +53,9 @@ public class ReplaceStringLiteralValue extends Recipe {
         this.newLiteralValue = newStringValue;
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Replace `String` literal";
-    }
+    String displayName = "Replace `String` literal";
 
-    @Override
-    public String getDescription() {
-        return "Replace the value of a complete `String` literal.";
-    }
+    String description = "Replace the value of a complete `String` literal.";
 
     @Override
     public List<Recipe> getRecipeList() {

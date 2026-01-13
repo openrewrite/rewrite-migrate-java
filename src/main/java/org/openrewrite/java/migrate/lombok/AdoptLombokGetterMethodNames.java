@@ -40,20 +40,14 @@ public class AdoptLombokGetterMethodNames extends ScanningRecipe<List<AdoptLombo
 
     private final static String DO_NOT_RENAME = "DO_NOT_RENAME";
 
-    @Override
-    public String getDisplayName() {
-        return "Rename getter methods to fit Lombok";
-    }
+    String displayName = "Rename getter methods to fit Lombok";
 
-    @Override
-    public String getDescription() {
-        return "Rename methods that are effectively getter to the name Lombok would give them.\n\n" +
+    String description = "Rename methods that are effectively getter to the name Lombok would give them.\n\n" +
                 "Limitations:\n" +
                 " - If two methods in a class are effectively the same getter then one's name will be corrected and the others name will be left as it is.\n" +
                 " - If the correct name for a method is already taken by another method then the name will not be corrected.\n" +
                 " - Method name swaps or circular renaming within a class cannot be performed because the names block each other.\n" +
                 "E.g. `int getFoo() { return ba; } int getBa() { return foo; }` stays as it is.";
-    }
 
     @Value
     public static class RenameRecord {

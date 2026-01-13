@@ -35,15 +35,9 @@ public class FindJavaVersion extends Recipe {
     transient JavaVersionTable table = new JavaVersionTable(this);
     transient Set<JavaVersion> seen = new HashSet<>();
 
-    @Override
-    public String getDisplayName() {
-        return "Find Java versions in use";
-    }
+    String displayName = "Find Java versions in use";
 
-    @Override
-    public String getDescription() {
-        return "Finds Java versions in use.";
-    }
+    String description = "Finds Java versions in use.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

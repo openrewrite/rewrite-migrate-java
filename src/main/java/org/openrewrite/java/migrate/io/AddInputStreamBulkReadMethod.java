@@ -37,19 +37,13 @@ public class AddInputStreamBulkReadMethod extends Recipe {
     private static final String MARKER_MESSAGE = "Missing bulk read method may cause significant performance degradation";
     private static final String JAVA_IO_INPUT_STREAM = "java.io.InputStream";
 
-    @Override
-    public String getDisplayName() {
-        return "Add bulk read method to `InputStream` implementations";
-    }
+    String displayName = "Add bulk read method to `InputStream` implementations";
 
-    @Override
-    public String getDescription() {
-        return "Adds a `read(byte[], int, int)` method to `InputStream` subclasses that only override the single-byte " +
+    String description = "Adds a `read(byte[], int, int)` method to `InputStream` subclasses that only override the single-byte " +
                 "`read()` method. Java's default `InputStream.read(byte[], int, int)` implementation calls the " +
                 "single-byte `read()` method in a loop, which can cause severe performance degradation (up to 350x " +
                 "slower) for bulk reads. This recipe detects `InputStream` implementations that delegate to another " +
                 "stream and adds the missing bulk read method to delegate bulk reads as well.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
