@@ -39,17 +39,12 @@ public class UseJavaUtilBase64 extends Recipe {
     @Option(displayName = "Use Mime Coder", description = "Use `Base64.getMimeEncoder()/getMimeDecoder()` instead of `Base64.getEncoder()/getDecoder()`.", required = false, example = "false")
     boolean useMimeCoder;
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `java.util.Base64` instead of `sun.misc`";
-    }
+    @Getter
+    final String displayName = "Prefer `java.util.Base64` instead of `sun.misc`";
 
-    @Override
-    public String getDescription() {
-        //language=markdown
-        return "Prefer `java.util.Base64` instead of using `sun.misc` in Java 8 or higher. `sun.misc` is not exported " +
-               "by the Java module system and accessing this class will result in a warning in Java 11 and an error in Java 17.";
-    }
+    @Getter
+    final String description = "Prefer `java.util.Base64` instead of using `sun.misc` in Java 8 or higher. `sun.misc` is not exported " +
+            "by the Java module system and accessing this class will result in a warning in Java 11 and an error in Java 17.";
 
     public UseJavaUtilBase64(String sunPackage, boolean useMimeCoder) {
         this.sunPackage = sunPackage;

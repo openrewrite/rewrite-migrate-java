@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -29,15 +30,11 @@ import org.openrewrite.java.tree.*;
 import static java.util.Objects.requireNonNull;
 
 public class OptionalStreamRecipe extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "`Stream<Optional>` idiom recipe";
-    }
+    @Getter
+    final String displayName = "`Stream<Optional>` idiom recipe";
 
-    @Override
-    public String getDescription() {
-        return "Migrate Java 8 `Optional<Stream>.filter(Optional::isPresent).map(Optional::get)` to Java 11 `.flatMap(Optional::stream)`.";
-    }
+    @Getter
+    final String description = "Migrate Java 8 `Optional<Stream>.filter(Optional::isPresent).map(Optional::get)` to Java 11 `.flatMap(Optional::stream)`.";
 
     private static final MethodMatcher mapMatcher = new MethodMatcher("java.util.stream.Stream map(java.util.function.Function)");
     private static final MethodMatcher filterMatcher = new MethodMatcher("java.util.stream.Stream filter(java.util.function.Predicate)");

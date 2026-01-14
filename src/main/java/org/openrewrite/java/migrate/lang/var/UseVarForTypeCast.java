@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
@@ -32,17 +33,13 @@ import static org.openrewrite.java.tree.Space.EMPTY;
 
 public class UseVarForTypeCast extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        return "Use `var` for variables initialized with type casts";
-    }
+    @Getter
+    final String displayName = "Use `var` for variables initialized with type casts";
 
-    @Override
-    public String getDescription() {
-        return "Apply local variable type inference `var` to variables that are initialized by a cast expression " +
-                "where the cast type matches the declared variable type. This removes the redundant type duplication. " +
-                "For example, `String s = (String) obj;` becomes `var s = (String) obj;`.";
-    }
+    @Getter
+    final String description = "Apply local variable type inference `var` to variables that are initialized by a cast expression " +
+            "where the cast type matches the declared variable type. This removes the redundant type duplication. " +
+            "For example, `String s = (String) obj;` becomes `var s = (String) obj;`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

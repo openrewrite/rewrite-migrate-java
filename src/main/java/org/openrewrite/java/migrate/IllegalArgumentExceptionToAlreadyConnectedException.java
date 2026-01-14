@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,15 +33,11 @@ public class IllegalArgumentExceptionToAlreadyConnectedException extends Recipe 
     private static final String ILLEGAL_ARGUMENT_EXCEPTION = "java.lang.IllegalArgumentException";
     private static final String ALREADY_CONNECTED_EXCEPTION = "java.nio.channels.AlreadyConnectedException";
 
-    @Override
-    public String getDisplayName() {
-        return "Replace `IllegalArgumentException` with `AlreadyConnectedException` in `DatagramChannel.send()` method";
-    }
+    @Getter
+    final String displayName = "Replace `IllegalArgumentException` with `AlreadyConnectedException` in `DatagramChannel.send()` method";
 
-    @Override
-    public String getDescription() {
-        return "Replace `IllegalArgumentException` with `AlreadyConnectedException` for DatagramChannel.send() to ensure compatibility with Java 11+.";
-    }
+    @Getter
+    final String description = "Replace `IllegalArgumentException` with `AlreadyConnectedException` for DatagramChannel.send() to ensure compatibility with Java 11+.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.net;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -33,15 +34,11 @@ public class URLConstructorsToNewURI extends Recipe {
     private static final MethodMatcher methodMatcherThreeArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, java.lang.String)");
     private static final MethodMatcher methodMatcherFourArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, int, java.lang.String)");
 
-    @Override
-    public String getDisplayName() {
-        return "Convert `new URL(String, ..)` to `new URI(String, ..).toURL()`";
-    }
+    @Getter
+    final String displayName = "Convert `new URL(String, ..)` to `new URI(String, ..).toURL()`";
 
-    @Override
-    public String getDescription() {
-        return "Converts `new URL(String, ..)` constructors to `new URI(String, ..).toURL()`.";
-    }
+    @Getter
+    final String description = "Converts `new URL(String, ..)` constructors to `new URI(String, ..).toURL()`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -38,15 +39,11 @@ public class MigrateMainMethodToInstanceMain extends Recipe {
 
     private static final MethodMatcher MAIN_METHOD_MATCHER = new MethodMatcher("*..* main(String[])", false);
 
-    @Override
-    public String getDisplayName() {
-        return "Migrate `public static void main(String[] args)` to instance `void main()`";
-    }
+    @Getter
+    final String displayName = "Migrate `public static void main(String[] args)` to instance `void main()`";
 
-    @Override
-    public String getDescription() {
-        return "Migrate `public static void main(String[] args)` method to instance `void main()` method when the `args` parameter is unused, as supported by JEP 512 in Java 25+.";
-    }
+    @Getter
+    final String description = "Migrate `public static void main(String[] args)` method to instance `void main()` method when the `args` parameter is unused, as supported by JEP 512 in Java 25+.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

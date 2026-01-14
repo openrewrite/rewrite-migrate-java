@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -36,15 +37,11 @@ import static java.util.Collections.singleton;
 public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends Recipe {
     private static final MethodMatcher NEW_INSTANCE_MATCHER = new MethodMatcher("java.lang.Class newInstance()");
 
-    @Override
-    public String getDisplayName() {
-        return "Use `Class#getDeclaredConstructor().newInstance()`";
-    }
+    @Getter
+    final String displayName = "Use `Class#getDeclaredConstructor().newInstance()`";
 
-    @Override
-    public String getDescription() {
-        return "Use `Class#getDeclaredConstructor().newInstance()` instead of the deprecated `Class#newInstance()` in Java 9 or higher.";
-    }
+    @Getter
+    final String description = "Use `Class#getDeclaredConstructor().newInstance()` instead of the deprecated `Class#newInstance()` in Java 9 or higher.";
 
     @Override
     public Set<String> getTags() {

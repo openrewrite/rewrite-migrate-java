@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,15 +33,11 @@ import static java.util.Collections.singleton;
 public class NoGuavaAtomicsNewReference extends Recipe {
     private static final MethodMatcher NEW_ATOMIC_REFERENCE = new MethodMatcher("com.google.common.util.concurrent.Atomics newReference(..)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `new AtomicReference<>()`";
-    }
+    @Getter
+    final String displayName = "Prefer `new AtomicReference<>()`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
-    }
+    @Getter
+    final String description = "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
 
     @Override
     public Set<String> getTags() {

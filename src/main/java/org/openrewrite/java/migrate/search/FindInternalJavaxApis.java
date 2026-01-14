@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.search;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
@@ -46,15 +47,11 @@ public class FindInternalJavaxApis extends Recipe {
     @Nullable
     private final String methodPattern;
 
-    @Override
-    public String getDisplayName() {
-        return "Find uses of internal javax APIs";
-    }
+    @Getter
+    final String displayName = "Find uses of internal javax APIs";
 
-    @Override
-    public String getDescription() {
-        return "The libraries that define these APIs will have to be migrated before any of the repositories that use them.";
-    }
+    @Getter
+    final String description = "The libraries that define these APIs will have to be migrated before any of the repositories that use them.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

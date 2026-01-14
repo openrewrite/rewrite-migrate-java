@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -30,15 +31,11 @@ public class PreferJavaStringJoin extends Recipe {
 
     static final MethodMatcher JOIN_METHOD_MATCHER = new MethodMatcher("com.google.common.base.Joiner join(..)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `String#join()` over Guava `Joiner#join()`";
-    }
+    @Getter
+    final String displayName = "Prefer `String#join()` over Guava `Joiner#join()`";
 
-    @Override
-    public String getDescription() {
-        return "Replaces supported calls to `com.google.common.base.Joiner#join()` with `java.lang.String#join()`.";
-    }
+    @Getter
+    final String description = "Replaces supported calls to `com.google.common.base.Joiner#join()` with `java.lang.String#join()`.";
 
     @Override
     public Set<String> getTags() {

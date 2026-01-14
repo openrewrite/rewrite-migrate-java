@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -30,15 +31,11 @@ import org.openrewrite.staticanalysis.SimplifyConstantIfBranchExecution;
 import static org.openrewrite.Tree.randomId;
 
 public class RemoveBeanIsNullable extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Remove `Bean.isNullable()`";
-    }
+    @Getter
+    final String displayName = "Remove `Bean.isNullable()`";
 
-    @Override
-    public String getDescription() {
-        return "`Bean.isNullable()` has been removed in CDI 4.0.0, and now always returns `false`.";
-    }
+    @Getter
+    final String description = "`Bean.isNullable()` has been removed in CDI 4.0.0, and now always returns `false`.";
 
     private static final MethodMatcher BEAN_ISNULLABLE = new MethodMatcher("jakarta.enterprise.inject.spi.Bean isNullable()", false);
 

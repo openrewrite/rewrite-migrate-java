@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,15 +33,11 @@ import static java.util.Collections.singletonList;
 public class MigrateSecurityManagerMulticast extends Recipe {
     private static final MethodMatcher MULTICAST_METHOD = new MethodMatcher("java.lang.SecurityManager checkMulticast(java.net.InetAddress, byte)");
 
-    @Override
-    public String getDisplayName() {
-        return "Use `SecurityManager#checkMulticast(InetAddress)`";
-    }
+    @Getter
+    final String displayName = "Use `SecurityManager#checkMulticast(InetAddress)`";
 
-    @Override
-    public String getDescription() {
-        return "Use `SecurityManager#checkMulticast(InetAddress)` instead of the deprecated `SecurityManager#checkMulticast(InetAddress, byte)` in Java 1.4 or higher.";
-    }
+    @Getter
+    final String description = "Use `SecurityManager#checkMulticast(InetAddress)` instead of the deprecated `SecurityManager#checkMulticast(InetAddress, byte)` in Java 1.4 or higher.";
 
     @Override
     public Set<String> getTags() {

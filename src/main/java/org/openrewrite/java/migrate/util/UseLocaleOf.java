@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -31,15 +32,11 @@ import java.util.StringJoiner;
 public class UseLocaleOf extends Recipe {
     private static final MethodMatcher NEW_LOCALE = new MethodMatcher("java.util.Locale <constructor>(..)", false);
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Locale.of(..)` over `new Locale(..)`";
-    }
+    @Getter
+    final String displayName = "Prefer `Locale.of(..)` over `new Locale(..)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Locale.of(..)` over `new Locale(..)` in Java 19 or higher.";
-    }
+    @Getter
+    final String description = "Prefer `Locale.of(..)` over `new Locale(..)` in Java 19 or higher.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

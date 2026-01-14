@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.logging;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -34,15 +35,11 @@ import static java.util.Collections.singleton;
 public class MigrateGetLoggingMXBeanToGetPlatformMXBean extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.util.logging.LogManager getLoggingMXBean()");
 
-    @Override
-    public String getDisplayName() {
-        return "Use `ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)`";
-    }
+    @Getter
+    final String displayName = "Use `ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)`";
 
-    @Override
-    public String getDescription() {
-        return "Use `ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)` instead of the deprecated `LogManager#getLoggingMXBean()` in Java 9 or higher.";
-    }
+    @Getter
+    final String description = "Use `ManagementFactory#getPlatformMXBean(PlatformLoggingMXBean.class)` instead of the deprecated `LogManager#getLoggingMXBean()` in Java 9 or higher.";
 
     @Override
     public Set<String> getTags() {

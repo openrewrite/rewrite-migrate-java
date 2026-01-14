@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -34,15 +35,11 @@ public class NoMapsAndSetsWithExpectedSize extends Recipe {
     private static final MethodMatcher NEW_HASHSET = new MethodMatcher("com.google.common.collect.Sets newHashSetWithExpectedSize(int)", false);
     private static final MethodMatcher NEW_LINKED_HASHSET = new MethodMatcher("com.google.common.collect.Sets newLinkedHashSetWithExpectedSize(int)", false);
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer JDK methods for Maps and Sets of an expected size";
-    }
+    @Getter
+    final String displayName = "Prefer JDK methods for Maps and Sets of an expected size";
 
-    @Override
-    public String getDescription() {
-        return "Prefer Java 19+ methods to create Maps and Sets of an expected size instead of using Guava methods.";
-    }
+    @Getter
+    final String description = "Prefer Java 19+ methods to create Maps and Sets of an expected size instead of using Guava methods.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

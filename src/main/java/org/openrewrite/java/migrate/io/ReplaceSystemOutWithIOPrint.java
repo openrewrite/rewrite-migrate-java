@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.io;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -29,16 +30,12 @@ import org.openrewrite.java.tree.TypeUtils;
 
 public class ReplaceSystemOutWithIOPrint extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        return "Migrate `System.out.print` to Java 25 IO utility class";
-    }
+    @Getter
+    final String displayName = "Migrate `System.out.print` to Java 25 IO utility class";
 
-    @Override
-    public String getDescription() {
-        return "Replace `System.out.print()`, `System.out.println()` with `IO.print()` and `IO.println()`. " +
-                "Migrates to the new IO utility class introduced in Java 25.";
-    }
+    @Getter
+    final String description = "Replace `System.out.print()`, `System.out.println()` with `IO.print()` and `IO.println()`. " +
+            "Migrates to the new IO utility class introduced in Java 25.";
 
     private static final MethodMatcher SYSTEM_OUT_PRINT = new MethodMatcher("java.io.PrintStream print(..)");
     private static final MethodMatcher SYSTEM_OUT_PRINTLN = new MethodMatcher("java.io.PrintStream println(..)");

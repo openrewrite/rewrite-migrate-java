@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -30,15 +31,11 @@ import static java.util.Collections.singleton;
 public class NoGuavaPredicatesInstanceOf extends Recipe {
     private static final MethodMatcher PREDICATES_INSTANCE_OF = new MethodMatcher("com.google.common.base.Predicates instanceOf(..)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `A.class::isInstance`";
-    }
+    @Getter
+    final String displayName = "Prefer `A.class::isInstance`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `A.class::isInstance` over `Predicates.instanceOf(A.class)`.";
-    }
+    @Getter
+    final String description = "Prefer `A.class::isInstance` over `Predicates.instanceOf(A.class)`.";
 
     @Override
     public Set<String> getTags() {

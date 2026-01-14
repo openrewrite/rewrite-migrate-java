@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -33,19 +34,15 @@ import static org.openrewrite.Tree.randomId;
 public class ChangeDefaultKeyStore extends Recipe {
     private static final MethodMatcher KEYSTORE_METHOD_REF = new MethodMatcher("java.security.KeyStore getDefaultType()", true);
 
-    @Override
-    public String getDisplayName() {
-        return "Return String `jks` when  `KeyStore.getDefaultType()` is called";
-    }
+    @Getter
+    final String displayName = "Return String `jks` when  `KeyStore.getDefaultType()` is called";
 
-    @Override
-    public String getDescription() {
-        return "In Java 11 the default keystore was updated from JKS to PKCS12. " +
-                "As a result, applications relying on KeyStore.getDefaultType() may encounter issues after migrating, " +
-                "unless their JKS keystore has been converted to PKCS12. " +
-                "This recipe returns default key store of `jks` when `KeyStore.getDefaultType()` method is called to " +
-                "use the pre Java 11 default keystore.";
-    }
+    @Getter
+    final String description = "In Java 11 the default keystore was updated from JKS to PKCS12. " +
+            "As a result, applications relying on KeyStore.getDefaultType() may encounter issues after migrating, " +
+            "unless their JKS keystore has been converted to PKCS12. " +
+            "This recipe returns default key store of `jks` when `KeyStore.getDefaultType()` method is called to " +
+            "use the pre Java 11 default keystore.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -33,15 +34,11 @@ public class NoGuavaSetsFilter extends Recipe {
     private static final MethodMatcher SETS_FILTER = new MethodMatcher("com.google.common.collect.Sets filter(java.util.Set, com.google.common.base.Predicate)");
     private static final MethodMatcher SETS_FILTER_SORTED_SET = new MethodMatcher("com.google.common.collect.Sets filter(java.util.SortedSet, com.google.common.base.Predicate)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Collection.stream().filter(Predicate)`";
-    }
+    @Getter
+    final String displayName = "Prefer `Collection.stream().filter(Predicate)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Collection.stream().filter(Predicate)` over `Sets.filter(Set, Predicate)`.";
-    }
+    @Getter
+    final String description = "Prefer `Collection.stream().filter(Predicate)` over `Sets.filter(Set, Predicate)`.";
 
     @Override
     public Set<String> getTags() {

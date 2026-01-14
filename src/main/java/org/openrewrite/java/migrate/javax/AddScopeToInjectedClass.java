@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
@@ -31,15 +32,11 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
     private static final String JAVAX_INJECT_INJECT = "javax.inject.Inject";
     private static final String JAVAX_ENTERPRISE_CONTEXT_DEPENDENT = "javax.enterprise.context.Dependent";
 
-    @Override
-    public String getDisplayName() {
-        return "Add scope annotation to injected classes";
-    }
+    @Getter
+    final String displayName = "Add scope annotation to injected classes";
 
-    @Override
-    public String getDescription() {
-        return "Finds member variables annotated with `@Inject' and applies `@Dependent` scope annotation to the variable's type.";
-    }
+    @Getter
+    final String description = "Finds member variables annotated with `@Inject' and applies `@Dependent` scope annotation to the variable's type.";
 
     @Override
     public Set<String> getInitialValue(ExecutionContext ctx) {

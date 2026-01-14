@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,15 +33,11 @@ public class ArrayStoreExceptionToTypeNotPresentException extends Recipe {
     private static final String ARRAY_STORE_EXCEPTION = "java.lang.ArrayStoreException";
     private static final String TYPE_NOT_PRESENT_EXCEPTION = "java.lang.TypeNotPresentException";
 
-    @Override
-    public String getDisplayName() {
-        return "Catch `TypeNotPresentException` thrown by `Class.getAnnotation()`";
-    }
+    @Getter
+    final String displayName = "Catch `TypeNotPresentException` thrown by `Class.getAnnotation()`";
 
-    @Override
-    public String getDescription() {
-        return "Replace catch blocks for `ArrayStoreException` around `Class.getAnnotation()` with `TypeNotPresentException` to ensure compatibility with Java 11+.";
-    }
+    @Getter
+    final String description = "Replace catch blocks for `ArrayStoreException` around `Class.getAnnotation()` with `TypeNotPresentException` to ensure compatibility with Java 11+.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

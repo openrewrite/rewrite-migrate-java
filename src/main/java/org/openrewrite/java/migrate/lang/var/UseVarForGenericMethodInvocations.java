@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -32,18 +33,12 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 public class UseVarForGenericMethodInvocations extends Recipe {
-    @Override
-    public String getDisplayName() {
-        //language=markdown
-        return "Apply `var` to generic method invocations";
-    }
+    @Getter
+    final String displayName = "Apply `var` to generic method invocations";
 
-    @Override
-    public String getDescription() {
-        //language=markdown
-        return "Apply `var` to variables initialized by invocations of generic methods. " +
-                "This recipe ignores generic factory methods without parameters, because open rewrite cannot handle them correctly ATM.";
-    }
+    @Getter
+    final String description = "Apply `var` to variables initialized by invocations of generic methods. " +
+            "This recipe ignores generic factory methods without parameters, because open rewrite cannot handle them correctly ATM.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

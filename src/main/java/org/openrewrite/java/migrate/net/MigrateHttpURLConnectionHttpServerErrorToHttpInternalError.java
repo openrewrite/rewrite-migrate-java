@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.net;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -31,15 +32,11 @@ import java.util.Set;
 import static java.util.Collections.singleton;
 
 public class MigrateHttpURLConnectionHttpServerErrorToHttpInternalError extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Use `java.net.HttpURLConnection.HTTP_INTERNAL_ERROR`";
-    }
+    @Getter
+    final String displayName = "Use `java.net.HttpURLConnection.HTTP_INTERNAL_ERROR`";
 
-    @Override
-    public String getDescription() {
-        return "Use `java.net.HttpURLConnection.HTTP_INTERNAL_ERROR` instead of the deprecated `java.net.HttpURLConnection.HTTP_SERVER_ERROR`.";
-    }
+    @Getter
+    final String description = "Use `java.net.HttpURLConnection.HTTP_INTERNAL_ERROR` instead of the deprecated `java.net.HttpURLConnection.HTTP_SERVER_ERROR`.";
 
     @Override
     public Set<String> getTags() {

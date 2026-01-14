@@ -44,15 +44,11 @@ public class AddSuppressionForIllegalReflectionWarningsPlugin extends Recipe {
             example = "29.X")
     private final String version;
 
-    @Override
-    public String getDisplayName() {
-        return "Add maven jar plugin to suppress illegal reflection warnings";
-    }
+    @Getter
+    final String displayName = "Add maven jar plugin to suppress illegal reflection warnings";
 
-    @Override
-    public String getDescription() {
-        return "Adds a maven jar plugin that's configured to suppress Illegal Reflection Warnings.";
-    }
+    @Getter
+    final String description = "Adds a maven jar plugin that's configured to suppress Illegal Reflection Warnings.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

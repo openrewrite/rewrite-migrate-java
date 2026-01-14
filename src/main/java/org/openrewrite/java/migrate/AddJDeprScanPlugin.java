@@ -37,15 +37,11 @@ public class AddJDeprScanPlugin extends Recipe {
     @Option(displayName = "release", description = "Specifies the Java SE release that provides the set of deprecated APIs for scanning.", required = false, example = "11")
     private final String release;
 
-    @Override
-    public String getDisplayName() {
-        return "Add `JDeprScan` Maven Plug-in";
-    }
+    @Getter
+    final String displayName = "Add `JDeprScan` Maven Plug-in";
 
-    @Override
-    public String getDescription() {
-        return "Add the `JDeprScan` Maven plugin to scan class files for uses of deprecated APIs.";
-    }
+    @Getter
+    final String description = "Add the `JDeprScan` Maven plugin to scan class files for uses of deprecated APIs.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

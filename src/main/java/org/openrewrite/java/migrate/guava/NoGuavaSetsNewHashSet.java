@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -34,15 +35,11 @@ import static java.util.stream.Collectors.joining;
 public class NoGuavaSetsNewHashSet extends Recipe {
     private static final MethodMatcher NEW_HASH_SET = new MethodMatcher("com.google.common.collect.Sets newHashSet(..)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `new HashSet<>()`";
-    }
+    @Getter
+    final String displayName = "Prefer `new HashSet<>()`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
-    }
+    @Getter
+    final String description = "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
 
     @Override
     public Set<String> getTags() {

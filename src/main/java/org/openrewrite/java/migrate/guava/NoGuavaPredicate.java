@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -29,15 +30,11 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.marker.SearchResult;
 
 public class NoGuavaPredicate extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Change Guava's `Predicate` into `java.util.function.Predicate` where possible";
-    }
+    @Getter
+    final String displayName = "Change Guava's `Predicate` into `java.util.function.Predicate` where possible";
 
-    @Override
-    public String getDescription() {
-        return "Change the type only where no methods are used that explicitly require a Guava `Predicate`.";
-    }
+    @Getter
+    final String description = "Change the type only where no methods are used that explicitly require a Guava `Predicate`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

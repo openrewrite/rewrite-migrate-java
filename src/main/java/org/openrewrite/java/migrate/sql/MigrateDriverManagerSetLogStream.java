@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.sql;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,15 +33,11 @@ import static java.util.Collections.singleton;
 public class MigrateDriverManagerSetLogStream extends Recipe {
     private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.sql.DriverManager setLogStream(java.io.PrintStream)");
 
-    @Override
-    public String getDisplayName() {
-        return "Use `DriverManager#setLogWriter(java.io.PrintWriter)`";
-    }
+    @Getter
+    final String displayName = "Use `DriverManager#setLogWriter(java.io.PrintWriter)`";
 
-    @Override
-    public String getDescription() {
-        return "Use `DriverManager#setLogWriter(java.io.PrintWriter)` instead of the deprecated `DriverManager#setLogStream(java.io.PrintStream)` in Java 1.2 or higher.";
-    }
+    @Getter
+    final String description = "Use `DriverManager#setLogWriter(java.io.PrintWriter)` instead of the deprecated `DriverManager#setLogStream(java.io.PrintStream)` in Java 1.2 or higher.";
 
     @Override
     public Set<String> getTags() {

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -34,15 +35,11 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
     private static final MethodMatcher NEW_ARRAY_LIST = new MethodMatcher("com.google.common.collect.Lists newCopyOnWriteArrayList()");
     private static final MethodMatcher NEW_ARRAY_LIST_ITERABLE = new MethodMatcher("com.google.common.collect.Lists newCopyOnWriteArrayList(java.lang.Iterable)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `new CopyOnWriteArrayList<>()`";
-    }
+    @Getter
+    final String displayName = "Prefer `new CopyOnWriteArrayList<>()`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
-    }
+    @Getter
+    final String description = "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
 
     @Override
     public Set<String> getTags() {

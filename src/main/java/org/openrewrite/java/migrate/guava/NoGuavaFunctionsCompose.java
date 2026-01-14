@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,15 +33,11 @@ import static java.util.Collections.singleton;
 public class NoGuavaFunctionsCompose extends Recipe {
     private static final MethodMatcher FUNCTIONS_COMPOSE = new MethodMatcher("com.google.common.base.Functions compose(com.google.common.base.Function, com.google.common.base.Function)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Function.compose(Function)`";
-    }
+    @Getter
+    final String displayName = "Prefer `Function.compose(Function)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Function.compose(Function)` over `Functions.compose(Function, Function)`.";
-    }
+    @Getter
+    final String description = "Prefer `Function.compose(Function)` over `Functions.compose(Function, Function)`.";
 
     @Override
     public Set<String> getTags() {

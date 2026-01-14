@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.logging;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -33,15 +34,11 @@ import static java.util.Collections.singleton;
 public class MigrateLogRecordSetMillisToSetInstant extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.util.logging.LogRecord setMillis(long)");
 
-    @Override
-    public String getDisplayName() {
-        return "Use `LogRecord#setInstant(Instant)`";
-    }
+    @Getter
+    final String displayName = "Use `LogRecord#setInstant(Instant)`";
 
-    @Override
-    public String getDescription() {
-        return "Use `LogRecord#setInstant(Instant)` instead of the deprecated `LogRecord#setMillis(long)` in Java 9 or higher.";
-    }
+    @Getter
+    final String description = "Use `LogRecord#setInstant(Instant)` instead of the deprecated `LogRecord#setMillis(long)` in Java 9 or higher.";
 
     @Override
     public Set<String> getTags() {

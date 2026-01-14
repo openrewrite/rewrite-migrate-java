@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.net;
 
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -41,15 +42,11 @@ public class URLConstructorToURICreate extends Recipe {
     private static final String URL_FQN = "java.net.URL";
     private static final MethodMatcher methodMatcherSingleArg = new MethodMatcher(URL_FQN + "#<init>(java.lang.String)");
 
-    @Override
-    public String getDisplayName() {
-        return "Convert `new URL(String)` to `URI.create(String).toURL()`";
-    }
+    @Getter
+    final String displayName = "Convert `new URL(String)` to `URI.create(String).toURL()`";
 
-    @Override
-    public String getDescription() {
-        return "Converts `new URL(String)` constructor to `URI.create(String).toURL()`. The URL constructor has been deprecated due to security vulnerabilities when handling malformed URLs. Using `URI.create(String)` provides stronger validation and safer URL handling in modern Java applications.";
-    }
+    @Getter
+    final String description = "Converts `new URL(String)` constructor to `URI.create(String).toURL()`. The URL constructor has been deprecated due to security vulnerabilities when handling malformed URLs. Using `URI.create(String)` provides stronger validation and safer URL handling in modern Java applications.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

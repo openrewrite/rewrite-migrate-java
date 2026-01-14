@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -41,15 +42,11 @@ public class NoGuavaPredicatesAndOr extends Recipe {
     private static final List<MethodMatcher> PREDICATES_METHODS_HANDLED = Arrays.asList(new MethodMatcher("com.google.common.base.Predicates equalTo(..)"),
             PREDICATES_AND, PREDICATES_OR, new MethodMatcher("com.google.common.base.Predicates not(..)"));
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Predicate.and(Predicate)`";
-    }
+    @Getter
+    final String displayName = "Prefer `Predicate.and(Predicate)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Predicate.and(Predicate)` over `Predicates.and(Predicate, Predicate)`.";
-    }
+    @Getter
+    final String description = "Prefer `Predicate.and(Predicate)` over `Predicates.and(Predicate, Predicate)`.";
 
     @Override
     public Set<String> getTags() {

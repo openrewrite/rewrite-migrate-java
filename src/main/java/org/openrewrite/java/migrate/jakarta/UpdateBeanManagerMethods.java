@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -30,15 +31,11 @@ import java.util.List;
 import static java.util.Collections.nCopies;
 
 public class UpdateBeanManagerMethods extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Update `fireEvent()` and `createInjectionTarget()` calls";
-    }
+    @Getter
+    final String displayName = "Update `fireEvent()` and `createInjectionTarget()` calls";
 
-    @Override
-    public String getDescription() {
-        return "Updates `BeanManager.fireEvent()` or `BeanManager.createInjectionTarget()`.";
-    }
+    @Getter
+    final String description = "Updates `BeanManager.fireEvent()` or `BeanManager.createInjectionTarget()`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

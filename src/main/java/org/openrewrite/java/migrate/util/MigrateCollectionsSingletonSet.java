@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -29,15 +30,11 @@ import org.openrewrite.java.tree.J;
 public class MigrateCollectionsSingletonSet extends Recipe {
     private static final MethodMatcher SINGLETON_SET = new MethodMatcher("java.util.Collections singleton(..)", true);
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Set.of(..)`";
-    }
+    @Getter
+    final String displayName = "Prefer `Set.of(..)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Set.Of(..)` instead of using `Collections.singleton()` in Java 9 or higher.";
-    }
+    @Getter
+    final String description = "Prefer `Set.Of(..)` instead of using `Collections.singleton()` in Java 9 or higher.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

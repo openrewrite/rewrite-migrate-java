@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -33,18 +34,14 @@ import java.util.regex.Pattern;
 
 public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumulator> {
 
-    @Override
-    public String getDisplayName() {
-        return "`@Embeddable` classes cannot have an `@Id` annotation when referenced by an `@EmbeddedId` annotation";
-    }
+    @Getter
+    final String displayName = "`@Embeddable` classes cannot have an `@Id` annotation when referenced by an `@EmbeddedId` annotation";
 
-    @Override
-    public String getDescription() {
-        return "According to the Java Persistence API (JPA) specification, if an entity defines an attribute with an " +
-               "`@EmbeddedId` annotation, the embeddable class cannot contain an attribute with an `@Id` annotation. " +
-               "If both the `@EmbeddedId` annotation and the `@Id` annotation are defined, " +
-               "OpenJPA ignores the `@Id` annotation, whereas EclipseLink throws an exception.";
-    }
+    @Getter
+    final String description = "According to the Java Persistence API (JPA) specification, if an entity defines an attribute with an " +
+            "`@EmbeddedId` annotation, the embeddable class cannot contain an attribute with an `@Id` annotation. " +
+            "If both the `@EmbeddedId` annotation and the `@Id` annotation are defined, " +
+            "OpenJPA ignores the `@Id` annotation, whereas EclipseLink throws an exception.";
 
     @Override
     public Accumulator getInitialValue(ExecutionContext ctx) {

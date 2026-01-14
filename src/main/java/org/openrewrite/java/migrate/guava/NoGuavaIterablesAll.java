@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -33,15 +34,11 @@ import static java.util.Collections.singleton;
 public class NoGuavaIterablesAll extends Recipe {
     private static final MethodMatcher ITERABLES_ALL = new MethodMatcher("com.google.common.collect.Iterables all(java.lang.Iterable, com.google.common.base.Predicate)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Collection.stream().allMatch(Predicate)`";
-    }
+    @Getter
+    final String displayName = "Prefer `Collection.stream().allMatch(Predicate)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Collection.stream().allMatch(Predicate)` over `Iterables.all(Collection, Predicate)`.";
-    }
+    @Getter
+    final String description = "Prefer `Collection.stream().allMatch(Predicate)` over `Iterables.all(Collection, Predicate)`.";
 
     @Override
     public Set<String> getTags() {

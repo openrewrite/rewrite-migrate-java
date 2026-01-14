@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -34,15 +35,11 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
     private static final MethodMatcher UNMODIFIABLE_SET = new MethodMatcher("java.util.Collections unmodifiableSet(java.util.Set)", true);
     private static final MethodMatcher ARRAYS_AS_LIST = new MethodMatcher("java.util.Arrays asList(..)", true);
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Set.of(..)`";
-    }
+    @Getter
+    final String displayName = "Prefer `Set.of(..)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Set.Of(..)` instead of using `unmodifiableSet(java.util.Set(java.util.Arrays asList(<args>)))` in Java 9 or higher.";
-    }
+    @Getter
+    final String description = "Prefer `Set.Of(..)` instead of using `unmodifiableSet(java.util.Set(java.util.Arrays asList(<args>)))` in Java 9 or higher.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

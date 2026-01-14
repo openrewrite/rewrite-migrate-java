@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
@@ -27,15 +28,11 @@ import org.openrewrite.java.tree.J;
 import static java.util.Collections.singletonList;
 
 public class ApplicationPathWildcardNoLongerAccepted extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Remove trailing slash from `jakarta.ws.rs.ApplicationPath` values";
-    }
+    @Getter
+    final String displayName = "Remove trailing slash from `jakarta.ws.rs.ApplicationPath` values";
 
-    @Override
-    public String getDescription() {
-        return "Remove trailing `/*` from `jakarta.ws.rs.ApplicationPath` values.";
-    }
+    @Getter
+    final String description = "Remove trailing `/*` from `jakarta.ws.rs.ApplicationPath` values.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.metrics;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -30,15 +31,11 @@ import static java.util.Collections.singleton;
 public class SimplifyMicrometerMeterTags extends Recipe {
     private static final MethodMatcher COUNTER_TAGS = new MethodMatcher("io.micrometer.core.instrument.Counter.Builder tags(String[])");
 
-    @Override
-    public String getDisplayName() {
-        return "Simplify [Micrometer](https://micrometer.io) meter tags";
-    }
+    @Getter
+    final String displayName = "Simplify [Micrometer](https://micrometer.io) meter tags";
 
-    @Override
-    public String getDescription() {
-        return "Use the simplest method to add new tags.";
-    }
+    @Getter
+    final String description = "Use the simplest method to add new tags.";
 
     @Override
     public Set<String> getTags() {

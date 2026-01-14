@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -36,15 +37,11 @@ public class UseMapOf extends Recipe {
     private static final MethodMatcher NEW_HASH_MAP = new MethodMatcher("java.util.HashMap <constructor>()", true);
     private static final MethodMatcher MAP_PUT = new MethodMatcher("java.util.Map put(..)", true);
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Map.of(..)`";
-    }
+    @Getter
+    final String displayName = "Prefer `Map.of(..)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Map.of(..)` instead of using `java.util.Map#put(..)` in Java 10 or higher.";
-    }
+    @Getter
+    final String description = "Prefer `Map.of(..)` instead of using `java.util.Map#put(..)` in Java 10 or higher.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

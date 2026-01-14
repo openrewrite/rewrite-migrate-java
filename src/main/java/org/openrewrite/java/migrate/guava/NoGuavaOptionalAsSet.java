@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,15 +33,11 @@ import static java.util.Collections.singleton;
 public class NoGuavaOptionalAsSet extends Recipe {
     private static final MethodMatcher OPTIONAL_AS_SET = new MethodMatcher("com.google.common.base.Optional asSet()");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Optional.stream().collect(Collectors.toSet())`";
-    }
+    @Getter
+    final String displayName = "Prefer `Optional.stream().collect(Collectors.toSet())`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Optional.stream().collect(Collectors.toSet())` over `Optional.asSet()`.";
-    }
+    @Getter
+    final String description = "Prefer `Optional.stream().collect(Collectors.toSet())` over `Optional.asSet()`.";
 
     @Override
     public Set<String> getTags() {

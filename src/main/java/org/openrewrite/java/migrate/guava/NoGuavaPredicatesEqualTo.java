@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -35,15 +36,11 @@ import static java.util.Collections.singleton;
 public class NoGuavaPredicatesEqualTo extends Recipe {
     private static final MethodMatcher PREDICATES_EQUAL_TO = new MethodMatcher("com.google.common.base.Predicates equalTo(..)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Predicate.isEqual(Object)`";
-    }
+    @Getter
+    final String displayName = "Prefer `Predicate.isEqual(Object)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Predicate.isEqual(Object)` over `Predicates.equalTo(Object)`.";
-    }
+    @Getter
+    final String description = "Prefer `Predicate.isEqual(Object)` over `Predicates.equalTo(Object)`.";
 
     @Override
     public Set<String> getTags() {

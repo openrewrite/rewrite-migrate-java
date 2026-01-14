@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -33,15 +34,11 @@ import static java.util.Collections.singleton;
 public class NoGuavaCollections2Transform extends Recipe {
     private static final MethodMatcher COLLECTIONS2_TRANSFORM = new MethodMatcher("com.google.common.collect.Collections2 transform(java.util.Collection, com.google.common.base.Function)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Collection.stream().map(Function)` over `Collections2.transform`";
-    }
+    @Getter
+    final String displayName = "Prefer `Collection.stream().map(Function)` over `Collections2.transform`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Collection.stream().map(Function)` over `Collections2.transform(Collection, Function)`.";
-    }
+    @Getter
+    final String description = "Prefer `Collection.stream().map(Function)` over `Collections2.transform(Collection, Function)`.";
 
     @Override
     public Set<String> getTags() {

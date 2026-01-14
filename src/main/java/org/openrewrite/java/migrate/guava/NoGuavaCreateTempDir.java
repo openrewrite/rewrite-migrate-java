@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -30,15 +31,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class NoGuavaCreateTempDir extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Files#createTempDirectory()`";
-    }
+    @Getter
+    final String displayName = "Prefer `Files#createTempDirectory()`";
 
-    @Override
-    public String getDescription() {
-        return "Replaces Guava `Files#createTempDir()` with Java `Files#createTempDirectory(..)`. Transformations are limited to scopes throwing or catching `java.io.IOException`.";
-    }
+    @Getter
+    final String description = "Replaces Guava `Files#createTempDir()` with Java `Files#createTempDirectory(..)`. Transformations are limited to scopes throwing or catching `java.io.IOException`.";
 
     @Override
     public Set<String> getTags() {

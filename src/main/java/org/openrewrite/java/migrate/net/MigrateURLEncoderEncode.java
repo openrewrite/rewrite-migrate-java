@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.net;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -34,15 +35,11 @@ import static java.util.Collections.singleton;
 public class MigrateURLEncoderEncode extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.net.URLEncoder encode(String)");
 
-    @Override
-    public String getDisplayName() {
-        return "Use `java.net.URLEncoder#encode(String, StandardCharsets.UTF_8)`";
-    }
+    @Getter
+    final String displayName = "Use `java.net.URLEncoder#encode(String, StandardCharsets.UTF_8)`";
 
-    @Override
-    public String getDescription() {
-        return "Use `java.net.URLEncoder#encode(String, StandardCharsets.UTF_8)` instead of the deprecated `java.net.URLEncoder#encode(String)` in Java 10 or higher.";
-    }
+    @Getter
+    final String description = "Use `java.net.URLEncoder#encode(String, StandardCharsets.UTF_8)` instead of the deprecated `java.net.URLEncoder#encode(String)` in Java 10 or higher.";
 
     @Override
     public Set<String> getTags() {

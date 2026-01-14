@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -34,17 +35,13 @@ public class ThreadStopUnsupported extends Recipe {
     private static final MethodMatcher THREAD_RESUME_MATCHER = new MethodMatcher("java.lang.Thread resume()");
     private static final MethodMatcher THREAD_SUSPEND_MATCHER = new MethodMatcher("java.lang.Thread suspend()");
 
-    @Override
-    public String getDisplayName() {
-        return "Replace `Thread.resume()`, `Thread.stop()`, and `Thread.suspend()` with `throw new UnsupportedOperationException()`";
-    }
+    @Getter
+    final String displayName = "Replace `Thread.resume()`, `Thread.stop()`, and `Thread.suspend()` with `throw new UnsupportedOperationException()`";
 
-    @Override
-    public String getDescription() {
-        return "`Thread.resume()`, `Thread.stop()`, and `Thread.suspend()` always throws a `new UnsupportedOperationException` in Java 21+. " +
-                "This recipe makes that explicit, as the migration is more complicated. " +
-                "See https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html .";
-    }
+    @Getter
+    final String description = "`Thread.resume()`, `Thread.stop()`, and `Thread.suspend()` always throws a `new UnsupportedOperationException` in Java 21+. " +
+            "This recipe makes that explicit, as the migration is more complicated. " +
+            "See https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html .";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
