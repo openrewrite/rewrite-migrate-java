@@ -23,7 +23,6 @@ import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.test.RewriteTest;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static java.util.function.UnaryOperator.identity;
@@ -34,7 +33,7 @@ import static org.openrewrite.maven.Assertions.pomXml;
 class BouncyCastleTest implements RewriteTest {
 
     static List<String> artifactBaseNames() {
-        return Arrays.asList("bcprov", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls");
+        return List.of("bcprov", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls");
     }
 
     @DocumentExample
