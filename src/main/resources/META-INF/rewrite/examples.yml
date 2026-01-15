@@ -4410,7 +4410,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
 examples:
-- description: '`EhcacheJavaxtoJakartaTest#migrateEhcacheDependencies`'
+- description: '`EhcacheJavaxToJakartaTest#migrateEhcacheDependencies`'
   sources:
   - before: |
       <project>
@@ -7388,6 +7388,25 @@ examples:
         void m() {
             var ch = '�';
         }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.var.UseVarForTypeCast
+examples:
+- description: '`UseVarForTypeCastTest#simpleCast`'
+  sources:
+  - before: |
+      class A {
+          void m(Object obj) {
+              String s = (String) obj;
+          }
+      }
+    after: |
+      class A {
+          void m(Object obj) {
+              var s = (String) obj;
+          }
       }
     language: java
 ---
