@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.search;
+package org.openrewrite.java.migrate.table;
 
 import lombok.Value;
 import org.openrewrite.Column;

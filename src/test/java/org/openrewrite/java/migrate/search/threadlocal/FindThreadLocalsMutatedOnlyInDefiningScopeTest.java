@@ -17,9 +17,11 @@ package org.openrewrite.java.migrate.search.threadlocal;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.migrate.table.ThreadLocalTable;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 
 class FindThreadLocalsMutatedOnlyInDefiningScopeTest implements RewriteTest {
@@ -245,6 +247,39 @@ class FindThreadLocalsMutatedOnlyInDefiningScopeTest implements RewriteTest {
 
                   public String getValue() {
                       return TL.get();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void verifyDataTableOutput() {
+        rewriteRun(
+          spec -> spec.dataTable(ThreadLocalTable.Row.class, rows -> {
+              assertThat(rows).hasSize(1);
+              assertThat(rows.get(0).getClassName()).isEqualTo("Example");
+              assertThat(rows.get(0).getFieldName()).isEqualTo("TL");
+              assertThat(rows.get(0).getAccessModifier()).isEqualTo("private");
+              assertThat(rows.get(0).getMutationType()).isEqualTo("Mutated only in initialization");
+          }),
+          java(
+            """
+              class Example {
+                  private static final ThreadLocal<String> TL = new ThreadLocal<>();
+
+                  static {
+                      TL.set("initial");
+                  }
+              }
+              """,
+            """
+              class Example {
+                  /*~~(ThreadLocal is only mutated during initialization (constructor/static initializer))~~>*/private static final ThreadLocal<String> TL = new ThreadLocal<>();
+
+                  static {
+                      TL.set("initial");
                   }
               }
               """

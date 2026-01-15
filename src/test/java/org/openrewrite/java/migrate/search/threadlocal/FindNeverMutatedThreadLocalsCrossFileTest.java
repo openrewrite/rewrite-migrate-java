@@ -17,9 +17,11 @@ package org.openrewrite.java.migrate.search.threadlocal;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.migrate.table.ThreadLocalTable;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 
 class FindNeverMutatedThreadLocalsCrossFileTest implements RewriteTest {
@@ -415,5 +417,42 @@ class FindNeverMutatedThreadLocalsCrossFileTest implements RewriteTest {
           )
         );
         // Instance ThreadLocal should NOT be marked as immutable due to external mutation
+    }
+
+    @Test
+    void verifyDataTableOutputCrossFile() {
+        rewriteRun(
+          spec -> spec.dataTable(ThreadLocalTable.Row.class, rows -> {
+              assertThat(rows).hasSize(1);
+              assertThat(rows.get(0).getClassName()).isEqualTo("com.example.Holder");
+              assertThat(rows.get(0).getFieldName()).isEqualTo("TL");
+              assertThat(rows.get(0).getMutationType()).isEqualTo("Never mutated");
+          }),
+          java(
+            """
+              package com.example;
+
+              class Holder {
+                  private static final ThreadLocal<String> TL = new ThreadLocal<>();
+              }
+              """,
+            """
+              package com.example;
+
+              class Holder {
+                  /*~~(ThreadLocal is never mutated and could be replaced with ScopedValue)~~>*/private static final ThreadLocal<String> TL = new ThreadLocal<>();
+              }
+              """
+          ),
+          java(
+            """
+              package com.example;
+
+              class Reader {
+                  // Only reads, no mutation
+              }
+              """
+          )
+        );
     }
 }
