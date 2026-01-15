@@ -467,8 +467,13 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     private static TabsAndIndentsStyle buildTabsAndIndents(int tabSize) {
-        return new TabsAndIndentsStyle(true, tabSize, tabSize, tabSize * 2, false,
-          new TabsAndIndentsStyle.MethodDeclarationParameters(true));
+        return new TabsAndIndentsStyle(true,
+          tabSize,
+          tabSize,
+          tabSize * 2,
+          false,
+          new TabsAndIndentsStyle.MethodDeclarationParameters(true),
+          new TabsAndIndentsStyle.RecordComponents(true));
     }
 
     @Test

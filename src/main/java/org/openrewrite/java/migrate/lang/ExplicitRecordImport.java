@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -25,15 +26,11 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
 
 public class ExplicitRecordImport extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Add explicit import for `Record` classes";
-    }
+    @Getter
+    final String displayName = "Add explicit import for `Record` classes";
 
-    @Override
-    public String getDescription() {
-        return "Add explicit import for `Record` classes when upgrading past Java 14+, to avoid conflicts with `java.lang.Record`.";
-    }
+    @Getter
+    final String description = "Add explicit import for `Record` classes when upgrading past Java 14+, to avoid conflicts with `java.lang.Record`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

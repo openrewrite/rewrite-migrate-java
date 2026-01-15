@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -30,15 +31,11 @@ import static java.util.Collections.singleton;
 public class MigrateClassLoaderDefineClass extends Recipe {
     private static final MethodMatcher DEFINE_CLASS_MATCHER = new MethodMatcher("java.lang.ClassLoader defineClass(byte[], int, int)");
 
-    @Override
-    public String getDisplayName() {
-        return "Use `ClassLoader#defineClass(String, byte[], int, int)`";
-    }
+    @Getter
+    final String displayName = "Use `ClassLoader#defineClass(String, byte[], int, int)`";
 
-    @Override
-    public String getDescription() {
-        return "Use `ClassLoader#defineClass(String, byte[], int, int)` instead of the deprecated `ClassLoader#defineClass(byte[], int, int)` in Java 1.1 or higher.";
-    }
+    @Getter
+    final String description = "Use `ClassLoader#defineClass(String, byte[], int, int)` instead of the deprecated `ClassLoader#defineClass(byte[], int, int)` in Java 1.1 or higher.";
 
     @Override
     public Set<String> getTags() {

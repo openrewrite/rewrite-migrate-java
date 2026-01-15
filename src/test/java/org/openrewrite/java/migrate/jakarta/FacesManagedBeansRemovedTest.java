@@ -18,24 +18,28 @@ package org.openrewrite.java.migrate.jakarta;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
 class FacesManagedBeansRemovedTest implements RewriteTest {
 
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved");
+    }
+
     @DocumentExample
     @Test
     void updateFacesManagedBeanFromEE8() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion()
-              .classpathFromResources(new InMemoryExecutionContext(), "cdi-api-2.0.SP1", "jsf-api-2.1.29-11", "jakarta.enterprise.cdi-api-4.0.1"))
-            .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
-              .build()
-              .activateRecipes("org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved"))
-          ,
+          spec -> spec
+            .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(),
+              "cdi-api-2.0.SP1",
+              "jsf-api-2.1.29-11",
+              "jakarta.enterprise.cdi-api-4.0.1")),
           //language=java
           java(
             """
@@ -79,12 +83,11 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
     @Test
     void updateFacesManagedBeanFromEE9() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion()
-              .classpathFromResources(new InMemoryExecutionContext(), "cdi-api-2.0.SP1", "jakarta.faces-api-3.0.0", "jakarta.enterprise.cdi-api-4.0.1"))
-            .recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
-              .build()
-              .activateRecipes("org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved"))
-          ,
+          spec -> spec
+            .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(),
+              "cdi-api-2.0.SP1",
+              "jakarta.faces-api-3.0.0",
+              "jakarta.enterprise.cdi-api-4.0.1")),
           //language=java
           java(
             """
@@ -124,5 +127,4 @@ class FacesManagedBeansRemovedTest implements RewriteTest {
           )
         );
     }
-
 }

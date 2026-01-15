@@ -51,3 +51,33 @@ packageName: org.openrewrite.java.migrate.javax
 type: specs.openrewrite.org/v1beta/category
 name: '`java.sql` APIs'
 packageName: org.openrewrite.java.migrate.sql
+---
+type: specs.openrewrite.org/v1beta/category
+name: JSpecify
+packageName: org.openrewrite.java.jspecify
+description: Recipes for adopting [JSpecify](https://jspecify.dev/) nullability annotations.
+---
+type: specs.openrewrite.org/v1beta/category
+name: Java EE 7
+packageName: org.openrewrite.java.migrate.javaee7
+description: Recipes for migrating to [Java EE 7](https://javaee.github.io/javaee-spec/javadocs/).
+---
+type: specs.openrewrite.org/v1beta/category
+name: Java EE 8
+packageName: org.openrewrite.java.migrate.javaee8
+description: Recipes for migrating to [Java EE 8](https://javaee.github.io/javaee-spec/javadocs/).
+---
+type: specs.openrewrite.org/v1beta/category
+name: Jakarta
+packageName: org.openrewrite.java.migrate.jakarta
+description: Recipes for migrating to [Jakarta EE](https://jakarta.ee/).
+---
+type: specs.openrewrite.org/v1beta/category
+name: Guava
+packageName: org.openrewrite.java.migrate.guava
+description: Recipes for migrating from [Google Guava](https://github.com/google/guava) to Java standard library.
+---
+type: specs.openrewrite.org/v1beta/category
+name: Lombok
+packageName: org.openrewrite.java.migrate.lombok
+description: Recipes for working with [Lombok](https://projectlombok.org/).

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.Getter;
 import org.openrewrite.Recipe;
 import org.openrewrite.staticanalysis.RemoveExtraSemicolons;
 
@@ -27,17 +28,12 @@ import static java.util.Collections.singletonList;
  */
 @Deprecated
 public class RemoveIllegalSemicolons extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Remove illegal semicolons";
-    }
+    @Getter
+    final String displayName = "Remove illegal semicolons";
 
-    @Override
-    public String getDescription() {
-        //language=markdown
-        return "Remove semicolons after package declarations and imports, no longer accepted in Java 21 as of " +
-                "[JDK-8027682](https://bugs.openjdk.org/browse/JDK-8027682).";
-    }
+    @Getter
+    final String description = "Remove semicolons after package declarations and imports, no longer accepted in Java 21 as of " +
+            "[JDK-8027682](https://bugs.openjdk.org/browse/JDK-8027682).";
 
     @Override
     public List<Recipe> getRecipeList() {

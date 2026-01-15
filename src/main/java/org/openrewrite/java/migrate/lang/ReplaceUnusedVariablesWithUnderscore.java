@@ -37,21 +37,15 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
 
     private static final String UNDERSCORE = "_";
 
-    @Override
-    public String getDisplayName() {
-        return "Replace unused variables with underscore";
-    }
+    String displayName = "Replace unused variables with underscore";
 
-    @Override
-    public String getDescription() {
-        return "Replace unused variable declarations with underscore (_) for Java 22+. " +
+    String description = "Replace unused variable declarations with underscore (_) for Java 22+. " +
                 "This includes unused variables in enhanced for loops, catch blocks, " +
                 "and lambda parameters where the variable is never referenced.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesJavaVersion<>(25), new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesJavaVersion<>(22), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.ForEachLoop visitForEachLoop(J.ForEachLoop forLoop, ExecutionContext ctx) {
                 J.ForEachLoop l = super.visitForEachLoop(forLoop, ctx);

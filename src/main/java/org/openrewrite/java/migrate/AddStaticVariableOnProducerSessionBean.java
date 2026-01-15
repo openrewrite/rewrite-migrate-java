@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaVisitor;
@@ -36,15 +37,11 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Set<S
 
     private static final XPathMatcher EJB_PATH = new XPathMatcher("ejb-jar/enterprise-beans/session");
 
-    @Override
-    public String getDisplayName() {
-        return "Adds `static` modifier to `@Produces` fields that are in session beans";
-    }
+    @Getter
+    final String displayName = "Adds `static` modifier to `@Produces` fields that are in session beans";
 
-    @Override
-    public String getDescription() {
-        return "Ensures that the fields annotated with `@Produces` which is inside the session bean (`@Stateless`, `@Stateful`, or `@Singleton`) are declared `static`.";
-    }
+    @Getter
+    final String description = "Ensures that the fields annotated with `@Produces` which is inside the session bean (`@Stateless`, `@Stateful`, or `@Singleton`) are declared `static`.";
 
     @Override
     public Set<String> getInitialValue(ExecutionContext ctx) {

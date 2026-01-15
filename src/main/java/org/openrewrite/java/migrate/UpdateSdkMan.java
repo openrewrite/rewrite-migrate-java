@@ -56,19 +56,12 @@ public class UpdateSdkMan extends Recipe {
     @Nullable
     String newDistribution;
 
-    @Override
-    public String getDisplayName() {
-        return "Update SDKMan Java version";
-    }
+    String displayName = "Update SDKMan Java version";
 
-    @Override
-    public String getDescription() {
-        //language=markdown
-        return "Update the SDKMAN JDK version in the `.sdkmanrc` file. Given a major release (e.g., 17), the recipe " +
+    String description = "Update the SDKMAN JDK version in the `.sdkmanrc` file. Given a major release (e.g., 17), the recipe " +
                 "will update the current distribution to the current default SDKMAN version of the specified major " +
                 "release. The distribution option can be used to specify a specific JVM distribution. " +
                 "Note that these must correspond to valid SDKMAN distributions.";
-    }
 
     @Override
     public Validated<Object> validate(ExecutionContext ctx) {

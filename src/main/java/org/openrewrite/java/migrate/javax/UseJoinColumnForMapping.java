@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,18 +33,14 @@ public class UseJoinColumnForMapping extends Recipe {
     private final String JOIN_COLUMN = "javax.persistence.JoinColumn";
     private final String COLUMN = "javax.persistence.Column";
 
-    @Override
-    public String getDisplayName() {
-        return "`@JoinColumn` annotations must be used with relationship mappings";
-    }
+    @Getter
+    final String displayName = "`@JoinColumn` annotations must be used with relationship mappings";
 
-    @Override
-    public String getDescription() {
-        return "In OpenJPA, when a relationship attribute has either a `@OneToOne` or a `@ManyToOne` annotation with a " +
-               "`@Column` annotation, the `@Column` annotation is treated as a `@JoinColumn` annotation. EclipseLink " +
-               "throws an exception that indicates that the entity class must use `@JoinColumn` instead of `@Column` " +
-               "to map a relationship attribute.";
-    }
+    @Getter
+    final String description = "In OpenJPA, when a relationship attribute has either a `@OneToOne` or a `@ManyToOne` annotation with a " +
+            "`@Column` annotation, the `@Column` annotation is treated as a `@JoinColumn` annotation. EclipseLink " +
+            "throws an exception that indicates that the entity class must use `@JoinColumn` instead of `@Column` " +
+            "to map a relationship attribute.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

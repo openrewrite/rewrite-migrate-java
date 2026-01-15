@@ -50,16 +50,10 @@ public class DontOverfetchDto extends Recipe {
             example = "name")
     String dtoDataElement;
 
-    @Override
-    public String getDisplayName() {
-        return "Replace DTO method parameters with data elements";
-    }
+    String displayName = "Replace DTO method parameters with data elements";
 
-    @Override
-    public String getDescription() {
-        return "Replace method parameters that have DTOs with their " +
+    String description = "Replace method parameters that have DTOs with their " +
                "data elements when only the specified data element is used.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

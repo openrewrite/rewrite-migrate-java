@@ -53,17 +53,11 @@ public class RemoveTemporalAnnotation extends Recipe {
      * NOTES: @Temporal has a required argument, which can only be TemporalType.DATE/TIME/TIMESTAMP
      */
 
-    @Override
-    public String getDisplayName() {
-        return "Remove the `@Temporal` annotation for some `java.sql` attributes";
-    }
+    String displayName = "Remove the `@Temporal` annotation for some `java.sql` attributes";
 
-    @Override
-    public String getDescription() {
-        return "OpenJPA persists the fields of attributes of type `java.sql.Date`, `java.sql.Time`, or `java.sql.Timestamp` " +
+    String description = "OpenJPA persists the fields of attributes of type `java.sql.Date`, `java.sql.Time`, or `java.sql.Timestamp` " +
                "that have a `javax.persistence.Temporal` annotation, whereas EclipseLink throws an exception. " +
                "Remove the `@Temporal` annotation so the behavior in EclipseLink will match the behavior in OpenJPA.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

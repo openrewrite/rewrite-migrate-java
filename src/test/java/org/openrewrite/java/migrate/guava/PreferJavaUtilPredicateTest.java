@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.guava;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -27,7 +28,9 @@ import static org.openrewrite.java.Assertions.java;
 class PreferJavaUtilPredicateTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate")
+        spec.recipeFromResource(
+            "/META-INF/rewrite/no-guava.yml",
+            "org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
@@ -62,6 +65,64 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
                               return input.isEmpty();
                           }
                       };
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void predicatesNotToPredicate() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class A {
+                  public static Predicate<String> notEmptyPredicate() {
+                      Predicate<String> isEmpty = String::isEmpty;
+                      return Predicates.not(isEmpty);
+                  }
+              }
+              """,
+            """
+              import java.util.function.Predicate;
+
+              class A {
+                  public static Predicate<String> notEmptyPredicate() {
+                      Predicate<String> isEmpty = String::isEmpty;
+                      return Predicate.not(isEmpty);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/899")
+    @Test
+    void doNotChangeWhenUsingCollectionsFilter() {
+        // Collections2.filter requires Guava Predicate as last parameter
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Collections2;
+              import java.util.Collection;
+
+              class Test {
+                  Predicate<String> notEmpty = new Predicate<String>() {
+                      @Override public boolean apply(String s) {
+                          return !s.isEmpty();
+                      }
+                  };
+
+                  public Collection<String> filterCollection(Collection<String> input) {
+                      return Collections2.filter(input, notEmpty);
                   }
               }
               """

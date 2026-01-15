@@ -31,7 +31,9 @@ record UpdateManagedBeanToNamedTest(String pkg) implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "jsf-api-2.1.29-11", "jakarta.faces-api-3.0.0"))
+            .classpathFromResources(new InMemoryExecutionContext(),
+              "jsf-api-2.1.29-11",
+              "jakarta.faces-api-3.0.0"))
           .recipe(new UpdateManagedBeanToNamed());
     }
 

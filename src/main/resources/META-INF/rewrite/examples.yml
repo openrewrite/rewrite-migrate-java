@@ -13,6 +13,26 @@
 # limitations under the License.
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: com.google.guava.InlineGuavaMethods
+examples:
+- description: '`InlineGuavaMethodsTest#stringsRegular`'
+  sources:
+  - before: |
+      import com.google.common.base.Strings;
+      class Regular {
+          String repeatString(String s, int n) {
+              return Strings.repeat(s, n);
+          }
+      }
+    after: |
+      class Regular {
+          String repeatString(String s, int n) {
+              return s.repeat(n);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.jspecify.JSpecifyBestPractices
 examples:
 - description: '`JSpecifyBestPracticesTest#migrateFromJavaxAnnotationApiToJspecify`'
@@ -105,6 +125,32 @@ examples:
       </project>
     path: pom.xml
     language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.AddLombokMapstructBinding
+examples:
+- description: '`AddLombokMapstructBindingTest#addForGradle`'
+  sources:
+  - before: |
+      plugins { id 'java' }
+      repositories { mavenCentral() }
+      dependencies {
+          implementation "org.projectlombok:lombok:1.18.42"
+          implementation "org.mapstruct:mapstruct:1.6.3"
+      }
+    after: |
+      plugins { id 'java' }
+      repositories { mavenCentral() }
+      dependencies {
+          annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+
+          implementation "org.projectlombok:lombok:1.18.42"
+          implementation "org.mapstruct:mapstruct:1.6.3"
+      }
+    path: build.gradle
+    language: groovy
+  - before: project
+    language: mavenProject
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.AddMissingMethodImplementation
@@ -3422,6 +3468,50 @@ examples:
           }
       }
     language: java
+- description: '`NoGuavaPredicatesEqualToTest#predicatesEqualToToPredicateIsEqual`'
+  sources:
+  - before: |
+      import com.google.common.base.Predicate;
+      import com.google.common.base.Predicates;
+
+      class A {
+          public static Predicate<String> isHelloPredicate() {
+              return Predicates.equalTo("hello");
+          }
+      }
+    after: |
+      import java.util.function.Predicate;
+
+      class A {
+          public static Predicate<String> isHelloPredicate() {
+              return Predicate.<String>isEqual("hello");
+          }
+      }
+    language: java
+- description: '`NoGuavaSetsFilterTest#replaceSetsFilter`'
+  sources:
+  - before: |
+      import java.util.Set;
+
+      import com.google.common.base.Predicate;
+      import com.google.common.collect.Sets;
+
+      class Test {
+          public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
+              return Sets.filter(set, isNotNull);
+          }
+      }
+    after: |
+      import java.util.Set;
+      import java.util.function.Predicate;
+      import java.util.stream.Collectors;
+
+      class Test {
+          public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
+              return set.stream().filter(isNotNull).collect(Collectors.toSet());
+          }
+      }
+    language: java
 - description: '`NoGuavaTest#moreObjectsFirstNonNullToObjectsRequireNonNullElse`'
   sources:
   - before: |
@@ -3438,25 +3528,6 @@ examples:
       class A {
           Object foo(Object obj) {
               return Objects.requireNonNullElse(obj, "default");
-          }
-      }
-    language: java
-- description: '`PreferJavaUtilOptionalTest#absentToEmpty`'
-  sources:
-  - before: |
-      import com.google.common.base.Optional;
-
-      class A {
-          Optional<String> foo() {
-              return Optional.absent();
-          }
-      }
-    after: |
-      import java.util.Optional;
-
-      class A {
-          Optional<String> foo() {
-              return Optional.empty();
           }
       }
     language: java
@@ -3487,6 +3558,25 @@ examples:
           }
       }
     language: java
+- description: '`PreferJavaUtilOptionalTest#absentToEmpty`'
+  sources:
+  - before: |
+      import com.google.common.base.Optional;
+
+      class A {
+          Optional<String> foo() {
+              return Optional.absent();
+          }
+      }
+    after: |
+      import java.util.Optional;
+
+      class A {
+          Optional<String> foo() {
+              return Optional.empty();
+          }
+      }
+    language: java
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference
@@ -3506,6 +3596,35 @@ examples:
       class Test {
           Object o1 = new AtomicReference<>();
           Object o2 = new AtomicReference<>(0);
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaCollections2Transform
+examples:
+- description: '`NoGuavaCollections2TransformTest#replaceCollections2Transform`'
+  sources:
+  - before: |
+      import java.util.Collection;
+
+      import com.google.common.base.Function;
+      import com.google.common.collect.Collections2;
+
+      class Test {
+          Iterable<Integer> test(Collection<String> collection, Function<String, Integer> toSize) {
+              return Collections2.transform(collection, toSize);
+          }
+      }
+    after: |
+      import java.util.Collection;
+      import java.util.stream.Collectors;
+
+      import com.google.common.base.Function;
+
+      class Test {
+          Iterable<Integer> test(Collection<String> collection, Function<String, Integer> toSize) {
+              return collection.stream().map(toSize).collect(Collectors.toList());
+          }
       }
     language: java
 ---
@@ -3563,6 +3682,50 @@ examples:
 
       class Test {
           Executor executor = Runnable::run;
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaFunctionsCompose
+examples:
+- description: '`NoGuavaFunctionsComposeTest#replaceFunctionsCompose`'
+  sources:
+  - before: |
+      import com.google.common.base.Function;
+      import com.google.common.base.Functions;
+
+      class Test {
+          public static void test() {
+              Function<Object, Integer> composed = Functions.compose(new Function<String, Integer>() {
+                  @Override
+                  public Integer apply(String input) {
+                      return input.length();
+                  }
+              }, new Function<Object, String>() {
+                  @Override
+                  public String apply(Object input) {
+                      return input.toString();
+                  }
+              });
+          }
+      }
+    after: |
+      import com.google.common.base.Function;
+
+      class Test {
+          public static void test() {
+              Function<Object, Integer> composed = new Function<String, Integer>() {
+                  @Override
+                  public Integer apply(String input) {
+                      return input.length();
+                  }
+              }.compose(new Function<Object, String>() {
+                  @Override
+                  public String apply(Object input) {
+                      return input.toString();
+                  }
+              });
+          }
       }
     language: java
 ---
@@ -3627,21 +3790,90 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
-recipeName: org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaIterablesAll
 examples:
-- description: '`NoGuavaInlineMeMethodsTest#stringsRegular`'
+- description: '`NoGuavaIterablesAllTest#replaceIterablesAll`'
   sources:
   - before: |
-      import com.google.common.base.Strings;
-      class Regular {
-          String repeatString(String s, int n) {
-              return Strings.repeat(s, n);
+      import java.util.Collection;
+
+      import com.google.common.base.Predicate;
+      import com.google.common.collect.Iterables;
+
+      class Test {
+          boolean test(Collection<String> collection, Predicate<String> aPredicate) {
+              return Iterables.all(collection, aPredicate);
           }
       }
     after: |
-      class Regular {
-          String repeatString(String s, int n) {
-              return s.repeat(n);
+      import java.util.Collection;
+
+      import com.google.common.base.Predicate;
+
+      class Test {
+          boolean test(Collection<String> collection, Predicate<String> aPredicate) {
+              return collection.stream().allMatch(aPredicate);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaIterablesAnyFilter
+examples:
+- description: '`NoGuavaIterablesAnyFilterTest#replaceIterablesAny`'
+  sources:
+  - before: |
+      import java.util.ArrayList;
+      import java.util.Collection;
+      import java.util.Objects;
+
+      import com.google.common.base.Predicate;
+      import com.google.common.collect.Iterables;
+
+      class Test {
+          boolean test(Collection<Object> collection, Predicate<Object> isNotNull) {
+              return Iterables.any(collection, isNotNull);
+          }
+      }
+    after: |
+      import java.util.ArrayList;
+      import java.util.Collection;
+      import java.util.Objects;
+
+      import com.google.common.base.Predicate;
+
+      class Test {
+          boolean test(Collection<Object> collection, Predicate<Object> isNotNull) {
+              return collection.stream().anyMatch(isNotNull);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaIterablesTransform
+examples:
+- description: '`NoGuavaIterablesTransformTest#replaceIterablesTransform`'
+  sources:
+  - before: |
+      import java.util.Collection;
+
+      import com.google.common.base.Function;
+      import com.google.common.collect.Iterables;
+
+      class Test {
+          Iterable<Integer> test(Collection<String> collection, Function<String, Integer> toSize) {
+              return Iterables.transform(collection, toSize);
+          }
+      }
+    after: |
+      import java.util.Collection;
+      import java.util.stream.Collectors;
+
+      import com.google.common.base.Function;
+
+      class Test {
+          Iterable<Integer> test(Collection<String> collection, Function<String, Integer> toSize) {
+              return collection.stream().map(toSize).collect(Collectors.toList());
           }
       }
     language: java
@@ -3773,6 +4005,77 @@ examples:
 
       class Test {
           Map<Integer, Integer> cardinalsWorldSeries = new TreeMap<>();
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaPredicate
+examples:
+- description: '`NoGuavaPredicateTest#changeGuavaPredicateToJavaUtilPredicate`'
+  sources:
+  - before: |
+      import com.google.common.base.Predicate;
+
+      class Test {
+          Predicate<String> predicate = input -> input != null && !input.isEmpty();
+      }
+    after: |
+      import java.util.function.Predicate;
+
+      class Test {
+          Predicate<String> predicate = input -> input != null && !input.isEmpty();
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaPredicatesAndOr
+examples:
+- description: '`NoGuavaPredicatesAndOrTest#replacePredicatesAnd`'
+  sources:
+  - before: |
+      import com.google.common.base.Predicate;
+      import com.google.common.base.Predicates;
+
+      class Test {
+          Predicate<String> isNotNull = s -> s != null;
+          Predicate<String> isNotEmpty = s -> !s.isEmpty();
+          Predicate<String> combined = Predicates.and(isNotNull, isNotEmpty);
+      }
+    after: |
+      import com.google.common.base.Predicate;
+
+      class Test {
+          Predicate<String> isNotNull = s -> s != null;
+          Predicate<String> isNotEmpty = s -> !s.isEmpty();
+          Predicate<String> combined = isNotNull.and(isNotEmpty);
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaPredicatesInstanceOf
+examples:
+- description: '`NoGuavaPredicatesInstanceOfTest#predicatesEqualToToPredicateIsEqual`'
+  sources:
+  - before: |
+      import java.util.Collection;
+
+      import com.google.common.base.Predicates;
+      import com.google.common.collect.Iterables;
+
+      class Test {
+          boolean test(Collection<Object> collection) {
+              return Iterables.all(collection, Predicates.instanceOf(String.class));
+          }
+      }
+    after: |
+      import java.util.Collection;
+
+      import com.google.common.collect.Iterables;
+
+      class Test {
+          boolean test(Collection<Object> collection) {
+              return Iterables.all(collection, String.class::isInstance);
+          }
       }
     language: java
 ---
@@ -3963,6 +4266,50 @@ examples:
                   @Override
                   public boolean test(String input) {
                       return input.isEmpty();
+                  }
+              };
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.io.AddInputStreamBulkReadMethod
+examples:
+- description: '`Transform#anonymousClassWithSimpleDelegation`'
+  sources:
+  - before: |
+      import java.io.IOException;
+      import java.io.InputStream;
+
+      class Example {
+          private InputStream delegate;
+
+          InputStream getWrappedStream() {
+              return new InputStream() {
+                  @Override
+                  public int read() throws IOException {
+                      return delegate.read();
+                  }
+              };
+          }
+      }
+    after: |
+      import java.io.IOException;
+      import java.io.InputStream;
+
+      class Example {
+          private InputStream delegate;
+
+          InputStream getWrappedStream() {
+              return new InputStream() {
+                  @Override
+                  public int read() throws IOException {
+                      return delegate.read();
+                  }
+
+                  @Override
+                  public int read(byte[] b, int off, int len) throws IOException {
+                      return delegate.read(b, off, len);
                   }
               };
           }
@@ -4272,6 +4619,24 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JakartaEE10
 examples:
+- description: '`JakartaEE10Test#chainedJettyUpgradeEE10`'
+  sources:
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <dependencies>
+              <dependency>
+                  <groupId>org.eclipse.jetty.websocket</groupId>
+                  <artifactId>websocket-server</artifactId>
+                  <version>9.4.58.v20250814</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
 - description: '`UpdateAnnotationAttributeJavaxToJakartaTest#replaceInterfaceName`'
   sources:
   - before: |
@@ -5362,6 +5727,32 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
+examples:
+- description: '`UpdateApacheShiroDependenciesTest#migrateShiroDependenciesMaven`'
+  sources:
+  - before: |
+      <project>
+          <groupId>com.example.shiro</groupId>
+          <artifactId>shiro-legacy</artifactId>
+          <version>1.0.0</version>
+          <dependencies>
+              <dependency>
+                  <groupId>org.apache.shiro</groupId>
+                  <artifactId>shiro-core</artifactId>
+                  <version>1.13.0</version>
+              </dependency>
+              <dependency>
+                  <groupId>org.apache.shiro</groupId>
+                  <artifactId>shiro-web</artifactId>
+                  <version>1.13.0</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
 examples:
 - description: '`UpdateApacheWSSecurityPackagesTest#updateApacheWSSecurityPackages`'
@@ -6014,6 +6405,109 @@ examples:
           }
       }
     language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.javax.MigrateJaxBWSPlugin
+examples:
+- description: '`MigrateJaxwsMavenPluginTest#migrateJaxwsPluginFromJvnetToSunXmlWs`'
+  sources:
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>jaxws-service</artifactId>
+          <version>1.0.0</version>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.jvnet.jax-ws-commons</groupId>
+                      <artifactId>jaxws-maven-plugin</artifactId>
+                      <version>2.1</version>
+                      <executions>
+                          <execution>
+                              <id>wsimport-from-jdk</id>
+                              <goals>
+                                  <goal>wsimport</goal>
+                              </goals>
+                              <configuration>
+                                  <sourceDestDir>${project.build.directory}/generated-sources/wsimport</sourceDestDir>
+                                  <wsdlDirectory>${project.basedir}/src/main/resources/wsdl</wsdlDirectory>
+                                  <wsdlFiles>
+                                      <wsdlFile>STSSAPPrimingService.wsdl</wsdlFile>
+                                  </wsdlFiles>
+                                  <packageName>org.example.generated</packageName>
+                                  <keep>true</keep>
+                                  <nocompile>true</nocompile>
+                                  <verbose>true</verbose>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <version>3.14.1</version>
+                      <executions>
+                          <execution>
+                              <configuration>
+                                  <nocompile>true</nocompile>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+              </plugins>
+          </build>
+      </project>
+    after: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>jaxws-service</artifactId>
+          <version>1.0.0</version>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>com.sun.xml.ws</groupId>
+                      <artifactId>jaxws-maven-plugin</artifactId>
+                      <version>2.3.7</version>
+                      <executions>
+                          <execution>
+                              <id>wsimport-from-jdk</id>
+                              <goals>
+                                  <goal>wsimport</goal>
+                              </goals>
+                              <configuration>
+                                  <sourceDestDir>${project.build.directory}/generated-sources/wsimport</sourceDestDir>
+                                  <wsdlDirectory>${project.basedir}/src/main/resources/wsdl</wsdlDirectory>
+                                  <wsdlFiles>
+                                      <wsdlFile>STSSAPPrimingService.wsdl</wsdlFile>
+                                  </wsdlFiles>
+                                  <packageName>org.example.generated</packageName>
+                                  <keep>true</keep>
+                                  <xnocompile>true</xnocompile>
+                                  <verbose>true</verbose>
+                              </configuration>
+                              <phase>generate-sources</phase>
+                          </execution>
+                      </executions>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <version>3.14.1</version>
+                      <executions>
+                          <execution>
+                              <configuration>
+                                  <nocompile>true</nocompile>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+              </plugins>
+          </build>
+      </project>
+    path: pom.xml
+    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.RemoveEmbeddableId
@@ -7156,13 +7650,13 @@ examples:
 
       @Value
       public class A {
-         String test;
+          String test;
       }
     after: |
       package example;
 
       public record A(
-         String test) {
+              String test) {
       }
     language: java
   - before: |
@@ -8090,6 +8584,8 @@ type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.UseEnumSetOf
 examples:
 - description: '`UseEnumSetOfTest#changeDeclaration`'
+  parameters:
+  - 'null'
   sources:
   - before: |
       import java.util.Set;

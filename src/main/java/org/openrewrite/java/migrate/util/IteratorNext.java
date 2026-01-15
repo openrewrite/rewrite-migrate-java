@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,15 +33,11 @@ public class IteratorNext extends Recipe {
     private static final MethodMatcher ITERATOR_MATCHER = new MethodMatcher("java.util.Collection iterator()", true);
     private static final MethodMatcher NEXT_MATCHER = new MethodMatcher("java.util.Iterator next()", true);
 
-    @Override
-    public String getDisplayName() {
-        return "Replace `iterator().next()` with `getFirst()`";
-    }
+    @Getter
+    final String displayName = "Replace `iterator().next()` with `getFirst()`";
 
-    @Override
-    public String getDescription() {
-        return "Replace `SequencedCollection.iterator().next()` with `getFirst()`.";
-    }
+    @Getter
+    final String description = "Replace `SequencedCollection.iterator().next()` with `getFirst()`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

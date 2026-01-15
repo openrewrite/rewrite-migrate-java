@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -49,17 +50,13 @@ public class JREThrowableFinalMethods extends Recipe {
         this.methodPatternGetSuppressed = methodPatternGetSuppressed;
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Rename final method declarations `getSuppressed()` and `addSuppressed(Throwable exception)` in classes that extend `Throwable`";
-    }
+    @Getter
+    final String displayName = "Rename final method declarations `getSuppressed()` and `addSuppressed(Throwable exception)` in classes that extend `Throwable`";
 
-    @Override
-    public String getDescription() {
-        return "The recipe renames  `getSuppressed()` and `addSuppressed(Throwable exception)` methods  in classes " +
-               "that extend `java.lang.Throwable` to `myGetSuppressed` and `myAddSuppressed(Throwable)`. " +
-               "These methods were added to Throwable in Java 7 and are marked final which cannot be overridden.";
-    }
+    @Getter
+    final String description = "The recipe renames  `getSuppressed()` and `addSuppressed(Throwable exception)` methods  in classes " +
+            "that extend `java.lang.Throwable` to `myGetSuppressed` and `myAddSuppressed(Throwable)`. " +
+            "These methods were added to Throwable in Java 7 and are marked final which cannot be overridden.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

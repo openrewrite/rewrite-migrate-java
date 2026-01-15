@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.logging;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -26,15 +27,11 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
 public class MigrateLoggerGlobalToGetGlobal extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Use `Logger#getGlobal()`";
-    }
+    @Getter
+    final String displayName = "Use `Logger#getGlobal()`";
 
-    @Override
-    public String getDescription() {
-        return "The preferred way to get the global logger object is via the call `Logger#getGlobal()` over direct field access to `java.util.logging.Logger.global`.";
-    }
+    @Getter
+    final String description = "The preferred way to get the global logger object is via the call `Logger#getGlobal()` over direct field access to `java.util.logging.Logger.global`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

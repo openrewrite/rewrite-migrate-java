@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -31,15 +32,11 @@ import java.util.Set;
 
 public class PreferJavaUtilOptionalOrElseNull extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `java.util.Optional#orElse(null)` over `com.google.common.base.Optional#orNull()`";
-    }
+    @Getter
+    final String displayName = "Prefer `java.util.Optional#orElse(null)` over `com.google.common.base.Optional#orNull()`";
 
-    @Override
-    public String getDescription() {
-        return "Replaces `com.google.common.base.Optional#orNull()` with `java.util.Optional#orElse(null)`.";
-    }
+    @Getter
+    final String description = "Replaces `com.google.common.base.Optional#orNull()` with `java.util.Optional#orElse(null)`.";
 
     @Override
     public Set<String> getTags() {

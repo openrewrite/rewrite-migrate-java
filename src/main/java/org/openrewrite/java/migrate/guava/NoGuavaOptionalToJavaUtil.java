@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,15 +33,11 @@ public class NoGuavaOptionalToJavaUtil extends Recipe {
 
     static final MethodMatcher METHOD_MATCHER = new MethodMatcher("com.google.common.base.Optional toJavaUtil()");
 
-    @Override
-    public String getDisplayName() {
-        return "Remove `com.google.common.base.Optional#toJavaUtil()`";
-    }
+    @Getter
+    final String displayName = "Remove `com.google.common.base.Optional#toJavaUtil()`";
 
-    @Override
-    public String getDescription() {
-        return "Remove calls to `com.google.common.base.Optional#toJavaUtil()`.";
-    }
+    @Getter
+    final String description = "Remove calls to `com.google.common.base.Optional#toJavaUtil()`.";
 
     @Override
     public Set<String> getTags() {

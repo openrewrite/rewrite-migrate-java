@@ -43,15 +43,9 @@ public class RemoveFinalizerFromZip extends Recipe {
 
     private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.lang.Object finalize()");
 
-    @Override
-    public String getDisplayName() {
-        return "Remove invocations of deprecated invocations from Deflater, Inflater, ZipFile ";
-    }
+    String displayName = "Remove invocations of deprecated invocations from Deflater, Inflater, ZipFile ";
 
-    @Override
-    public String getDescription() {
-        return "Remove invocations of finalize() deprecated invocations from Deflater, Inflater, ZipFile.";
-    }
+    String description = "Remove invocations of finalize() deprecated invocations from Deflater, Inflater, ZipFile.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

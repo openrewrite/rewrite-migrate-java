@@ -35,17 +35,11 @@ import org.openrewrite.java.tree.TypeUtils;
 public class ReferenceCloneMethod extends Recipe {
     private static final MethodMatcher REFERENCE_CLONE = new MethodMatcher("java.lang.ref.Reference clone()", true);
 
-    @Override
-    public String getDisplayName() {
-        return "Replace `java.lang.ref.Reference.clone()` with constructor call";
-    }
+    String displayName = "Replace `java.lang.ref.Reference.clone()` with constructor call";
 
-    @Override
-    public String getDescription() {
-        return "The recipe replaces any clone calls that may resolve to a `java.lang.ref.Reference.clone()` " +
+    String description = "The recipe replaces any clone calls that may resolve to a `java.lang.ref.Reference.clone()` " +
                "or any of its known subclasses: `java.lang.ref.PhantomReference`, `java.lang.ref.SoftReference`, and `java.lang.ref.WeakReference` " +
                "with a constructor call passing in the referent and reference queue as parameters.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

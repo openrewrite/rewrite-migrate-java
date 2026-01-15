@@ -24,6 +24,8 @@ tags:
 recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
   - org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
+  - org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta10
+  - org.openrewrite.java.migrate.jakarta.JettyUpgradeEE10
   - org.openrewrite.java.migrate.jakarta.Faces3xMigrationToFaces4x
   - org.openrewrite.java.migrate.jakarta.RemovedIsParmetersProvidedMethod
   - org.openrewrite.java.migrate.jakarta.RemovedSOAPElementFactory
@@ -49,6 +51,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
   - org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
+  - org.openrewrite.java.migrate.jakarta.MigrateFastjsonForJakarta10
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
@@ -78,6 +81,10 @@ recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.batch
       artifactId: jakarta.batch-api
+      newVersion: 2.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.mail
+      artifactId: jakarta.mail-api
       newVersion: 2.1.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.validation
@@ -404,7 +411,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaAnnotations2
-displayName: Update Jakarta EE annotation Dependencies to 2.1.x.
+displayName: Update Jakarta EE annotation Dependencies to 2.1.x
 description: Update Jakarta EE annotation Dependencies to 2.1.x.
 tags:
   # This recipe has been inlined into `MigrationToJakarta10Apis`; drop the reference to this recipe,
@@ -414,7 +421,7 @@ recipeList: []
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaXmlWsEE10
-displayName: Update Jakarta EE XML Web Services Dependencies for EE 10.
+displayName: Update Jakarta EE XML Web Services Dependencies for EE 10
 description: Update Jakarta EE XML Web Services Dependencies for EE 10.
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
@@ -463,6 +470,10 @@ recipeList:
       groupId: org.glassfish.jersey.ext
       artifactId: "*"
       newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish.tyrus
+      artifactId: "*"
+      newVersion: 2.1.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
@@ -498,10 +509,43 @@ recipeList:
       groupId: org.apache.shiro
       artifactId: "*"
       newClassifier: jakarta
+      changeManagedDependency: true
+  - org.openrewrite.gradle.ChangeDependencyClassifier:
+      groupId: org.apache.shiro
+      artifactId: "*"
+      newClassifier: jakarta
+      changeManagedDependency: true
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.shiro
       artifactId: "*"
       newVersion: 2.0.x
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.shiro.codec
+      newPackageName: org.apache.shiro.lang.codec
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.shiro.util.ByteSource
+      newFullyQualifiedTypeName: org.apache.shiro.lang.util.ByteSource
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.shiro.util.StringUtils
+      newFullyQualifiedTypeName: org.apache.shiro.lang.util.StringUtils
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: io.buji
+      artifactId: buji-pac4j
+      newVersion: 9.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.pac4j
+      artifactId: "*"
+      newVersion: 6.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.pac4j
+      oldArtifactId: javaee-pac4j
+      newArtifactId: pac4j-jakartaee
+      newVersion: 6.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.pac4j
+      oldArtifactId: pac4j-javaee
+      newArtifactId: pac4j-jakartaee
+      newVersion: 6.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
@@ -523,3 +567,148 @@ recipeList:
       artifactId: yasson
       newVersion: 3.0.x
 ---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE10
+displayName: Update Jetty EE9 to Jetty EE10
+description: Update Jetty dependencies from EE9 to EE10, changing the groupId and artifactIds as needed.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9.websocket
+      oldArtifactId: jetty-ee9-websocket-jetty-server
+      newGroupId: org.eclipse.jetty.ee10.websocket
+      newArtifactId: jetty-ee10-websocket-jetty-server
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9.websocket
+      oldArtifactId: jetty-ee9-websocket-jetty-client
+      newGroupId: org.eclipse.jetty.ee10.websocket
+      newArtifactId: jetty-ee10-websocket-jetty-client
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-apache-jsp
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-apache-jsp
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-servlets
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-servlets
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-servlet
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-servlet
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-webapp
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-webapp
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-security
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-security
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-proxy
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-proxy
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9
+      oldArtifactId: jetty-ee9-annotations
+      newGroupId: org.eclipse.jetty.ee10
+      newArtifactId: jetty-ee10-annotations
+      newVersion: 12.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee9.websocket
+      oldArtifactId: jetty-ee9-websocket-jetty-server
+      newGroupId: org.eclipse.jetty.ee10.websocket
+      newArtifactId: jetty-ee10-websocket-jakarta-server
+      newVersion: 12.x
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.eclipse.jetty.util.resource.ResourceCollection
+      newFullyQualifiedTypeName: org.eclipse.jetty.util.resource.Resource
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta10
+displayName: Update Plugins for Jakarta EE 10
+description: Update plugin to be compatible with Jakarta EE 10.
+recipeList:
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.codehaus.mojo
+      artifactId: jaxb2-maven-plugin
+      newVersion: 4.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.jvnet.jaxb
+      artifactId: jaxb-maven-plugin
+      newVersion: 4.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.MigrateFastjsonForJakarta10
+displayName: Update Fastjson for Jakarta EE 10
+description: Update Fastjson to be compatible with Jakarta EE 10.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.alibaba
+      oldArtifactId: fastjson
+      newGroupId: com.alibaba.fastjson2
+      newArtifactId: fastjson2
+      newVersion: 2.x
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.parser.ParserConfig
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.reader.ObjectReaderProvider
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.parser.deserializer.ExtraProcessor
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.ExtraProcessor
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.parser.deserializer.ObjectDeserializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.reader.ObjectReader
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.AfterFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.AfterFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.BeforeFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.BeforeFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.ContextValueFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.ContextValueFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.LabelFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.LabelFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.NameFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.NameFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.PascalNameFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.PascalNameFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.PropertyFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.PropertyFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.ObjectSerializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.writer.ObjectWriter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.SerializeConfig
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.writer.ObjectWriterProvider
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.ToStringSerializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.writer.ObjectWriterImplToString
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.ValueFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.ValueFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.SerializerFeature
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.JSONReader.Feature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.parser.Feature
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.JSONWriter.Feature
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: com.alibaba.fastjson
+      newPackageName: com.alibaba.fastjson2

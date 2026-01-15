@@ -36,16 +36,10 @@ public class UseTabsOrSpaces extends Recipe {
             description = "Whether to use tabs for indentation.")
     boolean useTabs;
 
-    @Override
-    public String getDisplayName() {
-        return "Force indentation to either tabs or spaces";
-    }
+    String displayName = "Force indentation to either tabs or spaces";
 
-    @Override
-    public String getDescription() {
-        return "This is useful for one-off migrations of a codebase that has mixed indentation styles, while " +
+    String description = "This is useful for one-off migrations of a codebase that has mixed indentation styles, while " +
                 "preserving all other auto-detected formatting rules.";
-    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

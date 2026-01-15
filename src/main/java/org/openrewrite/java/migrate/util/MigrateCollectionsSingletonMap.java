@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -33,15 +34,11 @@ import java.util.StringJoiner;
 public class MigrateCollectionsSingletonMap extends Recipe {
     private static final MethodMatcher SINGLETON_MAP = new MethodMatcher("java.util.Collections singletonMap(..)", true);
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Map.of(..)`";
-    }
+    @Getter
+    final String displayName = "Prefer `Map.of(..)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Map.of(..)` instead of using `Collections.singletonMap()` in Java 9 or higher.";
-    }
+    @Getter
+    final String description = "Prefer `Map.of(..)` instead of using `Collections.singletonMap()` in Java 9 or higher.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

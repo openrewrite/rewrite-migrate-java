@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -31,15 +32,11 @@ public class NoGuavaPrimitiveAsList extends Recipe {
 
     private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("com.google.common.primitives.* asList(..)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Arrays.asList(..)` over Guava primitives";
-    }
+    @Getter
+    final String displayName = "Prefer `Arrays.asList(..)` over Guava primitives";
 
-    @Override
-    public String getDescription() {
-        return "Migrate from Guava `com.google.common.primitives.* asList(..)` to `Arrays.asList(..)`.";
-    }
+    @Getter
+    final String description = "Migrate from Guava `com.google.common.primitives.* asList(..)` to `Arrays.asList(..)`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

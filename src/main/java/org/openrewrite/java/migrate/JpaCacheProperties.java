@@ -36,15 +36,9 @@ import static org.openrewrite.xml.FilterTagChildrenVisitor.filterTagChildren;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class JpaCacheProperties extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Disable the persistence unit second-level cache";
-    }
+    String displayName = "Disable the persistence unit second-level cache";
 
-    @Override
-    public String getDescription() {
-        return "Sets an explicit value for the shared cache mode.";
-    }
+    String description = "Sets an explicit value for the shared cache mode.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

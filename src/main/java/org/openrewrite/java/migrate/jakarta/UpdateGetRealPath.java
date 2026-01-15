@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -25,15 +26,11 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
 public class UpdateGetRealPath extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Updates `getRealPath()` to call `getContext()` followed by `getRealPath()`";
-    }
+    @Getter
+    final String displayName = "Updates `getRealPath()` to call `getContext()` followed by `getRealPath()`";
 
-    @Override
-    public String getDescription() {
-        return "Updates `getRealPath()` for `jakarta.servlet.ServletRequest` and `jakarta.servlet.ServletRequestWrapper` to use `ServletContext.getRealPath(String)`.";
-    }
+    @Getter
+    final String description = "Updates `getRealPath()` for `jakarta.servlet.ServletRequest` and `jakarta.servlet.ServletRequestWrapper` to use `ServletContext.getRealPath(String)`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

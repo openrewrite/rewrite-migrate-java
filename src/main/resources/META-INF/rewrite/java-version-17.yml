@@ -72,8 +72,6 @@ recipeList:
       artifactId: mapstruct*
       newVersion: 1.6.x
   - org.openrewrite.java.migrate.AddLombokMapstructBinding
-  - org.openrewrite.java.migrate.UpdateJakartaAnnotationsIfForJavax
-  - org.openrewrite.java.migrate.UpdateJakartaAnnotationsIfExistsForJakarta
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -329,37 +327,25 @@ recipeList:
       version: 0.2.0
       configuration: annotationProcessor
       acceptTransitive: false
-  - org.openrewrite.maven.AddDependency:
-      groupId: org.projectlombok
-      artifactId: lombok-mapstruct-binding
-      version: 0.2.0
-      acceptTransitive: false
+  - org.openrewrite.java.migrate.AddLombokMapstructBindingMavenDependencyOnly
   - org.openrewrite.maven.AddAnnotationProcessor:
       groupId: org.projectlombok
       artifactId: lombok-mapstruct-binding
       version: 0.2.0
 ---
-# The scanning phase comes before the editing phase, therefor we check if a javax.annotation dependency is on the classpath (with whatever version)
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpdateJakartaAnnotationsIfForJavax
-displayName: Update `jakarta.annotation-api` dependency if it exists
-description: Counteract the `jakarta.annotation-api` by updating to `jakarta` namespace
+name: org.openrewrite.java.migrate.AddLombokMapstructBindingMavenDependencyOnly
+displayName: Add `lombok-mapstruct-binding` dependency for Maven when both MapStruct and Lombok are used
+description: >-
+  Add the `lombok-mapstruct-binding` when both MapStruct and Lombok are used, and the dependency does not already exist.
+  Only to be called from `org.openrewrite.java.migrate.AddLombokMapstructBinding` to reduce redundant checks.
 preconditions:
-  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
-      groupIdPattern: javax.annotation
-      artifactIdPattern: javax.annotation-api
+  - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
+      groupId: org.projectlombok
+      artifactId: lombok-mapstruct-binding
 recipeList:
-  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
-
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpdateJakartaAnnotationsIfExistsForJakarta
-displayName: Update `jakarta.annotation-api` dependency if it exists
-description: Counteract the `jakarta.annotation-api` by updating to `jakarta` namespace
-preconditions:
-  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
-      groupIdPattern: jakarta.annotation
-      artifactIdPattern: jakarta.annotation-api
-      version: 1.3.x
-recipeList:
-  - org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
+  - org.openrewrite.maven.AddDependency:
+      groupId: org.projectlombok
+      artifactId: lombok-mapstruct-binding
+      version: 0.2.0
+      acceptTransitive: false

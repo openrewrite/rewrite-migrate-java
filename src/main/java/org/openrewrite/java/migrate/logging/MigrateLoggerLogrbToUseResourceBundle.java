@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.logging;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,15 +33,11 @@ import static java.util.Collections.singleton;
 public class MigrateLoggerLogrbToUseResourceBundle extends Recipe {
     private static final MethodMatcher MATCHER = new MethodMatcher("java.util.logging.Logger logrb(java.util.logging.Level, String, String, String, String, ..)");
 
-    @Override
-    public String getDisplayName() {
-        return "Use `Logger#logrb(.., ResourceBundle bundleName, ..)`";
-    }
+    @Getter
+    final String displayName = "Use `Logger#logrb(.., ResourceBundle bundleName, ..)`";
 
-    @Override
-    public String getDescription() {
-        return "Use `Logger#logrb(.., ResourceBundle bundleName, ..)` instead of the deprecated `java.util.logging.Logger#logrb(.., String bundleName, ..)` in Java 8 or higher.";
-    }
+    @Getter
+    final String description = "Use `Logger#logrb(.., ResourceBundle bundleName, ..)` instead of the deprecated `java.util.logging.Logger#logrb(.., String bundleName, ..)` in Java 8 or higher.";
 
     @Override
     public Set<String> getTags() {

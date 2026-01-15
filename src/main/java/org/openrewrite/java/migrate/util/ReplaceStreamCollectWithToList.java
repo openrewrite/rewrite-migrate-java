@@ -51,16 +51,10 @@ public class ReplaceStreamCollectWithToList extends Recipe {
     @Nullable
     Boolean convertToList;
 
-    @Override
-    public String getDisplayName() {
-        return "Replace `Stream.collect(Collectors.toUnmodifiableList())` with `Stream.toList()`";
-    }
+    String displayName = "Replace `Stream.collect(Collectors.toUnmodifiableList())` with `Stream.toList()`";
 
-    @Override
-    public String getDescription() {
-        return "Replace `Stream.collect(Collectors.toUnmodifiableList())` with Java 16+ `Stream.toList()`. " +
+    String description = "Replace `Stream.collect(Collectors.toUnmodifiableList())` with Java 16+ `Stream.toList()`. " +
                "Also replaces `Stream.collect(Collectors.toList())` if `convertToList` is set to `true`.";
-    }
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {

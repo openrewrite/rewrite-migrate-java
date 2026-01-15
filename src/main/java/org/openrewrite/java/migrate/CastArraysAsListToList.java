@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -29,16 +30,11 @@ import org.openrewrite.java.tree.TypeTree;
 
 public class CastArraysAsListToList extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        return "Remove explicit casts on `Arrays.asList(..).toArray()`";
-    }
+    @Getter
+    final String displayName = "Remove explicit casts on `Arrays.asList(..).toArray()`";
 
-    @Override
-    public String getDescription() {
-        //language=markdown
-        return "Convert code like `(Integer[]) Arrays.asList(1, 2, 3).toArray()` to `Arrays.asList(1, 2, 3).toArray(new Integer[0])`.";
-    }
+    @Getter
+    final String description = "Convert code like `(Integer[]) Arrays.asList(1, 2, 3).toArray()` to `Arrays.asList(1, 2, 3).toArray(new Integer[0])`.";
 
     private static final MethodMatcher ARRAYS_AS_LIST = new MethodMatcher("java.util.Arrays asList(..)", false);
     private static final MethodMatcher LIST_TO_ARRAY = new MethodMatcher("java.util.List toArray()", true);

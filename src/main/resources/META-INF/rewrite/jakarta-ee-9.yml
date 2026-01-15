@@ -323,7 +323,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name:  org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
 displayName: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
-description: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
+description: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`.
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: commons-fileupload
@@ -335,10 +335,6 @@ recipeList:
       oldGroupId: org.apache.commons
       oldArtifactId: commons-fileupload2-jakarta
       newArtifactId: commons-fileupload2-jakarta-servlet5
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: org.apache.commons
-      artifactId: '*'
-      newVersion: 2.0.0-M4
   - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.commons.fileload.disk
       newPackageName: org.apache.commons.fileload2.core
@@ -525,6 +521,18 @@ name: org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail
 displayName: Migrate deprecated `javax.mail` packages to `jakarta.mail`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
 recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.mail
+      oldArtifactId: javax.mail
+      newGroupId: jakarta.mail
+      newArtifactId: jakarta.mail-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.mail
+      oldArtifactId: jakarta.mail
+      newGroupId: jakarta.mail
+      newArtifactId: jakarta.mail-api
+      newVersion: 2.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.mail
       oldArtifactId: mail
@@ -781,9 +789,9 @@ recipeList:
       artifactId: jaxb2-maven-plugin
       newVersion: 3.x
   - org.openrewrite.maven.UpgradePluginVersion:
-      groupId: org.codehaus.mojo
+      groupId: org.jvnet.jaxb
       artifactId: jaxb-maven-plugin
-      newVersion: 4.x
+      newVersion: 3.x
   - org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -1052,9 +1060,15 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider
       newFullyQualifiedTypeName: com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: com.fasterxml.jackson.jaxrs.json
+      newPackageName: com.fasterxml.jackson.jakarta.rs.json
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule
       newFullyQualifiedTypeName: com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector
+      newFullyQualifiedTypeName: com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -1073,10 +1087,12 @@ recipeList:
       groupId: org.ehcache
       artifactId: ehcache
       newClassifier: jakarta
+      changeManagedDependency: true
   - org.openrewrite.maven.ChangeDependencyClassifier:
       groupId: org.ehcache
       artifactId: ehcache-transactions
       newClassifier: jakarta
+      changeManagedDependency: true
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -1242,7 +1258,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateRestLet2_6
 displayName: Update RestLet to 2.6.0
-description: Update RestLet to 2.6.0
+description: Update RestLet to 2.6.0.
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.restlet

@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -25,17 +26,13 @@ import org.openrewrite.java.tree.J;
 
 @EqualsAndHashCode(callSuper = false)
 public class AddDefaultConstructorToEntityClass extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "`@Entity` objects with constructors must also have a default constructor";
-    }
+    @Getter
+    final String displayName = "`@Entity` objects with constructors must also have a default constructor";
 
-    @Override
-    public String getDescription() {
-        return "When a Java Persistence API (JPA) entity class has a constructor with arguments, the class must also " +
-               "have a default, no-argument constructor. The OpenJPA implementation automatically generates the " +
-               "no-argument constructor, but the EclipseLink implementation does not.";
-    }
+    @Getter
+    final String description = "When a Java Persistence API (JPA) entity class has a constructor with arguments, the class must also " +
+            "have a default, no-argument constructor. The OpenJPA implementation automatically generates the " +
+            "no-argument constructor, but the EclipseLink implementation does not.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

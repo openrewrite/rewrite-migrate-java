@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,15 +33,11 @@ public class StreamFindFirst extends Recipe {
     private static final MethodMatcher STREAM_FIND_FIRST_MATCHER = new MethodMatcher("java.util.stream.Stream findFirst()", true);
     private static final MethodMatcher OPTIONAL_OR_ELSE_THROW_MATCHER = new MethodMatcher("java.util.Optional orElseThrow()", true);
 
-    @Override
-    public String getDisplayName() {
-        return "Use `getFirst()` instead of `stream().findFirst().orElseThrow()`";
-    }
+    @Getter
+    final String displayName = "Use `getFirst()` instead of `stream().findFirst().orElseThrow()`";
 
-    @Override
-    public String getDescription() {
-        return "For SequencedCollections, use `collection.getFirst()` instead of `collection.stream().findFirst().orElseThrow()`.";
-    }
+    @Getter
+    final String description = "For SequencedCollections, use `collection.getFirst()` instead of `collection.stream().findFirst().orElseThrow()`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

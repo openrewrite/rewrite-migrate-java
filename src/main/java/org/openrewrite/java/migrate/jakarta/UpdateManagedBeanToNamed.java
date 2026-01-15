@@ -38,16 +38,10 @@ import java.util.Set;
 @Value
 public class UpdateManagedBeanToNamed extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        return "Update Faces `@ManagedBean` to use CDI `@Named`";
-    }
+    String displayName = "Update Faces `@ManagedBean` to use CDI `@Named`";
 
-    @Override
-    public String getDescription() {
-        return "Faces ManagedBean was deprecated in JSF 2.3 (EE8) and removed in Jakarta Faces 4.0 (EE10). " +
+    String description = "Faces ManagedBean was deprecated in JSF 2.3 (EE8) and removed in Jakarta Faces 4.0 (EE10). " +
                 "Replace `@ManagedBean` with `@Named` for CDI-based bean management.";
-    }
 
     @Override
     public Set<String> getTags() {
@@ -64,9 +58,9 @@ public class UpdateManagedBeanToNamed extends Recipe {
                     public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
                         Optional<Annotated> annotated = new Annotated.Matcher(MANAGED_BEAN_MATCHER).get(getCursor());
                         if (annotated.isPresent()) {
-                            maybeAddImport("jakarta.inject.Named");
                             maybeRemoveImport("javax.faces.bean.ManagedBean");
                             maybeRemoveImport("jakarta.faces.bean.ManagedBean");
+                            maybeAddImport("jakarta.inject.Named");
                             // Get the name from the @ManagedBean annotation
                             String beanName = annotated
                                     .flatMap(a -> a.getDefaultAttribute("name"))

@@ -44,17 +44,11 @@ import static org.openrewrite.java.migrate.lang.SwitchUtils.coversAllPossibleVal
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class NullCheckAsSwitchCase extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Add null check to existing switch cases";
-    }
+    String displayName = "Add null check to existing switch cases";
 
-    @Override
-    public String getDescription() {
-        return "In later Java 21+, null checks are valid in switch cases. " +
+    String description = "In later Java 21+, null checks are valid in switch cases. " +
                 "This recipe will only add null checks to existing switch cases if there are no other statements in between them " +
                 "or if the block in the if statement is not impacting the flow of the switch.";
-    }
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {

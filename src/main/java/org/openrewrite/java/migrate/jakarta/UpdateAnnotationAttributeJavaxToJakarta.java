@@ -30,15 +30,9 @@ import org.openrewrite.java.tree.JavaType;
 @Value
 public class UpdateAnnotationAttributeJavaxToJakarta extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        return "Update annotation attributes using `javax` to `jakarta`";
-    }
+    String displayName = "Update annotation attributes using `javax` to `jakarta`";
 
-    @Override
-    public String getDescription() {
-        return "Replace `javax` with `jakarta` in annotation attributes for matching annotation signatures.";
-    }
+    String description = "Replace `javax` with `jakarta` in annotation attributes for matching annotation signatures.";
 
     @Option(
             displayName = "Annotation signature",

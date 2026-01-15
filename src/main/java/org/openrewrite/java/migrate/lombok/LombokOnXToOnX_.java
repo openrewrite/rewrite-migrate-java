@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -42,16 +43,12 @@ public class LombokOnXToOnX_ extends Recipe {
     private static final AnnotationMatcher LOMBOK_ALL_ARGS_CONSTRUCTOR = new AnnotationMatcher("@lombok.AllArgsConstructor");
     private static final AnnotationMatcher LOMBOK_NO_ARGS_CONSTRUCTOR = new AnnotationMatcher("@lombok.NoArgsConstructor");
 
-    @Override
-    public String getDisplayName() {
-        return "Migrate Lombok's `@__` syntax to `onX_` for Java 8+";
-    }
+    @Getter
+    final String displayName = "Migrate Lombok's `@__` syntax to `onX_` for Java 8+";
 
-    @Override
-    public String getDescription() {
-        return "Migrates Lombok's `onX` annotations from the Java 7 style using `@__` to the Java 8+ style " +
-                "using `onX_`. For example, `@Getter(onMethod=@__({@Id}))` becomes `@Getter(onMethod_={@Id})`.";
-    }
+    @Getter
+    final String description = "Migrates Lombok's `onX` annotations from the Java 7 style using `@__` to the Java 8+ style " +
+            "using `onX_`. For example, `@Getter(onMethod=@__({@Id}))` becomes `@Getter(onMethod_={@Id})`.";
 
     @Override
     public Set<String> getTags() {

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -31,15 +32,11 @@ import org.openrewrite.java.tree.Statement;
 import java.time.Duration;
 
 public class OptionalNotPresentToIsEmpty extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Optional.isEmpty()`";
-    }
+    @Getter
+    final String displayName = "Prefer `Optional.isEmpty()`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Optional.isEmpty()` instead of using `!Optional.isPresent()` in Java 11 or higher.";
-    }
+    @Getter
+    final String description = "Prefer `Optional.isEmpty()` instead of using `!Optional.isPresent()` in Java 11 or higher.";
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {

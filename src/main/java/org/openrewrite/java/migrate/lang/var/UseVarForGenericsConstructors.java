@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -31,17 +32,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UseVarForGenericsConstructors extends Recipe {
-    @Override
-    public String getDisplayName() {
-        //language=markdown
-        return "Apply `var` to Generic Constructors";
-    }
+    @Getter
+    final String displayName = "Apply `var` to Generic Constructors";
 
-    @Override
-    public String getDescription() {
-        //language=markdown
-        return "Apply `var` to generics variables initialized by constructor calls.";
-    }
+    @Getter
+    final String description = "Apply `var` to generics variables initialized by constructor calls.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

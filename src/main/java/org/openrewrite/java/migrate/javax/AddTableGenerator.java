@@ -36,15 +36,9 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class AddTableGenerator extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Attributes with automatically generated values require configuration";
-    }
+    String displayName = "Attributes with automatically generated values require configuration";
 
-    @Override
-    public String getDescription() {
-        return "Adds missing `@TableGenerator` annotation and updates the `@GeneratedValue` annotation values when it uses automatically generated values.";
-    }
+    String description = "Adds missing `@TableGenerator` annotation and updates the `@GeneratedValue` annotation values when it uses automatically generated values.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

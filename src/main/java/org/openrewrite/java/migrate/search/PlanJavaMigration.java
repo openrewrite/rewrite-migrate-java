@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.search;
 
+import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.migrate.table.JavaVersionMigrationPlan;
@@ -30,16 +31,12 @@ import static java.util.Collections.emptyList;
 public class PlanJavaMigration extends ScanningRecipe<JavaVersionMigrationPlan.Row.Builder> {
     transient JavaVersionMigrationPlan plan = new JavaVersionMigrationPlan(this);
 
-    @Override
-    public String getDisplayName() {
-        return "Plan a Java version migration";
-    }
+    @Getter
+    final String displayName = "Plan a Java version migration";
 
-    @Override
-    public String getDescription() {
-        return "Study the set of Java versions and associated tools in " +
-               "use across many repositories.";
-    }
+    @Getter
+    final String description = "Study the set of Java versions and associated tools in " +
+            "use across many repositories.";
 
     @Override
     public JavaVersionMigrationPlan.Row.Builder getInitialValue(ExecutionContext ctx) {

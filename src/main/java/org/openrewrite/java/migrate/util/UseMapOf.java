@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -36,53 +37,51 @@ public class UseMapOf extends Recipe {
     private static final MethodMatcher NEW_HASH_MAP = new MethodMatcher("java.util.HashMap <constructor>()", true);
     private static final MethodMatcher MAP_PUT = new MethodMatcher("java.util.Map put(..)", true);
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Map.of(..)`";
-    }
+    @Getter
+    final String displayName = "Prefer `Map.of(..)`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer `Map.of(..)` instead of using `java.util.Map#put(..)` in Java 10 or higher.";
-    }
+    @Getter
+    final String description = "Prefer `Map.of(..)` instead of using `java.util.Map#put(..)` in Java 10 or higher.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(10),
-            new UsesMethod<>(NEW_HASH_MAP)), new UseMapOfVisitor());
-    }
+        return Preconditions.check(
+                Preconditions.and(
+                        new UsesJavaVersion<>(10),
+                        new UsesMethod<>(NEW_HASH_MAP)),
+                new JavaVisitor<ExecutionContext>() {
+                    @Override
+                    public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
+                        J.NewClass n = (J.NewClass) super.visitNewClass(newClass, ctx);
+                        J.Block body = n.getBody();
+                        if (NEW_HASH_MAP.matches(n) && body != null && body.getStatements().size() == 1) {
+                            Statement statement = body.getStatements().get(0);
+                            if (statement instanceof J.Block) {
+                                List<Expression> args = new ArrayList<>();
+                                StringJoiner mapOf = new StringJoiner(", ", "Map.of(", ")");
+                                for (Statement stat : ((J.Block) statement).getStatements()) {
+                                    if (!(stat instanceof J.MethodInvocation) || !MAP_PUT.matches((Expression) stat)) {
+                                        return n;
+                                    }
+                                    J.MethodInvocation put = (J.MethodInvocation) stat;
+                                    args.addAll(put.getArguments());
+                                    mapOf.add("#{any()}");
+                                    mapOf.add("#{any()}");
+                                }
 
-    private static class UseMapOfVisitor extends JavaVisitor<ExecutionContext> {
-        @Override
-        public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
-            J.NewClass n = (J.NewClass) super.visitNewClass(newClass, ctx);
-            J.Block body = n.getBody();
-            if (NEW_HASH_MAP.matches(n) && body != null && body.getStatements().size() == 1) {
-                Statement statement = body.getStatements().get(0);
-                if (statement instanceof J.Block) {
-                    List<Expression> args = new ArrayList<>();
-                    StringJoiner mapOf = new StringJoiner(", ", "Map.of(", ")");
-                    for (Statement stat : ((J.Block) statement).getStatements()) {
-                        if (!(stat instanceof J.MethodInvocation) || !MAP_PUT.matches((Expression) stat)) {
-                            return n;
+                                maybeRemoveImport("java.util.HashMap");
+                                maybeAddImport("java.util.Map");
+                                return JavaTemplate.builder(mapOf.toString())
+                                        .contextSensitive()
+                                        .imports("java.util.Map")
+                                        .build()
+                                        .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
+                            }
                         }
-                        J.MethodInvocation put = (J.MethodInvocation) stat;
-                        args.addAll(put.getArguments());
-                        mapOf.add("#{any()}");
-                        mapOf.add("#{any()}");
+
+                        return n;
                     }
-
-                    maybeRemoveImport("java.util.HashMap");
-                    maybeAddImport("java.util.Map");
-                    return JavaTemplate.builder(mapOf.toString())
-                        .contextSensitive()
-                        .imports("java.util.Map")
-                        .build()
-                        .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
-                }
-            }
-
-            return n;
-        }
+                });
     }
+
 }

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -24,17 +25,13 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
 public class RemovedSecurityManagerMethods extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Replace deprecated methods in`SecurityManager`";
-    }
+    @Getter
+    final String displayName = "Replace deprecated methods in`SecurityManager`";
 
-    @Override
-    public String getDescription() {
-        return "Replace `SecurityManager` methods `checkAwtEventQueueAccess()`, `checkSystemClipboardAccess()`, " +
-               "`checkMemberAccess()` and `checkTopLevelWindow()` deprecated in Java SE 11 by " +
-               "`checkPermission(new java.security.AllPermission())`.";
-    }
+    @Getter
+    final String description = "Replace `SecurityManager` methods `checkAwtEventQueueAccess()`, `checkSystemClipboardAccess()`, " +
+            "`checkMemberAccess()` and `checkTopLevelWindow()` deprecated in Java SE 11 by " +
+            "`checkPermission(new java.security.AllPermission())`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

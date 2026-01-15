@@ -118,4 +118,100 @@ class NoGuavaSetsNewHashSetTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void setsNewHashSetWithIterablesFilter() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              import com.google.common.collect.Iterables;
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  void test() {
+                      final List<ClassCastException> result = new ArrayList<ClassCastException>();
+                      List<Exception> myExceptions = new ArrayList<Exception>();
+                      result.addAll(Sets.newHashSet(Iterables.filter(myExceptions, ClassCastException.class)));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void setsNewHashSetWithIteratorsFilter() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Collection;
+              import java.util.Iterator;
+
+              import com.google.common.collect.Iterators;
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  public Collection<String> collectExistingRepresentations(Iterator<Object> iterator) {
+                      return Sets.newHashSet(Iterators.filter(iterator, String.class));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void setsNewHashSetWithCustomIterable() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  void test(Iterable<String> myIterable) {
+                      var result = Sets.newHashSet(myIterable);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void setsNewHashSetWithCollectionStillWorks() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.Sets;
+
+              import java.util.List;
+              import java.util.Set;
+
+              class Test {
+                  public static void test(List<String> myList) {
+                      Set<String> result = Sets.newHashSet(myList);
+                  }
+              }
+              """,
+            """
+              import java.util.HashSet;
+              import java.util.List;
+              import java.util.Set;
+
+              class Test {
+                  public static void test(List<String> myList) {
+                      Set<String> result = new HashSet<>(myList);
+                  }
+              }
+              """
+          )
+        );
+    }
 }

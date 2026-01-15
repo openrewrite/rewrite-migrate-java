@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -33,15 +34,11 @@ public class NoGuavaMapsNewLinkedHashMap extends Recipe {
     private static final MethodMatcher NEW_LINKED_HASH_MAP = new MethodMatcher("com.google.common.collect.Maps newLinkedHashMap()");
     private static final MethodMatcher NEW_LINKED_HASH_MAP_WITH_MAP = new MethodMatcher("com.google.common.collect.Maps newLinkedHashMap(java.util.Map)");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `new LinkedHashMap<>()`";
-    }
+    @Getter
+    final String displayName = "Prefer `new LinkedHashMap<>()`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
-    }
+    @Getter
+    final String description = "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
 
     @Override
     public Set<String> getTags() {

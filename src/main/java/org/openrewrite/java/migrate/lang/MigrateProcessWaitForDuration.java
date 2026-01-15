@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -32,15 +33,11 @@ public class MigrateProcessWaitForDuration extends Recipe {
 
     private static final MethodMatcher PROCESS_WAIT_FOR_MATCHER = new MethodMatcher("java.lang.Process waitFor(long, java.util.concurrent.TimeUnit)");
 
-    @Override
-    public String getDisplayName() {
-        return "Use `Process#waitFor(Duration)`";
-    }
+    @Getter
+    final String displayName = "Use `Process#waitFor(Duration)`";
 
-    @Override
-    public String getDescription() {
-        return "Use `Process#waitFor(Duration)` instead of `Process#waitFor(long, TimeUnit)` in Java 25 or higher.";
-    }
+    @Getter
+    final String description = "Use `Process#waitFor(Duration)` instead of `Process#waitFor(long, TimeUnit)` in Java 25 or higher.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

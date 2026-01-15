@@ -197,6 +197,36 @@ class UseLombokGetterTest implements RewriteTest {
         );
     }
 
+	@Test
+	void replacePrivateGetterAnnotated() {
+		rewriteRun(// language=java
+		  java(
+			"""
+			  class A {
+
+				  int foo = 9;
+
+				  @Deprecated
+				  private int getFoo() {
+					  return foo;
+				  }
+			  }
+			  """,
+			"""
+              import lombok.AccessLevel;
+              import lombok.Getter;
+
+              class A {
+
+                  @Getter(value = AccessLevel.PRIVATE, onMethod_ = {@Deprecated})
+                  int foo = 9;
+              }
+              """
+
+		  )
+		);
+	}
+
     @Test
     void replaceJustTheMatchingGetter() {
         rewriteRun(// language=java
@@ -530,21 +560,47 @@ class UseLombokGetterTest implements RewriteTest {
         );
     }
 
+	@Test
+	void noChangeRecordWithCompactConstructor() {
+		rewriteRun(// language=java
+		  java(
+			"""
+			  public record Foo(String id) {
+			      public Foo {
+			  		if (id == null || id.isBlank()) {
+			  			throw new IllegalArgumentException("ID cannot be null or blank");
+			  		}
+			  	}
+			  }
+			  """
+		  )
+		);
+	}
+
     @Issue("https://github.com/openrewrite/rewrite/issues/5015")
     @Test
-    void noChangeIfAnnotated() {
+    void addOnMethodArgIfAnnotated() {
         rewriteRun(// language=java
-          java("@interface MyOtherAnnotation {}"),
           java(
             """
               class A {
 
                   int foo = 9;
 
-                  @MyOtherAnnotation
+                  @Deprecated
+                  @SuppressWarnings("deprecation")
                   public int getFoo() {
                       return foo;
                   }
+              }
+              """,
+			"""
+              import lombok.Getter;
+
+              class A {
+
+                  @Getter(onMethod_ = {@Deprecated, @SuppressWarnings("deprecation")})
+                  int foo = 9;
               }
               """
           )
@@ -633,6 +689,38 @@ class UseLombokGetterTest implements RewriteTest {
                           return sample.number;
                       }
                   }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/876")
+    @Test
+    void multipleVariableDeclarations() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo, bar = 9;
+
+                  public int getFoo() {
+                      return foo;
+                  }
+
+                  public int getBar() {
+                      return bar;
+                  }
+              }
+              """,
+            """
+              import lombok.Getter;
+
+              class A {
+
+                  @Getter
+                  int foo, bar = 9;
               }
               """
           )

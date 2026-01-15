@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -32,15 +33,11 @@ import static java.util.Collections.singleton;
 public class NoGuavaDirectExecutor extends Recipe {
     private static final MethodMatcher DIRECT_EXECUTOR = new MethodMatcher("com.google.common.util.concurrent.MoreExecutors directExecutor()");
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `Runnable::run`";
-    }
+    @Getter
+    final String displayName = "Prefer `Runnable::run`";
 
-    @Override
-    public String getDescription() {
-        return "`Executor` is a SAM-compatible interface, so `Runnable::run` is just as succinct as `MoreExecutors.directExecutor()` but without the third-party library requirement.";
-    }
+    @Getter
+    final String description = "`Executor` is a SAM-compatible interface, so `Runnable::run` is just as succinct as `MoreExecutors.directExecutor()` but without the third-party library requirement.";
 
     @Override
     public Set<String> getTags() {

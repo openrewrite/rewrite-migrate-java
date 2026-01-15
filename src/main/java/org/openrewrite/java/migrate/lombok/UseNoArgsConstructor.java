@@ -25,6 +25,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.marker.CompactConstructor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
@@ -34,25 +35,18 @@ import static java.util.Comparator.comparing;
 @Value
 public class UseNoArgsConstructor extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        //language=markdown
-        return "Use `@NoArgsConstructor` where applicable";
-    }
+    String displayName = "Use `@NoArgsConstructor` where applicable";
 
-    @Override
-    public String getDescription() {
-        //language=markdown
-        return "Prefer the Lombok `@NoArgsConstructor` annotation over explicitly written out constructors.";
-    }
+    String description = "Prefer the Lombok `@NoArgsConstructor` annotation over explicitly written out constructors.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.@Nullable MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                if (method.isConstructor() &&
-                        method.getParameters().get(0) instanceof J.Empty &&
+				if (method.isConstructor() &&
+						!method.getMarkers().findFirst(CompactConstructor.class).isPresent() &&
+						method.getParameters().get(0) instanceof J.Empty &&
                         method.getBody() != null && method.getBody().getStatements().isEmpty()) {
                     J.ClassDeclaration enclosing = getCursor().firstEnclosing(J.ClassDeclaration.class);
                     AccessLevel accessLevel = LombokUtils.getAccessLevel(method);

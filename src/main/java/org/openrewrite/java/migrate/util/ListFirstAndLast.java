@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -41,15 +42,11 @@ public class ListFirstAndLast extends Recipe {
     private static final MethodMatcher REMOVE_MATCHER = new MethodMatcher("java.util.List remove(int)", true);
     private static final MethodMatcher SIZE_MATCHER = new MethodMatcher("java.util.List size()", true);
 
-    @Override
-    public String getDisplayName() {
-        return "Replace `List.get(int)`, `add(int, Object)`, and `remove(int)` with `SequencedCollection` `*First` and `*Last` methods";
-    }
+    @Getter
+    final String displayName = "Replace `List.get(int)`, `add(int, Object)`, and `remove(int)` with `SequencedCollection` `*First` and `*Last` methods";
 
-    @Override
-    public String getDescription() {
-        return "Replace `list.get(0)` with `list.getFirst()`, `list.get(list.size() - 1)` with `list.getLast()`, and similar for `add(int, E)` and `remove(int)`.";
-    }
+    @Getter
+    final String description = "Replace `list.get(0)` with `list.getFirst()`, `list.get(list.size() - 1)` with `list.getLast()`, and similar for `add(int, E)` and `remove(int)`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

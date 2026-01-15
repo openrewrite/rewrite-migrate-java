@@ -61,15 +61,9 @@ public class UseTextBlocks extends Recipe {
         this.convertStringsWithoutNewlines = convertStringsWithoutNewlines;
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Use text blocks";
-    }
+    String displayName = "Use text blocks";
 
-    @Override
-    public String getDescription() {
-        return "Text blocks are easier to read than concatenated strings.";
-    }
+    String description = "Text blocks are easier to read than concatenated strings.";
 
     @Override
     public @Nullable Duration getEstimatedEffortPerOccurrence() {

@@ -25,17 +25,28 @@ description: >-
 tags:
   - guava
 recipeList:
+  - com.google.guava.InlineGuavaMethods
   - org.openrewrite.java.migrate.guava.NoGuavaJava11
   - org.openrewrite.java.migrate.guava.NoGuavaJava21
   - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
-  - org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods
+  - org.openrewrite.java.migrate.guava.NoGuavaFunctionsCompose
+  - org.openrewrite.java.migrate.guava.NoGuavaIterablesAll
+  - org.openrewrite.java.migrate.guava.NoGuavaIterablesAnyFilter
+  - org.openrewrite.java.migrate.guava.NoGuavaIterablesTransform
+  - org.openrewrite.java.migrate.guava.NoGuavaCollections2Transform
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList
+  - org.openrewrite.java.migrate.guava.NoGuavaMapsNewLinkedHashMap
   - org.openrewrite.java.migrate.guava.NoGuavaMapsNewTreeMap
+  - org.openrewrite.java.migrate.guava.NoGuavaPredicatesAndOr
+  - org.openrewrite.java.migrate.guava.NoGuavaPredicatesEqualTo
+  - org.openrewrite.java.migrate.guava.NoGuavaPredicatesInstanceOf
   - org.openrewrite.java.migrate.guava.NoGuavaPrimitiveAsList
   - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes
+  - org.openrewrite.java.migrate.guava.NoGuavaMapsNewHashMap
+  - org.openrewrite.java.migrate.guava.NoGuavaSetsFilter
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet
@@ -147,6 +158,7 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrElseNull
   - org.openrewrite.java.migrate.guava.NoGuavaOptionalFromJavaUtil
   - org.openrewrite.java.migrate.guava.NoGuavaOptionalToJavaUtil
+  - org.openrewrite.java.migrate.guava.NoGuavaOptionalAsSet
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.base.Optional absent()
       newMethodName: empty
@@ -175,13 +187,10 @@ tags:
   - guava
   - RSPEC-S4738
 recipeList:
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: com.google.common.base.Predicate apply(..)
-      newMethodName: test
-      matchOverrides: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: com.google.common.base.Predicate
-      newFullyQualifiedTypeName: java.util.function.Predicate
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.google.common.base.Predicates not(com.google.common.base.Predicate)
+      fullyQualifiedTargetTypeName: java.util.function.Predicate
+  - org.openrewrite.java.migrate.guava.NoGuavaPredicate
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

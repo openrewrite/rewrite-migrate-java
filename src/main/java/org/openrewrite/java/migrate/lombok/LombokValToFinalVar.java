@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -36,15 +37,11 @@ public class LombokValToFinalVar extends Recipe {
     private static final String LOMBOK_VAL = "lombok.val";
     private static final String LOMBOK_VAR = "lombok.var";
 
-    @Override
-    public String getDisplayName() {
-        return "Prefer `final var` over `lombok.val`";
-    }
+    @Getter
+    final String displayName = "Prefer `final var` over `lombok.val`";
 
-    @Override
-    public String getDescription() {
-        return "Prefer the Java standard library's `final var` and `var` over third-party usage of Lombok's `lombok.val` and `lombok.var` in Java 10 or higher.";
-    }
+    @Getter
+    final String description = "Prefer the Java standard library's `final var` and `var` over third-party usage of Lombok's `lombok.val` and `lombok.var` in Java 10 or higher.";
 
     @Override
     public Set<String> getTags() {

@@ -37,15 +37,9 @@ import static java.util.Collections.singletonList;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class SwitchCaseEnumGuardToLabel extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Use switch cases labels for enums";
-    }
+    String displayName = "Use switch cases labels for enums";
 
-    @Override
-    public String getDescription() {
-        return "Use switch case labels when a guard is checking equality with an enum.";
-    }
+    String description = "Use switch case labels when a guard is checking equality with an enum.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

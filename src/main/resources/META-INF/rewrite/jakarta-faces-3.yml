@@ -388,6 +388,7 @@ recipeList:
       groupId: org.primefaces
       artifactId: primefaces
       newClassifier: jakarta
+      changeManagedDependency: true
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.primefaces
       artifactId: primefaces
@@ -396,6 +397,7 @@ recipeList:
       groupId: org.primefaces.extensions
       artifactId: primefaces-extensions
       newClassifier: jakarta
+      changeManagedDependency: true
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.primefaces.extensions
       artifactId: primefaces-extensions

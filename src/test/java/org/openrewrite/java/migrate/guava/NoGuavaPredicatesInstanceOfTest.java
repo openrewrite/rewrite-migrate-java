@@ -17,59 +17,50 @@ package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 
-class NoGuavaInlineMeMethodsTest implements RewriteTest {
-
+class NoGuavaPredicatesInstanceOfTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources(
-          "org.openrewrite.java.migrate.guava.NoGuavaInlineMeMethods");
+        spec
+          .recipe(new NoGuavaPredicatesInstanceOf())
+          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
     @DocumentExample
     @Test
-    void stringsRegular() {
+    void predicatesEqualToToPredicateIsEqual() {
         rewriteRun(
+          // XXX Pending JavaTemplate support for MemberReference
+          spec -> spec.afterTypeValidationOptions(TypeValidation.none()),
+          //language=java
           java(
             """
-              import com.google.common.base.Strings;
-              class Regular {
-                  String repeatString(String s, int n) {
-                      return Strings.repeat(s, n);
-                  }
-              }
-              """,
-            """
-              class Regular {
-                  String repeatString(String s, int n) {
-                      return s.repeat(n);
-                  }
-              }
-              """
-          )
-        );
-    }
+              import java.util.Collection;
 
-    @Test
-    void stringsStaticImport() {
-        rewriteRun(
-          java(
-            """
-              import static com.google.common.base.Strings.repeat;
-              class StaticImport {
-                  String repeatString(String s, int n) {
-                      return repeat(s, n);
+              import com.google.common.base.Predicates;
+              import com.google.common.collect.Iterables;
+
+              class Test {
+                  boolean test(Collection<Object> collection) {
+                      return Iterables.all(collection, Predicates.instanceOf(String.class));
                   }
               }
               """,
             """
-              class StaticImport {
-                  String repeatString(String s, int n) {
-                      return s.repeat(n);
+              import java.util.Collection;
+
+              import com.google.common.collect.Iterables;
+
+              class Test {
+                  boolean test(Collection<Object> collection) {
+                      return Iterables.all(collection, String.class::isInstance);
                   }
               }
               """
