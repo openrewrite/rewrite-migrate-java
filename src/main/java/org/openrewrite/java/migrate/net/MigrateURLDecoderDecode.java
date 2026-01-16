@@ -40,10 +40,8 @@ public class MigrateURLDecoderDecode extends Recipe {
     @Getter
     final String description = "Use `java.net.URLDecoder#decode(String, StandardCharsets.UTF_8)` instead of the deprecated `java.net.URLDecoder#decode(String)` in Java 10 or higher.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("deprecated");
-    }
+    @Getter
+    final Set<String> tags = singleton( "deprecated" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

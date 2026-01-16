@@ -39,10 +39,8 @@ public class NoGuavaOptionalFromJavaUtil extends Recipe {
     @Getter
     final String description = "Replaces `com.google.common.base.Optional#fromJavaUtil(java.util.Optional)` with argument.";
 
-    @Override
-    public Set<String> getTags() {
-        return new HashSet<>(Arrays.asList("RSPEC-S4738", "guava"));
-    }
+    @Getter
+    final Set<String> tags = new HashSet<>( Arrays.asList( "RSPEC-S4738", "guava" ) );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

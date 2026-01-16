@@ -61,10 +61,7 @@ public class ReplaceStreamCollectWithToList extends Recipe {
         return Duration.ofMinutes(1);
     }
 
-    @Override
-    public Set<String> getTags() {
-        return new HashSet<>(singletonList("RSPEC-S6204"));
-    }
+    Set<String> tags = new HashSet<>( singletonList( "RSPEC-S6204" ) );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -38,10 +38,8 @@ public class MigrateHttpURLConnectionHttpServerErrorToHttpInternalError extends 
     @Getter
     final String description = "Use `java.net.HttpURLConnection.HTTP_INTERNAL_ERROR` instead of the deprecated `java.net.HttpURLConnection.HTTP_SERVER_ERROR`.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("deprecated");
-    }
+    @Getter
+    final Set<String> tags = singleton( "deprecated" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

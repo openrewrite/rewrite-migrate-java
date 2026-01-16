@@ -40,10 +40,8 @@ public class NoGuavaSetsFilter extends Recipe {
     @Getter
     final String description = "Prefer `Collection.stream().filter(Predicate)` over `Sets.filter(Set, Predicate)`.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("guava");
-    }
+    @Getter
+    final Set<String> tags = singleton( "guava" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

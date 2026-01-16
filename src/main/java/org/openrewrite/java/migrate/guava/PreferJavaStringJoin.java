@@ -37,10 +37,8 @@ public class PreferJavaStringJoin extends Recipe {
     @Getter
     final String description = "Replaces supported calls to `com.google.common.base.Joiner#join()` with `java.lang.String#join()`.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("guava");
-    }
+    @Getter
+    final Set<String> tags = singleton( "guava" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

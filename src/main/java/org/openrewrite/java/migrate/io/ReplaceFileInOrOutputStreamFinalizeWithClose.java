@@ -46,10 +46,7 @@ public class ReplaceFileInOrOutputStreamFinalizeWithClose extends Recipe {
 
     String description = "Replace invocations of the deprecated `finalize()` method on `FileInputStream` and `FileOutputStream` with `close()`.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("JDK-8212050");
-    }
+    Set<String> tags = singleton( "JDK-8212050" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -41,10 +41,8 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
     @Getter
     final String description = "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("guava");
-    }
+    @Getter
+    final Set<String> tags = singleton( "guava" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

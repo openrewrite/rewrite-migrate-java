@@ -60,10 +60,7 @@ public class AddJaxwsRuntime extends Recipe {
         return Duration.ofMinutes(30);
     }
 
-    @Override
-    public Set<String> getTags() {
-        return new HashSet<>(Arrays.asList("javax", "jakarta", "javaee", "jaxws", "java11"));
-    }
+    Set<String> tags = new HashSet<>( Arrays.asList( "javax", "jakarta", "javaee", "jaxws", "java11" ) );
 
     @Override
     public List<Recipe> getRecipeList() {

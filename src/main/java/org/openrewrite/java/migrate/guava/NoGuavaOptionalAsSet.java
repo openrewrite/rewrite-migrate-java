@@ -39,10 +39,8 @@ public class NoGuavaOptionalAsSet extends Recipe {
     @Getter
     final String description = "Prefer `Optional.stream().collect(Collectors.toSet())` over `Optional.asSet()`.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("guava");
-    }
+    @Getter
+    final Set<String> tags = singleton( "guava" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

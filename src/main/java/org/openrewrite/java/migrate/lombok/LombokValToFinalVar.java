@@ -43,10 +43,8 @@ public class LombokValToFinalVar extends Recipe {
     @Getter
     final String description = "Prefer the Java standard library's `final var` and `var` over third-party usage of Lombok's `lombok.val` and `lombok.var` in Java 10 or higher.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("lombok");
-    }
+    @Getter
+    final Set<String> tags = singleton( "lombok" );
 
     @Override
     public Duration getEstimatedEffortPerOccurrence() {

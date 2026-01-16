@@ -56,10 +56,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
     String description = "Convert Lombok `@Value` annotated classes to standard Java Records.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("lombok");
-    }
+    Set<String> tags = singleton( "lombok" );
 
     @Override
     public Map<String, Set<String>> getInitialValue(ExecutionContext ctx) {

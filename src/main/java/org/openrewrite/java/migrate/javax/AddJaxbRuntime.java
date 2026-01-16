@@ -74,10 +74,7 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
         return Duration.ofMinutes(30);
     }
 
-    @Override
-    public Set<String> getTags() {
-        return new HashSet<>(Arrays.asList("javax", "jakarta", "javaee", "jaxb", "glassfish", "java11"));
-    }
+    Set<String> tags = new HashSet<>( Arrays.asList( "javax", "jakarta", "javaee", "jaxb", "glassfish", "java11" ) );
 
     @Override
     public AtomicBoolean getInitialValue(ExecutionContext ctx) {

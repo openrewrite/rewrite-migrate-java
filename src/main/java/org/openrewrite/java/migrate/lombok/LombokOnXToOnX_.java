@@ -50,10 +50,8 @@ public class LombokOnXToOnX_ extends Recipe {
     final String description = "Migrates Lombok's `onX` annotations from the Java 7 style using `@__` to the Java 8+ style " +
             "using `onX_`. For example, `@Getter(onMethod=@__({@Id}))` becomes `@Getter(onMethod_={@Id})`.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("lombok");
-    }
+    @Getter
+    final Set<String> tags = singleton( "lombok" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

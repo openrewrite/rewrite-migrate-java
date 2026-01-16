@@ -37,10 +37,8 @@ public class SimplifyMicrometerMeterTags extends Recipe {
     @Getter
     final String description = "Use the simplest method to add new tags.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("micrometer");
-    }
+    @Getter
+    final Set<String> tags = singleton( "micrometer" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

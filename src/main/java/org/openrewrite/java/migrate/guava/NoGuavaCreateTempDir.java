@@ -37,10 +37,8 @@ public class NoGuavaCreateTempDir extends Recipe {
     @Getter
     final String description = "Replaces Guava `Files#createTempDir()` with Java `Files#createTempDirectory(..)`. Transformations are limited to scopes throwing or catching `java.io.IOException`.";
 
-    @Override
-    public Set<String> getTags() {
-        return new HashSet<>(Arrays.asList("RSPEC-S4738", "guava"));
-    }
+    @Getter
+    final Set<String> tags = new HashSet<>( Arrays.asList( "RSPEC-S4738", "guava" ) );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

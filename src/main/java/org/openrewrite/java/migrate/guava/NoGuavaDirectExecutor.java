@@ -39,10 +39,8 @@ public class NoGuavaDirectExecutor extends Recipe {
     @Getter
     final String description = "`Executor` is a SAM-compatible interface, so `Runnable::run` is just as succinct as `MoreExecutors.directExecutor()` but without the third-party library requirement.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("guava");
-    }
+    @Getter
+    final Set<String> tags = singleton( "guava" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

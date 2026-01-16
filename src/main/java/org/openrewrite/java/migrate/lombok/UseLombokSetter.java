@@ -40,10 +40,7 @@ public class UseLombokSetter extends Recipe {
 
     String description = "Convert trivial setter methods to `@Setter` annotations on their respective fields.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("lombok");
-    }
+    Set<String> tags = singleton( "lombok" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

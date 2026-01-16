@@ -37,10 +37,8 @@ public class NoGuavaPredicatesInstanceOf extends Recipe {
     @Getter
     final String description = "Prefer `A.class::isInstance` over `Predicates.instanceOf(A.class)`.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("guava");
-    }
+    @Getter
+    final Set<String> tags = singleton( "guava" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

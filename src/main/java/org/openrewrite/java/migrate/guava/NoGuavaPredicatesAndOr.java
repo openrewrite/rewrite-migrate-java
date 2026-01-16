@@ -48,10 +48,8 @@ public class NoGuavaPredicatesAndOr extends Recipe {
     @Getter
     final String description = "Prefer `Predicate.and(Predicate)` over `Predicates.and(Predicate, Predicate)`.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("guava");
-    }
+    @Getter
+    final Set<String> tags = singleton( "guava" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

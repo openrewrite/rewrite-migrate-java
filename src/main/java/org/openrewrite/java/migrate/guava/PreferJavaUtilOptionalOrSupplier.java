@@ -42,10 +42,7 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
 
     String description = "Prefer `java.util.Optional#or(Supplier<T extends java.util.Optional<T>>)` over `com.google.common.base.Optional#or(com.google.common.base.Optional).";
 
-    @Override
-    public Set<String> getTags() {
-        return new HashSet<>(Arrays.asList("RSPEC-S4738", "guava"));
-    }
+    Set<String> tags = new HashSet<>( Arrays.asList( "RSPEC-S4738", "guava" ) );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

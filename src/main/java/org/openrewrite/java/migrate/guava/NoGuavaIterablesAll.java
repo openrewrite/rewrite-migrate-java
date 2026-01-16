@@ -40,10 +40,8 @@ public class NoGuavaIterablesAll extends Recipe {
     @Getter
     final String description = "Prefer `Collection.stream().allMatch(Predicate)` over `Iterables.all(Collection, Predicate)`.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("guava");
-    }
+    @Getter
+    final Set<String> tags = singleton( "guava" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

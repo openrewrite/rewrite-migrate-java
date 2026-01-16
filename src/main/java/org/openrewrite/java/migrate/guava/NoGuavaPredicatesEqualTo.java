@@ -42,10 +42,8 @@ public class NoGuavaPredicatesEqualTo extends Recipe {
     @Getter
     final String description = "Prefer `Predicate.isEqual(Object)` over `Predicates.equalTo(Object)`.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("guava");
-    }
+    @Getter
+    final Set<String> tags = singleton( "guava" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

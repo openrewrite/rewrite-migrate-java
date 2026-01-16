@@ -40,10 +40,8 @@ public class NoGuavaCollections2Transform extends Recipe {
     @Getter
     final String description = "Prefer `Collection.stream().map(Function)` over `Collections2.transform(Collection, Function)`.";
 
-    @Override
-    public Set<String> getTags() {
-        return singleton("guava");
-    }
+    @Getter
+    final Set<String> tags = singleton( "guava" );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
