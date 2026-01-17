@@ -38,10 +38,8 @@ public class OptionalNotEmptyToIsPresent extends Recipe {
     @Getter
     final String description = "Prefer `Optional.isPresent()` instead of using `!Optional.isEmpty()` in Java 11 or higher.";
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(1);
-    }
+    @Getter
+    final Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 1 );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -50,10 +50,7 @@ public class NullCheckAsSwitchCase extends Recipe {
                 "This recipe will only add null checks to existing switch cases if there are no other statements in between them " +
                 "or if the block in the if statement is not impacting the flow of the switch.";
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(3);
-    }
+    Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 3 );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
@@ -70,10 +71,8 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
         return "Replaces `" + getShortType(guavaType) + ".of(..)` if the returned type is immediately down-cast.";
     }
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(10);
-    }
+    @Getter
+    final Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 10 );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

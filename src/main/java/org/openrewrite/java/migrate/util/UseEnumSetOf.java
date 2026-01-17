@@ -52,10 +52,7 @@ public class UseEnumSetOf extends Recipe {
 
     String description = "Prefer `EnumSet of(..)` instead of using `Set of(..)` when the arguments are enums in Java 9 or higher.";
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(2);
-    }
+    Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 2 );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -69,10 +69,7 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                "dependency on the JAXB API. **The resulting dependencies still use the `javax` namespace, despite " +
                "the move to the Jakarta artifact**.";
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(30);
-    }
+    Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 30 );
 
     Set<String> tags = new HashSet<>( Arrays.asList( "javax", "jakarta", "javaee", "jaxb", "glassfish", "java11" ) );
 

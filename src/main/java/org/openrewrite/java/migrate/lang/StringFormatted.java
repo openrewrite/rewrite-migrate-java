@@ -52,10 +52,7 @@ public class StringFormatted extends Recipe {
 
     String description = "Prefer `String.formatted(Object...)` over `String.format(String, Object...)` in Java 17 or higher.";
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(1);
-    }
+    Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 1 );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

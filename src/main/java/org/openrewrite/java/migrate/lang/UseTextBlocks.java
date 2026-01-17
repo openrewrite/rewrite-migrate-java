@@ -65,10 +65,7 @@ public class UseTextBlocks extends Recipe {
 
     String description = "Text blocks are easier to read than concatenated strings.";
 
-    @Override
-    public @Nullable Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(3);
-    }
+    Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 3 );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

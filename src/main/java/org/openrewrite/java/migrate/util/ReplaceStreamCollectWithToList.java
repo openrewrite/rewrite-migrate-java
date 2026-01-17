@@ -56,10 +56,7 @@ public class ReplaceStreamCollectWithToList extends Recipe {
     String description = "Replace `Stream.collect(Collectors.toUnmodifiableList())` with Java 16+ `Stream.toList()`. " +
                "Also replaces `Stream.collect(Collectors.toList())` if `convertToList` is set to `true`.";
 
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(1);
-    }
+    Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 1 );
 
     Set<String> tags = new HashSet<>( singletonList( "RSPEC-S6204" ) );
 

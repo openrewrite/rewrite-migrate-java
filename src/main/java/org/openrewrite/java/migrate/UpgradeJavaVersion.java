@@ -63,10 +63,7 @@ public class UpgradeJavaVersion extends Recipe {
      *
      * @return Zero estimated time.
      */
-    @Override
-    public Duration getEstimatedEffortPerOccurrence() {
-        return Duration.ofMinutes(0);
-    }
+    Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 0 );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
