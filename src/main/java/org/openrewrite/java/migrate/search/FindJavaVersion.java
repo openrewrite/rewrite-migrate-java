@@ -46,7 +46,9 @@ public class FindJavaVersion extends Recipe {
             public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
                 cu.getMarkers().findFirst(JavaVersion.class)
                         .filter(seen::add)
-                        .map(jv -> new JavaVersionTable.Row(jv.getSourceCompatibility(), jv.getTargetCompatibility()))
+                        .map(jv -> new JavaVersionTable.Row(
+                                Integer.toString(jv.getMajorVersion()),
+                                Integer.toString(jv.getMajorReleaseVersion())))
                         .ifPresent(row -> table.insertRow(ctx, row));
                 return cu;
             }
