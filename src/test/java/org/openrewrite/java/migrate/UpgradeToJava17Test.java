@@ -21,6 +21,7 @@ import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -148,10 +149,15 @@ class UpgradeToJava17Test implements RewriteTest {
                        }
                     }
                     """,
-                  spec -> spec.afterRecipe(cu ->
-                    assertThat(cu.getMarkers().findFirst(JavaVersion.class))
-                      .map(JavaVersion::getSourceCompatibility)
-                      .hasValue("17"))
+                  spec -> spec.afterRecipe(cu -> {
+                      Optional<JavaVersion> jv = cu.getMarkers().findFirst(JavaVersion.class);
+                      assertThat(jv)
+                        .map(JavaVersion::getSourceCompatibility)
+                        .hasValue("17");
+                      assertThat(jv)
+                        .map(JavaVersion::getMajorVersion)
+                        .hasValue(17);
+                  })
                 )
               )
             ),
