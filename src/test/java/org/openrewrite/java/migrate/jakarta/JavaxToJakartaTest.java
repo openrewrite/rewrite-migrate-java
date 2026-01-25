@@ -962,4 +962,75 @@ class JavaxToJakartaTest implements RewriteTest {
           )
         );
     }
+
+    @Issue("https://github.com/moderneinc/customer-requests/issues/1563")
+    @Test
+    void addJakartaAnnotationApiWhenUsingJavaxAnnotationPriority() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .dependsOn(
+              """
+                package javax.annotation;
+                public @interface Priority {
+                    int value();
+                }
+                """,
+              """
+                package jakarta.annotation;
+                public @interface Priority {
+                    int value();
+                }
+                """
+            )
+          ),
+          mavenProject(
+            "Sample",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                </project>
+                """,
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>jakarta.annotation</groupId>
+                      <artifactId>jakarta.annotation-api</artifactId>
+                      <version>2.0.0</version>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """
+            ),
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.annotation.Priority;
+
+                  @Priority(1)
+                  public class MyFilter {
+                  }
+                  """,
+                """
+                  import jakarta.annotation.Priority;
+
+                  @Priority(1)
+                  public class MyFilter {
+                  }
+                  """
+              )
+            )
+          )
+        );
+    }
 }
