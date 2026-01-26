@@ -252,6 +252,9 @@ recipeList:
       oldPackageName: javax.validation
       newPackageName: jakarta.validation
       recursive: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.istack.NotNull
+      newFullyQualifiedTypeName: jakarta.validation.constraints.NotNull
   - org.openrewrite.RenameFile:
       fileMatcher: '**/javax.validation.ConstraintValidator'
       fileName: jakarta.validation.ConstraintValidator
