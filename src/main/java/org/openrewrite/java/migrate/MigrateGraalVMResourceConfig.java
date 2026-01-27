@@ -20,6 +20,7 @@ import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.json.JsonIsoVisitor;
 import org.openrewrite.json.tree.Json;
 import org.openrewrite.json.tree.JsonRightPadded;
@@ -57,18 +58,12 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 public class MigrateGraalVMResourceConfig extends Recipe {
 
-    @Override
-    public String getDisplayName() {
-        return "Migrate GraalVM resource-config.json to glob patterns";
-    }
+    String displayName = "Migrate GraalVM resource-config.json to glob patterns";
 
-    @Override
-    public String getDescription() {
-        return "Migrates GraalVM native-image resource-config.json files from the legacy regex pattern format " +
-               "(JDK 21 and earlier) to the new glob pattern format (JDK 23+). " +
-               "Converts `pattern` entries to `glob` entries and restructures the format. " +
-               "Note: `excludes` are no longer supported in the new format and will be removed.";
-    }
+    String description = "Migrates GraalVM native-image resource-config.json files from the legacy regex pattern format " +
+            "(JDK 21 and earlier) to the new glob pattern format (JDK 23+). " +
+            "Converts `pattern` entries to `glob` entries and restructures the format. " +
+            "Note: `excludes` are no longer supported in the new format and will be removed.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -329,7 +324,7 @@ public class MigrateGraalVMResourceConfig extends Recipe {
         }
 
         private static ConversionResult convertRegexToGlob(String regex) {
-            if (regex == null || regex.isEmpty()) {
+            if (StringUtils.isNullOrEmpty(regex)) {
                 return new ConversionResult(null, "Empty pattern cannot be converted");
             }
 
