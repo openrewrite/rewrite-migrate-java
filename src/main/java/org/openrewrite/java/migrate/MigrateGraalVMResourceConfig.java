@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2026 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.json.JsonIsoVisitor;
 import org.openrewrite.json.tree.Json;
 import org.openrewrite.json.tree.JsonRightPadded;
@@ -28,7 +29,6 @@ import org.openrewrite.marker.SearchResult;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Migrates GraalVM native-image resource-config.json files from the legacy regex pattern
@@ -127,7 +127,7 @@ public class MigrateGraalVMResourceConfig extends Recipe {
                     JsonValue entry = paddedEntry.getElement();
                     if (entry instanceof Json.JsonObject) {
                         Json.JsonObject entryObj = (Json.JsonObject) entry;
-                        ConvertedEntry converted = convertPatternEntry(entryObj, ctx);
+                        ConvertedEntry converted = convertPatternEntry(entryObj);
                         if (converted != null) {
                             newResourceEntries.add(paddedEntry.withElement(converted.entry));
                             if (converted.hasWarning) {
@@ -140,7 +140,7 @@ public class MigrateGraalVMResourceConfig extends Recipe {
 
             // Build new resources array
             Json.Array newResourcesArray = new Json.Array(
-                    UUID.randomUUID(),
+                    Tree.randomId(),
                     resourcesObj.getPrefix(),
                     Markers.EMPTY,
                     newResourceEntries
@@ -150,16 +150,13 @@ public class MigrateGraalVMResourceConfig extends Recipe {
             Json.Member newResourcesMember = resourcesMember.withValue(newResourcesArray);
 
             // Update root object
-            List<JsonRightPadded<Json>> newRootMembers = new ArrayList<>();
-            for (JsonRightPadded<Json> paddedMember : root.getPadding().getMembers()) {
-                if (paddedMember.getElement() == resourcesMember) {
-                    newRootMembers.add(paddedMember.withElement(newResourcesMember));
-                } else {
-                    newRootMembers.add(paddedMember);
-                }
-            }
-
-            Json.JsonObject newRoot = root.getPadding().withMembers(newRootMembers);
+            Json.JsonObject newRoot = root.getPadding().withMembers(
+                    ListUtils.map(root.getPadding().getMembers(), paddedMember ->
+                            paddedMember.getElement() == resourcesMember
+                                    ? paddedMember.withElement(newResourcesMember)
+                                    : paddedMember
+                    )
+            );
             doc = doc.withValue(newRoot);
 
             if (hasUnconvertiblePatterns) {
@@ -179,7 +176,7 @@ public class MigrateGraalVMResourceConfig extends Recipe {
             }
         }
 
-        private @Nullable ConvertedEntry convertPatternEntry(Json.JsonObject entryObj, ExecutionContext ctx) {
+        private @Nullable ConvertedEntry convertPatternEntry(Json.JsonObject entryObj) {
             Json.Member patternMember = findMember(entryObj, "pattern");
             if (patternMember == null) {
                 // Already in glob format or unknown format, keep as is
@@ -193,36 +190,30 @@ public class MigrateGraalVMResourceConfig extends Recipe {
             }
 
             // Convert regex to glob
-            RegexToGlobConverter.ConversionResult result = RegexToGlobConverter.convert(patternValue);
+            ConversionResult result = convertRegexToGlob(patternValue);
 
             if (!result.isSuccessful()) {
                 // Mark the entry for manual review but keep the original pattern
                 return new ConvertedEntry(
-                        SearchResult.found(entryObj, result.warningMessage()),
+                        SearchResult.found(entryObj, result.warningMessage),
                         true
                 );
             }
 
-            // Create new entry with glob key
-            List<JsonRightPadded<Json>> newMembers = new ArrayList<>();
-
-            for (JsonRightPadded<Json> paddedMember : entryObj.getPadding().getMembers()) {
-                Json member = paddedMember.getElement();
-                if (member instanceof Json.Member) {
-                    Json.Member m = (Json.Member) member;
-                    String key = getKeyName(m);
-                    if ("pattern".equals(key)) {
-                        // Replace pattern with glob
-                        Json.Member globMember = createGlobMember(m, result.glob());
-                        newMembers.add(paddedMember.withElement(globMember));
-                    } else {
-                        // Keep other members (like "module")
-                        newMembers.add(paddedMember);
-                    }
-                }
-            }
-
-            Json.JsonObject newEntry = entryObj.getPadding().withMembers(newMembers);
+            // Create new entry with glob key using ListUtils.map
+            Json.JsonObject newEntry = entryObj.getPadding().withMembers(
+                    ListUtils.map(entryObj.getPadding().getMembers(), paddedMember -> {
+                        Json member = paddedMember.getElement();
+                        if (member instanceof Json.Member) {
+                            Json.Member m = (Json.Member) member;
+                            if ("pattern".equals(getKeyName(m))) {
+                                // Replace pattern with glob
+                                return paddedMember.withElement(createGlobMember(m, result.glob));
+                            }
+                        }
+                        return paddedMember;
+                    })
+            );
             return new ConvertedEntry(newEntry, false);
         }
 
@@ -235,7 +226,7 @@ public class MigrateGraalVMResourceConfig extends Recipe {
                 newKey = oldKey.withSource(newKeySource);
             } else {
                 newKey = new Json.Literal(
-                        UUID.randomUUID(),
+                        Tree.randomId(),
                         patternMember.getKey().getPrefix(),
                         Markers.EMPTY,
                         "\"glob\"",
@@ -251,7 +242,7 @@ public class MigrateGraalVMResourceConfig extends Recipe {
                 newValue = oldValue.withSource(newValueSource).withValue(globValue);
             } else {
                 newValue = new Json.Literal(
-                        UUID.randomUUID(),
+                        Tree.randomId(),
                         patternMember.getValue().getPrefix(),
                         Markers.EMPTY,
                         "\"" + escapeJsonString(globValue) + "\"",
@@ -280,7 +271,8 @@ public class MigrateGraalVMResourceConfig extends Recipe {
             if (member.getKey() instanceof Json.Literal) {
                 Object value = ((Json.Literal) member.getKey()).getValue();
                 return value instanceof String ? (String) value : null;
-            } else if (member.getKey() instanceof Json.Identifier) {
+            }
+            if (member.getKey() instanceof Json.Identifier) {
                 return ((Json.Identifier) member.getKey()).getName();
             }
             return null;
@@ -318,6 +310,165 @@ public class MigrateGraalVMResourceConfig extends Recipe {
                 }
             }
             return sb.toString();
+        }
+
+        // Regex to glob conversion logic integrated from RegexToGlobConverter
+
+        private static final class ConversionResult {
+            final @Nullable String glob;
+            final @Nullable String warningMessage;
+
+            ConversionResult(@Nullable String glob, @Nullable String warningMessage) {
+                this.glob = glob;
+                this.warningMessage = warningMessage;
+            }
+
+            boolean isSuccessful() {
+                return glob != null;
+            }
+        }
+
+        private static ConversionResult convertRegexToGlob(String regex) {
+            if (regex == null || regex.isEmpty()) {
+                return new ConversionResult(null, "Empty pattern cannot be converted");
+            }
+
+            // Check for patterns that cannot be converted
+            String unconvertibleReason = findUnconvertibleConstruct(regex);
+            if (unconvertibleReason != null) {
+                return new ConversionResult(null, unconvertibleReason);
+            }
+
+            String glob = regex;
+
+            // Note: OpenRewrite's JSON parser preserves JSON escape sequences in values,
+            // so "\\." in JSON source appears as "\\\\.properties" in the value (double backslash).
+            // We need to handle this by first normalizing double backslashes.
+
+            // Step 1: Handle escaped dots - temporarily replace with placeholder
+            // The placeholder uses Unicode null chars to avoid collision with actual content
+            // Handle both \\. (JSON escaped) and \. (standard regex) formats
+            glob = glob.replace("\\\\.", "\u0000DOT\u0000");  // JSON escaped: \\.
+            glob = glob.replace("\\.", "\u0000DOT\u0000");    // Standard regex: \.
+
+            // Step 2: Handle [^/]* and [^/]+ (matches any characters except slash on one level) -> *
+            glob = glob.replace("[^/]*", "*");
+            glob = glob.replace("[^/]+", "*");
+
+            // Step 3: Handle .* patterns
+            // The order of these replacements is important!
+
+            // Pattern: .*\.ext (match all files with extension recursively)
+            // ".*\.txt" -> after DOT placeholder: ".*\u0000DOT\u0000txt"
+            // We want: "**/*.txt"
+            // Match .* at start followed by DOT placeholder, replace with **/*
+            glob = glob.replaceAll("^\\.\\*\u0000DOT\u0000", "**/*.");
+
+            // Handle .* at end of string -> **
+            glob = glob.replaceAll("\\.\\*$", "**");
+
+            // Handle /.* in the middle or end -> /**
+            glob = glob.replace("/.*", "/**");
+
+            // Handle remaining .* -> **  (this catches .* in the middle of a path)
+            glob = glob.replace(".*", "**");
+
+            // Step 4: Restore escaped dots
+            glob = glob.replace("\u0000DOT\u0000", ".");
+
+            // Step 5: Remove remaining backslash escapes that aren't needed in glob
+            // In glob, most characters are literal, so we just remove the backslash
+            glob = glob.replace("\\/", "/");
+            glob = glob.replace("\\-", "-");
+            glob = glob.replace("\\_", "_");
+
+            // Step 6: Validate the resulting glob pattern
+            String validationError = validateGlob(glob);
+            if (validationError != null) {
+                return new ConversionResult(null, validationError);
+            }
+
+            return new ConversionResult(glob, null);
+        }
+
+        private static @Nullable String findUnconvertibleConstruct(String pattern) {
+            // Check for character classes (but not [^/] which we handle)
+            if (pattern.matches(".*\\[[^^/].*\\].*") || pattern.matches(".*\\[\\^[^/].*\\].*")) {
+                // Has character class that isn't [^/]
+                if (!pattern.matches(".*\\[\\^/\\][*+].*") && pattern.matches(".*\\[.*\\].*")) {
+                    return "Pattern contains character class that cannot be converted to glob: " + pattern;
+                }
+            }
+
+            // Check for alternation groups
+            if (pattern.contains("(") && pattern.contains("|")) {
+                return "Pattern contains alternation group that cannot be converted to glob: " + pattern;
+            }
+
+            // Check for quantifiers other than * and +
+            if (pattern.matches(".*\\{\\d+,?\\d*}.*")) {
+                return "Pattern contains bounded quantifier that cannot be converted to glob: " + pattern;
+            }
+
+            // Check for special character classes
+            if (pattern.contains("\\d") || pattern.contains("\\D") ||
+                pattern.contains("\\w") || pattern.contains("\\W") ||
+                pattern.contains("\\s") || pattern.contains("\\S")) {
+                return "Pattern contains special character class that cannot be converted to glob: " + pattern;
+            }
+
+            // Check for anchors (^ at start, $ at end outside of character class)
+            if (pattern.startsWith("^") || pattern.endsWith("$")) {
+                return "Pattern contains anchors that cannot be converted to glob: " + pattern;
+            }
+
+            // Check for lookahead/lookbehind
+            if (pattern.contains("(?=") || pattern.contains("(?!") ||
+                pattern.contains("(?<=") || pattern.contains("(?<!")) {
+                return "Pattern contains lookahead/lookbehind that cannot be converted to glob: " + pattern;
+            }
+
+            // Check for backreferences
+            if (pattern.matches(".*\\\\\\d+.*")) {
+                return "Pattern contains backreference that cannot be converted to glob: " + pattern;
+            }
+
+            // Check for ? quantifier (zero or one)
+            // But be careful not to match \? which is an escaped literal
+            if (pattern.matches(".*[^\\\\]\\?.*") || pattern.startsWith("?")) {
+                return "Pattern contains optional quantifier (?) that cannot be converted to glob: " + pattern;
+            }
+
+            return null;
+        }
+
+        private static @Nullable String validateGlob(String glob) {
+            if (glob.isEmpty()) {
+                return "Converted glob pattern is empty";
+            }
+
+            if (glob.endsWith("/")) {
+                return "Glob pattern cannot end with /";
+            }
+
+            if (glob.contains("***")) {
+                return "Glob pattern cannot contain more than two consecutive *";
+            }
+
+            if (glob.contains("//")) {
+                return "Glob pattern cannot contain empty path segments (//)";
+            }
+
+            // Check for invalid globstar usage
+            // Globstar (**) must be the entire path segment
+            if (glob.matches(".*\\*\\*[^/].*") || glob.matches(".*[^/]\\*\\*.*")) {
+                // Exception: **/*.ext is valid
+                if (!glob.matches(".*\\*\\*/.*") && !glob.matches(".*/\\*\\*$") && !"**".equals(glob)) {
+                    return "Globstar (**) must be a complete path segment";
+                }
+            }
+
+            return null;
         }
     }
 }

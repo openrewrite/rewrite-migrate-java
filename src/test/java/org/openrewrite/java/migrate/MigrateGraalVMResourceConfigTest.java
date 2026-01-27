@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2026 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,22 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.json.Assertions.json;
 
 class MigrateGraalVMResourceConfigTest implements RewriteTest {
 
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.recipe(new MigrateGraalVMResourceConfig());
+    }
+
     @DocumentExample
     @Test
     void migrateSimpleResourceConfig() {
         rewriteRun(
-          spec -> spec.recipe(new MigrateGraalVMResourceConfig()),
           json(
             """
               {
@@ -55,7 +60,6 @@ class MigrateGraalVMResourceConfigTest implements RewriteTest {
     @Test
     void migrateWithExcludes() {
         rewriteRun(
-          spec -> spec.recipe(new MigrateGraalVMResourceConfig()),
           json(
             """
               {
@@ -84,7 +88,6 @@ class MigrateGraalVMResourceConfigTest implements RewriteTest {
     @Test
     void migrateSingleLevelWildcard() {
         rewriteRun(
-          spec -> spec.recipe(new MigrateGraalVMResourceConfig()),
           json(
             """
               {
@@ -110,7 +113,6 @@ class MigrateGraalVMResourceConfigTest implements RewriteTest {
     @Test
     void migrateLiteralPath() {
         rewriteRun(
-          spec -> spec.recipe(new MigrateGraalVMResourceConfig()),
           json(
             """
               {
@@ -136,7 +138,6 @@ class MigrateGraalVMResourceConfigTest implements RewriteTest {
     @Test
     void migrateNestedPathWildcard() {
         rewriteRun(
-          spec -> spec.recipe(new MigrateGraalVMResourceConfig()),
           json(
             """
               {
@@ -162,7 +163,6 @@ class MigrateGraalVMResourceConfigTest implements RewriteTest {
     @Test
     void noChangeForNonResourceConfigFiles() {
         rewriteRun(
-          spec -> spec.recipe(new MigrateGraalVMResourceConfig()),
           json(
             """
               {
@@ -181,7 +181,6 @@ class MigrateGraalVMResourceConfigTest implements RewriteTest {
     @Test
     void noChangeForAlreadyNewFormat() {
         rewriteRun(
-          spec -> spec.recipe(new MigrateGraalVMResourceConfig()),
           json(
             """
               {
@@ -198,7 +197,6 @@ class MigrateGraalVMResourceConfigTest implements RewriteTest {
     @Test
     void handleEmptyIncludes() {
         rewriteRun(
-          spec -> spec.recipe(new MigrateGraalVMResourceConfig()),
           json(
             """
               {
@@ -220,7 +218,6 @@ class MigrateGraalVMResourceConfigTest implements RewriteTest {
     @Test
     void preserveModuleField() {
         rewriteRun(
-          spec -> spec.recipe(new MigrateGraalVMResourceConfig()),
           json(
             """
               {
@@ -246,7 +243,6 @@ class MigrateGraalVMResourceConfigTest implements RewriteTest {
     @Test
     void migrateMultiplePatterns() {
         rewriteRun(
-          spec -> spec.recipe(new MigrateGraalVMResourceConfig()),
           json(
             """
               {
@@ -278,7 +274,6 @@ class MigrateGraalVMResourceConfigTest implements RewriteTest {
     @Test
     void preserveOtherTopLevelFields() {
         rewriteRun(
-          spec -> spec.recipe(new MigrateGraalVMResourceConfig()),
           json(
             """
               {
