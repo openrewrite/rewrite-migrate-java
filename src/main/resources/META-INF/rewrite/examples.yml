@@ -782,6 +782,30 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.MigrateGraalVMResourceConfig
+examples:
+- description: '`MigrateGraalVMResourceConfigTest#migrateSimpleResourceConfig`'
+  sources:
+  - before: |
+      {
+        "resources": {
+          "includes": [
+            {"pattern": ".*\\.txt"},
+            {"pattern": "META-INF/.*"}
+          ]
+        }
+      }
+    after: |
+      {
+        "resources": [
+            {"glob": "**/*.txt"},
+            {"glob": "META-INF/**"}
+          ]
+      }
+    path: META-INF/native-image/resource-config.json
+    language: json
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.MigrateZipErrorToZipException
 examples:
 - description: '`MigrateZipErrorToZipExceptionTest#migrateZipErrorInCatchClause`'

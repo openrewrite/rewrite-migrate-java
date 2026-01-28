@@ -42,6 +42,7 @@ recipeList:
   - org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
   - org.openrewrite.java.migrate.MigrateZipErrorToZipException
   - org.openrewrite.java.migrate.EnableLombokAnnotationProcessor
+  - org.openrewrite.java.migrate.MigrateGraalVMResourceConfig
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
