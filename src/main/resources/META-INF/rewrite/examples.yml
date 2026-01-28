@@ -1254,6 +1254,29 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.UpgradeToJava25
+examples:
+- description: '`UpgradeToJava25Test#addsLombokAnnotationProcessor`'
+  sources:
+  - before: project
+    language: mavenProject
+  - before: |
+      <project>
+          <groupId>com.mycompany.app</groupId>
+          <artifactId>my-app</artifactId>
+          <version>1</version>
+          <dependencies>
+              <dependency>
+                  <groupId>org.projectlombok</groupId>
+                  <artifactId>lombok</artifactId>
+                  <version>1.18.40</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradeToJava6
 examples:
 - description: '`UpgradeToJava6Test#dataSource`'
