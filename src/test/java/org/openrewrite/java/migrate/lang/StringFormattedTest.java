@@ -69,18 +69,18 @@ class StringFormattedTest implements RewriteTest {
                 package com.example.app;
                 class A {
                     String str = String.format(\"""
-                    foo
-                    %s
-                    \""", "a");
+                      foo
+                      %s
+                      \""", "a");
                 }
                 """,
               """
                 package com.example.app;
                 class A {
                     String str = \"""
-                    foo
-                    %s
-                    \""".formatted("a");
+                      foo
+                      %s
+                      \""".formatted("a");
                 }
                 """
             ),
