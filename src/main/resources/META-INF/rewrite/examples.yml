@@ -5155,6 +5155,27 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxValidationMigrationToJakartaValidation
+examples:
+- description: '`JavaxValidationMigrationToJakartaValidationTest#javaxValidationToJakartaValidation`'
+  sources:
+  - before: |
+      import javax.validation.constraints.NotNull;
+
+      public class Example {
+          @NotNull
+          private String name;
+      }
+    after: |
+      import jakarta.validation.constraints.NotNull;
+
+      public class Example {
+          @NotNull
+          private String name;
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxWebFragmentXmlToJakartaWebFragmentXml
 examples:
 - description: '`JavaxWebFragmentXmlToJakartaWebFragmentXmlTest#migrateSun`'
@@ -8285,6 +8306,33 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.search.FindLocaleDateTimeFormats
+examples:
+- description: '`FindLocaleDateTimeFormatsTest#findDateFormatGetTimeInstance`'
+  sources:
+  - before: |
+      import java.text.DateFormat;
+      import java.util.Date;
+
+      class Test {
+          void test() {
+              DateFormat df = DateFormat.getTimeInstance();
+              String formatted = df.format(new Date());
+          }
+      }
+    after: |
+      import java.text.DateFormat;
+      import java.util.Date;
+
+      class Test {
+          void test() {
+              DateFormat df = /*~~(JDK 20+ CLDR: may use NNBSP before AM/PM)~~>*/DateFormat.getTimeInstance();
+              String formatted = df.format(new Date());
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.sql.MigrateDriverManagerSetLogStream
 examples:
 - description: '`MigrateDriverManagerSetLogStreamTest#migrateDefineClass`'
@@ -8632,6 +8680,29 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.UseListOf
+examples:
+- description: '`UseListOfTest#anonymousArrayListWithAdd`'
+  sources:
+  - before: |
+      import java.util.ArrayList;
+      import java.util.List;
+
+      class Test {
+          List<String> l = new ArrayList<>() {{
+              add("a");
+              add("b");
+          }};
+      }
+    after: |
+      import java.util.List;
+
+      class Test {
+          List<String> l = List.of("a", "b");
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.UseLocaleOf
 examples:
 - description: '`UseLocaleOfTest#localeOf`'
@@ -8674,5 +8745,28 @@ examples:
 
       class Test {
           Map<String, String> m = Map.of("stru", "menta", "mod", "erne");
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.UseSetOf
+examples:
+- description: '`UseSetOfTest#anonymousHashSetWithAdd`'
+  sources:
+  - before: |
+      import java.util.HashSet;
+      import java.util.Set;
+
+      class Test {
+          Set<String> s = new HashSet<>() {{
+              add("a");
+              add("b");
+          }};
+      }
+    after: |
+      import java.util.Set;
+
+      class Test {
+          Set<String> s = Set.of("a", "b");
       }
     language: java
