@@ -41,6 +41,7 @@ recipeList:
   - org.openrewrite.java.migrate.RemoveSecurityManager
   - org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
   - org.openrewrite.java.migrate.MigrateZipErrorToZipException
+  - org.openrewrite.java.migrate.EnableLombokAnnotationProcessor
   - org.openrewrite.java.migrate.MigrateGraalVMResourceConfig
 
 ---
@@ -154,3 +155,27 @@ recipeList:
    - org.openrewrite.java.ChangeType:
        oldFullyQualifiedTypeName: java.util.zip.ZipError
        newFullyQualifiedTypeName: java.util.zip.ZipException
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.EnableLombokAnnotationProcessor
+displayName: Enable Lombok annotation processor
+description: >-
+  With Java 23 the encapsulation of JDK internals made it necessary to configure annotation processors like Lombok explicitly.
+  The change is valid for older versions as well.
+preconditions:
+  # we have to check the whole repo here as we might do a change parent pom not defining lombok as dependency
+  - org.openrewrite.java.dependencies.search.RepositoryHasDependency:
+      groupIdPattern: org.projectlombok
+      artifactIdPattern: lombok
+recipeList:
+  - org.openrewrite.maven.AddAnnotationProcessor:
+      groupId: org.projectlombok
+      artifactId: lombok
+      version: 1.18.40
+  - org.openrewrite.gradle.AddDependency:
+      groupId: org.projectlombok
+      artifactId: lombok
+      version: "[1.18.40)"
+      configuration: annotationProcessor
+      onlyIfUsing: lombok.*
