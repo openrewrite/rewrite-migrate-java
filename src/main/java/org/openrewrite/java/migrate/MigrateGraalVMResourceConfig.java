@@ -147,9 +147,9 @@ public class MigrateGraalVMResourceConfig extends Recipe {
             // Update root object
             Json.JsonObject newRoot = root.getPadding().withMembers(
                     ListUtils.map(root.getPadding().getMembers(), paddedMember ->
-                            paddedMember.getElement() == resourcesMember
-                                    ? paddedMember.withElement(newResourcesMember)
-                                    : paddedMember
+                            paddedMember.getElement() == resourcesMember ?
+                                    paddedMember.withElement(newResourcesMember) :
+                                    paddedMember
                     )
             );
             doc = doc.withValue(newRoot);
