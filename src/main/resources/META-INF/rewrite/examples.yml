@@ -1254,6 +1254,32 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.UpgradeToJava25
+examples:
+- description: '`UpgradeToJava25Test#updateCompilerVersion`'
+  sources:
+  - before: |
+      <project>
+          <groupId>com.mycompany.app</groupId>
+          <artifactId>my-app</artifactId>
+          <version>1</version>
+          <properties>
+              <maven.compiler.release>17</maven.compiler.release>
+          </properties>
+      </project>
+    after: |
+      <project>
+          <groupId>com.mycompany.app</groupId>
+          <artifactId>my-app</artifactId>
+          <version>1</version>
+          <properties>
+              <maven.compiler.release>25</maven.compiler.release>
+          </properties>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradeToJava6
 examples:
 - description: '`UpgradeToJava6Test#dataSource`'
