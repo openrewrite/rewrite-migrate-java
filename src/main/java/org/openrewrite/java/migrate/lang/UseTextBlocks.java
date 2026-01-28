@@ -65,10 +65,6 @@ public class UseTextBlocks extends Recipe {
         avoidLineContinuations = false;
     }
 
-    public UseTextBlocks(boolean convertStringsWithoutNewlines) {
-        this.convertStringsWithoutNewlines = convertStringsWithoutNewlines;
-        this.avoidLineContinuations = false;
-    }
 
     public UseTextBlocks(boolean convertStringsWithoutNewlines, boolean avoidLineContinuations) {
         this.convertStringsWithoutNewlines = convertStringsWithoutNewlines;
