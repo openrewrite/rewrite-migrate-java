@@ -299,7 +299,7 @@ class UseTextBlocksTest implements RewriteTest {
     @Test
     void preferNoChangeIfNoNewLineInContent() {
         rewriteRun(
-          spec -> spec.recipe(new UseTextBlocks(false)),
+          spec -> spec.recipe(new UseTextBlocks(false, false)),
           //language=java
           java(
             """
@@ -885,7 +885,7 @@ class UseTextBlocksTest implements RewriteTest {
     @Test
     void noLineContinuationWhenContentHasNewlines() {
         rewriteRun(
-          spec -> spec.recipe(new UseTextBlocks(true, true)),
+          spec -> spec.recipe(new UseTextBlocks(true, false)),
           //language=java
           java(
             """
