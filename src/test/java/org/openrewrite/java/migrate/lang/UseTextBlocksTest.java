@@ -471,9 +471,7 @@ class UseTextBlocksTest implements RewriteTest {
           tabSize,
           tabSize,
           tabSize * 2,
-          false,
-          new TabsAndIndentsStyle.MethodDeclarationParameters(true),
-          new TabsAndIndentsStyle.RecordComponents(true));
+          false);
     }
 
     @Test

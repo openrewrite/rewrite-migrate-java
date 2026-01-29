@@ -72,7 +72,6 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                       public String field1;
                       @Nullable
                       public String field2;
-
                       public Foo.@Nullable Bar foobar;
                   }
 
@@ -179,7 +178,6 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                       public String field1;
                       @Nullable
                       public String field2;
-
                       public Foo.@Nullable Bar foobar;
                   }
 
@@ -271,7 +269,6 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                       public String field1;
                       @Nullable
                       public String field2;
-
                       public Foo.@Nullable Bar foobar;
                   }
 
@@ -366,7 +363,6 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                       public String field1;
                       @Nullable
                       public String field2;
-
                       public Foo.@Nullable Bar foobar;
                   }
 
@@ -457,7 +453,6 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                       public String field1;
                       @Nullable
                       public String field2;
-
                       public Foo.@Nullable Bar foobar;
                   }
 

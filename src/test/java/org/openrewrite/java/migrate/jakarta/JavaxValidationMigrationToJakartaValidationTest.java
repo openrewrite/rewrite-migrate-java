@@ -37,6 +37,60 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
         );
     }
 
+    @DocumentExample
+    @Test
+    void javaxValidationToJakartaValidation() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
+            //language=java
+            """
+              package javax.validation.constraints;
+              import java.lang.annotation.*;
+              @Documented
+              @Retention(RetentionPolicy.RUNTIME)
+              @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
+              public @interface NotNull {
+                  String message() default "{javax.validation.constraints.NotNull.message}";
+                  Class<?>[] groups() default {};
+                  Class<?>[] payload() default {};
+              }
+              """,
+            //language=java
+            """
+              package jakarta.validation.constraints;
+              import java.lang.annotation.*;
+              @Documented
+              @Retention(RetentionPolicy.RUNTIME)
+              @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
+              public @interface NotNull {
+                  String message() default "{jakarta.validation.constraints.NotNull.message}";
+                  Class<?>[] groups() default {};
+                  Class<?>[] payload() default {};
+              }
+              """
+          )),
+          //language=java
+          java(
+            """
+              import javax.validation.constraints.NotNull;
+
+              public class Example {
+                  @NotNull
+                  private String name;
+              }
+              """,
+            """
+              import jakarta.validation.constraints.NotNull;
+
+              public class Example {
+                  @NotNull
+                  private String name;
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/moderneinc/customer-requests/issues/1526")
     @Test
     void sunIstackNotNullToJakartaValidation() {
@@ -90,60 +144,6 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
                   public void setName(@NotNull String name) {
                       this.name = name;
                   }
-              }
-              """
-          )
-        );
-    }
-
-    @DocumentExample
-    @Test
-    void javaxValidationToJakartaValidation() {
-        rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
-            //language=java
-            """
-              package javax.validation.constraints;
-              import java.lang.annotation.*;
-              @Documented
-              @Retention(RetentionPolicy.RUNTIME)
-              @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
-              public @interface NotNull {
-                  String message() default "{javax.validation.constraints.NotNull.message}";
-                  Class<?>[] groups() default {};
-                  Class<?>[] payload() default {};
-              }
-              """,
-            //language=java
-            """
-              package jakarta.validation.constraints;
-              import java.lang.annotation.*;
-              @Documented
-              @Retention(RetentionPolicy.RUNTIME)
-              @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
-              public @interface NotNull {
-                  String message() default "{jakarta.validation.constraints.NotNull.message}";
-                  Class<?>[] groups() default {};
-                  Class<?>[] payload() default {};
-              }
-              """
-          )),
-          //language=java
-          java(
-            """
-              import javax.validation.constraints.NotNull;
-
-              public class Example {
-                  @NotNull
-                  private String name;
-              }
-              """,
-            """
-              import jakarta.validation.constraints.NotNull;
-
-              public class Example {
-                  @NotNull
-                  private String name;
               }
               """
           )

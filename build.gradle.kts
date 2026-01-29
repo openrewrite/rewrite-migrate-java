@@ -50,6 +50,7 @@ dependencies {
 
     implementation(platform("org.openrewrite:rewrite-bom:${rewriteVersion}"))
     implementation("org.openrewrite:rewrite-java")
+    implementation("org.openrewrite:rewrite-json")
     implementation("org.openrewrite:rewrite-maven")
     implementation("org.openrewrite:rewrite-gradle")
     implementation("org.openrewrite.recipe:rewrite-github-actions:$rewriteVersion")

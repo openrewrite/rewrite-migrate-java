@@ -107,21 +107,23 @@ class AddLombokMapstructBindingTest implements RewriteTest {
                             <version>1.6.3</version>
                         </dependency>
                     </dependencies>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-compiler-plugin</artifactId>
-                            <configuration>
-                                <annotationProcessorPaths>
-                                    <path>
-                                        <groupId>org.projectlombok</groupId>
-                                        <artifactId>lombok</artifactId>
-                                    </path>
-                                </annotationProcessorPaths>
-                            </configuration>
-                            <version>3.14.1</version>
-                        </plugin>
-                    </plugins>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-compiler-plugin</artifactId>
+                                <configuration>
+                                    <annotationProcessorPaths>
+                                        <path>
+                                            <groupId>org.projectlombok</groupId>
+                                            <artifactId>lombok</artifactId>
+                                        </path>
+                                    </annotationProcessorPaths>
+                                </configuration>
+                                <version>3.14.1</version>
+                            </plugin>
+                        </plugins>
+                    </build>
                 </project>
                 """,
               """
@@ -146,26 +148,28 @@ class AddLombokMapstructBindingTest implements RewriteTest {
                             <version>1.6.3</version>
                         </dependency>
                     </dependencies>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-compiler-plugin</artifactId>
-                            <configuration>
-                                <annotationProcessorPaths>
-                                    <path>
-                                        <groupId>org.projectlombok</groupId>
-                                        <artifactId>lombok</artifactId>
-                                    </path>
-                                    <path>
-                                        <groupId>org.projectlombok</groupId>
-                                        <artifactId>lombok-mapstruct-binding</artifactId>
-                                        <version>0.2.0</version>
-                                    </path>
-                                </annotationProcessorPaths>
-                            </configuration>
-                            <version>3.14.1</version>
-                        </plugin>
-                    </plugins>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-compiler-plugin</artifactId>
+                                <configuration>
+                                    <annotationProcessorPaths>
+                                        <path>
+                                            <groupId>org.projectlombok</groupId>
+                                            <artifactId>lombok</artifactId>
+                                        </path>
+                                        <path>
+                                            <groupId>org.projectlombok</groupId>
+                                            <artifactId>lombok-mapstruct-binding</artifactId>
+                                            <version>0.2.0</version>
+                                        </path>
+                                    </annotationProcessorPaths>
+                                </configuration>
+                                <version>3.14.1</version>
+                            </plugin>
+                        </plugins>
+                    </build>
                 </project>
                 """
             ),
@@ -224,26 +228,28 @@ class AddLombokMapstructBindingTest implements RewriteTest {
                             <version>1.6.3</version>
                         </dependency>
                     </dependencies>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-compiler-plugin</artifactId>
-                            <configuration>
-                                <annotationProcessorPaths>
-                                    <path>
-                                        <groupId>org.projectlombok</groupId>
-                                        <artifactId>lombok</artifactId>
-                                    </path>
-                                    <path>
-                                        <groupId>org.projectlombok</groupId>
-                                        <artifactId>lombok-mapstruct-binding</artifactId>
-                                        <version>0.2.0</version>
-                                    </path>
-                                </annotationProcessorPaths>
-                            </configuration>
-                            <version>3.14.1</version>
-                        </plugin>
-                    </plugins>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-compiler-plugin</artifactId>
+                                <configuration>
+                                    <annotationProcessorPaths>
+                                        <path>
+                                            <groupId>org.projectlombok</groupId>
+                                            <artifactId>lombok</artifactId>
+                                        </path>
+                                        <path>
+                                            <groupId>org.projectlombok</groupId>
+                                            <artifactId>lombok-mapstruct-binding</artifactId>
+                                            <version>0.2.0</version>
+                                        </path>
+                                    </annotationProcessorPaths>
+                                </configuration>
+                                <version>3.14.1</version>
+                            </plugin>
+                        </plugins>
+                    </build>
                 </project>
                 """
             )
