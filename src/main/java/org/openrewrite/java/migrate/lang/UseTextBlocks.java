@@ -52,12 +52,27 @@ public class UseTextBlocks extends Recipe {
             required = false)
     boolean convertStringsWithoutNewlines;
 
+    @Option(displayName = "Whether to avoid line continuation escape sequences.",
+            description = "When enabled, the recipe avoids using `\\` line continuation escapes in text blocks " +
+                          "where the content contains newlines. Non-newline-joined strings are placed on the same " +
+                          "text block line instead. The default value is false.",
+            example = "true",
+            required = false)
+    boolean avoidLineContinuations;
+
     public UseTextBlocks() {
         convertStringsWithoutNewlines = true;
+        avoidLineContinuations = false;
     }
 
     public UseTextBlocks(boolean convertStringsWithoutNewlines) {
         this.convertStringsWithoutNewlines = convertStringsWithoutNewlines;
+        this.avoidLineContinuations = false;
+    }
+
+    public UseTextBlocks(boolean convertStringsWithoutNewlines, boolean avoidLineContinuations) {
+        this.convertStringsWithoutNewlines = convertStringsWithoutNewlines;
+        this.avoidLineContinuations = avoidLineContinuations;
     }
 
     String displayName = "Use text blocks";
@@ -122,6 +137,7 @@ public class UseTextBlocks extends Recipe {
                 stringLiterals = stringLiterals.stream()
                         .filter(s -> s.getValue() != null && !s.getValue().toString().isEmpty())
                         .collect(toList());
+                boolean skipLineContinuations = avoidLineContinuations && containsNewLineInContent(content);
                 for (int i = 0; i < stringLiterals.size(); i++) {
                     String s = requireNonNull(stringLiterals.get(i).getValue()).toString();
                     sb.append(s);
@@ -129,7 +145,7 @@ public class UseTextBlocks extends Recipe {
                     if (i != stringLiterals.size() - 1) {
                         String nextLine = requireNonNull(stringLiterals.get(i + 1).getValue()).toString();
                         char nextChar = nextLine.charAt(0);
-                        if (!s.endsWith("\n") && nextChar != '\n') {
+                        if (!s.endsWith("\n") && nextChar != '\n' && !skipLineContinuations) {
                             sb.append(passPhrase);
                         }
                     }
