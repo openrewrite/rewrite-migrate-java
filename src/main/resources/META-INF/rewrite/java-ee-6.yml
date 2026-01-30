@@ -19,6 +19,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee6
 displayName: Migrate to JavaEE6
 description: These recipes help with the Migration to Java EE 6, flagging and updating deprecated methods.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - javaee6
   - deprecated

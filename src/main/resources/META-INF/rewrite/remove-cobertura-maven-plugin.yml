@@ -19,6 +19,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
 displayName: Remove Cobertura Maven plugin
 description: This recipe will remove Cobertura, as it is not compatible with Java 11.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java11
   - cobertura

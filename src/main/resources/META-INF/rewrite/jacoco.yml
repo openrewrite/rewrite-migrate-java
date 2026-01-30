@@ -23,6 +23,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jacoco.UpgradeJaCoCo
 displayName: Upgrade JaCoCo
 description: This recipe will upgrade JaCoCo to the latest patch version, which traditionally advertises full backwards compatibility for older Java versions.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jacoco
 recipeList:

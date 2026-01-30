@@ -24,6 +24,8 @@ description: >-
   bundled with the JDK. This recipe will also replace deprecated API with equivalents when there is a clear migration
   strategy. Build files will also be updated to use Java 11 as the target/source and plugins will be also be upgraded
   to versions that are compatible with Java 11.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java11
   - jaxb
@@ -87,6 +89,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11
 displayName: Upgrade build to Java 11
 description: Updates build files to use Java 11 as the target/source.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java11
 recipeList:
@@ -97,6 +101,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradePluginsForJava11
 displayName: Upgrade plugins to Java 11 compatible versions
 description: Updates plugins to version compatible with Java 11.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java11
 recipeList:
@@ -126,6 +132,8 @@ description: >-
   This recipe will add explicit dependencies for Jakarta EE 8 when a Java 8 application is using JAX-WS. Any existing
   dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 but the
   application can continue to use the `javax.xml.bind` namespace.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - javax
   - java11
@@ -181,6 +189,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.InternalBindPackages
 displayName: Use `com.sun.xml.bind.*` instead of `com.sun.xml.internal.bind.*`
 description: Do not use APIs from `com.sun.xml.internal.bind.*` packages.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java11
 recipeList:
@@ -193,6 +203,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedPolicy
 displayName: Replace `javax.security.auth.Policy` with `java.security.Policy`
 description: The `javax.security.auth.Policy` class is not available from Java SE 11 onwards.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java11
 recipeList:
@@ -207,6 +219,8 @@ displayName: Remove `Thread.destroy()` and `Thread.stop(Throwable)`
 description: >-
   The `java.lang.Thread.destroy()` method was never implemented, and the `java.lang.Thread.stop(java.lang.Throwable)`
   method has been unusable since Java SE 8. This recipe removes any usage of these methods from your application.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java11
 recipeList:
@@ -221,6 +235,8 @@ displayName: Replace `Paths.get` with `Path.of`
 description: >-
   The `java.nio.file.Paths.get` method was introduced in Java SE 7. The `java.nio.file.Path.of` method was introduced in
   Java SE 11. This recipe replaces all usages of `Paths.get` with `Path.of` for consistency.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java11
 recipeList:

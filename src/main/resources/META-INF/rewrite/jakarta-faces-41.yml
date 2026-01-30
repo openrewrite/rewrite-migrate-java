@@ -19,6 +19,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.Faces4xMigrationToFaces41x
 displayName: Jakarta Faces 4.0 to 4.1
 description: Jakarta EE 11 uses Faces 4.1 a minor upgrade.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jakarta
   - faces
@@ -34,6 +36,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi41
 displayName: Update Jakarta EE Java Faces Dependencies to 4.1.x
 description: Update Jakarta EE Java Faces Dependencies to 4.1.x.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.faces
@@ -44,6 +48,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.OmniFacesNamespaceMigration
 displayName: OmniFaces Namespace Migration
 description: Find and replace legacy OmniFaces namespaces.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jakarta
   - faces
@@ -63,6 +69,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpgradeFaces41OpenSourceLibraries
 displayName: Upgrade Faces open source libraries
 description: Upgrade OmniFaces and MyFaces/Mojarra libraries to Jakarta EE11 versions.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jakarta
   - faces

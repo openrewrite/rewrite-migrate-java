@@ -19,6 +19,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.openJPAToEclipseLink
 displayName: Migrate from OpenJPA to EclipseLink JPA
 description: These recipes help migrate Java Persistence applications using OpenJPA to EclipseLink JPA.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - javaee7
   - deprecated

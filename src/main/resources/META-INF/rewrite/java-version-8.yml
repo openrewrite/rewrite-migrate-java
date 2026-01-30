@@ -21,6 +21,8 @@ displayName: Migrate to Java 8
 description: >-
   This recipe will apply changes commonly needed when upgrading to Java 8. This recipe will also replace deprecated API
   with equivalents when there is a clear migration strategy.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java8
 recipeList:

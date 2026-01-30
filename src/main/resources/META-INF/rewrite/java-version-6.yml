@@ -21,6 +21,8 @@ displayName: Migrate to Java 6
 description: >-
   This recipe will apply changes commonly needed when upgrading to Java 6. This recipe will also replace deprecated API
   with equivalents when there is a clear migration strategy.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java6
 recipeList:
@@ -31,6 +33,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JREWrapperInterface
 displayName: Add missing `isWrapperFor` and `unwrap` methods
 description: Add method implementations stubs to classes that implement `java.sql.Wrapper`.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Wrapper
