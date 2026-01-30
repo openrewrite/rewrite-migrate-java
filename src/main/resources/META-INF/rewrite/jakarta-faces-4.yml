@@ -19,6 +19,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.Faces3xMigrationToFaces4x
 displayName: Upgrade to Jakarta Faces 4.x
 description: Jakarta EE 10 uses Faces 4.0.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jakarta
   - faces
@@ -39,6 +41,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi4
 displayName: Update Jakarta EE Java Faces Dependencies to 4.0.x
 description: Update Jakarta EE Java Faces Dependencies to 4.0.x.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.faces
@@ -49,6 +53,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE10
 displayName: Faces XHTML migration for Jakarta EE 10
 description: Find and replace legacy JSF namespace URIs with Jakarta Faces URNs in XHTML files.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jakarta
   - faces
@@ -131,6 +137,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaFacesConfigXml4
 displayName: Migrate xmlns entries in `faces-config.xml` files
 description: Jakarta EE 10 uses Faces version 4.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jakarta
   - faces
@@ -149,6 +157,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaFacesTagLibraryXml4
 displayName: Migrate xmlns entries in `taglib.xml` files
 description: Faces 4 uses facelet-taglib 4.0.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jakarta
   - faces
@@ -167,6 +177,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaWebFragmentXml6
 displayName: Migrate xmlns entries in `web-fragment.xml` files
 description: Faces 4 uses web-fragment 6.0.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jakarta
   - faces
@@ -185,6 +197,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaWebXml6
 displayName: Migrate xmlns entries in `web.xml` files
 description: Faces 4 uses web-app 6.0.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jakarta
   - faces
@@ -208,6 +222,8 @@ name: org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
 displayName: Substitute removed Faces Managed Beans
 description: >-
   This recipe substitutes Faces Managed Beans, which were deprecated in JavaServer Faces 2.3 and have been removed from Jakarta Faces 4.0.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.faces.bean.ApplicationScoped
@@ -263,6 +279,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpgradeFaces4OpenSourceLibraries
 displayName: Upgrade Faces open source libraries
 description: Upgrade PrimeFaces, OmniFaces, and MyFaces libraries to Jakarta EE10 versions.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jakarta
   - faces

@@ -24,6 +24,8 @@ description: >-
   longer directly bundled with the JDK. This recipe will also replace deprecated API with equivalents when there is a
   clear migration strategy. Build files will also be updated to use Java 17 as the target/source and plugins will be
   also be upgraded to versions that are compatible with Java 17.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -78,6 +80,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava17
 displayName: Upgrade build to Java 17
 description: Updates build files to use Java 17 as the target/source.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -88,6 +92,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradePluginsForJava17
 displayName: Upgrade plugins to Java 17 compatible versions
 description: Updates plugins to version compatible with Java 17.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -121,6 +127,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedJavaxSecurityCert
 displayName: Use `java.security.cert` instead of `javax.security.cert`
 description: The `javax.security.cert` package has been deprecated for removal.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -132,6 +140,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedLegacySunJSSEProviderName
 displayName: Use `SunJSSE` instead of `com.sun.net.ssl.internal.ssl.Provider`
 description: The `com.sun.net.ssl.internal.ssl.Provider` provider name was removed.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -143,6 +153,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedLogRecordThreadID
 displayName: Adopt `setLongThreadID` in `java.util.logging.LogRecord`
 description: Avoid using the deprecated methods in `java.util.logging.LogRecord`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -160,6 +172,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.Jre17AgentMainPreMainPublic
 displayName: Set visibility of `premain` and `agentmain` methods to `public`
 description: Check for a behavior change in Java agents.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -182,6 +196,8 @@ displayName: Replace `finalize` method in `java.util.zip.ZipFile`, `java.util.zi
 description: >-
   The `finalize` method in `java.util.zip.ZipFile` is replaced with the `close` method and is replaced by the `end` method in
    `java.util.zip.Inflater` and `java.util.zip.Deflater` as it is no longer available in Java SE 12 and later.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -205,6 +221,8 @@ description: >-
   The `javax.net.ssl.SSLSession.getPeerCertificateChain()` method implementation was removed from the SunJSSE provider and HTTP client implementation in Java SE 15.
   The default implementation will now throw an `UnsupportedOperationException`.
   Applications using this method should be updated to use the `javax.net.ssl.SSLSession.getPeerCertificates()` method instead.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -218,6 +236,8 @@ name: org.openrewrite.java.migrate.SunNetSslPackageUnavailable
 displayName: Replace `com.sun.net.ssl` package
 description: >-
   The internal API `com.sun.net.ssl` is removed. The package was intended for internal use only and replacement APIs can be found in the `javax.net.ssl` package.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -230,6 +250,8 @@ name: org.openrewrite.java.migrate.RemovedRMIConnectorServerCredentialTypesConst
 displayName: Replace `RMIConnectorServer.CREDENTIAL_TYPES` constant
 description: >-
   This recipe replaces the `RMIConnectorServer.CREDENTIAL_TYPES` constant with the `RMIConnectorServer.CREDENTIALS_FILTER_PATTERN` constant.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -244,6 +266,8 @@ description: >-
   `Thread.countStackFrames()` has been removed in Java SE 14 and has been changed in this release to unconditionally throw `UnsupportedOperationException`
    This recipe removes the usage of this method in your application as long as the method is not assigned to a variable.
    For more information on the Java SE 14 deprecation of this method, see https://bugs.java.com/bugdatabase/view_bug?bug_id=8205132.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -255,6 +279,8 @@ name: org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
 displayName: Replace `finalize` method in `java.io.FileInputStream`  and `java.io.FileOutputStream`
 description: >-
   The `finalize` method in `java.io.FileInputStream` and `java.io.FileOutputStream` is no longer available in Java SE 12 and later. The recipe replaces it with the `close` method.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -273,6 +299,8 @@ displayName: Change `javax.tools.ToolProvider` methods calls to static
 description: >-
   The `javax.tools.ToolProvider()` constructor has been removed in Java SE 16 since the class only contains static methods.
   The recipe converts `javax.tools.ToolProvider getSystemJavaCompiler()`, `javax.tools.ToolProvider getSystemDocumentationTool()` and `javax.tools.ToolProvider getSystemToolClassLoader()` to static methods.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: javax.tools.ToolProvider *()
@@ -285,6 +313,8 @@ description: >-
   The `java.lang.reflect.Modifier()` and `java.lang.invoke.ConstantBootstraps()` constructors have been removed in Java SE 15 because both classes only contain static methods.
   This recipe converts the usage of all methods in the two classes to be  static.
   See https://docs.oracle.com/en/java/javase/15/migrate/index.html#GUID-233853B8-0782-429E-BEF7-7532EE610E63 for more information on these changes.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: java.lang.reflect.Modifier *(..)
@@ -299,6 +329,8 @@ displayName: Remove `Runtime.traceInstructions(boolean)` and `Runtime.traceMetho
 description: >-
   The `traceInstructions` and `traceMethodCalls` methods in `java.lang.Runtime` were deprecated in Java SE 9 and are no longer available in Java SE 13 and later.
   The recipe removes the invocations of these methods since the method invocations do nothing functionally.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java17
 recipeList:
@@ -314,6 +346,7 @@ description: Add the `lombok-mapstruct-binding` annotation processor as needed w
 tags:
   - java17
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.java.dependencies.DependencyInsight:
       groupIdPattern: org.projectlombok
       artifactIdPattern: lombok
@@ -340,6 +373,7 @@ description: >-
   Add the `lombok-mapstruct-binding` when both MapStruct and Lombok are used, and the dependency does not already exist.
   Only to be called from `org.openrewrite.java.migrate.AddLombokMapstructBinding` to reduce redundant checks.
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
       groupId: org.projectlombok
       artifactId: lombok-mapstruct-binding

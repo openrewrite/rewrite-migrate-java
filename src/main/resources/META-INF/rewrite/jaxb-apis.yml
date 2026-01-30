@@ -22,7 +22,8 @@ description: >-
   dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 version 2.x
   which allows for the continued use of the `javax.xml.bind` namespace. Running a full javax to Jakarta migration
   using `org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta` will update to versions greater than 3.x which
-  necessitates the package change as well.
+  necessitates the package change as well.preconditions:
+  - org.openrewrite.Singleton
 tags:
   - javax
   - java11
@@ -51,6 +52,8 @@ description: >-
   This recipe will add explicit API dependencies without runtime dependencies for Jakarta EE 8 when a Java 8 application is using JAXB.
   Any existing API dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 version 2.x
   which allows for the continued use of the `javax.xml.bind` namespace. All JAXB runtime implementation dependencies are removed.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - javax
   - java11
@@ -81,6 +84,8 @@ description: >-
   which allows for the continued use of the `javax.xml.bind` namespace. Running a full javax to Jakarta migration
   using `org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta` will update to versions greater than 3.x which
   necessitates the package change as well.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - javax
   - java11

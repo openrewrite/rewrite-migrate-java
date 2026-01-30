@@ -19,6 +19,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaEE10
 displayName: Migrate to Jakarta EE 10
 description: These recipes help with the Migration to Jakarta EE 10, flagging and updating deprecated methods.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jakarta
 recipeList:
@@ -57,6 +59,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
 displayName: Migrate Jakarta EE 9 api dependencies to Jakarta EE 10 versions
 description: Jakarta EE 10 updates some apis compared to Jakarta EE 9.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jakarta
 # NOTE: The spec versions in this section comes from https://github.com/jakartaee/jakartaee-api/blob/10.0.0/pom.xml
@@ -147,6 +151,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name:  org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
 displayName: Update Apache Commons FileUpload2 package for EE10
 description: Update Apache Commons FileUpload2 package for EE10.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.apache.commons
@@ -163,6 +169,8 @@ description: >-
   Jakarta Servlet methods have been deprecated for removal in Jakarta Servlet 6.0 to align with RFC 6265.
   In addition, the behavior of these methods has been changed so the setters no longer have any effect, the getComment methods return null, and the getVersion method returns 0.
   The deprecated methods are removed.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: jakarta.servlet.http.Cookie getComment()
@@ -181,6 +189,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
 displayName: Replace `doUpgrade(..)` with `ServerContainer.upgradeHttpToWebSocket(..)`
 description: Deprecated `WsWsocServerContainer.doUpgrade(..)` is replaced by the Jakarta WebSocket 2.1 specification `ServerContainer.upgradeHttpToWebSocket(..)`.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.ibm.websphere.wsoc.WsWsocServerContainer doUpgrade(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, com.ibm.websphere.wsoc.ServerEndpointConfig, java.util.Map)
@@ -195,6 +205,8 @@ displayName: Use `isParametersProvided()`
 description: >-
   Expression Language prior to 5.0 provides the deprecated MethodExpression.isParmetersProvided() method, with the word 'parameter' misspelled in the method name.
   This method is unavailable in Jakarta Expression Language 5.0. Use the correctly spelled MethodExpression.isParametersProvided() method instead.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.el.MethodExpression isParmetersProvided()
@@ -206,6 +218,8 @@ displayName: Use `jakarta.xml.soap.SOAPFactory` to create `SOAPElements`
 description: >-
   XML Web Services prior to 4.0 provides the deprecated SOAPElementFactory class,
   which is removed in XML Web Services 4.0. The recommended replacement is to use jakarta.xml.soap.SOAPFactory to create SOAPElements.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.xml.soap.SOAPElementFactory create(String,..)
@@ -226,6 +240,7 @@ tags:
   - beans
   - cdi
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.FindSourceFiles:
       filePattern: '**/beans.xml'
 recipeList:
@@ -250,6 +265,7 @@ tags:
   - jakarta
   - ejb
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.FindSourceFiles:
       filePattern: '**/ejb-jar.xml'
 recipeList:
@@ -279,6 +295,7 @@ tags:
   - bean validation
   - ejb
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.FindSourceFiles:
       filePattern: '**/validation.xml'
 recipeList:
@@ -304,6 +321,8 @@ name: org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10
 displayName: Replace  deprecated Jakarta Servlet methods and classes
 description: >-
   This recipe replaces the classes and methods deprecated in Jakarta Servlet 6.0.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.servlet.http.HttpServletRequest
@@ -385,6 +404,8 @@ name: org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
 displayName: Remove deprecated API's not supported in CDI4.0
 description: >-
   Deprecated APIs have been removed in CDI 4.0. This recipe removes and updates the corresponding deprecated methods.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.jakarta.RemoveBeanIsNullable
   - org.openrewrite.java.migrate.jakarta.UpdateAddAnnotatedTypes
@@ -394,6 +415,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
 displayName: Rename CDI Extension to Jakarta
 description: Rename `javax.enterprise.inject.spi.Extension` to `jakarta.enterprise.inject.spi.Extension`.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.RenameFile:
       fileMatcher: '**/javax.enterprise.inject.spi.Extension'
@@ -403,6 +426,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
 displayName: Update Jakarta EE Platform Dependencies to 10.0.0
 description: Update Jakarta EE Platform Dependencies to 10.0.0.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.platform
@@ -413,6 +438,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaAnnotations2
 displayName: Update Jakarta EE annotation Dependencies to 2.1.x
 description: Update Jakarta EE annotation Dependencies to 2.1.x.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   # This recipe has been inlined into `MigrationToJakarta10Apis`; drop the reference to this recipe,
   # This placeholder is kept to avoid breaking existing recipes that reference this recipe still.
@@ -423,6 +450,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaXmlWsEE10
 displayName: Update Jakarta EE XML Web Services Dependencies for EE 10
 description: Update Jakarta EE XML Web Services Dependencies for EE 10.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
@@ -445,6 +474,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
 displayName: Update GlassFish Jersey Dependencies to 3.1.x
 description: Update GlassFish Jersey Dependencies to 3.1.x.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.glassfish.jersey.core
@@ -479,6 +510,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
 displayName: Update Apache Commons Email to Email2 for Jakarta
 description: Update Apache Commons Email to Email2 for Jakarta.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.apache.commons
@@ -504,6 +537,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
 displayName: Update Apache Shiro Dependencies to 2.0.x
 description: Update Apache Shiro Dependencies to 2.0.x.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.maven.ChangeDependencyClassifier:
       groupId: org.apache.shiro
@@ -551,6 +586,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
 displayName: Update EclipseLink Dependencies to 4.x
 description: Update EclipseLink Dependencies to 4.x.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.eclipse.persistence
@@ -561,6 +598,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
 displayName: Update Eclipse Yasson Dependencies to 3.0.x
 description: Update Eclipse Yasson Dependencies to 3.0.x.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.eclipse
@@ -571,6 +610,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE10
 displayName: Update Jetty EE9 to Jetty EE10
 description: Update Jetty dependencies from EE9 to EE10, changing the groupId and artifactIds as needed.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.eclipse.jetty.ee9.websocket
@@ -640,6 +681,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta10
 displayName: Update Plugins for Jakarta EE 10
 description: Update plugin to be compatible with Jakarta EE 10.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.codehaus.mojo
@@ -654,6 +697,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrateFastjsonForJakarta10
 displayName: Update Fastjson for Jakarta EE 10
 description: Update Fastjson to be compatible with Jakarta EE 10.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.alibaba

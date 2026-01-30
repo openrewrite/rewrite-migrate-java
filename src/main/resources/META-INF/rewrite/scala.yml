@@ -21,6 +21,8 @@ name: org.openrewrite.scala.migrate.UpgradeScala_2_12
 displayName: Migrate to Scala 2.12.+
 description: >-
   Upgrade the Scala version for compatibility with newer Java versions.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - scala
 recipeList:

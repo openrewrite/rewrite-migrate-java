@@ -22,6 +22,8 @@ description: >-
   This recipe will apply changes commonly needed when migrating to Java 25. This recipe will also replace deprecated API
   with equivalents when there is a clear migration strategy. Build files will also be updated to use Java 25 as the
   target/source and plugins will be also be upgraded to versions that are compatible with Java 25.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - java25
 recipeList:
@@ -51,6 +53,7 @@ displayName: Replace `Inflater` and `Deflater` `end()` calls with `close()`
 description: >-
   Replace `end()` method calls with `close()` method calls for `Inflater` and `Deflater` classes in Java 25+, as they now implement AutoCloseable.
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[25,)"
 recipeList:
@@ -71,6 +74,7 @@ tags:
   - security
   - deprecation
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
@@ -91,6 +95,7 @@ tags:
   - security
   - deprecation
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
@@ -111,6 +116,7 @@ tags:
   - security
   - deprecation
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
@@ -133,6 +139,7 @@ tags:
   - security
   - deprecation
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
@@ -149,6 +156,7 @@ name: org.openrewrite.java.migrate.MigrateZipErrorToZipException
 displayName: Use `ZipException` instead of `ZipError`
 description: Use `ZipException` instead of the deprecated `ZipError` in Java 9 or higher.
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[25,)"
 recipeList:
@@ -164,6 +172,8 @@ description: >-
   With Java 23 the encapsulation of JDK internals made it necessary to configure annotation processors like Lombok explicitly.
   The change is valid for older versions as well.
 preconditions:
+  # we have to check the whole repo here as we might do a change parent pom not defining lombok as dependency
+  - org.openrewrite.Singleton
   # we have to check the whole repo here as we might do a change parent pom not defining lombok as dependency
   - org.openrewrite.java.dependencies.search.RepositoryHasDependency:
       groupIdPattern: org.projectlombok

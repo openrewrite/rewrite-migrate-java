@@ -19,6 +19,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
 displayName: Migrate to Jakarta EE 9
 description: Jakarta EE 9 is the first version of Jakarta EE that uses the new `jakarta` namespace.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jaxb
   - jaxws
@@ -75,6 +77,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxActivationMigrationToJakartaActivation
 displayName: Migrate deprecated `javax.activation` packages to `jakarta.activation`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - activation
   - javax
@@ -103,6 +107,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
 displayName: Migrate deprecated `javax.annotation` to `jakarta.annotation`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - annotation
   - javax
@@ -146,6 +152,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxAuthenticationMigrationToJakartaAuthentication
 displayName: Migrate deprecated `javax.security.auth.message` packages to `jakarta.security.auth.message`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - authentication
   - security
@@ -178,6 +186,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxAuthorizationMigrationToJakartaAuthorization
 displayName: Migrate deprecated `javax.security.jacc` packages to `jakarta.security.jacc`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - authorization
   - security
@@ -209,6 +219,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxBatchMigrationToJakartaBatch
 displayName: Migrate deprecated `javax.batch` packages to `jakarta.batch`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - batch
   - javax
@@ -233,6 +245,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxValidationMigrationToJakartaValidation
 displayName: Migrate deprecated `javax.validation` packages to `jakarta.validation`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - validation
   - javax
@@ -267,6 +281,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxDecoratorToJakartaDecorator
 displayName: Migrate deprecated `javax.decorator` packages to `jakarta.decorator`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.enterprise
@@ -287,6 +303,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxEjbToJakartaEjb
 displayName: Migrate deprecated `javax.ejb` packages to `jakarta.ejb`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.ejb
@@ -313,6 +331,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxElToJakartaEl
 displayName: Migrate deprecated `javax.el` packages to `jakarta.el`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.el
@@ -333,6 +353,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name:  org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
 displayName: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
 description: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: commons-fileupload
@@ -361,6 +383,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
 displayName: Migrate deprecated `javax.enterprise` packages to `jakarta.enterprise`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.enterprise
@@ -381,6 +405,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
 displayName: Migrate deprecated `javax.inject` packages to `jakarta.inject`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - inject
   - javax
@@ -411,6 +437,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxInterceptorToJakartaInterceptor
 displayName: Migrate deprecated `javax.interceptor` packages to `jakarta.interceptor`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.interceptor
@@ -431,6 +459,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxJmsToJakartaJms
 displayName: Migrate deprecated `javax.jms` packages to `jakarta.jms`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.jms
@@ -457,6 +487,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxJsonToJakartaJson
 displayName: Migrate deprecated `javax.json` packages to `jakarta.json`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.json
@@ -477,6 +509,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxJwsToJakartaJws
 displayName: Migrate deprecated `javax.jws` packages to `jakarta.jws`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.jws
@@ -503,6 +537,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxJspToJakartaJsp
 displayName: Migrate deprecated `javax.jsp` packages to `jakarta.jsp`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.servlet.jsp
@@ -529,6 +565,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail
 displayName: Migrate deprecated `javax.mail` packages to `jakarta.mail`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.sun.mail
@@ -572,6 +610,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxPersistenceToJakartaPersistence
 displayName: Migrate deprecated `javax.persistence` packages to `jakarta.persistence`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.persistence
@@ -598,6 +638,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxResourceToJakartaResource
 displayName: Migrate deprecated `javax.resource` packages to `jakarta.resource`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.resource
@@ -624,6 +666,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxSecurityToJakartaSecurity
 displayName: Migrate deprecated `javax.security.enterprise` packages to `jakarta.security.enterprise`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.security.enterprise
@@ -644,6 +688,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxServletToJakartaServlet
 displayName: Migrate deprecated `javax.servlet` packages to `jakarta.servlet`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.servlet
@@ -669,6 +715,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxTransactionMigrationToJakartaTransaction
 displayName: Migrate deprecated `javax.transaction` packages to `jakarta.transaction`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - transaction
   - javax
@@ -699,6 +747,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxWebsocketToJakartaWebsocket
 displayName: Migrate deprecated `javax.websocket` packages to `jakarta.websocket`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.websocket
@@ -739,6 +789,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxWsToJakartaWs
 displayName: Migrate deprecated `javax.ws` packages to `jakarta.ws`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.ws.rs
@@ -764,6 +816,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind
 displayName: Migrate deprecated `javax.xml.bind` packages to `jakarta.xml.bind`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jaxb
   - javax
@@ -813,6 +867,8 @@ tags:
   - jakarta
 preconditions:
   # IBM-specific exclusion
+  - org.openrewrite.Singleton
+  # IBM-specific exclusion
   - org.openrewrite.xml.search.DoesNotUseNamespaceUri:
       namespaceUri: http://websphere.ibm.com/xml/ns/javaee
 recipeList:
@@ -835,6 +891,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
 displayName: Migrate deprecated `javax.soap` packages to `jakarta.soap`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.xml.soap
@@ -855,6 +913,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlWsMigrationToJakartaXmlWs
 displayName: Migrate deprecated `javax.xml.ws` packages to `jakarta.xml.ws`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - jaxws
   - javax
@@ -903,6 +963,7 @@ tags:
   - persistence
   - orm
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.FindSourceFiles:
       filePattern: '**/*orm.xml'
 recipeList:
@@ -924,6 +985,7 @@ name: org.openrewrite.java.migrate.jakarta.JavaxPersistenceXmlToJakartaPersisten
 displayName: Migrate xmlns entries in `persistence.xml` files
 description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.FindSourceFiles:
       filePattern: '**/persistence.xml'
 recipeList:
@@ -957,6 +1019,8 @@ displayName: Migrate Jackson from javax to jakarta namespace
 description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Jackson dependencies with their counterparts
   that are compatible with Jakarta EE 9.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   # JAXB annotations support
   - org.openrewrite.java.dependencies.ChangeDependency:
@@ -1086,6 +1150,8 @@ displayName: Migrate Ehcache from javax to jakarta namespace
 description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Ehcache dependencies with their counterparts
   that are compatible with Jakarta EE 9.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.ehcache
@@ -1110,6 +1176,8 @@ displayName: Migrate Johnzon from javax to jakarta namespace
 description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Johnzon dependencies with their counterparts
   that are compatible with Jakarta EE 9.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.apache.johnzon
@@ -1130,6 +1198,10 @@ displayName: Migrate RestAssured from javax to jakarta namespace by upgrading to
 description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces existing RestAssured dependencies with their
   counterparts that are compatible with Jakarta EE 9.
+# Currently this recipe is only updating the artifacts to a version that is compatible with J2EE 9. There still may be
+# breaking changes to the Rest Assured API that need to be addressed.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: io.rest-assured
@@ -1141,6 +1213,8 @@ name: org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
 displayName: Migrate `org.apache.ws.security` and `org.apache.ws.security.components.crypto` packages to  `org.apache.wss4j.common.ext` and `org.apache.wss4j.common.crypto` packages
 description: >-
   Java EE has been rebranded to Jakarta EE.  This recipe replaces Apache security packages to migrate to Apache `wss4j`.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.ws.security
@@ -1156,6 +1230,8 @@ name: org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
 displayName: Migrate deprecated `javaee-api` dependencies to `jakarta.platform`
 description: >-
   Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax
@@ -1180,6 +1256,8 @@ displayName: Remove `jakarta.annotation-api` dependency when managed by Spring B
 description: Best practice recipe to cleanup a direct dependency which also comes transitively for Spring Boot applications.
 preconditions:
   # TODO: This recipe can be broadened by checking if `jakarta.annotation-api` is transitively on the classpath OR move this recipe to be part of org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0 recipe.
+  - org.openrewrite.Singleton
+  # TODO: This recipe can be broadened by checking if `jakarta.annotation-api` is transitively on the classpath OR move this recipe to be part of org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0 recipe.
   - org.openrewrite.java.migrate.jakarta.HasNoJakartaAnnotations
   - org.openrewrite.java.dependencies.DependencyInsight:
       groupIdPattern: org.springframework.boot
@@ -1193,6 +1271,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE9
 displayName: Update Jetty9 to Jetty12
 description: Update Jetty dependencies from version 9 to version 12.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.eclipse.jetty.websocket
@@ -1268,6 +1348,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateRestLet2_6
 displayName: Update RestLet to 2.6.0
 description: Update RestLet to 2.6.0.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.restlet

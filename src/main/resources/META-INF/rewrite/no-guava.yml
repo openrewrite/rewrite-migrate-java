@@ -22,6 +22,8 @@ description: >-
   Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface
   area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they
   migrate to standard library for these functions.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -90,6 +92,7 @@ tags:
   - guava
   - java11
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[11,)"
 recipeList:
@@ -114,6 +117,7 @@ tags:
   - guava
   - java21
 preconditions:
+  - org.openrewrite.Singleton
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[21,)"
 recipeList:
@@ -125,6 +129,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaNioCharsetStandardCharsets
 displayName: Prefer `java.nio.charset.StandardCharsets`
 description: Prefer `java.nio.charset.StandardCharsets` instead of using `com.google.common.base.Charsets`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -137,6 +143,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
 displayName: Prefer `java.util.function.Function`
 description: Prefer `java.util.function.Function` instead of using `com.google.common.base.Function`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
   - RSPEC-S4738
@@ -150,6 +158,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilOptional
 displayName: Prefer `java.util.Optional`
 description: Prefer `java.util.Optional` instead of using `com.google.common.base.Optional`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
   - RSPEC-S4738
@@ -183,6 +193,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate
 displayName: Prefer `java.util.function.Predicate`
 description: Prefer `java.util.function.Predicate` instead of using `com.google.common.base.Predicate`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
   - RSPEC-S4738
@@ -197,6 +209,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier
 displayName: Prefer `java.util.function.Supplier`
 description: Prefer `java.util.function.Supplier` instead of using `com.google.common.base.Supplier`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
   - RSPEC-S4738
@@ -210,6 +224,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsEquals
 displayName: Prefer `java.util.Objects#equals`
 description: Prefer `java.util.Objects#equals` instead of using `com.google.common.base.Objects#equal`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -225,6 +241,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsHashCode
 displayName: Prefer `java.util.Objects#hash`
 description: Prefer `java.util.Objects#hash` instead of using `com.google.common.base.Objects#hashCode` or `com.google.common.base.Objects hash(..)`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -240,6 +258,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNullElse
 displayName: Prefer `java.util.Objects#requireNonNullElse`
 description: Prefer `java.util.Objects#requireNonNullElse` instead of using `com.google.common.base.MoreObjects#firstNonNull`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
   - java11
@@ -256,6 +276,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsUnmodifiableNavigableMap
 displayName: Prefer `java.util.Collections#unmodifiableNavigableMap`
 description: Prefer `java.util.Collections#unmodifiableNavigableMap` instead of using `com.google.common.collect.Maps#unmodifiableNavigableMap`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -268,6 +290,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferJavaUtilCollectionsSynchronizedNavigableMap
 displayName: Prefer `java.util.Collections#synchronizedNavigableMap`
 description: Prefer `java.util.Collections#synchronizedNavigableMap` instead of using `com.google.common.collect.Maps#synchronizedNavigableMap`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -280,6 +304,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferCharCompare
 displayName: Prefer `java.lang.Char#compare`
 description: Prefer `java.lang.Char#compare` instead of using `com.google.common.primitives.Chars#compare`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -292,6 +318,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerCompare
 displayName: Prefer `Integer#compare`
 description: Prefer `java.lang.Integer#compare` instead of using `com.google.common.primitives.Ints#compare`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -304,6 +332,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongCompare
 displayName: Prefer `Long#compare`
 description: Prefer `java.lang.Long#compare` instead of using `com.google.common.primitives.Longs#compare`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -316,6 +346,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferShortCompare
 displayName: Prefer `Short#compare`
 description: Prefer `java.lang.Short#compare` instead of using `com.google.common.primitives.Shorts#compare`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -330,6 +362,8 @@ displayName: Prefer `Integer#compareUnsigned`
 description: >-
   Prefer `java.lang.Integer#compareUnsigned` instead of using `com.google.common.primitives.UnsignedInts#compare` or
   `com.google.common.primitives.UnsignedInts#compareUnsigned`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -347,6 +381,8 @@ displayName: Prefer `Integer#divideUnsigned`
 description: >-
   Prefer `java.lang.Integer#divideUnsigned` instead of using `com.google.common.primitives.UnsignedInts#divide` or
   `com.google.common.primitives.UnsignedInts#divideUnsigned`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -362,6 +398,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerParseUnsignedInt
 displayName: Prefer `Integer#parseUnsignedInt`
 description: Prefer `java.lang.Integer#parseUnsignedInt` instead of using `com.google.common.primitives.UnsignedInts#parseUnsignedInt`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -374,6 +412,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerRemainderUnsigned
 displayName: Prefer `Integer#remainderUnsigned`
 description: Prefer `java.lang.Integer#remainderUnsigned` instead of using `com.google.common.primitives.UnsignedInts#remainderUnsigned`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -388,6 +428,8 @@ displayName: Prefer `Long#compareUnsigned`
 description: >-
   Prefer `java.lang.Long#compareUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#compare` or
   `com.google.common.primitives.UnsignedLongs#compareUnsigned`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -404,6 +446,8 @@ displayName: Prefer `Long#divideUnsigned`
 description: >-
   Prefer `java.lang.Long#divideUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#divide` or
   `com.google.common.primitives.UnsignedLongs#divideUnsigned`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -419,6 +463,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongParseUnsignedLong
 displayName: Prefer `Long#parseUnsignedInt`
 description: Prefer `java.lang.Long#parseUnsignedInt` instead of using `com.google.common.primitives.UnsignedLongs#parseUnsignedInt`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -431,6 +477,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongRemainderUnsigned
 displayName: Prefer `Long#remainderUnsigned`
 description: Prefer `java.lang.Long#remainderUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#remainderUnsigned`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -443,6 +491,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathAddExact
 displayName: Prefer `Math#addExact`
 description: Prefer `java.lang.Math#addExact` instead of using `com.google.common.math.IntMath#checkedAdd` or `com.google.common.math.IntMath#addExact`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -460,6 +510,8 @@ displayName: Prefer `Math#subtractExact`
 description: >-
   Prefer `java.lang.Math#subtractExact` instead of using `com.google.common.primitives.IntMath#checkedSubtract`
   or `com.google.common.primitives.IntMath#subtractExact`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -477,6 +529,8 @@ displayName: Prefer `Math#multiplyExact`
 description: >-
   Prefer `java.lang.Math#multiplyExact` instead of using `com.google.common.primitives.IntMath#checkedMultiply`
   or `com.google.common.primitives.IntMath#multiplyExact`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
 recipeList:
@@ -492,6 +546,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathClamp
 displayName: Prefer `Math#clamp`
 description: Prefer `java.lang.Math#clamp` instead of using `com.google.common.primitives.*#constrainToRange`.
+preconditions:
+  - org.openrewrite.Singleton
 tags:
   - guava
   - java21
