@@ -33,16 +33,10 @@ public class UpgradeDockerImageVersion extends Recipe {
             example = "11")
     Integer version;
 
-    @Override
-    public String getDisplayName() {
-        return "Upgrade Docker image Java version";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Upgrade Docker image tags to use the specified Java version. " +
-                "Updates common Java Docker images including eclipse-temurin, amazoncorretto, azul/zulu-openjdk, " +
-                "and others. Also migrates deprecated images (openjdk, adoptopenjdk) to eclipse-temurin.";
+    String displayName = "Upgrade Docker image Java version";
+    String description = "Upgrade Docker image tags to use the specified Java version. " +
+            "Updates common Java Docker images including eclipse-temurin, amazoncorretto, azul/zulu-openjdk, " +
+            "and others. Also migrates deprecated images (openjdk, adoptopenjdk) to eclipse-temurin.";
     }
 
     @Override

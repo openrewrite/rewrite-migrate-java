@@ -29,11 +29,7 @@ import org.openrewrite.maven.UpdateMavenProjectPropertyJavaVersion;
 import org.openrewrite.maven.UseMavenCompilerPluginReleaseConfiguration;
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @EqualsAndHashCode(callSuper = false)
 @Value

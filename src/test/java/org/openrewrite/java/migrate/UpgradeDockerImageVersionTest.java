@@ -23,7 +23,6 @@ import static org.openrewrite.test.SourceSpecs.text;
 
 class UpgradeDockerImageVersionTest implements RewriteTest {
 
-    @ParameterizedTest
     @CsvSource({
       // Deprecated images migrate to eclipse-temurin
       "openjdk, 8, eclipse-temurin, 17, 17",
@@ -49,6 +48,7 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
       "amazoncorretto, 11-alpine, amazoncorretto, 17-alpine, 17",
       "azul/zulu-openjdk, 11-jdk, azul/zulu-openjdk, 17-jdk, 17",
     })
+    @ParameterizedTest
     void upgradeDockerImage(String fromImage, String fromTag, String toImage, String toTag, int targetVersion) {
         rewriteRun(
           spec -> spec.recipe(new UpgradeDockerImageVersion(targetVersion)),
