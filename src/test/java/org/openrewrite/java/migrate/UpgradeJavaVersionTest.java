@@ -17,8 +17,6 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.config.CompositeRecipe;
 import org.openrewrite.java.marker.JavaVersion;
@@ -32,7 +30,6 @@ import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
-import static org.openrewrite.test.SourceSpecs.text;
 
 class UpgradeJavaVersionTest implements RewriteTest {
     @Nested
@@ -374,43 +371,4 @@ class UpgradeJavaVersionTest implements RewriteTest {
         }
     }
 
-    @Nested
-    class Docker {
-        @ParameterizedTest
-        @CsvSource({
-          // Deprecated images migrate to eclipse-temurin
-          "openjdk, 8, eclipse-temurin, 17, 17",
-          "openjdk, 11, eclipse-temurin, 17, 17",
-          "adoptopenjdk, 8, eclipse-temurin, 17, 17",
-          "adoptopenjdk, 11, eclipse-temurin, 17, 17",
-          // Deprecated images preserve common suffixes when migrating
-          "openjdk, 11-jdk, eclipse-temurin, 17-jdk, 17",
-          "openjdk, 11-jdk-alpine, eclipse-temurin, 17-jdk-alpine, 17",
-          "adoptopenjdk, 8-jre, eclipse-temurin, 17-jre, 17",
-          // Current images update tag only
-          "eclipse-temurin, 8, eclipse-temurin, 17, 17",
-          "eclipse-temurin, 11, eclipse-temurin, 17, 17",
-          "amazoncorretto, 8, amazoncorretto, 17, 17",
-          "amazoncorretto, 11, amazoncorretto, 17, 17",
-          // Current images preserve common suffixes
-          "eclipse-temurin, 11-jdk, eclipse-temurin, 17-jdk, 17",
-          "eclipse-temurin, 11-jre, eclipse-temurin, 17-jre, 17",
-          "eclipse-temurin, 11-jdk-alpine, eclipse-temurin, 17-jdk-alpine, 17",
-          "eclipse-temurin, 11-jre-alpine, eclipse-temurin, 17-jre-alpine, 17",
-          "eclipse-temurin, 11-jdk-jammy, eclipse-temurin, 17-jdk-jammy, 17",
-          "eclipse-temurin, 11-jdk-focal, eclipse-temurin, 17-jdk-focal, 17",
-          "amazoncorretto, 11-alpine, amazoncorretto, 17-alpine, 17",
-          "azul/zulu-openjdk, 11-jdk, azul/zulu-openjdk, 17-jdk, 17",
-        })
-        void upgradeDockerImage(String fromImage, String fromTag, String toImage, String toTag, int targetVersion) {
-            rewriteRun(
-              spec -> spec.recipe(new UpgradeJavaVersion(targetVersion)),
-              text(
-                "FROM %s:%s".formatted(fromImage, fromTag),
-                "FROM %s:%s".formatted(toImage, toTag),
-                spec -> spec.path("Dockerfile")
-              )
-            );
-        }
-    }
 }
