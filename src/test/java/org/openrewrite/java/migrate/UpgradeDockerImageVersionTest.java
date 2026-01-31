@@ -19,7 +19,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.test.SourceSpecs.text;
+import static org.openrewrite.docker.Assertions.docker;
 
 class UpgradeDockerImageVersionTest implements RewriteTest {
 
@@ -52,10 +52,9 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     void upgradeDockerImage(String fromImage, String fromTag, String toImage, String toTag, int targetVersion) {
         rewriteRun(
           spec -> spec.recipe(new UpgradeDockerImageVersion(targetVersion)),
-          text(
+          docker(
             "FROM %s:%s".formatted(fromImage, fromTag),
-            "FROM %s:%s".formatted(toImage, toTag),
-            spec -> spec.path("Dockerfile")
+            "FROM %s:%s".formatted(toImage, toTag)
           )
         );
     }
