@@ -19,6 +19,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
 displayName: Use modernized `javax.xml.stream` APIs
 description: Certain `javax.xml.stream` APIs have become deprecated and their usages changed, necessitating usage changes.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.javax.MigrateXMLEventFactoryNewInstanceToNewFactory
   - org.openrewrite.java.migrate.javax.MigrateXMLInputFactoryNewInstanceToNewFactory
@@ -29,6 +31,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateXMLEventFactoryNewInstanceToNewFactory
 displayName: Use `javax.xml.stream.XMLEventFactory#newFactory(String, ClassLoader)`
 description: Use `javax.xml.stream.XMLEventFactory#newFactory` instead of the deprecated `javax.xml.stream.XMLEventFactory#newInstance` in Java 7 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: javax.xml.stream.XMLEventFactory newInstance(String, java.lang.ClassLoader)
@@ -39,6 +43,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateXMLInputFactoryNewInstanceToNewFactory
 displayName: Use `javax.xml.stream.XMLInputFactory#newFactory(String, ClassLoader)`
 description: Use `javax.xml.stream.XMLInputFactory#newFactory` instead of the deprecated `javax.xml.stream.XMLInputFactory#newInstance` in Java 7 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: javax.xml.stream.XMLInputFactory newInstance(String, java.lang.ClassLoader)
@@ -49,6 +55,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateXMLOutputFactoryNewInstanceToNewFactory
 displayName: Use `javax.xml.stream.XMLOutputFactory#newFactory(String, ClassLoader)`
 description: Use `javax.xml.stream.XMLOutputFactory#newFactory` instead of the deprecated `javax.xml.stream.XMLOutputFactory#newInstance` in Java 7 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: javax.xml.stream.XMLOutputFactory newInstance(String, java.lang.ClassLoader)

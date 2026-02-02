@@ -23,6 +23,8 @@ description: >-
   with equivalents when there is a clear migration strategy.
 tags:
   - java7
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava6
   - org.openrewrite.java.migrate.JREJdbcInterfaceNewMethods
@@ -34,6 +36,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JREJdbcInterfaceNewMethods
 displayName: Adds missing JDBC interface methods
 description: Add method implementations stubs to classes that implement JDBC interfaces.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Connection

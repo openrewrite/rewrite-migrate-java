@@ -24,6 +24,8 @@ description: >-
   migrate to standard library for these functions.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - com.google.guava.InlineGuavaMethods
   - org.openrewrite.java.migrate.guava.NoGuavaJava11
@@ -92,6 +94,7 @@ tags:
 preconditions:
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[11,)"
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
@@ -116,6 +119,7 @@ tags:
 preconditions:
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[21,)"
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.guava.NoMapsAndSetsWithExpectedSize
   - org.openrewrite.java.migrate.guava.PreferMathClamp
@@ -127,6 +131,8 @@ displayName: Prefer `java.nio.charset.StandardCharsets`
 description: Prefer `java.nio.charset.StandardCharsets` instead of using `com.google.common.base.Charsets`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Charsets
@@ -140,6 +146,8 @@ description: Prefer `java.util.function.Function` instead of using `com.google.c
 tags:
   - guava
   - RSPEC-S4738
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Function
@@ -153,6 +161,8 @@ description: Prefer `java.util.Optional` instead of using `com.google.common.bas
 tags:
   - guava
   - RSPEC-S4738
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrSupplier
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrElseNull
@@ -186,6 +196,8 @@ description: Prefer `java.util.function.Predicate` instead of using `com.google.
 tags:
   - guava
   - RSPEC-S4738
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.base.Predicates not(com.google.common.base.Predicate)
@@ -200,6 +212,8 @@ description: Prefer `java.util.function.Supplier` instead of using `com.google.c
 tags:
   - guava
   - RSPEC-S4738
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Supplier
@@ -212,6 +226,8 @@ displayName: Prefer `java.util.Objects#equals`
 description: Prefer `java.util.Objects#equals` instead of using `com.google.common.base.Objects#equal`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.base.Objects equal(Object, Object)
@@ -227,6 +243,8 @@ displayName: Prefer `java.util.Objects#hash`
 description: Prefer `java.util.Objects#hash` instead of using `com.google.common.base.Objects#hashCode` or `com.google.common.base.Objects hash(..)`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.base.Objects hashCode(..)
@@ -243,6 +261,8 @@ description: Prefer `java.util.Objects#requireNonNullElse` instead of using `com
 tags:
   - guava
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.base.MoreObjects firstNonNull(..)
@@ -258,6 +278,8 @@ displayName: Prefer `java.util.Collections#unmodifiableNavigableMap`
 description: Prefer `java.util.Collections#unmodifiableNavigableMap` instead of using `com.google.common.collect.Maps#unmodifiableNavigableMap`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.collect.Maps unmodifiableNavigableMap(java.util.NavigableMap)
@@ -270,6 +292,8 @@ displayName: Prefer `java.util.Collections#synchronizedNavigableMap`
 description: Prefer `java.util.Collections#synchronizedNavigableMap` instead of using `com.google.common.collect.Maps#synchronizedNavigableMap`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.collect.Maps synchronizedNavigableMap(java.util.NavigableMap)
@@ -282,6 +306,8 @@ displayName: Prefer `java.lang.Char#compare`
 description: Prefer `java.lang.Char#compare` instead of using `com.google.common.primitives.Chars#compare`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.Chars compare(char, char)
@@ -294,6 +320,8 @@ displayName: Prefer `Integer#compare`
 description: Prefer `java.lang.Integer#compare` instead of using `com.google.common.primitives.Ints#compare`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.Ints compare(int, int)
@@ -306,6 +334,8 @@ displayName: Prefer `Long#compare`
 description: Prefer `java.lang.Long#compare` instead of using `com.google.common.primitives.Longs#compare`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.Longs compare(long, long)
@@ -318,6 +348,8 @@ displayName: Prefer `Short#compare`
 description: Prefer `java.lang.Short#compare` instead of using `com.google.common.primitives.Shorts#compare`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.Shorts compare(short, short)
@@ -332,6 +364,8 @@ description: >-
   `com.google.common.primitives.UnsignedInts#compareUnsigned`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.primitives.UnsignedInts compare(int, int)
@@ -349,6 +383,8 @@ description: >-
   `com.google.common.primitives.UnsignedInts#divideUnsigned`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.primitives.UnsignedInts divide(int, int)
@@ -364,6 +400,8 @@ displayName: Prefer `Integer#parseUnsignedInt`
 description: Prefer `java.lang.Integer#parseUnsignedInt` instead of using `com.google.common.primitives.UnsignedInts#parseUnsignedInt`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.UnsignedInts parseUnsignedInt(String, ..)
@@ -376,6 +414,8 @@ displayName: Prefer `Integer#remainderUnsigned`
 description: Prefer `java.lang.Integer#remainderUnsigned` instead of using `com.google.common.primitives.UnsignedInts#remainderUnsigned`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.UnsignedInts remainderUnsigned(int, int)
@@ -390,6 +430,8 @@ description: >-
   `com.google.common.primitives.UnsignedLongs#compareUnsigned`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.primitives.UnsignedLongs compare(int, int)
@@ -406,6 +448,8 @@ description: >-
   `com.google.common.primitives.UnsignedLongs#divideUnsigned`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.primitives.UnsignedLongs divide(int, int)
@@ -421,6 +465,8 @@ displayName: Prefer `Long#parseUnsignedInt`
 description: Prefer `java.lang.Long#parseUnsignedInt` instead of using `com.google.common.primitives.UnsignedLongs#parseUnsignedInt`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.UnsignedInts parseUnsignedLong(String, ..)
@@ -433,6 +479,8 @@ displayName: Prefer `Long#remainderUnsigned`
 description: Prefer `java.lang.Long#remainderUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#remainderUnsigned`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.UnsignedLongs remainderUnsigned(int, int)
@@ -445,6 +493,8 @@ displayName: Prefer `Math#addExact`
 description: Prefer `java.lang.Math#addExact` instead of using `com.google.common.math.IntMath#checkedAdd` or `com.google.common.math.IntMath#addExact`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.math.IntMath checkedAdd(..)
@@ -462,6 +512,8 @@ description: >-
   or `com.google.common.primitives.IntMath#subtractExact`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.math.IntMath checkedSubtract(..)
@@ -479,6 +531,8 @@ description: >-
   or `com.google.common.primitives.IntMath#multiplyExact`.
 tags:
   - guava
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.math.IntMath checkedMultiply(..)
@@ -495,6 +549,8 @@ description: Prefer `java.lang.Math#clamp` instead of using `com.google.common.p
 tags:
   - guava
   - java21
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: com.google.common.primitives.Doubles constrainToRange(..)

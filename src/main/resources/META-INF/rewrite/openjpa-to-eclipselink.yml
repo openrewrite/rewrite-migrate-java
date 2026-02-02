@@ -22,6 +22,8 @@ description: These recipes help migrate Java Persistence applications using Open
 tags:
   - javaee7
   - deprecated
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.javax.AddColumnAnnotation
   - org.openrewrite.java.migrate.javax.AddDefaultConstructorToEntityClass

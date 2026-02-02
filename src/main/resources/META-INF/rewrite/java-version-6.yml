@@ -23,6 +23,8 @@ description: >-
   with equivalents when there is a clear migration strategy.
 tags:
   - java6
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.jacoco.UpgradeJaCoCo
   - org.openrewrite.java.migrate.JREWrapperInterface
@@ -31,6 +33,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JREWrapperInterface
 displayName: Add missing `isWrapperFor` and `unwrap` methods
 description: Add method implementations stubs to classes that implement `java.sql.Wrapper`.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.AddMissingMethodImplementation:
       fullyQualifiedClassName: java.sql.Wrapper

@@ -24,6 +24,8 @@ tags:
   - intellij
   - jetbrains
   - annotations
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.intellij

@@ -23,6 +23,8 @@ description: >-
   Upgrade the Scala version for compatibility with newer Java versions.
 tags:
   - scala
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.scala-lang

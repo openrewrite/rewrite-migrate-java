@@ -22,5 +22,7 @@ description: These recipes help with the Migration to Java EE 6, flagging and up
 tags:
   - javaee6
   - deprecated
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.javax.HttpSessionInvalidate

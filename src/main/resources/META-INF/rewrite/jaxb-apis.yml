@@ -29,6 +29,8 @@ tags:
   - jaxb
   - jakarta
   - glassfish
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.javax.AddJaxbAPIDependencies
   # Add the jaxb runtime to any projects that have a transitive dependency on the api
@@ -56,6 +58,8 @@ tags:
   - java11
   - jaxb
   - jakarta
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.javax.AddJaxbAPIDependencies
   # Remove the jaxb runtime
@@ -86,6 +90,8 @@ tags:
   - java11
   - jaxb
   - jakarta
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   # Remove the legacy jaxb-core artifact
   - org.openrewrite.java.dependencies.RemoveDependency:

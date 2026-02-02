@@ -19,6 +19,8 @@ name: org.openrewrite.java.migrate.lombok.LombokBestPractices
 displayName: Lombok Best Practices
 description: >-
   Applies all recipes that enforce best practices for using Lombok.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.lombok.UpdateLombokToJava11
   - org.openrewrite.java.migrate.lombok.log.UseLombokLogAnnotations
@@ -44,6 +46,8 @@ description: Update Lombok dependency to a version that is compatible with Java 
 tags:
   - java11
   - lombok
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.projectlombok
@@ -73,6 +77,8 @@ name: org.openrewrite.java.migrate.lombok.log.UseLombokLogAnnotations
 displayName: Use Lombok logger annotations instead of explicit fields
 description: >-
   Applies all recipes that replace logger declarations with class level annotations.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.lombok.log.UseCommonsLog
   - org.openrewrite.java.migrate.lombok.log.UseJBossLog

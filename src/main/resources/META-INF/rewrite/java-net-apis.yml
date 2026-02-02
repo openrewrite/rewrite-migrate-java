@@ -21,6 +21,8 @@ displayName: Use modernized `java.net` APIs
 description: Certain Java networking APIs have become deprecated and their usages changed, necessitating usage changes.
 tags:
   - networking
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.net.MigrateMulticastSocketSetTTLToSetTimeToLive
   - org.openrewrite.java.migrate.net.MigrateMulticastSocketGetTTLToGetTimeToLive
@@ -33,6 +35,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.net.MigrateMulticastSocketGetTTLToGetTimeToLive
 displayName: Use `java.net.MulticastSocket#getTimeToLive()`
 description: Use `java.net.MulticastSocket#getTimeToLive()` instead of the deprecated `java.net.MulticastSocket#getTTL()` in Java 1.2 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.net.MulticastSocket getTTL()

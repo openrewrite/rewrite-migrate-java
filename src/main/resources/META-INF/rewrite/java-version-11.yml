@@ -30,6 +30,8 @@ tags:
   - jaxws
   - deprecated
   - jakarta
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava8
   - org.openrewrite.java.migrate.UseJavaUtilBase64
@@ -89,6 +91,8 @@ displayName: Upgrade build to Java 11
 description: Updates build files to use Java 11 as the target/source.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 11
@@ -99,6 +103,8 @@ displayName: Upgrade plugins to Java 11 compatible versions
 description: Updates plugins to version compatible with Java 11.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
@@ -132,6 +138,8 @@ tags:
   - jaxb
   - jakarta
   - glassfish
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   # Remove the legacy jaxws-ri artifact
   - org.openrewrite.java.dependencies.RemoveDependency:
@@ -183,6 +191,8 @@ displayName: Use `com.sun.xml.bind.*` instead of `com.sun.xml.internal.bind.*`
 description: Do not use APIs from `com.sun.xml.internal.bind.*` packages.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: com.sun.xml.internal.bind
@@ -195,6 +205,8 @@ displayName: Replace `javax.security.auth.Policy` with `java.security.Policy`
 description: The `javax.security.auth.Policy` class is not available from Java SE 11 onwards.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.security.auth.Policy
@@ -209,6 +221,8 @@ description: >-
   method has been unusable since Java SE 8. This recipe removes any usage of these methods from your application.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.lang.Thread destroy()
@@ -223,6 +237,8 @@ description: >-
   Java SE 11. This recipe replaces all usages of `Paths.get` with `Path.of` for consistency.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: java.nio.file.Paths get(..)

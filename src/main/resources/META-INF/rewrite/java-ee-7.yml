@@ -22,6 +22,8 @@ description: These recipes help with the Migration to Java EE 7, flagging and up
 tags:
   - javaee7
   - deprecated
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.javaee6
   - org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
@@ -35,6 +37,8 @@ displayName: Removed OpenJPA providers in the persistence.xml file
 description: >-
   When migrating  to EclipseLink, using OpenJPA providers in EclipseLink results in runtime errors. To resolve these errors,
   the recipe removes the flagged OpenJPA provider from the persistence.xml.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.xml.ChangeTagValue:
       elementName: /persistence/persistence-unit/provider

@@ -23,6 +23,8 @@ description: >-
 tags:
   - java21
   - virtual_threads
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.search.FindImplementations:
       typeName: java.lang.Thread
@@ -41,6 +43,8 @@ description: >-
 tags:
   - java21
   - virtual_threads
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.util.concurrent.Executors#newCachedThreadPool(..)

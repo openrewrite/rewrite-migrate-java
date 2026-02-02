@@ -23,6 +23,8 @@ description: >-
   solutions only available in IBM Semeru Runtimes.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocolHttpsHandler
   - org.openrewrite.java.migrate.JREDoNotUseSunNetSslInternalWwwProtocol
@@ -40,6 +42,8 @@ description: >-
   solutions necessary for migrating from IBM Runtimes to Oracle Runtimes.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.Krb5LoginModuleClass
 
@@ -50,6 +54,8 @@ displayName: Use `com.ibm.net.ssl.www2.protocol.https.Handler` instead of `com.s
 description: Do not use the `com.sun.net.ssl.internal.www.protocol.https.Handler` class.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.sun.net.ssl.internal.www.protocol.https.Handler
@@ -62,6 +68,8 @@ displayName: Use `com.ibm.net.ssl.www2.protocol` instead of `com.sun.net.ssl.int
 description: Do not use the `com.sun.net.ssl.internal.www.protocol` package.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ReplaceStringLiteralValue:
       oldLiteralValue: com.sun.net.ssl.internal.www.protocol
@@ -73,6 +81,8 @@ displayName: Use `com.ibm.jsse2` instead of `com.sun.net.ssl.internal.ssl`
 description: Do not use the `com.sun.net.ssl.internal.ssl.Provider` class.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.sun.net.ssl.internal.ssl.Provider
@@ -97,6 +107,8 @@ displayName: Use `javax.net.ssl` instead of `com.sun.net.ssl`
 description: Do not use APIs from `com.sun.net.ssl` packages.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: com.sun.net.ssl
@@ -109,6 +121,8 @@ displayName: Use `com.sun.security.auth.module.Krb5LoginModule` instead of `com.
 description: Do not use the `com.ibm.security.auth.module.Krb5LoginModule` class.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.ibm.security.auth.module.Krb5LoginModule
@@ -123,6 +137,8 @@ description:
   This recipe updates the `javax.xml.ws` dependency to use the `provided` scope to avoid class loading issues.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.maven.ChangeDependencyScope:
       groupId: javax.xml.ws
@@ -142,6 +158,8 @@ description:
   This recipe updates the `javax.xml.bind` and `javax.activation` dependencies to use the `provided` scope to avoid class loading issues.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.maven.ChangeDependencyScope:
       groupId: javax.xml.bind
@@ -164,6 +182,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.WasDevMvnChangeParentArtifactId
 displayName: Change `net.wasdev.maven.parent:java8-parent` to `:parent`
 description: This recipe changes the artifactId of the `<parent>` tag in the `pom.xml` from `java8-parent` to `parent`.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.maven.ChangeParentPom:
       oldGroupId: net.wasdev.maven.parent

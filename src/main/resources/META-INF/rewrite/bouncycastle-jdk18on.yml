@@ -22,6 +22,8 @@ description: >-
   This recipe will upgrade Bouncy Castle dependencies from `-jdk15on` or `-jdk15to18` to `-jdk18on`.
 tags:
   - bouncycastle
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   # -jdk15on migration
   - org.openrewrite.java.dependencies.ChangeDependency:

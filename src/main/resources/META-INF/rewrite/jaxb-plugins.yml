@@ -21,6 +21,8 @@ displayName: Migrate JAXB-WS Plugin
 description: Upgrade the JAXB-WS Maven plugin to be compatible with Java 11.
 tags:
   - java11
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.maven.ChangePluginGroupIdAndArtifactId:
       oldGroupId: org.jvnet.jax-ws-commons

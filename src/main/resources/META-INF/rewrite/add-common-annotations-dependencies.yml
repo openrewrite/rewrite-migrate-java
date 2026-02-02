@@ -25,6 +25,8 @@ tags:
   - java11
   - jsr250
   - jakarta
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   # Add or update the jakarta.annotation-api. Use version 1.3.x, as this version still kept the old javax namespace (starting from 2.x it's changed to jakarta).
   - org.openrewrite.java.dependencies.ChangeDependency:

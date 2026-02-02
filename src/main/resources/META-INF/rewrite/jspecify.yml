@@ -21,6 +21,8 @@ description: >-
   Apply JSpecify best practices, such as migrating off of alternatives, and adding missing `@Nullable` annotations.
 tags:
   - java
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
 - org.openrewrite.java.jspecify.MigrateToJSpecify
 - org.openrewrite.staticanalysis.AnnotateNullableMethods
@@ -36,6 +38,8 @@ description: >-
   This recipe will migrate to JSpecify annotations from various other nullability annotation standards.
 tags:
   - java
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.jspecify.MigrateFromJavaxAnnotationApi
   - org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
@@ -52,6 +56,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJavaxAnnotationApi
 displayName: Migrate from javax annotation API to JSpecify
 description: Migrate from javax annotation API to JSpecify.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: org.jspecify
@@ -78,6 +84,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
 displayName: Migrate from Jakarta annotation API to JSpecify
 description: Migrate from Jakarta annotation API to JSpecify.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: org.jspecify
@@ -100,6 +108,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJetbrainsAnnotations
 displayName: Migrate from JetBrains annotations to JSpecify
 description: Migrate from JetBrains annotations to JSpecify.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: org.jspecify
@@ -122,6 +132,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromMicrometerAnnotations
 displayName: Migrate from Micrometer annotations to JSpecify
 description: Migrate from Micrometer annotations to JSpecify.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: org.jspecify
@@ -144,6 +156,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations
 displayName: Migrate from Spring Framework annotations to JSpecify
 description: Migrate from Spring Framework annotations to JSpecify.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: org.jspecify
@@ -166,6 +180,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromMicronautAnnotations
 displayName: Migrate from Micronaut Framework annotations to JSpecify
 description: Migrate from Micronaut Framework annotations to JSpecify.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: org.jspecify

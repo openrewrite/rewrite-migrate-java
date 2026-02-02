@@ -23,6 +23,8 @@ description: >-
   with equivalents when there is a clear migration strategy.
 tags:
   - java8
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava7
   - org.openrewrite.java.migrate.UpgradeJavaVersion:

@@ -19,6 +19,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.JavaxLangModelUtil
 displayName: Use modernized `javax.lang.model.util` APIs
 description: Certain `javax.lang.model.util` APIs have become deprecated and their usages changed, necessitating usage changes.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.javax.MigrateAbstractAnnotationValueVisitor6To9
   - org.openrewrite.java.migrate.javax.MigrateAbstractElementVisitor6To9
@@ -36,6 +38,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateAbstractAnnotationValueVisitor6To9
 displayName: Use `javax.lang.model.util.AbstractAnnotationValueVisitor9`
 description: Use `javax.lang.model.util.AbstractAnnotationValueVisitor9` instead of the deprecated `javax.lang.model.util.AbstractAnnotationValueVisitor6` in Java 9 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.lang.model.util.AbstractAnnotationValueVisitor6
@@ -47,6 +51,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateAbstractElementVisitor6To9
 displayName: Use `javax.lang.model.util.AbstractElementVisitor9`
 description: Use `javax.lang.model.util.AbstractElementVisitor9` instead of the deprecated `javax.lang.model.util.AbstractElementVisitor6` in Java 9 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.lang.model.util.AbstractElementVisitor6
@@ -58,6 +64,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateAbstractTypeVisitor6To9
 displayName: Use `javax.lang.model.util.AbstractTypeVisitor9`
 description: Use `javax.lang.model.util.AbstractTypeVisitor9` instead of the deprecated `javax.lang.model.util.AbstractTypeVisitor6` in Java 9 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.lang.model.util.AbstractTypeVisitor6
@@ -69,6 +77,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateElementKindVisitor6To9
 displayName: Use `javax.lang.model.util.ElementKindVisitor9`
 description: Use `javax.lang.model.util.ElementKindVisitor9` instead of the deprecated `javax.lang.model.util.ElementKindVisitor6` in Java 9 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.lang.model.util.ElementKindVisitor6
@@ -80,6 +90,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateElementScanner6To9
 displayName: Use `javax.lang.model.util.ElementScanner9`
 description: Use `javax.lang.model.util.ElementScanner9` instead of the deprecated `javax.lang.model.util.ElementScanner6` in Java 9 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.lang.model.util.ElementScanner6
@@ -91,6 +103,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateSimpleAnnotationValueVisitor6To9
 displayName: Use `javax.lang.model.util.SimpleAnnotationValueVisitor9`
 description: Use `javax.lang.model.util.SimpleAnnotationValueVisitor9` instead of the deprecated `javax.lang.model.util.SimpleAnnotationValueVisitor6` in Java 9 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.lang.model.util.SimpleAnnotationValueVisitor6
@@ -102,6 +116,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateSimpleElementVisitor6To9
 displayName: Use `javax.lang.model.util.SimpleElementVisitor9`
 description: Use `javax.lang.model.util.SimpleElementVisitor9` instead of the deprecated `javax.lang.model.util.SimpleElementVisitor6` in Java 9 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.lang.model.util.SimpleElementVisitor6
@@ -113,6 +129,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateSimpleTypeVisitor6To9
 displayName: Use `javax.lang.model.util.SimpleTypeVisitor9`
 description: Use `javax.lang.model.util.SimpleTypeVisitor9` instead of the deprecated `javax.lang.model.util.SimpleTypeVisitor6` in Java 9 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.lang.model.util.SimpleTypeVisitor6
@@ -124,6 +142,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateTypeKindVisitor6To9
 displayName: Use `javax.lang.model.util.TypeKindVisitor9`
 description: Use `javax.lang.model.util.TypeKindVisitor9` instead of the deprecated `javax.lang.model.util.TypeKindVisitor6` in Java 9 or higher.
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.lang.model.util.TypeKindVisitor6

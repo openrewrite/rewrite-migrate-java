@@ -24,6 +24,8 @@ description: >-
   The `jdk15to18` artifact is the up-to-date replacement of the unmaintained `jdk15on` for Java < 8.
 tags:
   - bouncycastle
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.bouncycastle

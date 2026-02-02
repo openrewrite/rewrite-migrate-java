@@ -24,6 +24,8 @@ description: >-
   target/source and plugins will be also be upgraded to versions that are compatible with Java 21.
 tags:
   - java21
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.UpgradeBuildToJava21
@@ -53,6 +55,8 @@ displayName: Upgrade build to Java 21
 description: Updates build files to use Java 21 as the target/source.
 tags:
   - java21
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 21
@@ -63,6 +67,8 @@ displayName: Upgrade plugins to Java 21 compatible versions
 description: Updates plugins and dependencies to version compatible with Java 21.
 tags:
   - java21
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   # GitHub Actions bump needs Gradle Wrapper bump too https://docs.gradle.org/current/userguide/compatibility.html#java
   - org.openrewrite.gradle.UpdateGradleWrapper:
@@ -93,6 +99,8 @@ description: Replace older code patterns with `SequencedCollection` methods, as 
 tags:
   - java21
   - collections
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.util.ListFirstAndLast
   - org.openrewrite.java.migrate.util.IteratorNext
@@ -115,6 +123,8 @@ description: >-
   with `javax.security.auth.Subject.current()` and `javax.security.auth.Subject.callAs()`.
 tags:
   - java21
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: javax.security.auth.Subject getSubject()
@@ -129,6 +139,8 @@ displayName: Avoid using the deprecated empty `finalize()` method in `java.deskt
 description: The java.desktop module had a few implementations of finalize() that did nothing and have been removed. This recipe will remove these methods.
 tags:
   - java21
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.awt.color.ICC_Profile finalize()
@@ -145,6 +157,8 @@ description: >-
   This recipe applies some of those improvements where applicable.
 tags:
   - java21
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.lang.RefineSwitchCases
   - org.openrewrite.java.migrate.lang.SwitchCaseEnumGuardToLabel

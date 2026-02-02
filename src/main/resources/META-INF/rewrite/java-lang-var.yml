@@ -25,6 +25,8 @@ tags:
   - refactoring
   - java10
   - var
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.lang.var.UseVarForObject
   - org.openrewrite.java.migrate.lang.var.UseVarForPrimitive

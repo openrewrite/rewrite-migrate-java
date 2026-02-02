@@ -24,6 +24,8 @@ description: >-
   target/source and plugins will be also be upgraded to versions that are compatible with Java 25.
 tags:
   - java25
+preconditions:
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
@@ -53,6 +55,7 @@ description: >-
 preconditions:
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[25,)"
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.zip.Deflater end()
@@ -75,6 +78,7 @@ preconditions:
       version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.security.AccessController#checkPermission(..)
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.security.AccessController#checkPermission(..)
@@ -95,6 +99,7 @@ preconditions:
       version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.security.Policy#setPolicy(..)
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.security.Policy#setPolicy(..)
@@ -115,6 +120,7 @@ preconditions:
       version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.lang.SecurityManager#check*(..)
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.RemoveMethodInvocations:
       methodPattern: java.lang.SecurityManager#check*(..)
@@ -137,6 +143,7 @@ preconditions:
       version: "[25,)"
   - org.openrewrite.java.search.FindMethods:
       methodPattern: java.lang.System#getSecurityManager()
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ReplaceMethodInvocationWithConstant:
       methodPattern: java.lang.System#getSecurityManager()
@@ -151,6 +158,7 @@ description: Use `ZipException` instead of the deprecated `ZipError` in Java 9 o
 preconditions:
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[25,)"
+  - org.openrewrite.Singleton
 recipeList:
    - org.openrewrite.java.ChangeType:
        oldFullyQualifiedTypeName: java.util.zip.ZipError
@@ -168,6 +176,7 @@ preconditions:
   - org.openrewrite.java.dependencies.search.RepositoryHasDependency:
       groupIdPattern: org.projectlombok
       artifactIdPattern: lombok
+  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.maven.AddAnnotationProcessor:
       groupId: org.projectlombok
