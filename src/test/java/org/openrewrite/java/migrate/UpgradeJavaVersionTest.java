@@ -370,4 +370,5 @@ class UpgradeJavaVersionTest implements RewriteTest {
             );
         }
     }
+
 }

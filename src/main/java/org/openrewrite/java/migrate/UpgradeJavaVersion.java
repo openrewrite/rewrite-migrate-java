@@ -43,9 +43,9 @@ public class UpgradeJavaVersion extends Recipe {
     String displayName = "Upgrade Java version";
 
     String description = "Upgrade build plugin configuration to use the specified Java version. " +
-                "This recipe changes `java.toolchain.languageVersion` in `build.gradle(.kts)` of gradle projects, " +
-                "or maven-compiler-plugin target version and related settings. " +
-                "Will not downgrade if the version is newer than the specified version.";
+            "This recipe changes `java.toolchain.languageVersion` in `build.gradle(.kts)` of gradle projects, " +
+            "or maven-compiler-plugin target version and related settings. " +
+            "Will not downgrade if the version is newer than the specified version.";
 
     @Override
     public List<Recipe> getRecipeList() {
@@ -54,7 +54,8 @@ public class UpgradeJavaVersion extends Recipe {
                 new UpdateMavenProjectPropertyJavaVersion(version),
                 new org.openrewrite.jenkins.UpgradeJavaVersion(version, null),
                 new UpdateJavaCompatibility(version, null, null, false, null),
-                new UpdateSdkMan(String.valueOf(version), null)
+                new UpdateSdkMan(String.valueOf(version), null),
+                new UpgradeDockerImageVersion(version)
         );
     }
 
@@ -63,7 +64,7 @@ public class UpgradeJavaVersion extends Recipe {
      *
      * @return Zero estimated time.
      */
-    Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 0 );
+    Duration estimatedEffortPerOccurrence = Duration.ofMinutes(0);
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

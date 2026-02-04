@@ -53,6 +53,7 @@ dependencies {
     implementation("org.openrewrite:rewrite-json")
     implementation("org.openrewrite:rewrite-maven")
     implementation("org.openrewrite:rewrite-gradle")
+    implementation("org.openrewrite:rewrite-docker")
     implementation("org.openrewrite.recipe:rewrite-github-actions:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-java-dependencies:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-static-analysis:$rewriteVersion")
