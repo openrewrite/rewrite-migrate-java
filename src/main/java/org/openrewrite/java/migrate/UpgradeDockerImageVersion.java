@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2026 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,15 +54,28 @@ public class UpgradeDockerImageVersion extends Recipe {
         // Common tag suffixes to preserve when upgrading current images
         // Longer suffixes must come before shorter ones to match correctly
         String[] commonSuffixes = {
+                // Alpine
                 "-jdk-alpine", "-jre-alpine",
+                // Ubuntu LTS
                 "-jdk-noble", "-jre-noble",
                 "-jdk-jammy", "-jre-jammy",
                 "-jdk-focal", "-jre-focal",
+                "-jdk-bionic", "-jre-bionic",
+                // Debian
+                "-jdk-slim-bookworm", "-jre-slim-bookworm",
+                "-jdk-slim-bullseye", "-jre-slim-bullseye",
+                "-jdk-slim-buster", "-jre-slim-buster",
+                "-jdk-bookworm", "-jre-bookworm",
+                "-jdk-bullseye", "-jre-bullseye",
+                "-jdk-buster", "-jre-buster",
+                // Other Linux
                 "-jdk-centos7", "-jre-centos7",
                 "-jdk-ubi9-minimal", "-jre-ubi9-minimal",
+                // Windows
                 "-jdk-nanoserver", "-jre-nanoserver",
                 "-jdk-windowsservercore", "-jre-windowsservercore",
-                "-alpine",
+                // Generic suffixes (must come last)
+                "-alpine", "-slim",
                 "-jdk", "-jre"
         };
         for (int oldVersion = 8; oldVersion < version; oldVersion++) {
