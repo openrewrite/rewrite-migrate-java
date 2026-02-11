@@ -95,14 +95,13 @@ class UpgradeToJava25Test implements RewriteTest {
                   </build>
               </project>
               """,
-            spec -> spec.after(actual -> {
-                assertThat(actual)
-                  .contains("<maven.compiler.release>25</maven.compiler.release>")
-                  .containsPattern("maven-compiler-plugin</artifactId>\\s*<version>3\\.15\\.")
-                  .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.")
-                  .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.");
-                return actual;
-            })
+            spec -> spec.after(actual ->
+              assertThat(actual)
+                .contains("<maven.compiler.release>25</maven.compiler.release>")
+                .containsPattern("maven-compiler-plugin</artifactId>\\s*<version>3\\.15\\.")
+                .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.")
+                .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.")
+                .actual())
           )
         );
     }
@@ -129,12 +128,12 @@ class UpgradeToJava25Test implements RewriteTest {
                 </project>
                 """,
               spec -> spec.after(actual ->
-                    assertThat(actual)
-                      .contains("<maven.compiler.release>25</maven.compiler.release>")
-                      // check we have the expected annotation processor
-                      .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<groupId>org.projectlombok")
-                      .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<artifactId>lombok")
-                      .actual()
+                assertThat(actual)
+                  .contains("<maven.compiler.release>25</maven.compiler.release>")
+                  // check we have the expected annotation processor
+                  .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<groupId>org.projectlombok")
+                  .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<artifactId>lombok")
+                  .actual()
               )
             )
           )
