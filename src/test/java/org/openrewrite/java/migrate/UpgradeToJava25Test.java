@@ -64,8 +64,8 @@ class UpgradeToJava25Test implements RewriteTest {
     @Test
     void upgradesMavenPluginsForJava25() {
         rewriteRun(
-          //language=xml
           pomXml(
+            //language=xml
             """
               <project>
                   <groupId>com.mycompany.app</groupId>
@@ -111,8 +111,8 @@ class UpgradeToJava25Test implements RewriteTest {
         rewriteRun(
           spec -> spec.cycles(1).expectedCyclesThatMakeChanges(1),
           mavenProject("project",
-            //language=xml
             pomXml(
+              //language=xml
               """
                 <project>
                     <groupId>com.mycompany.app</groupId>
