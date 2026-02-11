@@ -30,8 +30,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 25
-  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
-      minimumJavaMajorVersion: 25
+  - org.openrewrite.java.migrate.UpgradePluginsForJava25
   - org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
   - org.openrewrite.java.migrate.lang.MigrateMainMethodToInstanceMain
   - org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
@@ -188,3 +187,35 @@ recipeList:
       version: "[1.18.40)"
       configuration: annotationProcessor
       onlyIfUsing: lombok.*
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradePluginsForJava25
+displayName: Upgrade plugins to Java 25 compatible versions
+description: Updates plugins and dependencies to versions compatible with Java 25.
+tags:
+  - java25
+preconditions:
+  - org.openrewrite.Singleton
+recipeList:
+  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
+      minimumJavaMajorVersion: 25
+  - org.openrewrite.gradle.UpdateGradleWrapper:
+      version: 9.1
+      addIfMissing: false
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-compiler-plugin
+      newVersion: 3.15.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-surefire-plugin
+      newVersion: 3.1.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-failsafe-plugin
+      newVersion: 3.1.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: net.bytebuddy
+      artifactId: byte-buddy*
+      newVersion: 1.17.x

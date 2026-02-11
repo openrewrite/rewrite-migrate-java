@@ -62,12 +62,57 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
+    void upgradesMavenPluginsForJava25() {
+        rewriteRun(
+          pomXml(
+            //language=xml
+            """
+              <project>
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                  <properties>
+                      <maven.compiler.release>17</maven.compiler.release>
+                  </properties>
+                  <build>
+                      <plugins>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-compiler-plugin</artifactId>
+                              <version>3.13.0</version>
+                          </plugin>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-surefire-plugin</artifactId>
+                              <version>2.22.2</version>
+                          </plugin>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-failsafe-plugin</artifactId>
+                              <version>2.22.2</version>
+                          </plugin>
+                  </plugins>
+                  </build>
+              </project>
+              """,
+            spec -> spec.after(actual ->
+              assertThat(actual)
+                .contains("<maven.compiler.release>25</maven.compiler.release>")
+                .containsPattern("maven-compiler-plugin</artifactId>\\s*<version>3\\.15\\.")
+                .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.1\\.")
+                .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.1\\.")
+                .actual())
+          )
+        );
+    }
+
+    @Test
     void addsLombokAnnotationProcessor() {
         rewriteRun(
           spec -> spec.cycles(1).expectedCyclesThatMakeChanges(1),
           mavenProject("project",
-            //language=xml
             pomXml(
+              //language=xml
               """
                 <project>
                     <groupId>com.mycompany.app</groupId>
@@ -83,12 +128,12 @@ class UpgradeToJava25Test implements RewriteTest {
                 </project>
                 """,
               spec -> spec.after(actual ->
-                    assertThat(actual)
-                      .contains("<maven.compiler.release>25</maven.compiler.release>")
-                      // check we have the expected annotation processor
-                      .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<groupId>org.projectlombok")
-                      .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<artifactId>lombok")
-                      .actual()
+                assertThat(actual)
+                  .contains("<maven.compiler.release>25</maven.compiler.release>")
+                  // check we have the expected annotation processor
+                  .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<groupId>org.projectlombok")
+                  .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<artifactId>lombok")
+                  .actual()
               )
             )
           )
