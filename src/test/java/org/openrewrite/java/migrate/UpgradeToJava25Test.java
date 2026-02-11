@@ -99,8 +99,8 @@ class UpgradeToJava25Test implements RewriteTest {
               assertThat(actual)
                 .contains("<maven.compiler.release>25</maven.compiler.release>")
                 .containsPattern("maven-compiler-plugin</artifactId>\\s*<version>3\\.15\\.")
-                .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.")
-                .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.")
+                .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.1\\.")
+                .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.1\\.")
                 .actual())
           )
         );
