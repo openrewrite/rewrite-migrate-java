@@ -30,8 +30,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 25
-  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
-      minimumJavaMajorVersion: 25
+  - org.openrewrite.java.migrate.UpgradePluginsForJava25
   - org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
   - org.openrewrite.java.migrate.lang.MigrateMainMethodToInstanceMain
   - org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
@@ -45,7 +44,6 @@ recipeList:
   - org.openrewrite.java.migrate.MigrateZipErrorToZipException
   - org.openrewrite.java.migrate.EnableLombokAnnotationProcessor
   - org.openrewrite.java.migrate.MigrateGraalVMResourceConfig
-  - org.openrewrite.java.migrate.UpgradePluginsForJava25
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -200,6 +198,8 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
+      minimumJavaMajorVersion: 25
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 9.1
       addIfMissing: false
