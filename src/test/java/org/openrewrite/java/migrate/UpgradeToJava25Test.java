@@ -62,6 +62,52 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
+    void upgradesMavenPluginsForJava25() {
+        rewriteRun(
+          //language=xml
+          pomXml(
+            """
+              <project>
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                  <properties>
+                      <maven.compiler.release>17</maven.compiler.release>
+                  </properties>
+                  <build>
+                      <plugins>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-compiler-plugin</artifactId>
+                              <version>3.13.0</version>
+                          </plugin>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-surefire-plugin</artifactId>
+                              <version>2.22.2</version>
+                          </plugin>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-failsafe-plugin</artifactId>
+                              <version>2.22.2</version>
+                          </plugin>
+                  </plugins>
+                  </build>
+              </project>
+              """,
+            spec -> spec.after(actual -> {
+                assertThat(actual)
+                  .contains("<maven.compiler.release>25</maven.compiler.release>")
+                  .containsPattern("maven-compiler-plugin</artifactId>\\s*<version>3\\.15\\.")
+                  .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.")
+                  .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.");
+                return actual;
+            })
+          )
+        );
+    }
+
+    @Test
     void addsLombokAnnotationProcessor() {
         rewriteRun(
           spec -> spec.cycles(1).expectedCyclesThatMakeChanges(1),
