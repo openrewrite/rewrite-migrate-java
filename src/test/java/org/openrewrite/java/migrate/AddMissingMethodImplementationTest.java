@@ -133,7 +133,6 @@ class AddMissingMethodImplementationTest implements RewriteTest {
         );
     }
 
-    @Issue("https://github.com/moderneinc/customer-requests/issues/1862")
     @Test
     void skipWhenSuperclassAlreadyHasMethod() {
         //language=java
