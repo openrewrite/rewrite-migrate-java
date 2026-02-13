@@ -23,6 +23,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 import static org.openrewrite.java.tree.J.ClassDeclaration.Kind.Type.Interface;
@@ -78,6 +79,14 @@ public class AddMissingMethodImplementation extends Recipe {
                     .map(J.MethodDeclaration.class::cast)
                     .anyMatch(methodDeclaration -> methodMatcher.matches(methodDeclaration, classDecl))) {
                 return classDecl;
+            }
+            // If a superclass already provides the method, don't add it.
+            JavaType.FullyQualified supertype = classDecl.getType() != null ? classDecl.getType().getSupertype() : null;
+            while (supertype != null) {
+                if (supertype.getMethods().stream().anyMatch(methodMatcher::matches)) {
+                    return classDecl;
+                }
+                supertype = supertype.getSupertype();
             }
 
             return classDecl.withBody(JavaTemplate.builder(methodTemplateString)
