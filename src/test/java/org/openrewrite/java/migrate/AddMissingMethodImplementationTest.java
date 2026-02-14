@@ -133,4 +133,22 @@ class AddMissingMethodImplementationTest implements RewriteTest {
         );
     }
 
+    @Test
+    void skipWhenSuperclassAlreadyHasMethod() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              interface I1 {}
+              class SuperClass implements I1 {
+                  public void m1() {
+                      System.out.println("m1 from super");
+                  }
+              }
+              class SubClass extends SuperClass {}
+              """
+          )
+        );
+    }
+
 }
