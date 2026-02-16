@@ -100,6 +100,10 @@ public class UseTextBlocks extends Recipe {
                     return binary; // Not super.visitBinary(binary, ctx) because we don't want to visit the children
                 }
 
+                if (containsComments(binary)) {
+                    return binary;
+                }
+
                 boolean flattenable = flatAdditiveStringLiterals(binary, stringLiterals, contentSb, concatenationSb);
                 if (!flattenable) {
                     return super.visitBinary(binary, ctx);
@@ -193,6 +197,18 @@ public class UseTextBlocks extends Recipe {
                        content.endsWith(";");
             }
         });
+    }
+
+    private static boolean containsComments(Expression expression) {
+        if (expression instanceof J.Binary) {
+            J.Binary b = (J.Binary) expression;
+            if (!b.getPrefix().getComments().isEmpty() ||
+                !b.getPadding().getOperator().getBefore().getComments().isEmpty()) {
+                return true;
+            }
+            return containsComments(b.getLeft()) || containsComments(b.getRight());
+        }
+        return expression instanceof J.Literal && !expression.getPrefix().getComments().isEmpty();
     }
 
     private static boolean allLiterals(Expression exp) {

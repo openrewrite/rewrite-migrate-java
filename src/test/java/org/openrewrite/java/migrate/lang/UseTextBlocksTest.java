@@ -257,6 +257,37 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
+    void doNotDropLineComments() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  String query = "SELECT * FROM\\n" + // table query
+                          "my_table\\n" +
+                          "WHERE something = 1;";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotDropBlockComments() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  String query = "SELECT * FROM\\n" + /* table name */ "my_table\\n" +
+                          "WHERE something = 1;";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void preferNoChangeIfCarriageReturnInContent() {
         rewriteRun(
           //language=java
