@@ -35,7 +35,9 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateToJSpecify
 displayName: Migrate to JSpecify
 description: >-
-  This recipe will migrate to JSpecify annotations from various other nullability annotation standards.
+  This recipe will migrate to JSpecify nullability annotations from various other annotation standards
+  including javax, Jakarta, JetBrains, Micrometer, and Micronaut. JSpecify is an industry-wide effort
+  to provide a single set of nullability annotations for Java.
 tags:
   - java
 preconditions:
@@ -155,7 +157,11 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations
 displayName: Migrate from Spring Framework annotations to JSpecify
-description: Migrate from Spring Framework annotations to JSpecify.
+description: >-
+  Spring Framework 7 has adopted JSpecify as its nullability annotation standard, deprecating Spring's own
+  `org.springframework.lang.@Nullable` and `org.springframework.lang.@NonNull` annotations. This recipe migrates
+  these annotations to their JSpecify equivalents (`org.jspecify.annotations.@Nullable` and
+  `org.jspecify.annotations.@NonNull`) and adds the JSpecify dependency.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
