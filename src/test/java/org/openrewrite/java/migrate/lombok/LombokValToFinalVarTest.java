@@ -227,7 +227,7 @@ class LombokValToFinalVarTest implements RewriteTest {
     void starImportRemainsWhenOnlyVarUsed() {
         // When `import lombok.*;` exists only for `var`, the star import remains unused after
         // the recipe runs. This is acceptable: removing a star import with incomplete type info
-        // (e.g. in multi-module projects) risks breaking compilation by dropping imports that
+        // risks breaking compilation by dropping imports that
         // other lombok types still need. An unused import is preferable to broken code.
         //language=java
         rewriteRun(
