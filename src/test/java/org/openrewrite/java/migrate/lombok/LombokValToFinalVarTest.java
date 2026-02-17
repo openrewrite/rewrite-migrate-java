@@ -21,6 +21,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -101,6 +102,141 @@ class LombokValToFinalVarTest implements RewriteTest {
                 @NoArgsConstructor
                 @Data
                 @Value
+                class A {
+                    void bar() {
+                        var foo = "foo";
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void preserveStarImportWithoutVarUsage() {
+        //language=java
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion())
+            .typeValidationOptions(TypeValidation.none()),
+          version(
+            java(
+              """
+                import lombok.*;
+
+                @AllArgsConstructor
+                @NoArgsConstructor
+                @ToString
+                @Data
+                @EqualsAndHashCode
+                public class AuthHeaders {
+                    String authHeader;
+                    String token;
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void preserveStarImportWithVarUsage() {
+        //language=java
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion())
+            .typeValidationOptions(TypeValidation.none()),
+          version(
+            java(
+              """
+                import lombok.*;
+
+                @Data
+                class A {
+                    void bar() {
+                        var foo = "foo";
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void removeExplicitVarImport() {
+        //language=java
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion())
+            .typeValidationOptions(TypeValidation.none()),
+          version(
+            java(
+              """
+                import lombok.var;
+                class A {
+                    void bar() {
+                        var foo = "foo";
+                    }
+                }
+                """,
+              """
+                class A {
+                    void bar() {
+                        var foo = "foo";
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void removeStarImportWhenOnlyValUsed() {
+        //language=java
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion())
+            .typeValidationOptions(TypeValidation.none()),
+          version(
+            java(
+              """
+                import lombok.*;
+                class A {
+                    void bar() {
+                        val foo = "foo";
+                    }
+                }
+                """,
+              """
+                class A {
+                    void bar() {
+                        final var foo = "foo";
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void starImportRemainsWhenOnlyVarUsed() {
+        // When `import lombok.*;` exists only for `var`, the star import remains unused after
+        // the recipe runs. This is acceptable: removing a star import with incomplete type info
+        // (e.g. in multi-module projects) risks breaking compilation by dropping imports that
+        // other lombok types still need. An unused import is preferable to broken code.
+        //language=java
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion())
+            .typeValidationOptions(TypeValidation.none()),
+          version(
+            java(
+              """
+                import lombok.*;
                 class A {
                     void bar() {
                         var foo = "foo";
