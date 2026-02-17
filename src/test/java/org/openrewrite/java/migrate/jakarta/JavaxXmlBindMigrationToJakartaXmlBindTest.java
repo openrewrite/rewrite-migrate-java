@@ -94,14 +94,12 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
                   api "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.16.0"
               }
               """,
-            spec -> spec.after(buildGradle -> {
-                // Verify that both jakarta.xml.bind-api AND jaxb-api are present
+            spec -> spec.after(buildGradle ->
                 assertThat(buildGradle)
                   .contains("jakarta.xml.bind:jakarta.xml.bind-api")
                   .contains("javax.xml.bind:jaxb-api")
-                  .contains("jackson-module-jaxb-annotations");
-                return buildGradle;
-            })
+                  .contains("jackson-module-jaxb-annotations")
+                  .actual())
           )
         );
     }
@@ -152,15 +150,14 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
                   </dependencies>
               </project>
               """,
-            spec -> spec.after(pom -> {
+            spec -> spec.after(pom ->
                 assertThat(pom)
                   .contains("jakarta.xml.bind")
                   .contains("jakarta.xml.bind-api")
                   .contains("javax.xml.bind")
                   .contains("jaxb-api")
-                  .contains("jackson-module-jaxb-annotations");
-                return pom;
-            })
+                  .contains("jackson-module-jaxb-annotations")
+                  .actual())
           )
         );
     }
@@ -204,12 +201,11 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
                   implementation "javax.xml.bind:jaxb-api:2.3.1"
               }
               """,
-            spec -> spec.after(buildGradle -> {
+            spec -> spec.after(buildGradle ->
                 assertThat(buildGradle)
                   .contains("jakarta.xml.bind:jakarta.xml.bind-api")
-                  .doesNotContain("javax.xml.bind:jaxb-api");
-                return buildGradle;
-            })
+                  .doesNotContain("javax.xml.bind:jaxb-api")
+                  .actual())
           )
         );
     }

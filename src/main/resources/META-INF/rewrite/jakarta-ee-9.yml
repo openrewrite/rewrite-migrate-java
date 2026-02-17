@@ -859,6 +859,58 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.RetainJaxbApiForJackson
+displayName: Retain `javax.xml.bind:jaxb-api` when `jackson-module-jaxb-annotations` is present
+description: >-
+  When migrating from `javax.xml.bind` to `jakarta.xml.bind` 3.0+, the `javax.xml.bind:jaxb-api`
+  dependency is normally replaced. However, if `jackson-module-jaxb-annotations` is on the classpath
+  (and still uses the `javax.xml.bind` namespace), this recipe ensures `javax.xml.bind:jaxb-api`
+  remains available as a runtime dependency to prevent `NoClassDefFoundError`.
+tags:
+  - jaxb
+  - javax
+  - jakarta
+recipeList:
+  - org.openrewrite.java.migrate.jakarta.RetainJaxbApiForJacksonGradle
+  - org.openrewrite.java.migrate.jakarta.RetainJaxbApiForJacksonMaven
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.RetainJaxbApiForJacksonGradle
+displayName: Retain `javax.xml.bind:jaxb-api` for Gradle when `jackson-module-jaxb-annotations` is present
+description: >-
+  Adds `javax.xml.bind:jaxb-api` as a `runtimeOnly` dependency when `jackson-module-jaxb-annotations` is
+  on the classpath, to prevent `NoClassDefFoundError` after migrating to `jakarta.xml.bind` 3.0+.
+preconditions:
+  - org.openrewrite.gradle.search.FindDependency:
+      groupId: com.fasterxml.jackson.module
+      artifactId: jackson-module-jaxb-annotations
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: javax.xml.bind
+      artifactId: jaxb-api
+      version: 2.3.x
+      configuration: runtimeOnly
+      acceptTransitive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.RetainJaxbApiForJacksonMaven
+displayName: Retain `javax.xml.bind:jaxb-api` for Maven when `jackson-module-jaxb-annotations` is present
+description: >-
+  Adds `javax.xml.bind:jaxb-api` as a `runtime` dependency when `jackson-module-jaxb-annotations` is
+  on the classpath, to prevent `NoClassDefFoundError` after migrating to `jakarta.xml.bind` 3.0+.
+preconditions:
+  - org.openrewrite.maven.search.FindDependency:
+      groupId: com.fasterxml.jackson.module
+      artifactId: jackson-module-jaxb-annotations
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: javax.xml.bind
+      artifactId: jaxb-api
+      version: 2.3.x
+      scope: runtime
+      acceptTransitive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
 displayName: Migrate XJC Bindings to Jakata XML
 description: Java EE has been rebranded to Jakarta EE, migrates the namespace and version in XJC bindings.
