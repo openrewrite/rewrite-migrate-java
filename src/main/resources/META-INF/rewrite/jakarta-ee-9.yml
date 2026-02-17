@@ -829,6 +829,7 @@ recipeList:
       newGroupId: jakarta.xml.bind
       newArtifactId: jakarta.xml.bind-api
       newVersion: 3.0.x
+  - org.openrewrite.java.migrate.jakarta.RetainJaxbApiForJackson
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
