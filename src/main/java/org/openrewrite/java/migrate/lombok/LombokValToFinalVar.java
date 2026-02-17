@@ -61,10 +61,6 @@ public class LombokValToFinalVar extends Recipe {
     private static class LombokValToFinalVarVisitor extends JavaIsoVisitor<ExecutionContext> {
         @Override
         public J.CompilationUnit visitCompilationUnit(J.CompilationUnit compilationUnit, ExecutionContext ctx) {
-            // Only remove explicit `import lombok.var;`, not from star imports like `import lombok.*;`
-            // which may also cover other lombok types still in use. With incomplete type info
-            // (e.g. in multi-module projects), maybeRemoveImport on a star import can incorrectly
-            // remove the entire import.
             for (J.Import imp : compilationUnit.getImports()) {
                 if (!imp.isStatic() && LOMBOK_VAR.equals(imp.getTypeName()) &&
                         !"*".equals(imp.getQualid().getSimpleName())) {
