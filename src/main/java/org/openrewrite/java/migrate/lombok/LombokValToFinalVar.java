@@ -61,7 +61,13 @@ public class LombokValToFinalVar extends Recipe {
     private static class LombokValToFinalVarVisitor extends JavaIsoVisitor<ExecutionContext> {
         @Override
         public J.CompilationUnit visitCompilationUnit(J.CompilationUnit compilationUnit, ExecutionContext ctx) {
-            maybeRemoveImport(LOMBOK_VAR);
+            for (J.Import imp : compilationUnit.getImports()) {
+                if (!imp.isStatic() && LOMBOK_VAR.equals(imp.getTypeName()) &&
+                        !"*".equals(imp.getQualid().getSimpleName())) {
+                    maybeRemoveImport(LOMBOK_VAR);
+                    break;
+                }
+            }
             return super.visitCompilationUnit(compilationUnit, ctx);
         }
 
