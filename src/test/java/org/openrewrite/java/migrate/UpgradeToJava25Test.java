@@ -139,4 +139,78 @@ class UpgradeToJava25Test implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void doesNotDuplicateLombokAnnotationProcessorWhenAlreadyInParentPluginManagement() {
+        rewriteRun(
+          spec -> spec.cycles(1).expectedCyclesThatMakeChanges(1),
+          //language=xml
+          pomXml(
+            """
+              <project>
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>parent</artifactId>
+                  <version>1</version>
+                  <packaging>pom</packaging>
+                  <modules>
+                      <module>child</module>
+                  </modules>
+                  <properties>
+                      <maven.compiler.release>17</maven.compiler.release>
+                  </properties>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.projectlombok</groupId>
+                          <artifactId>lombok</artifactId>
+                          <version>1.18.40</version>
+                      </dependency>
+                  </dependencies>
+                  <build>
+                      <pluginManagement>
+                          <plugins>
+                              <plugin>
+                                  <groupId>org.apache.maven.plugins</groupId>
+                                  <artifactId>maven-compiler-plugin</artifactId>
+                                  <configuration>
+                                      <annotationProcessorPaths>
+                                          <path>
+                                              <groupId>org.projectlombok</groupId>
+                                              <artifactId>lombok</artifactId>
+                                              <version>1.18.40</version>
+                                          </path>
+                                      </annotationProcessorPaths>
+                                  </configuration>
+                              </plugin>
+                          </plugins>
+                      </pluginManagement>
+                  </build>
+              </project>
+              """,
+            spec -> spec.after(actual ->
+              assertThat(actual)
+                .contains("<maven.compiler.release>25</maven.compiler.release>")
+                // annotation processor path for lombok should appear exactly once, not duplicated
+                .satisfies(content -> assertThat(content.split("<path>", -1).length - 1)
+                  .as("annotationProcessorPaths should have exactly one <path> entry")
+                  .isEqualTo(1))
+                .actual()
+            )
+          ),
+          mavenProject("child",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <parent>
+                        <groupId>com.mycompany.app</groupId>
+                        <artifactId>parent</artifactId>
+                        <version>1</version>
+                    </parent>
+                    <artifactId>child</artifactId>
+                </project>
+                """
+            )
+          )
+        );
+    }
 }

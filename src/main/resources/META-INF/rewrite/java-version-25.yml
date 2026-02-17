@@ -177,7 +177,7 @@ preconditions:
       artifactIdPattern: lombok
   - org.openrewrite.Singleton
 recipeList:
-  - org.openrewrite.maven.AddAnnotationProcessor:
+  - org.openrewrite.java.migrate.maven.AddAnnotationProcessorToEffectivePom:
       groupId: org.projectlombok
       artifactId: lombok
       version: 1.18.40
