@@ -71,6 +71,86 @@ class Java8toJava11Test implements RewriteTest {
     }
 
     @Test
+    void compilerPluginVersionAddedWhenMissing() {
+        rewriteRun(
+          version(
+            mavenProject("project",
+              //language=xml
+              pomXml(
+                """
+                  <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                      <plugins>
+                        <plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-compiler-plugin</artifactId>
+                          <configuration>
+                            <source>1.5</source>
+                            <target>1.5</target>
+                          </configuration>
+                        </plugin>
+                      </plugins>
+                    </build>
+                  </project>
+                  """,
+                spec -> spec.after(pomXml -> {
+                    assertThat(pomXml).contains("<version>3.");
+                    return pomXml;
+                })
+              )
+            ),
+            8)
+        );
+    }
+
+    @Test
+    void compilerPluginVersionAddedAndReleaseSetForFullMigration() {
+        rewriteRun(
+          spec -> spec.recipe(Environment.builder()
+            .scanRuntimeClasspath("org.openrewrite.java.migrate")
+            .build()
+            .activateRecipes("org.openrewrite.java.migrate.Java8toJava11")),
+          version(
+            mavenProject("project",
+              //language=xml
+              pomXml(
+                """
+                  <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                      <plugins>
+                        <plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-compiler-plugin</artifactId>
+                          <configuration>
+                            <source>1.5</source>
+                            <target>1.5</target>
+                          </configuration>
+                        </plugin>
+                      </plugins>
+                    </build>
+                  </project>
+                  """,
+                spec -> spec.after(pomXml -> {
+                    assertThat(pomXml)
+                      .contains("<release>11</release>")
+                      .contains("<version>3.")
+                      .doesNotContain("<source>")
+                      .doesNotContain("<target>");
+                    return pomXml;
+                })
+              )
+            ),
+            8)
+        );
+    }
+
+    @Test
     void noChangeOnCorrectJaxb2MavenPluginVersion() {
         rewriteRun(
           version(

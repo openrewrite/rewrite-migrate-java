@@ -110,6 +110,7 @@ recipeList:
       groupId: org.apache.maven.plugins
       artifactId: maven-compiler-plugin
       newVersion: 3.x
+      addVersionIfMissing: true
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
       artifactId: maven-war-plugin

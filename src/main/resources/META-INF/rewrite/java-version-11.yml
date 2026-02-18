@@ -110,6 +110,7 @@ recipeList:
       groupId: org.apache.maven.plugins
       artifactId: maven-compiler-plugin
       newVersion: 3.6.2
+      addVersionIfMissing: true
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 11
   - org.openrewrite.maven.UpgradePluginVersion:
