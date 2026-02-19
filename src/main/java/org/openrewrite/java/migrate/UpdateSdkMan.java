@@ -43,7 +43,7 @@ import static java.util.stream.Collectors.toList;
 public class UpdateSdkMan extends Recipe {
 
     @Option(displayName = "Java version",
-            description = "The Java version to update to.",
+            description = "The Java version to update to. Use `latest.patch` to upgrade to the latest version within the current major version.",
             required = false,
             example = "17")
     @Nullable
