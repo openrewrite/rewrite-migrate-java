@@ -86,7 +86,7 @@ public class UpdateSdkMan extends Recipe {
                 Matcher matcher = pattern.matcher(plainText.getText());
                 if (matcher.find()) {
                     String ver;
-                    if ("sameMajor".equalsIgnoreCase(newVersion)) {
+                    if ("latest.patch".equalsIgnoreCase(newVersion)) {
                         ver = matcher.group(1).split("\\.")[0];
                     } else if (newVersion == null) {
                         ver = matcher.group(1);
