@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
@@ -51,6 +52,55 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
       package jakarta.xml.bind.annotation;
       public @interface XmlElement {}
       """;
+
+    @DocumentExample
+    @Test
+    void dontRetainJaxbApiWhenJacksonNotPresent() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi())
+            .parser(JavaParser.fromJavaVersion().dependsOn(XML_ELEMENT_STUB, JAKARTA_XML_ELEMENT_STUB)),
+          //language=java
+          java(
+            """
+              import javax.xml.bind.annotation.XmlElement;
+
+              public class Test {
+                  @XmlElement
+                  private String name;
+              }
+              """,
+            """
+              import jakarta.xml.bind.annotation.XmlElement;
+
+              public class Test {
+                  @XmlElement
+                  private String name;
+              }
+              """
+          ),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+
+              repositories {
+                  mavenCentral()
+              }
+
+              dependencies {
+                  implementation "javax.xml.bind:jaxb-api:2.3.1"
+              }
+              """,
+            spec -> spec.after(buildGradle ->
+                assertThat(buildGradle)
+                  .contains("jakarta.xml.bind:jakarta.xml.bind-api")
+                  .doesNotContain("javax.xml.bind:jaxb-api")
+                  .actual())
+          )
+        );
+    }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/504")
     @Test
@@ -157,54 +207,6 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
                   .contains("javax.xml.bind")
                   .contains("jaxb-api")
                   .contains("jackson-module-jaxb-annotations")
-                  .actual())
-          )
-        );
-    }
-
-    @Test
-    void dontRetainJaxbApiWhenJacksonNotPresent() {
-        rewriteRun(
-          spec -> spec.beforeRecipe(withToolingApi())
-            .parser(JavaParser.fromJavaVersion().dependsOn(XML_ELEMENT_STUB, JAKARTA_XML_ELEMENT_STUB)),
-          //language=java
-          java(
-            """
-              import javax.xml.bind.annotation.XmlElement;
-
-              public class Test {
-                  @XmlElement
-                  private String name;
-              }
-              """,
-            """
-              import jakarta.xml.bind.annotation.XmlElement;
-
-              public class Test {
-                  @XmlElement
-                  private String name;
-              }
-              """
-          ),
-          buildGradle(
-            //language=gradle
-            """
-              plugins {
-                  id "java-library"
-              }
-
-              repositories {
-                  mavenCentral()
-              }
-
-              dependencies {
-                  implementation "javax.xml.bind:jaxb-api:2.3.1"
-              }
-              """,
-            spec -> spec.after(buildGradle ->
-                assertThat(buildGradle)
-                  .contains("jakarta.xml.bind:jakarta.xml.bind-api")
-                  .doesNotContain("javax.xml.bind:jaxb-api")
                   .actual())
           )
         );
