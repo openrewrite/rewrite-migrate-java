@@ -85,7 +85,14 @@ public class UpdateSdkMan extends Recipe {
                 Pattern pattern = Pattern.compile("java=(.*?)([.a-z]*-.*)");
                 Matcher matcher = pattern.matcher(plainText.getText());
                 if (matcher.find()) {
-                    String ver = newVersion == null ? matcher.group(1) : newVersion;
+                    String ver;
+                    if ("minor".equals(newVersion)) {
+                        ver = matcher.group(1).split("\\.")[0];
+                    } else if (newVersion == null) {
+                        ver = matcher.group(1);
+                    } else {
+                        ver = newVersion;
+                    }
                     String dist = newDistribution == null ? matcher.group(2) : "-" + newDistribution;
                     String newBasis = ver + dist;
                     Pattern majorPattern = Pattern.compile("^" + ver + "[.-].*");

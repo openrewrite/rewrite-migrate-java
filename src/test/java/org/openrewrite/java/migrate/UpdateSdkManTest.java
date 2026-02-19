@@ -200,6 +200,58 @@ class UpdateSdkManTest implements RewriteTest {
     }
 
     @Test
+    void minorUpgradesWithinSameMajorVersion() {
+        rewriteRun(
+          spec -> spec.recipe(new UpdateSdkMan("minor", null)),
+          text(
+            """
+              java=21.0.6-zulu
+              """,
+            spec -> spec.path(".sdkmanrc")
+              .after(str -> assertThat(str)
+                .startsWith("java=21.0.")
+                .doesNotContain("21.0.6")
+                .endsWith("-zulu")
+                .actual())
+          )
+        );
+    }
+
+    @Test
+    void minorUpgradeWithNewDistribution() {
+        rewriteRun(
+          spec -> spec.recipe(new UpdateSdkMan("minor", "amzn")),
+          text(
+            """
+              java=21.0.6-zulu
+              """,
+            spec -> spec.path(".sdkmanrc")
+              .after(str -> assertThat(str)
+                .startsWith("java=21.0.")
+                .endsWith("-amzn")
+                .actual())
+          )
+        );
+    }
+
+    @Test
+    void minorDoesNotCrossMajorVersion() {
+        rewriteRun(
+          spec -> spec.recipe(new UpdateSdkMan("minor", null)),
+          text(
+            """
+              java=11.0.25-tem
+              """,
+            spec -> spec.path(".sdkmanrc")
+              .after(str -> assertThat(str)
+                .startsWith("java=11.0.")
+                .endsWith("-tem")
+                .actual())
+          )
+        );
+    }
+
+    @Test
     void doNotDowngradeVersionIfAlreadyHighEnoughSameDistribution() {
         rewriteRun(
           spec -> spec.recipe(new UpdateSdkMan("17", null)),
