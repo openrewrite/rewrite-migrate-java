@@ -43,7 +43,7 @@ import static java.util.stream.Collectors.toList;
 public class UpdateSdkMan extends Recipe {
 
     @Option(displayName = "Java version",
-            description = "The Java version to update to.",
+            description = "The Java version to update to. Use `latest.patch` to upgrade to the latest version within the current major version.",
             required = false,
             example = "17")
     @Nullable
@@ -85,7 +85,14 @@ public class UpdateSdkMan extends Recipe {
                 Pattern pattern = Pattern.compile("java=(.*?)([.a-z]*-.*)");
                 Matcher matcher = pattern.matcher(plainText.getText());
                 if (matcher.find()) {
-                    String ver = newVersion == null ? matcher.group(1) : newVersion;
+                    String ver;
+                    if ("latest.patch".equalsIgnoreCase(newVersion)) {
+                        ver = matcher.group(1).split("\\.")[0];
+                    } else if (newVersion == null) {
+                        ver = matcher.group(1);
+                    } else {
+                        ver = newVersion;
+                    }
                     String dist = newDistribution == null ? matcher.group(2) : "-" + newDistribution;
                     String newBasis = ver + dist;
                     Pattern majorPattern = Pattern.compile("^" + ver + "[.-].*");
