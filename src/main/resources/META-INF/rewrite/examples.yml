@@ -5340,6 +5340,41 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind
+examples:
+- description: '`JavaxXmlBindMigrationToJakartaXmlBindTest#dontRetainJaxbApiWhenJacksonNotPresent`'
+  sources:
+  - before: |
+      plugins {
+          id "java-library"
+      }
+
+      repositories {
+          mavenCentral()
+      }
+
+      dependencies {
+          implementation "javax.xml.bind:jaxb-api:2.3.1"
+      }
+    path: build.gradle
+    language: groovy
+  - before: |
+      import javax.xml.bind.annotation.XmlElement;
+
+      public class Test {
+          @XmlElement
+          private String name;
+      }
+    after: |
+      import jakarta.xml.bind.annotation.XmlElement;
+
+      public class Test {
+          @XmlElement
+          private String name;
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
 examples:
 - description: '`Migrate#both`'
