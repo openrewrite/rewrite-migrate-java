@@ -31,10 +31,7 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
@@ -218,7 +215,44 @@ public class IfElseIfConstructToSwitch extends Recipe {
             }
             switchBody.append("}\n");
 
-            return JavaTemplate.apply(switchBody.toString(), cursor, if_.getCoordinates().replace(), arguments).withPrefix(if_.getPrefix());
+            J.Switch result = JavaTemplate.apply(switchBody.toString(), cursor, if_.getCoordinates().replace(), arguments).withPrefix(if_.getPrefix());
+            return fixTypeAttribution(result);
+        }
+
+        /**
+         * JavaTemplate uses raw string substitution (#{}), which loses type information
+         * for non-JDK types. This method restores the original type information from the
+         * instanceof checks onto the generated switch case labels.
+         */
+        private J.Switch fixTypeAttribution(J.Switch switch_) {
+            Iterator<J.InstanceOf> instanceOfs = patternMatchers.keySet().iterator();
+            List<Statement> statements = switch_.getCases().getStatements();
+            List<Statement> fixed = new ArrayList<>(statements.size());
+            for (Statement stmt : statements) {
+                if (stmt instanceof J.Case && instanceOfs.hasNext()) {
+                    J.Case case_ = (J.Case) stmt;
+                    if (!case_.getCaseLabels().isEmpty() && case_.getCaseLabels().get(0) instanceof J.VariableDeclarations) {
+                        J.InstanceOf instanceOf = instanceOfs.next();
+                        J.VariableDeclarations varDecl = (J.VariableDeclarations) case_.getCaseLabels().get(0);
+                        // Replace typeExpression with the original clazz (which has proper type info)
+                        varDecl = varDecl.withTypeExpression(
+                                varDecl.getTypeExpression() != null ?
+                                        instanceOf.getClazz().withPrefix(varDecl.getTypeExpression().getPrefix()) :
+                                        instanceOf.getClazz().withPrefix(Space.EMPTY));
+                        // Fix variable type from original pattern
+                        if (instanceOf.getPattern() instanceof J.Identifier && !varDecl.getVariables().isEmpty()) {
+                            J.Identifier originalPattern = (J.Identifier) instanceOf.getPattern();
+                            J.VariableDeclarations.NamedVariable var0 = varDecl.getVariables().get(0);
+                            varDecl = varDecl.withVariables(Collections.singletonList(
+                                    var0.withType(originalPattern.getType())
+                                            .withName(var0.getName().withType(originalPattern.getType()))));
+                        }
+                        stmt = case_.withCaseLabels(Collections.singletonList(varDecl.withPrefix(case_.getCaseLabels().get(0).getPrefix())));
+                    }
+                }
+                fixed.add(stmt);
+            }
+            return switch_.withCases(switch_.getCases().withStatements(fixed));
         }
 
         private Optional<Expression> switchOn() {
