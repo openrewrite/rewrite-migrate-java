@@ -7,6 +7,7 @@ group = "org.openrewrite.recipe"
 description = "Migrate to later Java versions. Automatically."
 
 recipeDependencies {
+    parserClasspath("org.projectlombok:lombok:latest.release")
     parserClasspath("jakarta.enterprise:jakarta.enterprise.cdi-api:3.0.0-M4")
     parserClasspath("jakarta.inject:jakarta.inject-api:2.0.1")
     parserClasspath("jakarta.servlet:jakarta.servlet-api:6.0.0")

@@ -94,7 +94,7 @@ public class UseAllArgsConstructor extends Recipe {
                             }
                             return JavaTemplate.builder(template)
                                     .imports("lombok.*")
-                                    .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
+                                    .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "lombok"))
                                     .build()
                                     .apply(getCursor(), classDecl.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
                         }
