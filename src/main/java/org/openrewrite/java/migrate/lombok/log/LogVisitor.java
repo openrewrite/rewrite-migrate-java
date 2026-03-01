@@ -51,7 +51,7 @@ public class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
             maybeAddImport(logAnnotation);
             return JavaTemplate
                     .builder("@" + logAnnotation.substring(logAnnotation.lastIndexOf('.') + 1) + "\n")
-                    .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
+                    .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "lombok"))
                     .imports(logAnnotation)
                     .build()
                     .apply(

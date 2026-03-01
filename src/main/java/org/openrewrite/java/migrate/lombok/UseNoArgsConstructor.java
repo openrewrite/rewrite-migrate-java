@@ -60,7 +60,7 @@ public class UseNoArgsConstructor extends Recipe {
                                 maybeAddImport("lombok.NoArgsConstructor");
                                 return JavaTemplate.builder(template)
                                         .imports("lombok.*")
-                                        .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
+                                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "lombok"))
                                         .build()
                                         .apply(getCursor(), classDecl.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
                             }

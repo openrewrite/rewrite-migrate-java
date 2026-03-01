@@ -65,7 +65,7 @@ class FieldAnnotator extends JavaIsoVisitor<ExecutionContext> {
 
 					return JavaTemplate.builder("@" + annotation.getSimpleName() + suffix)
                             .imports(annotation.getName(), "lombok.AccessLevel")
-                            .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "lombok"))
                             .build().apply(getCursor(), multiVariable.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
                 }
                 return multiVariable;
