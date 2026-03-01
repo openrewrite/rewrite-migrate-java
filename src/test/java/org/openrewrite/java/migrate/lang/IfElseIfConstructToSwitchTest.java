@@ -342,6 +342,111 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     }
 
     @Test
+    void nullCheckWithNonJdkTypes() {
+        rewriteRun(
+          java(
+            """
+              public class Dog {}
+              """
+          ),
+          java(
+            """
+              public class Cat {}
+              """
+          ),
+          //language=java
+          java(
+            """
+              class Test {
+                  static String describe(Object obj) {
+                      String result;
+                      if (obj == null) {
+                          result = "nothing";
+                      } else if (obj instanceof Dog d) {
+                          result = "dog";
+                      } else if (obj instanceof Cat c) {
+                          result = "cat";
+                      } else {
+                          result = "unknown";
+                      }
+                      return result;
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static String describe(Object obj) {
+                      String result;
+                      switch (obj) {
+                          case null -> result = "nothing";
+                          case Dog d -> result = "dog";
+                          case Cat c -> result = "cat";
+                          default -> result = "unknown";
+                      }
+                      return result;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void threeNonJdkTypes() {
+        rewriteRun(
+          java(
+            """
+              public class Dog {}
+              """
+          ),
+          java(
+            """
+              public class Cat {}
+              """
+          ),
+          java(
+            """
+              public class Bird {}
+              """
+          ),
+          //language=java
+          java(
+            """
+              class Test {
+                  static String describe(Object obj) {
+                      String result;
+                      if (obj instanceof Dog d) {
+                          result = "dog";
+                      } else if (obj instanceof Cat c) {
+                          result = "cat";
+                      } else if (obj instanceof Bird b) {
+                          result = "bird";
+                      } else {
+                          result = "unknown";
+                      }
+                      return result;
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static String describe(Object obj) {
+                      String result;
+                      switch (obj) {
+                          case Dog d -> result = "dog";
+                          case Cat c -> result = "cat";
+                          case Bird b -> result = "bird";
+                          default -> result = "unknown";
+                      }
+                      return result;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void switchBlockForNestedClasses() {
         rewriteRun(
           java(
