@@ -19,11 +19,12 @@ import lombok.AccessLevel;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
 import org.openrewrite.internal.StringUtils;
+import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.marker.CompactConstructor;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.Flag;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static lombok.AccessLevel.*;
 import static org.openrewrite.java.tree.J.Modifier.Type.*;
@@ -225,6 +226,140 @@ class LombokUtils {
             return PRIVATE;
         }
         return PACKAGE;
+    }
+
+    /**
+     * Returns the "required" fields for a class in declaration order: non-static final fields
+     * without initializers, plus non-static {@code @lombok.NonNull} fields without initializers.
+     */
+    static List<J.VariableDeclarations.NamedVariable> getRequiredFields(J.ClassDeclaration classDecl) {
+        List<J.VariableDeclarations.NamedVariable> result = new ArrayList<>();
+        for (Statement stmt : classDecl.getBody().getStatements()) {
+            if (!(stmt instanceof J.VariableDeclarations)) {
+                continue;
+            }
+            J.VariableDeclarations varDecls = (J.VariableDeclarations) stmt;
+            if (varDecls.hasModifier(Static)) {
+                continue;
+            }
+            boolean isFinal = varDecls.hasModifier(Final);
+            boolean hasNonNull = varDecls.getLeadingAnnotations().stream()
+                    .anyMatch(new AnnotationMatcher("@lombok.NonNull")::matches);
+            if (!isFinal && !hasNonNull) {
+                continue;
+            }
+            for (J.VariableDeclarations.NamedVariable var : varDecls.getVariables()) {
+                if (var.getInitializer() == null) {
+                    result.add(var);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all non-static fields for a class in declaration order.
+     */
+    static List<J.VariableDeclarations.NamedVariable> getAllNonStaticFields(J.ClassDeclaration classDecl) {
+        List<J.VariableDeclarations.NamedVariable> result = new ArrayList<>();
+        for (Statement stmt : classDecl.getBody().getStatements()) {
+            if (!(stmt instanceof J.VariableDeclarations)) {
+                continue;
+            }
+            J.VariableDeclarations varDecls = (J.VariableDeclarations) stmt;
+            if (varDecls.hasModifier(Static)) {
+                continue;
+            }
+            result.addAll(varDecls.getVariables());
+        }
+        return result;
+    }
+
+    /**
+     * Checks that a constructor's body consists entirely of simple field assignments
+     * matching the given fields in order, with matching parameter types.
+     */
+    static boolean isConstructorAssigningExactFields(J.MethodDeclaration constructor,
+                                                     List<J.VariableDeclarations.NamedVariable> expectedFields) {
+        if (constructor.getBody() == null) {
+            return false;
+        }
+        List<Statement> statements = constructor.getBody().getStatements();
+        if (statements.size() != expectedFields.size()) {
+            return false;
+        }
+
+        // Get constructor parameters (accounting for J.Empty when no params)
+        List<Statement> params = constructor.getParameters();
+        if (expectedFields.isEmpty()) {
+            return false;
+        }
+        if (params.size() != expectedFields.size() || params.get(0) instanceof J.Empty) {
+            return false;
+        }
+
+        JavaType.FullyQualified declaringType = constructor.getMethodType() != null
+                ? constructor.getMethodType().getDeclaringType() : null;
+
+        for (int i = 0; i < expectedFields.size(); i++) {
+            J.VariableDeclarations.NamedVariable expectedField = expectedFields.get(i);
+
+            // Check parameter type matches field type
+            if (!(params.get(i) instanceof J.VariableDeclarations)) {
+                return false;
+            }
+            J.VariableDeclarations paramDecl = (J.VariableDeclarations) params.get(i);
+            J.VariableDeclarations.NamedVariable param = paramDecl.getVariables().get(0);
+            if (!TypeUtils.isOfType(param.getType(), expectedField.getType())) {
+                return false;
+            }
+
+            // Check statement is a simple field assignment
+            if (!(statements.get(i) instanceof J.Assignment)) {
+                return false;
+            }
+            J.Assignment assignment = (J.Assignment) statements.get(i);
+
+            // Check left side is the expected field
+            String assignedFieldName = getAssignedFieldName(assignment.getVariable(), declaringType);
+            if (assignedFieldName == null || !assignedFieldName.equals(expectedField.getSimpleName())) {
+                return false;
+            }
+
+            // Check right side references the constructor parameter
+            if (!isReferenceTo(assignment.getAssignment(), param)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static @Nullable String getAssignedFieldName(Expression variable, JavaType.@Nullable FullyQualified declaringType) {
+        if (variable instanceof J.Identifier) {
+            J.Identifier id = (J.Identifier) variable;
+            if (id.getFieldType() != null && (declaringType == null || declaringType == id.getFieldType().getOwner())) {
+                return id.getSimpleName();
+            }
+        } else if (variable instanceof J.FieldAccess) {
+            J.FieldAccess fa = (J.FieldAccess) variable;
+            Expression target = fa.getTarget();
+            if (target instanceof J.Identifier && "this".equals(((J.Identifier) target).getSimpleName())) {
+                if (fa.getName().getFieldType() != null &&
+                        (declaringType == null || declaringType == fa.getName().getFieldType().getOwner())) {
+                    return fa.getSimpleName();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean isReferenceTo(Expression expr, J.VariableDeclarations.NamedVariable param) {
+        if (expr instanceof J.Identifier) {
+            J.Identifier id = (J.Identifier) expr;
+            return id.getSimpleName().equals(param.getSimpleName()) &&
+                    TypeUtils.isOfType(id.getType(), param.getType());
+        }
+        return false;
     }
 
 }

@@ -27,6 +27,8 @@ recipeList:
   - org.openrewrite.java.migrate.lombok.UseLombokGetter
   - org.openrewrite.java.migrate.lombok.UseLombokSetter
   - org.openrewrite.java.migrate.lombok.UseNoArgsConstructor
+  - org.openrewrite.java.migrate.lombok.UseRequiredArgsConstructor
+  - org.openrewrite.java.migrate.lombok.UseAllArgsConstructor
   - org.openrewrite.maven.ChangeDependencyScope:
       groupId: org.projectlombok
       artifactId: lombok
