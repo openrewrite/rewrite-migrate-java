@@ -10,6 +10,7 @@
 11.0.30-sem
 11.0.30-tem
 11.0.30-zulu
+11.0.30.1-sem
 11.0.30.fx-librca
 11.0.30.fx-zulu
 17.0.12-graal
@@ -25,6 +26,7 @@
 17.0.18-sem
 17.0.18-tem
 17.0.18-zulu
+17.0.18.1-sem
 17.0.18.crac-librca
 17.0.18.crac-zulu
 17.0.18.fx-librca
@@ -41,6 +43,7 @@
 21.0.10-sem
 21.0.10-tem
 21.0.10-zulu
+21.0.10.1-sem
 21.0.10.crac-librca
 21.0.10.crac-zulu
 21.0.10.fx-librca
@@ -100,6 +103,7 @@
 25.0.2-sem
 25.0.2-tem
 25.0.2-zulu
+25.0.2.1-sem
 25.0.2.crac-zulu
 25.0.2.fx-librca
 25.0.2.fx-nik
@@ -108,6 +112,7 @@
 25.0.2.r25-nik
 26.ea.13-graal
 26.ea.35-open
+27.ea.10-open
 27.ea.9-open
 6.0.119-zulu
 7.0.352-zulu
